@@ -1,4 +1,4 @@
-base_atomic = Class.new do
+class Atomic
   class ConcurrentUpdateError < ThreadError
   end
   
@@ -38,42 +38,25 @@ end
 
 if defined? RUBY_ENGINE && RUBY_ENGINE == "jruby"
   require 'java'
-  Atomic = Class.new(base_atomic) do
-    InternalReference = java.util.concurrent.atomic.AtomicReference
-  end
+  Atomic::InternalReference = java.util.concurrent.atomic.AtomicReference
 else
-  Atomic = Class.new(base_atomic) do
-    class InternalReference
-      attr_accessor :value
-      alias_method :get, :value
-      alias_method :set, :value=
+  require 'thread'
 
-      def initialize(value)
-        @value = value
-      end
+  class Atomic::InternalReference
+    attr_accessor :value
+    alias_method :get, :value
+    alias_method :set, :value=
 
-      def compare_and_set(old_value, new_value)
-        _exclusive do
-          return false unless @value.equal? old_value
-          @value = new_value
-        end
-        true
+    def initialize(value)
+      @value = value
+    end
+
+    def compare_and_set(old_value, new_value)
+      Thread.exclusive do 
+        return false unless @value.equal? old_value
+        @value = new_value
       end
-      
-      HAS_EXCLUSIVE = defined? Thread.exclusive
-      def _exclusive
-        if HAS_EXCLUSIVE
-          Thread.exclusive {yield}
-        else
-          begin
-            Thread.critical = true
-            yield
-          ensure
-            Thread.critical = false
-          end
-        end
-      end
-      private :_exclusive
+      true
     end
   end
 end
