@@ -34,7 +34,7 @@ class Atomic
     unless @ref.compare_and_set(old_value, new_value)
       raise ConcurrentUpdateError, "Update failed"
     end
-    old_value
+    new_value
   end
 end
 

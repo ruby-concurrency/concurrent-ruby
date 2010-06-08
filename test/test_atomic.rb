@@ -22,7 +22,7 @@ class TestAtomic < Test::Unit::TestCase
     res = atomic.update {|v| v + 1}
     
     assert_equal 1, atomic.value
-    assert_equal 0, res
+    assert_equal 1, res
   end
   
   def test_try_update
@@ -30,7 +30,7 @@ class TestAtomic < Test::Unit::TestCase
     res = atomic.try_update {|v| v + 1}
     
     assert_equal 1, atomic.value
-    assert_equal 0, res
+    assert_equal 1, res
   end
   
   def test_try_update_fails
