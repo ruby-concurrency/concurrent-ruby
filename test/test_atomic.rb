@@ -32,6 +32,14 @@ class TestAtomic < Test::Unit::TestCase
     assert_equal 1, atomic.value
     assert_equal 1, res
   end
+
+  def test_swap
+    atomic = Atomic.new(0)
+    res = atomic.swap(1)
+
+    assert_equal 1, atomic.value
+    assert_equal 0, res
+  end
   
   def test_try_update_fails
     atomic = Atomic.new(0)

@@ -17,6 +17,10 @@ class Atomic
     new_value
   end
 
+  def swap(new_value)
+    @ref.get_and_set(new_value)
+  end
+
   # Pass the current value to the given block, replacing it
   # with the block's result. May retry if the value changes
   # during the block's execution.
@@ -49,6 +53,14 @@ else
 
     def initialize(value)
       @value = value
+    end
+
+    def get_and_set(new_value)
+      Thread.exclusive do
+        old_value = @value
+        @value = new_value
+        old_value
+      end
     end
 
     def compare_and_set(old_value, new_value)
