@@ -18,42 +18,46 @@ class TestAtomic < Test::Unit::TestCase
   end
   
   def test_update
-    atomic = Atomic.new(0)
+    # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
+    atomic = Atomic.new(1000)
     res = atomic.update {|v| v + 1}
     
-    assert_equal 1, atomic.value
-    assert_equal 1, res
+    assert_equal 1001, atomic.value
+    assert_equal 1001, res
   end
   
   def test_try_update
-    atomic = Atomic.new(0)
+    # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
+    atomic = Atomic.new(1000)
     res = atomic.try_update {|v| v + 1}
     
-    assert_equal 1, atomic.value
-    assert_equal 1, res
+    assert_equal 1001, atomic.value
+    assert_equal 1001, res
   end
 
   def test_swap
-    atomic = Atomic.new(0)
-    res = atomic.swap(1)
+    atomic = Atomic.new(1000)
+    res = atomic.swap(1001)
 
-    assert_equal 1, atomic.value
-    assert_equal 0, res
+    assert_equal 1001, atomic.value
+    assert_equal 1000, res
   end
   
   def test_try_update_fails
-    atomic = Atomic.new(0)
+    # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
+    atomic = Atomic.new(1000)
     assert_raise Atomic::ConcurrentUpdateError do
       # assigning within block exploits implementation detail for test
-      atomic.try_update{|v| atomic.value = 1 ; v + 1}
+      atomic.try_update{|v| atomic.value = 1001 ; v + 1}
     end
   end
 
   def test_update_retries
     tries = 0
-    atomic = Atomic.new(0)
+    # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
+    atomic = Atomic.new(1000)
     # assigning within block exploits implementation detail for test
-    atomic.update{|v| tries += 1 ; atomic.value = 1 ; v + 1}
+    atomic.update{|v| tries += 1 ; atomic.value = 1001 ; v + 1}
     assert_equal 2, tries
   end
 end

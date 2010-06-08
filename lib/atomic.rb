@@ -43,8 +43,7 @@ class Atomic
 end
 
 if defined? RUBY_ENGINE && RUBY_ENGINE == "jruby"
-  require 'java'
-  Atomic::InternalReference = java.util.concurrent.atomic.AtomicReference
+  require 'atomic_reference'
 else
   class Atomic::InternalReference
     attr_accessor :value
