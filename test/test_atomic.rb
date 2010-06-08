@@ -19,17 +19,33 @@ class TestAtomic < Test::Unit::TestCase
   
   def test_update
     atomic = Atomic.new(0)
-    atomic.update {|v| v + 1}
+    res = atomic.update {|v| v + 1}
     
     assert_equal 1, atomic.value
+    assert_equal 0, res
   end
   
   def test_try_update
     atomic = Atomic.new(0)
-    atomic.try_update {|v| v + 1}
+    res = atomic.try_update {|v| v + 1}
     
     assert_equal 1, atomic.value
+    assert_equal 0, res
   end
   
-  # TODO: Test the ConcurrentUpdateError cases
+  def test_try_update_fails
+    atomic = Atomic.new(0)
+    assert_raise Atomic::ConcurrentUpdateError do
+      # assigning within block exploits implementation detail for test
+      atomic.try_update{|v| atomic.value = 1 ; v + 1}
+    end
+  end
+
+  def test_update_retries
+    tries = 0
+    atomic = Atomic.new(0)
+    # assigning within block exploits implementation detail for test
+    atomic.update{|v| tries += 1 ; atomic.value = 1 ; v + 1}
+    assert_equal 2, tries
+  end
 end
