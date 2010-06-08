@@ -1,3 +1,5 @@
+require 'thread'
+
 class Atomic
   class ConcurrentUpdateError < ThreadError
   end
@@ -40,8 +42,6 @@ if defined? RUBY_ENGINE && RUBY_ENGINE == "jruby"
   require 'java'
   Atomic::InternalReference = java.util.concurrent.atomic.AtomicReference
 else
-  require 'thread'
-
   class Atomic::InternalReference
     attr_accessor :value
     alias_method :get, :value
