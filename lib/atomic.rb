@@ -69,9 +69,12 @@ rescue LoadError
     end
 
     def compare_and_set(old_value, new_value)
-      @mutex.synchronize do
+      return false unless @mutex.try_lock
+      begin
         return false unless @value.equal? old_value
         @value = new_value
+      ensure
+        @mutex.unlock
       end
       true
     end
