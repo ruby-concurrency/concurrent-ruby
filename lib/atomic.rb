@@ -46,7 +46,7 @@ begin
   require 'atomic_reference'
 rescue LoadError
   # Portable/generic (but not very memory or scheduling-efficient) fallback
-  class Atomic::InternalReference
+  class Atomic::InternalReference #:nodoc: all
     def initialize(value)
       @mutex = Mutex.new
       @value = value
