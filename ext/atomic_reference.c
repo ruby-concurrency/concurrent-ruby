@@ -1,7 +1,7 @@
 #include <ruby.h>
 
 static void ir_mark(void *value) {
-  rb_mark((VALUE)value);
+  rb_gc_mark((VALUE)value);
 }
 
 static VALUE ir_alloc(VALUE klass) {
