@@ -1,7 +1,7 @@
 #include <ruby.h>
 
 static void ir_mark(void *value) {
-  rb_mark((VALUE)value);
+  rb_gc_mark((VALUE)value);
 }
 
 static VALUE ir_alloc(VALUE klass) {
@@ -29,15 +29,19 @@ static VALUE ir_get_and_set(VALUE self, VALUE new_value) {
   return old_value;
 }
 
-static VALUE ir_compare_and_set(VALUE self, VALUE expect_value, VALUE new_value) {
-  VALUE old_value;
-  old_value = (VALUE)DATA_PTR(self);
-  if (old_value == expect_value) {
-    DATA_PTR(self) = (void *)new_value;
+static VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE new_value) {
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+  if (OSAtomicCompareAndSwap64(expect_value, new_value, &DATA_PTR(self))) {
     return Qtrue;
-  } else {
-    return Qfalse;
   }
+#elif (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 40100
+  if (__sync_bool_compare_and_swap(&DATA_PTR(self), expect_value, new_value)) {
+    return Qtrue;
+  }
+#else
+# error No CAS operation available for this platform
+#endif
+  return Qfalse;
 }
 
 void Init_atomic_reference() {
