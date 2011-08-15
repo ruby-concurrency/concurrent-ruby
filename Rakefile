@@ -9,6 +9,11 @@ Rake::TestTask.new :test do |t|
   t.test_files = FileList["test/**/*.rb"]
 end
 
+desc "Run benchmarks"
+task :bench do
+  exec "ruby -Ilib -Iext test/bench_atomic.rb"
+end
+
 if defined?(JRUBY_VERSION)
   require 'ant'
 
