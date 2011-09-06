@@ -3,6 +3,8 @@ require 'atomic'
 require 'thread'
 Thread.abort_on_exception = true
 
+$go = false # for synchronizing parallel threads
+
 # number of updates on the value
 N = ARGV[1] ? ARGV[1].to_i : 100_000
 
@@ -10,7 +12,7 @@ N = ARGV[1] ? ARGV[1].to_i : 100_000
 M = ARGV[0] ? ARGV[0].to_i : 100
 
 
-puts "*** Sequencial updates ***"
+puts "*** Sequential updates ***"
 Benchmark.bm(10) do |x|
   value = 0
   x.report "no lock" do
@@ -50,7 +52,7 @@ def para_setup(num_threads, count, &block)
     diff = (i % 2 == 0) ? 1 : -1
 
     t = Thread.new do
-      Thread.stop # don't run until we get the go
+      nil until $go
       count.times do
         yield diff
       end
@@ -59,8 +61,8 @@ def para_setup(num_threads, count, &block)
     tg.add(t)
   end
 
-  # Make sure all threads are paused
-  while tg.list.find{|t| t.status != "sleep"}
+  # Make sure all threads are started
+  while tg.list.find{|t| t.status != "run"}
     Thread.pass
   end
 
@@ -71,21 +73,19 @@ def para_setup(num_threads, count, &block)
 end
 
 def para_run(tg)
-  Thread.exclusive do
-    tg.list.each{|t| t.run }
-  end
+  $go = true
   tg.list.each{|t| t.join}
+  $go = false
 end
 
-
 puts "*** Parallel updates ***"
-Benchmark.bm(10) do |x|
+Benchmark.bm(10) do |bm|
   # This is not secure
   value = 0
   tg = para_setup(M, N/M) do |diff|
     value += diff
   end
-  x.report("no lock"){ para_run(tg) }
+  bm.report("no lock"){ para_run(tg) }
 
 
   value = 0
@@ -95,7 +95,7 @@ Benchmark.bm(10) do |x|
       value += diff
     end
   end
-  x.report("mutex"){ para_run(tg) }
+  bm.report("mutex"){ para_run(tg) }
   raise unless value == 0
 
 
@@ -103,7 +103,7 @@ Benchmark.bm(10) do |x|
   tg = para_setup(M, N/M) do |diff|
     @atom.update{|x| x + diff}
   end
-  x.report("atomic"){ para_run(tg) }
+  bm.report("atomic"){ para_run(tg) }
   raise unless @atom.value == 0
 
 end
