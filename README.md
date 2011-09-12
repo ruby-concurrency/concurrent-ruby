@@ -1,7 +1,8 @@
 atomic: An atomic reference implementation for JRuby and green or GIL-threaded
 Ruby implementations (MRI 1.8/1.9, Rubinius)
 
-== Summary ==
+Summary
+=======
 
 This library provides:
 
@@ -20,8 +21,20 @@ methods:
 
 The atomic repository is at http://github.com/headius/ruby-atomic.
 
-== Usage ==
+Usage
+=====
 
+The simplest way to use "atomic" is to call the "update" or "try_update"
+methods.
+
+"try_update" and "update" both call the given block, passing the current
+value and using the block's result as the new value. If the value is updated
+by another thread before the block completes, "try update" raises a
+ConcurrentUpdateError and "update" retries the block. Because "update" may call
+the block several times when multiple threads are all updating the same value,
+the block's logic should be kept as simple as possible.
+
+````ruby
 require 'atomic'
 
 my_atomic = Atomic.new(0)
@@ -31,3 +44,16 @@ begin
 rescue Atomic::ConcurrentUpdateError => cue
   # deal with it (retry, propagate, etc)
 end
+````
+
+It's also possible to use the regular get/set operations on the Atomic, if you
+want to avoid the exception and respond to contended changes in some other way.
+
+````ruby
+my_atomic = Atomic.new(0)
+my_atomic.value # => 0
+my_atomic.value = 1
+my_atomic.swap(2) # => 1
+my_atomic.compare_and_swap(2, 3) => true, updated to 3
+my_atomic.compare_and_swap(2, 3) => false, current is not 2
+````
