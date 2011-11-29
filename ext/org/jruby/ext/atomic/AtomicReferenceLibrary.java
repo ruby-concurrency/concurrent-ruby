@@ -1,7 +1,7 @@
 package org.jruby.ext.atomic;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -36,46 +36,48 @@ public class AtomicReferenceLibrary implements Library {
 
     @JRubyClass(name="JRubyReference", parent="Object")
     public static class JRubyReference extends RubyObject {
-        private final AtomicReference<IRubyObject> reference;
+        private volatile IRubyObject reference;
+        private final static AtomicReferenceFieldUpdater<JRubyReference, IRubyObject> UPDATER =
+            AtomicReferenceFieldUpdater.newUpdater(JRubyReference.class, IRubyObject.class, "reference");
 
         public JRubyReference(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
-            reference = new AtomicReference<IRubyObject>(runtime.getNil());
+            reference = runtime.getNil();
         }
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context) {
             Ruby runtime = context.getRuntime();
-            reference.set(runtime.getNil());
+            UPDATER.set(this, runtime.getNil());
             return runtime.getNil();
         }
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context, IRubyObject value) {
             Ruby runtime = context.getRuntime();
-            reference.set(value);
+            UPDATER.set(this, value);
             return runtime.getNil();
         }
 
         @JRubyMethod(name = {"get", "value"})
         public IRubyObject get() {
-            return reference.get();
+            return UPDATER.get(this);
         }
 
         @JRubyMethod(name = {"set", "value="})
         public IRubyObject set(IRubyObject newValue) {
-            reference.set(newValue);
+            UPDATER.set(this, newValue);
             return newValue;
         }
 
         @JRubyMethod
         public IRubyObject compare_and_set(ThreadContext context, IRubyObject oldValue, IRubyObject newValue) {
-            return context.getRuntime().newBoolean(reference.compareAndSet(oldValue, newValue));
+            return context.getRuntime().newBoolean(UPDATER.compareAndSet(this, oldValue, newValue));
         }
 
         @JRubyMethod
         public IRubyObject get_and_set(ThreadContext context, IRubyObject newValue) {
-            return reference.getAndSet(newValue);
+            return UPDATER.getAndSet(this, newValue);
         }
     }
 }
