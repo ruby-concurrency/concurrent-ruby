@@ -2,14 +2,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{atomic}
-  s.version = "0.0.7"
+  s.version = "0.0.8"
   s.authors = ["Charles Oliver Nutter", "MenTaLguY"]
   s.date = Time.now.strftime('%Y-%m-%d')
-  s.description = "An atomic reference implementation for JRuby and green or GIL-threaded impls"
+  s.description = "An atomic reference implementation for JRuby, Rubinius, and MRI"
   s.email = ["headius@headius.com", "mental@rydia.net"]
   s.homepage = "http://github.com/headius/ruby-atomic"
   s.require_paths = ["lib"]
-  s.summary = "An atomic reference implementation for JRuby and green or GIL-threaded impls"
+  s.summary = "An atomic reference implementation for JRuby, Rubinius, and MRI"
   s.test_files = Dir["test/test*.rb"]
   if defined?(JRUBY_VERSION)
     s.files = Dir['{lib,examples,test}/**/*'] + Dir['{*.txt,*.gemspec,Rakefile}']
