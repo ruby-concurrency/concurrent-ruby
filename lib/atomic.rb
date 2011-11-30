@@ -55,8 +55,17 @@ class Atomic
 end
 
 begin
-  require 'atomic_reference'
+  ruby_engine = defined?(RUBY_ENGINE)? RUBY_ENGINE : 'ruby'
+  case ruby_engine
+  when 'jruby', 'ruby'
+    require 'atomic_reference'
+  when 'rbx'
+    Atomic::InternalReference = Rubinius::AtomicReference
+  else
+    raise LoadError
+  end
 rescue LoadError
+  warn 'unsupported Ruby engine, using less-efficient Atomic impl'
   # Portable/generic (but not very memory or scheduling-efficient) fallback
   class Atomic::InternalReference #:nodoc: all
     def initialize(value)
