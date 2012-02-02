@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{atomic}
-  s.version = "0.0.9"
+  s.version = "1.0.0"
   s.authors = ["Charles Oliver Nutter", "MenTaLguY"]
   s.date = Time.now.strftime('%Y-%m-%d')
   s.description = "An atomic reference implementation for JRuby, Rubinius, and MRI"
