@@ -54,6 +54,6 @@ my_atomic = Atomic.new(0)
 my_atomic.value # => 0
 my_atomic.value = 1
 my_atomic.swap(2) # => 1
-my_atomic.compare_and_swap(2, 3) => true, updated to 3
-my_atomic.compare_and_swap(2, 3) => false, current is not 2
+my_atomic.compare_and_swap(2, 3) # => true, updated to 3
+my_atomic.compare_and_swap(2, 3) # => false, current is not 2
 ````
