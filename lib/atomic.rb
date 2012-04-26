@@ -65,7 +65,7 @@ begin
     raise LoadError
   end
 rescue LoadError
-  warn 'unsupported Ruby engine, using less-efficient Atomic impl'
+  warn 'unsupported Ruby engine, using less-efficient Atomic impl' if $VERBOSE
   # Portable/generic (but not very memory or scheduling-efficient) fallback
   class Atomic::InternalReference #:nodoc: all
     def initialize(value)
