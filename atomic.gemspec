@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{atomic}
-  s.version = "1.0.0"
+  s.version = "1.0.1"
   s.authors = ["Charles Oliver Nutter", "MenTaLguY"]
   s.date = Time.now.strftime('%Y-%m-%d')
   s.description = "An atomic reference implementation for JRuby, Rubinius, and MRI"
@@ -12,10 +12,10 @@ Gem::Specification.new do |s|
   s.summary = "An atomic reference implementation for JRuby, Rubinius, and MRI"
   s.test_files = Dir["test/test*.rb"]
   if defined?(JRUBY_VERSION)
-    s.files = Dir['{lib,examples,test}/**/*'] + Dir['{*.txt,*.gemspec,Rakefile}']
+    s.files = Dir['lib/atomic_reference.jar']
     s.platform = 'java'
   else
-    s.files = Dir['{lib,examples,test,ext}/**/*'] + Dir['{*.txt,*.gemspec,Rakefile}']
     s.extensions = 'ext/extconf.rb'
   end
+  s.files += `git ls-files`.lines.map(&:chomp)
 end
