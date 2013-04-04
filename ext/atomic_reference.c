@@ -21,6 +21,10 @@ static VALUE ir_alloc(VALUE klass) {
 }
 
 static VALUE ir_initialize(int argc, VALUE* argv, VALUE self) {
+    VALUE value = Qnil;
+    if (rb_scan_args(argc, argv, "01", &value) == 1) {
+	value = argv[0];
+    }
     DATA_PTR(self) = (void *) value;
     return Qnil;
 }
@@ -58,17 +62,18 @@ static VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE n
 
 void Init_atomic_reference() {
     VALUE cAtomic;
-    VALUE cInternalReference;
 
-    cAtomic = rb_const_get(rb_cObject, rb_intern("Atomic"));
-    cInternalReference = rb_define_class_under(cAtomic, "InternalReference",
-	    rb_cObject);
+    cAtomic = rb_define_class_under(rb_cObject, "Atomic", rb_cObject);
 
-    rb_define_alloc_func(cInternalReference, ir_alloc);
+    rb_define_alloc_func(cAtomic, ir_alloc);
 
-    rb_define_method(cInternalReference, "initialize", ir_initialize, 1);
-    rb_define_method(cInternalReference, "get", ir_get, 0);
-    rb_define_method(cInternalReference, "set", ir_set, 1);
-    rb_define_method(cInternalReference, "get_and_set", ir_get_and_set, 1);
-    rb_define_method(cInternalReference, "compare_and_set", ir_compare_and_set, 2);
+    rb_define_method(cAtomic, "initialize", ir_initialize, -1);
+    rb_define_method(cAtomic, "get", ir_get, 0);
+    rb_define_method(cAtomic, "value", ir_get, 0);
+    rb_define_method(cAtomic, "set", ir_set, 1);
+    rb_define_method(cAtomic, "value=", ir_set, 1);
+    rb_define_method(cAtomic, "get_and_set", ir_get_and_set, 1);
+    rb_define_method(cAtomic, "swap", ir_get_and_set, 1);
+    rb_define_method(cAtomic, "compare_and_set", ir_compare_and_set, 2);
+    rb_define_method(cAtomic, "compare_and_swap", ir_compare_and_set, 2);
 }

@@ -10,10 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 begin
   ruby_engine = defined?(RUBY_ENGINE)? RUBY_ENGINE : 'ruby'
   require "atomic/#{ruby_engine}"
 rescue LoadError
-  require 'atomic/default'
+  require 'atomic/fallback'
 end
