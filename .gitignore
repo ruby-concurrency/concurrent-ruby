@@ -1,2 +1,5 @@
 lib/atomic_reference.jar
-/nbproject/private/
+/nbproject
+ext/*.bundle
+ext/*.so
+ext/*.jar
