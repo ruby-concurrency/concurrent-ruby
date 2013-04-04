@@ -1,0 +1,7 @@
+class Atomic
+  class ConcurrentUpdateError < ThreadError
+  end
+  
+  # frozen pre-allocated backtrace to speed ConcurrentUpdateError
+  CONC_UP_ERR_BACKTRACE = ['backtrace elided; set verbose to enable'].freeze
+end
