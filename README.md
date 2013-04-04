@@ -1,5 +1,4 @@
-atomic: An atomic reference implementation for JRuby and green or GIL-threaded
-Ruby implementations (MRI 1.8/1.9, Rubinius)
+atomic: An atomic reference implementation for JRuby, Rubinius, and MRI.
 
 Summary
 =======
@@ -57,3 +56,10 @@ my_atomic.swap(2) # => 1
 my_atomic.compare_and_swap(2, 3) # => true, updated to 3
 my_atomic.compare_and_swap(2, 3) # => false, current is not 2
 ````
+
+Building
+========
+
+As of 1.1.0, JDK8 is required to build the atomic gem, since it attempts to use
+the new atomic Unsafe.getAndSetObject method only in JDK8. The resulting code
+should still work fine as far back as Java 5.
