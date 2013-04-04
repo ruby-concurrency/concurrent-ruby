@@ -1,11 +1,11 @@
-warn 'unsupported Ruby engine, using less-efficient Atomic impl' if $VERBOSE
+warn "#{__FILE__}:#{__LINE__}: unsupported Ruby engine `#{RUBY_ENGINE}', using less-efficient Atomic impl"
 
 require 'thread'
 require 'atomic/direct_update'
 
 # Portable/generic (but not very memory or scheduling-efficient) fallback
 class Atomic #:nodoc: all
-  def initialize(value)
+  def initialize(value = nil)
     @mutex = Mutex.new
     @value = value
   end

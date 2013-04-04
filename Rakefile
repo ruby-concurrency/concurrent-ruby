@@ -18,6 +18,7 @@ task :default => :test
 desc "Run tests"
 Rake::TestTask.new :test do |t|
   t.libs << "lib"
+  t.libs << "ext"
   t.test_files = FileList["test/**/*.rb"]
 end
 
@@ -50,4 +51,15 @@ if defined?(JRUBY_VERSION)
   end
 
   task :package => :jar
+else
+  task :package do
+    Dir.chdir("ext") do
+      # this does essentially the same thing
+      # as what RubyGems does
+      ruby "extconf.rb"
+      sh "make"
+    end
+  end
 end
+
+task :test => :package
