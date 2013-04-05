@@ -1,17 +1,18 @@
 # -*- encoding: utf-8 -*-
 
 # Update these to get proper version and commit history
-new_version = "1.1.3"
+new_version = "1.1.4"
 old_version = "1.1.0"
 
-lines = File.readlines("README.rdoc")
+git_lines = `git log --oneline #{old_version}...#{new_version}`.lines.map {|str| "* #{str}"}.join
+doc_lines = File.readlines("README.rdoc")
 description = <<EOS
-#{lines[0]}
+#{doc_lines[0]}
 
 == Changes since #{old_version}
 
-#{`git log --oneline #{old_version}...#{new_version}`}
-#{lines[0..-1].join("\n")}
+#{git_lines}
+#{doc_lines[2..-1].join("\n")}
 EOS
 
 Gem::Specification.new do |s|
