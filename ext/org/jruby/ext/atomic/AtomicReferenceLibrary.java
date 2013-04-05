@@ -54,7 +54,7 @@ public class AtomicReferenceLibrary implements Library {
     
     private static final ObjectAllocator JRUBYREFERENCE8_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new JRubyReference(runtime, klazz);
+            return new JRubyReference8(runtime, klazz);
         }
     };
 
