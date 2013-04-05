@@ -3,10 +3,10 @@
 Gem::Specification.new do |s|
   s.name = %q{atomic}
   s.version = "1.1.1"
-  s.authors = ["Charles Oliver Nutter", "MenTaLguY"]
+  s.authors = ["Charles Oliver Nutter", "MenTaLguY", "Sokolov Yura"]
   s.date = Time.now.strftime('%Y-%m-%d')
   s.description = "An atomic reference implementation for JRuby, Rubinius, and MRI"
-  s.email = ["headius@headius.com", "mental@rydia.net"]
+  s.email = ["headius@headius.com", "mental@rydia.net", "funny.falcon@gmail.com"]
   s.homepage = "http://github.com/headius/ruby-atomic"
   s.require_paths = ["lib"]
   s.summary = "An atomic reference implementation for JRuby, Rubinius, and MRI"
