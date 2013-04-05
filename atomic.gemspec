@@ -1,21 +1,25 @@
 # -*- encoding: utf-8 -*-
 
 # Update these to get proper version and commit history
-new_version = "1.1.2"
-old_version = "1.1.1"
+new_version = "1.1.3"
+old_version = "1.1.0"
+
+lines = File.readlines("README.rdoc")
+description = <<EOS
+#{lines[0]}
+
+== Changes since #{old_version}
+
+#{`git log --oneline #{old_version}...#{new_version}`}
+#{lines[0..-1].join("\n")}
+EOS
 
 Gem::Specification.new do |s|
   s.name = %q{atomic}
   s.version = new_version
   s.authors = ["Charles Oliver Nutter", "MenTaLguY", "Sokolov Yura"]
   s.date = Time.now.strftime('%Y-%m-%d')
-  s.description = <<EOS
-Changes in version #{new_version}:
-
-#{`git log --oneline #{old_version}...#{new_version}`}
-#{`kramdown README.md`}
-EOS
-puts s.description
+  s.description = description
   s.email = ["headius@headius.com", "mental@rydia.net", "funny.falcon@gmail.com"]
   s.homepage = "http://github.com/headius/ruby-atomic"
   s.require_paths = ["lib"]
