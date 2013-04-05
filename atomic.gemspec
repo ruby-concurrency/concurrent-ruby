@@ -1,11 +1,20 @@
 # -*- encoding: utf-8 -*-
 
+# Update these to get proper version and commit history
+new_version = "1.1.1"
+old_version = "1.1.0"
+
 Gem::Specification.new do |s|
   s.name = %q{atomic}
-  s.version = "1.1.1"
+  s.version = new_version
   s.authors = ["Charles Oliver Nutter", "MenTaLguY", "Sokolov Yura"]
   s.date = Time.now.strftime('%Y-%m-%d')
-  s.description = "An atomic reference implementation for JRuby, Rubinius, and MRI"
+  s.description = <<EOS
+Changes in version #{new_version}:
+
+#{`git log --oneline #{old_version}...#{new_version}`}
+#{File.read('README.md')}
+EOS
   s.email = ["headius@headius.com", "mental@rydia.net", "funny.falcon@gmail.com"]
   s.homepage = "http://github.com/headius/ruby-atomic"
   s.require_paths = ["lib"]
