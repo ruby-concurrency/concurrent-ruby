@@ -50,7 +50,7 @@ static VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE n
     if (OSAtomicCompareAndSwap64(expect_value, new_value, &DATA_PTR(self))) {
 	return Qtrue;
     }
-#elif (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 40100
+#elif HAVE_GCC_CAS
     if (__sync_bool_compare_and_swap(&DATA_PTR(self), expect_value, new_value)) {
 	return Qtrue;
     }

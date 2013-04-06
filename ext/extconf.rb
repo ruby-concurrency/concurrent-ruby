@@ -14,6 +14,14 @@ require 'mkmf'
 extension_name = 'atomic_reference'
 dir_config(extension_name)
 
+try_run(<<CODE) && ($defs << '-DHAVE_GCC_CAS')
+int main() {
+  int i = 1;
+  __sync_bool_compare_and_swap(&i, 1, 4);
+  return (i != 4);
+}
+CODE
+
 case CONFIG["arch"]
 when /mswin32|mingw/
     $CFLAGS += " -march=i686"
