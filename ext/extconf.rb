@@ -24,7 +24,7 @@ CODE
 
 case CONFIG["arch"]
 when /mswin32|mingw/
-    $CFLAGS += " -march=i686"
+    $CFLAGS += " -march=native"
 end
 
 create_makefile(extension_name)
