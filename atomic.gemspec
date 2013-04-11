@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 # Update these to get proper version and commit history
-new_version = "1.1.6"
-old_version = "1.1.5"
+new_version = "1.1.7"
+old_version = "1.1.6"
 
 git_lines = `git log --oneline #{old_version}...#{new_version}`.lines.map {|str| "* #{str}"}.join
 doc_lines = File.readlines("README.rdoc")
