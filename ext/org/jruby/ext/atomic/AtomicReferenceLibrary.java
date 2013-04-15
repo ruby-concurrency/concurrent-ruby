@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -103,8 +104,15 @@ public class AtomicReferenceLibrary implements Library {
         }
 
         @JRubyMethod(name = {"compare_and_set", "compare_and_swap"})
-        public IRubyObject compare_and_set(ThreadContext context, IRubyObject oldValue, IRubyObject newValue) {
-            return context.runtime.newBoolean(UNSAFE.compareAndSwapObject(this, referenceOffset, oldValue, newValue));
+        public IRubyObject compare_and_set(ThreadContext context, IRubyObject expectedValue, IRubyObject newValue) {
+            Ruby runtime = context.runtime;
+            
+            if (expectedValue instanceof RubyNumeric) {
+                // numerics are not always idempotent in Ruby, so we need to do slower logic
+                return compareAndSetNumeric(context, expectedValue, newValue);
+            }
+            
+            return runtime.newBoolean(UNSAFE.compareAndSwapObject(this, referenceOffset, expectedValue, newValue));
         }
 
         @JRubyMethod(name = {"get_and_set", "swap"})
@@ -114,6 +122,35 @@ public class AtomicReferenceLibrary implements Library {
                 IRubyObject oldValue = get();
                 if (UNSAFE.compareAndSwapObject(this, referenceOffset, oldValue, newValue)) {
                     return oldValue;
+                }
+            }
+        }
+        
+        private IRubyObject compareAndSetNumeric(ThreadContext context, IRubyObject expectedValue, IRubyObject newValue) {
+            Ruby runtime = context.runtime;
+            
+            // loop until:
+            // * reference CAS would succeed for same-valued objects
+            // * current and expected have different values as determined by #equals
+            while (true) {
+                IRubyObject current = reference;
+
+                if (!(current instanceof RubyNumeric)) {
+                    // old value is not numeric, CAS fails
+                    return runtime.getFalse();
+                }
+
+                RubyNumeric currentNumber = (RubyNumeric)current;
+                if (!currentNumber.equals(expectedValue)) {
+                    // current number does not equal expected, fail CAS
+                    return runtime.getFalse();
+                }
+
+                // check that current has not changed, or else allow loop to repeat
+                boolean success = UNSAFE.compareAndSwapObject(this, referenceOffset, current, newValue);
+                if (success) {
+                    // value is same and did not change in interim...success
+                    return runtime.getTrue();
                 }
             }
         }

@@ -72,4 +72,50 @@ class TestAtomic < Test::Unit::TestCase
     atomic.update{|v| tries += 1 ; atomic.value = 1001 ; v + 1}
     assert_equal 2, tries
   end
+  
+  def test_numeric_cas
+    atomic = Atomic.new(0)
+    
+    # 9-bit idempotent Fixnum (JRuby)
+    max_8 = 2**256 - 1
+    min_8 = -(2**256)
+    
+    atomic.set(max_8)
+    max_8.upto(max_8 + 2) do |i|
+      assert atomic.compare_and_swap(i, i+1), "CAS failed for numeric #{i} => #{i + 1}"
+    end
+    
+    atomic.set(min_8)
+    min_8.downto(min_8 - 2) do |i|
+      assert atomic.compare_and_swap(i, i-1), "CAS failed for numeric #{i} => #{i - 1}"
+    end
+    
+    # 64-bit idempotent Fixnum (MRI, Rubinius)
+    max_64 = 2**62 - 1
+    min_64 = -(2**62)
+    
+    atomic.set(max_64)
+    max_64.upto(max_64 + 2) do |i|
+      assert atomic.compare_and_swap(i, i+1), "CAS failed for numeric #{i} => #{i + 1}"
+    end
+    
+    atomic.set(min_64)
+    min_64.downto(min_64 - 2) do |i|
+      assert atomic.compare_and_swap(i, i-1), "CAS failed for numeric #{i} => #{i - 1}"
+    end
+    
+    # 64-bit overflow into Bignum (JRuby)
+    max_64 = 2**63 - 1
+    min_64 = (-2**63)
+    
+    atomic.set(max_64)
+    max_64.upto(max_64 + 2) do |i|
+      assert atomic.compare_and_swap(i, i+1), "CAS failed for numeric #{i} => #{i + 1}"
+    end
+    
+    atomic.set(min_64)
+    min_64.downto(min_64 - 2) do |i|
+      assert atomic.compare_and_swap(i, i-1), "CAS failed for numeric #{i} => #{i - 1}"
+    end
+  end
 end
