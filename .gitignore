@@ -3,3 +3,5 @@ lib/atomic_reference.jar
 ext/*.bundle
 ext/*.so
 ext/*.jar
+pkg
+*.gem
