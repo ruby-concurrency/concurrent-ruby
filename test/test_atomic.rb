@@ -117,5 +117,21 @@ class TestAtomic < Test::Unit::TestCase
     min_64.downto(min_64 - 2) do |i|
       assert atomic.compare_and_swap(i, i-1), "CAS failed for numeric #{i} => #{i - 1}"
     end
+    
+    # non-idempotent Float (JRuby, Rubinius, MRI < 2.0.0 or 32-bit)
+    atomic.set(1.0 + 0.1)
+    assert atomic.compare_and_set(1.0 + 0.1, 1.2), "CAS failed for #{1.0 + 0.1} => 1.2"
+    
+    # Bignum
+    atomic.set(2**100)
+    assert atomic.compare_and_set(2**100, 0), "CAS failed for #{2**100} => 0"
+    
+    # Rational
+    atomic.set("1/3".to_r)
+    assert atomic.compare_and_set("1/3".to_r, 0), "CAS failed for #{"1/3".to_r} => 0"
+    
+    # Complex
+    atomic.set("1+2i".to_c)
+    assert atomic.compare_and_set("1+2i".to_c, 0), "CAS failed for #{"1+2i".to_c} => 0"
   end
 end
