@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/headius/ruby-atomic"
   s.require_paths = ["lib"]
   s.summary = "An atomic reference implementation for JRuby, Rubinius, and MRI"
+  s.licenses = ["Apache-2.0"]
   s.test_files = Dir["test/test*.rb"]
   if defined?(JRUBY_VERSION)
     s.files = Dir['lib/atomic_reference.jar']
