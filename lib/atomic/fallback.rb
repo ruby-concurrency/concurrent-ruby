@@ -49,5 +49,6 @@ class Atomic #:nodoc: all
     end
     true
   end
-  alias compare_and_swap compare_and_set
+  
+  require 'atomic/numeric_cas_wrapper'
 end

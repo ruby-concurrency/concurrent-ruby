@@ -12,3 +12,4 @@
 
 require 'atomic_reference'
 require 'atomic/direct_update'
+require 'atomic/numeric_cas_wrapper'

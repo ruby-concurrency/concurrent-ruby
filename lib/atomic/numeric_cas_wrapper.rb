@@ -10,12 +10,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# extend Rubinius's version adding aliases and numeric logic
-class Atomic < Rubinius::AtomicReference
-  alias value get
-  alias value= set
-  alias swap get_and_set
+class Atomic
+  alias _compare_and_set compare_and_set
+  def compare_and_set(expected, new)
+    if expected.kind_of? Numeric
+      while true
+        old = get
+        
+        return false unless old.kind_of? Numeric
+        
+        return false unless old == expected
+        
+        result = _compare_and_set(old, new)
+        return result if result
+      end
+    else
+      _compare_and_set(expected, new)
+    end
+  end
+  alias compare_and_swap compare_and_set
 end
-
-require 'atomic/direct_update'
-require 'atomic/numeric_cas_wrapper'
