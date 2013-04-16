@@ -127,11 +127,13 @@ class TestAtomic < Test::Unit::TestCase
     assert atomic.compare_and_set(2**100, 0), "CAS failed for #{2**100} => 0"
     
     # Rational
-    atomic.set("1/3".to_r)
-    assert atomic.compare_and_set("1/3".to_r, 0), "CAS failed for #{"1/3".to_r} => 0"
+    require 'rational' unless ''.respond_to? :to_r
+    atomic.set(Rational(1,3))
+    assert atomic.compare_and_set(Rational(1,3), 0), "CAS failed for #{Rational(1,3)} => 0"
     
     # Complex
-    atomic.set("1+2i".to_c)
-    assert atomic.compare_and_set("1+2i".to_c, 0), "CAS failed for #{"1+2i".to_c} => 0"
+    require 'complex' unless ''.respond_to? :to_c
+    atomic.set(Complex(1,2))
+    assert atomic.compare_and_set(Complex(1,2), 0), "CAS failed for #{Complex(1,2)} => 0"
   end
 end
