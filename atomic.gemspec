@@ -12,7 +12,6 @@ description = <<EOS
 == Changes since #{old_version}
 
 #{git_lines}
-#{doc_lines[2..-1].join("\n")}
 EOS
 
 Gem::Specification.new do |s|
