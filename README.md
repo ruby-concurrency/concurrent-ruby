@@ -1,6 +1,7 @@
-= An atomic reference implementation for JRuby, Rubinius, and MRI.
+atomic: An atomic reference implementation for JRuby, Rubinius, and MRI.
 
-== Summary
+Summary
+=======
 
 This library provides:
 
@@ -13,7 +14,8 @@ The Atomic class provides accessors for the contained "value" plus two update me
 
 The atomic repository is at http://github.com/headius/ruby-atomic.
 
-== Usage
+Usage
+=====
 
 The simplest way to use "atomic" is to call the "update" or "try_update" methods.
 
@@ -38,6 +40,7 @@ It's also possible to use the regular get/set operations on the Atomic, if you w
     my_atomic.compare_and_swap(2, 3) # => true, updated to 3
     my_atomic.compare_and_swap(2, 3) # => false, current is not 2
 
-== Building
+Building
+========
 
 As of 1.1.0, JDK8 is required to build the atomic gem, since it attempts to use the new atomic Unsafe.getAndSetObject method only in JDK8. The resulting code should still work fine as far back as Java 5.
