@@ -15,7 +15,7 @@ extension_name = 'atomic_reference'
 dir_config(extension_name)
 
 case CONFIG["arch"]
-when /mswin32|mingw/
+when /mswin32|mingw|solaris/
     $CFLAGS += " -march=native"
 end
 
