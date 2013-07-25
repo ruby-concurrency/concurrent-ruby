@@ -25,7 +25,7 @@ The project is hosted on the following sites:
 * [Dependency tracking on Gemnasium](https://gemnasium.com/jdantonio/concurrent-ruby)
 * [Follow me on Twitter](https://twitter.com/jerrydantonio)
 
-## Goals
+### Goals
 
 My history with high-performance, highly-concurrent programming goes back to my days with C/C++.
 I have the same scars as everyone else doing that kind of work with those languages.
@@ -88,12 +88,11 @@ Once you've installed the gem you must `require` it in your project:
 require 'concurrent'
 ```
 
-## Examples
+### Examples
 
 For complete examples, see the specific documentation linked above. Below are a few examples to whet your appetite.
 
-
-### Goroutine (Go)
+#### Goroutine (Go)
 
 ```ruby
 require 'concurrent'
@@ -104,7 +103,7 @@ sleep(0.1)
 @expected #=> [3, 2, 1]
 ```
 
-### Agent (Clojure)
+#### Agent (Clojure)
 
 ```ruby
 require 'concurrent'
@@ -125,7 +124,7 @@ sleep(0.1)
 score.value #=> 170
 ```
 
-### Defer (EventMachine)
+#### Defer (EventMachine)
 
 ```ruby
 require 'concurrent'
@@ -146,7 +145,7 @@ sleep(0.1)
 #=> "Boom!"
 ```
 
-### Future (Clojure)
+#### Future (Clojure)
 
 ```ruby
 require 'concurrent'
@@ -158,7 +157,7 @@ count.value #=> 10 (after blocking)
 deref count #=> 10
 ```
 
-### Promise (JavaScript)
+#### Promise (JavaScript)
 
 ```ruby
 require 'concurrent'
@@ -171,7 +170,7 @@ sleep(1)
 p.value #=> "Hello Jerry D'Antonio. Would you like to play a game?" 
 ```
 
-### Thread Pools
+#### Thread Pools
 
 ```ruby
 require 'concurrent'
