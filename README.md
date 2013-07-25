@@ -32,8 +32,8 @@ I'm fascinated by modern concurrency patterns like [Actors](http://en.wikipedia.
 [Promises](http://promises-aplus.github.io/promises-spec/). I'm equally fascinated by languages
 with strong concurrency support like [Erlang](http://www.erlang.org/doc/getting_started/conc_prog.html),
 [Go](http://golang.org/doc/articles/concurrency_patterns.html), and
-[Clojure](http://clojure.org/concurrent_programming) (I program with Erlang at work).
-My goal is to implement those patterns in Ruby. Specifically:
+[Clojure](http://clojure.org/concurrent_programming). My goal is to implement those patterns in Ruby.
+Specifically:
 
 * Stay true to the spirit of the languages providing inspiration
 * But implement in a way that makes sense for Ruby
@@ -45,13 +45,14 @@ My goal is to implement those patterns in Ruby. Specifically:
 
 ## Features (and Documentation)
 
-Several features from Erlang, Co, Clojure, and JavaScript have been implemented this far:
+Several features from Erlang, Co, Clojure, Java, and JavaScript have been implemented this far:
 
-* Function overloading with Erlang-style [Pattern Matching](https://github.com/jdantonio/concurrent-ruby/blob/master/md/pattern_matching.md)
-* Interface specifications with Erlang-style [Behavior](https://github.com/jdantonio/concurrent-ruby/blob/master/md/behavior.md)
-* Chained asynchronous operations inspried by JavaScript [Promises](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
-* Additional Clojure, Go, Erlang, and EventMachine inspired [Concurrency](https://github.com/jdantonio/concurrent-ruby/blob/master/md/concurrency.md)
-* Several useful concurrent [Utilities](https://github.com/jdantonio/concurrent-ruby/blob/master/md/utilities.md)
+* Clojure inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
+* EventMachine inspired [Defer](https://github.com/jdantonio/concurrent-ruby/blob/master/md/defer.md)
+* Clojure inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
+* Go inspired [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
+* JavaScript inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
+* Java inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
 
 ### Is it any good?
 
