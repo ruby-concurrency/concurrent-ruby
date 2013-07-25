@@ -1,3 +1,5 @@
+require 'eventmachine'
+
 require 'concurrent'
 
 # import all the support files
