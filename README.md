@@ -43,7 +43,7 @@ Specifically:
 
 ## Features (and Documentation)
 
-Several features from Erlang, Co, Clojure, Java, and JavaScript have been implemented this far:
+Several features from Erlang, Go, Clojure, Java, and JavaScript have been implemented thus far:
 
 * Clojure inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
 * EventMachine inspired [Defer](https://github.com/jdantonio/concurrent-ruby/blob/master/md/defer.md)
