@@ -21,9 +21,7 @@ The project is hosted on the following sites:
 * [Dependency tracking on Gemnasium](https://gemnasium.com/jdantonio/concurrent-ruby)
 * [Follow me on Twitter](https://twitter.com/jerrydantonio)
 
-## Introduction
-
-### Goals
+## Goals
 
 My history with high-performance, highly-concurrent programming goes back to my days with C/C++.
 I have the same scars as everyone else doing that kind of work with those languages.
