@@ -9,17 +9,13 @@ Gem::Specification.new do |s|
   s.author      = "Jerry D'Antonio"
   s.email       = 'jerry.dantonio@gmail.com'
   s.homepage    = 'https://github.com/jdantonio/concurrent-ruby/'
-  #s.summary     = 'Erlang, Clojure, and Go inspired concurrent programming tools for Ruby.'
-  s.summary     = 'This gem does nothing. It is a placeholder for a gem I plan to build.'
+  s.summary     = 'Erlang, Clojure, and Go inspired concurrent programming tools for Ruby.'
   s.license     = 'MIT'
   s.date        = Time.now.strftime('%Y-%m-%d')
 
   s.description = <<-EOF
-    This gem does nothing. It is a placeholder for a gem I plan to build.
+    A gem for adding Erlang, Clojure, and Go inspired concurrent programming tools to Ruby.
   EOF
-  #s.description = <<-EOF
-    #A gem for adding Erlang, Clojure, and Go inspired concurrent programming tools to Ruby.
-  #EOF
 
   s.files            = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.files           += Dir['{lib,md,spec}/**/*']
@@ -30,7 +26,7 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 1.9.2'
 
-  s.add_dependency 'functional-ruby', '~> 0.6.0'
+  s.add_dependency 'functional-ruby', '~> 0.7.0'
 
   s.add_development_dependency 'bundler'
 end
