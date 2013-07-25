@@ -1,5 +1,9 @@
 # Concurrent Ruby [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
 
+Erlang, Clojure, and Go inspired concurrent programming tools for Ruby.
+
+## Introduction
+
 The old-school "lock and synchronize" approach to concurrency is dead. The future of concurrency
 is asynchronous. Send out a bunch of independent [actors](http://en.wikipedia.org/wiki/Actor_model)
 to do your bidding and process the results when you are ready. Although the idea of the concurrent
