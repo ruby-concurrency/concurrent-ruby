@@ -6,10 +6,12 @@ module Concurrent
   class Event
 
     def initialize
-      @set = false
-      @notifier = Queue.new
-      @mutex = Mutex.new
-      @waiting = 0
+      Fiber.new {
+        @set = false
+        @notifier = Queue.new
+        @mutex = Mutex.new
+        @waiting = 0
+      }.resume
     end
 
     def set?

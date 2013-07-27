@@ -12,9 +12,11 @@ module Concurrent
       raise ArgumentError.new('no operation given') if operation.nil? && ! block_given?
       raise ArgumentError.new('two operations given') if ! operation.nil? && block_given?
 
-      @operation = operation || block
-      @callback = callback
-      @errorback = errorback
+      Fiber.new {
+        @operation = operation || block
+        @callback = callback
+        @errorback = errorback
+      }.resume
 
       if operation.nil?
         @running = false
@@ -43,8 +45,10 @@ module Concurrent
 
     def go
       return nil if @running
-      @running = true
-      $GLOBAL_THREAD_POOL.post { fulfill }
+      Fiber.new {
+        @running = true
+        $GLOBAL_THREAD_POOL.post { fulfill }
+      }.resume
       return nil
     end
 

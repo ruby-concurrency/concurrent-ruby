@@ -18,11 +18,13 @@ module Concurrent
     attr_reader :working
 
     def initialize(opts = {})
-      @gc_interval = opts[:gc_interval] || DEFAULT_GC_INTERVAL
-      @thread_idletime = opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME
-      super()
-      @working = 0
-      @mutex = Mutex.new
+      Fiber.new {
+        @gc_interval = opts[:gc_interval] || DEFAULT_GC_INTERVAL
+        @thread_idletime = opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME
+        super()
+        @working = 0
+        @mutex = Mutex.new
+      }.resume
     end
 
     def kill
@@ -78,25 +80,31 @@ module Concurrent
         loop do
           task = @queue.pop
 
-          @working += 1
-          me.status = :working
+          Fiber.new {
+            @working += 1
+            me.status = :working
+          }.resume
 
           if task == :stop
             me.status = :stopping
             break
           else
-            task.last.call(*task.first)
-            @working -= 1
-            me.status = :idle
-            me.idletime = timestamp
+            Fiber.new {
+              task.last.call(*task.first)
+              @working -= 1
+              me.status = :idle
+              me.idletime = timestamp
+            }.resume
           end
         end
 
-        @pool.delete(me)
-        if @pool.empty?
-          @termination.set
-          @status = :shutdown unless killed?
-        end
+        Fiber.new {
+          @pool.delete(me)
+          if @pool.empty?
+            @termination.set
+            @status = :shutdown unless killed?
+          end
+        }.resume
       end
 
       @pool << worker

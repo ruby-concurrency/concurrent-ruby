@@ -20,13 +20,15 @@ module Concurrent
     attr_reader :timeout
 
     def initialize(initial, timeout = TIMEOUT)
-      @value = initial
-      @timeout = timeout
-      @rescuers = []
-      @validator = nil
-      @queue = Queue.new
+      Fiber.new {
+        @value = initial
+        @timeout = timeout
+        @rescuers = []
+        @validator = nil
+        @queue = Queue.new
 
-      $GLOBAL_THREAD_POOL << proc{ work }
+        $GLOBAL_THREAD_POOL << proc{ work }
+      }.resume
     end
 
     def value(timeout = 0) return @value; end
@@ -49,8 +51,10 @@ module Concurrent
 
     def post(&block)
       return @queue.length unless block_given?
-      @queue << block
-      return @queue.length
+      return Fiber.new {
+        @queue << block
+        @queue.length
+      }.resume
     end
 
     def <<(block)
@@ -73,8 +77,10 @@ module Concurrent
 
     # @private
     def try_rescue(ex) # :nodoc:
-      rescuer = @rescuers.find{|r| ex.is_a?(r.clazz) }
-      rescuer.block.call(ex) if rescuer
+      Fiber.new {
+        rescuer = @rescuers.find{|r| ex.is_a?(r.clazz) }
+        rescuer.block.call(ex) if rescuer
+      }.resume
     rescue Exception => e
       # supress
     end
@@ -89,9 +95,11 @@ module Concurrent
             handler.call(@value)
           }
           if @validator.nil? || @validator.call(result)
-            @value = result
-            changed
-            notify_observers(Time.now, @value)
+            Fiber.new {
+              @value = result
+              changed
+              notify_observers(Time.now, @value)
+            }.resume
           end
         rescue Exception => ex
           try_rescue(ex)

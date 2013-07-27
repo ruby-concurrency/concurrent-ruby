@@ -14,17 +14,23 @@ module Concurrent
       unless block_given?
         @state = :fulfilled
       else
-        @value = nil
-        @state = :pending
+        Fiber.new {
+          @value = nil
+          @state = :pending
+        }.resume
         $GLOBAL_THREAD_POOL.post do
+          Thread.pass
           semaphore.synchronize do
-            Thread.pass
             begin
-              @value = yield(*args)
-              @state = :fulfilled
+              Fiber.new {
+                @value = yield(*args)
+                @state = :fulfilled
+              }.resume
             rescue Exception => ex
-              @state = :rejected
-              @reason = ex
+              Fiber.new {
+                @state = :rejected
+                @reason = ex
+              }.resume
             end
           end
         end
