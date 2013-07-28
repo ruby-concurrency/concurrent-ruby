@@ -4,8 +4,6 @@ gemspec
 
 group :development do
   gem 'eventmachine'
-  gem 'redcarpet', :platforms => :mri
-  gem 'debugger', :platforms => :mri
 end
 
 group :testing do
