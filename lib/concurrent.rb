@@ -10,6 +10,7 @@ require 'concurrent/future'
 require 'concurrent/goroutine'
 require 'concurrent/promise'
 require 'concurrent/obligation'
+require 'concurrent/utilities'
 
 require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'
