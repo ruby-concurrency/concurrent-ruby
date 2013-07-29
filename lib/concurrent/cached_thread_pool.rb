@@ -18,13 +18,11 @@ module Concurrent
     attr_reader :working
 
     def initialize(opts = {})
-      Fiber.new {
-        @gc_interval = opts[:gc_interval] || DEFAULT_GC_INTERVAL
-        @thread_idletime = opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME
-        super()
-        @working = 0
-        @mutex = Mutex.new
-      }.resume
+      @gc_interval = (opts[:gc_interval] || DEFAULT_GC_INTERVAL).freeze
+      @thread_idletime = (opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME).freeze
+      super()
+      @working = 0
+      @mutex = Mutex.new
     end
 
     def kill
@@ -89,8 +87,8 @@ module Concurrent
             me.status = :stopping
             break
           else
+            task.last.call(*task.first)
             Fiber.new {
-              task.last.call(*task.first)
               @working -= 1
               me.status = :idle
               me.idletime = timestamp
