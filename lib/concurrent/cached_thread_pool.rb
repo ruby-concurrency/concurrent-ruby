@@ -1,6 +1,8 @@
 require 'thread'
 
 require 'concurrent/thread_pool'
+require 'concurrent/utilities'
+
 require 'functional/utilities'
 
 module Concurrent
@@ -78,31 +80,31 @@ module Concurrent
         loop do
           task = @queue.pop
 
-          Fiber.new {
+          atomic {
             @working += 1
             me.status = :working
-          }.resume
+          }
 
           if task == :stop
             me.status = :stopping
             break
           else
             task.last.call(*task.first)
-            Fiber.new {
+            atomic {
               @working -= 1
               me.status = :idle
               me.idletime = timestamp
-            }.resume
+            }
           end
         end
 
-        Fiber.new {
+        atomic {
           @pool.delete(me)
           if @pool.empty?
             @termination.set
             @status = :shutdown unless killed?
           end
-        }.resume
+        }
       end
 
       @pool << worker

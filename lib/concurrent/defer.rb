@@ -44,7 +44,7 @@ module Concurrent
     def go
       return nil if @running
       @running = true
-      $GLOBAL_THREAD_POOL.post { fulfill }
+      $GLOBAL_THREAD_POOL.post { Thread.pass; fulfill }
       return nil
     end
 

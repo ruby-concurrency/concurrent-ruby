@@ -1,7 +1,8 @@
 require 'thread'
 
-require 'concurrent/obligation'
 require 'concurrent/global_thread_pool'
+require 'concurrent/obligation'
+require 'concurrent/utilities'
 
 module Concurrent
 
@@ -9,30 +10,35 @@ module Concurrent
     include Obligation
     behavior(:future)
 
-    def initialize(*args)
+    def initialize(*args, &block)
 
       unless block_given?
         @state = :fulfilled
       else
-        Fiber.new {
-          @value = nil
-          @state = :pending
-        }.resume
+        @value = nil
+        @state = :pending
         $GLOBAL_THREAD_POOL.post do
           Thread.pass
-          semaphore.synchronize do
-            begin
-              Fiber.new {
-                @value = yield(*args)
-                @state = :fulfilled
-              }.resume
-            rescue Exception => ex
-              Fiber.new {
-                @state = :rejected
-                @reason = ex
-              }.resume
-            end
-          end
+          work(*args, &block)
+        end
+      end
+    end
+
+    private
+
+    # @private
+    def work(*args) # :nodoc:
+      semaphore.synchronize do
+        begin
+          atomic {
+            @value = yield(*args)
+            @state = :fulfilled
+          }
+        rescue Exception => ex
+          atomic {
+            @state = :rejected
+            @reason = ex
+          }
         end
       end
     end
