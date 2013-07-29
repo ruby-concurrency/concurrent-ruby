@@ -95,6 +95,7 @@ module Concurrent
       return atomic {
         current = self
         current = current.parent until current.root?
+        current
       }
     end
 
