@@ -1,7 +1,7 @@
 require 'thread'
 
 require 'concurrent/obligation'
-require 'concurrent/global_thread_pool'
+require 'concurrent/utilities'
 
 module Concurrent
 
@@ -92,9 +92,11 @@ module Concurrent
 
     # @private
     def root # :nodoc:
-      current = self
-      current = current.parent until current.root?
-      return current
+      return atomic {
+        current = self
+        current = current.parent until current.root?
+        current
+      }
     end
 
     # @private
@@ -146,7 +148,7 @@ module Concurrent
 
     # @private
     def realize(*args) # :nodoc:
-      $GLOBAL_THREAD_POOL.post(@chain, @mutex, args) do |chain, mutex, args|
+      Thread.new(@chain, @mutex, args) do |chain, mutex, args|
         result = args.length == 1 ? args.first : args
         index = 0
         loop do

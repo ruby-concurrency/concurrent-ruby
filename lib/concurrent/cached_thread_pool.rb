@@ -1,6 +1,8 @@
 require 'thread'
 
 require 'concurrent/thread_pool'
+require 'concurrent/utilities'
+
 require 'functional/utilities'
 
 module Concurrent
@@ -18,13 +20,11 @@ module Concurrent
     attr_reader :working
 
     def initialize(opts = {})
-      Fiber.new {
-        @gc_interval = opts[:gc_interval] || DEFAULT_GC_INTERVAL
-        @thread_idletime = opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME
-        super()
-        @working = 0
-        @mutex = Mutex.new
-      }.resume
+      @gc_interval = (opts[:gc_interval] || DEFAULT_GC_INTERVAL).freeze
+      @thread_idletime = (opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME).freeze
+      super()
+      @working = 0
+      @mutex = Mutex.new
     end
 
     def kill
@@ -80,31 +80,31 @@ module Concurrent
         loop do
           task = @queue.pop
 
-          Fiber.new {
+          atomic {
             @working += 1
             me.status = :working
-          }.resume
+          }
 
           if task == :stop
             me.status = :stopping
             break
           else
-            Fiber.new {
-              task.last.call(*task.first)
+            task.last.call(*task.first)
+            atomic {
               @working -= 1
               me.status = :idle
               me.idletime = timestamp
-            }.resume
+            }
           end
         end
 
-        Fiber.new {
+        atomic {
           @pool.delete(me)
           if @pool.empty?
             @termination.set
             @status = :shutdown unless killed?
           end
-        }.resume
+        }
       end
 
       @pool << worker

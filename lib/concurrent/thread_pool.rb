@@ -1,5 +1,7 @@
 require 'functional/behavior'
+
 require 'concurrent/event'
+require 'concurrent/utilities'
 
 behavior_info(:thread_pool,
               running?: 0,
@@ -41,8 +43,10 @@ module Concurrent
     end
 
     def shutdown
-      @pool.size.times{ @queue << :stop }
-      @status = :shuttingdown
+      atomic {
+        @pool.size.times{ @queue << :stop }
+        @status = :shuttingdown
+      }
     end
 
     def wait_for_termination(timeout = nil)
