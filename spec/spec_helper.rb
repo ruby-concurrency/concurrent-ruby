@@ -6,6 +6,7 @@ require 'concurrent'
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }
 
 RSpec.configure do |config|
+  config.order = 'random'
 
   config.before(:suite) do
   end
