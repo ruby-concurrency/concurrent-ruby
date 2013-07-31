@@ -15,10 +15,6 @@ module Concurrent
       end.new
     end
 
-    before(:each) do
-      $GLOBAL_THREAD_POOL = CachedThreadPool.new
-    end
-
     context '#initialize' do
 
       it 'sets the value to the given initial state' do
@@ -38,7 +34,7 @@ module Concurrent
       end
 
       it 'spawns the worker thread' do
-        $GLOBAL_THREAD_POOL.should_receive(:post).once.with(any_args())
+        Thread.should_receive(:new).once.with(any_args())
         Agent.new(0)
       end
     end

@@ -1,7 +1,6 @@
 require 'observer'
 require 'thread'
 
-require 'concurrent/global_thread_pool'
 require 'concurrent/utilities'
 
 module Concurrent
@@ -27,7 +26,7 @@ module Concurrent
       @validator = nil
       @queue = Queue.new
 
-      $GLOBAL_THREAD_POOL << proc{ work }
+      @thread = Thread.new{ work }
     end
 
     def value(timeout = 0) return @value; end

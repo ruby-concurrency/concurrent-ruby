@@ -21,10 +21,6 @@ module Concurrent
         rescue{ nil }.tap(){ sleep(0.1) }
     end
 
-    before(:each) do
-      $GLOBAL_THREAD_POOL = CachedThreadPool.new
-    end
-
     it_should_behave_like Obligation
 
     context 'behavior' do
