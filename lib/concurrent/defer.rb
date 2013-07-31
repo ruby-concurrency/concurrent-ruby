@@ -10,15 +10,13 @@ module Concurrent
 
     def initialize(opts = {}, &block)
       operation = opts[:op] || opts[:operation]
-      callback = opts[:cback] || opts[:callback]
-      errorback = opts[:eback] || opts[:error] || opts[:errorback]
+      @callback = opts[:cback] || opts[:callback]
+      @errorback = opts[:eback] || opts[:error] || opts[:errorback]
 
       raise ArgumentError.new('no operation given') if operation.nil? && ! block_given?
       raise ArgumentError.new('two operations given') if ! operation.nil? && block_given?
 
       @operation = operation || block
-      @callback = callback
-      @errorback = errorback
 
       if operation.nil?
         @running = false
