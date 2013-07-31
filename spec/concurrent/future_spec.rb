@@ -21,7 +21,7 @@ module Concurrent
     end
 
     before(:each) do
-      $GLOBAL_THREAD_POOL = CachedThreadPool.new
+      $GLOBAL_THREAD_POOL = FixedThreadPool.new(2)
     end
 
     it_should_behave_like Obligation
@@ -44,6 +44,13 @@ module Concurrent
         Future.new{ nil }
       end
 
+      it 'accepts an alternate thread pool as the first argument' do
+        pool = Concurrent::FixedThreadPool.new(2)
+        pool.should_receive(:post).with(no_args())
+        Future.new(pool, 1, 2, 3){ nil }
+        sleep(0.1)
+      end
+
       it 'does not spawns a new thread when no block given' do
         Thread.should_not_receive(:new).with(any_args())
         Future.new
@@ -63,6 +70,16 @@ module Concurrent
       it 'passes all arguments to handler' do
         @a = @b = @c = nil
         f = Future.new(1, 2, 3) do |a, b, c|
+          @a, @b, @c = a, b, c
+        end
+        sleep(0.1)
+        [@a, @b, @c].should eq [1, 2, 3]
+      end
+
+      it 'passes all other arguments to the handler when a thread pool is given' do
+        @expected = nil
+        pool = Concurrent::FixedThreadPool.new(2)
+        f = Future.new(pool, 1, 2, 3) do |a, b, c|
           @a, @b, @c = a, b, c
         end
         sleep(0.1)
