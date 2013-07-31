@@ -8,7 +8,11 @@ module Concurrent
 
   class Defer
 
-    def initialize(operation = nil, callback = nil, errorback = nil, &block)
+    def initialize(opts = {}, &block)
+      operation = opts[:op] || opts[:operation]
+      callback = opts[:cback] || opts[:callback]
+      errorback = opts[:eback] || opts[:error] || opts[:errorback]
+
       raise ArgumentError.new('no operation given') if operation.nil? && ! block_given?
       raise ArgumentError.new('two operations given') if ! operation.nil? && block_given?
 

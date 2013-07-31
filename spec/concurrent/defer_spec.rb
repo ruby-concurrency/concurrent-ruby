@@ -19,19 +19,19 @@ module Concurrent
       it 'raises an exception if both a block and an operation given' do
         lambda {
           operation = proc{ nil }
-          Defer.new(operation, nil, nil){ nil }
+          Defer.new(op: operation){ nil }
         }.should raise_error(ArgumentError)
       end
 
       it 'starts the thread if an operation is given' do
         $GLOBAL_THREAD_POOL.should_receive(:post).once.with(any_args())
         operation = proc{ nil }
-        Defer.new(operation, nil, nil)
+        Defer.new(op: operation)
       end
 
       it 'does not start the thread if neither a callback or errorback is given' do
         $GLOBAL_THREAD_POOL.should_not_receive(:post)
-        Defer.new(nil, nil, nil){ nil }
+        Defer.new{ nil }
       end
 
       it 'aliases Kernel#defer' do
@@ -56,14 +56,14 @@ module Concurrent
       it 'raises an exception if an operation was provided at construction' do
         lambda {
           operation = proc{ nil }
-          Defer.new(operation, nil, nil).then{|result| nil }
+          Defer.new(op: operation).then{|result| nil }
         }.should raise_error(IllegalMethodCallError)
       end
 
       it 'raises an exception if a callback was provided at construction' do
         lambda {
           callback = proc{|result|nil }
-          Defer.new(nil, callback, nil){ nil }.then{|result| nil }
+          Defer.new(callback: callback){ nil }.then{|result| nil }
         }.should raise_error(IllegalMethodCallError)
       end
 
@@ -90,14 +90,14 @@ module Concurrent
       it 'raises an exception if an operation was provided at construction' do
         lambda {
           operation = proc{ nil }
-          Defer.new(operation, nil, nil).rescue{|ex| nil }
+          Defer.new(op: operation).rescue{|ex| nil }
         }.should raise_error(IllegalMethodCallError)
       end
 
       it 'raises an exception if an errorback was provided at construction' do
         lambda {
           errorback = proc{|ex| nil }
-          Defer.new(nil, nil, errorback){ nil }.rescue{|ex| nil }
+          Defer.new(errorback: errorback){ nil }.rescue{|ex| nil }
         }.should raise_error(IllegalMethodCallError)
       end
 
@@ -138,7 +138,7 @@ module Concurrent
         operation = proc{ nil }
         callback = proc{|result| nil }
         errorback = proc{|ex| nil }
-        deferred = Defer.new(operation, callback, errorback)
+        deferred = Defer.new(op: operation, callback: callback, errorback: errorback)
         $GLOBAL_THREAD_POOL.should_not_receive(:post)
         deferred.go
       end
