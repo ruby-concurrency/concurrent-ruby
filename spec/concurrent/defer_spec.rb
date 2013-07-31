@@ -34,6 +34,13 @@ module Concurrent
         Defer.new{ nil }
       end
 
+      it 'runs on the alternate thread pool if given' do
+        operation = proc{ nil }
+        pool = Concurrent::FixedThreadPool.new(2)
+        pool.should_receive(:post).with(no_args())
+        Defer.new(op: operation, pool: pool)
+      end
+
       it 'aliases Kernel#defer' do
         defer{ nil }.should be_a(Defer)
       end
@@ -141,6 +148,13 @@ module Concurrent
         deferred = Defer.new(op: operation, callback: callback, errorback: errorback)
         $GLOBAL_THREAD_POOL.should_not_receive(:post)
         deferred.go
+      end
+
+      it 'runs on the alternate thread pool if given' do
+        pool = Concurrent::FixedThreadPool.new(2)
+        pool.should_receive(:post).with(no_args())
+        deferred = Defer.new{ nil }
+        deferred.go(pool)
       end
     end
 

@@ -130,5 +130,5 @@ module Kernel
       return nil
     end
   end
-  module_function :deref
+  module_function :post
 end

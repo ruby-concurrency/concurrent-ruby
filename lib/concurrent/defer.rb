@@ -12,6 +12,7 @@ module Concurrent
       operation = opts[:op] || opts[:operation]
       @callback = opts[:cback] || opts[:callback]
       @errorback = opts[:eback] || opts[:error] || opts[:errorback]
+      thread_pool = opts[:pool] || opts[:thread_pool]
 
       raise ArgumentError.new('no operation given') if operation.nil? && ! block_given?
       raise ArgumentError.new('two operations given') if ! operation.nil? && block_given?
@@ -21,7 +22,7 @@ module Concurrent
       if operation.nil?
         @running = false
       else
-        self.go
+        self.go(thread_pool)
       end
     end
 
@@ -43,10 +44,13 @@ module Concurrent
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
-    def go
+    def go(thread_pool = nil)
       return nil if @running
-      @running = true
-      $GLOBAL_THREAD_POOL.post { Thread.pass; fulfill }
+      atomic {
+        thread_pool ||= $GLOBAL_THREAD_POOL
+        @running = true
+        thread_pool.post { Thread.pass; fulfill }
+      }
       return nil
     end
 
