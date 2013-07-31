@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'thread'
 
 describe 'utilities' do
 
@@ -41,5 +42,33 @@ describe 'utilities' do
       fiber.should_receive(:resume).with(no_args())
       atomic{ 'foo' }
     end
+  end
+
+  context Mutex do
+
+     context '#sync_with_timeout' do
+
+       it 'returns the result of the block if a lock is obtained before timeout' do
+         mutex = Mutex.new
+         result = mutex.sync_with_timeout(30){ 42 }
+         result.should eq 42
+       end
+
+       it 'raises Timeout::Error if the timeout is exceeded' do
+         mutex = Mutex.new
+         thread = Thread.new{ mutex.synchronize{ sleep(30) } }
+         sleep(0.1)
+         lambda {
+           mutex.sync_and_wait(1)
+         }.should raise_error
+         Thread.kill(thread)
+       end
+
+       it 'raises an exception if no block given' do
+         lambda {
+           Mutex.new.sync_with_timeout()
+         }.should raise_error
+       end
+     end
   end
 end

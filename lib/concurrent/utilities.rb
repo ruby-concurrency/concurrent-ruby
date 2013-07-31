@@ -20,5 +20,15 @@ module Kernel
     }.resume
   end
   module_function :atomic
+end
 
+class Mutex
+
+  def sync_with_timeout(timeout)
+    Timeout::timeout(timeout) {
+      self.synchronize {
+        yield
+      }
+    }
+  end
 end
