@@ -19,7 +19,11 @@ module Kernel
   # @see https://gobyexample.com/goroutines
   def go(*args, &block)
     return false unless block_given?
-    $GLOBAL_THREAD_POOL.post(*args, &block)
+    if args.first.behaves_as?(:global_thread_pool)
+      args.first.post(*args.slice(1, args.length), &block)
+    else
+      $GLOBAL_THREAD_POOL.post(*args, &block)
+    end
   end
   module_function :go
 end
