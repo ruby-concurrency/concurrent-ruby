@@ -10,6 +10,10 @@ module Concurrent
 
     subject { EventMachineDeferProxy.new }
 
+    after(:all) do
+      $GLOBAL_THREAD_POOL = FixedThreadPool.new(1)
+    end
+
     context '#post' do
 
       it 'proxies a call without arguments' do
