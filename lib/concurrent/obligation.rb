@@ -41,11 +41,11 @@ module Concurrent
       if !pending? || timeout == 0
         return @value
       elsif timeout.nil?
-        return semaphore.synchronize { @value }
+        return semaphore.synchronize { value = @value }
       else
         begin
           return Timeout::timeout(timeout.to_f) {
-            semaphore.synchronize { @value }
+            semaphore.synchronize { value = @value }
           }
         rescue Timeout::Error => ex
           return nil
