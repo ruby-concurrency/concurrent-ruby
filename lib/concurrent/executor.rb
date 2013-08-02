@@ -23,15 +23,18 @@ module Concurrent
         loop do
           sleep(execution)
           begin
-            t = Thread.new{ yield }
-            t.abort_on_exception = false
-            if t.join(timeout).nil?
+            worker = Thread.new{ yield }
+            worker.abort_on_exception = false
+            if worker.join(timeout).nil?
               logger.call(name, :warn, "execution timed out after #{timeout} seconds")
+              Thread.kill(worker)
             else
               logger.call(name, :info, 'execution completed successfully')
             end
           rescue Exception => ex
             logger.call(name, :error, "execution failed with error '#{ex}'")
+          ensure
+            worker = nil
           end
         end
       end
