@@ -40,10 +40,6 @@ module Concurrent
         pool.should_receive(:post).with(no_args())
         Defer.new(op: operation, pool: pool)
       end
-
-      it 'aliases Kernel#defer' do
-        defer{ nil }.should be_a(Defer)
-      end
     end
 
     context '#then' do
