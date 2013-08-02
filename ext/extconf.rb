@@ -17,6 +17,8 @@ dir_config(extension_name)
 case CONFIG["arch"]
 when /mswin32|mingw|solaris/
     $CFLAGS += " -march=native"
+when 'i686-linux'
+    $CFLAGS += " -march-i686"
 end
 
 try_run(<<CODE,$CFLAGS) && ($defs << '-DHAVE_GCC_CAS')
