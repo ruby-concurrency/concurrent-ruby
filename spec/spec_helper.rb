@@ -12,9 +12,12 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
+    @orig_stdout = $stdout
+    $stdout = StringIO.new 
   end
 
   config.after(:each) do
+    $stdout = @orig_stdout
   end
 
 end

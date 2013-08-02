@@ -20,7 +20,7 @@ module Concurrent
     context '#kill' do
 
       it 'kills all threads' do
-        Thread.should_receive(:kill).exactly(5).times
+        Thread.should_receive(:kill).at_least(5).times
         pool = CachedThreadPool.new
         5.times{ sleep(0.1); pool << proc{ sleep(1) } }
         sleep(1)

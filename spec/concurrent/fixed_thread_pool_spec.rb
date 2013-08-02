@@ -41,7 +41,7 @@ module Concurrent
     context '#kill' do
 
       it 'kills all threads' do
-        Thread.should_receive(:kill).exactly(5).times
+        Thread.should_receive(:kill).at_least(5).times
         pool = FixedThreadPool.new(5)
         pool.kill
         sleep(0.1)
