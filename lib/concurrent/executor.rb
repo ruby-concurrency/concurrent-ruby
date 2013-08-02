@@ -51,11 +51,3 @@ module Concurrent
     end
   end
 end
-
-#module Kernel
-
-  #def executor(*args, &block)
-    #return Concurrent::Executor.run(*args, &block)
-  #end
-  #module_function :executor
-#end

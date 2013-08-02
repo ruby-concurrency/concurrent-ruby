@@ -294,13 +294,6 @@ module Concurrent
         sleep(0.1)
         @expected.should be_true
       end
-
-      it 'aliases Kernel#promise for Promise.new' do
-        promise().should be_a(Promise)
-        promise(){ nil }.should be_a(Promise)
-        promise(1, 2, 3).should be_a(Promise)
-        promise(1, 2, 3){ nil }.should be_a(Promise)
-      end
     end
   end
 end

@@ -170,27 +170,3 @@ module Concurrent
     end
   end
 end
-
-module Kernel
-
-  # Creates a new promise object. "A promise represents the eventual
-  # value returned from the single completion of an operation."
-  # Promises can be chained in a tree structure where each promise
-  # has zero or more children. Promises are resolved asynchronously
-  # in the order they are added to the tree. Parents are guaranteed
-  # to be resolved before their children. The result of each promise
-  # is passes to each of its children when the child resolves. When
-  # a promise is rejected all its children will be summarily rejected.
-  # A promise added to a rejected promise will immediately be rejected.
-  # A promise that is neither resolved or rejected is pending.
-  #
-  # @param args [Array] zero or more arguments for the block
-  # @param block [Proc] the block to call when attempting fulfillment
-  #
-  # @see Promise
-  # @see http://wiki.commonjs.org/wiki/Promises/A
-  def promise(*args, &block)
-    return Concurrent::Promise.new(*args, &block)
-  end
-  module_function :promise
-end

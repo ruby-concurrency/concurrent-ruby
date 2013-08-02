@@ -50,11 +50,3 @@ module Concurrent
     end
   end
 end
-
-module Kernel
-
-  def future(*args, &block)
-    return Concurrent::Future.new(*args, &block)
-  end
-  module_function :future
-end

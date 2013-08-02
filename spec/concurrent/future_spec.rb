@@ -119,13 +119,6 @@ module Concurrent
         it 'aliases #deref for #value' do
           fulfilled_subject.deref.should eq fulfilled_value
         end
-
-        it 'aliases Kernel#future for Future.new' do
-          future().should be_a(Future)
-          future(){ nil }.should be_a(Future)
-          future(1, 2, 3).should be_a(Future)
-          future(1, 2, 3){ nil }.should be_a(Future)
-        end
       end
     end
   end

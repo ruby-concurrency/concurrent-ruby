@@ -104,31 +104,3 @@ module Concurrent
     end
   end
 end
-
-module Kernel
-
-  def agent(initial, timeout = Concurrent::Agent::TIMEOUT)
-    return Concurrent::Agent.new(initial, timeout)
-  end
-  module_function :agent
-
-  def deref(agent, timeout = nil)
-    if agent.respond_to?(:deref)
-      return agent.deref(timeout)
-    elsif agent.respond_to?(:value)
-      return agent.deref(timeout)
-    else
-      return nil
-    end
-  end
-  module_function :deref
-
-  def post(agent, &block)
-    if agent.respond_to?(:post)
-      return agent.post(&block)
-    else
-      return nil
-    end
-  end
-  module_function :post
-end

@@ -65,11 +65,3 @@ module Concurrent
     end
   end
 end
-
-module Kernel
-
-  def defer(*args, &block)
-    return Concurrent::Defer.new(*args, &block)
-  end
-  module_function :defer
-end

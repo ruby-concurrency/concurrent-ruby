@@ -371,31 +371,6 @@ module Concurrent
         sleep(0.1)
         observer.value.should eq 10
       end
-
-      it 'aliases #<< for Agent#post' do
-        subject << proc{ 100 }
-        sleep(0.1)
-        subject.value.should eq 100
-
-        subject << lambda{ 100 }
-        sleep(0.1)
-        subject.value.should eq 100
-      end
-
-      it 'aliases Kernel#agent for Agent.new' do
-        agent(10).should be_a(Agent)
-      end
-
-      it 'aliases Kernel#deref for #deref' do
-        deref(Agent.new(10)).should eq 10
-        deref(Agent.new(10), 10).should eq 10
-      end
-
-      it 'aliases Kernel:post for Agent#post' do
-        post(subject){ 100 }
-        sleep(0.1)
-        subject.value.should eq 100
-      end
     end
   end
 end
