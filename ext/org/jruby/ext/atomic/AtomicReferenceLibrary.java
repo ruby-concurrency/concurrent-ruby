@@ -25,8 +25,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import org.jruby.util.unsafe.UnsafeFactory;
-import org.jruby.util.unsafe.UnsafeGetter;
+import org.jruby.util.unsafe.UnsafeHolder;
 
 /**
  * This library adds an atomic reference type to JRuby for use in the atomic
@@ -68,7 +67,7 @@ public class AtomicReferenceLibrary implements Library {
 
         static {
             try {
-                UNSAFE = UnsafeGetter.getUnsafe();
+                UNSAFE = UnsafeHolder.U;
                 Class k = JRubyReference.class;
                 referenceOffset = UNSAFE.objectFieldOffset(k.getDeclaredField("reference"));
             } catch (Exception e) {
