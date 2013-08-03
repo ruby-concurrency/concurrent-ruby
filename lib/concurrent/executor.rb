@@ -2,39 +2,42 @@ require 'thread'
 
 module Concurrent
 
-  #ExecutionContext = Struct.new(
-    #:name,
-    #:execution_interval,
-    #:timeout_interval,
-    #:thread
-  #)
-
-  class ExecutionContext
-    attr_reader :name
-    attr_reader :execution_interval
-    attr_reader :timeout_interval
-
-    def initialize(name, execution_interval, timeout_interval, thread)
-      @name = name
-      @execution_interval = execution_interval
-      @timeout_interval = timeout_interval
-      @thread = thread
-      @thread[:stop] = false
-    end
-
-    def kill
-      @thread[:stop] = true
-    end
-    alias_method :terminate, :kill
-    alias_method :stop, :kill
-
-    def status
-      return @thread.status unless @thread.nil?
-    end
-  end
-
   module Executor
     extend self
+
+    class ExecutionContext
+      attr_reader :name
+      attr_reader :execution_interval
+      attr_reader :timeout_interval
+
+      def initialize(name, execution_interval, timeout_interval, thread)
+        @name = name
+        @execution_interval = execution_interval
+        @timeout_interval = timeout_interval
+        @thread = thread
+        @thread[:stop] = false
+      end
+
+      def status
+        return @thread.status unless @thread.nil?
+      end
+
+      def join(limit = nil)
+        if @thread.nil?
+          return nil
+        elsif limit.nil?
+          return @thread.join
+        else
+          return @thread.join(limit)
+        end
+      end
+
+      def kill
+        @thread[:stop] = true
+      end
+      alias_method :terminate, :kill
+      alias_method :stop, :kill
+    end
 
     EXECUTION_INTERVAL = 60
     TIMEOUT_INTERVAL = 30

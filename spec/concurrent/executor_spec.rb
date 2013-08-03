@@ -53,7 +53,7 @@ module Concurrent
 
       it 'returns an ExecutionContext' do
         @ec = Executor.run('Foo'){ nil }
-        @ec.should be_a(ExecutionContext)
+        @ec.should be_a(Executor::ExecutionContext)
       end
 
       it 'sets the #name context variable' do
