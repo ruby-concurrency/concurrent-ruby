@@ -4,8 +4,17 @@ module Concurrent
 
   describe Executor do
 
+    before(:each) do
+      @orig_stdout = $stdout
+      $stdout = StringIO.new 
+    end
+
     after(:each) do
-      Thread.kill(@ec.thread) if @ec.is_a?(ExecutionContext) && @ec.thread.is_a?(Thread)
+      $stdout = @orig_stdout
+    end
+
+    after(:each) do
+      @ec.stop unless @ec.nil?
     end
 
     context '#run' do
@@ -37,8 +46,8 @@ module Concurrent
       end
 
       it 'creates a new thread' do
-        thread_double = double('executor thread')
-        Thread.should_receive(:new).with(no_args()).and_return(thread_double)
+        thread = Thread.new{ sleep(1) }
+        Thread.should_receive(:new).with(any_args()).and_return(thread)
         @ec = Executor.run('Foo'){ nil }
       end
 
@@ -90,7 +99,7 @@ module Concurrent
       it 'kills the worker thread if the timeout is reached' do
         # the after(:each) block will trigger this expectation
         Thread.should_receive(:kill).at_least(1).with(any_args())
-        @ec = Executor.run('Foo', execution_interval: 0.5, timeout_interval: 0.5){ sleep(2) }
+        @ec = Executor.run('Foo', execution_interval: 0.5, timeout_interval: 0.5){ Thread.stop }
         sleep(1.5)
       end
     end
@@ -122,7 +131,7 @@ module Concurrent
       end
 
       it 'logs :warn when execution times out' do
-        @ec = Executor.run('Foo', execution_interval: 0.1, timeout_interval: 0.1, logger: @logger){ sleep(2) }
+        @ec = Executor.run('Foo', execution_interval: 0.1, timeout_interval: 0.1, logger: @logger){ Thread.stop }
         sleep(0.5)
         @level.should eq :warn
       end

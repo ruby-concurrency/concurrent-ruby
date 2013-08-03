@@ -2,12 +2,36 @@ require 'thread'
 
 module Concurrent
 
-  ExecutionContext = Struct.new(
-    :name,
-    :execution_interval,
-    :timeout_interval,
-    :thread
-  )
+  #ExecutionContext = Struct.new(
+    #:name,
+    #:execution_interval,
+    #:timeout_interval,
+    #:thread
+  #)
+
+  class ExecutionContext
+    attr_reader :name
+    attr_reader :execution_interval
+    attr_reader :timeout_interval
+
+    def initialize(name, execution_interval, timeout_interval, thread)
+      @name = name
+      @execution_interval = execution_interval
+      @timeout_interval = timeout_interval
+      @thread = thread
+      @thread[:stop] = false
+    end
+
+    def kill
+      @thread[:stop] = true
+    end
+    alias_method :terminate, :kill
+    alias_method :stop, :kill
+
+    def status
+      return @thread.status unless @thread.nil?
+    end
+  end
 
   module Executor
     extend self
@@ -30,6 +54,7 @@ module Concurrent
       executor = Thread.new(*block_args) do |*args|
         loop do
           sleep(execution_interval)
+          break if Thread.current[:stop]
           begin
             worker = Thread.new{ yield(*args) }
             worker.abort_on_exception = false
@@ -44,6 +69,7 @@ module Concurrent
             Thread.kill(worker)
             worker = nil
           end
+          break if Thread.current[:stop]
         end
       end
 
