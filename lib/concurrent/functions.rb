@@ -12,17 +12,6 @@ module Kernel
   end
   module_function :agent
 
-  def deref(agent, timeout = nil)
-    if agent.respond_to?(:deref)
-      return agent.deref(timeout)
-    elsif agent.respond_to?(:value)
-      return agent.deref(timeout)
-    else
-      return nil
-    end
-  end
-  module_function :deref
-
   def post(agent, &block)
     if agent.respond_to?(:post)
       return agent.post(&block)
@@ -33,7 +22,7 @@ module Kernel
   module_function :post
 
   ## defer
-  
+
   def defer(*args, &block)
     return Concurrent::Defer.new(*args, &block)
   end
@@ -52,6 +41,59 @@ module Kernel
     return Concurrent::Future.new(*args, &block)
   end
   module_function :future
+
+  ## obligation
+
+  def deref(obligation, timeout = nil)
+    if obligation.respond_to?(:deref)
+      return obligation.deref(timeout)
+    elsif obligation.respond_to?(:value)
+      return obligation.deref(timeout)
+    else
+      return nil
+    end
+  end
+  module_function :deref
+
+  def pending?(obligation)
+    if obligation.respond_to?(:pending?)
+      return obligation.pending?
+    else
+      return false
+    end
+  end
+  module_function :pending?
+
+  def fulfilled?(obligation)
+    if obligation.respond_to?(:fulfilled?)
+      return obligation.fulfilled?
+    elsif obligation.respond_to?(:realized?)
+      return obligation.realized?
+    else
+      return false
+    end
+  end
+  module_function :fulfilled?
+
+  def realized?(obligation)
+    if obligation.respond_to?(:realized?)
+      return obligation.realized?
+    elsif obligation.respond_to?(:fulfilled?)
+      return obligation.fulfilled?
+    else
+      return false
+    end
+  end
+  module_function :realized?
+
+  def rejected?(obligation)
+    if obligation.respond_to?(:rejected?)
+      return obligation.rejected?
+    else
+      return false
+    end
+  end
+  module_function :rejected?
 
   ## promise
 
