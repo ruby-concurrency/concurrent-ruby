@@ -55,6 +55,7 @@ Several features from Erlang, Go, Clojure, Java, and JavaScript have been implem
 * Go inspired [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
 * JavaScript inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
 * Java inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
+* Scheduled task execution with the [Executor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/executor.md) service
 
 ### Is it any good?
 
@@ -101,7 +102,6 @@ score = agent(10) #=> NoMethodError: undefined method `agent' for main:Object
 require 'concurrent/functions'
 score = agent(10) #=> #<Concurrent::Agent:0x35b2b28 ...
 score.value #=> 10
-
 ```
 
 ### Examples
@@ -212,6 +212,25 @@ pool << proc{ sleep(0.5); @expected += 10 }
 @expected #=> 0
 sleep(1)
 @expected #=> 30
+```
+
+#### Executor
+
+```ruby
+require 'concurrent'
+
+ec = Concurrent::Executor.run('Foo'){ puts 'Boom!' }
+
+ec.name               #=> "Foo"
+ec.execution_interval #=> 60 == Concurrent::Executor::EXECUTION_INTERVAL
+ec.timeout_interval   #=> 30 == Concurrent::Executor::TIMEOUT_INTERVAL
+ec.status             #=> "sleep"
+
+# wait 60 seconds...
+#=> 'Boom!'
+#=> ' INFO (2013-08-02 23:20:15) Foo: execution completed successfully'
+
+ec.kill #=> true
 ```
 
 ## Contributing
