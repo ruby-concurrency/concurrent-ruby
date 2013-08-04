@@ -1,15 +1,33 @@
 require 'thread'
+require 'functional'
 require 'concurrent/smart_mutex'
+
+behavior_info(:sync_event_demux,
+              start: 0,
+              stop: 0,
+              set_reactor: 1)
+
+behavior_info(:demux_reactor,
+              handle: -2)
 
 module Concurrent
 
   class Reactor
+
+    behavior(:demux_reactor)
 
     RESERVED_EVENTS = [ :stop ]
 
     EventContext = Struct.new(:event, :args, :callback)
 
     def initialize(demux = nil)
+      unless demux.nil? || demux.behaves_as?(:sync_event_demux)
+        raise ArgumentError.new('invalid event demultiplexer')
+      end
+
+      @demux = demux
+      @demux.set_reactor(self) unless @demux.nil?
+
       @running = false
       @queue = Queue.new
       @handlers = Hash.new
@@ -37,12 +55,13 @@ module Concurrent
       signals.each{|signal| Signal.trap(signal){ self.stop } }
     end
 
-    def handle(event, *args)
+    def handle_event(event, *args)
       return [:stopped, 'reactor not running'] unless running?
       context = EventContext.new(event.to_sym, args.dup, Queue.new)
       @queue.push(context)
       return context.callback.pop
     end
+    alias_method :handle, :handle_event
 
     def running?
       return @running
@@ -65,6 +84,7 @@ module Concurrent
     private
 
     def run
+      @demux.start unless @demux.nil?
       loop do
         context = @queue.pop
         break if context == :stop
@@ -82,7 +102,10 @@ module Concurrent
           end
         end
       end
-      @running = false
+      atomic {
+        @running = false
+        @demux.stop unless @demux.nil?
+      }
     end
   end
 end

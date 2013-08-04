@@ -2,7 +2,8 @@ $:<< 'lib'
 require 'rubygems'
 require 'concurrent'
 
-reactor = Concurrent::Reactor.new
+demux = Concurrent::DrbDemultiplexer.new
+reactor = Concurrent::Reactor.new(demux)
 
 puts "running: #{reactor.running?}"
 
@@ -11,7 +12,7 @@ reactor.add_handler(:bar){ 'Bar' }
 reactor.add_handler(:baz){ 'Baz' }
 reactor.add_handler(:fubar){ raise StandardError.new('Boom!') }
 
-reactor.stop_on_signal('TERM')
+reactor.stop_on_signal('INT', 'TERM')
 
 puts "running: #{reactor.running?}"
 
