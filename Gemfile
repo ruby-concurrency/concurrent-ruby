@@ -12,4 +12,5 @@ group :testing do
   gem 'countloc', :platforms => :mri
   gem 'irbtools', :platforms => :mri
   gem 'terminal-notifier', :platforms => :mri
+  gem 'faker'
 end

@@ -37,19 +37,21 @@ module Concurrent
         @reactor = reactor
       end
 
-      def stop
-        return false
+      Concurrent::Reactor::RESERVED_EVENTS.each do |event|
+        define_method(event){|*args| false }
       end
 
       def method_missing(method, *args, &block)
-        print "///--->>> #{method}\n"
-        result = @reactor.handle(method, *args)
-        print "<<<---\\\\\\ #{result}\n"
-        if result.first == :ok
-          return result.last
-        else
-          return nil
+        metaclass = class << self; self; end
+        metaclass.send(:define_method, method) do |*args|
+          result = @reactor.handle(method, *args)
+          if result.first == :ok
+            return result.last
+          else
+            return nil
+          end
         end
+        self.send(method, *args)
       end
     end
   end
