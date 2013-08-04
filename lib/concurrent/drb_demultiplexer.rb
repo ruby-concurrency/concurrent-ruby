@@ -20,12 +20,10 @@ module Concurrent
     end
 
     def start
-      print "Starting Drb service on #{@uri}\n"
       DRb.start_service(@uri, Demultiplexer.new(@reactor))
     end
 
     def stop
-      print "Stopping Drb service\n"
       DRb.start_service
     end
 
@@ -42,13 +40,19 @@ module Concurrent
       end
 
       def method_missing(method, *args, &block)
-        metaclass = class << self; self; end
-        metaclass.send(:define_method, method) do |*args|
-          result = @reactor.handle(method, *args)
-          if result.first == :ok
-            return result.last
-          else
-            return nil
+        (class << self; self; end).class_eval do
+          define_method(method) do |*args|
+            result = @reactor.handle(method, *args)
+            case result.first
+            when :ok
+              return result.last
+            when :ex
+              raise result.last
+            when :noop
+              raise NoMethodError.new("undefined method '#{method}' for #{self}")
+            else
+              raise DRb::DRbUnknownError.new("unexpected error when calling method '#{method}'")
+            end
           end
         end
         self.send(method, *args)

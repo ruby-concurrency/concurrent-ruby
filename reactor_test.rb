@@ -21,17 +21,15 @@ def echo_client(count, uri = nil)
 
   there = DRbObject.new_with_uri(uri)
 
-  good = bad = 0
+  good = 0
 
   duration = timer do
     count.times do |i|
       message = Faker::Company.bs
+      puts "Sending  '#{message}'"
       echo = there.echo(message)
-      if echo == message
-        good += 1
-      else
-        bad += 1
-      end
+      puts "Received '#{echo}'"
+      good += 1 if echo == message
       #puts "#{with_commas(i+1)}..." if (i+1) % 1000 == 0
     end
   end
@@ -39,7 +37,7 @@ def echo_client(count, uri = nil)
   messages_per_second = count / duration
   success_rate = good / count.to_f * 100.0
 
-  puts "Sent #{count} messages. Received #{good} good responses and #{bad} bad."
+  puts "Sent #{count} messages. Received #{good} good responses and #{count - good} bad."
   puts "The total processing time was %0.3f seconds." % duration
   puts "That's %i messages per second with a %0.1f success rate, for those keeping score." % [messages_per_second, success_rate]
   puts "And we're done!"
@@ -53,6 +51,7 @@ def echo_server(uri = nil)
 
   count = 0
   reactor.add_handler(:echo) do |message|
+    puts "Received: '#{message}'"
     count += 1
     #puts "#{with_commas(count)}..." if count % 1000 == 0
     message
