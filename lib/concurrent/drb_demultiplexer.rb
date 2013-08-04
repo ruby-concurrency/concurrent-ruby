@@ -4,7 +4,7 @@ require 'concurrent/reactor'
 
 module Concurrent
 
-  class DrbDemultiplexer
+  class DRbDemultiplexer
 
     behavior(:async_event_demux)
 
@@ -20,11 +20,15 @@ module Concurrent
     end
 
     def start
-      DRb.start_service(@uri, Demultiplexer.new(@reactor))
+      @service = DRb.start_service(@uri, Demultiplexer.new(@reactor))
     end
 
     def stop
-      DRb.stop_service
+      @service = DRb.stop_service
+    end
+
+    def stopped?
+      return @service.nil?
     end
 
     private
@@ -60,5 +64,5 @@ module Concurrent
     end
   end
 
-  DrbDemux = DrbDemultiplexer
+  DRbDemux = DRbDemultiplexer
 end

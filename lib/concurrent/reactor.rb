@@ -5,12 +5,15 @@ require 'concurrent/smart_mutex'
 behavior_info(:sync_event_demux,
               start: 0,
               stop: 0,
+              stopped?: 0,
               accept: 0,
-              respond: 1)
+              respond: 1,
+              close: 0)
 
 behavior_info(:async_event_demux,
               start: 0,
               stop: 0,
+              stopped?: 0,
               set_reactor: 1)
 
 behavior_info(:demux_reactor,
@@ -38,15 +41,7 @@ module Concurrent
         raise ArgumentError.new("invalid event demultiplexer '#{@demux}'")
       end
 
-      #unless demux.nil? || demux.behaves_as?(:sync_event_demux)
-        #raise ArgumentError.new('invalid event demultiplexer')
-      #end
-
-      #@demux = demux
-      #@demux.set_reactor(self) unless @demux.nil?
-
       @running = false
-      #@queue = Queue.new
       @handlers = Hash.new
       @mutex = SmartMutex.new
     end
@@ -93,52 +88,75 @@ module Concurrent
     def stop
       return unless self.running?
       if @sync
-        @queue.push(:stop)
+        @demux.stop
       else
-        # ???
+        @queue.push(:stop)
       end
       return nil
     end
 
     private
 
-    def run_sync
-      @demux.start
-      loop do
-        context = @demux.accept
-        @demux.respond(context.args.first)
-        @demux.close
+    def handle_event(context)
+      raise ArgumentError.new('no block given') unless block_given?
+
+      handler = @mutex.synchronize {
+        @handlers[context.event]
+      }
+
+      if handler.nil?
+        response = yield(:noop, "'#{context.event}' handler not found")
+      else
+        begin
+          result = handler.call(*context.args)
+          response = yield(:ok, result)
+        rescue Exception => ex
+          response = yield(:ex, ex)
+        end
       end
 
+      return response
+    end
+
+    def finalize_stop
       atomic {
         @running = false
         @demux.stop unless @demux.nil?
+        @demux = nil
       }
+    end
+
+    def run_sync
+      @demux.start
+
+      loop do
+        break if @demux.stopped?
+        context = @demux.accept
+        if context.nil?
+          @demux.close
+        else
+          response = handle_event(context) do |result, message|
+            TcpDemultiplexer.format_message(result, message)
+          end
+          @demux.respond(response)
+        end
+      end
+
+      finalize_stop
     end
 
     def run_async
       @demux.start unless @demux.nil?
+
       loop do
         context = @queue.pop
         break if context == :stop
-        handler = @mutex.synchronize {
-          @handlers[context.event]
-        }
-        if handler.nil?
-          context.callback.push([:noop, "'#{context.event}' handler not found"])
-        else
-          begin
-            result = handler.call(*context.args)
-            context.callback.push([:ok, result])
-          rescue Exception => ex
-            context.callback.push([:ex, ex])
-          end
+        handle_event(context) do |result, message|
+          context.callback.push([result, message])
         end
       end
-      atomic {
-        @running = false
-        @demux.stop unless @demux.nil?
-      }
+
+      finalize_stop
     end
   end
 end

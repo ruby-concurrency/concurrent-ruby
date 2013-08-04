@@ -30,7 +30,7 @@ module Concurrent
 
   class TcpDemultiplexer
 
-    #behavior(:sync_event_demux)
+    behavior(:sync_event_demux)
 
     DEFAULT_HOST = '127.0.0.1'
     DEFAULT_PORT = 12345
@@ -52,17 +52,40 @@ module Concurrent
       }
     end
 
+    def stopped?
+      return @server.nil?
+    end
+
+    #def accept
+      #@session = @server.accept if @session.nil?
+
+      #message = []
+      #while line = @session.gets
+        #if line.nil? || (line = line.strip).empty?
+          #break
+        #else
+          #message << line
+        #end
+      #end
+
+      #if message.empty?
+        #return nil
+      #else
+        #event, args = self.class.parse_message(message)
+        #return Reactor::EventContext.new(event, args)
+      #end
+    #end
+
     def accept
-      @session = TcpSession.new(@server.accept)
-      return Reactor::EventContext.new(@session.event, @session.args)
+      @session = @server.accept if @session.nil?
+      event, args = self.class.get_message(@session)
+      return nil if event.nil?
+      return Reactor::EventContext.new(event, args)
     end
 
     def respond(response)
+      return nil if @session.nil?
       @session.puts(response)
-      #atomic {
-        #@session.puts(response)
-        #self.close
-      #}
     end
 
     def close
@@ -74,48 +97,34 @@ module Concurrent
       args = args.reduce('') do |memo, arg|
         memo << "#{arg}\r\n"
       end
-      return "#{event}\r\n#{args}\r\n"
+      return ":#{event}\r\n#{args}\r\n"
     end
 
-    private
+    def self.parse_message(message)
+      return atomic {
+        event = message.first.match /^:?(\w+)/
+        event = event[1].to_s.downcase.to_sym unless event.nil?
 
-    class TcpSession < Delegator
+        args = message.slice(1, message.length) || []
 
-      attr_reader :event
-      attr_reader :args
+        [event, args]
+      }
+    end
 
-      def initialize(session)
-        super
-        @session = session
-
-        message = []
-        while line = @session.gets.strip
-          break if line.empty?
+    def self.get_message(socket)
+      message = []
+      while line = socket.gets
+        if line.nil? || (line = line.strip).empty?
+          break
+        else
           message << line
         end
-
-        @event, @args = parse_input(message)
       end
 
-      def __getobj__
-        @session
-      end
-
-      def __setobj__(obj)
-        @session = obj
-      end
-
-      private
-
-      def parse_input(message)
-        return Kernel.atomic {
-          event = message.first.match /^:?(\w+)/
-          event = event[1].to_s.downcase.to_sym unless event.nil?
-
-          args = message.slice(1, message.length) || []
-
-          [event, args]
-        }
+      if message.empty?
+        return nil
+      else
+        return parse_message(message)
       end
     end
   end
