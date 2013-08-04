@@ -1,4 +1,5 @@
 require 'socket'
+require 'delegate'
 require 'functional'
 require 'concurrent/reactor'
 
@@ -8,7 +9,7 @@ require 'concurrent/reactor'
 #>> require 'socket' #=> false
 #>> server = TCPServer.new('localhost', 8080) #=> #<TCPServer:fd 11>
 #>> request = Concurrent::TcpRequest.new(server.accept)
-#=> #<Concurrent::TcpRequest:0x007f8c8b236e68 @socket=#<TCPSocket:fd 10>, @event=:echo, @arguments=["foo"]>
+#=> #<Concurrent::TcpRequest:0x007f8c8b236e68 @socket=#<TCPSocket:fd 10>, @event=:echo, @args=["foo"]>
 #>> request.close #=> nil
 #----------------------------------------------------------------------------------------------------------
 
@@ -24,8 +25,6 @@ require 'concurrent/reactor'
 
 # Connection closed by foreign host.
 #----------------------------------------------------------------------------------------------------------
-
-
 
 module Concurrent
 
@@ -55,49 +54,61 @@ module Concurrent
 
     def accept
       @session = TcpSession.new(@server.accept)
-      return Reactor::EventContext(@session.event, @session.arguments)
+      return Reactor::EventContext.new(@session.event, @session.args)
     end
 
     def respond(response)
-      atomic {
-        @session.puts(response)
-        self.close
-      }
+      @session.puts(response)
+      #atomic {
+        #@session.puts(response)
+        #self.close
+      #}
     end
 
     def close
       @session.close
+      @session = nil
+    end
+
+    def self.format_message(event, *args)
+      args = args.reduce('') do |memo, arg|
+        memo << "#{arg}\r\n"
+      end
+      return "#{event}\r\n#{args}\r\n"
     end
 
     private
 
-    class TcpSession
+    class TcpSession < Delegator
 
       attr_reader :event
-      attr_reader :arguments
-      alias_method :args, :arguments
+      attr_reader :args
 
-      def initialize(socket)
-        @socket = socket
+      def initialize(session)
+        super
+        @session = session
 
         message = []
-        while line = socket.gets.strip
+        while line = @session.gets.strip
           break if line.empty?
           message << line
         end
 
-        @event, @arguments = parse_input(message)
+        @event, @args = parse_input(message)
       end
 
-      def close
-        @socket.close
-        @socket = nil
+      def __getobj__
+        @session
+      end
+
+      def __setobj__(obj)
+        @session = obj
       end
 
       private
 
       def parse_input(message)
-        return atomic {
+        return Kernel.atomic {
           event = message.first.match /^:?(\w+)/
           event = event[1].to_s.downcase.to_sym unless event.nil?
 
@@ -108,4 +119,6 @@ module Concurrent
       end
     end
   end
+
+  TcpDemux = TcpDemultiplexer
 end

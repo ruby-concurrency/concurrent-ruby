@@ -92,7 +92,11 @@ module Concurrent
 
     def stop
       return unless self.running?
-      @queue.push(:stop)
+      if @sync
+        @queue.push(:stop)
+      else
+        # ???
+      end
       return nil
     end
 
@@ -102,19 +106,10 @@ module Concurrent
       @demux.start
       loop do
         context = @demux.accept
-
-        #break if context == :stop
-        #handler = @mutex.synchronize {
-          #@handlers[context.event]
-        #}
-
-
-
-
-
-
-        @demux.respond('Hello World!')
+        @demux.respond(context.args.first)
+        @demux.close
       end
+
       atomic {
         @running = false
         @demux.stop unless @demux.nil?

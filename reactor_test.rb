@@ -8,9 +8,36 @@ require 'functional'
 
 DRB_URI = 'druby://localhost:12345'
 
+TCP_HOST = '127.0.0.1'
+TCP_PORT = 12345
+
 def with_commas(n)
   n.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse
 end
+
+
+
+
+def tcp_echo_server(verbose = true)
+  demux = Concurrent::TcpDemultiplexer.new(host: TCP_HOST, port: TCP_PORT)
+  reactor = Concurrent::Reactor.new(demux)
+
+  puts 'Starting the reactor...'
+  reactor.start
+
+  puts 'Done!'
+end
+
+
+
+
+
+
+
+
+
+
+
 
 def kill_drb_echo_server
   there = DRbObject.new_with_uri(DRB_URI)

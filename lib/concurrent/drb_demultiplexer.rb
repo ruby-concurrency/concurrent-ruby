@@ -59,4 +59,6 @@ module Concurrent
       end
     end
   end
+
+  DrbDemux = DrbDemultiplexer
 end
