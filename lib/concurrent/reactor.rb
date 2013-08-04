@@ -3,6 +3,8 @@ require 'functional'
 require 'concurrent/smart_mutex'
 
 behavior_info(:sync_event_demux,
+              start: 0,
+              stop: 0,
               accept: 0,
               respond: 1)
 
@@ -71,6 +73,7 @@ module Concurrent
     end
 
     def handle_event(event, *args)
+      raise NotImplementedError.new("demultiplexer '#{@demux.class}' is synchronous") if @sync 
       return [:stopped, 'reactor not running'] unless running?
       context = EventContext.new(event.to_sym, args.dup, Queue.new)
       @queue.push(context)
@@ -96,6 +99,26 @@ module Concurrent
     private
 
     def run_sync
+      @demux.start
+      loop do
+        context = @demux.accept
+
+        #break if context == :stop
+        #handler = @mutex.synchronize {
+          #@handlers[context.event]
+        #}
+
+
+
+
+
+
+        @demux.respond('Hello World!')
+      end
+      atomic {
+        @running = false
+        @demux.stop unless @demux.nil?
+      }
     end
 
     def run_async

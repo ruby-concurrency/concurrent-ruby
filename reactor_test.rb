@@ -6,33 +6,35 @@ require 'drb/drb'
 require 'faker'
 require 'functional'
 
+DRB_URI = 'druby://localhost:12345'
+
 def with_commas(n)
   n.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse
 end
 
-def kill_echo_server
-  uri ||= Concurrent::DrbDemultiplexer::DEFAULT_URI
-  there = DRbObject.new_with_uri(uri)
+def kill_drb_echo_server
+  there = DRbObject.new_with_uri(DRB_URI)
   there.kill
+  there = nil
 end
 
-def echo_test(count, uri = nil)
-  uri ||= Concurrent::DrbDemultiplexer::DEFAULT_URI
-
-  there = DRbObject.new_with_uri(uri)
+def drb_echo_test(count, verbose = true)
+  there = DRbObject.new_with_uri(DRB_URI)
 
   good = 0
 
   duration = timer do
     count.times do |i|
       message = Faker::Company.bs
-      puts "Sending  '#{message}'"
+      puts "Sending  '#{message}'" if verbose
       echo = there.echo(message)
-      puts "Received '#{echo}'"
+      puts "Received '#{echo}'" if verbose
       good += 1 if echo == message
       #puts "#{with_commas(i+1)}..." if (i+1) % 1000 == 0
     end
   end
+
+  there = nil
 
   messages_per_second = count / duration
   success_rate = good / count.to_f * 100.0
@@ -43,15 +45,13 @@ def echo_test(count, uri = nil)
   puts "And we're done!"
 end
 
-def echo_server(uri = nil)
-  uri ||= Concurrent::DrbDemultiplexer::DEFAULT_URI
-
-  demux = Concurrent::DrbDemultiplexer.new(uri)
+def drb_echo_server(verbose = true)
+  demux = Concurrent::DrbDemultiplexer.new(DRB_URI)
   reactor = Concurrent::Reactor.new(demux)
 
   count = 0
   reactor.add_handler(:echo) do |message|
-    puts "Received: '#{message}'"
+    puts "Received: '#{message}'" if verbose
     count += 1
     #puts "#{with_commas(count)}..." if count % 1000 == 0
     message

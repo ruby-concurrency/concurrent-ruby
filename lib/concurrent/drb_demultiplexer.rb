@@ -24,7 +24,7 @@ module Concurrent
     end
 
     def stop
-      DRb.start_service
+      DRb.stop_service
     end
 
     private
