@@ -3,6 +3,10 @@ require 'functional'
 require 'concurrent/smart_mutex'
 
 behavior_info(:sync_event_demux,
+              accept: 0,
+              respond: 1)
+
+behavior_info(:async_event_demux,
               start: 0,
               stop: 0,
               set_reactor: 1)
@@ -21,15 +25,26 @@ module Concurrent
     EventContext = Struct.new(:event, :args, :callback)
 
     def initialize(demux = nil)
-      unless demux.nil? || demux.behaves_as?(:sync_event_demux)
-        raise ArgumentError.new('invalid event demultiplexer')
+      @demux = demux
+      if @demux.nil? || @demux.behaves_as?(:async_event_demux)
+        @sync = false
+        @queue = Queue.new
+        @demux.set_reactor(self) unless @demux.nil?
+      elsif @demux.behaves_as?(:sync_event_demux)
+        @sync = true
+      else
+        raise ArgumentError.new("invalid event demultiplexer '#{@demux}'")
       end
 
-      @demux = demux
-      @demux.set_reactor(self) unless @demux.nil?
+      #unless demux.nil? || demux.behaves_as?(:sync_event_demux)
+        #raise ArgumentError.new('invalid event demultiplexer')
+      #end
+
+      #@demux = demux
+      #@demux.set_reactor(self) unless @demux.nil?
 
       @running = false
-      @queue = Queue.new
+      #@queue = Queue.new
       @handlers = Hash.new
       @mutex = SmartMutex.new
     end
@@ -69,10 +84,7 @@ module Concurrent
 
     def start
       raise StandardError.new('already running') if self.running?
-      atomic {
-        @running = true
-        run
-      }
+      @sync ? (@running = true; run_sync) : (@running = true; run_async)
     end
 
     def stop
@@ -83,7 +95,10 @@ module Concurrent
 
     private
 
-    def run
+    def run_sync
+    end
+
+    def run_async
       @demux.start unless @demux.nil?
       loop do
         context = @queue.pop

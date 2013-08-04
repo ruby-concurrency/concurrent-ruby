@@ -6,7 +6,7 @@ module Concurrent
 
   class DrbDemultiplexer
 
-    behavior(:sync_event_demux)
+    behavior(:async_event_demux)
 
     DEFAULT_URI = 'druby://localhost:12345'
 

@@ -16,6 +16,7 @@ require 'concurrent/smart_mutex'
 require 'concurrent/utilities'
 
 require 'concurrent/drb_demultiplexer'
+require 'concurrent/http_demultiplexer'
 
 require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'

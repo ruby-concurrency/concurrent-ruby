@@ -16,7 +16,7 @@ def kill_echo_server
   there.kill
 end
 
-def echo_client(count, uri = nil)
+def echo_test(count, uri = nil)
   uri ||= Concurrent::DrbDemultiplexer::DEFAULT_URI
 
   there = DRbObject.new_with_uri(uri)
