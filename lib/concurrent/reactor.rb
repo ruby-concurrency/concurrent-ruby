@@ -1,4 +1,5 @@
 require 'thread'
+require 'concurrent/smart_mutex'
 
 module Concurrent
 
@@ -12,18 +13,24 @@ module Concurrent
       @running = false
       @queue = Queue.new
       @handlers = Hash.new
+      @mutex = SmartMutex.new
     end
 
     def add_handler(event, &block)
       event = event.to_sym
       raise ArgumentError.new("'#{event}' is a reserved event") if RESERVED_EVENTS.include?(event)
       raise ArgumentError.new('no block given') unless block_given?
-      @handlers[event] = block
+      @mutex.synchronize {
+        @handlers[event] = block
+      }
       return true
     end
 
     def remove_handler(event)
-      return ! @handlers.delete(event.to_sym).nil?
+      handler = @mutex.synchronize {
+        @handlers.delete(event.to_sym)
+      }
+      return ! handler.nil?
     end
 
     def stop_on_signal(*signals)
@@ -31,6 +38,7 @@ module Concurrent
     end
 
     def handle(event, *args)
+      return [:stopped, 'reactor not running'] unless running?
       context = EventContext.new(event.to_sym, args.dup, Queue.new)
       @queue.push(context)
       return context.callback.pop
@@ -42,8 +50,10 @@ module Concurrent
 
     def start
       raise StandardError.new('already running') if self.running?
-      @running = true
-      run
+      atomic {
+        @running = true
+        run
+      }
     end
 
     def stop
@@ -58,9 +68,11 @@ module Concurrent
       loop do
         context = @queue.pop
         break if context == :stop
-        handler = @handlers[context.event]
+        handler = @mutex.synchronize {
+          @handlers[context.event]
+        }
         if handler.nil?
-          context.callback.push([:noop, 'handler not found'])
+          context.callback.push([:noop, "'#{context.event}' handler not found"])
         else
           begin
             result = handler.call(*context.args)
