@@ -63,7 +63,15 @@ Several features from Erlang, Go, Clojure, Java, and JavaScript have been implem
 
 ### Supported Ruby versions
 
-Optimized for and tested under MRI Ruby 1.9.x and 2.0.
+This library is optimized for and tested under MRI Ruby 1.9.x and 2.0. It makes heavy use of Fibers and is designed
+to work in concert with MRI's Global Interpreter Lock (GIL). In fact, there are parts of the code that are optimized
+based on the assumption that there *is* a GIL. [JRuby](http://jruby.org/) does not have a GIL and it's implementation of Fibers is
+broken. Therefore I cannot recommend using this library with JRuby. But that's OK. JRuby runs on the JVM and
+has access to many world-class concurrency libraries. Two examples are
+[java.util.concurrent](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html)
+and [Akka](http://akka.io/). Honestly, if you are running JRuby you're probably better of using those
+libraries than this gem. I don't know much about [Rubinius](http://rubini.us/) but I understand that it doesn't
+have a GIL, either. If that's the case then I don't recommend using this gem with Rubinius, either.
 
 ### Install
 
