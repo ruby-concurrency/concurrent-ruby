@@ -12,6 +12,7 @@ require 'concurrent/goroutine'
 require 'concurrent/promise'
 require 'concurrent/obligation'
 require 'concurrent/reactor'
+require 'concurrent/smart_mutex'
 require 'concurrent/utilities'
 
 require 'concurrent/thread_pool'
