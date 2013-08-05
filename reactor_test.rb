@@ -9,6 +9,7 @@ require 'faker'
 require 'functional'
 
 DRB_URI = 'druby://localhost:12345'
+DRB_ACL = %w{allow all}
 
 TCP_HOST = '127.0.0.1'
 TCP_PORT = 12345
@@ -71,6 +72,8 @@ def tcp_echo_server(verbose = true)
     reactor.stop
   end
 
+  reactor.stop_on_signal('TERM', 'INT')
+
   puts 'Starting the reactor...'
   reactor.start
 
@@ -114,7 +117,7 @@ def drb_echo_test(count, verbose = true)
 end
 
 def drb_echo_server(verbose = true)
-  demux = Concurrent::DRbAsyncDemux.new(DRB_URI)
+  demux = Concurrent::DRbAsyncDemux.new(uri: DRB_URI, acl: DRB_ACL)
   reactor = Concurrent::Reactor.new(demux)
 
   count = 0

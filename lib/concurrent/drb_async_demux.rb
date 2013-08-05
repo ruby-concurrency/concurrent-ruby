@@ -1,4 +1,5 @@
 require 'drb/drb'
+require 'drb/acl'
 require 'functional'
 require 'concurrent/reactor'
 
@@ -10,8 +11,9 @@ module Concurrent
 
     DEFAULT_URI = 'druby://localhost:12345'
 
-    def initialize(uri = nil)
-      @uri = uri || DEFAULT_URI
+    def initialize(opts = {})
+      @uri = opts[:uri] || DEFAULT_URI
+      @acl = opts[:acl]
     end
 
     def set_reactor(reactor)
@@ -20,6 +22,10 @@ module Concurrent
     end
 
     def start
+      unless @acl.nil?
+        acl = ACL.new(@acl)
+        DRb.install_acl(acl)
+      end
       @service = DRb.start_service(@uri, Demultiplexer.new(@reactor))
     end
 
