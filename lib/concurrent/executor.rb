@@ -32,8 +32,13 @@ module Concurrent
         end
       end
 
-      def kill
+      def stop
         @thread[:stop] = true
+      end
+
+      def kill
+        @thread.kill
+        @thread = nil
       end
       alias_method :terminate, :kill
       alias_method :stop, :kill

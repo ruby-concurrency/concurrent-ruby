@@ -14,7 +14,7 @@ module Concurrent
     end
 
     after(:each) do
-      @ec.stop unless @ec.nil?
+      @ec.kill unless @ec.nil?
     end
 
     context '#run' do
