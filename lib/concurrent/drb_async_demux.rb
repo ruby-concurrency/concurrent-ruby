@@ -4,7 +4,7 @@ require 'concurrent/reactor'
 
 module Concurrent
 
-  class DRbDemultiplexer
+  class DRbAsyncDemux
 
     behavior(:async_event_demux)
 
@@ -64,5 +64,5 @@ module Concurrent
     end
   end
 
-  DRbDemux = DRbDemultiplexer
+  DRbAsyncDemultiplexer = DRbAsyncDemux
 end

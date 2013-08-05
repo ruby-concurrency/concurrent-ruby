@@ -15,8 +15,8 @@ require 'concurrent/reactor'
 require 'concurrent/smart_mutex'
 require 'concurrent/utilities'
 
-require 'concurrent/drb_demultiplexer'
-require 'concurrent/tcp_demultiplexer'
+require 'concurrent/drb_async_demux'
+require 'concurrent/tcp_sync_demux'
 
 require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'

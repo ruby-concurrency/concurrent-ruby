@@ -136,7 +136,7 @@ module Concurrent
           @demux.close
         else
           response = handle_event(context) do |result, message|
-            TcpDemultiplexer.format_message(result, message)
+            @demux.format_message(result, message)
           end
           @demux.respond(response)
         end
