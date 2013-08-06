@@ -27,7 +27,7 @@ describe 'utilities' do
     it 'raises an exception if no block is given' do
       lambda {
         atomic()
-      }.should raise_error
+      }.should raise_error(ArgumentError)
     end
 
     it 'creates a new Fiber' do
@@ -60,14 +60,14 @@ describe 'utilities' do
          sleep(0.1)
          lambda {
            mutex.sync_and_wait(1)
-         }.should raise_error
+         }.should raise_error(NoMethodError)
          Thread.kill(thread)
        end
 
        it 'raises an exception if no block given' do
          lambda {
            Mutex.new.sync_with_timeout()
-         }.should raise_error
+         }.should raise_error(ArgumentError)
        end
      end
   end
