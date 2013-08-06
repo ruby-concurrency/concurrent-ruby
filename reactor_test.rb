@@ -10,6 +10,7 @@ require 'functional'
 
 DRB_URI = 'druby://localhost:12345'
 DRB_ACL = %w{allow all}
+#DRB_ACL = %w{deny all allow 127.0.0.1}
 
 TCP_HOST = '127.0.0.1'
 TCP_PORT = 12345
@@ -33,7 +34,7 @@ def tcp_echo_test(count, verbose = true)
 
   good = 0
 
-  duration = timer do
+  duration, result = timer do
     count.times do |i|
       message = Faker::Company.bs
       puts "Sending  '#{message}'" if verbose
@@ -53,7 +54,7 @@ def tcp_echo_test(count, verbose = true)
 
   puts "Sent #{count} messages. Received #{good} good responses and #{count - good} bad."
   puts "The total processing time was %0.3f seconds." % duration
-  puts "That's %i messages per second with a %0.1f success rate, for those keeping score." % [messages_per_second, success_rate]
+  puts "That's %i messages per second with a %0.1f success rate." % [messages_per_second, success_rate]
   puts "And we're done!"
 end
 
@@ -94,7 +95,7 @@ def drb_echo_test(count, verbose = true)
 
   good = 0
 
-  duration = timer do
+  duration, result = timer do
     count.times do |i|
       message = Faker::Company.bs
       puts "Sending  '#{message}'" if verbose
@@ -112,7 +113,7 @@ def drb_echo_test(count, verbose = true)
 
   puts "Sent #{count} messages. Received #{good} good responses and #{count - good} bad."
   puts "The total processing time was %0.3f seconds." % duration
-  puts "That's %i messages per second with a %0.1f success rate, for those keeping score." % [messages_per_second, success_rate]
+  puts "That's %i messages per second with a %0.1f success rate." % [messages_per_second, success_rate]
   puts "And we're done!"
 end
 

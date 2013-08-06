@@ -40,9 +40,9 @@ module Concurrent
       return Reactor::EventContext.new(event, args)
     end
 
-    def respond(response)
+    def respond(result, message)
       return nil if @session.nil?
-      @session.puts(response)
+      @session.puts(format_message(result, message))
     end
 
     def close

@@ -7,7 +7,7 @@ behavior_info(:sync_event_demux,
               stop: 0,
               stopped?: 0,
               accept: 0,
-              respond: 1,
+              respond: 2,
               close: 0)
 
 behavior_info(:async_event_demux,
@@ -136,9 +136,9 @@ module Concurrent
           @demux.close
         else
           response = handle_event(context) do |result, message|
-            @demux.format_message(result, message)
+            [result, message]
           end
-          @demux.respond(response)
+          @demux.respond(*response)
         end
       end
 
