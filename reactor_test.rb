@@ -9,11 +9,12 @@ require 'faker'
 require 'functional'
 
 DRB_URI = 'druby://localhost:12345'
-DRB_ACL = %w{allow all}
-#DRB_ACL = %w{deny all allow 127.0.0.1}
 
 TCP_HOST = '127.0.0.1'
 TCP_PORT = 12345
+
+NET_ACL = %w{allow all}
+#NET_ACL = %w{deny all allow 127.0.0.1}
 
 def with_commas(n)
   n.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse
@@ -59,7 +60,7 @@ def tcp_echo_test(count, verbose = true)
 end
 
 def tcp_echo_server(verbose = true)
-  demux = Concurrent::TcpSyncDemux.new(host: TCP_HOST, port: TCP_PORT)
+  demux = Concurrent::TcpSyncDemux.new(host: TCP_HOST, port: TCP_PORT, acl: NET_ACL)
   reactor = Concurrent::Reactor.new(demux)
 
   count = 0
@@ -102,7 +103,6 @@ def drb_echo_test(count, verbose = true)
       echo = there.echo(message)
       puts "Received '#{echo}'" if verbose
       good += 1 if echo == message
-      #puts "#{with_commas(i+1)}..." if (i+1) % 1000 == 0
     end
   end
 
@@ -118,14 +118,13 @@ def drb_echo_test(count, verbose = true)
 end
 
 def drb_echo_server(verbose = true)
-  demux = Concurrent::DRbAsyncDemux.new(uri: DRB_URI, acl: DRB_ACL)
+  demux = Concurrent::DRbAsyncDemux.new(uri: DRB_URI, acl: NET_ACL)
   reactor = Concurrent::Reactor.new(demux)
 
   count = 0
   reactor.add_handler(:echo) do |message|
     puts "Received: '#{message}'" if verbose
     count += 1
-    #puts "#{with_commas(count)}..." if count % 1000 == 0
     message
   end
 

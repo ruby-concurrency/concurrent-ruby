@@ -1,5 +1,5 @@
 require 'socket'
-require 'delegate'
+require 'drb/acl'
 require 'functional'
 require 'concurrent/reactor'
 
@@ -11,10 +11,12 @@ module Concurrent
 
     DEFAULT_HOST = '127.0.0.1'
     DEFAULT_PORT = 12345
+    DEFAULT_ACL = %[allow all]
 
     def initialize(opts = {})
       @host = opts[:host] || DEFAULT_HOST
       @port = opts[:port] || DEFAULT_PORT
+      @acl = ACL.new(opts[:acl] || DEFAULT_ACL)
     end
 
     def start
@@ -23,9 +25,9 @@ module Concurrent
 
     def stop
       atomic {
-        @session.close unless @session.nil?
+        @socket.close unless @socket.nil?
         @server.close unless @server.nil?
-        @server = @session = nil
+        @server = @socket = nil
       }
     end
 
@@ -34,20 +36,21 @@ module Concurrent
     end
 
     def accept
-      @session = @server.accept if @session.nil?
-      event, args = get_message(@session)
+      @socket = @server.accept if @socket.nil?
+      return nil unless @acl.allow_socket?(@socket)
+      event, args = get_message(@socket)
       return nil if event.nil?
       return Reactor::EventContext.new(event, args)
     end
 
     def respond(result, message)
-      return nil if @session.nil?
-      @session.puts(format_message(result, message))
+      return nil if @socket.nil?
+      @socket.puts(format_message(result, message))
     end
 
     def close
-      @session.close
-      @session = nil
+      @socket.close
+      @socket = nil
     end
 
     def self.format_message(event, *args)

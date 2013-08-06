@@ -10,10 +10,11 @@ module Concurrent
     behavior(:async_event_demux)
 
     DEFAULT_URI = 'druby://localhost:12345'
+    DEFAULT_ACL = %[allow all]
 
     def initialize(opts = {})
       @uri = opts[:uri] || DEFAULT_URI
-      @acl = opts[:acl]
+      @acl = ACL.new(opts[:acl] || DEFAULT_ACL)
     end
 
     def set_reactor(reactor)
@@ -22,10 +23,7 @@ module Concurrent
     end
 
     def start
-      unless @acl.nil?
-        acl = ACL.new(@acl)
-        DRb.install_acl(acl)
-      end
+      DRb.install_acl(@acl)
       @service = DRb.start_service(@uri, Demultiplexer.new(@reactor))
     end
 
