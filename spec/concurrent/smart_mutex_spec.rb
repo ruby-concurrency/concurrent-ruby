@@ -62,7 +62,7 @@ module Concurrent
         subject.lock
         lambda {
           subject.lock
-        }.should raise_error
+        }.should raise_error(ThreadError)
       end
 
       it 'does not raise an exception when lock called twice and there is only one thread' do
@@ -124,7 +124,7 @@ module Concurrent
         run_with_the_pack
         lambda {
           subject.sleep(0.1)
-        }.should raise_error
+        }.should raise_error(ThreadError)
       end
 
       it 'returns the number of seconds slept' do
@@ -217,7 +217,7 @@ module Concurrent
         run_with_the_pack
         lambda {
           subject.unlock
-        }.should raise_error
+        }.should raise_error(ThreadError)
       end
 
       it 'returns self' do
