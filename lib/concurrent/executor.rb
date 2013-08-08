@@ -37,11 +37,15 @@ module Concurrent
       end
 
       def kill
-        @thread.kill
-        @thread = nil
+        unless @thread.nil?
+          atomic do
+            stop
+            Thread.kill(@thread)
+            @thread = nil
+          end
+        end
       end
       alias_method :terminate, :kill
-      alias_method :stop, :kill
     end
 
     EXECUTION_INTERVAL = 60

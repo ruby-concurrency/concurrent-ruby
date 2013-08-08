@@ -64,7 +64,7 @@ module Concurrent
     end
 
     def stop_on_signal(*signals)
-      signals.each{|signal| Signal.trap(signal){ self.stop } }
+      signals.each{|signal| Signal.trap(signal){ Thread.new{ self.stop }}}
     end
 
     def handle_event(event, *args)
