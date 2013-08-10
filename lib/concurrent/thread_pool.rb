@@ -35,7 +35,7 @@ module Concurrent
     end
 
     def shutdown?
-      return ! running?
+      return @status == :shutdown
     end
 
     def killed?
@@ -44,8 +44,12 @@ module Concurrent
 
     def shutdown
       atomic {
-        @pool.size.times{ @queue << :stop }
-        @status = :shuttingdown
+        if @pool.empty?
+          @status = :shutdown
+        else
+          @status = :shuttingdown
+          @pool.size.times{ @queue << :stop }
+        end
       }
     end
 

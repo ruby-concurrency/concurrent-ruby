@@ -9,6 +9,7 @@ end
 group :testing do
   gem 'rake'
   gem 'rspec'
+  gem 'simplecov'
   gem 'countloc', :platforms => :mri
   gem 'irbtools', :platforms => :mri
   gem 'terminal-notifier', :platforms => :mri

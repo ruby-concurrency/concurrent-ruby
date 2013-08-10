@@ -29,8 +29,9 @@ module Concurrent
 
     context '#shutdown?' do
 
-      it 'returns true if #shutdown has been called' do
+      it 'returns true if #shutdown is complete' do
         subject.shutdown
+        sleep(0.1)
         subject.should be_shutdown
       end
 
@@ -139,7 +140,7 @@ module Concurrent
       it 'returns false when shutdown fails to complete before timeout' do
         subject.post{ sleep(1) }
         subject.shutdown
-        subject.wait_for_termination(0.5).should be_true
+        subject.wait_for_termination(0.5).should be_false
       end
     end
 

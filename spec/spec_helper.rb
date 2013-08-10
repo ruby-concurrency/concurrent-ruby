@@ -1,3 +1,12 @@
+require 'simplecov'
+SimpleCov.start do
+  project_name 'concurrent-ruby'
+  add_filter '/md/'
+  add_filter '/pkg/'
+  add_filter '/spec/'
+  add_filter '/tasks/'
+end
+
 require 'eventmachine'
 
 require 'concurrent'

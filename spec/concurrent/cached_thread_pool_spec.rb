@@ -10,6 +10,7 @@ module Concurrent
     it_should_behave_like 'Thread Pool'
 
     context '#initialize' do
+
       it 'aliases Concurrent#new_cached_thread_pool' do
         pool = Concurrent.new_cached_thread_pool
         pool.should be_a(CachedThreadPool)
@@ -106,6 +107,18 @@ module Concurrent
         subject.instance_variable_get(:@collector).status.should eq 'sleep'
         sleep(1.5)
         subject.instance_variable_get(:@collector).status.should be_false
+      end
+    end
+
+    context '#status' do
+
+      it 'returns an empty collection when the pool is empty' do
+        subject.status.should be_empty
+      end
+
+      it 'returns one status object for each thread in the pool' do
+        3.times{ sleep(0.1); subject << proc{ sleep(0.5) } }
+        subject.status.length.should eq 3
       end
     end
   end
