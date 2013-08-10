@@ -12,11 +12,11 @@ module Kernel
   end
   module_function :agent
 
-  def post(agent, &block)
-    if agent.respond_to?(:post)
-      return agent.post(&block)
+  def post(object, &block)
+    if object.respond_to?(:post)
+      return object.post(&block)
     else
-      return nil
+      raise ArgumentError.new('object does not support #post')
     end
   end
   module_function :post
@@ -44,53 +44,53 @@ module Kernel
 
   ## obligation
 
-  def deref(obligation, timeout = nil)
-    if obligation.respond_to?(:deref)
-      return obligation.deref(timeout)
-    elsif obligation.respond_to?(:value)
-      return obligation.deref(timeout)
+  def deref(object, timeout = nil)
+    if object.respond_to?(:deref)
+      return object.deref(timeout)
+    elsif object.respond_to?(:value)
+      return object.value(timeout)
     else
-      return nil
+      raise ArgumentError.new('object does not support #deref')
     end
   end
   module_function :deref
 
-  def pending?(obligation)
-    if obligation.respond_to?(:pending?)
-      return obligation.pending?
+  def pending?(object)
+    if object.respond_to?(:pending?)
+      return object.pending?
     else
-      return false
+      raise ArgumentError.new('object does not support #pending?')
     end
   end
   module_function :pending?
 
-  def fulfilled?(obligation)
-    if obligation.respond_to?(:fulfilled?)
-      return obligation.fulfilled?
-    elsif obligation.respond_to?(:realized?)
-      return obligation.realized?
+  def fulfilled?(object)
+    if object.respond_to?(:fulfilled?)
+      return object.fulfilled?
+    elsif object.respond_to?(:realized?)
+      return object.realized?
     else
-      return false
+      raise ArgumentError.new('object does not support #fulfilled?')
     end
   end
   module_function :fulfilled?
 
-  def realized?(obligation)
-    if obligation.respond_to?(:realized?)
-      return obligation.realized?
-    elsif obligation.respond_to?(:fulfilled?)
-      return obligation.fulfilled?
+  def realized?(object)
+    if object.respond_to?(:realized?)
+      return object.realized?
+    elsif object.respond_to?(:fulfilled?)
+      return object.fulfilled?
     else
-      return false
+      raise ArgumentError.new('object does not support #realized?')
     end
   end
   module_function :realized?
 
-  def rejected?(obligation)
-    if obligation.respond_to?(:rejected?)
-      return obligation.rejected?
+  def rejected?(object)
+    if object.respond_to?(:rejected?)
+      return object.rejected?
     else
-      return false
+      raise ArgumentError.new('object does not support #rejected?')
     end
   end
   module_function :rejected?

@@ -10,6 +10,8 @@ module Concurrent
       attr_reader :execution_interval
       attr_reader :timeout_interval
 
+      protected
+
       def initialize(name, execution_interval, timeout_interval, thread)
         @name = name
         @execution_interval = execution_interval
@@ -17,6 +19,8 @@ module Concurrent
         @thread = thread
         @thread[:stop] = false
       end
+
+      public
 
       def status
         return @thread.status unless @thread.nil?

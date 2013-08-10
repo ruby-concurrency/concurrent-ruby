@@ -91,15 +91,6 @@ module Concurrent
     Rescuer = Struct.new(:clazz, :block)
 
     # @private
-    def root # :nodoc:
-      return atomic {
-        current = self
-        current = current.parent until current.root?
-        current
-      }
-    end
-
-    # @private
     def root? # :nodoc:
       @parent.nil?
     end

@@ -142,5 +142,43 @@ module Concurrent
         @level.should eq :error
       end
     end
+
+    context '#status' do
+
+      it 'returns the status of the executor thread when running' do
+        @ec = Executor.run('Foo'){ nil }
+        sleep(0.1)
+        @ec.status.should eq 'sleep'
+      end
+
+      it 'returns nil when not running' do
+        @ec = Executor.run('Foo'){ nil }
+        @ec.kill
+        sleep(0.1)
+        @ec.status.should be_nil
+      end
+    end
+
+    context '#join' do
+
+      it 'joins the executor thread when running' do
+        @ec = Executor.run('Foo'){ nil }
+        Thread.new{ sleep(1); @ec.kill }
+        @ec.join.should be_a(Thread)
+      end
+
+      it 'joins the executor thread with timeout when running' do
+        @ec = Executor.run('Foo'){ nil }
+        @ec.join(1).should be_nil
+      end
+
+      it 'immediately returns nil when not running' do
+        @ec = Executor.run('Foo'){ nil }
+        @ec.kill
+        sleep(0.1)
+        @ec.join.should be_nil
+        @ec.join(1).should be_nil
+      end
+    end
   end
 end
