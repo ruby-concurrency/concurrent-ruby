@@ -21,6 +21,10 @@ module Concurrent
         rescue{ nil }.tap(){ sleep(0.1) }
     end
 
+    before(:each) do
+      Promise.thread_pool = FixedThreadPool.new(1)
+    end
+
     it_should_behave_like Obligation
 
     context 'behavior' do
@@ -194,6 +198,8 @@ module Concurrent
       end
 
       it 'searches associated rescue handlers in order' do
+        Promise.thread_pool = CachedThreadPool.new
+
         @expected = nil
         Promise.new{ raise ArgumentError }.
           rescue(ArgumentError){|ex| @expected = 1 }.

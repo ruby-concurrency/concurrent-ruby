@@ -4,11 +4,11 @@ module Concurrent
 
   describe Defer do
 
-    context '#initialize' do
+    before(:each) do
+      Defer.thread_pool = FixedThreadPool.new(1)
+    end
 
-      before(:each) do
-        $GLOBAL_THREAD_POOL = FixedThreadPool.new(1)
-      end
+    context '#initialize' do
 
       it 'raises an exception if no block or operation given' do
         lambda {
@@ -24,21 +24,14 @@ module Concurrent
       end
 
       it 'starts the thread if an operation is given' do
-        $GLOBAL_THREAD_POOL.should_receive(:post).once.with(any_args())
+        Defer.thread_pool.should_receive(:post).once.with(any_args())
         operation = proc{ nil }
         Defer.new(op: operation)
       end
 
       it 'does not start the thread if neither a callback or errorback is given' do
-        $GLOBAL_THREAD_POOL.should_not_receive(:post)
+        Defer.thread_pool.should_not_receive(:post)
         Defer.new{ nil }
-      end
-
-      it 'runs on the alternate thread pool if given' do
-        operation = proc{ nil }
-        pool = Concurrent::FixedThreadPool.new(2)
-        pool.should_receive(:post).with(no_args())
-        Defer.new(op: operation, pool: pool)
       end
     end
 
@@ -126,14 +119,14 @@ module Concurrent
 
       it 'starts the thread if not started' do
         deferred = Defer.new{ nil }
-        $GLOBAL_THREAD_POOL.should_receive(:post).once.with(any_args())
+        Defer.thread_pool.should_receive(:post).once.with(any_args())
         deferred.go
       end
 
       it 'does nothing if called more than once' do
         deferred = Defer.new{ nil }
         deferred.go
-        $GLOBAL_THREAD_POOL.should_not_receive(:post)
+        Defer.thread_pool.should_not_receive(:post)
         deferred.go
       end
 
@@ -142,15 +135,8 @@ module Concurrent
         callback = proc{|result| nil }
         errorback = proc{|ex| nil }
         deferred = Defer.new(op: operation, callback: callback, errorback: errorback)
-        $GLOBAL_THREAD_POOL.should_not_receive(:post)
+        Defer.thread_pool.should_not_receive(:post)
         deferred.go
-      end
-
-      it 'runs on the alternate thread pool if given' do
-        pool = Concurrent::FixedThreadPool.new(2)
-        pool.should_receive(:post).with(no_args())
-        deferred = Defer.new{ nil }
-        deferred.go(pool)
       end
     end
 

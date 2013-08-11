@@ -2,6 +2,7 @@ require 'spec_helper'
 
 require 'concurrent/agent'
 require 'concurrent/future'
+require 'concurrent/goroutine'
 require 'concurrent/promise'
 
 module Concurrent
@@ -70,8 +71,11 @@ module Concurrent
 
         subject { Agent.new(0) }
 
+        before(:each) do
+          Agent.thread_pool = EventMachineDeferProxy.new
+        end
+
         it 'supports fulfillment' do
-          $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
           EventMachine.run do
 
@@ -87,7 +91,6 @@ module Concurrent
         end
 
         it 'supports validation' do
-          $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
           EventMachine.run do
 
@@ -102,7 +105,6 @@ module Concurrent
         end
 
         it 'supports rejection' do
-          $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
           EventMachine.run do
 
@@ -122,8 +124,11 @@ module Concurrent
 
       context Future do
 
+        before(:each) do
+          Future.thread_pool = EventMachineDeferProxy.new
+        end
+
         it 'supports fulfillment' do
-          $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
           EventMachine.run do
 
@@ -142,10 +147,13 @@ module Concurrent
 
       context Promise do
 
+        before(:each) do
+          Promise.thread_pool = EventMachineDeferProxy.new
+        end
+
         context 'fulfillment' do
 
           it 'passes all arguments to the first promise in the chain' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
             EventMachine.run do
 
@@ -162,7 +170,6 @@ module Concurrent
           end
 
           it 'passes the result of each block to all its children' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
             EventMachine.run do
               @expected = nil
@@ -176,7 +183,6 @@ module Concurrent
           end
 
           it 'sets the promise value to the result if its block' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
             EventMachine.run do
 
@@ -193,7 +199,6 @@ module Concurrent
         context 'rejection' do
 
           it 'sets the promise reason and error on exception' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
             EventMachine.run do
 
@@ -209,7 +214,6 @@ module Concurrent
           end
 
           it 'calls the first exception block with a matching class' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
             EventMachine.run do
 
@@ -227,7 +231,6 @@ module Concurrent
           end
 
           it 'passes the exception object to the matched block' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 
             EventMachine.run do
 

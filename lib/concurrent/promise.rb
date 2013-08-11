@@ -1,5 +1,6 @@
 require 'thread'
 
+require 'concurrent/global_thread_pool'
 require 'concurrent/obligation'
 require 'concurrent/utilities'
 
@@ -7,6 +8,8 @@ module Concurrent
 
   class Promise
     include Obligation
+    include UsesGlobalThreadPool
+
     behavior(:future)
     behavior(:promise)
 
@@ -139,7 +142,7 @@ module Concurrent
 
     # @private
     def realize(*args) # :nodoc:
-      Thread.new(@chain, @mutex, args) do |chain, mutex, args|
+      Promise.thread_pool.post(@chain, @mutex, args) do |chain, mutex, args|
         result = args.length == 1 ? args.first : args
         index = 0
         loop do

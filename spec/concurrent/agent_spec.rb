@@ -15,6 +15,10 @@ module Concurrent
       end.new
     end
 
+    before(:each) do
+      Agent.thread_pool = FixedThreadPool.new(1)
+    end
+
     context '#initialize' do
 
       it 'sets the value to the given initial state' do
@@ -34,7 +38,7 @@ module Concurrent
       end
 
       it 'spawns the worker thread' do
-        Thread.should_receive(:new).once.with(any_args())
+        Agent.thread_pool.should_receive(:post).once.with(any_args())
         Agent.new(0)
       end
     end

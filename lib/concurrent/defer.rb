@@ -7,6 +7,7 @@ module Concurrent
   IllegalMethodCallError = Class.new(StandardError)
 
   class Defer
+    include UsesGlobalThreadPool
 
     def initialize(opts = {}, &block)
       operation = opts[:op] || opts[:operation]
@@ -22,7 +23,7 @@ module Concurrent
       if operation.nil?
         @running = false
       else
-        self.go(thread_pool)
+        self.go
       end
     end
 
@@ -44,12 +45,11 @@ module Concurrent
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
-    def go(thread_pool = nil)
+    def go
       return nil if @running
       atomic {
-        thread_pool ||= $GLOBAL_THREAD_POOL
         @running = true
-        thread_pool.post { Thread.pass; fulfill }
+        Defer.thread_pool.post { Thread.pass; fulfill }
       }
       return nil
     end

@@ -139,6 +139,10 @@ module Concurrent
 
   describe Agent do
 
+    before(:each) do
+      Agent.thread_pool = FixedThreadPool.new(1)
+    end
+
     it 'aliases #<< for Agent#post' do
       subject = Agent.new(0)
       subject << proc{ 100 }

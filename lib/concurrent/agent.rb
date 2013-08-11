@@ -1,6 +1,7 @@
 require 'observer'
 require 'thread'
 
+require 'concurrent/global_thread_pool'
 require 'concurrent/utilities'
 
 module Concurrent
@@ -13,6 +14,7 @@ module Concurrent
   # A good example of an agent is a shared incrementing counter, such as the score in a video game.
   class Agent
     include Observable
+    include UsesGlobalThreadPool
 
     TIMEOUT = 5
 
@@ -26,7 +28,7 @@ module Concurrent
       @validator = nil
       @queue = Queue.new
 
-      @thread = Thread.new{ work }
+      Agent.thread_pool.post{ work }
     end
 
     def value(timeout = 0) return @value; end

@@ -21,6 +21,7 @@ require 'concurrent/reactor/tcp_sync_demux'
 require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
+require 'concurrent/null_thread_pool'
 
 require 'concurrent/global_thread_pool'
 
