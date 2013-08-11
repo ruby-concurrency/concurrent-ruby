@@ -2,14 +2,14 @@
 
 In the pantheon of concurrency objects a `Defer` sits somewhere between `Future` and `Promise`.
 Inspired by [EventMachine's *defer* method](https://github.com/eventmachine/eventmachine/wiki/EM::Deferrable-and-EM.defer),
-a `Defer` can be considered a non-blocking `Future` or a simplified, non-blocking `Promise`.
+a `Defer` can be considered a non-blocking `Future` or a simplified, non-blocking `Promise`. Defers run on the global thread pool.
 
 Unlike `Future` and `Promise` a defer is non-blocking. The deferred *operation* is performed on another
 thread. If the *operation* is successful an optional *callback* is called on the same thread as the *operation*.
 The result of the *operation* is passed to the *callbacl*. If the *operation* fails (by raising an exception)
-then an optional *errorback* (error callback) is called on
-the same thread as the *operation*. The raised exception is passed to the *errorback*. The calling thread is
-never aware of the result of the *operation*. This approach fits much more cleanly within an
+then an optional *errorback* (error callback) is called on the same thread as the *operation*. The raised
+exception is passed to the *errorback*. The calling thread is never aware of the result of the *operation*.
+This approach fits much more cleanly within an
 [event-driven](http://en.wikipedia.org/wiki/Event-driven_programming) application.
 
 The operation of a `Defer` can easily be simulated using either `Future` or `Promise` and traditional branching

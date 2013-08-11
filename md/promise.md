@@ -28,6 +28,8 @@ A *timeout* value can be passed to `value` to limit how long the call will block
 block indefinitely. If `0` the call will not block. Any other integer or float value will indicate the
 maximum number of seconds to block.
 
+Promises run on the global thread pool.
+
 ## Examples
 
 Start by requiring promises

@@ -151,6 +151,12 @@ $GLOBAL_THREAD_POOL = Concurrent::FixedThreadPool.new(10)
 old_global_pool.shutdown
 ```
 
+### NullThreadPool
+
+If for some reason an appliction would be better served by *not* having a global thread pool, the
+`NullThreadPool` is provided. The `NullThreadPool` is compatible with the global thread pool but
+it is not an actual thread pool. Instead it spawns a new thread on every call to the `post` method.
+
 ### EventMachine
 
 The [EventMachine](http://rubyeventmachine.com/) library (source [online](https://github.com/eventmachine/eventmachine))
@@ -165,6 +171,27 @@ require 'eventmachine' # do this FIRST
 require 'functional/concurrency'
 
 $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
+```
+
+## Per-class Thread Pools
+
+Many of the classes in this library use the global thread pool rather than creating new threads.
+Classes such as `Agent`, `Defer`, and others follow this pattern. There may be cases where a
+program would be better suited for one or more of these classes used a different thread pool.
+All classes that use the global thread pool support a class-level `thread_pool` attribute accessor.
+This property defaults to the global thread pool but can be changed at any time. Once changed, all
+new instances of that class will use the new thread pool.
+
+```ruby
+Concurrent::Agent.thread_pool == $GLOBAL_THREAD_POOL #=> true
+
+$GLOBAL_THREAD_POOL = Concurrent::FixedThreadPool.new(10) #=> #<Concurrent::FixedThreadPool:0x007fe31130f1f0 ...
+
+Concurrent::Agent.thread_pool == $GLOBAL_THREAD_POOL #=> false
+
+Concurrent::Defer.thread_pool = Concurrent::CachedThreadPool.new #=> #<Concurrent::CachedThreadPool:0x007fef1c6b6b48 ...
+Concurrent::Defer.thread_pool == Concurrent::Agent.thread_pool #=> false
+Concurrent::Defer.thread_pool == $GLOBAL_THREAD_POOL #=> false
 ```
 
 ## Copyright
