@@ -169,6 +169,10 @@ module Concurrent
 
   describe Defer do
 
+    before(:each) do
+      Defer.thread_pool = FixedThreadPool.new(1)
+    end
+
     it 'aliases Kernel#defer' do
       defer{ nil }.should be_a(Defer)
     end
@@ -185,6 +189,10 @@ module Concurrent
 
   describe Future do
 
+    before(:each) do
+      Future.thread_pool = FixedThreadPool.new(1)
+    end
+
     it 'aliases Kernel#future for Future.new' do
       future().should be_a(Future)
       future(){ nil }.should be_a(Future)
@@ -194,6 +202,10 @@ module Concurrent
   end
 
   describe Promise do
+
+    before(:each) do
+      Promise.thread_pool = FixedThreadPool.new(1)
+    end
 
     it 'aliases Kernel#promise for Promise.new' do
       promise().should be_a(Promise)
