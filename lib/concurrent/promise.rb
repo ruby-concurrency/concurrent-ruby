@@ -36,7 +36,7 @@ module Concurrent
         @chain = [self]
       end
 
-      @mutex = Mutex.new
+      @lock = Mutex.new
       @handler = block || Proc.new{|result| result }
       @state = :pending
       @value = nil
@@ -55,7 +55,7 @@ module Concurrent
     #
     # @return [Promise] the new promise
     def then(&block)
-      child = @mutex.synchronize do
+      child = @lock.synchronize do
         block = Proc.new{|result| result } unless block_given?
         @children << Promise.new(self, &block)
         @children.last.on_reject(@reason) if rejected?
@@ -76,7 +76,7 @@ module Concurrent
     #
     # @return [self] so that additional chaining can occur
     def rescue(clazz = Exception, &block)
-      @mutex.synchronize do
+      @lock.synchronize do
         @rescuers << Rescuer.new(clazz, block) if block_given?
       end
       return self
@@ -109,7 +109,7 @@ module Concurrent
 
     # @private
     def on_fulfill(value) # :nodoc:
-      @mutex.synchronize do
+      @lock.synchronize do
         if pending?
           @value = @handler.call(value)
           @state = :fulfilled
@@ -121,7 +121,7 @@ module Concurrent
 
     # @private
     def on_reject(reason) # :nodoc:
-      @mutex.synchronize do
+      @lock.synchronize do
         if pending?
           @state = :rejected
           @reason = reason
@@ -142,14 +142,14 @@ module Concurrent
 
     # @private
     def realize(*args) # :nodoc:
-      Promise.thread_pool.post(@chain, @mutex, args) do |chain, mutex, args|
+      Promise.thread_pool.post(@chain, @lock, args) do |chain, lock, args|
         result = args.length == 1 ? args.first : args
         index = 0
         loop do
           Thread.pass
-          current = mutex.synchronize{ chain[index] }
+          current = lock.synchronize{ chain[index] }
           unless current.rejected?
-            current.semaphore.synchronize do
+            current.mutex.synchronize do
               begin
                 result = current.on_fulfill(result)
               rescue Exception => ex

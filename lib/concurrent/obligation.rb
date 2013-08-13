@@ -41,11 +41,11 @@ module Concurrent
       if !pending? || timeout == 0
         return @value
       elsif timeout.nil?
-        return semaphore.synchronize { value = @value }
+        return mutex.synchronize { value = @value }
       else
         begin
           return Timeout::timeout(timeout.to_f) {
-            semaphore.synchronize { value = @value }
+            mutex.synchronize { value = @value }
           }
         rescue Timeout::Error => ex
           return nil
@@ -60,8 +60,8 @@ module Concurrent
 
     protected
 
-    def semaphore
-      @semaphore ||= Mutex.new
+    def mutex
+      @mutex ||= Mutex.new
     end
   end
 end

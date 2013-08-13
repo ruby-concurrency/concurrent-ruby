@@ -26,8 +26,10 @@ module Concurrent
     end
 
     def kill
-      @status = :killed
-      @pool.each{|t| Thread.kill(t) }
+      mutex.synchronize do
+        @status = :killed
+        @pool.each{|t| Thread.kill(t) }
+      end
     end
 
     def size
@@ -50,7 +52,9 @@ module Concurrent
 
     # @private
     def status # :nodoc:
-      @pool.collect{|t| t.status }
+      mutex.synchronize do
+        @pool.collect{|t| t.status }
+      end
     end
 
     private
@@ -78,9 +82,11 @@ module Concurrent
     def collect_garbage # :nodoc:
       @collector = Thread.new do
         sleep(1)
-        @pool.size.times do |i|
-          if @pool[i].status.nil?
-            @pool[i] = create_worker_thread
+        mutex.synchronize do
+          @pool.size.times do |i|
+            if @pool[i].status.nil?
+              @pool[i] = create_worker_thread
+            end
           end
         end
       end

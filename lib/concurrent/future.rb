@@ -29,17 +29,13 @@ module Concurrent
 
     # @private
     def work(*args) # :nodoc:
-      semaphore.synchronize do
+      mutex.synchronize do
         begin
-          atomic {
-            @value = yield(*args)
-            @state = :fulfilled
-          }
+          @value = yield(*args)
+          @state = :fulfilled
         rescue Exception => ex
-          atomic {
-            @state = :rejected
-            @reason = ex
-          }
+          @state = :rejected
+          @reason = ex
         end
       end
     end

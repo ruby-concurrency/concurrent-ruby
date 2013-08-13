@@ -24,11 +24,9 @@ end
 
 class Mutex
 
-  def sync_with_timeout(timeout)
+  def sync_with_timeout(timeout, &block)
     Timeout::timeout(timeout) {
-      self.synchronize {
-        yield
-      }
+      synchronize(&block)
     }
   end
 end

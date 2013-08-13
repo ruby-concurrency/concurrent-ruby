@@ -24,12 +24,11 @@ module Concurrent
       @thread_idletime = (opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME).freeze
       super()
       @working = 0
-      @mutex = Mutex.new
     end
 
     def kill
       @status = :killed
-      @mutex.synchronize do
+      mutex.synchronize do
         @pool.each{|t| Thread.kill(t.thread) }
       end
     end
@@ -42,7 +41,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       if running?
         collect_garbage if @pool.empty?
-        @mutex.synchronize do
+        mutex.synchronize do
           if @working >= @pool.length
             create_worker_thread
           end
@@ -56,7 +55,7 @@ module Concurrent
 
     # @private
     def status # :nodoc:
-      @mutex.synchronize do
+      mutex.synchronize do
         @pool.collect do |worker|
           [
             worker.status,
@@ -80,31 +79,31 @@ module Concurrent
         loop do
           task = @queue.pop
 
-          atomic {
+          mutex.synchronize do
             @working += 1
             me.status = :working
-          }
+          end
 
           if task == :stop
             me.status = :stopping
             break
           else
             task.last.call(*task.first)
-            atomic {
+            mutex.synchronize do
               @working -= 1
               me.status = :idle
               me.idletime = timestamp
-            }
+            end
           end
         end
 
-        atomic {
+        mutex.synchronize do
           @pool.delete(me)
           if @pool.empty?
             @termination.set
             @status = :shutdown unless killed?
           end
-        }
+        end
       end
 
       @pool << worker
@@ -115,7 +114,7 @@ module Concurrent
       @collector = Thread.new do
         loop do
           sleep(@gc_interval)
-          @mutex.synchronize do
+          mutex.synchronize do
             @pool.reject! do |worker|
               worker.thread.status.nil? ||
                 (worker.status == :idle && @thread_idletime >= delta(worker.idletime, timestamp))

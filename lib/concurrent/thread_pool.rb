@@ -43,14 +43,14 @@ module Concurrent
     end
 
     def shutdown
-      atomic {
+      mutex.synchronize do
         if @pool.empty?
           @status = :shutdown
         else
           @status = :shuttingdown
           @pool.size.times{ @queue << :stop }
         end
-      }
+      end
     end
 
     def wait_for_termination(timeout = nil)
@@ -64,6 +64,13 @@ module Concurrent
     def <<(block)
       self.post(&block)
       return self
+    end
+
+    protected
+
+    # @private
+    def mutex # :nodoc:
+      @mutex || Mutex.new
     end
   end
 end

@@ -27,6 +27,7 @@ module Concurrent
       @rescuers = []
       @validator = nil
       @queue = Queue.new
+      @mutex = Mutex.new
 
       Agent.thread_pool.post{ work }
     end
@@ -35,7 +36,11 @@ module Concurrent
     alias_method :deref, :value
 
     def rescue(clazz = Exception, &block)
-      @rescuers << Rescuer.new(clazz, block) if block_given?
+      if block_given?
+        @mutex.synchronize do
+          @rescuers << Rescuer.new(clazz, block)
+        end
+      end
       return self
     end
     alias_method :catch, :rescue
@@ -51,10 +56,10 @@ module Concurrent
 
     def post(&block)
       return @queue.length unless block_given?
-      return atomic {
+      return @mutex.synchronize do
         @queue << block
         @queue.length
-      }
+      end
     end
 
     def <<(block)
@@ -77,7 +82,9 @@ module Concurrent
 
     # @private
     def try_rescue(ex) # :nodoc:
-      rescuer = atomic { @rescuers.find{|r| ex.is_a?(r.clazz) } }
+      rescuer = @mutex.synchronize do
+        @rescuers.find{|r| ex.is_a?(r.clazz) }
+      end
       rescuer.block.call(ex) if rescuer
     rescue Exception => e
       # supress
@@ -89,15 +96,15 @@ module Concurrent
         Thread.pass
         handler = @queue.pop
         begin
-          result = Timeout.timeout(@timeout){
+          result = Timeout.timeout(@timeout) do
             handler.call(@value)
-          }
+          end
           if @validator.nil? || @validator.call(result)
-            atomic {
+            @mutex.synchronize do
               @value = result
               changed
-            }
-            notify_observers(Time.now, @value)
+              notify_observers(Time.now, @value)
+            end
           end
         rescue Exception => ex
           try_rescue(ex)

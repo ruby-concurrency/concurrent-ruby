@@ -42,11 +42,9 @@ module Concurrent
 
       def kill
         unless @thread.nil?
-          atomic do
-            stop
-            Thread.kill(@thread)
-            @thread = nil
-          end
+          stop
+          Thread.kill(@thread)
+          @thread = nil
         end
       end
       alias_method :terminate, :kill

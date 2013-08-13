@@ -47,10 +47,8 @@ module Concurrent
 
     def go
       return nil if @running
-      atomic {
-        @running = true
-        Defer.thread_pool.post { Thread.pass; fulfill }
-      }
+      @running = true
+      Defer.thread_pool.post { Thread.pass; fulfill }
       return nil
     end
 

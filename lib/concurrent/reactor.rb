@@ -118,11 +118,11 @@ module Concurrent
     end
 
     def finalize_stop
-      atomic {
+      @mutex.synchronize do
         @running = false
         @demux.stop unless @demux.nil?
         @demux = nil
-      }
+      end
     end
 
     def run_sync
