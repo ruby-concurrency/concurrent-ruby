@@ -11,7 +11,6 @@ require 'concurrent/future'
 require 'concurrent/goroutine'
 require 'concurrent/promise'
 require 'concurrent/obligation'
-require 'concurrent/smart_mutex'
 require 'concurrent/utilities'
 
 require 'concurrent/reactor'

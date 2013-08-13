@@ -1,6 +1,5 @@
 require 'thread'
 require 'functional'
-require 'concurrent/smart_mutex'
 
 behavior_info(:sync_event_demux,
               start: 0,
@@ -43,7 +42,7 @@ module Concurrent
 
       @running = false
       @handlers = Hash.new
-      @mutex = SmartMutex.new
+      @mutex = Mutex.new
     end
 
     def add_handler(event, &block)
