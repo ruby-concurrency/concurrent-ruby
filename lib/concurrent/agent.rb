@@ -63,7 +63,7 @@ module Concurrent
     end
 
     def length
-      @queue.length
+      return @queue.length
     end
     alias_method :size, :length
     alias_method :count, :length
@@ -77,7 +77,7 @@ module Concurrent
 
     # @private
     def try_rescue(ex) # :nodoc:
-      rescuer = @rescuers.find{|r| ex.is_a?(r.clazz) }
+      rescuer = atomic { @rescuers.find{|r| ex.is_a?(r.clazz) } }
       rescuer.block.call(ex) if rescuer
     rescue Exception => e
       # supress
