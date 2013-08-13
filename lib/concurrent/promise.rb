@@ -41,10 +41,15 @@ module Concurrent
       @state = :pending
       @value = nil
       @reason = nil
+      @rescued = false
       @children = []
       @rescuers = []
 
       realize(*args) if root?
+    end
+
+    def rescued?
+      return @rescued
     end
 
     # Create a new child Promise. The block argument for the child will
@@ -76,8 +81,14 @@ module Concurrent
     #
     # @return [self] so that additional chaining can occur
     def rescue(clazz = Exception, &block)
+      return self if fulfilled? || rescued? || ! block_given?
       @lock.synchronize do
-        @rescuers << Rescuer.new(clazz, block) if block_given?
+        rescuer = Rescuer.new(clazz, block)
+        if pending?
+          @rescuers << rescuer
+        else
+          try_rescue(reason, rescuer)
+        end
       end
       return self
     end
@@ -127,9 +138,13 @@ module Concurrent
     end
 
     # @private
-    def try_rescue(ex) # :nodoc:
-      rescuer = @rescuers.find{|r| ex.is_a?(r.clazz) }
-      rescuer.block.call(ex) if rescuer
+    def try_rescue(ex, *rescuers) # :nodoc:
+      rescuers = @rescuers if rescuers.empty?
+      rescuer = rescuers.find{|r| ex.is_a?(r.clazz) }
+      if rescuer
+        rescuer.block.call(ex)
+        @rescued = true
+      end
     rescue Exception => e
       # supress
     end
