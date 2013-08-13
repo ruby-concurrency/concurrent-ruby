@@ -163,7 +163,7 @@ module Concurrent
       end
 
       it 'recursively rejects all children' do
-        p = Promise.new{ Thread.pass; raise StandardError.new('Boom!') }
+        p = Promise.new{ raise StandardError.new('Boom!') }
         promises = 10.times.collect{ p.then{ true } }
         sleep(0.1)
         10.times.each{|i| promises[i].should be_rejected }
@@ -193,7 +193,6 @@ module Concurrent
           rescue{|ex| @expected = 2 }.
           rescue(StandardError){|ex| @expected = 3 }
         sleep(0.1)
-        Thread.pass
         @expected.should eq 2
       end
 
@@ -265,7 +264,7 @@ module Concurrent
 
       it 'calls matching rescue handlers on all children' do
         @expected = []
-        Promise.new{ Thread.pass; raise StandardError }.
+        Promise.new{ raise StandardError }.
           then{ sleep(0.1) }.rescue{ @expected << 'Boom!' }.
           then{ sleep(0.1) }.rescue{ @expected << 'Boom!' }.
           then{ sleep(0.1) }.rescue{ @expected << 'Boom!' }.

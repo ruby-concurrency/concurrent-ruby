@@ -19,7 +19,6 @@ module Concurrent
         @value = nil
         @state = :pending
         Future.thread_pool.post(*args) do
-          Thread.pass
           work(*args, &block)
         end
       end

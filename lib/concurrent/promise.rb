@@ -155,7 +155,6 @@ module Concurrent
         result = args.length == 1 ? args.first : args
         index = 0
         loop do
-          Thread.pass
           current = lock.synchronize{ chain[index] }
           unless current.rejected?
             current.mutex.synchronize do

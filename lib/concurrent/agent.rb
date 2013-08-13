@@ -93,7 +93,6 @@ module Concurrent
     # @private
     def work # :nodoc:
       loop do
-        Thread.pass
         handler = @queue.pop
         begin
           result = Timeout.timeout(@timeout) do

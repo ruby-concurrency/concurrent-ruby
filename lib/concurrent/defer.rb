@@ -48,7 +48,7 @@ module Concurrent
     def go
       return nil if @running
       @running = true
-      Defer.thread_pool.post { Thread.pass; fulfill }
+      Defer.thread_pool.post { fulfill }
       return nil
     end
 
