@@ -9,7 +9,7 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Promise.new{ sleep(1) }
+      Promise.new{ sleep(3); fulfilled_value }
     end
 
     let(:fulfilled_subject) do
@@ -166,7 +166,6 @@ module Concurrent
         p = Promise.new{ Thread.pass; raise StandardError.new('Boom!') }
         promises = 10.times.collect{ p.then{ true } }
         sleep(0.1)
-
         10.times.each{|i| promises[i].should be_rejected }
       end
 
@@ -183,7 +182,7 @@ module Concurrent
           rescue(StandardError){|ex| @expected = 1 }.
           rescue(StandardError){|ex| @expected = 2 }.
           rescue(StandardError){|ex| @expected = 3 }
-          sleep(0.1)
+        sleep(0.1)
         @expected.should eq 1
       end
 
@@ -194,6 +193,7 @@ module Concurrent
           rescue{|ex| @expected = 2 }.
           rescue(StandardError){|ex| @expected = 3 }
         sleep(0.1)
+        Thread.pass
         @expected.should eq 2
       end
 

@@ -9,7 +9,7 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Future.new{ sleep(3) }
+      Future.new{ sleep(3); fulfilled_value }
     end
 
     let(:fulfilled_subject) do

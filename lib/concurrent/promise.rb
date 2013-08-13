@@ -110,26 +110,20 @@ module Concurrent
     # @private
     def on_fulfill(value) # :nodoc:
       @lock.synchronize do
-        if pending?
-          @value = @handler.call(value)
-          @state = :fulfilled
-          @reason = nil
-        end
+        @value = @handler.call(value)
+        @state = :fulfilled
+        @reason = nil
       end
       return @value
     end
 
     # @private
     def on_reject(reason) # :nodoc:
-      @lock.synchronize do
-        if pending?
-          @state = :rejected
-          @reason = reason
-          self.try_rescue(reason)
-          @value = nil
-        end
-        @children.each{|child| child.on_reject(reason) }
-      end
+      @value = nil
+      @state = :rejected
+      @reason = reason
+      try_rescue(reason)
+      @children.each{|child| child.on_reject(reason) }
     end
 
     # @private
@@ -158,7 +152,7 @@ module Concurrent
             end
           end
           index += 1
-          sleep while index >= chain.length
+          Thread.pass while index >= chain.length
         end
       end
     end
