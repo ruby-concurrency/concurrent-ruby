@@ -1,0 +1,5 @@
+export JRUBY_OPTS="-Xcext.enabled=true"
+alias jr='jruby --1.9 -S'
+
+alias mri='rvm use ruby-2.0.0-p195@concurrent-ruby --create'
+alias jvm='rvm use jruby-1.7.4@concurrent-ruby --create'

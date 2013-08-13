@@ -37,7 +37,7 @@ module Concurrent
       it 'returns nil when reaching the optional timeout value' do
         f = pending_subject
         sleep(0.1)
-        f.value(0.1).should be_nil
+        f.value(0).should be_nil
         f.should be_pending
       end
 
@@ -50,7 +50,7 @@ module Concurrent
       end
 
       it 'is nil when :pending' do
-        expected = pending_subject.value
+        expected = pending_subject.value(0)
         expected.should be_nil
       end
 

@@ -33,19 +33,23 @@ module Concurrent
     def fulfilled?() return(@state == :fulfilled); end
     alias_method :realized?, :fulfilled?
 
+    # Has the promise been rejected?
+    # @return [Boolean]
+    def rejected?() return(@state == :rejected); end
+
     # Is obligation completion still pending?
     # @return [Boolean]
-    def pending?() return(!(fulfilled? || rejected?)); end
+    def pending?() return(@state == :pending); end
 
     def value(timeout = nil)
-      if !pending? || timeout == 0
+      if timeout == 0 || ! pending?
         return @value
       elsif timeout.nil?
-        return mutex.synchronize { value = @value }
+        return mutex.synchronize { v = @value }
       else
         begin
           return Timeout::timeout(timeout.to_f) {
-            mutex.synchronize { value = @value }
+            mutex.synchronize { v = @value }
           }
         rescue Timeout::Error => ex
           return nil
@@ -53,10 +57,6 @@ module Concurrent
       end
     end
     alias_method :deref, :value
-
-    # Has the promise been rejected?
-    # @return [Boolean]
-    def rejected?() return(@state == :rejected); end
 
     protected
 

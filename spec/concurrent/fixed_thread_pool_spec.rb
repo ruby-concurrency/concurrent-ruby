@@ -74,10 +74,9 @@ module Concurrent
       it 'restarts threads that experience exception' do
         pool = FixedThreadPool.new(5)
         3.times{ pool << proc{ raise StandardError } }
-        sleep(2)
+        sleep(5)
         pool.size.should eq 5
         pool.status.should_not include(nil)
-        #pool.status.include?(nil).should be_false
       end
     end
   end

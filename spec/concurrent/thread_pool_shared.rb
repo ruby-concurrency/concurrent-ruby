@@ -82,10 +82,9 @@ module Concurrent
       end
 
       it 'allows threads to exit normally' do
-        pool = FixedThreadPool.new(5)
-        pool.shutdown
+        subject.shutdown
         sleep(1)
-        pool.status.should be_empty
+        subject.status.should be_empty
       end
     end
 

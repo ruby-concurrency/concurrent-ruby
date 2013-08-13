@@ -92,6 +92,8 @@ module Concurrent
     context '#post' do
       
       it 'adds the given block to the queue' do
+        subject.post{ sleep(100) }
+        sleep(0.1)
         before = subject.length
         subject.post{ nil }
         subject.post{ nil }
@@ -99,6 +101,8 @@ module Concurrent
       end
 
       it 'does not add to the queue when no block is given' do
+        subject.post{ sleep(100) }
+        sleep(0.1)
         before = subject.length
         subject.post
         subject.post{ nil }
@@ -113,6 +117,8 @@ module Concurrent
       end
 
       it 'should increase by one for each #post' do
+        subject.post{ sleep(100) }
+        sleep(0.1)
         subject.post{ sleep }
         subject.post{ sleep }
         subject.post{ sleep }
