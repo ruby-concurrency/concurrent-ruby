@@ -11,7 +11,7 @@ module Concurrent
       behavior(:async_event_demux)
 
       DEFAULT_URI = 'druby://localhost:12345'
-      DEFAULT_ACL = %[allow all]
+      DEFAULT_ACL = %w[allow all]
 
       def initialize(opts = {})
         @uri = opts[:uri] || DEFAULT_URI

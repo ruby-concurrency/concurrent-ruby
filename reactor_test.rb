@@ -21,11 +21,11 @@ def with_commas(n)
 end
 
 ###############################################################################
-# TcpSyncDemux
+# Reactor::TcpSyncDemux
 
 def kill_tcp_echo_server
   there = TCPSocket.open(TCP_HOST, TCP_PORT)
-  there.puts(Concurrent::TcpSyncDemux.format_message(:kill))
+  there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:kill))
   there.close
   there = nil
 end
@@ -39,8 +39,8 @@ def tcp_echo_test(count, verbose = true)
     count.times do |i|
       message = Faker::Company.bs
       puts "Sending  '#{message}'" if verbose
-      there.puts(Concurrent::TcpSyncDemux.format_message(:echo, message))
-      result, echo = Concurrent::TcpSyncDemux.get_message(there)
+      there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:echo, message))
+      result, echo = Concurrent::Reactor::TcpSyncDemux.get_message(there)
       echo = echo.first
       puts "Received '#{echo}'" if verbose
       good += 1 if echo == message
@@ -60,7 +60,7 @@ def tcp_echo_test(count, verbose = true)
 end
 
 def tcp_echo_server(verbose = true)
-  demux = Concurrent::TcpSyncDemux.new(host: TCP_HOST, port: TCP_PORT, acl: NET_ACL)
+  demux = Concurrent::Reactor::TcpSyncDemux.new(host: TCP_HOST, port: TCP_PORT, acl: NET_ACL)
   reactor = Concurrent::Reactor.new(demux)
 
   count = 0
@@ -83,7 +83,7 @@ def tcp_echo_server(verbose = true)
 end
 
 ###############################################################################
-# DRbAsyncDemux
+# Reactor::DRbAsyncDemux
 
 def kill_drb_echo_server
   there = DRbObject.new_with_uri(DRB_URI)
@@ -118,7 +118,7 @@ def drb_echo_test(count, verbose = true)
 end
 
 def drb_echo_server(verbose = true)
-  demux = Concurrent::DRbAsyncDemux.new(uri: DRB_URI, acl: NET_ACL)
+  demux = Concurrent::Reactor::DRbAsyncDemux.new(uri: DRB_URI, acl: NET_ACL)
   reactor = Concurrent::Reactor.new(demux)
 
   count = 0
@@ -143,8 +143,7 @@ end
 
 if __FILE__ == $0
 
-  demux = Concurrent::DRbAsyncDemux.new
-  reactor = Concurrent::Reactor.new(demux)
+  reactor = Concurrent::Reactor.new
 
   puts "running: #{reactor.running?}"
 

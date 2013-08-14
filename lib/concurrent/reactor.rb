@@ -45,10 +45,14 @@ module Concurrent
       @mutex = Mutex.new
     end
 
+    def running?
+      return @running
+    end
+
     def add_handler(event, &block)
+      raise ArgumentError.new('no block given') unless block_given?
       event = event.to_sym
       raise ArgumentError.new("'#{event}' is a reserved event") if RESERVED_EVENTS.include?(event)
-      raise ArgumentError.new('no block given') unless block_given?
       @mutex.synchronize {
         @handlers[event] = block
       }
@@ -66,32 +70,28 @@ module Concurrent
       signals.each{|signal| Signal.trap(signal){ Thread.new{ self.stop }}}
     end
 
-    def handle_event(event, *args)
+    def handle(event, *args)
       raise NotImplementedError.new("demultiplexer '#{@demux.class}' is synchronous") if @sync 
       return [:stopped, 'reactor not running'] unless running?
       context = EventContext.new(event.to_sym, args.dup, Queue.new)
       @queue.push(context)
       return context.callback.pop
     end
-    alias_method :handle, :handle_event
-
-    def running?
-      return @running
-    end
 
     def start
       raise StandardError.new('already running') if self.running?
       @sync ? (@running = true; run_sync) : (@running = true; run_async)
     end
+    alias_method :run, :start
 
     def stop
-      return unless self.running?
+      return true unless self.running?
       if @sync
         @demux.stop
       else
         @queue.push(:stop)
       end
-      return nil
+      return true
     end
 
     private
