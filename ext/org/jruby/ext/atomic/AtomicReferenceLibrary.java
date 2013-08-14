@@ -12,6 +12,7 @@
 
 package org.jruby.ext.atomic;
 
+import java.lang.reflect.Field;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import org.jruby.Ruby;
@@ -25,7 +26,6 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import org.jruby.util.unsafe.UnsafeHolder;
 
 /**
  * This library adds an atomic reference type to JRuby for use in the atomic
@@ -153,6 +153,23 @@ public class AtomicReferenceLibrary implements Library {
                 }
             }
         }
+    }
+
+    private static final class UnsafeHolder {
+	private UnsafeHolder(){}
+	    
+	public static final sun.misc.Unsafe U = loadUnsafe();
+	
+	private static sun.misc.Unsafe loadUnsafe() {
+	    try {
+		Class unsafeClass = Class.forName("sun.misc.Unsafe");
+		Field f = unsafeClass.getDeclaredField("theUnsafe");
+		f.setAccessible(true);
+		return (sun.misc.Unsafe) f.get(null);
+	    } catch (Exception e) {
+		return null;
+	    }
+	}
     }
     
     public static class JRubyReference8 extends JRubyReference {
