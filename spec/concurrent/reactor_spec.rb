@@ -120,10 +120,12 @@ module Concurrent
       end
 
       it 'raises an exception if given an invalid signal' do
-        reactor = Reactor.new
-        lambda {
-          reactor.stop_on_signal('BOGUS')
-        }.should raise_error(ArgumentError)
+        if mri?
+          reactor = Reactor.new
+          lambda {
+            reactor.stop_on_signal('BOGUS')
+          }.should raise_error(ArgumentError)
+        end
       end
 
       it 'stops the reactor when it receives a trapped signal' do

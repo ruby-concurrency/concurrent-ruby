@@ -1,12 +1,11 @@
 require 'spec_helper'
-require 'rbconfig'
 
 require 'concurrent/agent'
 require 'concurrent/future'
 require 'concurrent/goroutine'
 require 'concurrent/promise'
 
-if RbConfig::CONFIG['ruby_install_name'] =~ /^ruby$/i
+if mri?
 
   module Concurrent
 

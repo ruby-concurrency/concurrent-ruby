@@ -274,6 +274,14 @@ module Concurrent
 
         @expected.length.should eq 5
       end
+
+      it 'matches a rescue handler added after rejection' do
+        @expected = false
+        p = Promise.new{ raise StandardError }
+        sleep(0.1)
+        p.rescue(StandardError){ @expected = true }
+        @expected.should be_true
+      end
     end
 
     context 'aliases' do

@@ -49,6 +49,20 @@ module Concurrent
         f.should be_pending
       end
 
+      it 'returns the value when fulfilled before timeout' do
+        f = pending_subject
+        sleep(0.1)
+        f.value(10).should be_true
+        f.should be_fulfilled
+      end
+
+      it 'returns nil when timeout reached' do
+        f = pending_subject
+        sleep(0.1)
+        f.value(0.1).should be_nil
+        f.should be_pending
+      end
+
       it 'is nil when :pending' do
         expected = pending_subject.value(0)
         expected.should be_nil

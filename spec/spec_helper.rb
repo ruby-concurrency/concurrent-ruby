@@ -12,11 +12,25 @@ require 'eventmachine'
 require 'concurrent'
 require 'concurrent/functions'
 
+require 'rbconfig'
+
+def mri?
+  RbConfig::CONFIG['ruby_install_name'] =~ /^ruby$/i
+end
+
+def jruby?
+  RbConfig::CONFIG['ruby_install_name'] =~ /^jruby$/i
+end
+
+def rbx?
+  RbConfig::CONFIG['ruby_install_name'] =~ /^rbx$/i
+end
+
 # import all the support files
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }
 
 RSpec.configure do |config|
-  #config.order = 'random'
+  config.order = 'random'
 
   config.before(:suite) do
   end
