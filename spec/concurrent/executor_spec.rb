@@ -64,7 +64,23 @@ module Concurrent
 
     context 'execution' do
 
-      it 'waits for #execution_interval seconds before executing the block' do
+      it 'runs the block immediately when the :run_now option is true' do
+        @expected = false
+        @ec = Executor.run('Foo', execution: 500, now: true){ @expected = true }
+        @expected.should be_false
+        sleep(1)
+        @expected.should be_true
+      end
+
+      it 'waits for :execution_interval seconds when the :run_now option is false' do
+        @expected = false
+        @ec = Executor.run('Foo', execution: 0.5, now: false){ @expected = true }
+        @expected.should be_false
+        sleep(1)
+        @expected.should be_true
+      end
+
+      it 'waits for :execution_interval seconds when the :run_now option is not given' do
         @expected = false
         @ec = Executor.run('Foo', execution: 0.5){ @expected = true }
         @expected.should be_false

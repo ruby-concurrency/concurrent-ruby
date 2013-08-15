@@ -62,12 +62,13 @@ module Concurrent
 
       execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
       timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
+      run_now = opts[:now] || opts[:run_now] || false
       logger = opts[:logger] || STDOUT_LOGGER
       block_args = opts[:args] || opts [:arguments] || []
 
       executor = Thread.new(*block_args) do |*args|
+        sleep(execution_interval) unless run_now == true
         loop do
-          sleep(execution_interval)
           break if Thread.current[:stop]
           begin
             worker = Thread.new{ yield(*args) }
@@ -84,6 +85,7 @@ module Concurrent
             worker = nil
           end
           break if Thread.current[:stop]
+          sleep(execution_interval)
         end
       end
 
