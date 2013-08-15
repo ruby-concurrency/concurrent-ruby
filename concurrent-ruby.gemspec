@@ -1,4 +1,4 @@
-$LOAD_PATH << File.expand_path('../lib', __FILE__)
+$:.push File.join(File.dirname(__FILE__), 'lib')
 
 require 'concurrent/version'
 
