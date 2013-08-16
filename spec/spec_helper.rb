@@ -26,6 +26,10 @@ def rbx?
   RbConfig::CONFIG['ruby_install_name'] =~ /^rbx$/i
 end
 
+def windows?
+  (RbConfig::CONFIG['host_os'] =~ /win32/i) || (RbConfig::CONFIG['host_os'] =~ /mingw32/i)
+end
+
 # import all the support files
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }
 

@@ -112,7 +112,7 @@ module Concurrent
 
     context '#stop_on_signal' do
 
-      if mri?
+      if mri? && ! windows?
 
         it 'traps each valid signal' do
           Signal.should_receive(:trap).with('USR1')
@@ -269,7 +269,7 @@ module Concurrent
 
     specify 'synchronous demultiplexing' do
 
-      if mri?
+      if mri? && ! windows?
 
         demux = sync_demux
         reactor = Concurrent::Reactor.new(demux)
@@ -317,7 +317,7 @@ module Concurrent
 
     specify 'asynchronous demultiplexing' do
 
-      unless rbx?
+      if mri? && ! windows?
 
         demux = async_demux
         reactor = Concurrent::Reactor.new(demux)
