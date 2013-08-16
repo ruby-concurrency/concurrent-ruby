@@ -16,4 +16,8 @@ Dir.glob('tasks/**/*.rake').each do|rakefile|
   load rakefile
 end
 
-task :default => [:spec]
+RSpec::Core::RakeTask.new(:travis_spec) do |t|
+  t.rspec_opts = '--tag ~@not_on_travis -fd --color'
+end
+
+task :default => [:travis_spec]

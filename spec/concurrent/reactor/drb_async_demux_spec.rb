@@ -4,7 +4,7 @@ require_relative 'async_demux_shared'
 module Concurrent
   class Reactor
 
-    describe DRbAsyncDemux do
+    describe DRbAsyncDemux, not_on_travis: true do
 
       subject{ DRbAsyncDemux.new }
 

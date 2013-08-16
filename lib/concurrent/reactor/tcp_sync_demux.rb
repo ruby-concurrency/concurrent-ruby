@@ -12,7 +12,7 @@ module Concurrent
 
       DEFAULT_HOST = '127.0.0.1'
       DEFAULT_PORT = 12345
-      DEFAULT_ACL = %[allow all]
+      DEFAULT_ACL = %w{allow all}
 
       attr_reader :host
       attr_reader :port
@@ -29,11 +29,9 @@ module Concurrent
       end
 
       def stop
-        atomic {
-          @socket.close unless @socket.nil?
-          @server.close unless @server.nil?
-          @server = @socket = nil
-        }
+        @socket.close unless @socket.nil?
+        @server.close unless @server.nil?
+        @server = @socket = nil
       end
 
       def stopped?
@@ -64,19 +62,21 @@ module Concurrent
         end
         return ":#{event}\r\n#{args}\r\n"
       end
-      def format_message(*args) self.class.format_message(*args); end
+
+      def format_message(*args)
+        self.class.format_message(*args)
+      end
 
       def self.parse_message(message)
-        return atomic {
-          event = message.first.match /^:?(\w+)/
-          event = event[1].to_s.downcase.to_sym unless event.nil?
-
-          args = message.slice(1, message.length) || []
-
-          [event, args]
-        }
+        event = message.first.match /^:?(\w+)/
+        event = event[1].to_s.downcase.to_sym unless event.nil?
+        args = message.slice(1, message.length) || []
+        return [event, args]
       end
-      def parse_message(*args) self.class.parse_message(*args); end
+
+      def parse_message(*args)
+        self.class.parse_message(*args)
+      end
 
       def self.get_message(socket)
         message = []

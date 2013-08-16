@@ -2,6 +2,13 @@ require 'spec_helper'
 
 share_examples_for 'asynchronous demultiplexer' do
 
+  context '#initialize' do
+
+    it 'sets the initial state to :stopped' do
+      subject.should be_stopped
+    end
+  end
+
   context 'start' do
 
     it 'raises an exception if already started' do
@@ -10,10 +17,6 @@ share_examples_for 'asynchronous demultiplexer' do
       lambda {
         subject.start
       }.should raise_error(StandardError)
-    end
-
-    it 'sets the initial state to :stopped' do
-      subject.should be_stopped
     end
   end
 
