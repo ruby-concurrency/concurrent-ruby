@@ -112,28 +112,31 @@ module Concurrent
 
     context '#stop_on_signal' do
 
-      it 'traps each valid signal' do
-        Signal.should_receive(:trap).with('USR1')
-        Signal.should_receive(:trap).with('USR2')
-        reactor = Reactor.new
-        reactor.stop_on_signal('USR1', 'USR2')
-      end
+      unless rbx?
 
-      it 'raises an exception if given an invalid signal' do
-        if mri?
+        it 'traps each valid signal' do
+          Signal.should_receive(:trap).with('USR1')
+          Signal.should_receive(:trap).with('USR2')
           reactor = Reactor.new
-          lambda {
-            reactor.stop_on_signal('BOGUS')
-          }.should raise_error(ArgumentError)
+          reactor.stop_on_signal('USR1', 'USR2')
         end
-      end
 
-      it 'stops the reactor when it receives a trapped signal' do
-        reactor = Reactor.new
-        reactor.stop_on_signal('USR1')
-        reactor.should_receive(:stop).with(no_args())
-        Process.kill('USR1', Process.pid)
-        sleep(0.1)
+        it 'raises an exception if given an invalid signal' do
+          if mri?
+            reactor = Reactor.new
+            lambda {
+              reactor.stop_on_signal('BOGUS')
+            }.should raise_error(ArgumentError)
+          end
+        end
+
+        it 'stops the reactor when it receives a trapped signal' do
+          reactor = Reactor.new
+          reactor.stop_on_signal('USR1')
+          reactor.should_receive(:stop).with(no_args())
+          Process.kill('USR1', Process.pid)
+          sleep(0.1)
+        end
       end
     end
 
@@ -266,86 +269,92 @@ module Concurrent
 
     specify 'synchronous demultiplexing' do
 
-      demux = sync_demux
-      reactor = Concurrent::Reactor.new(demux)
+      unless rbx?
 
-      reactor.should_not be_running
+        demux = sync_demux
+        reactor = Concurrent::Reactor.new(demux)
 
-      reactor.add_handler(:foo){ 'Foo' }
-      reactor.add_handler(:bar){ 'Bar' }
-      reactor.add_handler(:baz){ 'Baz' }
-      reactor.add_handler(:fubar){ raise StandardError.new('Boom!') }
+        reactor.should_not be_running
 
-      reactor.stop_on_signal('USR1')
+        reactor.add_handler(:foo){ 'Foo' }
+        reactor.add_handler(:bar){ 'Bar' }
+        reactor.add_handler(:baz){ 'Baz' }
+        reactor.add_handler(:fubar){ raise StandardError.new('Boom!') }
 
-      demux.should_receive(:respond).with(:ok, 'Foo')
-      demux.send(:foo)
+        reactor.stop_on_signal('USR1')
 
-      t = Thread.new do
-        reactor.start
+        demux.should_receive(:respond).with(:ok, 'Foo')
+        demux.send(:foo)
+
+        t = Thread.new do
+          reactor.start
+        end
+        t.abort_on_exception = true
+        sleep(0.1)
+
+        reactor.should be_running
+
+        demux.should_receive(:respond).with(:ok, 'Bar')
+        demux.should_receive(:respond).with(:ok, 'Baz')
+        demux.should_receive(:respond).with(:noop, anything())
+        demux.should_receive(:respond).with(:ex, anything())
+
+        demux.send(:bar)
+        demux.send(:baz)
+        demux.send(:bogus)
+        demux.send(:fubar)
+
+        reactor.should be_running
+
+        Process.kill('USR1', Process.pid)
+        sleep(0.1)
+
+        demux.should_not_receive(:respond).with(:foo, anything())
+        demux.send(:foo)
+        reactor.should_not be_running
       end
-      t.abort_on_exception = true
-      sleep(0.1)
-
-      reactor.should be_running
-
-      demux.should_receive(:respond).with(:ok, 'Bar')
-      demux.should_receive(:respond).with(:ok, 'Baz')
-      demux.should_receive(:respond).with(:noop, anything())
-      demux.should_receive(:respond).with(:ex, anything())
-
-      demux.send(:bar)
-      demux.send(:baz)
-      demux.send(:bogus)
-      demux.send(:fubar)
-
-      reactor.should be_running
-
-      Process.kill('USR1', Process.pid)
-      sleep(0.1)
-
-      demux.should_not_receive(:respond).with(:foo, anything())
-      demux.send(:foo)
-      reactor.should_not be_running
     end
 
     specify 'asynchronous demultiplexing' do
 
-      demux = async_demux
-      reactor = Concurrent::Reactor.new(demux)
+      unless rbx?
 
-      reactor.should_not be_running
+        demux = async_demux
+        reactor = Concurrent::Reactor.new(demux)
 
-      reactor.add_handler(:foo){ 'Foo' }
-      reactor.add_handler(:bar){ 'Bar' }
-      reactor.add_handler(:baz){ 'Baz' }
-      reactor.add_handler(:fubar){ raise StandardError.new('Boom!') }
+        reactor.should_not be_running
 
-      reactor.stop_on_signal('USR2')
+        reactor.add_handler(:foo){ 'Foo' }
+        reactor.add_handler(:bar){ 'Bar' }
+        reactor.add_handler(:baz){ 'Baz' }
+        reactor.add_handler(:fubar){ raise StandardError.new('Boom!') }
 
-      demux.send(:foo).first.should eq :stopped
+        reactor.stop_on_signal('USR2')
 
-      t = Thread.new do
-        reactor.start
+        demux.send(:foo).first.should eq :stopped
+
+        t = Thread.new do
+          reactor.start
+        end
+        t.abort_on_exception = true
+        sleep(0.1)
+
+        reactor.should be_running
+
+        demux.send(:foo).should eq [:ok, 'Foo']
+        demux.send(:bar).should eq [:ok, 'Bar']
+        demux.send(:baz).should eq [:ok, 'Baz']
+        demux.send(:bogus).first.should eq :noop
+        demux.send(:fubar).first.should eq :ex
+
+        reactor.should be_running
+
+        Process.kill('USR2', Process.pid)
+        sleep(0.1)
+
+        demux.send(:foo).first.should eq :stopped
+        reactor.should_not be_running
       end
-      t.abort_on_exception = true
-      sleep(0.1)
-
-      reactor.should be_running
-
-      demux.send(:foo).should eq [:ok, 'Foo']
-      demux.send(:bar).should eq [:ok, 'Bar']
-      demux.send(:baz).should eq [:ok, 'Baz']
-      demux.send(:bogus).first.should eq :noop
-      demux.send(:fubar).first.should eq :ex
-
-      reactor.should be_running
-
-      Process.kill('USR2', Process.pid)
-      sleep(0.1)
-
-      demux.send(:foo).first.should eq :stopped
-      reactor.should_not be_running
     end
   end
 end
