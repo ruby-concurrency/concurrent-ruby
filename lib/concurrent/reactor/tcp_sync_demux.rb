@@ -14,6 +14,10 @@ module Concurrent
       DEFAULT_PORT = 12345
       DEFAULT_ACL = %[allow all]
 
+      attr_reader :host
+      attr_reader :port
+      attr_reader :acl
+
       def initialize(opts = {})
         @host = opts[:host] || DEFAULT_HOST
         @port = opts[:port] || DEFAULT_PORT
