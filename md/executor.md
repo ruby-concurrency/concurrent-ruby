@@ -79,6 +79,17 @@ ec.execution_interval #=> 5
 ec.timeout_interval   #=> 5
 ```
 
+By default an `Executor` will wait for `:execution_interval` seconds before running the block.
+To run the block immediately set the `:run_now` option to `true`:
+
+```ruby
+ec = Concurrent::Executor.run('Foo', run_now: true){ puts 'Boom!' }
+#=> 'Boom!''
+#=> ' INFO (2013-08-15 21:35:14) Foo: execution completed successfully'
+ec.status #=> "sleep"
+>> 
+```
+
 A simple example with timeout and task exception:
 
 ```ruby
