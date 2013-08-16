@@ -112,7 +112,7 @@ module Concurrent
 
     context '#stop_on_signal' do
 
-      unless rbx?
+      if mri?
 
         it 'traps each valid signal' do
           Signal.should_receive(:trap).with('USR1')
@@ -269,7 +269,7 @@ module Concurrent
 
     specify 'synchronous demultiplexing' do
 
-      unless rbx?
+      if mri?
 
         demux = sync_demux
         reactor = Concurrent::Reactor.new(demux)
