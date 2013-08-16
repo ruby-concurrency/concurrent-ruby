@@ -13,6 +13,9 @@ module Concurrent
       DEFAULT_URI = 'druby://localhost:12345'
       DEFAULT_ACL = %w[allow all]
 
+      attr_reader :uri
+      attr_reader :acl
+
       def initialize(opts = {})
         @uri = opts[:uri] || DEFAULT_URI
         @acl = ACL.new(opts[:acl] || DEFAULT_ACL)
@@ -24,6 +27,7 @@ module Concurrent
       end
 
       def start
+        raise StandardError.new('already running') unless stopped?
         DRb.install_acl(@acl)
         @service = DRb.start_service(@uri, Demultiplexer.new(@reactor))
       end
