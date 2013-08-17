@@ -5,7 +5,7 @@ require 'concurrent/future'
 require 'concurrent/goroutine'
 require 'concurrent/promise'
 
-if mri?
+if Functional::PLATFORM.mri?
 
   module Concurrent
 

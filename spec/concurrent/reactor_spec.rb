@@ -112,7 +112,7 @@ module Concurrent
 
     context '#stop_on_signal' do
 
-      if mri? && ! windows?
+      if Functional::PLATFORM.mri? && ! Functional::PLATFORM.windows?
 
         it 'traps each valid signal' do
           Signal.should_receive(:trap).with('USR1')
@@ -122,7 +122,7 @@ module Concurrent
         end
 
         it 'raises an exception if given an invalid signal' do
-          if mri?
+          if Functional::PLATFORM.mri?
             reactor = Reactor.new
             lambda {
               reactor.stop_on_signal('BOGUS')
@@ -269,7 +269,7 @@ module Concurrent
 
     specify 'synchronous demultiplexing' do
 
-      if mri? && ! windows?
+      if Functional::PLATFORM.mri? && ! Functional::PLATFORM.windows?
 
         demux = sync_demux
         reactor = Concurrent::Reactor.new(demux)
@@ -317,7 +317,7 @@ module Concurrent
 
     specify 'asynchronous demultiplexing' do
 
-      if mri? && ! windows?
+      if Functional::PLATFORM.mri? && ! Functional::PLATFORM.windows?
 
         demux = async_demux
         reactor = Concurrent::Reactor.new(demux)
