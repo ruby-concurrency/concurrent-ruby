@@ -1,103 +1,130 @@
 require 'spec_helper'
+require 'faker'
+require_relative 'sync_demux_shared'
 
 module Concurrent
   class Reactor
 
     describe TcpSyncDemux, not_on_travis: true do
 
-      subject{ TcpSyncDemux.new }
+      subject do
+        @subject = TcpSyncDemux.new
+      end
 
       after(:each) do
-        subject.stop
+        @subject.stop unless @subject.nil?
       end
 
-      context 'shared' do
+      it_should_behave_like 'synchronous demultiplexer'
 
-        context '#initialize' do
+      context '#initialize' do
 
-          it 'sets the initial state to :stopped' do
-            subject.should be_stopped
-          end
+        it 'uses the given host' do
+          demux = TcpSyncDemux.new(host: 'www.foobar.com')
+          demux.host.should eq 'www.foobar.com'
         end
 
-        context '#start' do
-
-          it 'raises an exception if already started' do
-            subject.start
-
-            lambda {
-              subject.start
-            }.should raise_error(StandardError)
-          end
+        it 'uses the default host when none is given' do
+          demux = TcpSyncDemux.new
+          demux.host.should eq TcpSyncDemux::DEFAULT_HOST
         end
 
-        context '#stop' do
+        it 'uses the given port' do
+          demux = TcpSyncDemux.new(port: 4242)
+          demux.port.should eq 4242
         end
 
-        context '#stopped?' do
-
-          it 'returns true when stopped' do
-            subject.start
-            sleep(0.1)
-            subject.stop
-            sleep(0.1)
-            subject.should be_stopped
-          end
-
-          it 'returns false when running' do
-            subject.start
-            sleep(0.1)
-            subject.should_not be_stopped
-          end
+        it 'uses the default port when none is given' do
+          demux = TcpSyncDemux.new
+          demux.port.should eq TcpSyncDemux::DEFAULT_PORT
         end
 
-        context '#accept' do
-
-          it 'returns a correct EventContext object' do
-          end
+        it 'uses the given ACL' do
+          acl = %w[deny all]
+          ACL.should_receive(:new).with(acl).and_return(acl)
+          demux = TcpSyncDemux.new(acl: acl)
+          demux.acl.should eq acl
         end
 
-        context '#respond' do
-          pending
-        end
-
-        context '#close' do
-          pending
-        end
-
-        context 'event handling' do
+        it 'uses the default ACL when given' do
+          acl = TcpSyncDemux::DEFAULT_ACL
+          ACL.should_receive(:new).with(acl).and_return(acl)
+          demux = TcpSyncDemux.new
+          demux.acl.should eq acl
         end
       end
 
-      context 'not shared' do
+      context '#start' do
 
-        context '#initialize' do
-          pending
+        it 'creates a new TCP server' do
+          TCPServer.should_receive(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
+          subject.start
+        end
+      end
+
+      context '#stop' do
+
+        it 'closes the socket' do
         end
 
-        context '#start' do
-          pending
+        it 'closes the TCP server' do
+        end
+      end
+
+      context '#accept' do
+
+        it 'returns a correct EventContext object' do
         end
 
-        context '#stop' do
-          pending
+        it 'returns nil on exception' do
         end
 
-        context '#stopped?' do
-          pending
+        it 'returns nil if the ACL rejects the client' do
         end
 
-        context '#accept' do
-          pending
+        it 'stops and restarts itself on exception' do
+        end
+      end
+
+      context '#respond' do
+
+        it 'puts a message on the socket' do
+        end
+      end
+
+      context '#close' do
+
+        it 'closes the socket' do
+        end
+      end
+
+      specify 'integration', not_on_travis: true do
+
+        # server
+        demux = Concurrent::Reactor::TcpSyncDemux.new
+        reactor = Concurrent::Reactor.new(demux)
+
+        reactor.add_handler(:echo) {|*args| args.first }
+
+        t = Thread.new { reactor.start }
+        sleep(0.1)
+
+        # client
+        there = TCPSocket.open(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
+
+        10.times do
+          message = Faker::Company.bs
+          there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:echo, message))
+          result, echo = Concurrent::Reactor::TcpSyncDemux.get_message(there)
+          result.should eq :ok
+          echo.first.should eq message
         end
 
-        context '#respond' do
-          pending
-        end
-
-        context '#close' do
-          pending
-        end
+        #cleanup
+        reactor.stop
+        sleep(0.1)
+        Thread.kill(t)
+        sleep(0.1)
       end
     end
   end

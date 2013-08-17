@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'faker'
 require_relative 'async_demux_shared'
 
 module Concurrent
@@ -79,6 +80,33 @@ module Concurrent
           sleep(0.1)
           subject.stop
         end
+      end
+
+      specify 'integration', not_on_travis: true do
+
+        # server
+        demux = Concurrent::Reactor::DRbAsyncDemux.new
+        reactor = Concurrent::Reactor.new(demux)
+
+        reactor.add_handler(:echo) {|message| message }
+
+        t = Thread.new { reactor.start }
+        sleep(0.1)
+
+        # client
+        there = DRbObject.new_with_uri(DRbAsyncDemux::DEFAULT_URI)
+
+        10.times do
+          message = Faker::Company.bs
+          echo = there.echo(message)
+          echo.should eq message
+        end
+
+        # cleanup
+        reactor.stop
+        sleep(0.1)
+        Thread.kill(t)
+        sleep(0.1)
       end
     end
   end

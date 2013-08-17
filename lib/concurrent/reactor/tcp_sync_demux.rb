@@ -12,7 +12,7 @@ module Concurrent
 
       DEFAULT_HOST = '127.0.0.1'
       DEFAULT_PORT = 12345
-      DEFAULT_ACL = %w{allow all}
+      DEFAULT_ACL = %w{deny all allow 127.0.0.1}
 
       attr_reader :host
       attr_reader :port
@@ -44,6 +44,11 @@ module Concurrent
         event, args = get_message(@socket)
         return nil if event.nil?
         return Reactor::EventContext.new(event, args)
+      rescue Exception => ex
+        stop
+        sleep(1)
+        start
+        return nil
       end
 
       def respond(result, message)
