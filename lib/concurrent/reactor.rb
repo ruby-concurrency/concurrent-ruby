@@ -6,8 +6,7 @@ behavior_info(:sync_event_demux,
               stop: 0,
               stopped?: 0,
               accept: 0,
-              respond: 2,
-              close: 0)
+              respond: 2)
 
 behavior_info(:async_event_demux,
               start: 0,

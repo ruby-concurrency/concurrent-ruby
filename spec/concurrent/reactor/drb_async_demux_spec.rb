@@ -89,6 +89,9 @@ module Concurrent
         reactor = Concurrent::Reactor.new(demux)
 
         reactor.add_handler(:echo) {|message| message }
+        reactor.add_handler(:error) {|message| raise StandardError.new(message) }
+        reactor.add_handler(:unknown) {|message| message }
+        reactor.add_handler(:abend) {|message| message }
 
         t = Thread.new { reactor.start }
         sleep(0.1)
@@ -96,11 +99,34 @@ module Concurrent
         # client
         there = DRbObject.new_with_uri(DRbAsyncDemux::DEFAULT_URI)
 
+        # test :ok
         10.times do
           message = Faker::Company.bs
           echo = there.echo(message)
           echo.should eq message
         end
+
+        # test :ex
+        lambda {
+          echo = there.error('error')
+        }.should raise_error(StandardError, 'error')
+
+        # test :noop
+        lambda {
+          echo = there.bogus('bogus')
+        }.should raise_error(NoMethodError)
+
+        # test unknown respone code
+        reactor.should_receive(:handle).with(:unknown).and_return([:unknown, nil])
+        lambda {
+          echo = there.unknown
+        }.should raise_error(DRb::DRbError)
+
+        # test handler error
+        reactor.should_receive(:handle).with(:abend).and_raise(ArgumentError)
+        lambda {
+          echo = there.abend
+        }.should raise_error(DRb::DRbRemoteError)
 
         # cleanup
         reactor.stop

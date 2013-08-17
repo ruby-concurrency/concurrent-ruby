@@ -55,7 +55,11 @@ module Concurrent
         def method_missing(method, *args, &block)
           (class << self; self; end).class_eval do
             define_method(method) do |*args|
-              result = @reactor.handle(method, *args)
+              begin
+                result = @reactor.handle(method, *args)
+              rescue Exception => ex
+                raise DRb::DRbRemoteError.new(ex)
+              end
               case result.first
               when :ok
                 return result.last
@@ -64,7 +68,7 @@ module Concurrent
               when :noop
                 raise NoMethodError.new("undefined method '#{method}' for #{self}")
               else
-                raise DRb::DRbUnknownError.new("unexpected error when calling method '#{method}'")
+                raise DRb::DRbError.new("unexpected response from method '#{method}'")
               end
             end
           end

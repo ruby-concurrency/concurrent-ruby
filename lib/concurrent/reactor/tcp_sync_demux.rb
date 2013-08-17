@@ -56,11 +56,6 @@ module Concurrent
         @socket.puts(format_message(result, message))
       end
 
-      def close
-        @socket.close
-        @socket = nil
-      end
-
       def self.format_message(event, *args)
         args = args.reduce('') do |memo, arg|
           memo << "#{arg}\r\n"

@@ -51,7 +51,4 @@ share_examples_for 'synchronous demultiplexer' do
 
   context '#respond' do
   end
-
-  context '#close' do
-  end
 end
