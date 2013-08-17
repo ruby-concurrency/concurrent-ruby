@@ -25,7 +25,7 @@ module Concurrent
       Promise.thread_pool = FixedThreadPool.new(1)
     end
 
-    it_should_behave_like Obligation
+    it_should_behave_like Concurrent::Obligation
 
     context 'behavior' do
 
