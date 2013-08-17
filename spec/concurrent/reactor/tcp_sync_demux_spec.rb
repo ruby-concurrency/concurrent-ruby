@@ -105,6 +105,9 @@ module Concurrent
         reactor = Concurrent::Reactor.new(demux)
 
         reactor.add_handler(:echo) {|*args| args.first }
+        reactor.add_handler(:error) {|*args| raise StandardError.new(args.first) }
+        reactor.add_handler(:unknown) {|*args| args.first }
+        reactor.add_handler(:abend) {|*args| args.first }
 
         t = Thread.new { reactor.start }
         sleep(0.1)
@@ -112,6 +115,7 @@ module Concurrent
         # client
         there = TCPSocket.open(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
 
+        # test :ok
         10.times do
           message = Faker::Company.bs
           there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:echo, message))
@@ -119,6 +123,28 @@ module Concurrent
           result.should eq :ok
           echo.first.should eq message
         end
+
+        # test :ex
+        there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:error, 'error'))
+        result, echo = Concurrent::Reactor::TcpSyncDemux.get_message(there)
+        result.should eq :ex
+        echo.first.should eq 'error'
+
+        # test :noop
+        there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:bogus, 'bogus'))
+        result, echo = Concurrent::Reactor::TcpSyncDemux.get_message(there)
+        result.should eq :noop
+        echo.first.should =~ /bogus/
+
+        # test handler error
+        ex = ArgumentError.new('abend')
+        ec = Reactor::EventContext.new(:abend, [])
+        Reactor::EventContext.should_receive(:new).with(:abend, []).and_return(ec)
+        reactor.should_receive(:handle_event).with(ec).and_raise(ex)
+        there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:abend))
+        result, echo = Concurrent::Reactor::TcpSyncDemux.get_message(there)
+        result.should eq :abend
+        echo.first.should eq 'abend'
 
         #cleanup
         reactor.stop
