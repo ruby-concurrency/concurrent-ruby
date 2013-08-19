@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'faker'
-require_relative 'sync_demux_shared'
 
 module Concurrent
   class Reactor
@@ -15,9 +14,19 @@ module Concurrent
         @subject.stop unless @subject.nil?
       end
 
-      it_should_behave_like 'synchronous demultiplexer'
-
       context '#initialize' do
+
+        it 'sets the initial state to :stopped' do
+          subject.should be_stopped
+        end
+
+        it 'raises an exception if already started' do
+          subject.start
+
+          lambda {
+            subject.start
+          }.should raise_error(StandardError)
+        end
 
         it 'uses the given host' do
           demux = TcpSyncDemux.new(host: 'www.foobar.com')
@@ -79,6 +88,23 @@ module Concurrent
         end
 
         it 'closes the TCP server' do
+        end
+      end
+
+      context '#stopped?' do
+
+        it 'returns true when stopped' do
+          subject.start
+          sleep(0.1)
+          subject.stop
+          sleep(0.1)
+          subject.should be_stopped
+        end
+
+        it 'returns false when running' do
+          subject.start
+          sleep(0.1)
+          subject.should_not be_stopped
         end
       end
 
