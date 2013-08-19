@@ -17,14 +17,14 @@ module Concurrent
       context '#initialize' do
 
         it 'sets the initial state to :stopped' do
-          subject.should be_stopped
+          subject.should_not be_running
         end
 
-        it 'raises an exception if already started' do
-          subject.start
+        it 'raises an exception if already runed' do
+          subject.run
 
           lambda {
-            subject.start
+            subject.run
           }.should raise_error(StandardError)
         end
 
@@ -63,22 +63,22 @@ module Concurrent
         end
       end
 
-      context '#start' do
+      context '#run' do
 
         it 'creates a new TCP server' do
           TCPServer.should_receive(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
-          subject.start
+          subject.run
         end
 
         it 'returns true on success' do
           TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
-          subject.start.should be_true
+          subject.run.should be_true
         end
 
         it 'returns false on failure' do
           TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT) \
             .and_raise(StandardError)
-          subject.start.should be_false
+          subject.run.should be_false
         end
       end
 
@@ -91,20 +91,20 @@ module Concurrent
         end
       end
 
-      context '#stopped?' do
+      context '#running?' do
 
-        it 'returns true when stopped' do
-          subject.start
+        it 'returns false when stopped' do
+          subject.run
           sleep(0.1)
           subject.stop
           sleep(0.1)
-          subject.should be_stopped
+          subject.should_not be_running
         end
 
-        it 'returns false when running' do
-          subject.start
+        it 'returns true when running' do
+          subject.run
           sleep(0.1)
-          subject.should_not be_stopped
+          subject.should be_running
         end
       end
 
@@ -119,7 +119,7 @@ module Concurrent
         it 'returns nil if the ACL rejects the client' do
         end
 
-        it 'stops and restarts itself on exception' do
+        it 'stops and reruns itself on exception' do
         end
       end
 
@@ -140,7 +140,7 @@ module Concurrent
         reactor.add_handler(:unknown) {|*args| args.first }
         reactor.add_handler(:abend) {|*args| args.first }
 
-        t = Thread.new { reactor.start }
+        t = Thread.new { reactor.run }
         sleep(0.1)
 
         # client

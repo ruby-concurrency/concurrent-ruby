@@ -24,8 +24,8 @@ module Concurrent
         @acl = ACL.new(opts[:acl] || DEFAULT_ACL)
       end
 
-      def start
-        raise StandardError.new('already running') unless stopped?
+      def run
+        raise StandardError.new('already running') if running?
         begin
           @server = TCPServer.new(@host, @port)
           return true
@@ -43,11 +43,11 @@ module Concurrent
       def reset
         stop
         sleep(1)
-        start
+        run
       end
 
-      def stopped?
-        return @server.nil?
+      def running?
+        return ! @server.nil?
       end
 
       def accept

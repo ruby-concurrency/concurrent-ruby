@@ -26,8 +26,8 @@ module Concurrent
         @reactor = reactor
       end
 
-      def start
-        raise StandardError.new('already running') unless stopped?
+      def run
+        raise StandardError.new('already running') if running?
         DRb.install_acl(@acl)
         @service = DRb.start_service(@uri, Demultiplexer.new(@reactor))
       end
@@ -36,8 +36,8 @@ module Concurrent
         @service = DRb.stop_service
       end
 
-      def stopped?
-        return @service.nil?
+      def running?
+        return ! @service.nil?
       end
 
       private

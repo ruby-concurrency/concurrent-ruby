@@ -20,7 +20,7 @@ module Concurrent
       context '#initialize' do
 
         it 'sets the initial state to :stopped' do
-          subject.should be_stopped
+          subject.should_not be_running
         end
 
         it 'uses the given URI' do
@@ -49,13 +49,13 @@ module Concurrent
         end
       end
 
-      context '#start' do
+      context '#run' do
 
-        it 'raises an exception if already started' do
-          subject.start
+        it 'raises an exception if already runed' do
+          subject.run
 
           lambda {
-            subject.start
+            subject.run
           }.should raise_error(StandardError)
         end
 
@@ -65,17 +65,17 @@ module Concurrent
           DRb.should_receive(:install_acl).once.with(acl)
           demux = DRbAsyncDemux.new(acl: acl)
           reactor = Concurrent::Reactor.new(demux)
-          Thread.new{ reactor.start }
+          Thread.new{ reactor.run }
           sleep(0.1)
           reactor.stop
         end
 
-        it 'starts DRb' do
+        it 'runs DRb' do
           uri = DRbAsyncDemux::DEFAULT_URI
           DRb.should_receive(:start_service).with(uri, anything())
           demux = DRbAsyncDemux.new(uri: uri)
           reactor = Concurrent::Reactor.new(demux)
-          Thread.new{ reactor.start }
+          Thread.new{ reactor.run }
           sleep(0.1)
           reactor.stop
         end
@@ -85,26 +85,26 @@ module Concurrent
 
         it 'stops DRb' do
           DRb.should_receive(:stop_service).at_least(1).times
-          subject.start
+          subject.run
           sleep(0.1)
           subject.stop
         end
       end
 
-      context '#stopped?' do
+      context '#running?' do
 
-        it 'returns true when stopped' do
-          subject.start
+        it 'returns false when stopped' do
+          subject.run
           sleep(0.1)
           subject.stop
           sleep(0.1)
-          subject.should be_stopped
+          subject.should_not be_running
         end
 
-        it 'returns false when running' do
-          subject.start
+        it 'returns true when running' do
+          subject.run
           sleep(0.1)
-          subject.should_not be_stopped
+          subject.should be_running
         end
       end
 
@@ -129,7 +129,7 @@ module Concurrent
           reactor.add_handler(:foo){ nil }
           reactor.should_receive(:handle).with(:foo, 1,2,3).and_return([:ok, nil])
 
-          Thread.new { reactor.start }
+          Thread.new { reactor.run }
           sleep(0.1)
 
           post_event(demux, :foo, 1, 2, 3)
@@ -150,7 +150,7 @@ module Concurrent
         reactor.add_handler(:unknown) {|message| message }
         reactor.add_handler(:abend) {|message| message }
 
-        t = Thread.new { reactor.start }
+        t = Thread.new { reactor.run }
         sleep(0.1)
 
         # client

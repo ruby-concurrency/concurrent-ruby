@@ -2,16 +2,16 @@ require 'thread'
 require 'functional'
 
 behavior_info(:sync_event_demux,
-              start: 0,
+              run: 0,
               stop: 0,
-              stopped?: 0,
+              running?: 0,
               accept: 0,
               respond: 2)
 
 behavior_info(:async_event_demux,
-              start: 0,
+              run: 0,
               stop: 0,
-              stopped?: 0,
+              running?: 0,
               set_reactor: 1)
 
 behavior_info(:demux_reactor,
@@ -77,11 +77,11 @@ module Concurrent
       return context.callback.pop
     end
 
-    def start
+    def run
       raise StandardError.new('already running') if self.running?
       @sync ? (@running = true; run_sync) : (@running = true; run_async)
     end
-    alias_method :run, :start
+    alias_method :run, :run
 
     def stop
       return true unless self.running?
@@ -125,10 +125,10 @@ module Concurrent
     end
 
     def run_sync
-      @demux.start
+      @demux.run
 
       loop do
-        break if @demux.stopped?
+        break unless @demux.running?
         context = @demux.accept
         begin
           if context.nil?
@@ -148,7 +148,7 @@ module Concurrent
     end
 
     def run_async
-      @demux.start unless @demux.nil?
+      @demux.run unless @demux.nil?
 
       loop do
         context = @queue.pop
