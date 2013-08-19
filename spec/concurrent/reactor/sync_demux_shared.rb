@@ -18,6 +18,12 @@ share_examples_for 'synchronous demultiplexer' do
         subject.start
       }.should raise_error(StandardError)
     end
+
+    it 'returns true on success' do
+    end
+
+    it 'returns false on failure' do
+    end
   end
 
   context '#stop' do

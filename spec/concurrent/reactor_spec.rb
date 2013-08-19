@@ -25,7 +25,6 @@ module Concurrent
           end
         end
         def respond(result, message) return [result, message]; end
-        def close() nil; end
         def send(event) @queue.push(event) end
       }.new
     end
@@ -39,6 +38,10 @@ module Concurrent
         def set_reactor(reactor) @reactor = reactor; end
         def send(event) @reactor.handle(event); end
       }.new
+    end
+
+    after(:each) do
+      Thread.kill(@thread) unless @thread.nil?
     end
 
     context '#initialize' do
@@ -58,7 +61,7 @@ module Concurrent
 
       it 'returns true when the reactor is running' do
         reactor = Reactor.new
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         reactor.should be_running
         reactor.stop
@@ -66,7 +69,7 @@ module Concurrent
 
       it 'returns true when the reactor is stopped' do
         reactor = Reactor.new
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         reactor.stop
         sleep(0.1)
@@ -157,7 +160,7 @@ module Concurrent
       it 'returns :ok and the block result on success' do
         reactor = Reactor.new
         reactor.add_handler(:event){ 10 }
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         result = reactor.handle(:event)
         result.first.should eq :ok
@@ -168,7 +171,7 @@ module Concurrent
       it 'returns :ex and the exception on failure' do
         reactor = Reactor.new
         reactor.add_handler(:event){ raise StandardError }
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         result = reactor.handle(:event)
         result.first.should eq :ex
@@ -178,9 +181,10 @@ module Concurrent
 
       it 'returns :noop when there is no handler' do
         reactor = Reactor.new
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         result = reactor.handle(:event)
+        sleep(0.1)
         result.first.should eq :noop
         reactor.stop
       end
@@ -188,7 +192,7 @@ module Concurrent
       it 'triggers handlers added after the reactor is started' do
         @expected = false
         reactor = Reactor.new
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         reactor.add_handler(:event){ @expected = true }
         reactor.handle(:event)
@@ -201,7 +205,7 @@ module Concurrent
         reactor = Reactor.new
         reactor.add_handler(:event){ @expected = true }
         reactor.remove_handler(:event)
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         reactor.handle(:event)
         @expected.should be_false
@@ -213,7 +217,7 @@ module Concurrent
 
       it 'raises an exception if the reactor is already running' do
         reactor = Reactor.new
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         lambda {
           reactor.start
@@ -224,14 +228,14 @@ module Concurrent
       it 'starts the reactor if it is not running' do
         reactor = Reactor.new(async_demux)
         reactor.should_receive(:run_async).with(no_args())
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         reactor.should be_running
         reactor.stop
 
         reactor = Reactor.new(sync_demux)
         reactor.should_receive(:run_sync).with(no_args())
-        Thread.new{ reactor.start }
+        @thread = Thread.new{ reactor.start }
         sleep(0.1)
         reactor.should be_running
         reactor.stop
@@ -247,21 +251,21 @@ module Concurrent
 
       it 'stops the reactor when running and synchronous' do
         reactor = Reactor.new(sync_demux)
-        Thread.new{ sleep(0.1); reactor.stop }
+        @thread = Thread.new{ sleep(0.1); reactor.stop }
         Thread.pass
         reactor.start
       end
 
       it 'stops the reactor when running and asynchronous' do
         reactor = Reactor.new(async_demux)
-        Thread.new{ sleep(0.1); reactor.stop }
+        @thread = Thread.new{ sleep(0.1); reactor.stop }
         Thread.pass
         reactor.start
       end
 
       it 'stops the reactor when running without a demux' do
         reactor = Reactor.new
-        Thread.new{ sleep(0.1); reactor.stop }
+        @thread = Thread.new{ sleep(0.1); reactor.stop }
         Thread.pass
         reactor.start
       end
@@ -286,10 +290,10 @@ module Concurrent
         demux.should_receive(:respond).with(:ok, 'Foo')
         demux.send(:foo)
 
-        t = Thread.new do
+        @thread = Thread.new do
           reactor.start
         end
-        t.abort_on_exception = true
+        @thread.abort_on_exception = true
         sleep(0.1)
 
         reactor.should be_running
@@ -333,10 +337,10 @@ module Concurrent
 
         demux.send(:foo).first.should eq :stopped
 
-        t = Thread.new do
+        @thread = Thread.new do
           reactor.start
         end
-        t.abort_on_exception = true
+        @thread.abort_on_exception = true
         sleep(0.1)
 
         reactor.should be_running

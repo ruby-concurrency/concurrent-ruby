@@ -60,6 +60,17 @@ module Concurrent
           TCPServer.should_receive(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
           subject.start
         end
+
+        it 'returns true on success' do
+          TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
+          subject.start.should be_true
+        end
+
+        it 'returns false on failure' do
+          TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT) \
+            .and_raise(StandardError)
+          subject.start.should be_false
+        end
       end
 
       context '#stop' do
@@ -89,12 +100,6 @@ module Concurrent
       context '#respond' do
 
         it 'puts a message on the socket' do
-        end
-      end
-
-      context '#close' do
-
-        it 'closes the socket' do
         end
       end
 

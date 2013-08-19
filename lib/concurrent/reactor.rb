@@ -103,7 +103,7 @@ module Concurrent
       }
 
       if handler.nil?
-         response = [:noop, "'#{context.event}' handler not found"]
+         response = yield(:noop, "'#{context.event}' handler not found")
       else
         begin
           result = handler.call(*context.args)
@@ -132,7 +132,7 @@ module Concurrent
         context = @demux.accept
         begin
           if context.nil?
-            @demux.close
+            @demux.stop
           else
             response = handle_event(context) do |result, message|
               [result, message]

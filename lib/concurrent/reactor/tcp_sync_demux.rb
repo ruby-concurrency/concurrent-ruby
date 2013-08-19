@@ -25,13 +25,25 @@ module Concurrent
       end
 
       def start
-        @server = TCPServer.new(@host, @port)
+        raise StandardError.new('already running') unless stopped?
+        begin
+          @server = TCPServer.new(@host, @port)
+          return true
+        rescue Exception => ex
+          return false
+        end
       end
 
       def stop
         @socket.close unless @socket.nil?
         @server.close unless @server.nil?
         @server = @socket = nil
+      end
+
+      def reset
+        stop
+        sleep(1)
+        start
       end
 
       def stopped?
@@ -45,15 +57,14 @@ module Concurrent
         return nil if event.nil?
         return Reactor::EventContext.new(event, args)
       rescue Exception => ex
-        stop
-        sleep(1)
-        start
-        return nil
+        reset
       end
 
       def respond(result, message)
         return nil if @socket.nil?
         @socket.puts(format_message(result, message))
+      rescue Exception => ex
+        reset
       end
 
       def self.format_message(event, *args)

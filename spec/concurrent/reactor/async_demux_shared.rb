@@ -9,7 +9,7 @@ share_examples_for 'asynchronous demultiplexer' do
     end
   end
 
-  context 'start' do
+  context '#start' do
 
     it 'raises an exception if already started' do
       subject.start
@@ -33,10 +33,10 @@ share_examples_for 'asynchronous demultiplexer' do
     end
   end
 
-  context 'stop' do
+  context '#stop' do
   end
 
-  context 'stopped?' do
+  context '#stopped?' do
 
     it 'returns true when stopped' do
       subject.start
