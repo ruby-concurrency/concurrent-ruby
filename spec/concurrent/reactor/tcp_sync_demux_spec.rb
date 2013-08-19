@@ -7,7 +7,7 @@ module Concurrent
     describe TcpSyncDemux, not_on_travis: true do
 
       subject do
-        @subject = TcpSyncDemux.new
+        @subject = TcpSyncDemux.new(port: 2000 + rand(8000))
       end
 
       after(:each) do
@@ -31,21 +31,25 @@ module Concurrent
         it 'uses the given host' do
           demux = TcpSyncDemux.new(host: 'www.foobar.com')
           demux.host.should eq 'www.foobar.com'
+          demux.stop
         end
 
         it 'uses the default host when none is given' do
           demux = TcpSyncDemux.new
           demux.host.should eq TcpSyncDemux::DEFAULT_HOST
+          demux.stop
         end
 
         it 'uses the given port' do
           demux = TcpSyncDemux.new(port: 4242)
           demux.port.should eq 4242
+          demux.stop
         end
 
         it 'uses the default port when none is given' do
           demux = TcpSyncDemux.new
           demux.port.should eq TcpSyncDemux::DEFAULT_PORT
+          demux.stop
         end
 
         it 'uses the given ACL' do
@@ -53,6 +57,7 @@ module Concurrent
           ACL.should_receive(:new).with(acl).and_return(acl)
           demux = TcpSyncDemux.new(acl: acl)
           demux.acl.should eq acl
+          demux.stop
         end
 
         it 'uses the default ACL when given' do
@@ -60,34 +65,78 @@ module Concurrent
           ACL.should_receive(:new).with(acl).and_return(acl)
           demux = TcpSyncDemux.new
           demux.acl.should eq acl
+          demux.stop
         end
       end
 
       context '#run' do
 
         it 'creates a new TCP server' do
-          TCPServer.should_receive(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
+          TCPServer.should_receive(:new).with(TcpSyncDemux::DEFAULT_HOST, anything())
           subject.run
         end
 
         it 'returns true on success' do
-          TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT)
+          TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, anything())
           subject.run.should be_true
         end
 
         it 'returns false on failure' do
-          TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, TcpSyncDemux::DEFAULT_PORT) \
+          TCPServer.stub(:new).with(TcpSyncDemux::DEFAULT_HOST, anything()) \
             .and_raise(StandardError)
           subject.run.should be_false
+        end
+
+        it 'raises an exception when already running' do
+          subject.run
+          lambda {
+            subject.run
+          }.should raise_error
         end
       end
 
       context '#stop' do
 
+        let(:server){ double('tcp server') }
+        let(:socket){ double('tcp socket') }
+
+        before(:each) do
+          socket.stub(:close).with(no_args())
+          server.stub(:close).with(no_args())
+          subject.run
+          subject.instance_variable_set(:@socket, socket)
+          subject.instance_variable_set(:@server, server)
+        end
+
+        it 'immediately returns true when not running' do
+          socket.should_not_receive(:close)
+          server.should_not_receive(:close)
+          demux = TcpSyncDemux.new
+          demux.stop.should be_true
+        end
+
         it 'closes the socket' do
+          socket.should_receive(:close).with(no_args())
+          subject.stop
         end
 
         it 'closes the TCP server' do
+          server.should_receive(:close).with(no_args())
+          subject.stop
+        end
+
+        it 'is supresses socket close exceptions' do
+          socket.should_receive(:close).and_raise(SocketError)
+          lambda {
+            subject.stop
+          }.should_not raise_error
+        end
+
+        it 'supresses server close exceptions' do
+          server.should_receive(:close).and_raise(SocketError)
+          lambda {
+            subject.stop
+          }.should_not raise_error
         end
       end
 
@@ -108,24 +157,144 @@ module Concurrent
         end
       end
 
+      context '#reset' do
+
+        it 'closes the demux' do
+          subject.should_receive(:run).exactly(2).times.and_return(true)
+          subject.run
+          sleep(0.1)
+          subject.reset
+        end
+
+        it 'starts the demux' do
+          # add one call to #stop for the :after clause
+          subject.should_receive(:stop).exactly(2).times.and_return(true)
+          sleep(0.1)
+          subject.reset
+        end
+      end
+
       context '#accept' do
 
+        let!(:event){ :echo }
+        let!(:message){ 'hello world' }
+
+        def setup_demux
+          @demux = TcpSyncDemux.new(host: 'localhost', port: 5555, acl: %w[allow all])
+          @demux.run
+        end
+
+        def send_event_message
+          there = TCPSocket.open('localhost', 5555)
+          @thread = Thread.new do
+            there.puts(@demux.format_message(event, message))
+          end
+
+          @expected = nil
+          Timeout::timeout(2) do
+            @expected = @demux.accept
+          end
+          @thread.join(1)
+        end
+
+        after(:each) do
+          @demux.stop unless @demux.nil?
+          Thread.kill(@thread) unless @thread.nil?
+          @expected = @demux = @thread = nil
+        end
+
         it 'returns a correct EventContext object' do
+          setup_demux
+          send_event_message
+          @expected.should be_a(EventContext)
+          @expected.event.should eq :echo
+          @expected.args.should eq ['hello world']
+          @expected.callback.should be_nil
         end
 
         it 'returns nil on exception' do
+          setup_demux
+          @demux.should_receive(:get_message).with(any_args()).and_raise(StandardError)
+          send_event_message
+          @expected.should be_nil
         end
 
         it 'returns nil if the ACL rejects the client' do
+          acl = double('acl')
+          acl.should_receive(:allow_socket?).with(anything()).and_return(false)
+          ACL.should_receive(:new).with(anything()).and_return(acl)
+          setup_demux
+          send_event_message
+          @expected.should be_nil
         end
 
-        it 'stops and reruns itself on exception' do
+        it 'resets the demux on exception' do
+          setup_demux
+          @demux.should_receive(:get_message).with(any_args()).and_raise(StandardError)
+          @demux.should_receive(:reset).with(no_args())
+          send_event_message
         end
       end
 
       context '#respond' do
 
+        it 'returns nil if the socket is nil' do
+          subject.stop
+          subject.respond(:ok, 'foo').should be_nil
+        end
+
         it 'puts a message on the socket' do
+          socket = double('tcp socket')
+          socket.should_receive(:puts).with("ok\r\necho\r\n\r\n")
+          subject.instance_variable_set(:@socket, socket)
+          subject.respond(:ok, 'echo')
+        end
+
+        it 'resets the demux on exception' do
+          socket = double('tcp socket')
+          socket.should_receive(:puts).and_raise(SocketError)
+          subject.instance_variable_set(:@socket, socket)
+          subject.should_receive(:reset)
+          subject.respond(:ok, 'echo')
+        end
+      end
+
+      context '#format_message' do
+
+        it 'raises an exception when the event is nil' do
+          lambda {
+            subject.format_message(nil)
+          }.should raise_error(ArgumentError)
+
+          lambda {
+            TcpSyncDemux.format_message(nil)
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception when the event is an empty string' do
+          lambda {
+            subject.format_message('  ')
+          }.should raise_error(ArgumentError)
+
+          lambda {
+            TcpSyncDemux.format_message('   ')
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'creates a message with no arguments' do
+          message = subject.format_message(:echo)
+          message.should eq "echo\r\n\r\n"
+
+          message = TcpSyncDemux.format_message('echo')
+          message.should eq "echo\r\n\r\n"
+        end
+
+        it 'creates a message with arguments' do
+          message = subject.format_message(:echo, 'hello', 'world')
+          message.should eq "echo\r\nhello\r\nworld\r\n\r\n"
+
+          message = TcpSyncDemux.format_message('echo', 'hello', 'world')
+          message.should eq "echo\r\nhello\r\nworld\r\n\r\n"
         end
       end
 

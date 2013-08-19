@@ -35,9 +35,20 @@ module Concurrent
       end
 
       def stop
-        @socket.close unless @socket.nil?
-        @server.close unless @server.nil?
+        begin
+          @socket.close unless @socket.nil?
+        rescue Exception => ex
+          # suppress
+        end
+
+        begin
+          @server.close unless @server.nil?
+        rescue Exception => ex
+          # suppress
+        end
+
         @server = @socket = nil
+        return true
       end
 
       def reset
@@ -58,6 +69,7 @@ module Concurrent
         return Reactor::EventContext.new(event, args)
       rescue Exception => ex
         reset
+        return nil
       end
 
       def respond(result, message)
@@ -68,10 +80,12 @@ module Concurrent
       end
 
       def self.format_message(event, *args)
+        event = event.to_s.strip
+        raise ArgumentError.new('nil or empty event') if event.empty?
         args = args.reduce('') do |memo, arg|
           memo << "#{arg}\r\n"
         end
-        return ":#{event}\r\n#{args}\r\n"
+        return "#{event}\r\n#{args}\r\n"
       end
 
       def format_message(*args)
