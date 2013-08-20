@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.date        = Time.now.strftime('%Y-%m-%d')
 
   s.description = <<-EOF
-    Modern concurrency tools including agents, futures, promises, thread pools, reactors, and more.
+    Modern concurrency tools including agents, futures, promises, thread pools, reactors, supervisors, and more.
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   EOF
 

@@ -1,6 +1,7 @@
 # Concurrent Ruby [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
 
-Erlang, Clojure, and Go inspired concurrent programming tools for Ruby.
+Modern concurrency tools including agents, futures, promises, thread pools, reactors, supervisors, and more.
+Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
 
 ## Introduction
 
