@@ -93,9 +93,12 @@ module Concurrent
       end
 
       def self.parse_message(message)
-        event = message.first.match /^:?(\w+)/
+        message = message.lines.map(&:chomp) if message.is_a?(String)
+        return [nil, []] if message.nil?
+        event = message.first.match(/^:?(\w+)/)
         event = event[1].to_s.downcase.to_sym unless event.nil?
         args = message.slice(1, message.length) || []
+        args.pop if args.last.nil? || args.last.empty?
         return [event, args]
       end
 

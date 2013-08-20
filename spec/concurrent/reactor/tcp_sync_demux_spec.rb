@@ -298,6 +298,59 @@ module Concurrent
         end
       end
 
+      context '#parse_message' do
+
+        it 'accepts the message as a string' do
+          message = subject.parse_message("echo\r\nhello world\r\n\r\n")
+          message.should_not eq [nil, nil]
+        end
+
+        it 'accepts the message as an array of lines' do
+          message = subject.parse_message(%w[echo hello world])
+          message.should_not eq [nil, nil]
+        end
+
+        it 'recognizes an event name beginning with a colon' do
+          message = subject.parse_message(":echo\r\nhello world\r\n\r\n")
+          message.first.should eq :echo
+
+          message = TcpSyncDemux.parse_message(%w[:echo hello world])
+          message.first.should eq :echo
+        end
+
+        it 'recognizes an event name without a beginning colon' do
+          message = subject.parse_message(%w[echo hello world])
+          message.first.should eq :echo
+
+          message = TcpSyncDemux.parse_message("echo\r\nhello world\r\n\r\n")
+          message.first.should eq :echo
+        end
+
+        it 'parses a message without arguments' do
+          message = subject.parse_message("echo\r\n\r\n")
+          message.first.should eq :echo
+
+          message = TcpSyncDemux.parse_message(%w[echo])
+          message.first.should eq :echo
+        end
+
+        it 'parses a message with arguments' do
+          message = subject.parse_message(%w[echo hello world])
+          message.last.should eq %w[hello world]
+
+          message = TcpSyncDemux.parse_message("echo\r\nhello world\r\n\r\n")
+          message.last.should eq ['hello world']
+        end
+
+        it 'returns nil for a malformed message' do
+          message = subject.parse_message(nil)
+          message.should eq [nil, []]
+
+          message = subject.parse_message('    ')
+          message.should eq [nil, []]
+        end
+      end
+
       specify 'integration', not_on_travis: true do
 
         # server
