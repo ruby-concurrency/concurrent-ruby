@@ -1,8 +1,12 @@
 require 'spec_helper'
+require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
 
   describe Agent do
+
+    let!(:thread_pool_user){ Agent }
+    it_should_behave_like Concurrent::UsesGlobalThreadPool
 
     subject { Agent.new(0) }
 

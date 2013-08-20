@@ -8,9 +8,17 @@ module Concurrent
 
     def self.included(base)
       class << base
-        attr_accessor :thread_pool
+        def thread_pool
+          @thread_pool || $GLOBAL_THREAD_POOL
+        end
+        def thread_pool=(pool)
+          if pool == $GLOBAL_THREAD_POOL
+            @thread_pool = nil
+          else
+            @thread_pool = pool
+          end
+        end
       end
-      base.thread_pool = $GLOBAL_THREAD_POOL
     end
   end
 end

@@ -253,16 +253,16 @@ module Concurrent
         workers = (1..3).collect{ worker_class.new }
         workers.each{|worker| s3.add_worker(worker)}
         # must stub AFTER adding or else #add_worker will reject
-        workers.each{|worker| worker.should_receive(:run).with(no_args())}
-        workers.each{|worker| worker.should_receive(:stop).with(no_args())}
+        workers.each{|worker| worker.should_receive(:run).at_least(1).times.with(no_args())}
+        workers.each{|worker| worker.should_receive(:stop).at_least(1).times.with(no_args())}
 
         s1.add_worker(s2)
         s2.add_worker(s3)
 
         s1.run!
-        sleep(0.1)
+        sleep(0.2)
         s1.stop
-        sleep(0.1)
+        sleep(0.2)
       end
     end
   end

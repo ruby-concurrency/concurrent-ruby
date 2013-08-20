@@ -1,9 +1,13 @@
 require 'spec_helper'
 require_relative 'obligation_shared'
+require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
 
   describe Promise do
+
+    let!(:thread_pool_user){ Promise }
+    it_should_behave_like Concurrent::UsesGlobalThreadPool
 
     let!(:fulfilled_value) { 10 }
     let!(:rejected_reason) { StandardError.new('mojo jojo') }

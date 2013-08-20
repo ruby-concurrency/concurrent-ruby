@@ -1,8 +1,12 @@
 require 'spec_helper'
+require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
 
   describe Defer do
+
+    let!(:thread_pool_user){ Defer }
+    it_should_behave_like Concurrent::UsesGlobalThreadPool
 
     before(:each) do
       Defer.thread_pool = FixedThreadPool.new(1)
