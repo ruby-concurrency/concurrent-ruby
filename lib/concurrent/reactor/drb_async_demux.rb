@@ -2,6 +2,7 @@ require 'drb/drb'
 require 'drb/acl'
 require 'functional'
 require 'concurrent/reactor'
+require 'concurrent/supervisor'
 
 module Concurrent
   class Reactor
@@ -9,6 +10,7 @@ module Concurrent
     class DRbAsyncDemux
 
       behavior(:async_event_demux)
+      behavior(:runnable)
 
       DEFAULT_URI = 'druby://localhost:12345'
       DEFAULT_ACL = %w{deny all allow 127.0.0.1}

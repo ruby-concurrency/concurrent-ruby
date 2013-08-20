@@ -1,5 +1,6 @@
 require 'thread'
 require 'functional'
+require 'concurrent/supervisor'
 
 behavior_info(:sync_event_demux,
               run: 0,
@@ -22,6 +23,7 @@ module Concurrent
   class Reactor
 
     behavior(:demux_reactor)
+    behavior(:runnable)
 
     RESERVED_EVENTS = [ :stop ]
 

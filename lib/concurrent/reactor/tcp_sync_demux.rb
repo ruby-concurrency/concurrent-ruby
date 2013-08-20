@@ -2,6 +2,7 @@ require 'socket'
 require 'drb/acl'
 require 'functional'
 require 'concurrent/reactor'
+require 'concurrent/supervisor'
 
 module Concurrent
   class Reactor
@@ -9,6 +10,7 @@ module Concurrent
     class TcpSyncDemux
 
       behavior(:sync_event_demux)
+      behavior(:runnable)
 
       DEFAULT_HOST = '127.0.0.1'
       DEFAULT_PORT = 12345
