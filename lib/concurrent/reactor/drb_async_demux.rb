@@ -10,7 +10,6 @@ module Concurrent
     class DRbAsyncDemux
 
       behavior(:async_event_demux)
-      behavior(:runnable)
 
       DEFAULT_URI = 'druby://localhost:12345'
       DEFAULT_ACL = %w{deny all allow 127.0.0.1}

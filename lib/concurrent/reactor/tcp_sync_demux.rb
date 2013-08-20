@@ -10,7 +10,6 @@ module Concurrent
     class TcpSyncDemux
 
       behavior(:sync_event_demux)
-      behavior(:runnable)
 
       DEFAULT_HOST = '127.0.0.1'
       DEFAULT_PORT = 12345
