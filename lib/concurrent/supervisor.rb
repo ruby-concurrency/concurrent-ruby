@@ -27,22 +27,22 @@ module Concurrent
       add_worker(opts[:worker]) unless opts[:worker].nil?
     end
 
+    def run!
+      raise StandardError.new('already running') if running?
+      @running = true
+      @monitor = Thread.new{ monitor }
+      Thread.pass
+    end
+
     def run
       raise StandardError.new('already running') if running?
-      @mutex.synchronize do
-        @monitor = Thread.new do
-          loop do
-            monitor
-            sleep(@monitor_interval)
-          end
-        end
-        @running = true
-      end
-      Thread.pass
+      @running = true
+      monitor
     end
 
     def stop
       return true unless running?
+      @running = false
       @mutex.synchronize do
         Thread.kill(@monitor) unless @monitor.nil?
         @monitor = nil
@@ -58,8 +58,6 @@ module Concurrent
             Thread.kill(context.thread) unless context.thread.nil?
           end
         end
-
-        @running = false
       end
     end
 
@@ -86,14 +84,17 @@ module Concurrent
     private
 
     def monitor
-      @mutex.synchronize do
-        @workers.each do |context|
-          unless context.thread && context.thread.alive?
-            context.thread = Thread.new{ context.worker.run }
-            context.thread.abort_on_exception = false
+      loop do
+        @mutex.synchronize do
+          @workers.each do |context|
+            unless context.thread && context.thread.alive?
+              context.thread = Thread.new{ context.worker.run }
+              context.thread.abort_on_exception = false
+            end
           end
         end
+        sleep(@monitor_interval)
       end
     end
+    end
   end
-end
