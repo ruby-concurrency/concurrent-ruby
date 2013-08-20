@@ -93,7 +93,9 @@ module Concurrent
             end
           end
         end
+        break unless running?
         sleep(@monitor_interval)
+        break unless running?
       end
     end
     end

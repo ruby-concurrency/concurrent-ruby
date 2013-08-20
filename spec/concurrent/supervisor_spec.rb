@@ -149,6 +149,16 @@ module Concurrent
       it 'returns true immediately when already stopped' do
         subject.stop.should be_true
       end
+
+      it 'unblocks a thread blocked by #run and exits normally' do
+        supervisor = Supervisor.new(monitor: 0.1)
+        @thread = Thread.new{ sleep(0.5); supervisor.stop }
+        sleep(0.1)
+        lambda {
+          Timeout::timeout(1){ supervisor.run }
+        }.should_not raise_error
+        Thread.kill(@thread) unless @thread.nil?
+      end
     end
 
     context '#running?' do
