@@ -96,7 +96,8 @@ module Concurrent
     context '#run!' do
 
       it 'runs the monitor thread' do
-        Thread.should_receive(:new).with(no_args())
+        thread = Thread.new{ nil }
+        Thread.should_receive(:new).with(no_args()).and_return(thread)
         subject.run!
       end
 

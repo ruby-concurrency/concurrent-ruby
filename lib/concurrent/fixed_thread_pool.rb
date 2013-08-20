@@ -61,7 +61,7 @@ module Concurrent
 
     # @private
     def create_worker_thread # :nodoc:
-      Thread.new do
+      thread = Thread.new do
         loop do
           task = @queue.pop
           if task == :stop
@@ -76,6 +76,9 @@ module Concurrent
           @status = :shutdown unless killed?
         end
       end
+
+      thread.abort_on_exception = false
+      return thread
     end
 
     # @private
@@ -90,6 +93,7 @@ module Concurrent
           end
         end
       end
+      @collector.abort_on_exception = false
     end
   end
 end

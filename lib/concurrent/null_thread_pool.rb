@@ -6,7 +6,7 @@ module Concurrent
     behavior(:global_thread_pool)
 
     def self.post(*args, &block)
-      Thread.new(*args, &block)
+      Thread.new(*args, &block).abort_on_exception = false
       return true
     end
 

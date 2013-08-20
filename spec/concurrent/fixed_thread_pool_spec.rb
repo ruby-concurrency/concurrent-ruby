@@ -24,7 +24,7 @@ module Concurrent
       end
 
       it 'creates a thread pool of the given size' do
-        thread = double('thread')
+        thread = Thread.new{ nil }
         # add one for the garbage collector
         Thread.should_receive(:new).exactly(5+1).times.and_return(thread)
         pool = FixedThreadPool.new(5)

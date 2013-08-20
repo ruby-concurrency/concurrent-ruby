@@ -29,8 +29,11 @@ module Concurrent
 
     def run!
       raise StandardError.new('already running') if running?
-      @running = true
-      @monitor = Thread.new{ monitor }
+      @mutex.synchronize do
+        @running = true
+        @monitor = Thread.new{ monitor }
+        @monitor.abort_on_exception = false
+      end
       Thread.pass
     end
 

@@ -15,19 +15,22 @@ module Concurrent
     context '#post' do
 
       it 'proxies a call without arguments' do
-        Thread.should_receive(:new).with(no_args())
+        thread = Thread.new{ nil }
+        Thread.should_receive(:new).with(no_args()).and_return(thread)
         $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
         subject.post{ nil }
       end
 
       it 'proxies a call with arguments' do
-        Thread.should_receive(:new).with(1,2,3)
+        thread = Thread.new{ nil }
+        Thread.should_receive(:new).with(1,2,3).and_return(thread)
         $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
         subject.post(1,2,3){ nil }
       end
 
       it 'aliases #<<' do
-        Thread.should_receive(:new).with(no_args())
+        thread = Thread.new{ nil }
+        Thread.should_receive(:new).with(no_args()).and_return(thread)
         $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
         subject << proc{ nil }
       end

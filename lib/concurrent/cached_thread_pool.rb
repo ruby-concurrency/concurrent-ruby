@@ -106,6 +106,7 @@ module Concurrent
         end
       end
 
+      worker.thread.abort_on_exception = false
       @pool << worker
     end
 
@@ -124,6 +125,7 @@ module Concurrent
           break if @pool.empty?
         end
       end
+      @collector.abort_on_exception = false
     end
   end
 end

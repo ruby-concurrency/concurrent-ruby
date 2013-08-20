@@ -89,6 +89,7 @@ module Concurrent
         end
       end
 
+      executor.abort_on_exception = false
       return ExecutionContext.new(name, execution_interval, timeout_interval, executor)
     end
   end
