@@ -11,6 +11,7 @@ occur repeatedly at regular intervals.
 * [Supervisor Module](http://www.erlang.org/doc/man/supervisor.html)
 * [Supervisor Behaviour](http://www.erlang.org/doc/design_principles/sup_princ.html)
 * [Who Supervises The Supervisors?](http://learnyousomeerlang.com/supervisors)
+* [OTP Design Principles](http://www.erlang.org/doc/design_principles/des_princ.html)
 
 ## Copyright
 
