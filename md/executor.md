@@ -21,10 +21,16 @@ One other advantage of the `Executor` class is that it forces the bsiness logic 
 be completely decoupled from the threading logic. The business logic can be tested
 separately then passed to the an executor for scheduling and running.
 
+The `Executor` is the yin to to the
+[Supervisor's](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md)
+yang. Where the `Supervisor` is intended to manage long-running threads that operate
+continuously, the `Executor` is intended to manage fairly short operations that
+occur repeatedly at regular intervals.
+
 Unlike some of the others concurrency objects in the library, executors do not
-run on the global. In my experience the types of tasks that will benefit from
-the `Executor` class tend to also be long running. For this reason they get their
-own thread every time the task is executed.
+run on the global thread pool. In my experience the types of tasks that will benefit
+from the `Executor` class tend to also be long running. For this reason they get
+their own thread every time the task is executed.
 
 ## ExecutionContext
 
