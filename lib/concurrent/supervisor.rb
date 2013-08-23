@@ -10,26 +10,25 @@ module Concurrent
 
   class Supervisor
 
-    DEFAULT_MONITOR_INTERVAL = 1
-    #STRATEGIES = [:one_for_one, :one_for_all, :rest_for_one]
-    STRATEGIES = [:one_for_one]
-
     behavior(:runnable)
+
+    DEFAULT_MONITOR_INTERVAL = 1
+    RESTART_STRATEGIES = [:one_for_one, :one_for_all, :rest_for_one]
 
     WorkerContext = Struct.new(:worker, :thread)
 
     attr_reader :monitor_interval
 
     def initialize(opts = {})
-      @strategy = opts[:strategy] || :one_for_one
-      raise ArgumentError.new(":#{opts[:strategy]} is not a valid restart strategy") unless STRATEGIES.include?(@strategy)
+      @strategy = opts[:restart_strategy] || opts[:strategy] || :one_for_one
+      raise ArgumentError.new(":#{@strategy} is not a valid restart strategy") unless RESTART_STRATEGIES.include?(@strategy)
 
       @mutex = Mutex.new
       @workers = []
       @running = false
 
       @monitor = nil
-      @monitor_interval = opts[:monitor] || opts[:monitor_interval] || DEFAULT_MONITOR_INTERVAL
+      @monitor_interval = opts[:monitor_interval] || opts[:monitor] || DEFAULT_MONITOR_INTERVAL
 
       add_worker(opts[:worker]) unless opts[:worker].nil?
     end
@@ -111,6 +110,50 @@ module Concurrent
           context.thread.abort_on_exception = false
         end
       end
+    end
+
+    def one_for_all
+      restart = false
+
+      restart = @workers.each do |context|
+        unless context.thread && context.thread.alive?
+          break(true)
+        end
+      end
+
+      if restart
+
+        @workers.each do |context|
+          begin
+            context.worker.stop
+          rescue Exception => ex
+            # suppress
+          end
+        end
+
+        @workers.each do |context|
+          context.thread = Thread.new{ context.worker.run }
+          context.thread.abort_on_exception = false
+        end
+      end
+    end
+
+    def rest_for_one
+      restart = false
+
+      @workers.each do |context|
+        if restart
+          begin
+            context.worker.stop
+          rescue Exception => ex
+            # suppress
+          end
+        elsif ! context.thread || ! context.thread.alive?
+          restart = true
+        end
+      end
+
+      one_for_one if restart
     end
   end
 end

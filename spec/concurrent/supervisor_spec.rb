@@ -15,7 +15,7 @@ module Concurrent
 
     let(:worker){ worker_class.new }
 
-    subject{ Supervisor.new }
+    subject{ Supervisor.new(strategy: :one_for_one) }
 
     after(:each) do
       subject.stop
@@ -52,7 +52,7 @@ module Concurrent
       end
 
       it 'raises an exception when given an invalid restart strategy' do
-        Supervisor::STRATEGIES.each do |strategy|
+        Supervisor::RESTART_STRATEGIES.each do |strategy|
           lambda {
             supervisor = Supervisor.new(strategy: strategy)
           }.should_not raise_error
@@ -232,33 +232,65 @@ module Concurrent
       end
     end
 
-    context 'restart strategirs' do
+    context 'restart strategies' do
+
+      let(:sleeper_class) do
+        Class.new(worker_class) {
+          def run() sleep; end
+        }
+      end
+
+      let(:stopper_class) do
+        Class.new(worker_class) {
+          def run() sleep(0.2); end
+        }
+      end
+
+      let(:error_class) do
+        Class.new(worker_class) {
+          def run() raise StandardError; end
+        }
+      end
 
       context ':one_for_one' do
 
-        it 'reruns any worker that stops' do
-          worker = Class.new(worker_class){
-            def run() sleep(0.2); end
-          }.new
+        it 'restarts any worker that stops' do
 
-          supervisor = Supervisor.new(worker: worker, monitor: 0.1)
-          supervisor.add_worker(worker)
+          workers = [
+            sleeper_class.new,
+            stopper_class.new,
+            sleeper_class.new
+          ]
+
+          supervisor = Supervisor.new(strategy: :one_for_one, monitor: 0.1)
+          workers.each{|worker| supervisor.add_worker(worker) }
+
           # must stub AFTER adding or else #add_worker will reject
-          worker.should_receive(:run).with(no_args()).at_least(2).times
+          workers[0].should_receive(:run).once.with(no_args())
+          workers[1].should_receive(:run).with(no_args()).at_least(2).times
+          workers[2].should_receive(:run).once.with(no_args())
+
           supervisor.run!
           sleep(1)
           supervisor.stop
         end
 
-        it 'reruns any dead threads' do
-          worker = Class.new(worker_class){
-            def run() raise StandardError; end
-          }.new
+        it 'restarts any dead threads' do
 
-          supervisor = Supervisor.new(worker: worker, monitor: 0.1)
-          supervisor.add_worker(worker)
+          workers = [
+            sleeper_class.new,
+            error_class.new,
+            sleeper_class.new
+          ]
+
+          supervisor = Supervisor.new(strategy: :one_for_one, monitor: 0.1)
+          workers.each{|worker| supervisor.add_worker(worker) }
+
           # must stub AFTER adding or else #add_worker will reject
-          worker.should_receive(:run).with(no_args()).at_least(2).times
+          workers[0].should_receive(:run).once.with(no_args())
+          workers[1].should_receive(:run).with(no_args()).at_least(2).times
+          workers[2].should_receive(:run).once.with(no_args())
+
           supervisor.run!
           sleep(1)
           supervisor.stop
@@ -266,11 +298,105 @@ module Concurrent
       end
 
       context ':one_for_all' do
-        pending
+
+        it 'restarts all workers when one stops' do
+
+          workers = [
+            sleeper_class.new,
+            stopper_class.new,
+            sleeper_class.new
+          ]
+
+          supervisor = Supervisor.new(strategy: :one_for_all, monitor: 0.1)
+          workers.each{|worker| supervisor.add_worker(worker) }
+
+          # must stub AFTER adding or else #add_worker will reject
+          workers[0].should_receive(:run).with(no_args()).at_least(2).times
+          workers[1].should_receive(:run).with(no_args()).at_least(2).times
+          workers[2].should_receive(:run).with(no_args()).at_least(2).times
+
+          workers[0].should_receive(:stop).once.with(no_args())
+          workers[2].should_receive(:stop).once.with(no_args())
+
+          supervisor.run!
+          sleep(1)
+          supervisor.stop
+        end
+
+        it 'restarts all workers when one thread dies' do
+
+          workers = [
+            sleeper_class.new,
+            error_class.new,
+            sleeper_class.new
+          ]
+
+          supervisor = Supervisor.new(strategy: :one_for_all, monitor: 0.1)
+          workers.each{|worker| supervisor.add_worker(worker) }
+
+          # must stub AFTER adding or else #add_worker will reject
+          workers[0].should_receive(:run).with(no_args()).at_least(2).times
+          workers[1].should_receive(:run).with(no_args()).at_least(2).times
+          workers[2].should_receive(:run).with(no_args()).at_least(2).times
+
+          workers[0].should_receive(:stop).once.with(no_args())
+          workers[2].should_receive(:stop).once.with(no_args())
+
+          supervisor.run!
+          sleep(1)
+          supervisor.stop
+        end
       end
 
       context ':rest_for_one' do
-        pending
+
+        it 'restarts a stopped worker and all workers added after it' do
+
+          workers = [
+            sleeper_class.new,
+            stopper_class.new,
+            sleeper_class.new
+          ]
+
+          supervisor = Supervisor.new(strategy: :rest_for_one, monitor: 0.1)
+          workers.each{|worker| supervisor.add_worker(worker) }
+
+          # must stub AFTER adding or else #add_worker will reject
+          workers[0].should_receive(:run).once.with(no_args())
+          workers[1].should_receive(:run).with(no_args()).at_least(2).times
+          workers[2].should_receive(:run).with(no_args()).at_least(2).times
+
+          workers[0].should_not_receive(:stop)
+          workers[2].should_receive(:stop).once.with(no_args())
+
+          supervisor.run!
+          sleep(1)
+          supervisor.stop
+        end
+
+        it 'restarts a dead worker thread and all workers added after it' do
+
+          workers = [
+            sleeper_class.new,
+            error_class.new,
+            sleeper_class.new
+          ]
+
+          supervisor = Supervisor.new(strategy: :rest_for_one, monitor: 0.1)
+          workers.each{|worker| supervisor.add_worker(worker) }
+
+          # must stub AFTER adding or else #add_worker will reject
+          workers[0].should_receive(:run).once.with(no_args())
+          workers[1].should_receive(:run).with(no_args()).at_least(2).times
+          workers[2].should_receive(:run).with(no_args()).at_least(2).times
+
+          workers[0].should_not_receive(:stop)
+          workers[2].should_receive(:stop).once.with(no_args())
+
+          supervisor.run!
+          sleep(1)
+          supervisor.stop
+        end
       end
     end
 
