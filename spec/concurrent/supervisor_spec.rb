@@ -38,17 +38,34 @@ module Concurrent
         supervisor.should_not be_running
       end
 
-      it 'sets the monitor interval when given' do
+      it 'uses the given monitor interval' do
         supervisor = Supervisor.new
         supervisor.monitor_interval.should == Supervisor::DEFAULT_MONITOR_INTERVAL
       end
 
-      it 'sets the monitor interval to the default when not given' do
+      it 'uses the default monitor interval when none given' do
         supervisor = Supervisor.new(monitor_interval: 5)
         supervisor.monitor_interval.should == 5
+      end
 
-        supervisor = Supervisor.new(monitor: 10)
-        supervisor.monitor_interval.should == 10
+      it 'raises an exception when given an invalid monitor interval' do
+        lambda {
+          Supervisor.new(monitor_interval: -1)
+        }.should raise_error(ArgumentError)
+
+        lambda {
+          Supervisor.new(monitor_interval: 'bogus')
+        }.should raise_error(ArgumentError)
+      end
+
+      it 'uses the given restart strategy' do
+        supervisor = Supervisor.new(restart_strategy: :rest_for_one)
+        supervisor.restart_strategy.should eq :rest_for_one
+      end
+
+      it 'uses :one_for_one when no restart strategy given' do
+        supervisor = Supervisor.new
+        supervisor.restart_strategy.should eq :one_for_one
       end
 
       it 'raises an exception when given an invalid restart strategy' do
@@ -63,12 +80,28 @@ module Concurrent
         }.should raise_error(ArgumentError)
       end
 
-      it 'uses :one_for_one as the default restart strategy' do
-        supervisor = Supervisor.new
-        supervisor.should_receive(:one_for_one)
-        supervisor.run!
-        sleep(0.1)
-        supervisor.stop
+      it 'uses the given maximum restart value' do
+        pending
+      end
+
+      it 'raises an exception when given an invalid maximum restart value' do
+        pending
+      end
+
+      it 'uses the default maximum restart value when none given' do
+        pending
+      end
+
+      it 'uses the given maximum time value' do
+        pending
+      end
+
+      it 'raises an exception when given an invalid maximum time value' do
+        pending
+      end
+
+      it 'uses the default maximum time value when none given' do
+        pending
       end
     end
 
@@ -172,7 +205,7 @@ module Concurrent
       end
 
       it 'unblocks a thread blocked by #run and exits normally' do
-        supervisor = Supervisor.new(monitor: 0.1)
+        supervisor = Supervisor.new(monitor_interval: 0.1)
         @thread = Thread.new{ sleep(0.5); supervisor.stop }
         sleep(0.1)
         lambda {
@@ -262,7 +295,7 @@ module Concurrent
             sleeper_class.new
           ]
 
-          supervisor = Supervisor.new(strategy: :one_for_one, monitor: 0.1)
+          supervisor = Supervisor.new(strategy: :one_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
           # must stub AFTER adding or else #add_worker will reject
@@ -283,7 +316,7 @@ module Concurrent
             sleeper_class.new
           ]
 
-          supervisor = Supervisor.new(strategy: :one_for_one, monitor: 0.1)
+          supervisor = Supervisor.new(strategy: :one_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
           # must stub AFTER adding or else #add_worker will reject
@@ -307,7 +340,7 @@ module Concurrent
             sleeper_class.new
           ]
 
-          supervisor = Supervisor.new(strategy: :one_for_all, monitor: 0.1)
+          supervisor = Supervisor.new(strategy: :one_for_all, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
           # must stub AFTER adding or else #add_worker will reject
@@ -331,7 +364,7 @@ module Concurrent
             sleeper_class.new
           ]
 
-          supervisor = Supervisor.new(strategy: :one_for_all, monitor: 0.1)
+          supervisor = Supervisor.new(strategy: :one_for_all, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
           # must stub AFTER adding or else #add_worker will reject
@@ -358,7 +391,7 @@ module Concurrent
             sleeper_class.new
           ]
 
-          supervisor = Supervisor.new(strategy: :rest_for_one, monitor: 0.1)
+          supervisor = Supervisor.new(strategy: :rest_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
           # must stub AFTER adding or else #add_worker will reject
@@ -382,7 +415,7 @@ module Concurrent
             sleeper_class.new
           ]
 
-          supervisor = Supervisor.new(strategy: :rest_for_one, monitor: 0.1)
+          supervisor = Supervisor.new(strategy: :rest_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
           # must stub AFTER adding or else #add_worker will reject
@@ -403,9 +436,9 @@ module Concurrent
     context 'supervisor tree' do
 
       specify do
-        s1 = Supervisor.new(monitor: 0.1)
-        s2 = Supervisor.new(monitor: 0.1)
-        s3 = Supervisor.new(monitor: 0.1)
+        s1 = Supervisor.new(monitor_interval: 0.1)
+        s2 = Supervisor.new(monitor_interval: 0.1)
+        s3 = Supervisor.new(monitor_interval: 0.1)
 
         workers = (1..3).collect{ worker_class.new }
         workers.each{|worker| s3.add_worker(worker)}

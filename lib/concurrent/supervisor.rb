@@ -14,21 +14,32 @@ module Concurrent
 
     DEFAULT_MONITOR_INTERVAL = 1
     RESTART_STRATEGIES = [:one_for_one, :one_for_all, :rest_for_one]
+    DEFAULT_MAX_RESTART = 5
+    DEFAULT_MAX_TIME = 60
 
     WorkerContext = Struct.new(:worker, :thread)
 
     attr_reader :monitor_interval
+    attr_reader :restart_strategy
+    attr_reader :max_restart
+    attr_reader :max_time
+
+    alias_method :strategy, :restart_strategy
+    alias_method :max_r, :max_restart
+    alias_method :max_t, :max_time
 
     def initialize(opts = {})
-      @strategy = opts[:restart_strategy] || opts[:strategy] || :one_for_one
-      raise ArgumentError.new(":#{@strategy} is not a valid restart strategy") unless RESTART_STRATEGIES.include?(@strategy)
+      @restart_strategy = opts[:restart_strategy] || opts[:strategy] || :one_for_one
+      @monitor_interval = (opts[:monitor_interval] || DEFAULT_MONITOR_INTERVAL).to_f
+
+      raise ArgumentError.new(':monitor_interval must be greater than zero') unless @monitor_interval > 0.0
+      raise ArgumentError.new(":#{@restart_strategy} is not a valid restart strategy") unless RESTART_STRATEGIES.include?(@restart_strategy)
 
       @mutex = Mutex.new
       @workers = []
       @running = false
 
       @monitor = nil
-      @monitor_interval = opts[:monitor_interval] || opts[:monitor] || DEFAULT_MONITOR_INTERVAL
 
       add_worker(opts[:worker]) unless opts[:worker].nil?
     end
@@ -56,8 +67,8 @@ module Concurrent
         Thread.kill(@monitor) unless @monitor.nil?
         @monitor = nil
 
-        until @workers.empty?
-          context = @workers.pop
+        @workers.length.times do |i|
+          context = @workers[-1-i]
           begin
             context.worker.stop
             Thread.pass
@@ -95,7 +106,7 @@ module Concurrent
     def monitor
       loop do
         @mutex.synchronize do
-          self.send(@strategy)
+          self.send(@restart_strategy)
         end
         break unless running?
         sleep(@monitor_interval)
