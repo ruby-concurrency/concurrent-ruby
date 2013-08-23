@@ -12,4 +12,5 @@ group :testing do
   gem 'rspec'
   gem 'simplecov'
   gem 'faker'
+  gem 'timecop'
 end

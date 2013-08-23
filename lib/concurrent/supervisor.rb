@@ -46,7 +46,6 @@ module Concurrent
       @monitor = nil
 
       @restart_times = []
-      @restart_count = 0
 
       add_worker(opts[:worker]) unless opts[:worker].nil?
     end
@@ -73,6 +72,7 @@ module Concurrent
       @mutex.synchronize do
         Thread.kill(@monitor) unless @monitor.nil?
         @monitor = nil
+        @restart_times.clear
 
         @workers.length.times do |i|
           context = @workers[-1-i]
@@ -97,6 +97,10 @@ module Concurrent
     end
     alias_method :size, :length
     alias_method :count, :length
+
+    def current_restart_count
+      return @restart_times.length
+    end
 
     def add_worker(worker)
       if worker.nil? || running? || ! worker.behaves_as?(:runnable)
@@ -134,11 +138,9 @@ module Concurrent
     def exceeded_max_restart_frequency?
       @restart_times.unshift(Time.now.to_i)
       diff = delta(@restart_times.first, @restart_times.last)
-      @restart_count += 1
-      if @restart_count >= @max_restart && diff <= @max_time
+      if @restart_times.length >= @max_restart && diff <= @max_time
         return true
       elsif diff >= @max_time
-        @restart_count -= 1
         @restart_times.pop
       end
       return false

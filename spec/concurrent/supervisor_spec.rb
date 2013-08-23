@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'timecop'
+
 module Concurrent
 
   describe Supervisor do
@@ -281,6 +283,34 @@ module Concurrent
       end
     end
 
+    context '#current_restart_count' do
+
+      it 'is zero for a new Supervisor' do
+        subject.current_restart_count.should eq 0
+      end
+
+      it 'returns the number of worker restarts' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker)
+        supervisor.run!
+        sleep(0.3)
+        supervisor.current_restart_count.should > 0
+        supervisor.stop
+      end
+
+      it 'resets to zero on #stop' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker)
+        supervisor.run!
+        sleep(0.3)
+        supervisor.stop
+        sleep(0.1)
+        supervisor.current_restart_count.should eq 0
+      end
+    end
+
     context '#add_worker' do
 
       it 'adds the worker when stopped' do
@@ -310,63 +340,90 @@ module Concurrent
 
     context 'maximum restart frequency' do
 
-      it 'terminates all workers then itself when exceeded' do
+      context '#exceeded_max_restart_frequency?' do
 
-        workers = [
-          sleeper_class.new,
-          stopper_class.new(0.1),
-          sleeper_class.new
-        ]
+        # Normally I am very opposed to testing private methods
+        # but this functionality has proven extremely difficult to test.
+        # Geting the timing right is almost impossible. This is the
+        # best approach I could think of.
 
-        supervisor = Supervisor.new(strategy: :one_for_one,
-                                    max_restart: 2,
-                                    monitor_interval: 0.1)
-        workers.each{|worker| supervisor.add_worker(worker) }
+        it 'increments the restart count on every call' do
+          subject.send(:exceeded_max_restart_frequency?)
+          subject.current_restart_count.should eq 1
 
-        supervisor.run
-        supervisor.should_not be_running
+          subject.send(:exceeded_max_restart_frequency?)
+          subject.current_restart_count.should eq 2
+
+          subject.send(:exceeded_max_restart_frequency?)
+          subject.current_restart_count.should eq 3
+        end
+
+        it 'returns false when the restart count is lower than :max_restart' do
+          supervisor = Supervisor.new(max_restart: 5, max_time: 60)
+
+          Timecop.freeze do
+            4.times do
+              Timecop.travel(5)
+              supervisor.send(:exceeded_max_restart_frequency?).should be_false
+            end
+
+            Timecop.travel(5)
+            supervisor.send(:exceeded_max_restart_frequency?).should be_true
+          end
+        end
+
+        it 'returns false when the restart count is high but the time range is out of scope' do
+          supervisor = Supervisor.new(max_restart: 3, max_time: 8)
+
+          Timecop.freeze do
+            10.times do
+              Timecop.travel(5)
+              supervisor.send(:exceeded_max_restart_frequency?).should be_false
+            end
+          end
+        end
+
+        it 'returns true when the restart count is exceeded within the max time range' do
+          supervisor = Supervisor.new(max_restart: 2, max_time: 5)
+          Timecop.freeze do
+            supervisor.send(:exceeded_max_restart_frequency?).should be_false
+            Timecop.travel(1)
+            supervisor.send(:exceeded_max_restart_frequency?).should be_true
+          end
+        end
       end
 
-      it 'does nothing when :max_r is not exceeded' do
+      context 'restarts when true for strategy' do
 
-        workers = [
-          sleeper_class.new,
-          stopper_class.new(1),
-          sleeper_class.new
-        ]
+        specify ':one_for_one' do
+          supervisor = Supervisor.new(restart_strategy: :one_for_one,
+                                      monitor_interval: 0.1)
+          supervisor.add_worker(error_class.new)
+          supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
+          supervisor.run!
+          sleep(0.2)
+          supervisor.should_not be_running
+        end
 
-        supervisor = Supervisor.new(strategy: :one_for_one,
-                                    max_restart: 3,
-                                    monitor_interval: 0.1)
-        workers.each{|worker| supervisor.add_worker(worker) }
+        specify ':one_for_all' do
+          supervisor = Supervisor.new(restart_strategy: :one_for_all,
+                                      monitor_interval: 0.1)
+          supervisor.add_worker(error_class.new)
+          supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
+          supervisor.run!
+          sleep(0.2)
+          supervisor.should_not be_running
+        end
 
-        supervisor.run!
-        supervisor.should be_running
-        sleep(1)
-        supervisor.should be_running
-        supervisor.stop
-      end
-
-      it 'does nothing when :max_r is exceeded but outside :max_t' do
-        pending('cannot get the timing right')
-
-        workers = [
-          sleeper_class.new,
-          stopper_class.new(0.5),
-          sleeper_class.new
-        ]
-
-        supervisor = Supervisor.new(strategy: :one_for_one,
-                                    max_restart: 4,
-                                    max_time: 1,
-                                    monitor_interval: 0.5)
-        workers.each{|worker| supervisor.add_worker(worker) }
-
-        supervisor.run!
-        supervisor.should be_running
-        sleep(2)
-        supervisor.should be_running
-        supervisor.stop
+        specify ':rest_for_one' do
+          supervisor = Supervisor.new(restart_strategy: :rest_for_one,
+                                      monitor_interval: 0.1)
+          supervisor.add_worker(error_class.new)
+          supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
+          supervisor.run!
+          sleep(0.2)
+          supervisor.should_not be_running
+        end
       end
     end
 
