@@ -13,6 +13,25 @@ module Concurrent
       }
     end
 
+    let(:sleeper_class) do
+      Class.new(worker_class) {
+        def run() sleep; end
+      }
+    end
+
+    let(:stopper_class) do
+      Class.new(worker_class) {
+        def initialize(sleep_time = 0.2) @sleep_time = sleep_time; end;
+        def run() sleep(@sleep_time); end
+      }
+    end
+
+    let(:error_class) do
+      Class.new(worker_class) {
+        def run() raise StandardError; end
+      }
+    end
+
     let(:worker){ worker_class.new }
 
     subject{ Supervisor.new(strategy: :one_for_one) }
@@ -81,27 +100,51 @@ module Concurrent
       end
 
       it 'uses the given maximum restart value' do
-        pending
-      end
+        supervisor = Supervisor.new(max_restart: 3)
+        supervisor.max_r.should == 3
 
-      it 'raises an exception when given an invalid maximum restart value' do
-        pending
+        supervisor = Supervisor.new(max_r: 3)
+        supervisor.max_restart.should == 3
       end
 
       it 'uses the default maximum restart value when none given' do
-        pending
+        supervisor = Supervisor.new
+        supervisor.max_restart.should == Supervisor::DEFAULT_MAX_RESTART
+        supervisor.max_r.should == Supervisor::DEFAULT_MAX_RESTART
+      end
+
+      it 'raises an exception when given an invalid maximum restart value' do
+        lambda {
+          Supervisor.new(max_restart: -1)
+        }.should raise_error(ArgumentError)
+
+        lambda {
+          Supervisor.new(max_restart: 'bogus')
+        }.should raise_error(ArgumentError)
       end
 
       it 'uses the given maximum time value' do
-        pending
-      end
+        supervisor = Supervisor.new(max_time: 3)
+        supervisor.max_t.should == 3
 
-      it 'raises an exception when given an invalid maximum time value' do
-        pending
+        supervisor = Supervisor.new(max_t: 3)
+        supervisor.max_time.should == 3
       end
 
       it 'uses the default maximum time value when none given' do
-        pending
+        supervisor = Supervisor.new
+        supervisor.max_time.should == Supervisor::DEFAULT_MAX_TIME
+        supervisor.max_t.should == Supervisor::DEFAULT_MAX_TIME
+      end
+
+      it 'raises an exception when given an invalid maximum time value' do
+        lambda {
+          Supervisor.new(max_time: -1)
+        }.should raise_error(ArgumentError)
+
+        lambda {
+          Supervisor.new(max_time: 'bogus')
+        }.should raise_error(ArgumentError)
       end
     end
 
@@ -265,25 +308,69 @@ module Concurrent
       end
     end
 
+    context 'maximum restart frequency' do
+
+      it 'terminates all workers then itself when exceeded' do
+
+        workers = [
+          sleeper_class.new,
+          stopper_class.new(0.1),
+          sleeper_class.new
+        ]
+
+        supervisor = Supervisor.new(strategy: :one_for_one,
+                                    max_restart: 2,
+                                    monitor_interval: 0.1)
+        workers.each{|worker| supervisor.add_worker(worker) }
+
+        supervisor.run
+        supervisor.should_not be_running
+      end
+
+      it 'does nothing when :max_r is not exceeded' do
+
+        workers = [
+          sleeper_class.new,
+          stopper_class.new(1),
+          sleeper_class.new
+        ]
+
+        supervisor = Supervisor.new(strategy: :one_for_one,
+                                    max_restart: 3,
+                                    monitor_interval: 0.1)
+        workers.each{|worker| supervisor.add_worker(worker) }
+
+        supervisor.run!
+        supervisor.should be_running
+        sleep(1)
+        supervisor.should be_running
+        supervisor.stop
+      end
+
+      it 'does nothing when :max_r is exceeded but outside :max_t' do
+        pending('cannot get the timing right')
+
+        workers = [
+          sleeper_class.new,
+          stopper_class.new(0.5),
+          sleeper_class.new
+        ]
+
+        supervisor = Supervisor.new(strategy: :one_for_one,
+                                    max_restart: 4,
+                                    max_time: 1,
+                                    monitor_interval: 0.5)
+        workers.each{|worker| supervisor.add_worker(worker) }
+
+        supervisor.run!
+        supervisor.should be_running
+        sleep(2)
+        supervisor.should be_running
+        supervisor.stop
+      end
+    end
+
     context 'restart strategies' do
-
-      let(:sleeper_class) do
-        Class.new(worker_class) {
-          def run() sleep; end
-        }
-      end
-
-      let(:stopper_class) do
-        Class.new(worker_class) {
-          def run() sleep(0.2); end
-        }
-      end
-
-      let(:error_class) do
-        Class.new(worker_class) {
-          def run() raise StandardError; end
-        }
-      end
 
       context ':one_for_one' do
 
