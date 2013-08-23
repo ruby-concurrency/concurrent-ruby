@@ -16,12 +16,12 @@ go('bar'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Pow!\n" }
 go('baz'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Zap!\n" }
 sleep(0.5)
 
->> foo
->> bar
->> baz
->> Boom!
->> Pow!
->> Zap!
+#=> foo
+#=> bar
+#=> baz
+#=> Boom!
+#=> Pow!
+#=> Zap!
 ```
 
 ## Copyright

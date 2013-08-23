@@ -128,12 +128,12 @@ go('bar'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Pow!\n" }
 go('baz'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Zap!\n" }
 sleep(0.5)
 
->> foo
->> bar
->> baz
->> Boom!
->> Pow!
->> Zap!
+#=> foo
+#=> bar
+#=> baz
+#=> Boom!
+#=> Pow!
+#=> Zap!
 ```
 
 #### Agent (Clojure)
@@ -224,9 +224,9 @@ pool.size #=> 2
 
 sleep(1)
 
->> Boom!
->> Pow!
->> Zap!
+#=> Boom!
+#=> Pow!
+#=> Zap!
 
 pool = Concurrent::CachedThreadPool.new
 pool.size #=> 0
@@ -240,9 +240,9 @@ pool.size #=> 3
 
 sleep(1)
 
->> Boom!
->> Pow!
->> Zap!
+#=> Boom!
+#=> Pow!
+#=> Zap!
 ```
 
 #### Executor
