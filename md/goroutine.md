@@ -11,15 +11,17 @@ for processing.
 ```ruby
 require 'concurrent'
 
-@expected = nil
+go('foo'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Boom!\n" }
+go('bar'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Pow!\n" }
+go('baz'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Zap!\n" }
+sleep(0.5)
 
-go(1, 2, 3){|a, b, c| sleep(1); @expected = [c, b, a] }
-
-sleep(0.1)
-@expected #=> nil
-
-sleep(2)
-@expected #=> [3, 2, 1]
+>> foo
+>> bar
+>> baz
+>> Boom!
+>> Pow!
+>> Zap!
 ```
 
 ## Copyright

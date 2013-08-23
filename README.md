@@ -123,10 +123,17 @@ For complete examples, see the specific documentation linked above. Below are a 
 ```ruby
 require 'concurrent'
 
-@expected = nil
-go(1, 2, 3){|a, b, c| @expected = [c, b, a] }
-sleep(0.1)
-@expected #=> [3, 2, 1]
+go('foo'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Boom!\n" }
+go('bar'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Pow!\n" }
+go('baz'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Zap!\n" }
+sleep(0.5)
+
+>> foo
+>> bar
+>> baz
+>> Boom!
+>> Pow!
+>> Zap!
 ```
 
 #### Agent (Clojure)
@@ -205,23 +212,37 @@ p.value #=> "Hello Jerry D'Antonio. Would you like to play a game?"
 ```ruby
 require 'concurrent'
 
-pool = Concurrent::FixedThreadPool.new(10)
-@expected = 0
-pool.post{ sleep(0.5); @expected += 100 }
-pool.post{ sleep(0.5); @expected += 100 }
-pool.post{ sleep(0.5); @expected += 100 }
-@expected #=> nil
+pool = Concurrent::FixedThreadPool.new(2)
+pool.size #=> 2
+
+pool.post{ sleep(0.5); print "Boom!\n" }
+pool.size #=> 2
+pool.post{ sleep(0.5); print "Pow!\n" }
+pool.size #=> 2
+pool.post{ sleep(0.5); print "Zap!\n" }
+pool.size #=> 2
+
 sleep(1)
-@expected #=> 300
+
+>> Boom!
+>> Pow!
+>> Zap!
 
 pool = Concurrent::CachedThreadPool.new
-@expected = 0
-pool << proc{ sleep(0.5); @expected += 10 }
-pool << proc{ sleep(0.5); @expected += 10 }
-pool << proc{ sleep(0.5); @expected += 10 }
-@expected #=> 0
+pool.size #=> 0
+
+pool << proc{ sleep(0.5); print "Boom!\n" }
+pool.size #=> 1
+pool << proc{ sleep(0.5); print "Pow!\n" }
+pool.size #=> 2
+pool << proc{ sleep(0.5); print "Zap!\n" }
+pool.size #=> 3
+
 sleep(1)
-@expected #=> 30
+
+>> Boom!
+>> Pow!
+>> Zap!
 ```
 
 #### Executor
