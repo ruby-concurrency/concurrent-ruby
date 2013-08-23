@@ -50,6 +50,26 @@ module Concurrent
         supervisor = Supervisor.new(monitor: 10)
         supervisor.monitor_interval.should == 10
       end
+
+      it 'raises an exception when given an invalid restart strategy' do
+        Supervisor::STRATEGIES.each do |strategy|
+          lambda {
+            supervisor = Supervisor.new(strategy: strategy)
+          }.should_not raise_error
+        end
+
+        lambda {
+          supervisor = Supervisor.new(strategy: :bogus)
+        }.should raise_error(ArgumentError)
+      end
+
+      it 'uses :one_for_one as the default restart strategy' do
+        supervisor = Supervisor.new
+        supervisor.should_receive(:one_for_one)
+        supervisor.run!
+        sleep(0.1)
+        supervisor.stop
+      end
     end
 
     context 'run' do
@@ -212,34 +232,45 @@ module Concurrent
       end
     end
 
-    context 'supervision' do
+    context 'restart strategirs' do
 
-      it 'reruns any worker that stops' do
-        worker = Class.new(worker_class){
-          def run() sleep(0.2); end
-        }.new
+      context ':one_for_one' do
 
-        supervisor = Supervisor.new(worker: worker, monitor: 0.1)
-        supervisor.add_worker(worker)
-        # must stub AFTER adding or else #add_worker will reject
-        worker.should_receive(:run).with(no_args()).at_least(2).times
-        supervisor.run!
-        sleep(1)
-        supervisor.stop
+        it 'reruns any worker that stops' do
+          worker = Class.new(worker_class){
+            def run() sleep(0.2); end
+          }.new
+
+          supervisor = Supervisor.new(worker: worker, monitor: 0.1)
+          supervisor.add_worker(worker)
+          # must stub AFTER adding or else #add_worker will reject
+          worker.should_receive(:run).with(no_args()).at_least(2).times
+          supervisor.run!
+          sleep(1)
+          supervisor.stop
+        end
+
+        it 'reruns any dead threads' do
+          worker = Class.new(worker_class){
+            def run() raise StandardError; end
+          }.new
+
+          supervisor = Supervisor.new(worker: worker, monitor: 0.1)
+          supervisor.add_worker(worker)
+          # must stub AFTER adding or else #add_worker will reject
+          worker.should_receive(:run).with(no_args()).at_least(2).times
+          supervisor.run!
+          sleep(1)
+          supervisor.stop
+        end
       end
 
-      it 'reruns any dead threads' do
-        worker = Class.new(worker_class){
-          def run() raise StandardError; end
-        }.new
+      context ':one_for_all' do
+        pending
+      end
 
-        supervisor = Supervisor.new(worker: worker, monitor: 0.1)
-        supervisor.add_worker(worker)
-        # must stub AFTER adding or else #add_worker will reject
-        worker.should_receive(:run).with(no_args()).at_least(2).times
-        supervisor.run!
-        sleep(1)
-        supervisor.stop
+      context ':rest_for_one' do
+        pending
       end
     end
 

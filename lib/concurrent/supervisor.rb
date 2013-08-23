@@ -11,6 +11,8 @@ module Concurrent
   class Supervisor
 
     DEFAULT_MONITOR_INTERVAL = 1
+    #STRATEGIES = [:one_for_one, :one_for_all, :rest_for_one]
+    STRATEGIES = [:one_for_one]
 
     behavior(:runnable)
 
@@ -19,11 +21,16 @@ module Concurrent
     attr_reader :monitor_interval
 
     def initialize(opts = {})
+      @strategy = opts[:strategy] || :one_for_one
+      raise ArgumentError.new(":#{opts[:strategy]} is not a valid restart strategy") unless STRATEGIES.include?(@strategy)
+
       @mutex = Mutex.new
       @workers = []
       @running = false
+
       @monitor = nil
       @monitor_interval = opts[:monitor] || opts[:monitor_interval] || DEFAULT_MONITOR_INTERVAL
+
       add_worker(opts[:worker]) unless opts[:worker].nil?
     end
 
@@ -89,17 +96,21 @@ module Concurrent
     def monitor
       loop do
         @mutex.synchronize do
-          @workers.each do |context|
-            unless context.thread && context.thread.alive?
-              context.thread = Thread.new{ context.worker.run }
-              context.thread.abort_on_exception = false
-            end
-          end
+          self.send(@strategy)
         end
         break unless running?
         sleep(@monitor_interval)
         break unless running?
       end
     end
+
+    def one_for_one
+      @workers.each do |context|
+        unless context.thread && context.thread.alive?
+          context.thread = Thread.new{ context.worker.run }
+          context.thread.abort_on_exception = false
+        end
+      end
     end
   end
+end
