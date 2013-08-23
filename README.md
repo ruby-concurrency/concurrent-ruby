@@ -3,6 +3,9 @@
 Modern concurrency tools including agents, futures, promises, thread pools, reactors, supervisors, and more.
 Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
 
+If you find this gem useful you should check out my [functional-ruby](https://github.com/jdantonio/functional-ruby)
+gem, too. This gem uses several of the tools in that gem.
+
 ## Introduction
 
 The old-school "lock and synchronize" approach to concurrency is dead. The future of concurrency
