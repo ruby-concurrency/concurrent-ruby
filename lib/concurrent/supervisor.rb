@@ -17,8 +17,12 @@ module Concurrent
     DEFAULT_MAX_RESTART = 5
     DEFAULT_MAX_TIME = 60
 
-    WorkerContext = Struct.new(:worker, :thread)
+    CHILD_TYPES = [:worker, :supervisor]
+    CHILD_RESTART_OPTIONS = [:permanent, :transient, :temporary]
+    #CHILD_SHUTDOWN_OPTIONS = [:brutal_kill, :infinity]
+
     MaxRestartFrequencyError = Class.new(StandardError)
+    WorkerContext = Struct.new(:worker, :thread, :type, :restart)
 
     attr_reader :monitor_interval
     attr_reader :restart_strategy
@@ -102,16 +106,21 @@ module Concurrent
       return @restart_times.length
     end
 
-    def add_worker(worker)
+    def add_worker(worker, opts = {})
       if worker.nil? || running? || ! worker.behaves_as?(:runnable)
         return false
       else
         @mutex.synchronize {
-          @workers << WorkerContext.new(worker)
+          restart = opts[:restart] || :permanent
+          type = opts[:type] || :worker
+          raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
+          raise ArgumentError.new(":#{type} is not a valid child type") unless CHILD_TYPES.include?(type)
+          @workers << WorkerContext.new(worker, nil, type, restart)
         }
         return true
       end
     end
+    alias_method :add_child, :add_worker
 
     private
 

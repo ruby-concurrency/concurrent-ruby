@@ -329,6 +329,42 @@ module Concurrent
         subject.length.should == 0
       end
 
+      it 'sets the restart type to the given value' do
+        subject.add_worker(worker_class.new, restart: :temporary)
+        worker = subject.instance_variable_get(:@workers).first
+        worker.restart.should eq :temporary
+      end
+
+      it 'sets the restart type to :permanent when none given' do
+        subject.add_worker(worker_class.new)
+        worker = subject.instance_variable_get(:@workers).first
+        worker.restart.should eq :permanent
+      end
+
+      it 'raises an exception when given an invalid restart type' do
+        lambda {
+          subject.add_worker(worker_class.new, restart: :bogus)
+        }.should raise_error(ArgumentError)
+      end
+
+      it 'sets the child type to the given value' do
+        subject.add_worker(worker_class.new, type: :supervisor)
+        worker = subject.instance_variable_get(:@workers).first
+        worker.type.should eq :supervisor
+      end
+
+      it 'sets the worker type to :worker when none given' do
+        subject.add_worker(worker_class.new)
+        worker = subject.instance_variable_get(:@workers).first
+        worker.type.should eq :worker
+      end
+
+      it 'raises an exception when given an invalid restart type' do
+        lambda {
+          subject.add_worker(worker_class.new, type: :bogus)
+        }.should raise_error(ArgumentError)
+      end
+
       it 'returns true when a worker is accepted' do
         subject.add_worker(worker).should be_true
       end
