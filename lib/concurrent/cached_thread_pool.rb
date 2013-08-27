@@ -75,6 +75,7 @@ module Concurrent
       worker = Worker.new(:idle, timestamp, nil)
 
       worker.thread = Thread.new(worker) do |me|
+        Thread.current.abort_on_exception = false
 
         loop do
           task = @queue.pop
@@ -106,13 +107,13 @@ module Concurrent
         end
       end
 
-      worker.thread.abort_on_exception = false
       @pool << worker
     end
 
     # @private
     def collect_garbage # :nodoc:
       @collector = Thread.new do
+        Thread.current.abort_on_exception = false
         loop do
           sleep(@gc_interval)
           mutex.synchronize do
@@ -125,7 +126,6 @@ module Concurrent
           break if @pool.empty?
         end
       end
-      @collector.abort_on_exception = false
     end
   end
 end

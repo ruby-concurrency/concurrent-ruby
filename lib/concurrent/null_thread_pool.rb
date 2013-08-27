@@ -5,8 +5,11 @@ module Concurrent
   class NullThreadPool
     behavior(:global_thread_pool)
 
-    def self.post(*args, &block)
-      Thread.new(*args, &block).abort_on_exception = false
+    def self.post(*args)
+      Thread.new(*args) do
+        Thread.current.abort_on_exception = false
+        yield(*args)
+      end
       return true
     end
 

@@ -62,6 +62,7 @@ module Concurrent
     # @private
     def create_worker_thread # :nodoc:
       thread = Thread.new do
+        Thread.current.abort_on_exception = false
         loop do
           task = @queue.pop
           if task == :stop
@@ -77,13 +78,13 @@ module Concurrent
         end
       end
 
-      thread.abort_on_exception = false
       return thread
     end
 
     # @private
     def collect_garbage # :nodoc:
       @collector = Thread.new do
+        Thread.current.abort_on_exception = false
         sleep(1)
         mutex.synchronize do
           @pool.size.times do |i|
@@ -93,7 +94,6 @@ module Concurrent
           end
         end
       end
-      @collector.abort_on_exception = false
     end
   end
 end
