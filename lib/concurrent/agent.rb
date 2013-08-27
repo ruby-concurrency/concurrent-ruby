@@ -86,7 +86,7 @@ module Concurrent
         @rescuers.find{|r| ex.is_a?(r.clazz) }
       end
       rescuer.block.call(ex) if rescuer
-    rescue Exception => e
+    rescue Exception => ex
       # supress
     end
 
