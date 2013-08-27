@@ -145,7 +145,7 @@ module Concurrent
         rescuer.block.call(ex)
         @rescued = true
       end
-    rescue Exception => e
+    rescue Exception => ex
       # supress
     end
 

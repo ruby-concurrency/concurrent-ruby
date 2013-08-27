@@ -67,12 +67,15 @@ module Concurrent
       block_args = opts[:args] || opts [:arguments] || []
 
       executor = Thread.new(*block_args) do |*args|
+        Thread.current.abort_on_exception = false
         sleep(execution_interval) unless run_now == true
         loop do
           break if Thread.current[:stop]
           begin
-            worker = Thread.new{ yield(*args) }
-            worker.abort_on_exception = false
+            worker = Thread.new do
+              Thread.current.abort_on_exception = false
+              yield(*args)
+            end
             if worker.join(timeout_interval).nil?
               logger.call(name, :warn, "execution timed out after #{timeout_interval} seconds")
             else
@@ -89,7 +92,6 @@ module Concurrent
         end
       end
 
-      executor.abort_on_exception = false
       return ExecutionContext.new(name, execution_interval, timeout_interval, executor)
     end
   end

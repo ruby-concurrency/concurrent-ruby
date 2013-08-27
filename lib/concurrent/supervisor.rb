@@ -58,8 +58,10 @@ module Concurrent
       raise StandardError.new('already running') if running?
       @mutex.synchronize do
         @running = true
-        @monitor = Thread.new{ monitor }
-        @monitor.abort_on_exception = false
+        @monitor = Thread.new do
+          Thread.current.abort_on_exception = false
+          monitor
+        end
       end
       Thread.pass
     end
@@ -139,8 +141,10 @@ module Concurrent
     end
 
     def start_worker(context)
-      context.thread = Thread.new{ context.worker.run }
-      context.thread.abort_on_exception = false
+      context.thread = Thread.new do
+        Thread.current.abort_on_exception = false
+        context.worker.run
+      end
       return context
     end
 
