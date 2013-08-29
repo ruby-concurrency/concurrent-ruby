@@ -9,7 +9,8 @@ module Concurrent
     let(:worker_class) do
       Class.new {
         behavior(:runnable)
-        def run() return true; end
+        attr_reader :start_count
+        def run() @start_count ||= 0; @start_count += 1; return true; end
         def stop() return true; end
         def running?() return true; end
       }
@@ -17,20 +18,20 @@ module Concurrent
 
     let(:sleeper_class) do
       Class.new(worker_class) {
-        def run() sleep; end
+        def run() super(); sleep; end
       }
     end
 
     let(:stopper_class) do
       Class.new(worker_class) {
         def initialize(sleep_time = 0.2) @sleep_time = sleep_time; end;
-        def run() sleep(@sleep_time); end
+        def run() super(); sleep(@sleep_time); end
       }
     end
 
     let(:error_class) do
       Class.new(worker_class) {
-        def run() raise StandardError; end
+        def run() super(); raise StandardError; end
       }
     end
 
@@ -616,6 +617,86 @@ module Concurrent
           sleep(1)
           supervisor.stop
         end
+      end
+    end
+
+    context 'child restart options' do
+
+      def worker_status(supervisor)
+        worker = supervisor.instance_variable_get(:@workers).first
+        return worker.thread.status
+      end
+
+      specify ':permanent restarts on abend' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :permanent)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        worker.start_count.should >= 1
+      end
+
+      specify ':permanent restarts on normal stop' do
+        worker = stopper_class.new(0.1)
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :permanent)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        worker.start_count.should >= 1
+      end
+
+      specify ':temporary does not restart on abend' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :temporary)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        worker.start_count.should eq 1
+      end
+
+      specify ':temporary does not restart on normal stop' do
+        worker = stopper_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :temporary)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        worker.start_count.should eq 1
+      end
+
+      specify ':transient restarts on abend' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :transient)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        worker.start_count.should >= 1
+      end
+
+      specify ':transient does not restart on normal stop' do
+        worker = stopper_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :transient)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        worker.start_count.should eq 1
       end
     end
 
