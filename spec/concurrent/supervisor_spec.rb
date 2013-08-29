@@ -359,6 +359,12 @@ module Concurrent
         worker.type.should eq :worker
       end
 
+      it 'sets the worker type to :supervisor when #is_a? Supervisor' do
+        subject.add_worker(Supervisor.new)
+        worker = subject.instance_variable_get(:@workers).first
+        worker.type.should eq :supervisor
+      end
+
       it 'raises an exception when given an invalid restart type' do
         lambda {
           subject.add_worker(worker_class.new, type: :bogus)

@@ -114,7 +114,7 @@ module Concurrent
       else
         @mutex.synchronize {
           restart = opts[:restart] || :permanent
-          type = opts[:type] || :worker
+          type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
           raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
           raise ArgumentError.new(":#{type} is not a valid child type") unless CHILD_TYPES.include?(type)
           @workers << WorkerContext.new(worker, nil, type, restart)
