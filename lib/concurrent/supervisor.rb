@@ -19,10 +19,22 @@ module Concurrent
 
     CHILD_TYPES = [:worker, :supervisor]
     CHILD_RESTART_OPTIONS = [:permanent, :transient, :temporary]
-    #CHILD_SHUTDOWN_OPTIONS = [:brutal_kill, :infinity]
 
     MaxRestartFrequencyError = Class.new(StandardError)
-    WorkerContext = Struct.new(:worker, :thread, :type, :restart)
+    WorkerContext = Struct.new(:worker, :thread, :type, :restart) do
+      def needs_restart?
+        return false if self.thread && self.thread.alive?
+        case self.restart
+        when :permanent
+          return true
+        when :transient
+          return self.thread.nil? || self.thread.status.nil?
+        when :temporary
+          return false
+        end
+        return true
+      end
+    end
 
     attr_reader :monitor_interval
     attr_reader :restart_strategy
@@ -161,7 +173,7 @@ module Concurrent
 
     def one_for_one
       @workers.each do |context|
-        unless context.thread && context.thread.alive?
+        if context.needs_restart?
           raise MaxRestartFrequencyError if exceeded_max_restart_frequency?
           start_worker(context)
         end
@@ -172,7 +184,7 @@ module Concurrent
       restart = false
 
       restart = @workers.each do |context|
-        unless context.thread && context.thread.alive?
+        if context.needs_restart?
           raise MaxRestartFrequencyError if exceeded_max_restart_frequency?
           break(true)
         end
@@ -202,7 +214,7 @@ module Concurrent
           rescue Exception => ex
             # suppress
           end
-        elsif ! context.thread || ! context.thread.alive?
+        elsif context.needs_restart?
           raise MaxRestartFrequencyError if exceeded_max_restart_frequency?
           restart = true
         end
