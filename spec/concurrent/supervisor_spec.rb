@@ -151,7 +151,7 @@ module Concurrent
       end
     end
 
-    context 'run' do
+    context '#run' do
 
       it 'runs the monitor' do
         subject.should_receive(:monitor).with(no_args()).at_least(1).times
@@ -372,12 +372,15 @@ module Concurrent
         }.should raise_error(ArgumentError)
       end
 
-      it 'returns true when a worker is accepted' do
-        subject.add_worker(worker).should be_true
+      it 'returns an object id when a worker is accepted' do
+        worker_id = subject.add_worker(worker)
+        worker_id.should be_a(Integer)
+        first = subject.instance_variable_get(:@workers).first
+        worker_id.should eq first.object_id
       end
 
-      it 'returns false when a worker is not accepted' do
-        subject.add_worker('bogus worker').should be_false
+      it 'returns nil when a worker is not accepted' do
+        subject.add_worker('bogus worker').should be_nil
       end
     end
 

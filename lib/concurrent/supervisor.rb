@@ -114,7 +114,6 @@ module Concurrent
       return @workers.length
     end
     alias_method :size, :length
-    alias_method :count, :length
 
     def current_restart_count
       return @restart_times.length
@@ -122,16 +121,16 @@ module Concurrent
 
     def add_worker(worker, opts = {})
       if worker.nil? || running? || ! worker.behaves_as?(:runnable)
-        return false
+        return nil
       else
-        @mutex.synchronize {
+        return @mutex.synchronize {
           restart = opts[:restart] || :permanent
           type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
           raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
           raise ArgumentError.new(":#{type} is not a valid child type") unless CHILD_TYPES.include?(type)
           @workers << WorkerContext.new(worker, nil, type, restart)
+          @workers.last.object_id
         }
-        return true
       end
     end
     alias_method :add_child, :add_worker
