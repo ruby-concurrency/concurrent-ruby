@@ -309,6 +309,7 @@ module Concurrent
         demux.send(:fubar)
 
         reactor.should be_running
+        sleep(0.1)
 
         Process.kill('USR1', Process.pid)
         sleep(0.1)
