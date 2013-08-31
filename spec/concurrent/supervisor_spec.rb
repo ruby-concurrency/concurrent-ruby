@@ -35,6 +35,12 @@ module Concurrent
       }
     end
 
+    let(:runner_class) do
+      Class.new(worker_class) {
+        def run() super(); loop do Thread.pass end; end
+      }
+    end
+
     let(:worker){ worker_class.new }
 
     subject{ Supervisor.new(strategy: :one_for_one) }
@@ -281,6 +287,122 @@ module Concurrent
         workers = (1..3).collect{ worker.dup }
         workers.each{|worker| subject.add_worker(worker)}
         subject.length.should == 3
+      end
+    end
+
+    context '#count' do
+
+      let(:busy_supervisor) do
+        supervisor = Supervisor.new(monitor_interval: 60)
+        3.times do
+          supervisor.add_worker(sleeper_class.new)
+          supervisor.add_worker(stopper_class.new)
+          supervisor.add_worker(error_class.new)
+          supervisor.add_worker(runner_class.new)
+        end
+        supervisor
+      end
+
+      let!(:total_count){ 12 }
+      let!(:active_count){ 6 }
+      let!(:sleeping_count){ 3 }
+      let!(:running_count){ 3 }
+      let!(:aborting_count){ 3 }
+      let!(:stopped_count){ 3 }
+      let!(:abend_count){ 3 }
+
+      after(:each) do
+        busy_supervisor.stop
+      end
+
+      it 'returns an immutable WorkerCounts object' do
+        counts = subject.count
+        counts.should be_a(Supervisor::WorkerCounts)
+
+        lambda {
+          counts.specs += 1
+        }.should raise_error(RuntimeError)
+      end
+
+      it 'returns the total worker count as #specs' do
+        subject.count.specs.should eq 0
+
+        3.times do
+          subject.add_worker(worker_class.new, type: :worker)
+          subject.add_worker(worker_class.new, type: :supervisor)
+        end
+
+        subject.count.specs.should eq 6
+      end
+
+      it 'returns the count of all children marked as :supervisor as #supervisors' do
+        subject.count.supervisors.should eq 0
+
+        3.times do
+          subject.add_worker(worker_class.new, type: :worker)
+          subject.add_worker(worker_class.new, type: :supervisor)
+        end
+
+        subject.count.supervisors.should eq 3
+      end
+
+      it 'returns the count of all children marked as :worker as #workers' do
+        subject.count.workers.should eq 0
+
+        3.times do
+          subject.add_worker(worker_class.new, type: :worker)
+          subject.add_worker(worker_class.new, type: :supervisor)
+        end
+
+        subject.count.workers.should eq 3
+      end
+
+      it 'returns the count of all active workers as #active' do
+        busy_supervisor.count.active.should eq 0
+        busy_supervisor.run!
+        sleep(0.5)
+
+        busy_supervisor.count.active.should eq active_count
+      end
+
+      it 'returns the count of all sleeping workers as #sleeping' do
+        busy_supervisor.count.sleeping.should eq 0
+        busy_supervisor.run!
+        sleep(0.5)
+
+        busy_supervisor.count.sleeping.should eq sleeping_count
+      end
+
+      it 'returns the count of all running workers as #running' do
+        busy_supervisor.count.running.should eq 0
+        busy_supervisor.run!
+        sleep(0.5)
+
+        busy_supervisor.count.running.should eq running_count
+      end
+
+      it 'returns the count of all aborting workers as #aborting' do
+        busy_supervisor.count.aborting.should eq 0
+
+        count = Supervisor::WorkerCounts.new(5, 0, 5)
+        count.status = %w[aborting run aborting false aborting]
+        count.aborting.should eq 3
+      end
+
+      it 'returns the count of all stopped workers as #stopped' do
+        busy_supervisor.count.stopped.should eq total_count
+        busy_supervisor.run!
+        sleep(0.5)
+
+        busy_supervisor.count.stopped.should eq stopped_count
+      end
+
+      it 'returns the count of all workers terminated by exception as #abend' do
+        busy_supervisor.count.abend.should eq 0
+        busy_supervisor.run!
+        sleep(0.5)
+
+        busy_supervisor.count.abend.should eq abend_count
       end
     end
 

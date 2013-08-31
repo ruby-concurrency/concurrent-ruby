@@ -21,18 +21,34 @@ module Concurrent
     CHILD_RESTART_OPTIONS = [:permanent, :transient, :temporary]
 
     MaxRestartFrequencyError = Class.new(StandardError)
-    WorkerContext = Struct.new(:worker, :thread, :type, :restart) do
+
+    WorkerCounts = Struct.new(:specs, :supervisors, :workers) do
+      attr_accessor :status
+      def add(context)
+        self.specs += 1
+        self.supervisors += 1 if context.type == :supervisor
+        self.workers += 1 if context.type == :worker
+      end
+      def active() sleeping + running + aborting end;
+      def sleeping() @status.reduce(0){|x, s| x += (s == 'sleep' ? 1 : 0) } end;
+      def running() @status.reduce(0){|x, s| x += (s == 'run' ? 1 : 0) } end;
+      def aborting() @status.reduce(0){|x, s| x += (s == 'aborting' ? 1 : 0) } end;
+      def stopped() @status.reduce(0){|x, s| x += (s == false ? 1 : 0) } end;
+      def abend() @status.reduce(0){|x, s| x += (s.nil? ? 1 : 0) } end;
+    end
+
+    WorkerContext = Struct.new(:worker, :type, :restart) do
+      attr_accessor :thread
       def needs_restart?
-        return false if self.thread && self.thread.alive?
+        return false if @thread && @thread.alive?
         case self.restart
         when :permanent
           return true
         when :transient
-          return self.thread.nil? || self.thread.status.nil?
-        when :temporary
+          return @thread.nil? || @thread.status.nil?
+        else #when :temporary
           return false
         end
-        return true
       end
     end
 
@@ -61,6 +77,7 @@ module Concurrent
       @workers = []
       @monitor = nil
 
+      @count = WorkerCounts.new(0, 0, 0)
       @restart_times = []
 
       add_worker(opts[:worker]) unless opts[:worker].nil?
@@ -119,6 +136,13 @@ module Concurrent
       return @restart_times.length
     end
 
+    def count
+      return @mutex.synchronize do
+        @count.status = @workers.collect{|w| w.thread ? w.thread.status : false }
+        @count.dup.freeze
+      end
+    end
+
     def add_worker(worker, opts = {})
       if worker.nil? || running? || ! worker.behaves_as?(:runnable)
         return nil
@@ -128,8 +152,10 @@ module Concurrent
           type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
           raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
           raise ArgumentError.new(":#{type} is not a valid child type") unless CHILD_TYPES.include?(type)
-          @workers << WorkerContext.new(worker, nil, type, restart)
-          @workers.last.object_id
+          context = WorkerContext.new(worker, type, restart)
+          @workers << context
+          @count.add(context)
+          context.object_id
         }
       end
     end
