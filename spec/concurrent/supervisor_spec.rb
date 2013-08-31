@@ -9,9 +9,9 @@ module Concurrent
     let(:worker_class) do
       Class.new {
         behavior(:runnable)
-        attr_reader :start_count
+        attr_reader :start_count, :stop_count
         def run() @start_count ||= 0; @start_count += 1; return true; end
-        def stop() return true; end
+        def stop() @stop_count ||= 0; @stop_count += 1; return true; end
         def running?() return true; end
       }
     end
@@ -37,7 +37,16 @@ module Concurrent
 
     let(:runner_class) do
       Class.new(worker_class) {
-        def run() super(); loop do Thread.pass end; end
+        attr_accessor :stopped
+        def run()
+          super()
+          stopped = false
+          loop do
+            break if stopped
+            Thread.pass
+          end
+        end
+        def stop() super(); stopped = true; end
       }
     end
 
@@ -237,7 +246,7 @@ module Concurrent
       end
 
       it 'calls #stop on all workers' do
-        workers = (1..3).collect{ worker_class.new }
+        workers = (1..3).collect{ runner_class.new }
         workers.each{|worker| subject.add_worker(worker)}
         # must stub AFTER adding or else #add_worker will reject
         workers.each{|worker| worker.should_receive(:stop).with(no_args())}
@@ -441,10 +450,14 @@ module Concurrent
         subject.length.should == 1
       end
 
-      it 'rejects the worker when running' do
+      it 'runs the worker when the supervisor is running' do
+        worker = worker_class.new
+        worker.start_count.to_i.should eq 0
         subject.run!
-        subject.add_worker(worker)
-        subject.length.should == 0
+        sleep(0.1)
+        subject.add_worker(worker).should be_true
+        sleep(0.1)
+        worker.start_count.should eq 1
       end
 
       it 'rejects a worker without the :runnable behavior' do
@@ -503,6 +516,172 @@ module Concurrent
 
       it 'returns nil when a worker is not accepted' do
         subject.add_worker('bogus worker').should be_nil
+      end
+    end
+
+    context '#remove_worker' do
+
+      it 'returns false if the worker is running'
+
+      it 'returns nil if the worker is not found'
+      
+      it 'returns the worker on success'
+    end
+
+    context '#stop_worker' do
+
+      it 'returns true if the supervisor is not running' do
+        worker = worker_class.new
+        id = subject.add_worker(worker)
+        subject.stop_worker(id).should be_true
+      end
+
+      it 'returns nil if the worker is not found' do
+        worker = sleeper_class.new
+        id = subject.add_worker(worker)
+        subject.run!
+        sleep(0.1)
+        subject.stop_worker(1234).should be_nil
+      end
+
+      it 'returns true on success' do
+        worker = sleeper_class.new
+        id = subject.add_worker(worker)
+        subject.run!
+        sleep(0.1)
+        worker.should_receive(:stop).at_least(1).times.and_return(true)
+        subject.stop_worker(id).should be_true
+      end
+
+      it 'deletes the worker if it is :temporary' do
+        worker = sleeper_class.new
+        id = subject.add_worker(worker, restart: :temporary)
+        subject.size.should eq 1
+        subject.run!
+        sleep(0.1)
+        subject.stop_worker(id).should be_true
+        subject.size.should eq 0
+      end
+
+      it 'does not implicitly restart the worker' do
+        pending
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        worker = worker_class.new
+        id = supervisor.add_worker(worker, restart: :permanent)
+        supervisor.run!
+        sleep(0.1)
+        supervisor.stop_worker(id)
+        sleep(0.5)
+        supervisor.stop
+        worker.start_count.should eq 1
+      end
+    end
+
+    context '#start_worker' do
+
+      it 'returns false if the supervisor is not running' do
+        worker = worker_class.new
+        id = subject.add_worker(worker)
+        subject.start_worker(id).should be_false
+      end
+
+      it 'returns nil if the worker is not found' do
+        subject.run!
+        sleep(0.1)
+        subject.start_worker(1234).should be_nil
+      end
+
+      it 'starts the worker if not running' do
+        supervisor = Supervisor.new(monitor_interval: 60)
+        worker = error_class.new
+        id = supervisor.add_worker(worker)
+        supervisor.run!
+        sleep(0.1)
+        supervisor.start_worker(id)
+        sleep(0.1)
+        worker.start_count.should == 2
+        supervisor.stop
+      end
+
+      it 'returns true when the worker is successfully started' do
+        supervisor = Supervisor.new(monitor_interval: 60)
+        worker = error_class.new
+        id = supervisor.add_worker(worker)
+        supervisor.run!
+        sleep(0.1)
+        supervisor.start_worker(id).should be_true
+        supervisor.stop
+      end
+
+      it 'returns true if the worker was already running' do
+        supervisor = Supervisor.new(monitor_interval: 60)
+        worker = sleeper_class.new
+        id = supervisor.add_worker(worker)
+        supervisor.run!
+        sleep(0.1)
+        supervisor.start_worker(id).should be_true
+        worker.start_count.should == 1
+        supervisor.stop
+      end
+    end
+
+    context '#restart_worker' do
+
+      it 'returns false if the supervisor is not running' do
+        worker = worker_class.new
+        id = subject.add_worker(worker)
+        subject.restart_worker(id).should be_false
+      end
+
+      it 'returns nil if the worker is not found' do
+        subject.run!
+        sleep(0.1)
+        subject.restart_worker(1234).should be_nil
+      end
+
+      it 'returns false if the worker is :temporary' do
+        worker = worker_class.new
+        id = subject.add_worker(worker, restart: :temporary)
+        subject.run!
+        sleep(0.1)
+        subject.restart_worker(id).should be_false
+      end
+
+      it 'stops and then starts a worker that is running' do
+        worker = runner_class.new
+        id = subject.add_worker(worker)
+        subject.run!
+        sleep(0.1)
+        subject.restart_worker(id)
+        sleep(0.1)
+        worker.start_count.should == 2
+        worker.stop_count.should == 1
+      end
+
+      it 'returns true if the worker is running and is successfully restarted' do
+        worker = runner_class.new
+        id = subject.add_worker(worker)
+        subject.run!
+        sleep(0.1)
+        subject.restart_worker(id).should be_true
+      end
+
+      it 'starts a worker that is not running' do
+        worker = error_class.new
+        id = subject.add_worker(worker)
+        subject.run!
+        sleep(0.1)
+        subject.restart_worker(id)
+        sleep(0.1)
+        worker.start_count.should == 2
+      end
+
+      it 'returns true if the worker is not running and is successfully started' do
+        worker = error_class.new
+        id = subject.add_worker(worker)
+        subject.run!
+        sleep(0.1)
+        subject.restart_worker(id).should be_true
       end
     end
 
@@ -610,13 +789,13 @@ module Concurrent
           supervisor = Supervisor.new(strategy: :one_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
-          # must stub AFTER adding or else #add_worker will reject
-          workers[0].should_receive(:run).once.with(no_args())
-          workers[1].should_receive(:run).with(no_args()).at_least(2).times
-          workers[2].should_receive(:run).once.with(no_args())
-
           supervisor.run!
           sleep(1)
+
+          workers[0].start_count.should == 1
+          workers[1].start_count.should >= 2
+          workers[2].start_count.should == 1
+
           supervisor.stop
         end
 
@@ -631,13 +810,13 @@ module Concurrent
           supervisor = Supervisor.new(strategy: :one_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
-          # must stub AFTER adding or else #add_worker will reject
-          workers[0].should_receive(:run).once.with(no_args())
-          workers[1].should_receive(:run).with(no_args()).at_least(2).times
-          workers[2].should_receive(:run).once.with(no_args())
-
           supervisor.run!
           sleep(1)
+
+          workers[0].start_count.should == 1
+          workers[1].start_count.should >= 2
+          workers[2].start_count.should == 1
+
           supervisor.stop
         end
       end
@@ -655,16 +834,13 @@ module Concurrent
           supervisor = Supervisor.new(strategy: :one_for_all, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
-          # must stub AFTER adding or else #add_worker will reject
-          workers[0].should_receive(:run).with(no_args()).at_least(2).times
-          workers[1].should_receive(:run).with(no_args()).at_least(2).times
-          workers[2].should_receive(:run).with(no_args()).at_least(2).times
-
           workers[0].should_receive(:stop).once.with(no_args())
           workers[2].should_receive(:stop).once.with(no_args())
 
           supervisor.run!
           sleep(1)
+          workers.each{|worker| worker.start_count.should >= 2 }
+
           supervisor.stop
         end
 
@@ -679,16 +855,13 @@ module Concurrent
           supervisor = Supervisor.new(strategy: :one_for_all, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
-          # must stub AFTER adding or else #add_worker will reject
-          workers[0].should_receive(:run).with(no_args()).at_least(2).times
-          workers[1].should_receive(:run).with(no_args()).at_least(2).times
-          workers[2].should_receive(:run).with(no_args()).at_least(2).times
-
           workers[0].should_receive(:stop).once.with(no_args())
           workers[2].should_receive(:stop).once.with(no_args())
 
           supervisor.run!
           sleep(1)
+          workers.each{|worker| worker.start_count.should >= 2 }
+
           supervisor.stop
         end
       end
@@ -706,16 +879,16 @@ module Concurrent
           supervisor = Supervisor.new(strategy: :rest_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
-          # must stub AFTER adding or else #add_worker will reject
-          workers[0].should_receive(:run).once.with(no_args())
-          workers[1].should_receive(:run).with(no_args()).at_least(2).times
-          workers[2].should_receive(:run).with(no_args()).at_least(2).times
-
           workers[0].should_not_receive(:stop)
           workers[2].should_receive(:stop).once.with(no_args())
 
           supervisor.run!
           sleep(1)
+
+          workers[0].start_count.should == 1
+          workers[1].start_count.should >= 2
+          workers[2].start_count.should >= 2
+
           supervisor.stop
         end
 
@@ -730,16 +903,16 @@ module Concurrent
           supervisor = Supervisor.new(strategy: :rest_for_one, monitor_interval: 0.1)
           workers.each{|worker| supervisor.add_worker(worker) }
 
-          # must stub AFTER adding or else #add_worker will reject
-          workers[0].should_receive(:run).once.with(no_args())
-          workers[1].should_receive(:run).with(no_args()).at_least(2).times
-          workers[2].should_receive(:run).with(no_args()).at_least(2).times
-
           workers[0].should_not_receive(:stop)
           workers[2].should_receive(:stop).once.with(no_args())
 
           supervisor.run!
           sleep(1)
+
+          workers[0].start_count.should == 1
+          workers[1].start_count.should >= 2
+          workers[2].start_count.should >= 2
+
           supervisor.stop
         end
       end
@@ -800,6 +973,30 @@ module Concurrent
         worker.start_count.should eq 1
       end
 
+      specify ':temporary is deleted on abend' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :temporary)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        supervisor.size.should eq 0
+      end
+
+      specify ':temporary is deleted on normal stop' do
+        worker = stopper_class.new
+        supervisor = Supervisor.new(monitor_interval: 0.1)
+        supervisor.add_worker(worker, restart: :temporary)
+
+        supervisor.run!
+        sleep(0.5)
+        supervisor.stop
+
+        supervisor.size.should eq 0
+      end
+
       specify ':transient restarts on abend' do
         worker = error_class.new
         supervisor = Supervisor.new(monitor_interval: 0.1)
@@ -825,17 +1022,16 @@ module Concurrent
       end
     end
 
-    context 'supervisor tree' do
+    context 'supervision tree' do
 
       specify do
         s1 = Supervisor.new(monitor_interval: 0.1)
         s2 = Supervisor.new(monitor_interval: 0.1)
         s3 = Supervisor.new(monitor_interval: 0.1)
 
-        workers = (1..3).collect{ worker_class.new }
+        workers = (1..3).collect{ sleeper_class.new }
         workers.each{|worker| s3.add_worker(worker)}
-        # must stub AFTER adding or else #add_worker will reject
-        workers.each{|worker| worker.should_receive(:run).at_least(1).times.with(no_args())}
+
         workers.each{|worker| worker.should_receive(:stop).at_least(1).times.with(no_args())}
 
         s1.add_worker(s2)
@@ -843,6 +1039,7 @@ module Concurrent
 
         s1.run!
         sleep(0.2)
+
         s1.stop
         sleep(0.2)
       end

@@ -22,6 +22,22 @@ module Concurrent
 
     MaxRestartFrequencyError = Class.new(StandardError)
 
+    WorkerContext = Struct.new(:worker, :type, :restart) do
+      attr_accessor :thread
+      def alive?() return thread && thread.alive?; end
+      def needs_restart?
+        return false if thread && thread.alive?
+        case self.restart
+        when :permanent
+          return true
+        when :transient
+          return thread.nil? || thread.status.nil?
+        else #when :temporary
+          return false
+        end
+      end
+    end
+
     WorkerCounts = Struct.new(:specs, :supervisors, :workers) do
       attr_accessor :status
       def add(context)
@@ -35,21 +51,6 @@ module Concurrent
       def aborting() @status.reduce(0){|x, s| x += (s == 'aborting' ? 1 : 0) } end;
       def stopped() @status.reduce(0){|x, s| x += (s == false ? 1 : 0) } end;
       def abend() @status.reduce(0){|x, s| x += (s.nil? ? 1 : 0) } end;
-    end
-
-    WorkerContext = Struct.new(:worker, :type, :restart) do
-      attr_accessor :thread
-      def needs_restart?
-        return false if @thread && @thread.alive?
-        case self.restart
-        when :permanent
-          return true
-        when :transient
-          return @thread.nil? || @thread.status.nil?
-        else #when :temporary
-          return false
-        end
-      end
     end
 
     attr_reader :monitor_interval
@@ -111,15 +112,9 @@ module Concurrent
 
         @workers.length.times do |i|
           context = @workers[-1-i]
-          begin
-            context.worker.stop
-            Thread.pass
-          rescue Exception => ex
-            # suppress
-          ensure
-            Thread.kill(context.thread) unless context.thread.nil?
-          end
+          terminate_worker(context)
         end
+        prune_workers
       end
     end
 
@@ -144,31 +139,70 @@ module Concurrent
     end
 
     def add_worker(worker, opts = {})
-      if worker.nil? || running? || ! worker.behaves_as?(:runnable)
-        return nil
-      else
-        return @mutex.synchronize {
-          restart = opts[:restart] || :permanent
-          type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
-          raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
-          raise ArgumentError.new(":#{type} is not a valid child type") unless CHILD_TYPES.include?(type)
-          context = WorkerContext.new(worker, type, restart)
-          @workers << context
-          @count.add(context)
-          context.object_id
-        }
-      end
+      return nil if worker.nil? || ! worker.behaves_as?(:runnable)
+      return @mutex.synchronize {
+        restart = opts[:restart] || :permanent
+        type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
+        raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
+        raise ArgumentError.new(":#{type} is not a valid child type") unless CHILD_TYPES.include?(type)
+        context = WorkerContext.new(worker, type, restart)
+        @workers << context
+        @count.add(context)
+        worker.run if running?
+        context.object_id
+      }
     end
     alias_method :add_child, :add_worker
+
+    def remove_worker(worker_id)
+    end
+    alias_method :remove_child, :remove_worker
+
+    def stop_worker(worker_id)
+      return true unless running?
+      return @mutex.synchronize do
+        index, context = find_worker(worker_id)
+        break(nil) if index.nil?
+        terminate_worker(context)
+        @workers.delete_at(index) if @workers[index].restart == :temporary
+        true
+      end
+    end
+    alias_method :stop_child, :stop_worker
+
+    def start_worker(worker_id)
+      return false unless running?
+      return @mutex.synchronize do
+        index, context = find_worker(worker_id)
+        break(nil) if context.nil?
+        run_worker(context) unless context.alive?
+        true
+      end
+    end
+    alias_method :start_child, :start_worker
+
+    def restart_worker(worker_id)
+      return false unless running?
+      return @mutex.synchronize do
+        index, context = find_worker(worker_id)
+        break(nil) if context.nil?
+        break(false) if context.restart == :temporary
+        terminate_worker(context)
+        run_worker(context)
+        true
+      end
+    end
+    alias_method :restart_child, :restart_worker
 
     private
 
     def monitor
-      @workers.each{|context| start_worker(context)}
+      @workers.each{|context| run_worker(context)}
       loop do
         sleep(@monitor_interval)
         break unless running?
         @mutex.synchronize do
+          prune_workers
           self.send(@restart_strategy)
         end
         break unless running?
@@ -177,12 +211,40 @@ module Concurrent
       stop
     end
 
-    def start_worker(context)
+    def run_worker(context)
       context.thread = Thread.new do
         Thread.current.abort_on_exception = false
         context.worker.run
       end
       return context
+    end
+
+    def terminate_worker(context)
+      if context.alive?
+        context.worker.stop
+        Thread.pass
+      end
+    rescue Exception => ex
+      begin
+        Thread.kill(context.thread)
+      rescue
+        # suppress
+      end
+    ensure
+      context.thread = nil
+    end
+
+    def prune_workers
+      @workers.delete_if{|w| w.restart == :temporary && ! w.alive? }
+    end
+
+    def find_worker(worker_id)
+      index = @workers.find_index{|worker| worker.object_id == worker_id}
+      if index.nil?
+        return [nil, nil]
+      else
+        return [index, @workers[index]]
+      end
     end
 
     def exceeded_max_restart_frequency?
@@ -196,11 +258,14 @@ module Concurrent
       return false
     end
 
+    #----------------------------------------------------------------
+    # restart strategies
+
     def one_for_one
       @workers.each do |context|
         if context.needs_restart?
           raise MaxRestartFrequencyError if exceeded_max_restart_frequency?
-          start_worker(context)
+          run_worker(context)
         end
       end
     end
@@ -216,16 +281,10 @@ module Concurrent
       end
 
       if restart
-
         @workers.each do |context|
-          begin
-            context.worker.stop
-          rescue Exception => ex
-            # suppress
-          end
+          terminate_worker(context)
         end
-
-        @workers.each{|context| start_worker(context)}
+        @workers.each{|context| run_worker(context)}
       end
     end
 
@@ -234,11 +293,7 @@ module Concurrent
 
       @workers.each do |context|
         if restart
-          begin
-            context.worker.stop
-          rescue Exception => ex
-            # suppress
-          end
+          terminate_worker(context)
         elsif context.needs_restart?
           raise MaxRestartFrequencyError if exceeded_max_restart_frequency?
           restart = true
