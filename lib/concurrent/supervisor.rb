@@ -155,6 +155,13 @@ module Concurrent
     alias_method :add_child, :add_worker
 
     def remove_worker(worker_id)
+      return @mutex.synchronize do
+        index, context = find_worker(worker_id)
+        break(nil) if context.nil?
+        break(false) if context.alive?
+        @workers.delete_at(index)
+        context.worker
+      end
     end
     alias_method :remove_child, :remove_worker
 

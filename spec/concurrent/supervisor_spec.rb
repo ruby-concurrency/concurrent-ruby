@@ -521,11 +521,40 @@ module Concurrent
 
     context '#remove_worker' do
 
-      it 'returns false if the worker is running'
+      it 'returns false if the worker is running' do
+        id = subject.add_worker(sleeper_class.new)
+        subject.run!
+        sleep(0.1)
+        subject.remove_worker(id).should be_false
+      end
 
-      it 'returns nil if the worker is not found'
+      it 'returns nil if the worker is not found' do
+        subject.run!
+        sleep(0.1)
+        subject.remove_worker(1234).should be_nil
+      end
       
-      it 'returns the worker on success'
+      it 'returns the worker on success' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 60)
+        id = supervisor.add_worker(worker)
+        supervisor.run!
+        sleep(0.1)
+        supervisor.remove_worker(id).should eq worker
+        supervisor.stop
+      end
+
+      it 'removes the worker from the supervisor on success' do
+        worker = error_class.new
+        supervisor = Supervisor.new(monitor_interval: 60)
+        id = supervisor.add_worker(worker)
+        supervisor.length.should == 1
+        supervisor.run!
+        sleep(0.1)
+        supervisor.remove_worker(id)
+        supervisor.length.should == 0
+        supervisor.stop
+      end
     end
 
     context '#stop_worker' do
