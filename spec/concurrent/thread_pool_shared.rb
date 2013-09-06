@@ -51,6 +51,19 @@ share_examples_for 'Thread Pool' do
     end
   end
 
+  context '#waiting' do
+
+    it 'returns zero when the pool is empty' do
+      subject.waiting.should eq 0
+    end
+
+    it 'returns the number of jobs waiting in the queue' do
+      (subject.max_threads + 10).times{ sleep(0.1); subject << proc{ sleep } }
+      sleep(0.1)
+      subject.waiting.should eq 10
+    end
+  end
+
   context '#shutdown' do
 
     it 'stops accepting new tasks' do

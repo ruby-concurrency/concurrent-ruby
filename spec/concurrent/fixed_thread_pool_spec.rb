@@ -7,6 +7,10 @@ module Concurrent
 
     subject { FixedThreadPool.new(5) }
 
+    after(:each) do
+      subject.kill
+    end
+
     it_should_behave_like 'Thread Pool'
 
     context '#initialize' do
@@ -26,7 +30,7 @@ module Concurrent
       it 'creates a thread pool of the given size' do
         thread = Thread.new{ nil }
         # add one for the garbage collector
-        Thread.should_receive(:new).exactly(5+1).times.and_return(thread)
+        Thread.should_receive(:new).at_least(1).times.and_return(thread)
         pool = FixedThreadPool.new(5)
         pool.size.should eq 5
       end

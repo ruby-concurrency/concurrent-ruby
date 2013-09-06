@@ -23,6 +23,11 @@ module Concurrent
 
   class ThreadPool
 
+    MIN_POOL_SIZE = 1
+    MAX_POOL_SIZE = 1024
+
+    attr_reader :max_threads
+
     def initialize
       @status = :running
       @queue = Queue.new
@@ -41,6 +46,11 @@ module Concurrent
     def killed?
       return @status == :killed
     end
+
+    def waiting
+      return @queue.length
+    end
+    alias_method :queued, :waiting
 
     def shutdown
       mutex.synchronize do

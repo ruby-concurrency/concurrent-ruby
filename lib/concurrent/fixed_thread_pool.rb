@@ -12,16 +12,14 @@ module Concurrent
   class FixedThreadPool < ThreadPool
     behavior(:thread_pool)
 
-    MIN_POOL_SIZE = 1
-    MAX_POOL_SIZE = 1024
-
     def initialize(size)
-      super()
-      if size < MIN_POOL_SIZE || size > MAX_POOL_SIZE
-        raise ArgumentError.new("size must be between #{MIN_POOL_SIZE} and #{MAX_POOL_SIZE}")
+      @max_threads = size
+      if @max_threads < MIN_POOL_SIZE || @max_threads > MAX_POOL_SIZE
+        raise ArgumentError.new("@max_threads must be from #{MIN_POOL_SIZE} to #{MAX_POOL_SIZE}")
       end
 
-      @pool = size.times.collect{ create_worker_thread }
+      super()
+      @pool = @max_threads.times.collect{ create_worker_thread }
       collect_garbage
     end
 
@@ -39,6 +37,7 @@ module Concurrent
         return 0
       end
     end
+    alias_method :length, :size
 
     def post(*args, &block)
       raise ArgumentError.new('no block given') unless block_given?

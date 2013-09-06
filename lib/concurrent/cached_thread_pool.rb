@@ -22,6 +22,12 @@ module Concurrent
     def initialize(opts = {})
       @gc_interval = (opts[:gc_interval] || DEFAULT_GC_INTERVAL).freeze
       @thread_idletime = (opts[:thread_idletime] || DEFAULT_THREAD_IDLETIME).freeze
+      @max_threads = opts[:max_threads] || opts[:max] || MAX_POOL_SIZE
+
+      if @max_threads < MIN_POOL_SIZE || @max_threads > MAX_POOL_SIZE
+        raise ArgumentError.new("size must be from #{MIN_POOL_SIZE} to #{MAX_POOL_SIZE}")
+      end
+
       super()
       @working = 0
     end
@@ -36,13 +42,14 @@ module Concurrent
     def size
       return @pool.length
     end
+    alias_method :length, :size
 
     def post(*args, &block)
       raise ArgumentError.new('no block given') unless block_given?
       if running?
-        collect_garbage if @pool.empty?
         mutex.synchronize do
-          if @working >= @pool.length
+          collect_garbage if @pool.empty?
+          if @working >= @pool.length && @pool.length < @max_threads
             create_worker_thread
           end
           @queue << [args, block]
