@@ -1,4 +1,11 @@
 require 'simplecov'
+require 'coveralls'
+
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+  SimpleCov::Formatter::HTMLFormatter,
+  Coveralls::SimpleCov::Formatter
+]
+
 SimpleCov.start do
   project_name 'concurrent-ruby'
   add_filter '/md/'
@@ -6,9 +13,6 @@ SimpleCov.start do
   add_filter '/spec/'
   add_filter '/tasks/'
 end
-
-require 'coveralls'
-Coveralls.wear!
 
 require 'eventmachine'
 
@@ -21,7 +25,7 @@ require 'functional'
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }
 
 RSpec.configure do |config|
-  #config.order = 'random'
+  config.order = 'random'
 
   config.before(:suite) do
   end
@@ -31,5 +35,4 @@ RSpec.configure do |config|
 
   config.after(:each) do
   end
-
 end
