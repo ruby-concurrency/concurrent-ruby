@@ -12,6 +12,7 @@ end
 group :testing do
   gem 'rspec'
   gem 'simplecov'
+  gem 'coveralls', require: false
   gem 'faker'
   gem 'timecop'
 end
