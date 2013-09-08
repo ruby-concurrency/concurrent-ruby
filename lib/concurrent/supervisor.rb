@@ -24,9 +24,11 @@ module Concurrent
 
     WorkerContext = Struct.new(:worker, :type, :restart) do
       attr_accessor :thread
+      attr_accessor :terminated
       def alive?() return thread && thread.alive?; end
       def needs_restart?
         return false if thread && thread.alive?
+        return false if terminated == true
         case self.restart
         when :permanent
           return true
@@ -170,6 +172,7 @@ module Concurrent
       return @mutex.synchronize do
         index, context = find_worker(worker_id)
         break(nil) if index.nil?
+        context.terminated = true
         terminate_worker(context)
         @workers.delete_at(index) if @workers[index].restart == :temporary
         true
@@ -182,6 +185,7 @@ module Concurrent
       return @mutex.synchronize do
         index, context = find_worker(worker_id)
         break(nil) if context.nil?
+        context.terminated = false
         run_worker(context) unless context.alive?
         true
       end
@@ -194,6 +198,7 @@ module Concurrent
         index, context = find_worker(worker_id)
         break(nil) if context.nil?
         break(false) if context.restart == :temporary
+        context.terminated = false
         terminate_worker(context)
         run_worker(context)
         true

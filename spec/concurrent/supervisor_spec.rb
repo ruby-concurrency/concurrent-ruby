@@ -593,9 +593,8 @@ module Concurrent
       end
 
       it 'does not implicitly restart the worker' do
-        pending
         supervisor = Supervisor.new(monitor_interval: 0.1)
-        worker = worker_class.new
+        worker = runner_class.new
         id = supervisor.add_worker(worker, restart: :permanent)
         supervisor.run!
         sleep(0.1)
