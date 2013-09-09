@@ -11,6 +11,9 @@
 // limitations under the License.
 
 #include <ruby.h>
+#if defined(__sun)
+#include <atomic.h>
+#endif
 
 static void ir_mark(void *value) {
     rb_gc_mark_maybe((VALUE) value);
@@ -50,6 +53,20 @@ static VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE n
     if (OSAtomicCompareAndSwap64(expect_value, new_value, &DATA_PTR(self))) {
 	return Qtrue;
     }
+#elif defined(__sun)
+/*  Assuming VALUE is uintptr_t */
+/*  Based on the definition of uintptr_t from /usr/include/sys/int_types.h */
+#if defined(_LP64) || defined(_I32LPx)
+    /*  64-bit: uintptr_t === unsigned long */
+    if (atomic_cas_ulong((uintptr_t *) &DATA_PTR(self), expect_value, new_value)) {
+        return Qtrue;
+    }
+#else
+    /*  32-bit: uintptr_t === unsigned int */
+    if (atomic_cas_uint((uintptr_t *) &DATA_PTR(self), expect_value, new_value)) {
+        return Qtrue;
+    }
+#endif
 #elif HAVE_GCC_CAS
     if (__sync_bool_compare_and_swap(&DATA_PTR(self), expect_value, new_value)) {
 	return Qtrue;
