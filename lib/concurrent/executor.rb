@@ -52,23 +52,29 @@ module Concurrent
     end
 
     def stop
-      return unless running?
+      return true unless running?
       @mutex.synchronize do
         @running = false
         @monitor.wakeup if @monitor.alive?
         Thread.pass
       end
+      return true
+    rescue
+      return false
     ensure
       @worker = @monitor = nil
     end
 
     def kill
-      return unless running?
+      return true unless running?
       @mutex.synchronize do
         @running = false
         Thread.kill(@worker) unless @worker.nil?
         Thread.kill(@monitor) unless @monitor.nil?
       end
+      return true
+    rescue
+      return false
     ensure
       @worker = @monitor = nil
     end
