@@ -34,59 +34,61 @@ module Concurrent
     end
 
     def run!
-      return true if running?
-      @thread = Thread.new do
-        Thread.current.abort_on_exception = false
-        monitor
+      raise StandardError.new('already running') if running?
+      @mutex.synchronize do
+        @running = true
+        @monitor = Thread.new do
+          Thread.current.abort_on_exception = false
+          monitor
+        end
+        Thread.pass
       end
-      Thread.pass
-      return running?
     end
 
     def run
-      monitor unless running?
+      raise StandardError.new('already running') if running?
+      @running = true
+      monitor
     end
 
     def stop
-      return true if @thread.nil?
-      @running = false
-      Thread.pass
-      return ! running?
+      return unless running?
+      @mutex.synchronize do
+        @running = false
+        @monitor.wakeup if @monitor.alive?
+        Thread.pass
+      end
+    ensure
+      @worker = @monitor = nil
     end
 
     def kill
-      Thread.kill(@worker) unless @worker.nil?
-
-      case @thread.status
-      when 'sleep'
-        Thread.kill(@thread)
-      when 'run'
-        Thread.kill(@thread) if @thread.join(1).nil?
+      return unless running?
+      @mutex.synchronize do
+        @running = false
+        Thread.kill(@worker) unless @worker.nil?
+        Thread.kill(@monitor) unless @monitor.nil?
       end
-
-      return true
-    rescue => ex
-      return false
     ensure
-      @thread = nil
+      @worker = @monitor = nil
     end
     alias_method :terminate, :kill
 
     def running?
-      return @running && @thread && @thread.alive?
+      return @running && @monitor && @monitor.alive?
     end
 
     def status
-      return @thread.status unless @thread.nil?
+      return @monitor.status unless @monitor.nil?
     end
 
     def join(limit = nil)
-      if @thread.nil?
+      if @monitor.nil?
         return nil
       elsif limit.nil?
-        return @thread.join
+        return @monitor.join
       else
-        return @thread.join(limit)
+        return @monitor.join(limit)
       end
     end
 
@@ -100,7 +102,7 @@ module Concurrent
 
     def monitor
       @running = true
-      @thread = Thread.current if @thread.nil?
+      @monitor = Thread.current if @monitor.nil?
 
       sleep(@execution_interval) unless @run_now == true
 
@@ -127,7 +129,7 @@ module Concurrent
         break unless @running
         sleep(@execution_interval)
       end
-      @thread = nil
+      @monitor = nil
     end
   end
 

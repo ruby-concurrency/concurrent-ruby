@@ -67,8 +67,7 @@ module Concurrent
       it 'runs the block immediately when the :run_now option is true' do
         @expected = false
         @ec = Executor.run('Foo', execution: 500, now: true){ @expected = true }
-        @expected.should be_false
-        sleep(1)
+        sleep(0.1)
         @expected.should be_true
       end
 
@@ -169,6 +168,7 @@ module Concurrent
 
       it 'returns nil when not running' do
         @ec = Executor.run('Foo'){ nil }
+        sleep(0.1)
         @ec.kill
         sleep(0.1)
         @ec.status.should be_nil
@@ -190,6 +190,7 @@ module Concurrent
 
       it 'immediately returns nil when not running' do
         @ec = Executor.run('Foo'){ nil }
+        sleep(0.1)
         @ec.kill
         sleep(0.1)
         @ec.join.should be_nil
