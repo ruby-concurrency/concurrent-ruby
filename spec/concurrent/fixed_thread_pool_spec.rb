@@ -11,7 +11,7 @@ module Concurrent
       subject.kill
     end
 
-    it_should_behave_like 'Thread Pool'
+    it_should_behave_like :thread_pool
 
     context '#initialize' do
 
