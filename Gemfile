@@ -1,5 +1,7 @@
 source 'http://rubygems.org'
 
+gem 'functional-ruby', git: 'git@github.com:jdantonio/functional-ruby.git', branch: 'master'
+
 gemspec
 
 group :development do
