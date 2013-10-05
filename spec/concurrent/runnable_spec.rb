@@ -8,6 +8,9 @@ module Concurrent
       Class.new {
         include Runnable
         attr_reader :thread
+        def initialize
+          yield if block_given?
+        end
         def on_task
           @thread = Thread.current
           sleep(0.1)
@@ -129,6 +132,7 @@ module Concurrent
         @thread = Thread.new { subject.run }
         sleep(0.1)
         subject.stop.should be_true
+        subject.should_not be_running
       end
 
       it 'return false when #on_stop raises an exception' do
@@ -136,6 +140,7 @@ module Concurrent
         @thread = Thread.new { subject.run }
         sleep(0.1)
         subject.stop.should be_false
+        subject.should_not be_running
       end
     end
 
@@ -179,6 +184,13 @@ module Concurrent
         runnable.should_receive(:new).once.with(*args)
         @context = runnable.run!(*args)
         sleep(0.1)
+      end
+
+      it 'passes a block argument to the runner constructor' do
+        @expected = false
+        @context = runnable.run!{ @expected = true }
+        sleep(0.1)
+        @expected.should be_true
       end
 
       it 'creates a new thread' do

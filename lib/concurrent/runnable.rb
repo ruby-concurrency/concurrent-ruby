@@ -17,8 +17,8 @@ module Concurrent
     def run
       mutex.synchronize do
         raise LifecycleError.new('already running') if @running
-        raise LifecycleError.new('#on_task not implemented') unless self.respond_to?(:on_task)
-        on_run if respond_to?(:on_run)
+        raise LifecycleError.new('#on_task not implemented') unless self.respond_to?(:on_task, true)
+        on_run if respond_to?(:on_run, true)
         @running = true
       end
 
@@ -41,8 +41,8 @@ module Concurrent
     def stop
       return true unless @running
       mutex.synchronize do
-        on_stop if respond_to?(:on_stop)
         @running = false
+        on_stop if respond_to?(:on_stop, true)
       end
       return true
     rescue => ex
@@ -55,9 +55,9 @@ module Concurrent
 
     def self.included(base)
       class << base
-        def run!(*args)
+        def run!(*args, &block)
           context = Context.new
-          context.runner = self.new(*args)
+          context.runner = self.new(*args, &block)
           context.thread = Thread.new(context.runner) do |runner|
             Thread.abort_on_exception = false
             runner.run

@@ -1,70 +1,65 @@
-#require 'observer'
 require 'thread'
-require 'functional'
+require 'observer'
 
-require 'concurrent/supervisor'
+require 'concurrent/runnable'
 
 module Concurrent
-  include PatternMatching
 
   class Channel
+    include Observable
+    include Runnable
     behavior(:runnable)
 
-    def initialize(&block)
-      @mailbox = Queue.new
+    def initialize(errorback = nil, &block)
       @task = block
-      @running = false
-      @thread = nil
+      @errorback = errorback
     end
 
-    def send(*message)
-      @mailbox.push(message)
+    def post(*message)
+      return false unless running?
+      @queue.push(message)
+      return @queue.length
     end
 
-    def run
-      return if running?
-      listen
-    end
-
-    def stop
-      return unless running?
-      @mailbox.clear
-      @mailbox.push(:stop)
-    end
-
-    def running?
-      @running && ( @thread.nil? || @thread.alive? )
-    end
-
-    def run!
-      return if running?
-      @thread.kill unless @thread.nil?
-      @thread = Thread.new do
-        Thread.current.abort_on_exception = false
-        listen
-      end
-
-      return @thread.alive?
+    def <<(message)
+      self.post(*message)
+      return self
     end
 
     protected
 
-    def receive(*message)
-      @task.call(*msg) unless @task.nil?
+    # @private
+    def on_run # :nodoc:
+      @queue = Queue.new
     end
 
-    def listen
-      loop do
-        @running = true
-        message = @mailbox.pop
-        break if message == :stop
-        begin
-          receive(*message)
-        rescue => ex
-          # ???
-        end
+    # @private
+    def on_stop # :nodoc:
+      @queue.clear
+      @queue.push(:stop)
+    end
+
+    # @private
+    def on_task # :nodoc:
+      message = @queue.pop
+      return if message == :stop
+      begin
+        result = receive(*message)
+        changed
+        notify_observers(Time.now, message, result)
+      rescue => ex
+        on_error(Time.now, message, ex)
       end
-      @running = false
+    end
+
+    # @private
+    def on_error(time, msg, ex) # :nodoc:
+      @errorback.call(time, msg, ex) if @errorback
+    end
+
+    # @private
+    def receive(*message) # :nodoc:
+      @task.call(*message) unless @task.nil?
     end
   end
 end
