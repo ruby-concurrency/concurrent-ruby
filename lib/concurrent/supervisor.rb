@@ -1,10 +1,7 @@
 require 'thread'
 require 'functional'
 
-behavior_info(:runnable,
-              run: 0,
-              stop: 0,
-              running?: 0)
+require 'concurrent/runnable'
 
 module Concurrent
 

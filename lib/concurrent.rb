@@ -12,6 +12,7 @@ require 'concurrent/future'
 require 'concurrent/goroutine'
 require 'concurrent/obligation'
 require 'concurrent/promise'
+require 'concurrent/runnable'
 require 'concurrent/supervisor'
 require 'concurrent/utilities'
 
