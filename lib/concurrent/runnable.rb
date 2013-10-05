@@ -16,25 +16,26 @@ module Concurrent
 
     def run
       mutex.synchronize do
-        raise LifecycleError.new('already running') if @running == true
-        raise NotImplementedError.new('#on_task') unless self.respond_to?(:on_task)
-        @running = true
+        raise LifecycleError.new('already running') if @running
+        raise LifecycleError.new('#on_task not implemented') unless self.respond_to?(:on_task)
         on_run if respond_to?(:on_run)
+        @running = true
       end
 
-      begin
-        loop do
-          break unless @running
-          on_task
-          break unless @running
-          Thread.pass
-        end
-
-        return true
-      rescue => ex
-        @running = false
-        return false
+      loop do
+        break unless @running
+        on_task
+        break unless @running
+        Thread.pass
       end
+
+      return true
+    rescue LifecycleError => ex
+      @running = false
+      raise ex
+    rescue => ex
+      @running = false
+      return false
     end
 
     def stop

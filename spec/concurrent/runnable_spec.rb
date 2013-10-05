@@ -69,19 +69,6 @@ module Concurrent
         @expected.should be_true
       end
 
-      it 'raises an exception if the #on_task callback is not implemented' do
-        runner = Class.new { include Runnable }.new
-        expect {
-          runner.run
-        }.to raise_error(NotImplementedError)
-      end
-
-      it 'calls #on_task in an infinite loop' do
-        subject.should_receive(:on_task).with(no_args()).at_least(1)
-        @thread = Thread.new { subject.run }
-        @thread.join(1)
-      end
-
       it 'returns false when the task loop raises an exception' do
         @expected = false
         subject.stub(:on_task).and_raise(StandardError)
@@ -90,21 +77,27 @@ module Concurrent
         @expected.should be_false
       end
 
-      it 'returns false when stopped abnormally' do
-        @expected = false
-        subject.stub(:on_stop).and_raise(StandardError)
-        @thread = Thread.new { @expected = subject.run }
+      it 'return false when #on_run raises an exception' do
+        @expected = true
+        subject.stub(:on_run).and_raise(StandardError)
+        @thread = Thread.new do
+          @expected = subject.run
+        end
         sleep(0.1)
         @expected.should be_false
       end
 
-      it 'raises an exception when it fails to run' do
-        subject.stub(:on_run).and_raise(StandardError)
-        @thread = Thread.new { subject.run }
-        sleep(0.1)
+      it 'raises an exception if the #on_task callback is not implemented' do
+        runner = Class.new { include Runnable }.new
         expect {
-          subject.run
-        }.to raise_error(StandardError)
+          runner.run
+        }.to raise_error(Runnable::LifecycleError)
+      end
+
+      it 'calls #on_task in an infinite loop' do
+        subject.should_receive(:on_task).with(no_args()).at_least(1)
+        @thread = Thread.new { subject.run }
+        @thread.join(1)
       end
     end
 
@@ -138,7 +131,7 @@ module Concurrent
         subject.stop.should be_true
       end
 
-      it 'returns false when it fails to stop' do
+      it 'return false when #on_stop raises an exception' do
         subject.stub(:on_stop).and_raise(StandardError)
         @thread = Thread.new { subject.run }
         sleep(0.1)
