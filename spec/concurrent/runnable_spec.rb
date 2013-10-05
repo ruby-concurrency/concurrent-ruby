@@ -9,7 +9,7 @@ module Concurrent
       Class.new {
         include Runnable
         attr_reader :thread
-        def initialize
+        def initialize(*args, &block)
           yield if block_given?
         end
         def on_task
@@ -23,11 +23,12 @@ module Concurrent
 
     subject { runnable.new }
 
+    it_should_behave_like :runnable
+
     after(:each) do
+      subject.stop
       @thread.kill unless @thread.nil?
     end
-
-    it_should_behave_like :runnable
 
     context '#run' do
 
@@ -101,21 +102,25 @@ module Concurrent
 
     context '#run!' do
 
+      let(:clazz) do
+        Class.new { include Runnable }
+      end
+
       after(:each) do
         @context.runner.stop if @context && @context.runner
         @context.thread.kill if @context && @context.thread
       end
 
       it 'creates a new runner' do
-        runnable.should_receive(:new).once.with(no_args())
-        @context = runnable.run!
+        clazz.should_receive(:new).once.with(no_args())
+        @context = clazz.run!
         sleep(0.1)
       end
 
       it 'passes all args to the runner constructor' do
         args = [1, 2, :three, :four]
-        runnable.should_receive(:new).once.with(*args)
-        @context = runnable.run!(*args)
+        clazz.should_receive(:new).once.with(*args)
+        @context = clazz.run!(*args)
         sleep(0.1)
       end
 

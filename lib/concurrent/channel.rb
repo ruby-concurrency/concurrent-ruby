@@ -22,7 +22,7 @@ module Concurrent
     end
 
     def <<(message)
-      self.post(*message)
+      post(*message)
       return self
     end
 

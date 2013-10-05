@@ -2,6 +2,11 @@ require 'spec_helper'
 
 share_examples_for :runnable do
 
+  after(:each) do
+    subject.stop
+    @thread.kill unless @thread.nil?
+  end
+
   context '#run' do
 
     it 'starts the (blocking) runner on the current thread when stopped' do
