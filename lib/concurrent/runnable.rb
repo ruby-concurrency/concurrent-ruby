@@ -1,0 +1,77 @@
+require 'thread'
+require 'functional'
+
+behavior_info(:runnable,
+              run: 0,
+              stop: 0,
+              running?: 0)
+
+module Concurrent
+
+  module Runnable
+    behavior(:runnable)
+
+    Context = Struct.new(:runner, :thread)
+    LifecycleError = Class.new(StandardError)
+
+    def run
+      mutex.synchronize do
+        raise LifecycleError.new('already running') if @running == true
+        raise NotImplementedError.new('#on_task') unless self.respond_to?(:on_task)
+        @running = true
+        on_run if respond_to?(:on_run)
+      end
+
+      begin
+        loop do
+          break unless @running
+          on_task
+          break unless @running
+          Thread.pass
+        end
+
+        return true
+      rescue => ex
+        @running = false
+        return false
+      end
+    end
+
+    def stop
+      return true unless @running
+      mutex.synchronize do
+        on_stop if respond_to?(:on_stop)
+        @running = false
+      end
+      return true
+    rescue => ex
+      return false
+    end
+
+    def running?
+      return @running == true
+    end
+
+    def self.included(base)
+      class << base
+        def run!(*args)
+          context = Context.new
+          context.runner = self.new(*args)
+          context.thread = Thread.new(context.runner) do |runner|
+            Thread.abort_on_exception = false
+            runner.run
+          end
+          return context
+        rescue => ex
+          return nil
+        end
+      end
+    end
+
+    protected
+
+    def mutex
+      @mutex ||= Mutex.new
+    end
+  end
+end
