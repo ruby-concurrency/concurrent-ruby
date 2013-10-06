@@ -36,15 +36,6 @@ module Concurrent
       it 'sets the timeout to the default when nil' do
         Agent.new(0).timeout.should eq Agent::TIMEOUT
       end
-
-      it 'sets the length to zero' do
-        Agent.new(10).length.should eq 0
-      end
-
-      it 'spawns the worker thread' do
-        Agent.thread_pool.should_receive(:post).once.with(any_args())
-        Agent.new(0)
-      end
     end
 
     context '#rescue' do
@@ -96,45 +87,19 @@ module Concurrent
     context '#post' do
       
       it 'adds the given block to the queue' do
+        Agent.thread_pool.should_receive(:post).with(no_args()).exactly(3).times
         subject.post{ sleep(100) }
+        subject.post{ nil }
+        subject.post{ nil }
         sleep(0.1)
-        before = subject.length
-        subject.post{ nil }
-        subject.post{ nil }
-        subject.length.should eq before+2
       end
 
       it 'does not add to the queue when no block is given' do
+        Agent.thread_pool.should_receive(:post).with(no_args()).exactly(2).times
         subject.post{ sleep(100) }
-        sleep(0.1)
-        before = subject.length
         subject.post
         subject.post{ nil }
-        subject.length.should eq before+1
-      end
-    end
-
-    context '#length' do
-
-      it 'should be zero for a new agent' do
-        subject.length.should eq 0
-      end
-
-      it 'should increase by one for each #post' do
-        subject.post{ sleep(100) }
         sleep(0.1)
-        subject.post{ sleep }
-        subject.post{ sleep }
-        subject.post{ sleep }
-        subject.length.should eq 3
-      end
-
-      it 'should decrease by one each time a handler is run' do
-        subject.post{ nil }
-        subject.post{ sleep }
-        subject.post{ sleep }
-        sleep(0.1)
-        subject.length.should eq 1
       end
     end
 
