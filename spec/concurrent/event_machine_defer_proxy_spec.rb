@@ -86,7 +86,9 @@ if Functional::PLATFORM.mri?
               subject.post{ @expected << 2 }
               subject.post{ @expected << 3 }
               sleep(0.1)
-              @expected.should eq [1,2,3]
+              @expected.should include(1)
+              @expected.should include(2)
+              @expected.should include(3)
 
               EventMachine.stop
             end
