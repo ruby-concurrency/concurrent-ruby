@@ -80,11 +80,11 @@ module Concurrent
     # @private
     def work(&handler) # :nodoc:
       begin
-        result = Timeout.timeout(@timeout) do
-          handler.call(@value)
-        end
-        if @validator.nil? || @validator.call(result)
-          @mutex.synchronize do
+        @mutex.synchronize do
+          result = Timeout.timeout(@timeout) do
+            handler.call(@value)
+          end
+          if @validator.nil? || @validator.call(result)
             @value = result
             changed
             notify_observers(Time.now, @value)

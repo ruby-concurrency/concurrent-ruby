@@ -351,5 +351,23 @@ module Concurrent
         observer.value.should eq 10
       end
     end
+
+    context 'stress test' do
+
+      before(:each) do
+        Agent.thread_pool = FixedThreadPool.new(5)
+      end
+
+      specify do
+        count = 10_000
+        counter = Concurrent::Agent.new(0)
+
+        count.times do |i|
+          counter.post{|value| value + 1 }
+        end
+
+        sleep(0.1) until counter.value == count
+      end
+    end
   end
 end
