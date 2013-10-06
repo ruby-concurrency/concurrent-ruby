@@ -14,6 +14,7 @@ module Concurrent
     after(:each) do
       subject.stop
       @thread.kill unless @thread.nil?
+      sleep(0.1)
     end
 
     context '#post' do
@@ -77,7 +78,11 @@ module Concurrent
         channel.stop
         @thread.join(0.1)
         q = channel.instance_variable_get(:@queue)
-        q.size.should == 0
+        if q.size >= 1
+          q.pop.should == :stop
+        else
+          q.size.should == 0
+        end
       end
 
       it 'pushes a :stop message onto the queue' do
