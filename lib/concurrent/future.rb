@@ -3,7 +3,6 @@ require 'observer'
 
 require 'concurrent/global_thread_pool'
 require 'concurrent/obligation'
-require 'concurrent/utilities'
 
 module Concurrent
 

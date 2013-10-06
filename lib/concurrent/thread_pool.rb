@@ -1,7 +1,6 @@
 require 'functional/behavior'
 
 require 'concurrent/event'
-require 'concurrent/utilities'
 
 behavior_info(:thread_pool,
               running?: 0,

@@ -1,7 +1,6 @@
 require 'thread'
 
 require 'concurrent/thread_pool'
-require 'concurrent/event'
 
 module Concurrent
 

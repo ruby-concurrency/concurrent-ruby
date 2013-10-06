@@ -14,7 +14,6 @@ require 'concurrent/obligation'
 require 'concurrent/promise'
 require 'concurrent/runnable'
 require 'concurrent/supervisor'
-require 'concurrent/utilities'
 
 require 'concurrent/reactor'
 require 'concurrent/reactor/drb_async_demux'
