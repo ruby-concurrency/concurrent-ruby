@@ -131,6 +131,7 @@ module Concurrent
         future.add_observer(observer)
         future.value.should == 42
         future.reason.should be_nil
+        sleep(0.1)
         observer.value.should == 42
         observer.reason.should be_nil
       end
@@ -140,6 +141,7 @@ module Concurrent
         future.add_observer(observer)
         future.value.should be_nil
         future.reason.should be_a(StandardError)
+        sleep(0.1)
         observer.value.should be_nil
         observer.reason.should be_a(StandardError)
       end
