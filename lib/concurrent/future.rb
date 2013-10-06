@@ -15,6 +15,7 @@ module Concurrent
     behavior(:future)
 
     def initialize(*args, &block)
+      @mutex = Mutex.new
       unless block_given?
         @state = :fulfilled
       else
@@ -24,6 +25,19 @@ module Concurrent
           work(*args, &block)
         end
       end
+    end
+
+    def add_observer(observer, func = :update)
+      @mutex.synchronize do
+        if event.set?
+          Future.thread_pool.post(func, Time.now, @value, @reason) do |f, *args|
+            observer.send(f, *args)
+          end
+        else
+          super
+        end
+      end
+      return func
     end
 
     private
@@ -37,9 +51,12 @@ module Concurrent
         @reason = ex
         @state = :rejected
       ensure
-        event.set
-        changed
-        notify_observers(Time.now, @value, @reason)
+        @mutex.synchronize {
+          event.set
+          changed
+          notify_observers(Time.now, @value, @reason)
+          delete_observers
+        }
       end
     end
   end

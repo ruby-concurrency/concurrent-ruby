@@ -111,23 +111,27 @@ module Concurrent
 
     context 'observation' do
 
-      let(:observer) do
+      let(:clazz) do
         Class.new do
           attr_reader :value
           attr_reader :reason
+          attr_reader :count
           define_method(:update) do |time, value, reason|
+            @count = @count.to_i + 1
             @value = value
             @reason = reason
           end
-        end.new
+        end
       end
+
+      let(:observer) { clazz.new }
 
       it 'notifies all observers on fulfillment' do
         future = Future.new{ sleep(0.1); 42 }
         future.add_observer(observer)
-        future.value.should eq 42
+        future.value.should == 42
         future.reason.should be_nil
-        observer.value.should eq 42
+        observer.value.should == 42
         observer.reason.should be_nil
       end
 
@@ -138,6 +142,56 @@ module Concurrent
         future.reason.should be_a(StandardError)
         observer.value.should be_nil
         observer.reason.should be_a(StandardError)
+      end
+
+      it 'notifies an observer added after fulfillment' do
+        future = Future.new{ 42 }
+        sleep(0.1)
+        future.value.should == 42
+        future.add_observer(observer)
+        observer.value.should be_nil
+        sleep(0.1)
+        observer.value.should == 42
+      end
+
+      it 'notifies an observer added after rejection' do
+        future = Future.new{ raise StandardError }
+        sleep(0.1)
+        future.reason.should be_a(StandardError)
+        future.add_observer(observer)
+        observer.value.should be_nil
+        sleep(0.1)
+        observer.reason.should be_a(StandardError)
+      end
+
+      it 'does not notify existing observers when a new observer added after fulfillment' do
+        future = Future.new{ 42 }
+        future.add_observer(observer)
+        sleep(0.1)
+        future.value.should == 42
+        observer.count.should == 1
+
+        o2 = clazz.new
+        future.add_observer(o2)
+        sleep(0.1)
+
+        observer.count.should == 1
+        o2.value.should == 42
+      end
+
+      it 'does not notify existing observers when a new observer added after rejection' do
+        future = Future.new{ raise StandardError }
+        future.add_observer(observer)
+        sleep(0.1)
+        future.reason.should be_a(StandardError)
+        observer.count.should == 1
+
+        o2 = clazz.new
+        future.add_observer(o2)
+        sleep(0.1)
+
+        observer.count.should == 1
+        o2.reason.should be_a(StandardError)
       end
     end
   end
