@@ -191,13 +191,96 @@ module Concurrent
     end
 
     context '#pool' do
-      pending
+
+      let(:clazz){ Class.new(Channel) }
+
+      it 'raises an exception if the count is zero or less' do
+        expect {
+          clazz.pool(0)
+        }.to raise_error(ArgumentError)
+      end
+  
+      it 'creates the requested number of channels' do
+        mailbox, channels = clazz.pool(5)
+        channels.size.should == 5
+      end
+
+      it 'passes the errorback to each channel' do
+        errorback = proc{ nil }
+        clazz.should_receive(:new).with(errorback)
+        clazz.pool(1, errorback)
+      end
+
+      it 'passes the block to each channel' do
+        block = proc{ nil }
+        clazz.should_receive(:new).with(anything(), &block)
+        clazz.pool(1, nil, &block)
+      end
+
+      it 'gives all channels the same mailbox' do
+        mailbox, channels = clazz.pool(2)
+        mbox1 = channels.first.instance_variable_get(:@queue)
+        mbox2 = channels.last.instance_variable_get(:@queue)
+        mbox1.should eq mbox2
+      end
+
+      it 'returns a Poolbox as the first retval' do
+        mailbox, channels = clazz.pool(2)
+        mailbox.should be_a(Channel::Poolbox)
+      end
+
+      it 'gives the Poolbox the same mailbox as the channels' do
+        mailbox, channels = clazz.pool(1)
+        mbox1 = mailbox.instance_variable_get(:@queue)
+        mbox2 = channels.first.instance_variable_get(:@queue)
+        mbox1.should eq mbox2
+      end
+
+      it 'returns an array of channels as the second retval' do
+        mailbox, channels = clazz.pool(2)
+        channels.each do |channel|
+          channel.should be_a(clazz)
+        end
+      end
+
+      it 'posts to the mailbox with Poolbox#post' do
+        @expected = false
+        mailbox, channels = clazz.pool(1){|msg| @expected = true }
+        @thread = Thread.new{ channels.first.run }
+        sleep(0.1)
+        mailbox.post(42)
+        sleep(0.1)
+        channels.each{|channel| channel.stop }
+        @thread.kill
+        @expected.should be_true
+      end
+
+      it 'posts to the mailbox with Poolbox#<<' do
+        @expected = false
+        mailbox, channels = clazz.pool(1){|msg| @expected = true }
+        @thread = Thread.new{ channels.first.run }
+        sleep(0.1)
+        mailbox << 42
+        sleep(0.1)
+        channels.each{|channel| channel.stop }
+        @thread.kill
+        @expected.should be_true
+      end
     end
 
     context 'subclassing' do
 
       after(:each) do
         @thread.kill unless @thread.nil?
+      end
+
+      context '#pool' do
+
+        it 'creates channels of the appropriate subclass' do
+          actor = Class.new(Channel)
+          mailbox, channels = actor.pool(1)
+          channels.first.should be_a(actor)
+        end
       end
 
       context '#receive overloading' do

@@ -546,7 +546,35 @@ module Concurrent
     end
 
     context '#add_workers' do
-      pending
+
+      it 'calls #add_worker once for each worker' do
+        workers = 5.times.collect{ worker_class.new }
+        workers.each do |worker|
+          subject.should_receive(:add_worker).once.with(worker, anything())
+        end
+        subject.add_workers(workers)
+      end
+
+      it 'passes the options hash to each #add_worker call' do
+        options = {
+          restart: :permanent,
+          type: :worker
+        }
+        workers = 5.times.collect{ worker_class.new }
+        workers.each do |worker|
+          subject.should_receive(:add_worker).once.with(anything(), options)
+        end
+        subject.add_workers(workers, options)
+      end
+
+      it 'returns an array of object identifiers' do
+        workers = 5.times.collect{ worker_class.new }
+        context = subject.add_workers(workers)
+        context.size.should == 5
+        context.each do |wc|
+          wc.should be_a(Fixnum)
+        end
+      end
     end
 
     context '#remove_worker' do
