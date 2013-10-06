@@ -33,13 +33,13 @@ module Concurrent
       begin
         @value = yield(*args)
         @state = :fulfilled
+      rescue Exception => ex
+        @reason = ex
+        @state = :rejected
+      ensure
         event.set
         changed
-        notify_observers(Time.now, @value)
-      rescue Exception => ex
-        @state = :rejected
-        @reason = ex
-        event.set
+        notify_observers(Time.now, @value, @reason)
       end
     end
   end

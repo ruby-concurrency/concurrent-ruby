@@ -114,26 +114,30 @@ module Concurrent
       let(:observer) do
         Class.new do
           attr_reader :value
-          define_method(:update) do |time, value|
+          attr_reader :reason
+          define_method(:update) do |time, value, reason|
             @value = value
+            @reason = reason
           end
         end.new
       end
 
-      it 'notifies all observers when the value changes' do
+      it 'notifies all observers on fulfillment' do
         future = Future.new{ sleep(0.1); 42 }
         future.add_observer(observer)
         future.value.should eq 42
         future.reason.should be_nil
         observer.value.should eq 42
+        observer.reason.should be_nil
       end
 
-      it 'does not notify observers when the operation raises an exception' do
+      it 'notifies all observers on rejection' do
         future = Future.new{ sleep(0.1); raise StandardError }
         future.add_observer(observer)
         future.value.should be_nil
         future.reason.should be_a(StandardError)
         observer.value.should be_nil
+        observer.reason.should be_a(StandardError)
       end
     end
   end
