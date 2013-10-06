@@ -1,8 +1,7 @@
-require 'observer'
 require 'thread'
+require 'observer'
 
 require 'concurrent/global_thread_pool'
-require 'concurrent/utilities'
 
 module Concurrent
 
@@ -26,10 +25,7 @@ module Concurrent
       @timeout = timeout
       @rescuers = []
       @validator = nil
-      @queue = Queue.new
       @mutex = Mutex.new
-
-      Agent.thread_pool.post{ work }
     end
 
     def value(timeout = 0) return @value; end
@@ -55,23 +51,13 @@ module Concurrent
     alias_method :validates_with, :validate
 
     def post(&block)
-      return @queue.length unless block_given?
-      return @mutex.synchronize do
-        @queue << block
-        @queue.length
-      end
+      Agent.thread_pool.post{ work(&block) } if block_given?
     end
 
     def <<(block)
       self.post(&block)
       return self
     end
-
-    def length
-      return @queue.length
-    end
-    alias_method :size, :length
-    alias_method :count, :length
 
     alias_method :add_watch, :add_observer
 
@@ -91,23 +77,20 @@ module Concurrent
     end
 
     # @private
-    def work # :nodoc:
-      loop do
-        handler = @queue.pop
-        begin
+    def work(&handler) # :nodoc:
+      begin
+        @mutex.synchronize do
           result = Timeout.timeout(@timeout) do
             handler.call(@value)
           end
           if @validator.nil? || @validator.call(result)
-            @mutex.synchronize do
-              @value = result
-              changed
-              notify_observers(Time.now, @value)
-            end
+            @value = result
+            changed
+            notify_observers(Time.now, @value)
           end
-        rescue Exception => ex
-          try_rescue(ex)
         end
+      rescue Exception => ex
+        try_rescue(ex)
       end
     end
   end

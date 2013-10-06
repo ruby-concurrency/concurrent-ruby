@@ -2,6 +2,8 @@ require 'thread'
 require 'timeout'
 require 'functional'
 
+require 'concurrent/event'
+
 behavior_info(:future,
               state: 0,
               value: -1,
@@ -41,26 +43,15 @@ module Concurrent
     def pending?() return(@state == :pending); end
 
     def value(timeout = nil)
-      if timeout == 0 || ! pending?
-        return @value
-      elsif timeout.nil?
-        return mutex.synchronize { v = @value }
-      else
-        begin
-          return Timeout::timeout(timeout.to_f) {
-            mutex.synchronize { v = @value }
-          }
-        rescue Timeout::Error => ex
-          return nil
-        end
-      end
+      event.wait(timeout) unless timeout == 0 || @state != :pending
+      return @value
     end
     alias_method :deref, :value
 
     protected
 
-    def mutex
-      @mutex ||= Mutex.new
+    def event
+      @event ||= Event.new
     end
   end
 end

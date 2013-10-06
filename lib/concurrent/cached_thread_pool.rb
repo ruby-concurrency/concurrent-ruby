@@ -2,7 +2,6 @@ require 'thread'
 require 'functional'
 
 require 'concurrent/thread_pool'
-require 'concurrent/utilities'
 
 module Concurrent
 

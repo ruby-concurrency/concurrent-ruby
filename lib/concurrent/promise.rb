@@ -2,7 +2,6 @@ require 'thread'
 
 require 'concurrent/global_thread_pool'
 require 'concurrent/obligation'
-require 'concurrent/utilities'
 
 module Concurrent
 
@@ -157,12 +156,12 @@ module Concurrent
         loop do
           current = lock.synchronize{ chain[index] }
           unless current.rejected?
-            current.mutex.synchronize do
-              begin
-                result = current.on_fulfill(result)
-              rescue Exception => ex
-                current.on_reject(ex)
-              end
+            begin
+              result = current.on_fulfill(result)
+            rescue Exception => ex
+              current.on_reject(ex)
+            ensure
+              event.set
             end
           end
           index += 1

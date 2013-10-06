@@ -1,7 +1,6 @@
 require 'concurrent'
 
 require 'drb/drb'
-require 'socket'
 
 require 'faker'
 require 'functional'
@@ -44,54 +43,6 @@ namespace :test do
       end
     end
 
-    there = nil
-
-    messages_per_second = count / duration
-    success_rate = good / count.to_f * 100.0
-
-    puts "Sent #{count} messages. Received #{good} good responses and #{count - good} bad."
-    puts "The total processing time was %0.3f seconds." % duration
-    puts "That's %i messages per second with a %0.1f success rate." % [messages_per_second, success_rate]
-
-    # cleanup
-    reactor.stop
-    sleep(0.1)
-    Thread.kill(t)
-    sleep(0.1)
-
-    puts "And we're done!"
-  end
-
-  desc 'Test TcpAsyncDemux and Reactor with an echo client and server'
-  task :tcp_demux, [:count] do |t, args|
-    args.with_defaults(count: DEFAULT_COUNT)
-
-    count = args[:count].to_i
-
-    # server
-    demux = Concurrent::Reactor::TcpSyncDemux.new(host: TCP_HOST, port: TCP_PORT, acl: NET_ACL)
-    reactor = Concurrent::Reactor.new(demux)
-    reactor.add_handler(:echo) {|*args| args.first }
-
-    puts 'Starting the reactor...'
-    t = Thread.new{ reactor.start }
-
-    # client
-    there = TCPSocket.open(TCP_HOST, TCP_PORT)
-
-    good = 0
-
-    duration, result = timer do
-      count.times do |i|
-        message = Faker::Company.bs
-        there.puts(Concurrent::Reactor::TcpSyncDemux.format_message(:echo, message))
-        result, echo = Concurrent::Reactor::TcpSyncDemux.get_message(there)
-        echo = echo.first
-        good += 1 if echo == message
-      end
-    end
-
-    there.close
     there = nil
 
     messages_per_second = count / duration

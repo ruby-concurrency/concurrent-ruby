@@ -27,14 +27,12 @@ share_examples_for Concurrent::Obligation do
 
     it 'blocks the caller when :pending and timeout is nil' do
       f = pending_subject
-      sleep(0.1)
       f.value.should be_true
       f.should be_fulfilled
     end
 
     it 'returns nil when reaching the optional timeout value' do
       f = pending_subject
-      sleep(0.1)
       f.value(0).should be_nil
       f.should be_pending
     end
@@ -42,21 +40,18 @@ share_examples_for Concurrent::Obligation do
     it 'returns immediately when timeout is zero' do
       Timeout.should_not_receive(:timeout).with(any_args())
       f = pending_subject
-      sleep(0.1)
       f.value(0).should be_nil
       f.should be_pending
     end
 
     it 'returns the value when fulfilled before timeout' do
       f = pending_subject
-      sleep(0.1)
       f.value(10).should be_true
       f.should be_fulfilled
     end
 
     it 'returns nil when timeout reached' do
       f = pending_subject
-      sleep(0.1)
       f.value(0.1).should be_nil
       f.should be_pending
     end

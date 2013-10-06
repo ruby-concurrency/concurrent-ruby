@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-share_examples_for 'Thread Pool' do
+share_examples_for :thread_pool do
 
   context '#running?' do
 
