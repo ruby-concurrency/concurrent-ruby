@@ -18,7 +18,6 @@ require 'concurrent/utilities'
 
 require 'concurrent/reactor'
 require 'concurrent/reactor/drb_async_demux'
-require 'concurrent/reactor/tcp_sync_demux'
 
 require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'
