@@ -1,4 +1,5 @@
 require 'thread'
+require 'observer'
 
 require 'concurrent/global_thread_pool'
 require 'concurrent/obligation'
@@ -8,6 +9,7 @@ module Concurrent
 
   class Future
     include Obligation
+    include Observable
     include UsesGlobalThreadPool
 
     behavior(:future)
@@ -28,14 +30,16 @@ module Concurrent
 
     # @private
     def work(*args) # :nodoc:
-      mutex.synchronize do
-        begin
-          @value = yield(*args)
-          @state = :fulfilled
-        rescue Exception => ex
-          @state = :rejected
-          @reason = ex
-        end
+      begin
+        @value = yield(*args)
+        @state = :fulfilled
+        event.set
+        changed
+        notify_observers(Time.now, @value)
+      rescue Exception => ex
+        @state = :rejected
+        @reason = ex
+        event.set
       end
     end
   end

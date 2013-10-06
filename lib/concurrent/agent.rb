@@ -1,5 +1,5 @@
-require 'observer'
 require 'thread'
+require 'observer'
 
 require 'concurrent/global_thread_pool'
 require 'concurrent/utilities'

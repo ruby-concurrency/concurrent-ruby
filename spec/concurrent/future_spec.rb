@@ -108,5 +108,33 @@ module Concurrent
         end
       end
     end
+
+    context 'observation' do
+
+      let(:observer) do
+        Class.new do
+          attr_reader :value
+          define_method(:update) do |time, value|
+            @value = value
+          end
+        end.new
+      end
+
+      it 'notifies all observers when the value changes' do
+        future = Future.new{ sleep(0.1); 42 }
+        future.add_observer(observer)
+        future.value.should eq 42
+        future.reason.should be_nil
+        observer.value.should eq 42
+      end
+
+      it 'does not notify observers when the operation raises an exception' do
+        future = Future.new{ sleep(0.1); raise StandardError }
+        future.add_observer(observer)
+        future.value.should be_nil
+        future.reason.should be_a(StandardError)
+        observer.value.should be_nil
+      end
+    end
   end
 end
