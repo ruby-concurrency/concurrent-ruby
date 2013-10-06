@@ -16,7 +16,7 @@ share_examples_for :runnable do
 
     it 'raises an exception when already running' do
       @thread = Thread.new { subject.run }
-      sleep(0.1)
+      @thread.join(0.1)
       expect {
         subject.run
       }.to raise_error
@@ -25,9 +25,9 @@ share_examples_for :runnable do
     it 'returns true when stopped normally' do
       @expected = false
       @thread = Thread.new { @expected = subject.run }
-      sleep(0.1)
+      @thread.join(0.1)
       subject.stop
-      sleep(0.1)
+      @thread.join(1)
       @expected.should be_true
     end
 
@@ -35,7 +35,7 @@ share_examples_for :runnable do
       @expected = false
       subject.stub(:on_task).and_raise(StandardError)
       @thread = Thread.new { @expected = subject.run }
-      sleep(0.1)
+      @thread.join(0.1)
       @expected.should be_false
     end
   end
@@ -48,7 +48,7 @@ share_examples_for :runnable do
 
     it 'returns true when successfully stopped' do
       @thread = Thread.new { subject.run }
-      sleep(0.1)
+      @thread.join(0.1)
       subject.stop.should be_true
       subject.should_not be_running
     end
@@ -58,18 +58,11 @@ share_examples_for :runnable do
 
     it 'returns true when running' do
       @thread = Thread.new { subject.run }
-      sleep(0.1)
+      @thread.join(0.1)
       subject.should be_running
     end
 
     it 'returns false when not running' do
-      subject.should_not be_running
-    end
-
-    it 'returns false if runner abends' do
-      subject.stub(:on_task).and_raise(StandardError)
-      @thread = Thread.new { subject.run }
-      sleep(0.1)
       subject.should_not be_running
     end
   end

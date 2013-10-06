@@ -100,6 +100,16 @@ module Concurrent
       end
     end
 
+    context '#running?' do
+
+      it 'returns false if runner abends' do
+        subject.stub(:on_task).and_raise(StandardError)
+        @thread = Thread.new { subject.run }
+        @thread.join(0.1)
+        subject.should_not be_running
+      end
+    end
+
     context '#run!' do
 
       let(:clazz) do

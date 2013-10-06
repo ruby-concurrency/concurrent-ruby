@@ -1,6 +1,6 @@
 require 'spec_helper'
-
 require 'timecop'
+require_relative 'runnable_shared'
 
 module Concurrent
 
@@ -52,10 +52,13 @@ module Concurrent
 
     let(:worker){ worker_class.new }
 
-    subject{ Supervisor.new(strategy: :one_for_one) }
+    subject{ Supervisor.new(strategy: :one_for_one, monitor_interval: 0.1) }
+
+    it_should_behave_like :runnable
 
     after(:each) do
       subject.stop
+      sleep(0.1)
     end
 
     context '#initialize' do
@@ -213,6 +216,7 @@ module Concurrent
         thread = Thread.new{ nil }
         Thread.should_receive(:new).with(no_args()).and_return(thread)
         subject.run!
+        sleep(0.1)
       end
 
       it 'calls #run on all workers' do
@@ -238,8 +242,28 @@ module Concurrent
 
     context '#stop' do
 
-      it 'stops the monitor thread' do
-        Thread.should_receive(:kill).with(anything())
+      def mock_thread(status = 'run')
+        thread = double('thread')
+        thread.should_receive(:status).with(no_args()).and_return(status)
+        thread.stub(:join).with(any_args()).and_return(thread)
+        Thread.stub(:new).with(no_args()).and_return(thread)
+        return thread
+      end
+
+      it 'wakes the monitor thread if sleeping' do
+        thread = mock_thread('sleep')
+        thread.should_receive(:run).once.with(no_args())
+
+        subject.run!
+        sleep(0.1)
+        subject.stop
+      end
+
+      it 'kills the monitor thread if it does not wake up' do
+        thread = mock_thread('run')
+        thread.should_receive(:join).with(any_args()).and_return(nil)
+        thread.should_receive(:kill).with(no_args())
+
         subject.run!
         sleep(0.1)
         subject.stop
@@ -457,7 +481,7 @@ module Concurrent
         sleep(0.1)
         subject.add_worker(worker).should be_true
         sleep(0.1)
-        worker.start_count.should eq 1
+        worker.start_count.should >= 1
       end
 
       it 'rejects a worker without the :runnable behavior' do
@@ -701,7 +725,7 @@ module Concurrent
         sleep(0.1)
         subject.restart_worker(id)
         sleep(0.1)
-        worker.start_count.should == 2
+        worker.start_count.should >= 2
       end
 
       it 'returns true if the worker is not running and is successfully started' do

@@ -99,14 +99,20 @@ module Concurrent
       raise StandardError.new('already running') if running?
       @running = true
       monitor
+      return true
     end
 
     def stop
       return true unless running?
       @running = false
       @mutex.synchronize do
-        Thread.kill(@monitor) unless @monitor.nil?
-        @monitor = nil
+        unless @monitor.nil?
+          @monitor.run if @monitor.status == 'sleep'
+          if @monitor.join(0.1).nil?
+            @monitor.kill
+          end
+          @monitor = nil
+        end
         @restart_times.clear
 
         @workers.length.times do |i|
