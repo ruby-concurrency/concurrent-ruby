@@ -32,5 +32,8 @@ RSpec.configure do |config|
   end
 
   config.after(:each) do
+    Thread.list.each do |thread|
+      thread.kill unless thread == Thread.current
+    end
   end
 end
