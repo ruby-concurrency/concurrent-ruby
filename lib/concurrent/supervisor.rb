@@ -81,11 +81,12 @@ module Concurrent
       @restart_times = []
 
       add_worker(opts[:worker]) unless opts[:worker].nil?
+      add_workers(opts[:workers]) unless opts[:workers].nil?
     end
 
     def run!
-      raise StandardError.new('already running') if running?
       @mutex.synchronize do
+        raise StandardError.new('already running') if @running
         @running = true
         @monitor = Thread.new do
           Thread.current.abort_on_exception = false
@@ -96,16 +97,18 @@ module Concurrent
     end
 
     def run
-      raise StandardError.new('already running') if running?
-      @running = true
+      @mutex.synchronize do
+        raise StandardError.new('already running') if @running
+        @running = true
+      end
       monitor
       return true
     end
 
     def stop
-      return true unless running?
-      @running = false
+      return true unless @running
       @mutex.synchronize do
+        @running = false
         unless @monitor.nil?
           @monitor.run if @monitor.status == 'sleep'
           if @monitor.join(0.1).nil?
@@ -121,10 +124,11 @@ module Concurrent
         end
         prune_workers
       end
+      return true
     end
 
     def running?
-      return @running
+      return @running == true
     end
 
     def length
@@ -158,6 +162,13 @@ module Concurrent
       }
     end
     alias_method :add_child, :add_worker
+
+    def add_workers(workers, opts = {})
+      return workers.collect do |worker|
+        add_worker(worker, opts)
+      end
+    end
+    alias_method :add_children, :add_workers
 
     def remove_worker(worker_id)
       return @mutex.synchronize do

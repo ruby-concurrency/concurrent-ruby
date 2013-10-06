@@ -190,6 +190,10 @@ module Concurrent
       end
     end
 
+    context '#pool' do
+      pending
+    end
+
     context 'subclassing' do
 
       after(:each) do

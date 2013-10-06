@@ -11,6 +11,7 @@ module Concurrent
     behavior(:runnable)
 
     def initialize(errorback = nil, &block)
+      @queue = Queue.new
       @task = block
       @errorback = errorback
     end
@@ -26,11 +27,39 @@ module Concurrent
       return self
     end
 
+    def self.pool(count, errorback = nil, &block)
+      raise ArgumentError.new('count must be greater than zero') unless count > 0
+      mailbox = Queue.new
+      channels = count.times.collect do
+        channel = self.new(errorback, &block)
+        channel.instance_variable_set(:@queue, mailbox)
+        channel
+      end
+      return Poolbox.new(mailbox), channels
+    end
+
     protected
+
+    class Poolbox
+
+      def initialize(queue)
+        @queue = queue
+      end
+
+      def post(*message)
+        @queue.push(message)
+        return @queue.length
+      end
+
+      def <<(message)
+        post(*message)
+        return self
+      end
+    end
 
     # @private
     def on_run # :nodoc:
-      @queue = Queue.new
+      @queue.clear
     end
 
     # @private

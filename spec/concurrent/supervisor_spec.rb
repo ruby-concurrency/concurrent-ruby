@@ -201,8 +201,10 @@ module Concurrent
         @thread = nil
         subject.run!
         lambda {
-          @thread = Thread.new{ subject.run }
-          @thread.abort_on_exception = true
+          @thread = Thread.new do
+            Thread.current.abort_on_exception = true
+            subject.run
+          end
           sleep(0.1)
         }.should raise_error(StandardError)
         subject.stop
@@ -541,6 +543,10 @@ module Concurrent
       it 'returns nil when a worker is not accepted' do
         subject.add_worker('bogus worker').should be_nil
       end
+    end
+
+    context '#add_workers' do
+      pending
     end
 
     context '#remove_worker' do
