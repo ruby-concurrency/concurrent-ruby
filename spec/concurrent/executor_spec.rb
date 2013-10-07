@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'runnable_shared'
 
 module Concurrent
 
@@ -15,6 +16,13 @@ module Concurrent
 
     after(:each) do
       @subject.kill unless @subject.nil?
+    end
+
+    context ':runnable' do
+
+      subject { Executor.new(':runnable'){ nil } }
+
+      it_should_behave_like :runnable
     end
 
     context 'created with #new' do
@@ -117,64 +125,8 @@ module Concurrent
         end
       end
 
-      context '#run' do
-        pending
-      end
-
-      context '#stop' do
-        pending
-      end
-
       context '#kill' do
         pending
-      end
-
-      context '#running?' do
-
-        it 'returns false when first created' do
-          @subject = Executor.new('Foo'){ nil }
-          @subject.should_not be_running
-        end
-
-        it 'returns true when the monitor is running' do
-          @subject = Executor.new('Foo'){ nil }
-          @subject.run!
-          @subject.should be_running
-        end
-
-        it 'returns false if the monitor exits' do
-          monitor = Thread.new{ nil }
-          Thread.should_receive(:new).with(no_args()).and_return(monitor)
-          @subject = Executor.new('Foo'){ nil }
-          @subject.run!
-          sleep(0.1)
-          @subject.should_not be_running
-        end
-
-        it 'returns false if the monitor crashes' do
-          monitor = Thread.new{ raise StandardException }
-          Thread.should_receive(:new).with(no_args()).and_return(monitor)
-          @subject = Executor.new('Foo'){ nil }
-          @subject.run!
-          sleep(0.1)
-          @subject.should_not be_running
-        end
-
-        it 'returns false after stopped' do
-          @subject = Executor.new('Foo'){ nil }
-          @subject.run!
-          sleep(0.1)
-          @subject.stop
-          @subject.should_not be_running
-        end
-
-        it 'returns false after killed' do
-          @subject = Executor.new('Foo'){ nil }
-          @subject.run!
-          sleep(0.1)
-          @subject.kill
-          @subject.should_not be_running
-        end
       end
 
       context '#status' do
@@ -261,8 +213,6 @@ module Concurrent
         it 'returns an Executor' do
           @subject = Executor.run('Foo'){ nil }
           @subject.should be_a(Executor)
-          # backward compaibility
-          @subject.should be_a(Executor::ExecutionContext)
         end
       end
 

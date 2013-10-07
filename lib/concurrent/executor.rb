@@ -49,6 +49,7 @@ module Concurrent
       raise StandardError.new('already running') if running?
       @running = true
       monitor
+      return true
     end
 
     def stop
