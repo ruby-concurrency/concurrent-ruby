@@ -178,15 +178,6 @@ module Concurrent
     end
   end
 
-  describe Executor do
-
-    it 'aliases Kernel#executor' do
-      ex = executor('executor'){ nil }
-      ex.should be_a(Executor::ExecutionContext)
-      ex.kill
-    end
-  end
-
   describe Future do
 
     before(:each) do

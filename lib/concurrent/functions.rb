@@ -28,13 +28,6 @@ module Kernel
   end
   module_function :defer
 
-  ## executor
-
-  def executor(*args, &block)
-    return Concurrent::Executor.run(*args, &block)
-  end
-  module_function :executor
-
   ## future
 
   def future(*args, &block)
