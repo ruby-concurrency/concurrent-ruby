@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'runnable_shared'
 
 module Concurrent
 
@@ -43,6 +44,9 @@ module Concurrent
     after(:each) do
       Thread.kill(@thread) unless @thread.nil?
     end
+
+    subject { Reactor.new }
+    it_should_behave_like :runnable
 
     context '#initialize' do
 
@@ -227,14 +231,14 @@ module Concurrent
 
       it 'runs the reactor if it is not running' do
         reactor = Reactor.new(async_demux)
-        reactor.should_receive(:run_async).with(no_args())
+        reactor.should_receive(:run_async).with(no_args()).at_least(1).times
         @thread = Thread.new{ reactor.run }
         sleep(0.1)
         reactor.should be_running
         reactor.stop
 
         reactor = Reactor.new(sync_demux)
-        reactor.should_receive(:run_sync).with(no_args())
+        reactor.should_receive(:run_sync).with(no_args()).at_least(1).times
         @thread = Thread.new{ reactor.run }
         sleep(0.1)
         reactor.should be_running

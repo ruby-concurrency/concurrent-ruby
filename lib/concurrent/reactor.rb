@@ -1,6 +1,7 @@
 require 'thread'
 require 'functional'
-require 'concurrent/supervisor'
+
+require 'concurrent/runnable'
 
 behavior_info(:sync_event_demux,
               run: 0,
@@ -21,7 +22,7 @@ behavior_info(:demux_reactor,
 module Concurrent
 
   class Reactor
-
+    include Runnable
     behavior(:demux_reactor)
     behavior(:runnable)
 
@@ -41,27 +42,21 @@ module Concurrent
         raise ArgumentError.new("invalid event demultiplexer '#{@demux}'")
       end
 
-      @running = false
       @handlers = Hash.new
-      @mutex = Mutex.new
-    end
-
-    def running?
-      return @running
     end
 
     def add_handler(event, &block)
-      raise ArgumentError.new('no block given') unless block_given?
-      event = event.to_sym
-      raise ArgumentError.new("'#{event}' is a reserved event") if RESERVED_EVENTS.include?(event)
-      @mutex.synchronize {
+      mutex.synchronize {
+        raise ArgumentError.new('no block given') unless block_given?
+        event = event.to_sym
+        raise ArgumentError.new("'#{event}' is a reserved event") if RESERVED_EVENTS.include?(event)
         @handlers[event] = block
       }
       return true
     end
 
     def remove_handler(event)
-      handler = @mutex.synchronize {
+      handler = mutex.synchronize {
         @handlers.delete(event.to_sym)
       }
       return ! handler.nil?
@@ -86,33 +81,33 @@ module Concurrent
       return context.callback.pop
     end
 
-    def run
-      raise StandardError.new('already running') if self.running?
-      @sync ? (@running = true; run_sync) : (@running = true; run_async)
-    end
-    alias_method :run, :run
+    protected
 
-    def stop
-      return true unless self.running?
+    def on_run
+      @demux.run unless @demux.nil?
+    end
+
+    def on_stop
       if @sync
         @demux.stop
       else
         @queue.push(:stop)
       end
-      return true
     end
 
-    private
+    def on_task
+      @sync ? run_sync : run_async
+    end
 
     def handle_event(context)
       raise ArgumentError.new('no block given') unless block_given?
 
-      handler = @mutex.synchronize {
+      handler = mutex.synchronize {
         @handlers[context.event]
       }
 
       if handler.nil?
-         response = yield(:noop, "'#{context.event}' handler not found")
+        response = yield(:noop, "'#{context.event}' handler not found")
       else
         begin
           result = handler.call(*context.args)
@@ -125,49 +120,34 @@ module Concurrent
       return response
     end
 
-    def finalize_stop
-      @mutex.synchronize do
-        @running = false
+    def after_stop
+      mutex.synchronize do
         @demux.stop unless @demux.nil?
         @demux = nil
       end
     end
 
     def run_sync
-      @demux.run
-
-      loop do
-        break unless @demux.running?
-        context = @demux.accept
-        begin
-          if context.nil?
-            @demux.stop
-          else
-            response = handle_event(context) do |result, message|
-              [result, message]
-            end
-            @demux.respond(*response)
-          end
-        rescue Exception => ex
-          @demux.respond(:abend, ex)
+      return unless @demux.running?
+      context = @demux.accept
+      if context.nil?
+        @demux.stop
+      else
+        response = handle_event(context) do |result, message|
+          [result, message]
         end
+        @demux.respond(*response)
       end
-
-      finalize_stop
+    rescue Exception => ex
+      @demux.respond(:abend, ex)
     end
 
     def run_async
-      @demux.run unless @demux.nil?
-
-      loop do
-        context = @queue.pop
-        break if context == :stop
-        handle_event(context) do |result, message|
-          context.callback.push([result, message])
-        end
+      context = @queue.pop
+      return if context == :stop
+      handle_event(context) do |result, message|
+        context.callback.push([result, message])
       end
-
-      finalize_stop
     end
   end
 end

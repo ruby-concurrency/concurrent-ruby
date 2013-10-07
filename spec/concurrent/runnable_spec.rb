@@ -17,6 +17,7 @@ module Concurrent
           sleep(0.1)
         end
         def on_run() return true; end
+        def after_run() return true; end
         def on_stop() return true; end
       }
     end
@@ -70,6 +71,14 @@ module Concurrent
           runner.run
         }.to raise_error(Runnable::LifecycleError)
       end
+
+      it 'returns false when the task loop raises an exception' do
+        @expected = false
+        subject.stub(:on_task).and_raise(StandardError)
+        @thread = Thread.new { @expected = subject.run }
+        @thread.join(0.1)
+        @expected.should be_false
+      end
     end
 
     context '#stop' do
@@ -88,6 +97,7 @@ module Concurrent
         sleep(0.1)
         expect {
           subject.stop
+          sleep(0.1)
         }.not_to raise_error
       end
 
@@ -97,6 +107,24 @@ module Concurrent
         sleep(0.1)
         subject.stop.should be_false
         subject.should_not be_running
+      end
+
+      it 'calls #after_run when implemented' do
+        subject.should_receive(:after_run).with(no_args())
+        @thread = Thread.new { subject.run }
+        sleep(0.1)
+        subject.stop
+        sleep(0.2)
+      end
+
+      it 'does not attempt to call #after_run when not implemented' do
+        subject.class.send(:remove_method, :after_run)
+        @thread = Thread.new { subject.run }
+        sleep(0.1)
+        expect {
+          subject.stop
+          sleep(0.2)
+        }.not_to raise_error
       end
     end
 
@@ -158,7 +186,7 @@ module Concurrent
       it 'returns a context object on success' do
         @context = runnable.run!
         sleep(0.1)
-        @context.should be_a(Runnable::Context)
+        @context.should be_a(Running::Context)
       end
 
       it 'returns nil on failure' do

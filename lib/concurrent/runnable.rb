@@ -8,11 +8,36 @@ behavior_info(:runnable,
 
 module Concurrent
 
-  module Runnable
-    behavior(:runnable)
+  module Running
 
     Context = Struct.new(:runner, :thread)
+
+    def self.included(base)
+      class << base
+        def run!(*args, &block)
+          context = Context.new
+          context.runner = self.new(*args, &block)
+          context.thread = Thread.new(context.runner) do |runner|
+            Thread.abort_on_exception = false
+            runner.run
+          end
+          return context
+        rescue => ex
+          return nil
+        end
+      end
+    end
+  end
+
+  module Runnable
+
+    behavior(:runnable)
+
     LifecycleError = Class.new(StandardError)
+
+    def self.included(base)
+      base.send(:include, Running)
+    end
 
     def run
       mutex.synchronize do
@@ -29,6 +54,7 @@ module Concurrent
         Thread.pass
       end
 
+      after_run if respond_to?(:after_run, true)
       return true
     rescue LifecycleError => ex
       @running = false
@@ -51,22 +77,6 @@ module Concurrent
 
     def running?
       return @running == true
-    end
-
-    def self.included(base)
-      class << base
-        def run!(*args, &block)
-          context = Context.new
-          context.runner = self.new(*args, &block)
-          context.thread = Thread.new(context.runner) do |runner|
-            Thread.abort_on_exception = false
-            runner.run
-          end
-          return context
-        rescue => ex
-          return nil
-        end
-      end
     end
 
     protected

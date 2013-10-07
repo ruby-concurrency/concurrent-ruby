@@ -30,14 +30,6 @@ share_examples_for :runnable do
       @thread.join(1)
       @expected.should be_true
     end
-
-    it 'returns false when the task loop raises an exception' do
-      @expected = false
-      subject.stub(:on_task).and_raise(StandardError)
-      @thread = Thread.new { @expected = subject.run }
-      @thread.join(0.1)
-      @expected.should be_false
-    end
   end
 
   context '#stop' do

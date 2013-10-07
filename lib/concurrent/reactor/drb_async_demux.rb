@@ -2,7 +2,6 @@ require 'drb/drb'
 require 'drb/acl'
 require 'functional'
 require 'concurrent/reactor'
-require 'concurrent/supervisor'
 
 module Concurrent
   class Reactor
@@ -31,10 +30,12 @@ module Concurrent
         raise StandardError.new('already running') if running?
         DRb.install_acl(@acl)
         @service = DRb.start_service(@uri, Demultiplexer.new(@reactor))
+        return true
       end
 
       def stop
         @service = DRb.stop_service
+        return true
       end
 
       def running?

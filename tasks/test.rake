@@ -7,11 +7,7 @@ require 'functional'
 
 namespace :test do
 
-  DRB_URI = 'druby://localhost:12345'
-
-  TCP_HOST = '127.0.0.1'
-  TCP_PORT = 12345
-
+  DRB_URI = 'druby://127.0.0.1:12345'
   NET_ACL = %w{allow all}
 
   DEFAULT_COUNT = 100
@@ -27,8 +23,12 @@ namespace :test do
     reactor = Concurrent::Reactor.new(demux)
     reactor.add_handler(:echo) {|message| message }
 
+    # supervisor
+    supervisor = Concurrent::Supervisor.new
+    supervisor.add_worker(reactor)
+
     puts 'Starting the reactor...'
-    t = Thread.new{ reactor.start }
+    supervisor.run!
 
     # client
     there = DRbObject.new_with_uri(DRB_URI)
@@ -40,8 +40,10 @@ namespace :test do
         message = Faker::Company.bs
         echo = there.echo(message)
         good += 1 if echo == message
+        print '.' if i > 0 && i % 1000 == 0
       end
     end
+    print "\n" if count > 1000
 
     there = nil
 
@@ -53,9 +55,7 @@ namespace :test do
     puts "That's %i messages per second with a %0.1f success rate." % [messages_per_second, success_rate]
 
     # cleanup
-    reactor.stop
-    sleep(0.1)
-    Thread.kill(t)
+    supervisor.stop
     sleep(0.1)
 
     puts "And we're done!"
