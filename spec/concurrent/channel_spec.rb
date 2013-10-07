@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'concurrent/supervisor'
 require_relative 'runnable_shared'
 
 module Concurrent
