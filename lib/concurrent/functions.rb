@@ -7,14 +7,14 @@ module Kernel
 
   ## agent
 
-  def agent(initial, timeout = Concurrent::Agent::TIMEOUT)
-    return Concurrent::Agent.new(initial, timeout)
+  def agent(*args, &block)
+    return Concurrent::Agent.new(*args, &block)
   end
   module_function :agent
 
-  def post(object, &block)
+  def post(object, *args, &block)
     if object.respond_to?(:post)
-      return object.post(&block)
+      return object.post(*args, &block)
     else
       raise ArgumentError.new('object does not support #post')
     end
@@ -37,11 +37,11 @@ module Kernel
 
   ## obligation
 
-  def deref(object, timeout = nil)
+  def deref(object, *args, &block)
     if object.respond_to?(:deref)
-      return object.deref(timeout)
+      return object.deref(*args, &block)
     elsif object.respond_to?(:value)
-      return object.value(timeout)
+      return object.value(*args, &block)
     else
       raise ArgumentError.new('object does not support #deref')
     end
