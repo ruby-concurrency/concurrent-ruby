@@ -20,15 +20,28 @@ module Concurrent
     attr_reader :initial
     attr_reader :timeout
 
-    def initialize(initial, timeout = TIMEOUT)
+    def initialize(initial, opts = {})
       @value = initial
-      @timeout = timeout
       @rescuers = []
       @validator = nil
+
+      @timeout = opts[:timeout] || TIMEOUT
+      @dup_on_deref = opts[:dup_on_deref] || opts[:dup] || false
+      @freeze_on_deref = opts[:freeze_on_deref] || opts[:freeze] || false
+      @copy_on_deref = opts[:copy_on_deref] || opts[:copy]
+
       @mutex = Mutex.new
     end
 
-    def value(timeout = 0) return @value; end
+    def value(timeout = 0)
+      return @mutex.synchronize do
+        value = @value
+        value = @copy_on_deref.call(value) if @copy_on_deref
+        value = value.dup if @dup_on_deref
+        value = value.freeze if @freeze_on_deref
+        value
+      end
+    end
     alias_method :deref, :value
 
     def rescue(clazz = Exception, &block)

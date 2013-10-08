@@ -30,7 +30,7 @@ module Concurrent
       end
 
       it 'sets the timeout to the given value' do
-        Agent.new(0, 5).timeout.should eq 5
+        Agent.new(0, timeout: 5).timeout.should eq 5
       end
 
       it 'sets the timeout to the default when nil' do
@@ -128,7 +128,7 @@ module Concurrent
       end
 
       it 'rejects the handler after timeout reached' do
-        agent = Agent.new(0, 0.1)
+        agent = Agent.new(0, timeout: 0.1)
         agent.post{ sleep(1); 10 }
         agent.value.should eq 0
       end
@@ -266,6 +266,102 @@ module Concurrent
           subject.post{ raise ArgumentError }
           sleep(0.1)
         }.should_not raise_error
+      end
+    end
+
+    context 'dereference' do
+
+      it 'defaults :dup_on_deref to false' do
+        value = 'value'
+        value.should_not_receive(:dup).with(any_args())
+
+        agent = Agent.new(value)
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, dup_on_deref: false)
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, dup: false)
+        agent.value.should eq 'value'
+      end
+
+      it 'calls #dup when the :dup_on_deref option is true' do
+        value = 'value'
+        
+        agent = Agent.new(value, dup_on_deref: true)
+        agent.value.object_id.should_not eq value.object_id
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, dup: true)
+        agent.value.object_id.should_not eq value.object_id
+        agent.value.should eq 'value'
+      end
+
+      it 'defaults :freeze_on_deref to false' do
+        value = 'value'
+        value.should_not_receive(:freeze).with(any_args())
+
+        agent = Agent.new(value)
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, freeze_on_deref: false)
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, freeze: false)
+        agent.value.should eq 'value'
+      end
+
+      it 'calls #freeze when the :freeze_on_deref option is true' do
+        value = 'value'
+
+        agent = Agent.new(value, freeze_on_deref: true)
+        agent.value.should be_frozen
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, freeze: true)
+        agent.value.should be_frozen
+        agent.value.should eq 'value'
+      end
+
+      it 'defaults :copy_on_deref to nil' do
+        value = 'value'
+
+        agent = Agent.new(value)
+        agent.value.object_id.should == value.object_id
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, copy_on_deref: nil)
+        agent.value.object_id.should == value.object_id
+        agent.value.should eq 'value'
+
+        agent = Agent.new(value, copy: nil)
+        agent.value.object_id.should == value.object_id
+        agent.value.should eq 'value'
+      end
+
+      it 'calls the block when the :copy_on_deref option is passed a proc' do
+        value = 'value'
+        copy = proc{|val| 'copy' }
+
+        agent = Agent.new(value, copy_on_deref: copy)
+        agent.value.object_id.should_not == value.object_id
+
+        agent = Agent.new(value, copy: copy)
+        agent.value.object_id.should_not == value.object_id
+      end
+
+      it 'calls the :copy block first followed by #dup followed by #freeze' do
+        value = 'value'
+        copied = 'copied'
+        dup = 'dup'
+        frozen = 'frozen'
+        copy = proc{|val| copied }
+
+        copied.should_receive(:dup).with(no_args()).and_return(dup)
+        dup.should_receive(:freeze).with(no_args()).and_return(frozen)
+
+        agent = Agent.new(value, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copy)
+        agent.value.should eq frozen
       end
     end
 
