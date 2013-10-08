@@ -1,5 +1,4 @@
 require 'concurrent/agent'
-require 'concurrent/defer'
 require 'concurrent/future'
 require 'concurrent/promise'
 
@@ -20,13 +19,6 @@ module Kernel
     end
   end
   module_function :post
-
-  ## defer
-
-  def defer(*args, &block)
-    return Concurrent::Defer.new(*args, &block)
-  end
-  module_function :defer
 
   ## future
 

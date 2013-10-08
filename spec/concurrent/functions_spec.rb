@@ -167,17 +167,6 @@ module Concurrent
     end
   end
 
-  describe Defer do
-
-    before(:each) do
-      Defer.thread_pool = FixedThreadPool.new(1)
-    end
-
-    it 'aliases Kernel#defer' do
-      defer{ nil }.should be_a(Defer)
-    end
-  end
-
   describe Future do
 
     before(:each) do

@@ -54,7 +54,6 @@ Specifically:
 Several features from Erlang, Go, Clojure, Java, and JavaScript have been implemented thus far:
 
 * Clojure inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
-* EventMachine inspired [Defer](https://github.com/jdantonio/concurrent-ruby/blob/master/md/defer.md)
 * Clojure inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
 * Go inspired [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
 * JavaScript inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
@@ -157,28 +156,6 @@ deref score #=> 220
 score << proc{|current| current - 50 }
 sleep(0.1)
 score.value #=> 170
-```
-
-#### Defer (EventMachine)
-
-```ruby
-require 'concurrent'
-require 'concurrent/functions'
-
-Concurrent::Defer.new{ "Jerry D'Antonio" }.
-                  then{|result| puts "Hello, #{result}!" }.
-                  rescue{|ex| puts ex.message }.
-                  go
-
-#=> Hello, Jerry D'Antonio!
-
-operation = proc{ raise StandardError.new('Boom!') }
-callback  = proc{|result| puts result }
-errorback = proc{|ex| puts ex.message }
-defer(operation, callback, errorback)
-sleep(0.1)
-
-#=> "Boom!"
 ```
 
 #### Future (Clojure)

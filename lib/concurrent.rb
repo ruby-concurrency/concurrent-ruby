@@ -9,7 +9,6 @@ require 'concurrent/event'
 
 require 'concurrent/agent'
 require 'concurrent/channel'
-require 'concurrent/defer'
 require 'concurrent/executor'
 require 'concurrent/future'
 require 'concurrent/goroutine'
