@@ -10,18 +10,39 @@ module Concurrent
 
   module Running
 
-    Context = Struct.new(:runner, :thread)
+    class Context
+      attr_reader :runner, :thread
+      def initialize(runner)
+        @runner = runner
+        @thread = Thread.new(runner) do |runner|
+          Thread.abort_on_exception = false
+          runner.run
+        end
+      end
+    end
 
     def self.included(base)
+
+      def run!
+        return mutex.synchronize do
+          raise LifecycleError.new('already running') if @running
+          Context.new(self)
+        end
+      end
+
+      protected
+
+      def mutex
+        @mutex ||= Mutex.new
+      end
+
+      public
+
       class << base
+
         def run!(*args, &block)
-          context = Context.new
-          context.runner = self.new(*args, &block)
-          context.thread = Thread.new(context.runner) do |runner|
-            Thread.abort_on_exception = false
-            runner.run
-          end
-          return context
+          runner = self.new(*args, &block)
+          return Context.new(runner)
         rescue => ex
           return nil
         end
@@ -77,12 +98,6 @@ module Concurrent
 
     def running?
       return @running == true
-    end
-
-    protected
-
-    def mutex
-      @mutex ||= Mutex.new
     end
   end
 end

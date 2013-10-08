@@ -138,7 +138,39 @@ module Concurrent
       end
     end
 
-    context '#run!' do
+    context 'instance #run!' do
+
+      let(:clazz) do
+        Class.new { include Runnable }
+      end
+
+      subject { clazz.new }
+
+      after(:each) do
+        @context.runner.stop if @context && @context.runner
+        @context.thread.kill if @context && @context.thread
+      end
+
+      it 'creates a new thread' do
+        Thread.should_receive(:new).with(any_args()).and_return(nil)
+        @context = subject.run!
+        sleep(0.1)
+      end
+
+      it 'runs the runner on the new thread' do
+        @context = subject.run!
+        sleep(0.1)
+        @context.thread.should_not eq Thread.current
+      end
+
+      it 'returns a context object on success' do
+        @context = subject.run!
+        sleep(0.1)
+        @context.should be_a(Running::Context)
+      end
+    end
+
+    context 'module #run!' do
 
       let(:clazz) do
         Class.new { include Runnable }
