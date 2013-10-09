@@ -29,6 +29,7 @@ module Concurrent
     after(:each) do
       subject.stop
       @thread.kill unless @thread.nil?
+      sleep(0.1)
     end
 
     context '#run' do
