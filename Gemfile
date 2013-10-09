@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'functional-ruby', git: 'git@github.com:jdantonio/functional-ruby.git', branch: 'master'
+gem 'functional-ruby', '~> 0.7.6.pre'
 
 gemspec
 
