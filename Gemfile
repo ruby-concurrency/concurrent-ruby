@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
 gem 'functional-ruby', git: 'git@github.com:jdantonio/functional-ruby.git', branch: 'master'
 
