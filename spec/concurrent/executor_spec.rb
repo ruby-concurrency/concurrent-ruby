@@ -17,9 +17,6 @@ module Concurrent
     after(:each) do
       @subject = @subject.runner if @subject.respond_to?(:runner)
       @subject.kill unless @subject.nil?
-    end
-
-    after(:each) do
       @thread.kill unless @thread.nil?
       sleep(0.1)
     end
