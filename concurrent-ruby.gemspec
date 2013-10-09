@@ -9,12 +9,12 @@ Gem::Specification.new do |s|
   s.author      = "Jerry D'Antonio"
   s.email       = 'jerry.dantonio@gmail.com'
   s.homepage    = 'http://www.concurrent-ruby.com'
-  s.summary     = 'Modern concurrency tools including agents, futures, promises, thread pools, reactors, and more.'
+  s.summary     = 'Modern concurrency tools including agents, futures, promises, thread pools, actors, and more.'
   s.license     = 'MIT'
   s.date        = Time.now.strftime('%Y-%m-%d')
 
   s.description = <<-EOF
-    Modern concurrency tools including agents, futures, promises, thread pools, reactors, supervisors, and more.
+    Modern concurrency tools including agents, futures, promises, thread pools, actors, supervisors, and more.
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   EOF
 
