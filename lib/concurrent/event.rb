@@ -16,39 +16,30 @@ module Concurrent
       return @set == true
     end
 
-    def set(pulse = false)
+    def set
       return true if set?
-      @mutex.synchronize {
+      @mutex.synchronize do
         @set = true
-        while @waiting > 0
-          @notifier << :set
-          @waiting -= 1
-        end
-        @set = ! pulse
-      }
+        @waiting.times { @notifier << :set }
+        @waiting = 0
+      end
       return true
     end
 
     def reset
-      @mutex.synchronize {
-        @set = false
-      }
+      @mutex.synchronize { @set = false }
       return true
-    end
-
-    def pulse
-      return set(true)
     end
 
     def wait(timeout = nil)
       return true if set?
 
+      @mutex.synchronize { @waiting += 1 }
+
       if timeout.nil?
-        @waiting += 1
         @notifier.pop
       else
         Timeout::timeout(timeout) do
-          @waiting += 1
           @notifier.pop
         end
       end
