@@ -17,9 +17,6 @@ require 'concurrent/promise'
 require 'concurrent/runnable'
 require 'concurrent/supervisor'
 
-require 'concurrent/reactor'
-require 'concurrent/reactor/drb_async_demux'
-
 require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'

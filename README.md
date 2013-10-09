@@ -1,6 +1,6 @@
 # Concurrent Ruby [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
 
-Modern concurrency tools including agents, futures, promises, thread pools, reactors, supervisors, and more.
+Modern concurrency tools including agents, futures, promises, thread pools, supervisors, and more.
 Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
 
 If you find this gem useful you should check out my [functional-ruby](https://github.com/jdantonio/functional-ruby)
@@ -61,7 +61,6 @@ Several features from Erlang, Go, Clojure, Java, and JavaScript have been implem
 * Old school [events](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655(v=vs.85).aspx) from back in my Visual C++ days
 * Scheduled task execution with the [Executor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/executor.md) service
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
-* Lightweight implementation of the classic [Reactor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/executor.md) pattern
 
 ### Is it any good?
 
