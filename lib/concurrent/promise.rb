@@ -79,7 +79,7 @@ module Concurrent
     # @param block [Proc] the block to call if the rescue is matched
     #
     # @return [self] so that additional chaining can occur
-    def rescue(clazz = Exception, &block)
+    def rescue(clazz = nil, &block)
       return self if fulfilled? || rescued? || ! block_given?
       @lock.synchronize do
         rescuer = Rescuer.new(clazz, block)
@@ -139,7 +139,7 @@ module Concurrent
     # @private
     def try_rescue(ex, *rescuers) # :nodoc:
       rescuers = @rescuers if rescuers.empty?
-      rescuer = rescuers.find{|r| ex.is_a?(r.clazz) }
+      rescuer = rescuers.find{|r| r.clazz.nil? || ex.is_a?(r.clazz) }
       if rescuer
         rescuer.block.call(ex)
         @rescued = true

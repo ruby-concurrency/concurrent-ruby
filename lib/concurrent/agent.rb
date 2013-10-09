@@ -44,7 +44,7 @@ module Concurrent
     end
     alias_method :deref, :value
 
-    def rescue(clazz = Exception, &block)
+    def rescue(clazz = nil, &block)
       if block_given?
         @mutex.synchronize do
           @rescuers << Rescuer.new(clazz, block)
@@ -82,7 +82,7 @@ module Concurrent
     # @private
     def try_rescue(ex) # :nodoc:
       rescuer = @mutex.synchronize do
-        @rescuers.find{|r| ex.is_a?(r.clazz) }
+        @rescuers.find{|r| r.clazz.nil? || ex.is_a?(r.clazz) }
       end
       rescuer.block.call(ex) if rescuer
     rescue Exception => ex
