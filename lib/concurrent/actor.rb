@@ -28,15 +28,19 @@ module Concurrent
     def self.pool(count, &block)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
-      channels = count.times.collect do
-        channel = self.new(&block)
-        channel.instance_variable_set(:@queue, mailbox)
-        channel
+      actors = count.times.collect do
+        actor = self.new(&block)
+        actor.instance_variable_set(:@queue, mailbox)
+        actor
       end
-      return Poolbox.new(mailbox), channels
+      return Poolbox.new(mailbox), actors
     end
 
     protected
+
+    def act(*args)
+      raise NotImplementedError.new("#{self.class} does not implement #act")
+    end
 
     class Poolbox
 
@@ -71,7 +75,7 @@ module Concurrent
       message = @queue.pop
       return if message == :stop
       begin
-        result = receive(*message)
+        result = act(*message)
         changed
         notify_observers(Time.now, message, result)
       rescue => ex
