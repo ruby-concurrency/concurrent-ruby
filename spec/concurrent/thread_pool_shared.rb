@@ -69,6 +69,7 @@ share_examples_for :thread_pool do
 
     it 'stops accepting new tasks' do
       subject.post{ sleep(1) }
+      sleep(0.1)
       subject.kill
       @expected = false
       subject.post{ @expected = true }.should be_false
@@ -79,6 +80,7 @@ share_examples_for :thread_pool do
     it 'attempts to kill all in-progress tasks' do
       @expected = false
       subject.post{ sleep(1); @expected = true }
+      sleep(0.1)
       subject.kill
       sleep(1)
       @expected.should be_false
@@ -88,6 +90,7 @@ share_examples_for :thread_pool do
       @expected = false
       subject.post{ sleep(0.5) }
       subject.post{ sleep(0.5); @expected = true }
+      sleep(0.1)
       subject.kill
       sleep(1)
       @expected.should be_false
