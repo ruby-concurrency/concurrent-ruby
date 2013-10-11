@@ -87,9 +87,7 @@ From the docs:
 ### Examples
 
 ```ruby
-require 'functional/cached_thread_pool'
-# or
-require 'functional/concurrency'
+require 'concurrent'
 
 pool = Concurrent::CachedThreadPool.new
 
@@ -162,13 +160,13 @@ it is not an actual thread pool. Instead it spawns a new thread on every call to
 The [EventMachine](http://rubyeventmachine.com/) library (source [online](https://github.com/eventmachine/eventmachine))
 is an awesome library for creating evented applications. EventMachine provides its own thread pool
 and the authors recommend using their pool rather than using Ruby's `Thread`. No sweat,
-`functional-ruby` is fully compatible with EventMachine. Simple require `eventmachine`
-*before* requiring `functional-ruby` then replace the global thread pool with an instance
+`concurrent-ruby` is fully compatible with EventMachine. Simple require `eventmachine`
+*before* requiring `concurrent-ruby` then replace the global thread pool with an instance
 of `EventMachineDeferProxy`:
 
 ```ruby
 require 'eventmachine' # do this FIRST
-require 'functional/concurrency'
+require 'concurrent'
 
 $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
 ```

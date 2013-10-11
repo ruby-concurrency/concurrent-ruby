@@ -1,7 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'functional-ruby', '~> 0.7.6.pre'
-
 gemspec
 
 group :development do

@@ -1,5 +1,4 @@
 require 'thread'
-require 'functional'
 
 require 'concurrent/runnable'
 
@@ -7,12 +6,11 @@ module Concurrent
 
   class Supervisor
 
-    behavior(:runnable)
-
     DEFAULT_MONITOR_INTERVAL = 1
     RESTART_STRATEGIES = [:one_for_one, :one_for_all, :rest_for_one]
     DEFAULT_MAX_RESTART = 5
     DEFAULT_MAX_TIME = 60
+    WORKER_API = {run: 0, stop: 0, running?: 0}
 
     CHILD_TYPES = [:worker, :supervisor]
     CHILD_RESTART_OPTIONS = [:permanent, :transient, :temporary]
@@ -148,7 +146,7 @@ module Concurrent
     end
 
     def add_worker(worker, opts = {})
-      return nil if worker.nil? || ! worker.behaves_as?(:runnable)
+      return nil if worker.nil? || ! behaves_as_worker?(worker)
       return @mutex.synchronize {
         restart = opts[:restart] || :permanent
         type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
@@ -221,6 +219,13 @@ module Concurrent
     alias_method :restart_child, :restart_worker
 
     private
+
+    def behaves_as_worker?(obj)
+      return WORKER_API.each do |method, arity|
+        break(false) unless obj.respond_to?(method) && obj.method(method).arity == arity
+        true
+      end
+    end
 
     def monitor
       @workers.each{|context| run_worker(context)}

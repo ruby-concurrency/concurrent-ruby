@@ -9,9 +9,6 @@ module Concurrent
     include Obligation
     include UsesGlobalThreadPool
 
-    behavior(:future)
-    behavior(:promise)
-
     # Creates a new promise object. "A promise represents the eventual
     # value returned from the single completion of an operation."
     # Promises can be chained in a tree structure where each promise

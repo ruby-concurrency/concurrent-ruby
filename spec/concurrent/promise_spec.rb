@@ -31,25 +31,6 @@ module Concurrent
 
     it_should_behave_like Concurrent::Obligation
 
-    context 'behavior' do
-
-      it 'implements :promise behavior' do
-        lambda {
-          Promise.new{ nil }
-        }.should_not raise_error
-
-        Promise.new{ nil }.behaves_as?(:promise).should be_true
-      end
-
-      it 'implements :future behavior' do
-        lambda {
-          Promise.new{ nil }
-        }.should_not raise_error
-
-        Promise.new{ nil }.behaves_as?(:future).should be_true
-      end
-    end
-
     context '#then' do
 
       it 'returns a new Promise when :pending' do

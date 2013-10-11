@@ -11,8 +11,6 @@ module Concurrent
     include Observable
     include UsesGlobalThreadPool
 
-    behavior(:future)
-
     def initialize(*args, &block)
       @mutex = Mutex.new
       unless block_given?

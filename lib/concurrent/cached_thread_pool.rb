@@ -3,7 +3,6 @@ require 'concurrent/thread_pool'
 module Concurrent
 
   class CachedThreadPool < AbstractThreadPool
-    behavior(:global_thread_pool)
 
     DEFAULT_THREAD_IDLETIME = 60
 

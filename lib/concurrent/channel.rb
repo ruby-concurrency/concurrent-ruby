@@ -8,7 +8,6 @@ module Concurrent
   class Channel
     include Observable
     include Runnable
-    behavior(:runnable)
 
     def initialize(errorback = nil, &block)
       @queue = Queue.new

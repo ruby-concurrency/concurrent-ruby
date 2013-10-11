@@ -5,7 +5,6 @@ module Concurrent
 
   class Executor
     include Runnable
-    behavior(:runnable)
 
     EXECUTION_INTERVAL = 60
     TIMEOUT_INTERVAL = 30

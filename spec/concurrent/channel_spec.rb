@@ -315,47 +315,6 @@ module Concurrent
         end
       end
 
-      context '#receive pattern matching' do
-
-        let(:actor) do
-          Class.new(Channel) {
-            include PatternMatching
-            attr_reader :last_message
-            defn(:receive, :foo){|*args| @last_message = 'FOO' }
-            defn(:receive, :foo, :bar){|_, _| @last_message = 'FUBAR'}
-          }
-        end
-
-        it 'recognizes #defn pattern matches' do
-          channel = actor.new
-          @thread = Thread.new{ channel.run }
-          @thread.join(0.1)
-
-          channel.post(:foo)
-          @thread.join(0.1)
-          channel.last_message.should eq 'FOO'
-
-          channel.post(:foo, :bar)
-          @thread.join(0.1)
-          channel.last_message.should eq 'FUBAR'
-          
-          channel.stop
-        end
-
-        it 'falls back to the superclass #receive on no match' do
-          @expected = false
-          channel = actor.new{|*args| @expected = true }
-          @thread = Thread.new{ channel.run }
-          @thread.join(0.1)
-
-          channel.post(1, 2, 3, 4, 5)
-          @thread.join(0.1)
-          @expected.should be_true
-
-          channel.stop
-        end
-      end
-
       context '#on_error overloading' do
 
         let(:actor) do
