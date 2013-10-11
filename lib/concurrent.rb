@@ -1,14 +1,11 @@
 require 'thread'
 
-$ENABLE_BEHAVIOR_CHECK_ON_CONSTRUCTION ||= ( $DEGUG ? true : false )
-require 'functional'
-
 require 'concurrent/version'
 
 require 'concurrent/event'
 
+require 'concurrent/actor'
 require 'concurrent/agent'
-require 'concurrent/channel'
 require 'concurrent/executor'
 require 'concurrent/future'
 require 'concurrent/goroutine'

@@ -54,25 +54,6 @@ module Concurrent
       end
     end
 
-    context '#pulse' do
-
-      it 'triggers the event' do
-        subject.reset
-        @expected = false
-        Thread.new{ subject.wait; @expected = true }
-        sleep(0.1)
-        subject.pulse
-        sleep(0.1)
-        @expected.should be_true
-      end
-
-      it 'sets the state to unset' do
-        subject.pulse
-        sleep(0.1)
-        subject.should_not be_set
-      end
-    end
-
     context '#wait' do
 
       it 'returns immediately when the event has been set' do

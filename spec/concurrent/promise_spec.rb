@@ -31,25 +31,6 @@ module Concurrent
 
     it_should_behave_like Concurrent::Obligation
 
-    context 'behavior' do
-
-      it 'implements :promise behavior' do
-        lambda {
-          Promise.new{ nil }
-        }.should_not raise_error
-
-        Promise.new{ nil }.behaves_as?(:promise).should be_true
-      end
-
-      it 'implements :future behavior' do
-        lambda {
-          Promise.new{ nil }
-        }.should_not raise_error
-
-        Promise.new{ nil }.behaves_as?(:future).should be_true
-      end
-    end
-
     context '#then' do
 
       it 'returns a new Promise when :pending' do
@@ -156,7 +137,7 @@ module Concurrent
       it 'sets the promise reason the error object on exception' do
         p = Promise.new{ raise StandardError.new('Boom!') }
         sleep(0.1)
-        p.reason.should be_a(Exception)
+        p.reason.should be_a(StandardError)
         p.reason.should.to_s =~ /Boom!/
       end
 
@@ -207,7 +188,7 @@ module Concurrent
         Promise.new{ raise ArgumentError }.
           rescue(ArgumentError){|ex| @expected = 1 }.
           rescue(LoadError){|ex| @expected = 2 }.
-          rescue(Exception){|ex| @expected = 3 }
+          rescue(StandardError){|ex| @expected = 3 }
         sleep(0.1)
         @expected.should eq 1
 
@@ -215,7 +196,7 @@ module Concurrent
         Promise.new{ raise LoadError }.
           rescue(ArgumentError){|ex| @expected = 1 }.
           rescue(LoadError){|ex| @expected = 2 }.
-          rescue(Exception){|ex| @expected = 3 }
+          rescue(StandardError){|ex| @expected = 3 }
         sleep(0.1)
         @expected.should eq 2
 
@@ -223,7 +204,7 @@ module Concurrent
         Promise.new{ raise StandardError }.
           rescue(ArgumentError){|ex| @expected = 1 }.
           rescue(LoadError){|ex| @expected = 2 }.
-          rescue(Exception){|ex| @expected = 3 }
+          rescue(StandardError){|ex| @expected = 3 }
         sleep(0.1)
         @expected.should eq 3
       end
@@ -233,7 +214,7 @@ module Concurrent
         Promise.new{ raise StandardError }.
           rescue(ArgumentError){|ex| @expected = ex }.
           rescue(LoadError){|ex| @expected = ex }.
-          rescue(Exception){|ex| @expected = ex }
+          rescue(StandardError){|ex| @expected = ex }
         sleep(0.1)
         @expected.should be_a(StandardError)
       end
@@ -242,8 +223,7 @@ module Concurrent
         @expected = nil
         Promise.new{ raise StandardError }.
           rescue(StandardError).
-          rescue(StandardError){|ex| @expected = ex }.
-          rescue(Exception){|ex| @expected = ex }
+          rescue(StandardError){|ex| @expected = ex }
         sleep(0.1)
         @expected.should be_a(StandardError)
       end
@@ -252,8 +232,8 @@ module Concurrent
         lambda {
           Promise.new{ raise StandardError }.
             rescue(ArgumentError){|ex| @expected = ex }.
-            rescue(StandardError){|ex| @expected = ex }.
-            rescue(Exception){|ex| @expected = ex }
+            rescue(NotImplementedError){|ex| @expected = ex }.
+            rescue(NoMethodError){|ex| @expected = ex }
           sleep(0.1)
         }.should_not raise_error
       end
@@ -261,7 +241,7 @@ module Concurrent
       it 'supresses exceptions thrown from rescue handlers' do
         lambda {
           Promise.new{ raise ArgumentError }.
-          rescue(Exception){ raise StandardError }
+          rescue(StandardError){ raise StandardError }
           sleep(0.1)
         }.should_not raise_error
       end

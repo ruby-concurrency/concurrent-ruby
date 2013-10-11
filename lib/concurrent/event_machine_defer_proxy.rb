@@ -3,7 +3,6 @@ require 'concurrent/global_thread_pool'
 module Concurrent
 
   class EventMachineDeferProxy
-    behavior(:global_thread_pool)
 
     def post(*args, &block)
       if args.empty?

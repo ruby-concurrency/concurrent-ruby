@@ -48,20 +48,5 @@ module Concurrent
       sleep(0.1)
       @expected.should eq [1,2,3]
     end
-
-    it 'accepts an alternate thread pool as the first argument' do
-      pool = Concurrent::FixedThreadPool.new(2)
-      pool.should_receive(:post).with(no_args())
-      go(pool){ sleep(0.1) }
-      sleep(0.2)
-    end
-
-    it 'passes all other arguments to the block when a thread pool is given' do
-      @expected = nil
-      pool = Concurrent::FixedThreadPool.new(2)
-      go(pool, 1, 2, 3){|a, b, c| @expected = [c, b, a] }
-      sleep(0.1)
-      @expected.should eq [3, 2, 1]
-    end
   end
 end

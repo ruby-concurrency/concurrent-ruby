@@ -3,7 +3,6 @@ require 'concurrent/global_thread_pool'
 module Concurrent
 
   class NullThreadPool
-    behavior(:global_thread_pool)
 
     def self.post(*args)
       Thread.new(*args) do

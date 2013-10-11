@@ -1,11 +1,6 @@
 require 'thread'
-require 'functional'
 
 require 'concurrent/event'
-
-behavior_info(:global_thread_pool,
-              post: -1,
-              :<< => 1)
 
 module Concurrent
 

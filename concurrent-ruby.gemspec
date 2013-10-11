@@ -32,7 +32,5 @@ Gem::Specification.new do |s|
     #=> Hello, world!
   MSG
 
-  s.add_dependency 'functional-ruby', '~> 0.7.4'
-
   s.add_development_dependency 'bundler'
 end

@@ -8,7 +8,6 @@ module Concurrent
 
     let(:worker_class) do
       Class.new {
-        behavior(:runnable)
         attr_reader :start_count, :stop_count
         def run() @start_count ||= 0; @start_count += 1; return true; end
         def stop() @stop_count ||= 0; @stop_count += 1; return true; end

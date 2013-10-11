@@ -4,4 +4,3 @@ rvm:
 - 1.9.2
 - ruby-head
 - jruby-19mode
-- rbx-19mode

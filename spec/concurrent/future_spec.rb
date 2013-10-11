@@ -30,17 +30,6 @@ module Concurrent
 
     it_should_behave_like Concurrent::Obligation
 
-    context 'behavior' do
-
-      it 'implements :future behavior' do
-        lambda {
-          Future.new{ nil }
-        }.should_not raise_error
-
-        Future.new{ nil }.behaves_as?(:future).should be_true
-      end
-    end
-
     context '#initialize' do
 
       it 'spawns a new thread when a block is given' do

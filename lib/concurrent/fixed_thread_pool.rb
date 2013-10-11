@@ -3,7 +3,6 @@ require 'concurrent/thread_pool'
 module Concurrent
 
   class FixedThreadPool < AbstractThreadPool
-    behavior(:global_thread_pool)
 
     def initialize(size, opts = {})
       super(opts.merge(max_threads: size))

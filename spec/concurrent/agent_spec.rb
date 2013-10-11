@@ -203,7 +203,7 @@ module Concurrent
         subject.
           rescue(ArgumentError){|ex| @expected = 1 }.
           rescue(LoadError){|ex| @expected = 2 }.
-          rescue(Exception){|ex| @expected = 3 }
+          rescue(StandardError){|ex| @expected = 3 }
         subject.post{ raise ArgumentError }
         sleep(0.1)
         @expected.should eq 1
@@ -212,7 +212,7 @@ module Concurrent
         subject.
           rescue(ArgumentError){|ex| @expected = 1 }.
           rescue(LoadError){|ex| @expected = 2 }.
-          rescue(Exception){|ex| @expected = 3 }
+          rescue(StandardError){|ex| @expected = 3 }
         subject.post{ raise LoadError }
         sleep(0.1)
         @expected.should eq 2
@@ -221,7 +221,7 @@ module Concurrent
         subject.
           rescue(ArgumentError){|ex| @expected = 1 }.
           rescue(LoadError){|ex| @expected = 2 }.
-          rescue(Exception){|ex| @expected = 3 }
+          rescue(StandardError){|ex| @expected = 3 }
         subject.post{ raise StandardError }
         sleep(0.1)
         @expected.should eq 3
@@ -232,7 +232,7 @@ module Concurrent
         subject.
           rescue(ArgumentError){|ex| @expected = ex }.
           rescue(LoadError){|ex| @expected = ex }.
-          rescue(Exception){|ex| @expected = ex }
+          rescue(StandardError){|ex| @expected = ex }
         subject.post{ raise StandardError }
         sleep(0.1)
         @expected.should be_a(StandardError)
@@ -240,11 +240,9 @@ module Concurrent
 
       it 'ignores rescuers without a block' do
         @expected = nil
-        subject.
+        Promise.new{ raise StandardError }.
           rescue(StandardError).
-          rescue(StandardError){|ex| @expected = ex }.
-          rescue(Exception){|ex| @expected = ex }
-        subject.post{ raise StandardError }
+          rescue(StandardError){|ex| @expected = ex }
         sleep(0.1)
         @expected.should be_a(StandardError)
       end
@@ -253,8 +251,8 @@ module Concurrent
         lambda {
           subject.
             rescue(ArgumentError){|ex| @expected = ex }.
-            rescue(StandardError){|ex| @expected = ex }.
-            rescue(Exception){|ex| @expected = ex }
+            rescue(NotImplementedError){|ex| @expected = ex }.
+            rescue(NoMethodError){|ex| @expected = ex }
           subject.post{ raise StandardError }
           sleep(0.1)
         }.should_not raise_error
@@ -262,7 +260,7 @@ module Concurrent
 
       it 'supresses exceptions thrown from rescue handlers' do
         lambda {
-          subject.rescue(Exception){ raise StandardError }
+          subject.rescue(StandardError){ raise StandardError }
           subject.post{ raise ArgumentError }
           sleep(0.1)
         }.should_not raise_error
