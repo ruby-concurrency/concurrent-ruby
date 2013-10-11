@@ -4,8 +4,8 @@ require 'concurrent/version'
 
 require 'concurrent/event'
 
+require 'concurrent/actor'
 require 'concurrent/agent'
-require 'concurrent/channel'
 require 'concurrent/executor'
 require 'concurrent/future'
 require 'concurrent/goroutine'

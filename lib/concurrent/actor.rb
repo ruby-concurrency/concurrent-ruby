@@ -5,14 +5,13 @@ require 'concurrent/runnable'
 
 module Concurrent
 
-  class Channel
+  # http://www.scala-lang.org/api/current/index.html#scala.actors.Actor
+  class Actor
     include Observable
     include Runnable
 
-    def initialize(errorback = nil, &block)
+    def initialize
       @queue = Queue.new
-      @task = block
-      @errorback = errorback
     end
 
     def post(*message)
@@ -26,11 +25,11 @@ module Concurrent
       return self
     end
 
-    def self.pool(count, errorback = nil, &block)
+    def self.pool(count, &block)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
       channels = count.times.collect do
-        channel = self.new(errorback, &block)
+        channel = self.new(&block)
         channel.instance_variable_set(:@queue, mailbox)
         channel
       end
@@ -82,12 +81,6 @@ module Concurrent
 
     # @private
     def on_error(time, msg, ex) # :nodoc:
-      @errorback.call(time, msg, ex) if @errorback
-    end
-
-    # @private
-    def receive(*message) # :nodoc:
-      @task.call(*message) unless @task.nil?
     end
   end
 end

@@ -3,10 +3,21 @@ require_relative 'runnable_shared'
 
 module Concurrent
 
-  describe Channel do
+  describe Actor do
 
-    subject { Channel.new }
-    let(:runnable) { Channel }
+    let(:actor_clazz) do
+      Class.new(Actor) do
+        def initialize(&block)
+          @task = block
+          super()
+        end
+        def receive(*message) # :nodoc:
+          @task.call(*message) unless @task.nil?
+        end
+      end
+    end
+
+    subject { Class.new(actor_clazz).new }
 
     it_should_behave_like :runnable
 
@@ -24,7 +35,7 @@ module Concurrent
 
       it 'pushes a message onto the queue' do
         @expected = false
-        channel = Channel.new{|msg| @expected = msg }
+        channel = actor_clazz.new{|msg| @expected = msg }
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
         channel.post(true)
@@ -34,7 +45,7 @@ module Concurrent
       end
 
       it 'returns the current size of the queue' do
-        channel = Channel.new{|msg| sleep }
+        channel = actor_clazz.new{|msg| sleep }
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
         channel.post(true).should == 1
@@ -47,7 +58,7 @@ module Concurrent
 
       it 'is aliased a <<' do
         @expected = false
-        channel = Channel.new{|msg| @expected = msg }
+        channel = actor_clazz.new{|msg| @expected = msg }
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
         channel << true
@@ -70,7 +81,7 @@ module Concurrent
     context '#stop' do
 
       it 'empties the queue' do
-        channel = Channel.new{|msg| sleep }
+        channel = actor_clazz.new{|msg| sleep }
         @thread = Thread.new{ channel.run }
         10.times { channel.post(true) }
         @thread.join(0.1)
@@ -98,7 +109,7 @@ module Concurrent
 
       it 'runs the constructor block once for every message' do
         @expected = 0
-        channel = Channel.new{|msg| @expected += 1 }
+        channel = actor_clazz.new{|msg| @expected += 1 }
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
         10.times { channel.post(true) }
@@ -109,7 +120,7 @@ module Concurrent
 
       it 'passes the message to the block' do
         @expected = []
-        channel = Channel.new{|msg| @expected << msg }
+        channel = actor_clazz.new{|msg| @expected << msg }
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
         10.times {|i| channel.post(i) }
@@ -122,26 +133,12 @@ module Concurrent
     context 'exception handling' do
 
       it 'supresses exceptions thrown when handling messages' do
-        channel = Channel.new{|msg| raise StandardError }
+        channel = actor_clazz.new{|msg| raise StandardError }
         @thread = Thread.new{ channel.run }
         expect {
           @thread.join(0.1)
           10.times { channel.post(true) }
         }.not_to raise_error
-        channel.stop
-      end
-
-      it 'calls the errorback with the time, message, and exception' do
-        @expected = []
-        errorback = proc{|*args| @expected = args }
-        channel = Channel.new(errorback){|msg| raise StandardError }
-        @thread = Thread.new{ channel.run }
-        @thread.join(0.1)
-        channel.post(42)
-        @thread.join(0.1)
-        @expected[0].should be_a(Time)
-        @expected[1].should == [42]
-        @expected[2].should be_a(StandardError)
         channel.stop
       end
     end
@@ -166,7 +163,7 @@ module Concurrent
 
       it 'does not notify observers when a message raises an exception' do
         observer.should_not_receive(:update).with(any_args())
-        channel = Channel.new{|msg| raise StandardError }
+        channel = actor_clazz.new{|msg| raise StandardError }
         channel.add_observer(observer)
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
@@ -176,7 +173,7 @@ module Concurrent
       end
 
       it 'passes the time, message, and result to the observer' do
-        channel = Channel.new{|*msg| msg }
+        channel = actor_clazz.new{|*msg| msg }
         channel.add_observer(observer)
         @thread = Thread.new{ channel.run }
         @thread.join(0.1)
@@ -191,7 +188,7 @@ module Concurrent
 
     context '#pool' do
 
-      let(:clazz){ Class.new(Channel) }
+      let(:clazz){ Class.new(actor_clazz) }
 
       it 'raises an exception if the count is zero or less' do
         expect {
@@ -204,16 +201,10 @@ module Concurrent
         channels.size.should == 5
       end
 
-      it 'passes the errorback to each channel' do
-        errorback = proc{ nil }
-        clazz.should_receive(:new).with(errorback)
-        clazz.pool(1, errorback)
-      end
-
       it 'passes the block to each channel' do
         block = proc{ nil }
-        clazz.should_receive(:new).with(anything(), &block)
-        clazz.pool(1, nil, &block)
+        clazz.should_receive(:new).with(&block)
+        clazz.pool(1, &block)
       end
 
       it 'gives all channels the same mailbox' do
@@ -225,7 +216,7 @@ module Concurrent
 
       it 'returns a Poolbox as the first retval' do
         mailbox, channels = clazz.pool(2)
-        mailbox.should be_a(Channel::Poolbox)
+        mailbox.should be_a(Actor::Poolbox)
       end
 
       it 'gives the Poolbox the same mailbox as the channels' do
@@ -276,7 +267,7 @@ module Concurrent
       context '#pool' do
 
         it 'creates channels of the appropriate subclass' do
-          actor = Class.new(Channel)
+          actor = Class.new(actor_clazz)
           mailbox, channels = actor.pool(1)
           channels.first.should be_a(actor)
         end
@@ -285,7 +276,7 @@ module Concurrent
       context '#receive overloading' do
 
         let(:actor) do
-          Class.new(Channel) {
+          Class.new(actor_clazz) {
             attr_reader :last_message
             def receive(*message)
               @last_message = message
@@ -318,7 +309,7 @@ module Concurrent
       context '#on_error overloading' do
 
         let(:actor) do
-          Class.new(Channel) {
+          Class.new(actor_clazz) {
             attr_reader :last_error
             def receive(*message)
               raise StandardError
@@ -327,18 +318,6 @@ module Concurrent
               @last_error = args
             end
           }
-        end
-
-        it 'ignores the constructor errorback' do
-          @expected = false
-          errorback = proc{|*args| @expected = true }
-          channel = actor.new(errorback)
-          @thread = Thread.new{ channel.run }
-          @thread.join(0.1)
-          channel.post(true)
-          @thread.join(0.1)
-          @expected.should be_false
-          channel.stop
         end
 
         it 'uses the subclass #on_error implementation' do
@@ -358,7 +337,7 @@ module Concurrent
     context 'supervision' do
 
       it 'can be started by a Supervisor' do
-        channel = Channel.new
+        channel = actor_clazz.new
         supervisor = Supervisor.new
         supervisor.add_worker(channel)
         
@@ -373,7 +352,7 @@ module Concurrent
 
       it 'can receive messages while under supervision' do
         @expected = false
-        channel = Channel.new{|*args| @expected = true}
+        channel = actor_clazz.new{|*args| @expected = true}
         supervisor = Supervisor.new
         supervisor.add_worker(channel)
         supervisor.run!
@@ -389,7 +368,7 @@ module Concurrent
       end
 
       it 'can be stopped by a supervisor' do
-        channel = Channel.new
+        channel = actor_clazz.new
         supervisor = Supervisor.new
         supervisor.add_worker(channel)
         
