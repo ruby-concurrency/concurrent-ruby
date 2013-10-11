@@ -1,5 +1,20 @@
-require 'rubygems'
-require 'pp'
+require 'rbconfig'
+
+def delta(v1, v2)
+  if block_given?
+    v1 = yield(v1)
+    v2 = yield(v2)
+  end
+  return (v1 - v2).abs
+end
+
+def mri?
+  RbConfig::CONFIG['ruby_install_name']=~ /^ruby$/i 
+end
+
+def jruby?
+  RbConfig::CONFIG['ruby_install_name']=~ /^jruby$/i 
+end
 
 Node = Struct.new(:word, :next, :previous)
 
@@ -72,7 +87,7 @@ def print_word_list(list, letter, silent = false)
   return count
 end
 
-def stats_from_words_array(array, silent = false)
+def tally_from_words_array(array, silent = false)
   total = 0
   highest_count = 0
   most_common_letters = []
@@ -103,12 +118,12 @@ end
 
 def print_words_array(array)
 
-  stats = stats_from_words_array(array)
+  tally = tally_from_words_array(array)
 
-  puts "\nThere were #{stats[:total]} unique words in the file."
-  puts "The highest word count was #{stats[:highest_count]}."
-  puts "\nLetter(s) that began words #{stats[:highest_count]} times were"
-  stats[:most_common_letters].each { |letter| puts "\t'#{letter}'/'#{letter.upcase}'" }
+  puts "\nThere were #{tally[:total]} unique words in the file."
+  puts "The highest word count was #{tally[:highest_count]}."
+  puts "\nLetter(s) that began words #{tally[:highest_count]} times were"
+  tally[:most_common_letters].each { |letter| puts "\t'#{letter}'/'#{letter.upcase}'" }
 end
 
 def make_word_list(infile)
