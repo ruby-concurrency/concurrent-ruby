@@ -1,4 +1,4 @@
-require 'concurrent/thread_pool'
+require 'concurrent/abstract_thread_pool'
 
 module Concurrent
 
@@ -12,8 +12,10 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       return @mutex.synchronize do
         if @state == :running
+          while @pool.size < @max_threads
+            create_worker_thread
+          end
           @queue << [args, block]
-          @pool << create_worker_thread if @pool.size < @max_threads
           true
         else
           false

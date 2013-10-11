@@ -14,7 +14,6 @@ require 'concurrent/promise'
 require 'concurrent/runnable'
 require 'concurrent/supervisor'
 
-require 'concurrent/thread_pool'
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/null_thread_pool'

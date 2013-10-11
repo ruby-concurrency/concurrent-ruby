@@ -1,4 +1,4 @@
-require 'concurrent/thread_pool'
+require 'concurrent/abstract_thread_pool'
 
 module Concurrent
 

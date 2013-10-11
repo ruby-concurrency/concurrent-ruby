@@ -43,7 +43,7 @@ module Concurrent
         pool_size.times do |i|
           subject.post{ sleep }
           sleep(0.1)
-          subject.size.should eq i+1
+          subject.size.should eq pool_size
         end
       end
 
