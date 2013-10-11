@@ -240,9 +240,10 @@ module Concurrent
 
       it 'ignores rescuers without a block' do
         @expected = nil
-        Promise.new{ raise StandardError }.
+        subject.
           rescue(StandardError).
           rescue(StandardError){|ex| @expected = ex }
+        subject.post{ raise StandardError }
         sleep(0.1)
         @expected.should be_a(StandardError)
       end

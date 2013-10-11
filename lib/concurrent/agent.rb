@@ -45,7 +45,7 @@ module Concurrent
     alias_method :deref, :value
 
     def rescue(clazz = nil, &block)
-      if block_given?
+      unless block.nil?
         @mutex.synchronize do
           @rescuers << Rescuer.new(clazz, block)
         end
@@ -56,7 +56,7 @@ module Concurrent
     alias_method :on_error, :rescue
 
     def validate(&block)
-      @validator = block if block_given?
+      @validator = block unless block.nil?
       return self
     end
     alias_method :validates, :validate
@@ -64,7 +64,7 @@ module Concurrent
     alias_method :validates_with, :validate
 
     def post(&block)
-      Agent.thread_pool.post{ work(&block) } if block_given?
+      Agent.thread_pool.post{ work(&block) } unless block.nil?
     end
 
     def <<(block)

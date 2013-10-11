@@ -57,7 +57,7 @@ module Concurrent
     # @return [Promise] the new promise
     def then(&block)
       child = @lock.synchronize do
-        block = Proc.new{|result| result } unless block_given?
+        block = Proc.new{|result| result } if block.nil?
         @children << Promise.new(self, &block)
         @children.last.on_reject(@reason) if rejected?
         push(@children.last)
@@ -77,7 +77,7 @@ module Concurrent
     #
     # @return [self] so that additional chaining can occur
     def rescue(clazz = nil, &block)
-      return self if fulfilled? || rescued? || ! block_given?
+      return self if fulfilled? || rescued? || block.nil?
       @lock.synchronize do
         rescuer = Rescuer.new(clazz, block)
         if pending?
