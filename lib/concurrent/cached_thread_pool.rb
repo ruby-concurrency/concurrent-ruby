@@ -11,31 +11,23 @@ module Concurrent
       super(opts)
     end
 
-    def post(*args, &block)
-      raise ArgumentError.new('no block given') unless block_given?
-      return @mutex.synchronize do
-        if @state == :running
-          @queue << [args, block]
-          at_capacity = @pool.empty? || ! @queue.empty? || @working >= @pool.size
-          if at_capacity && @pool.length < @max_threads
-            @pool << create_worker_thread
-          end
-          true
-        else
-          false
-        end
+    protected
+
+    def at_post
+      at_capacity = @pool.empty? || ! @queue.empty? || Worker.working >= @pool.size
+      if at_capacity && @pool.length < @max_threads
+        create_worker_thread
       end
     end
 
-    protected
-
-    def dead_worker?(context)
-      return context.thread.nil? || context.thread.status == 'aborting' || ! context.thread.status
+    def dead_worker?(worker)
+      thread_status = worker.status.last
+      return ! thread_status || thread_status == 'aborting'
     end
 
-    def stale_worker?(context)
-      if context.status == :idle && @idletime <= (timestamp - context.idletime)
-        context.thread.kill
+    def stale_worker?(worker)
+      if worker.idle? && worker.idletime >= @idletime
+        worker.kill
         return true
       else
         return false
@@ -43,8 +35,8 @@ module Concurrent
     end
 
     def collect_garbage
-      @pool.reject! do |context|
-        dead_worker?(context) || stale_worker?(context)
+      @pool.reject! do |worker|
+        dead_worker?(worker) || stale_worker?(worker)
       end
     end
   end

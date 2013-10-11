@@ -8,25 +8,16 @@ module Concurrent
       super(opts.merge(max_threads: size))
     end
 
-    def post(*args, &block)
-      raise ArgumentError.new('no block given') unless block_given?
-      return @mutex.synchronize do
-        if @state == :running
-          while @pool.size < @max_threads
-            create_worker_thread
-          end
-          @queue << [args, block]
-          true
-        else
-          false
-        end
+    protected
+
+    def at_post
+      while @pool.size < @max_threads
+        create_worker_thread
       end
     end
 
-    protected
-
     def collect_garbage
-      @pool.reject! {|context| ! context.status }
+      @pool.reject! {|context| ! context.status.last }
     end
   end
 end

@@ -48,6 +48,19 @@ module Concurrent
       return @terminator.wait(timeout)
     end
 
+    def post(*args, &block)
+      raise ArgumentError.new('no block given') unless block_given?
+      return @mutex.synchronize do
+        if @state == :running
+          at_post
+          @queue << [args, block]
+          true
+        else
+          false
+        end
+      end
+    end
+
     def <<(block)
       self.post(&block)
       return self

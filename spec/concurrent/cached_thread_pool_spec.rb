@@ -79,19 +79,19 @@ module Concurrent
 
     context 'garbage collection' do
 
-      subject{ CachedThreadPool.new(gc_interval: 1, idletime: 0.1) }
+      subject{ CachedThreadPool.new(gc_interval: 1, idletime: 1) }
 
       it 'removes from pool any thread that has been idle too long' do
         subject << proc{ nil }
         subject.size.should eq 1
-        sleep(1.5)
+        sleep(2)
         subject.size.should eq 0
       end
 
       it 'removed from pool any dead thread' do
-        subject << proc{ raise StandardError }
+        subject << proc{ raise Exception }
         subject.size.should eq 1
-        sleep(1.5)
+        sleep(2)
         subject.size.should eq 0
       end
     end

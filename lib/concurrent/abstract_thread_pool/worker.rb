@@ -7,7 +7,6 @@ module Concurrent
     protected
 
     class Worker
-      @@mutex = Mutex.new
 
       def initialize(queue)
         @queue = queue
@@ -16,12 +15,12 @@ module Concurrent
       end
      
       def idle?
-        return ! @idletime
+        return ! @idletime.nil?
       end
 
       def idletime
         return @mutex.synchronize do
-          @idletime.nil? ? 0 : Time.now.to_i = @idletime.to_i
+          @idletime.nil? ? 0 : Time.now.to_i - @idletime.to_i
         end
       end
 
@@ -56,13 +55,32 @@ module Concurrent
           end
 
           @idletime = nil
+          Worker.busy
           begin
             task.last.call(*task.first)
           rescue
             # let it fail
           ensure
+            Worker.free
             @idletime = Time.now
           end
+        end
+      end
+
+      class << self
+        attr_reader :working
+
+        def mutex
+          @working ||= 0
+          @mutex ||= Mutex.new
+        end
+
+        def busy
+          mutex.synchronize { @working += 1 }
+        end
+
+        def free
+          mutex.synchronize { @working -= 1 }
         end
       end
     end
