@@ -11,7 +11,7 @@ module Concurrent
           @task = block
           super()
         end
-        def receive(*message) # :nodoc:
+        def act(*message) # :nodoc:
           @task.call(*message) unless @task.nil?
         end
       end
@@ -273,29 +273,29 @@ module Concurrent
         end
       end
 
-      context '#receive overloading' do
+      context '#act overloading' do
 
         let(:actor) do
           Class.new(actor_clazz) {
             attr_reader :last_message
-            def receive(*message)
+            def act(*message)
               @last_message = message
             end
           }
         end
 
-        it 'ignores the constructor block' do
-          @expected = false
-          channel = actor.new{|*args| @expected = true }
+        it 'raises an exception if #act is not implemented in the subclass' do
+          channel = Class.new(Actor).new
           @thread = Thread.new{ channel.run }
           @thread.join(0.1)
-          channel.post(:foo)
-          @thread.join(0.1)
-          @expected.should be_false
+          expect {
+            channel.post(:foo)
+            @thread.join(0.1)
+          }.to raise_error(NotImplementedError)
           channel.stop
         end
 
-        it 'uses the subclass receive implementation' do
+        it 'uses the subclass #act implementation' do
           channel = actor.new{|*args| @expected = true }
           @thread = Thread.new{ channel.run }
           @thread.join(0.1)
@@ -311,7 +311,7 @@ module Concurrent
         let(:actor) do
           Class.new(actor_clazz) {
             attr_reader :last_error
-            def receive(*message)
+            def act(*message)
               raise StandardError
             end
             def on_error(*args)

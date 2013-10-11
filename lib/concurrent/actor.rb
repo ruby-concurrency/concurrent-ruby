@@ -38,6 +38,10 @@ module Concurrent
 
     protected
 
+    def act(*args)
+      raise NotImplementedError.new("#{self.class} does not implement #act")
+    end
+
     class Poolbox
 
       def initialize(queue)
@@ -71,7 +75,7 @@ module Concurrent
       message = @queue.pop
       return if message == :stop
       begin
-        result = receive(*message)
+        result = act(*message)
         changed
         notify_observers(Time.now, message, result)
       rescue => ex
