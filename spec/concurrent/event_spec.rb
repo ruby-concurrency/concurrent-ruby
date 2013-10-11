@@ -83,7 +83,7 @@ module Concurrent
         subject.reset
         @expected = false
         Thread.new{ subject.wait(0.5); @expected = true}
-        sleep(1)
+        sleep(2)
         @expected.should be_true
       end
 

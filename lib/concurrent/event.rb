@@ -39,12 +39,16 @@ module Concurrent
       if timeout.nil?
         @notifier.pop
       else
-        Timeout::timeout(timeout) do
-          @notifier.pop
+        countdown = timeout.ceil
+        while @notifier.empty? && countdown > 0
+          sleep(1)
+          countdown -= 1
         end
+        @notifier.pop(true)
       end
       return true
-    rescue Timeout::Error
+    rescue ThreadError
+      @mutex.synchronize { @waiting -= 1 }
       return false
     end
   end
