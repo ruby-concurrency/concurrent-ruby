@@ -1,5 +1,5 @@
 require 'thread'
-require 'timeout'
+require 'concurrent/utilities'
 
 module Concurrent
 
@@ -39,15 +39,12 @@ module Concurrent
       if timeout.nil?
         @notifier.pop
       else
-        countdown = timeout.ceil
-        while @notifier.empty? && countdown > 0
-          sleep(1)
-          countdown -= 1
+        Concurrent::timeout(timeout) do
+          @notifier.pop
         end
-        @notifier.pop(true)
       end
       return true
-    rescue ThreadError
+    rescue
       @mutex.synchronize { @waiting -= 1 }
       return false
     end

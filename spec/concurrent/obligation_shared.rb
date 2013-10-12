@@ -38,7 +38,7 @@ share_examples_for Concurrent::Obligation do
     end
 
     it 'returns immediately when timeout is zero' do
-      Timeout.should_not_receive(:timeout).with(any_args())
+      Concurrent.should_not_receive(:timeout).with(any_args())
       f = pending_subject
       f.value(0).should be_nil
       f.should be_pending

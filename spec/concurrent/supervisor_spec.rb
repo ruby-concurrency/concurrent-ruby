@@ -295,7 +295,7 @@ module Concurrent
         @thread = Thread.new{ sleep(0.5); supervisor.stop }
         sleep(0.1)
         lambda {
-          Timeout::timeout(1){ supervisor.run }
+          Concurrent::timeout(1){ supervisor.run }
         }.should_not raise_error
         Thread.kill(@thread) unless @thread.nil?
       end

@@ -2,6 +2,7 @@ require 'thread'
 require 'observer'
 
 require 'concurrent/global_thread_pool'
+require 'concurrent/utilities'
 
 module Concurrent
 
@@ -93,7 +94,7 @@ module Concurrent
     def work(&handler) # :nodoc:
       begin
         @mutex.synchronize do
-          result = Timeout.timeout(@timeout) do
+          result = Concurrent::timeout(@timeout) do
             handler.call(@value)
           end
           if @validator.nil? || @validator.call(result)
