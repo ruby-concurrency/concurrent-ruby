@@ -4,18 +4,23 @@ module Concurrent
 
   class AbstractThreadPool
 
-    protected
-
     class Worker
 
-      def initialize(queue)
+      def initialize(queue, parent)
         @queue = queue
+        @parent = parent
         @mutex = Mutex.new
         @idletime = Time.now
       end
      
       def idle?
         return ! @idletime.nil?
+      end
+
+      def dead?
+        return @mutex.synchronize do
+          @thread.nil? ? false : ! @thread.alive?
+        end
       end
 
       def idletime
@@ -51,11 +56,13 @@ module Concurrent
           task = @queue.pop
           if task == :stop
             @thread = nil
+            @parent.on_worker_exit(self)
             break
           end
 
           @idletime = nil
           Worker.busy
+          @parent.on_start_task(self)
           begin
             task.last.call(*task.first)
           rescue
@@ -63,6 +70,7 @@ module Concurrent
           ensure
             Worker.free
             @idletime = Time.now
+            @parent.on_end_task(self)
           end
         end
       end

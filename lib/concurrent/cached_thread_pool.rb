@@ -8,35 +8,26 @@ module Concurrent
 
     def initialize(opts = {})
       @idletime = (opts[:idletime] || DEFAULT_THREAD_IDLETIME).to_i
-      super(opts)
+      raise ArgumentError.new('idletime must be greater than zero') if @idletime <= 0
+
+      super
     end
 
-    protected
-
-    def at_post
-      at_capacity = @pool.empty? || ! @queue.empty? || Worker.working >= @pool.size
-      if at_capacity && @pool.length < @max_threads
-        create_worker_thread
+    def fill_pool
+      return unless @state == :running
+      if @pool.length < @max_threads && Concurrent::AbstractThreadPool::Worker.busy >= @pool.length
+        @pool << create_worker_thread
       end
     end
 
-    def dead_worker?(worker)
-      thread_status = worker.status.last
-      return ! thread_status || thread_status == 'aborting'
-    end
-
-    def stale_worker?(worker)
-      if worker.idle? && worker.idletime >= @idletime
-        worker.kill
-        return true
-      else
-        return false
-      end
-    end
-
-    def collect_garbage
+    def clean_pool
       @pool.reject! do |worker|
-        dead_worker?(worker) || stale_worker?(worker)
+        if worker.idle? && worker.idletime >= @idletime
+          worker.kill
+          true
+        else
+          worker.dead?
+        end
       end
     end
   end

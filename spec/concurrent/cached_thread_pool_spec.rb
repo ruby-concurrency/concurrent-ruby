@@ -29,39 +29,39 @@ module Concurrent
       end
     end
 
-    context '#size' do
+    context '#length' do
 
       it 'returns zero for a new thread pool' do
-        subject.size.should eq 0
+        subject.length.should eq 0
       end
 
-      it 'returns the size of the subject when running' do
+      it 'returns the length of the subject when running' do
         5.times{ sleep(0.1); subject << proc{ sleep(1) } }
-        subject.size.should eq 5
+        subject.length.should eq 5
       end
 
       it 'returns zero once shut down' do
         subject.shutdown
-        subject.size.should eq 0
+        subject.length.should eq 0
       end
     end
 
     context 'worker creation and caching' do
 
       it 'creates new workers when there are none available' do
-        subject.size.should eq 0
+        subject.length.should eq 0
         5.times{ sleep(0.1); subject << proc{ sleep } }
         sleep(1)
-        subject.size.should eq 5
+        subject.length.should eq 5
       end
 
       it 'uses existing idle threads' do
         5.times{ subject << proc{ sleep(0.1) } }
         sleep(1)
-        subject.size.should eq 5
+        subject.length.should >= 5
         3.times{ subject << proc{ sleep } }
         sleep(0.1)
-        subject.size.should eq 5
+        subject.length.should >= 5
       end
 
       it 'never creates more than :max_threads threads' do
@@ -82,17 +82,29 @@ module Concurrent
       subject{ CachedThreadPool.new(gc_interval: 1, idletime: 1) }
 
       it 'removes from pool any thread that has been idle too long' do
-        subject << proc{ nil }
-        subject.size.should eq 1
+        3.times { subject << proc{ sleep(0.1) } }
+        subject.length.should eq 3
         sleep(2)
-        subject.size.should eq 0
+        subject << proc{ nil }
+        subject.length.should < 3
       end
 
       it 'removed from pool any dead thread' do
-        subject << proc{ raise Exception }
-        subject.size.should eq 1
+        3.times { subject << proc{ sleep(0.1); raise Exception } }
+        subject.length.should == 3
         sleep(2)
-        subject.size.should eq 0
+        subject << proc{ nil }
+        subject.length.should < 3
+      end
+
+      it 'creates new threads if there are tasks waiting in the queue' do
+        queue = Queue.new
+        20.times { queue << [[], proc { nil }] }
+        subject.instance_variable_set(:@queue, queue)
+        subject.length.should == 0
+        subject << proc { sleep }
+        sleep(1)
+        subject.length.should == 21
       end
     end
 

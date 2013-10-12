@@ -7,9 +7,8 @@ module Concurrent
 
     def initialize
       @set = false
-      @notifier = Queue.new
       @mutex = Mutex.new
-      @waiting = 0
+      @waiters = []
     end
 
     def set?
@@ -20,33 +19,32 @@ module Concurrent
       return true if set?
       @mutex.synchronize do
         @set = true
-        @waiting.times { @notifier << :set }
-        @waiting = 0
+        @waiters.each {|waiter| waiter.run if waiter.status == 'sleep'}
       end
       return true
     end
 
     def reset
-      @mutex.synchronize { @set = false }
+      @mutex.synchronize { @set = false; @waiters.clear }
       return true
     end
 
     def wait(timeout = nil)
       return true if set?
 
-      @mutex.synchronize { @waiting += 1 }
+      @mutex.synchronize { @waiters << Thread.current }
+      return true if set? # if event was set while waiting for mutex
 
       if timeout.nil?
-        @notifier.pop
+        slept = sleep
       else
-        Concurrent::timeout(timeout) do
-          @notifier.pop
-        end
+        slept = sleep(timeout)
       end
-      return true
     rescue
-      @mutex.synchronize { @waiting -= 1 }
-      return false
+      # let it fail
+    ensure
+      @mutex.synchronize { @waiters.delete(Thread.current) }
+      return set?
     end
   end
 end

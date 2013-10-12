@@ -43,7 +43,7 @@ share_examples_for :thread_pool do
 
     it 'allows in-progress tasks to complete' do
       @expected = false
-      subject.post{ sleep(0.5); @expected = true }
+      subject.post{ @expected = true }
       subject.shutdown
       sleep(1)
       @expected.should be_true
@@ -80,7 +80,6 @@ share_examples_for :thread_pool do
     it 'attempts to kill all in-progress tasks' do
       @expected = false
       subject.post{ sleep(1); @expected = true }
-      sleep(0.1)
       subject.kill
       sleep(1)
       @expected.should be_false
@@ -90,7 +89,6 @@ share_examples_for :thread_pool do
       @expected = false
       subject.post{ sleep(0.5) }
       subject.post{ sleep(0.5); @expected = true }
-      sleep(0.1)
       subject.kill
       sleep(1)
       @expected.should be_false
@@ -99,7 +97,7 @@ share_examples_for :thread_pool do
     it 'kills all threads' do
       100.times { subject << proc{ sleep(1) } }
       sleep(0.1)
-      Thread.should_receive(:kill).at_least(subject.size).times
+      Thread.should_receive(:kill).at_least(subject.length).times
       subject.kill
       sleep(0.1)
     end
@@ -107,12 +105,18 @@ share_examples_for :thread_pool do
 
   context '#wait_for_termination' do
 
-    it 'immediately returns true after shutdown has complete' do
+    it 'immediately returns true when no threads running' do
       subject.shutdown
       subject.wait_for_termination.should be_true
     end
 
-    it 'blocks indefinitely when timeout it nil' do
+    it 'returns true after shutdown has complete' do
+      10.times { subject << proc{ sleep(0.1) } }
+      subject.shutdown
+      subject.wait_for_termination.should be_true
+    end
+
+    it 'blocks indefinitely when timeout is nil' do
       subject.post{ sleep(1) }
       subject.shutdown
       subject.wait_for_termination(nil).should be_true

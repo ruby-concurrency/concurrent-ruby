@@ -19,29 +19,14 @@ module Concurrent
       end
 
       @state = :running
-      @mutex ||= Mutex.new
-      @terminator ||= Event.new
-      @pool ||= []
-      @queue ||= Queue.new
-      @working = 0
+      @pool = []
+      @terminator = Event.new
+      @queue = Queue.new
+      @mutex = Mutex.new
     end
 
     def running?
       return @state == :running
-    end
-
-    def shutdown
-      @mutex.synchronize do
-        @collector.kill if @collector && @collector.status
-        if @pool.empty?
-          @state = :shutdown
-          @terminator.set
-        else
-          @state = :shuttingdown
-          @pool.size.times{ @queue << :stop }
-        end
-      end
-      Thread.pass
     end
 
     def wait_for_termination(timeout = nil)
@@ -49,15 +34,13 @@ module Concurrent
     end
 
     def post(*args, &block)
-      raise ArgumentError.new('no block given') unless block_given?
-      return @mutex.synchronize do
-        if @state == :running
-          at_post
-          @queue << [args, block]
-          true
-        else
-          false
-        end
+      raise ArgumentError.new('no block given') if block.nil?
+      @mutex.synchronize do
+        break false unless @state == :running
+        @queue << [args, block]
+        clean_pool
+        fill_pool
+        true
       end
     end
 
@@ -66,22 +49,34 @@ module Concurrent
       return self
     end
 
-    def kill
+    def shutdown
       @mutex.synchronize do
-        @state = :shuttingdown
-        @collector.kill if @collector && @collector.status
-        @pool.each{|worker| worker.kill }
-        @terminator.set
+        break unless @state == :running
+        if @pool.empty?
+          @state = :shutdown
+          @terminator.set
+        else
+          @state = :shuttingdown
+          @pool.length.times{ @queue << :stop }
+        end
       end
-      Thread.pass
     end
 
-    def size
-      return @mutex.synchronize do
-        @state == :running ? @pool.length : 0
-      end 
+    def kill
+      @mutex.synchronize do
+        break if @state == :shutdown
+        @state = :shutdown
+        @queue.clear
+        drain_pool
+        @terminator.set
+      end
     end
-    alias_method :length, :size
+
+    def length
+      @mutex.synchronize do
+        @state == :running ? @pool.length : 0
+      end
+    end
 
     def status
       @mutex.synchronize do
@@ -89,33 +84,46 @@ module Concurrent
       end
     end
 
-    private
-
     def create_worker_thread
-      @pool << Worker.new(@queue)
-      Thread.new(@pool.last) do |worker|
+      wrkr = Concurrent::AbstractThreadPool::Worker.new(@queue, self)
+      Thread.new(wrkr, self) do |worker, parent|
         Thread.current.abort_on_exception = false
         worker.run
-        @mutex.synchronize do
-          @pool.delete(worker)
-          if @pool.empty? && @state != :running
-            @terminator.set
-            @state = :shutdown
-          end
-        end
+        parent.on_worker_exit(worker)
       end
-      run_garbage_collector unless @collector && @collector.alive?
+      return wrkr
     end
 
-    def run_garbage_collector
-      @collector = Thread.new do
-        Thread.current.abort_on_exception = false
-        loop do
-          sleep(1)
-          @mutex.synchronize { collect_garbage }
+    def fill_pool
+    end
+
+    def clean_pool
+    end
+
+    def drain_pool
+      @pool.each {|worker| worker.kill }
+      @pool.clear
+    end
+
+    def on_start_task(worker)
+    end
+
+    def on_end_task(worker)
+      @mutex.synchronize do
+        break unless @state == :running
+        clean_pool
+        fill_pool
+      end
+    end
+
+    def on_worker_exit(worker)
+      @mutex.synchronize do
+        @pool.delete(worker)
+        if @pool.empty? && @state != :running
+          @state = :shutdown
+          @terminator.set
         end
       end
-      Thread.pass
     end
   end
 end

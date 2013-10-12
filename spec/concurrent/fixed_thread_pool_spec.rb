@@ -16,46 +16,46 @@ module Concurrent
 
     context '#initialize' do
 
-      it 'raises an exception when the pool size is less than one' do
+      it 'raises an exception when the pool length is less than one' do
         lambda {
           FixedThreadPool.new(0)
         }.should raise_error(ArgumentError)
       end
 
-      it 'raises an exception when the pool size is greater than MAX_POOL_SIZE' do
+      it 'raises an exception when the pool length is greater than MAX_POOL_SIZE' do
         lambda {
           FixedThreadPool.new(FixedThreadPool::MAX_POOL_SIZE + 1)
         }.should raise_error(ArgumentError)
       end
     end
 
-    context '#size' do
+    context '#length' do
 
-      let(:pool_size) { 3 }
-      subject { FixedThreadPool.new(pool_size) }
+      let(:pool_length) { 3 }
+      subject { FixedThreadPool.new(pool_length) }
 
       it 'returns zero on start' do
         subject.shutdown
-        subject.size.should eq 0
+        subject.length.should eq 0
       end
 
-      it 'returns the size of the pool when running' do
-        pool_size.times do |i|
+      it 'returns the length of the pool when running' do
+        pool_length.times do |i|
           subject.post{ sleep }
           sleep(0.1)
-          subject.size.should eq pool_size
+          subject.length.should eq pool_length
         end
       end
 
       it 'returns zero while shutting down' do
         subject.post{ sleep(1) }
         subject.shutdown
-        subject.size.should eq 0
+        subject.length.should eq 0
       end
 
       it 'returns zero once shut down' do
         subject.shutdown
-        subject.size.should eq 0
+        subject.length.should eq 0
       end
     end
 
@@ -63,10 +63,10 @@ module Concurrent
 
       it 'creates new workers when there are none available' do
         pool = FixedThreadPool.new(5)
-        pool.size.should eq 0
+        pool.length.should eq 0
         5.times{ sleep(0.1); pool << proc{ sleep } }
         sleep(0.1)
-        pool.size.should eq 5
+        pool.length.should eq 5
         pool.kill
       end
 
@@ -77,6 +77,17 @@ module Concurrent
         pool.length.should eq 5
         pool.kill
       end
+
+      it 'creates new threads when garbage collecting' do
+        pool = FixedThreadPool.new(5)
+        pool.length.should == 0
+        pool << proc { sleep }
+        sleep(0.1)
+        pool.length.should == 5
+        pool.instance_variable_set(:@max_threads, 25)
+        pool << proc { sleep }
+        pool.length.should == 25
+      end
     end
 
     context 'exception handling' do
@@ -85,7 +96,7 @@ module Concurrent
         pool = FixedThreadPool.new(5)
         5.times{ pool << proc{ raise StandardError } }
         sleep(5)
-        pool.size.should eq 5
+        pool.length.should eq 5
         pool.status.should_not include(nil)
       end
     end
