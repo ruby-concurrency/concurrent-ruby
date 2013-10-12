@@ -94,25 +94,6 @@ Once you've installed the gem you must `require` it in your project:
 require 'concurrent'
 ```
 
-### Kernel Methods
-
-Many Ruby developers consider it bad form to add function to the global (Kernel) namespace.
-I don't necessarily agree. If the function acts like a low-level feature of the language
-I think it is OK to add the method to the `Kernel` module. To support my personal programming
-style I have chosen to implement `Kernel` methods to instance many of the objects in this
-library. Out of respect for the larger Ruby community I have made these methods optional.
-They are not imported with the normal `require 'concurrent'` directive. To import these
-functions you must import the `concurrent/functions` library.
-
-```ruby
-require 'concurrent'
-score = agent(10) #=> NoMethodError: undefined method `agent' for main:Object
-
-require 'concurrent/functions'
-score = agent(10) #=> #<Concurrent::Agent:0x35b2b28 ...
-score.value #=> 10
-```
-
 ### Examples
 
 For complete examples, see the specific documentation linked above. Below are a few examples to whet your appetite.
@@ -139,9 +120,8 @@ sleep(0.5)
 
 ```ruby
 require 'concurrent'
-require 'concurrent/functions'
 
-score = agent(10)
+score = Concurrent::Agent.new(10)
 score.value #=> 10
 
 score << proc{|current| current + 100 }
@@ -150,7 +130,7 @@ score.value #=> 110
 
 score << proc{|current| current * 2 }
 sleep(0.1)
-deref score #=> 220
+score.value #=> 220
 
 score << proc{|current| current - 50 }
 sleep(0.1)
@@ -161,22 +141,19 @@ score.value #=> 170
 
 ```ruby
 require 'concurrent'
-require 'concurrent/functions'
 
-count = future{ sleep(1); 10 }
+count = Concurrent::Future.new{ sleep(1); 10 }
 count.state #=> :pending
 # do stuff...
 count.value #=> 10 (after blocking)
-deref count #=> 10
 ```
 
 #### Promise (JavaScript)
 
 ```ruby
 require 'concurrent'
-require 'concurrent/functions'
 
-p = promise("Jerry", "D'Antonio"){|a, b| "#{a} #{b}" }.
+p = Concurrent::Promise.new("Jerry", "D'Antonio"){|a, b| "#{a} #{b}" }.
     then{|result| "Hello #{result}." }.
     rescue(StandardError){|ex| puts "Boom!" }.
     then{|result| "#{result} Would you like to play a game?"}

@@ -44,10 +44,6 @@ Then create one
 p = Promise.new("Jerry", "D'Antonio") do |first, last|
       "#{last}, #{first}"
     end
-
-# -or-
-
-p = promise(10){|x| x * x * x }
 ```
 
 Promises can be chained using the `then` method. The `then` method
@@ -55,13 +51,13 @@ accepts a block but no arguments. The result of the each promise is
 passed as the block argument to chained promises
 
 ```ruby
-p = promise(10){|x| x * 2}.then{|result| result - 10 }
+p = Concurrent::Promise.new(10){|x| x * 2}.then{|result| result - 10 }
 ```
 
 And so on, and so on, and so on...
 
 ```ruby
-p = promise(10){|x| x * 2}.
+p = Concurrent::Promise.new(10){|x| x * 2}.
     then{|result| result - 10 }.
     then{|result| result * 3 }.
     then{|result| result % 5 }
@@ -69,9 +65,8 @@ p = promise(10){|x| x * 2}.
 
 Promises are executed asynchronously so a newly-created promise *should* always be in the pending state
 
-
 ```ruby
-p = promise{ "Hello, world!" }
+p = Concurrent::Promise.new{ "Hello, world!" }
 p.state   #=> :pending
 p.pending? #=> true
 ```
@@ -79,27 +74,24 @@ p.pending? #=> true
 Wait a little bit, and the promise will resolve and provide a value
 
 ```ruby
-p = promise{ "Hello, world!" }
+p = Concurrent::Promise.new{ "Hello, world!" }
 sleep(0.1)
 
 p.state      #=> :fulfilled
 p.fulfilled? #=> true
-
 p.value      #=> "Hello, world!"
-
 ```
 
 If an exception occurs, the promise will be rejected and will provide
 a reason for the rejection
 
 ```ruby
-p = promise{ raise StandardError.new("Here comes the Boom!") }
+p = Concurrent::Promise.new{ raise StandardError.new("Here comes the Boom!") }
 sleep(0.1)
 
 p.state     #=> :rejected
 p.rejected? #=> true
-
-p.reason=>  #=> "#<StandardError: Here comes the Boom!>"
+p.reason    #=> "#<StandardError: Here comes the Boom!>"
 ```
 
 ### Rejection
@@ -108,7 +100,7 @@ Much like the economy, rejection exhibits a trickle-down effect. When
 a promise is rejected all its children will be rejected
 
 ```ruby
-p = [ promise{ Thread.pass; raise StandardError } ]
+p = [ Concurrent::Promise.new{ Thread.pass; raise StandardError } ]
 
 10.times{|i| p << p.first.then{ i } }
 sleep(0.1)
@@ -122,7 +114,7 @@ Once a promise is rejected it will not accept any children. Calls
 to `then` will continually return `self`
 
 ```ruby
-p = promise{ raise StandardError }
+p = Concurrent::Promise.new{ raise StandardError }
 sleep(0.1)
 
 p.object_id        #=> 32960556
@@ -135,30 +127,28 @@ p.then{}.object_id #=> 32960556
 Promises support error handling callbacks is a style mimicing Ruby's
 own exception handling mechanism, namely `rescue`
 
-
 ```ruby
-promise{ "dangerous operation..." }.rescue{|ex| puts "Bam!" }
+Concurrent::Promise.new{ "dangerous operation..." }.rescue{|ex| puts "Bam!" }
 
 # -or- (for the Java/C# crowd)
-promise{ "dangerous operation..." }.catch{|ex| puts "Boom!" }
+Concurrent::Promise.new{ "dangerous operation..." }.catch{|ex| puts "Boom!" }
 
 # -or- (for the hipsters)
-promise{ "dangerous operation..." }.on_error{|ex| puts "Pow!" }
+Concurrent::Promise.new{ "dangerous operation..." }.on_error{|ex| puts "Pow!" }
 ```
 
 As with Ruby's `rescue` mechanism, a promise's `rescue` method can
 accept an optional Exception class argument (defaults to `Exception`
 when not specified)
 
-
 ```ruby
-promise{ "dangerous operation..." }.rescue(ArgumentError){|ex| puts "Bam!" }
+Concurrent::Promise.new{ "dangerous operation..." }.rescue(ArgumentError){|ex| puts "Bam!" }
 ```
 
 Calls to `rescue` can also be chained
 
 ```ruby
-promise{ "dangerous operation..." }.
+Concurrent::Promise.new{ "dangerous operation..." }.
   rescue(ArgumentError){|ex| puts "Bam!" }.
   rescue(NoMethodError){|ex| puts "Boom!" }.
   rescue(StandardError){|ex| puts "Pow!" }
@@ -168,7 +158,7 @@ When there are multiple `rescue` handlers the first one to match the thrown
 exception will be triggered
 
 ```ruby
-promise{ raise NoMethodError }.
+Concurrent::Promise.new{ raise NoMethodError }.
   rescue(ArgumentError){|ex| puts "Bam!" }.
   rescue(NoMethodError){|ex| puts "Boom!" }.
   rescue(StandardError){|ex| puts "Pow!" }
@@ -182,7 +172,7 @@ Trickle-down rejection also applies to rescue handlers. When a promise is reject
 for any reason, its rescue handlers will be triggered. Rejection of the parent counts.
 
 ```ruby
-promise{ Thread.pass; raise StandardError }.
+Concurrent::Promise.new{ Thread.pass; raise StandardError }.
   then{ true }.rescue{ puts 'Boom!' }.
   then{ true }.rescue{ puts 'Boom!' }.
   then{ true }.rescue{ puts 'Boom!' }.

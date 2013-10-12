@@ -38,18 +38,18 @@ count.value(0) #=> nil (does not block)
 count.value #=> 10 (after blocking)
 count.state #=> :fulfilled
 count.fulfilled? #=> true
-deref count #=> 10
+count.value #=> 10
 ```
 
 A rejected example:
 
 ```ruby
-count = future{ sleep(10); raise StandardError.new("Boom!") }
+count = Concurrent::Future.new{ sleep(10); raise StandardError.new("Boom!") }
 count.state #=> :pending
-pending?(count) #=> true
+count.pending? #=> true
 
 deref(count) #=> nil (after blocking)
-rejected?(count) #=> true
+count.rejected? #=> true
 count.reason #=> #<StandardError: Boom!> 
 ```
 

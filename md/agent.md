@@ -42,7 +42,7 @@ score.value #=> 110
 
 score << proc{|current| current * 2 }
 sleep(0.1)
-deref score #=> 220
+score.value #=> 220
 
 score << proc{|current| current - 50 }
 sleep(0.1)
@@ -52,7 +52,7 @@ score.value #=> 170
 With validation and error handling:
 
 ```ruby
-score = agent(0).validate{|value| value <= 1024 }.
+score = Concurrent::Agent.new(0).validate{|value| value <= 1024 }.
           rescue(NoMethodError){|ex| puts "Bam!" }.
           rescue(ArgumentError){|ex| puts "Pow!" }.
           rescue{|ex| puts "Boom!" }
@@ -81,7 +81,7 @@ bingo = Class.new{
   end
 }.new
 
-score = agent(0)
+score = Concurrent::Agent.new(0)
 score.add_observer(bingo)
 
 score << proc{|current| sleep(0.1); current += 30 }
