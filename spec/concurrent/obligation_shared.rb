@@ -87,41 +87,4 @@ share_examples_for Concurrent::Obligation do
       rejected_subject.reason.to_s.should =~ /#{rejected_reason}/
     end
   end
-
-  context 'Kernel aliases' do
-
-    it 'aliases Kernel#deref for #deref' do
-      deref(fulfilled_subject).should eq fulfilled_value
-      deref(fulfilled_subject, 0).should eq fulfilled_value
-    end
-
-    it 'aliases Kernel#pending? for #pending?' do
-      #NOTE: was structured like others but was incorrectly failing
-      # on fulfilled_subject
-      fulfilled_subject.should_receive(:pending?).once
-      pending?(fulfilled_subject)
-      pending_subject.should_receive(:pending?).once
-      pending?(pending_subject)
-      rejected_subject.should_receive(:pending?).once
-      pending?(rejected_subject)
-    end
-
-    it 'aliases Kernel#fulfilled? for #fulfilled?' do
-      fulfilled?(fulfilled_subject).should be_true
-      fulfilled?(pending_subject).should be_false
-      fulfilled?(rejected_subject).should be_false
-    end
-
-    it 'aliases Kernel#realized? for #realized?' do
-      realized?(fulfilled_subject).should be_true
-      realized?(pending_subject).should be_false
-      realized?(rejected_subject).should be_false
-    end
-
-    it 'aliases Kernel#rejected? for #rejected?' do
-      rejected?(rejected_subject).should be_true
-      rejected?(fulfilled_subject).should be_false
-      rejected?(pending_subject).should be_false
-    end
-  end
 end
