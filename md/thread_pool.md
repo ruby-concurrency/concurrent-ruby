@@ -123,8 +123,11 @@ goroutines) run against a global thread pool. This pool can be directly accessed
 `$GLOBAL_THREAD_POOL` global variable. Generally, this pool should not be directly accessed.
 Use the other concurrency features instead.
 
-By default the global thread pool is a `CachedThreadPool`. This means it consumes no resources
-unless concurrency functions are called. Most of the time this pool can simply be left alone.
+By default the global thread pool is a `NullThreadPool`. This isn't a real thread pool at all.
+It's simply a proxy for creating new threads on every post to the pool. I couldn't decide which
+of the other threads pools and what configuration would be the most universally appropriate so
+I punted. If you understand thread pools then you know enough to make your own choice. That's
+why the global thread pool can be changed.
 
 ### Changing the Global Thread Pool
 
