@@ -96,28 +96,6 @@ module Concurrent
         subject << proc{ nil }
         subject.length.should < 3
       end
-
-      it 'creates new threads if there are tasks waiting in the queue' do
-        queue = Queue.new
-        20.times { queue << [[], proc { nil }] }
-        subject.instance_variable_set(:@queue, queue)
-        subject.length.should == 0
-        subject << proc { sleep }
-        sleep(1)
-        subject.length.should == 21
-      end
-    end
-
-    context '#status' do
-
-      it 'returns an empty collection when the pool is empty' do
-        subject.status.should be_empty
-      end
-
-      it 'returns one status object for each thread in the pool' do
-        3.times{ sleep(0.1); subject << proc{ sleep(0.5) } }
-        subject.status.length.should eq 3
-      end
     end
   end
 end

@@ -44,6 +44,7 @@ share_examples_for :thread_pool do
     it 'allows in-progress tasks to complete' do
       @expected = false
       subject.post{ @expected = true }
+      sleep(0.1)
       subject.shutdown
       sleep(1)
       @expected.should be_true
@@ -53,15 +54,20 @@ share_examples_for :thread_pool do
       @expected = false
       subject.post{ sleep(0.2) }
       subject.post{ sleep(0.2); @expected = true }
+      sleep(0.1)
       subject.shutdown
       sleep(1)
       @expected.should be_true
     end
 
     it 'allows threads to exit normally' do
+      before_thread_count = Thread.list.size
+      10.times{ subject << proc{ nil } }
+      sleep(0.1)
+      Thread.list.size.should > before_thread_count
       subject.shutdown
       sleep(1)
-      subject.status.should be_empty
+      Thread.list.size.should == before_thread_count
     end
   end
 
@@ -80,6 +86,7 @@ share_examples_for :thread_pool do
     it 'attempts to kill all in-progress tasks' do
       @expected = false
       subject.post{ sleep(1); @expected = true }
+      sleep(0.1)
       subject.kill
       sleep(1)
       @expected.should be_false
@@ -89,17 +96,20 @@ share_examples_for :thread_pool do
       @expected = false
       subject.post{ sleep(0.5) }
       subject.post{ sleep(0.5); @expected = true }
+      sleep(0.1)
       subject.kill
       sleep(1)
       @expected.should be_false
     end
 
     it 'kills all threads' do
+      before_thread_count = Thread.list.size
       100.times { subject << proc{ sleep(1) } }
       sleep(0.1)
-      Thread.should_receive(:kill).at_least(subject.length).times
+      Thread.list.size.should > before_thread_count
       subject.kill
       sleep(0.1)
+      Thread.list.size.should == before_thread_count
     end
   end
 
@@ -112,24 +122,28 @@ share_examples_for :thread_pool do
 
     it 'returns true after shutdown has complete' do
       10.times { subject << proc{ sleep(0.1) } }
+      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination.should be_true
     end
 
     it 'blocks indefinitely when timeout is nil' do
       subject.post{ sleep(1) }
+      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(nil).should be_true
     end
 
     it 'returns true when shutdown sucessfully completes before timeout' do
       subject.post{ sleep(0.5) }
+      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1).should be_true
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
       subject.post{ sleep }
+      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1).should be_false
     end
