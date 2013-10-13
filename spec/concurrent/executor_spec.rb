@@ -171,14 +171,6 @@ module Concurrent
           @expected.should eq args
         end
 
-        it 'supresses exceptions thrown by the execution block' do
-          lambda {
-            @subject = Executor.new('Foo', execution_interval: 0.5) { raise StandardError }
-          @thread = Thread.new { @subject.run }
-            sleep(1)
-          }.should_not raise_error
-        end
-
         it 'kills the worker thread if the timeout is reached' do
           # the after(:each) block will trigger this expectation
           Thread.should_receive(:kill).at_least(1).with(any_args())

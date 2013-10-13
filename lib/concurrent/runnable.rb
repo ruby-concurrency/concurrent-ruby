@@ -12,6 +12,8 @@ module Concurrent
           Thread.abort_on_exception = false
           runner.run
         end
+        #HACK: more consistent on JRuby and Rbx
+        sleep(0.1)
       end
     end
 
