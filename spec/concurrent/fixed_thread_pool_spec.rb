@@ -64,7 +64,7 @@ module Concurrent
       it 'creates new workers when there are none available' do
         pool = FixedThreadPool.new(5)
         pool.length.should eq 0
-        5.times{ sleep(0.1); pool << proc{ sleep } }
+        5.times{ pool << proc{ sleep } }
         sleep(0.1)
         pool.length.should eq 5
         pool.kill
