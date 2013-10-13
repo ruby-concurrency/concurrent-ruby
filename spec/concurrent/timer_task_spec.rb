@@ -5,15 +5,6 @@ module Concurrent
 
   describe TimerTask do
 
-    before(:each) do
-      @orig_stdout = $stdout
-      $stdout = StringIO.new 
-    end
-
-    after(:each) do
-      $stdout = @orig_stdout
-    end
-
     after(:each) do
       @subject = @subject.runner if @subject.respond_to?(:runner)
       @subject.kill unless @subject.nil?
@@ -23,7 +14,7 @@ module Concurrent
 
     context ':runnable' do
 
-      subject { TimerTask.new(':runnable'){ nil } }
+      subject { TimerTask.new{ nil } }
 
       it_should_behave_like :runnable
     end
@@ -34,33 +25,28 @@ module Concurrent
 
         it 'raises an exception if no block given' do
           lambda {
-            @subject = Concurrent::TimerTask.new('Foo')
+            @subject = Concurrent::TimerTask.new
           }.should raise_error
         end
 
         it 'uses the default execution interval when no interval is given' do
-          @subject = TimerTask.new('Foo'){ nil }
+          @subject = TimerTask.new{ nil }
           @subject.execution_interval.should eq TimerTask::EXECUTION_INTERVAL
         end
 
         it 'uses the default timeout interval when no interval is given' do
-          @subject = TimerTask.new('Foo'){ nil }
+          @subject = TimerTask.new{ nil }
           @subject.timeout_interval.should eq TimerTask::TIMEOUT_INTERVAL
         end
 
         it 'uses the given execution interval' do
-          @subject = TimerTask.new('Foo', execution_interval: 5){ nil }
+          @subject = TimerTask.new(execution_interval: 5){ nil }
           @subject.execution_interval.should eq 5
         end
 
         it 'uses the given timeout interval' do
-          @subject = TimerTask.new('Foo', timeout_interval: 5){ nil }
+          @subject = TimerTask.new(timeout_interval: 5){ nil }
           @subject.timeout_interval.should eq 5
-        end
-
-        it 'sets the #name context variable' do
-          @subject = TimerTask.new('Foo'){ nil }
-          @subject.name.should eq 'Foo'
         end
       end
 
@@ -75,14 +61,8 @@ module Concurrent
 
         it 'raises an exception if no block given' do
           lambda {
-            @subject = Concurrent::TimerTask.run('Foo')
+            @subject = Concurrent::TimerTask.run
           }.should raise_error
-        end
-
-        it 'passes the name to the new TimerTask' do
-          @subject = TimerTask.new('Foo'){ nil }
-          TimerTask.should_receive(:new).with('Foo').and_return(@subject)
-          Concurrent::TimerTask.run!('Foo')
         end
 
         it 'passes the options to the new TimerTask' do
@@ -93,15 +73,15 @@ module Concurrent
             logger: proc{ nil },
             block_args: %w[one two three]
           }
-          @subject = TimerTask.new('Foo', opts){ nil }
-          TimerTask.should_receive(:new).with(anything(), opts).and_return(@subject)
-          Concurrent::TimerTask.run!('Foo', opts)
+          @subject = TimerTask.new(opts){ nil }
+          TimerTask.should_receive(:new).with(opts).and_return(@subject)
+          Concurrent::TimerTask.run!(opts)
         end
 
         it 'passes the block to the new TimerTask' do
           @expected = false
           block = proc{ @expected = true }
-          @subject = TimerTask.run!('Foo', run_now: true, &block)
+          @subject = TimerTask.run!(run_now: true, &block)
           sleep(0.1)
           @expected.should be_true
         end
@@ -109,99 +89,106 @@ module Concurrent
         it 'creates a new thread' do
           thread = Thread.new{ sleep(1) }
           Thread.should_receive(:new).with(any_args()).and_return(thread)
-          @subject = TimerTask.run!('Foo'){ nil }
-        end
-      end
-
-      context 'execution' do
-
-        it 'runs the block immediately when the :run_now option is true' do
-          @expected = false
-          @subject = TimerTask.run!('Foo', execution: 500, now: true){ @expected = true }
-          sleep(0.1)
-          @expected.should be_true
-        end
-
-        it 'waits for :execution_interval seconds when the :run_now option is false' do
-          @expected = false
-          @subject = TimerTask.run!('Foo', execution: 0.5, now: false){ @expected = true }
-          @expected.should be_false
-          sleep(1)
-          @expected.should be_true
-        end
-
-        it 'waits for :execution_interval seconds when the :run_now option is not given' do
-          @expected = false
-          @subject = TimerTask.run!('Foo', execution: 0.5){ @expected = true }
-          @expected.should be_false
-          sleep(1)
-          @expected.should be_true
-        end
-
-        it 'yields to the execution block' do
-          @expected = false
-          @subject = TimerTask.run!('Foo', execution: 1){ @expected = true }
-          sleep(2)
-          @expected.should be_true
-        end
-
-        it 'passes any given arguments to the execution block' do
-          args = [1,2,3,4]
-          @expected = nil
-          @subject = TimerTask.new('Foo', execution_interval: 0.5, args: args) do |*args|
-            @expected = args
-          end
-          @thread = Thread.new { @subject.run }
-          sleep(1)
-          @expected.should eq args
-        end
-
-        it 'kills the worker thread if the timeout is reached' do
-          # the after(:each) block will trigger this expectation
-          Thread.should_receive(:kill).at_least(1).with(any_args())
-          @subject = TimerTask.new('Foo', execution_interval: 0.5, timeout_interval: 0.5){ Thread.stop }
-          @thread = Thread.new { @subject.run }
-          sleep(1.5)
+          @subject = TimerTask.run!{ nil }
         end
       end
     end
 
-    context 'logging' do
+    context 'execution' do
 
-      before(:each) do
-        @name = nil
-        @level = nil
-        @msg = nil
+      it 'runs the block immediately when the :run_now option is true' do
+        @expected = false
+        @subject = TimerTask.run!(execution: 500, now: true){ @expected = true }
+        sleep(0.1)
+        @expected.should be_true
+      end
 
-        @logger = proc do |name, level, msg|
-          @name = name
-          @level = level
-          @msg = msg
+      it 'waits for :execution_interval seconds when the :run_now option is false' do
+        @expected = false
+        @subject = TimerTask.run!(execution: 0.5, now: false){ @expected = true }
+        @expected.should be_false
+        sleep(1)
+        @expected.should be_true
+      end
+
+      it 'waits for :execution_interval seconds when the :run_now option is not given' do
+        @expected = false
+        @subject = TimerTask.run!(execution: 0.5){ @expected = true }
+        @expected.should be_false
+        sleep(1)
+        @expected.should be_true
+      end
+
+      it 'yields to the execution block' do
+        @expected = false
+        @subject = TimerTask.run!(execution: 1){ @expected = true }
+        sleep(2)
+        @expected.should be_true
+      end
+
+      it 'passes any given arguments to the execution block' do
+        args = [1,2,3,4]
+        @expected = nil
+        @subject = TimerTask.new(execution_interval: 0.5, args: args) do |*args|
+          @expected = args
         end
+        @thread = Thread.new { @subject.run }
+        sleep(1)
+        @expected.should eq args
       end
 
-      it 'uses a custom logger when given' do
-        @subject = TimerTask.run!('Foo', execution_interval: 0.1, logger: @logger){ nil }
-        sleep(0.5)
-        @name.should eq 'Foo'
+      it 'kills the worker thread if the timeout is reached' do
+        # the after(:each) block will trigger this expectation
+        Thread.should_receive(:kill).at_least(1).with(any_args())
+        @subject = TimerTask.new(execution_interval: 0.5, timeout_interval: 0.5){ Thread.stop }
+        @thread = Thread.new { @subject.run }
+        sleep(1.5)
+      end
+    end
+
+    context 'observation' do
+
+      let(:observer) do
+        Class.new do
+          attr_reader :time
+          attr_reader :value
+          attr_reader :ex
+          define_method(:update) do |time, value, ex|
+            @time = time
+            @value = value
+            @ex = ex
+          end
+        end.new
       end
 
-      it 'logs :info when execution is successful' do
-        @subject = TimerTask.run!('Foo', execution_interval: 0.1, logger: @logger){ nil }
-        sleep(0.5)
-        @level.should eq :info
+      it 'notifies all observers on success' do
+        task = TimerTask.new(run_now: true){ sleep(0.1); 42 }
+        task.add_observer(observer)
+        Thread.new{ task.run }
+        sleep(1)
+        observer.value.should == 42
+        observer.ex.should be_nil
+        task.kill
       end
 
-      it 'logs :warn when execution times out' do
-        @subject = TimerTask.run!('Foo', execution_interval: 0.1, timeout_interval: 0.1, logger: @logger){ Thread.stop }
-        sleep(0.5)
-        @level.should eq :warn
+      it 'notifies all observers on timeout' do
+        task = TimerTask.new(run_now: true, timeout: 1){ sleep }
+        task.add_observer(observer)
+        Thread.new{ task.run }
+        sleep(2)
+        observer.value.should be_nil
+        observer.ex.should be_a(Concurrent::TimeoutError)
+        task.kill
       end
 
-      it 'logs :error when execution is fails' do
-        @subject = TimerTask.run!('Foo', execution_interval: 0.1, logger: @logger){ raise StandardError }
-        sleep(0.5)
-        @level.should eq :error
+      it 'notifies all observers on error' do
+        task = TimerTask.new(run_now: true){ sleep(0.1); raise ArgumentError }
+        task.add_observer(observer)
+        Thread.new{ task.run }
+        sleep(1)
+        observer.value.should be_nil
+        observer.ex.should be_a(ArgumentError)
+        task.kill
       end
     end
   end

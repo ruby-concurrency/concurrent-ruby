@@ -9,17 +9,17 @@ can cause the entire thread to abend. In a long-running application where the ta
 thread is intended to run for days/weeks/years a crashed task thread can pose a real
 problem. The `TimerTask` class alleviates both problems.
 
-When an executor is launched it starts a thread for monitoring the execution interval.
-The executor thread does not perform the task, however. Instead, the executor
+When a TimerTask is launched it starts a thread for monitoring the execution interval.
+The TimerTask thread does not perform the task, however. Instead, the TimerTask
 launches the task on a separat thread. The advantage of this approach is that if
-the task crashes it will only kill the task thread, not the executor thread. The
-executor thread can then log the success or failure of the task. The executor
+the task crashes it will only kill the task thread, not the TimerTask thread. The
+TimerTask thread can then log the success or failure of the task. The TimerTask
 can even be configured with a timeout value allowing it to kill a task that runs
 to long and then log the error.
 
 One other advantage of the `TimerTask` class is that it forces the bsiness logic to
 be completely decoupled from the threading logic. The business logic can be tested
-separately then passed to the an executor for scheduling and running.
+separately then passed to the a TimerTask for scheduling and running.
 
 The `TimerTask` is the yin to to the
 [Supervisor's](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md)
@@ -27,31 +27,19 @@ yang. Where the `Supervisor` is intended to manage long-running threads that ope
 continuously, the `TimerTask` is intended to manage fairly short operations that
 occur repeatedly at regular intervals.
 
-Unlike some of the others concurrency objects in the library, executors do not
+Unlike some of the others concurrency objects in the library, TimerTasks do not
 run on the global thread pool. In my experience the types of tasks that will benefit
 from the `TimerTask` class tend to also be long running. For this reason they get
 their own thread every time the task is executed.
 
-## Concurrent::Runnable::Context
+## Observation
 
-When an executor is run the return value is an `Concurrent::Runnable::Context` object. An
-`Concurrent::Runnable::Context` object has several attribute readers (`#name`, `#execution_interval`,
-and `#timeout_interval`). It also provides several `Thread` operations which can
-be performed against the internal thread. These include `#status`, `#join`, and
-`kill`.
-
-## Custom Logging
-
-An executor will write a log message to standard out at the completion of every
-task run. When the task is successful the log message is tagged at the `:info`
-level. When the task times out the log message is tagged at the `warn` level.
-When the task fails tocomplete (most likely because of exception) the log
-message is tagged at the `error` level.
-
-The default logging behavior can be overridden by passing a `proc` to the executor
-on creation. The block will be passes three (3) arguments every time it is run:
-executor `name`, log `level`, and the log `msg` (message). The `proc` can do
-whatever it wanst with these arguments.
+`TimerTask` supports notification through the Ruby standard library
+[Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html)
+module. On execution the `TimerTask` will notify the observers with thress arguments:
+time of execution, the result of the block (or nil on failure), and any raised
+exceptions (or nil on success). If the timeout interval is exceeded the observer
+will receive a `Concurrent::TimeoutError` object as the third argument.
 
 ## Examples
 
@@ -60,16 +48,14 @@ A basic example:
 ```ruby
 require 'concurrent'
 
-ec = Concurrent::TimerTask.run('Foo'){ puts 'Boom!' }
+ec = Concurrent::TimerTask.run{ puts 'Boom!' }
 
-ec.name               #=> "Foo"
 ec.execution_interval #=> 60 == Concurrent::TimerTask::EXECUTION_INTERVAL
 ec.timeout_interval   #=> 30 == Concurrent::TimerTask::TIMEOUT_INTERVAL
 ec.status             #=> "sleep"
 
 # wait 60 seconds...
 #=> 'Boom!'
-#=> ' INFO (2013-08-02 23:20:15) Foo: execution completed successfully'
 
 ec.kill #=> true
 ```
@@ -77,90 +63,63 @@ ec.kill #=> true
 Both the execution_interval and the timeout_interval can be configured:
 
 ```ruby
-ec = Concurrent::TimerTask.run('Foo', execution_interval: 5, timeout_interval: 5) do
+ec = Concurrent::TimerTask.run(execution_interval: 5, timeout_interval: 5) do
        puts 'Boom!'
      end
 
-ec.execution_interval #=> 5
-ec.timeout_interval   #=> 5
+ec.runner.execution_interval #=> 5
+ec.runner.timeout_interval   #=> 5
 ```
 
 By default an `TimerTask` will wait for `:execution_interval` seconds before running the block.
 To run the block immediately set the `:run_now` option to `true`:
 
 ```ruby
-ec = Concurrent::TimerTask.run('Foo', run_now: true){ puts 'Boom!' }
+ec = Concurrent::TimerTask.run(run_now: true){ puts 'Boom!' }
 #=> 'Boom!''
-#=> ' INFO (2013-08-15 21:35:14) Foo: execution completed successfully'
-ec.status #=> "sleep"
+ec.thread.status #=> "sleep"
 >> 
 ```
 
-A simple example with timeout and task exception:
+A simple example with observation:
 
 ```ruby
-ec = Concurrent::TimerTask.run('Foo', execution_interval: 1, timeout_interval: 1){ sleep(10) }
-
-#=> WARN (2013-08-02 23:45:26) Foo: execution timed out after 1 seconds
-#=> WARN (2013-08-02 23:45:28) Foo: execution timed out after 1 seconds
-#=> WARN (2013-08-02 23:45:30) Foo: execution timed out after 1 seconds
-
-ec = Concurrent::TimerTask.run('Foo', execution_interval: 1){ raise StandardError }
-
-#=> ERROR (2013-08-02 23:47:31) Foo: execution failed with error 'StandardError'
-#=> ERROR (2013-08-02 23:47:32) Foo: execution failed with error 'StandardError'
-#=> ERROR (2013-08-02 23:47:33) Foo: execution failed with error 'StandardError'
-```
-
-For custom logging, simply provide a `proc` when creating an executor:
-
-```ruby
-file_logger = proc do |name, level, msg|
-  open('executor.log', 'a') do |f|
-    f << ("%5s (%s) %s: %s\n" % [level.upcase, Time.now.strftime("%F %T"), name, msg])
+class TaskObserver
+  def update(time, result, ex)
+    if result
+      print "(#{time}) Execution successfully returned #{result}\n"
+    elsif ex.is_a?(Concurrent::TimeoutError)
+      print "(#{time}) Execution timed out\n"
+    else
+      print "(#{time}) Execution failed with error #{ex}\n"
+    end
   end
 end
 
-ec = Concurrent::TimerTask.run('Foo', execution_interval: 5, logger: file_logger) do
-       puts 'Boom!'
-     end
+task = Concurrent::TimerTask.run!(execution_interval: 1, timeout_interval: 1){ 42 }
+task.runner.add_observer(TaskObserver.new)
 
-# the log file contains
-# INFO (2013-08-02 23:30:19) Foo: execution completed successfully
-# INFO (2013-08-02 23:30:24) Foo: execution completed successfully
-# INFO (2013-08-02 23:30:29) Foo: execution completed successfully
-# INFO (2013-08-02 23:30:34) Foo: execution completed successfully
-# INFO (2013-08-02 23:30:39) Foo: execution completed successfully
-# INFO (2013-08-02 23:30:44) Foo: execution completed successfully
-```
+#=> (2013-10-13 19:08:58 -0400) Execution successfully returned 42
+#=> (2013-10-13 19:08:59 -0400) Execution successfully returned 42
+#=> (2013-10-13 19:09:00 -0400) Execution successfully returned 42
+task.runner.stop
 
-It is also possible to access the default stdout logger from within a logger `proc`:
 
-```ruby
-file_logger = proc do |name, level, msg|
-  Concurrent::TimerTask::STDOUT_LOGGER.call(name, level, msg)
-  open('executor.log', 'a') do |f|
-    f << ("%5s (%s) %s: %s\n" % [level.upcase, Time.now.strftime("%F %T"), name, msg])
-  end
-end
+task = Concurrent::TimerTask.run!(execution_interval: 1, timeout_interval: 1){ sleep }
+task.runner.add_observer(TaskObserver.new)
 
-ec = Concurrent::TimerTask.run('Foo', execution_interval: 5, logger: file_logger) do
-       puts 'Boom!'
-     end
+#=> (2013-10-13 19:07:25 -0400) Execution timed out
+#=> (2013-10-13 19:07:27 -0400) Execution timed out
+#=> (2013-10-13 19:07:29 -0400) Execution timed out
+task.runner.stop
 
-# wait...
+task = Concurrent::TimerTask.run!(execution_interval: 1){ raise StandardError }
+task.runner.add_observer(TaskObserver.new)
 
-#=> Boom!
-#=> INFO (2013-08-02 23:40:49) Foo: execution completed successfully
-#=> Boom!
-#=> INFO (2013-08-02 23:40:54) Foo: execution completed successfully
-#=> Boom!
-#=> INFO (2013-08-02 23:40:59) Foo: execution completed successfully
-
-# and the log file contains
-# INFO (2013-08-02 23:39:52) Foo: execution completed successfully
-# INFO (2013-08-02 23:39:57) Foo: execution completed successfully
-# INFO (2013-08-02 23:40:49) Foo: execution completed successfully
+#=> (2013-10-13 19:09:37 -0400) Execution failed with error StandardError
+#=> (2013-10-13 19:09:38 -0400) Execution failed with error StandardError
+#=> (2013-10-13 19:09:39 -0400) Execution failed with error StandardError
+task.runner.stop
 ```
 
 ## Copyright
