@@ -104,7 +104,6 @@ task.runner.add_observer(TaskObserver.new)
 #=> (2013-10-13 19:09:00 -0400) Execution successfully returned 42
 task.runner.stop
 
-
 task = Concurrent::TimerTask.run!(execution_interval: 1, timeout_interval: 1){ sleep }
 task.runner.add_observer(TaskObserver.new)
 

@@ -72,21 +72,10 @@ module Concurrent
 
       it 'never creates more than :max_threads threads' do
         pool = FixedThreadPool.new(5)
-        100.times{ sleep(0.01); pool << proc{ sleep } }
+        100.times{ pool << proc{ sleep } }
         sleep(0.1)
         pool.length.should eq 5
         pool.kill
-      end
-
-      it 'creates new threads when garbage collecting' do
-        pool = FixedThreadPool.new(5)
-        pool.length.should == 0
-        pool << proc { sleep }
-        sleep(0.1)
-        pool.length.should == 5
-        pool.instance_variable_set(:@max_threads, 25)
-        pool << proc { sleep }
-        pool.length.should == 25
       end
     end
 
