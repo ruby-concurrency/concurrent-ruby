@@ -18,7 +18,7 @@ module Concurrent
         pool.post do
           @tally << Stressor::test(Stressor::random_dataset)
           total = @tally.total
-          print '.' if total % 100 == 0
+          print '.' if total % 10 == 0
           @done.set if total == TEST_COUNT
         end
       end

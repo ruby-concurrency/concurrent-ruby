@@ -17,7 +17,7 @@ Dir.glob('tasks/**/*.rake').each do|rakefile|
 end
 
 RSpec::Core::RakeTask.new(:travis_spec) do |t|
-  t.rspec_opts = '--tag ~@not_on_travis'
+  t.rspec_opts = '-fd --tag ~@not_on_travis'
 end
 
 task :default => [:travis_spec]
