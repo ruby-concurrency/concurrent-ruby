@@ -3,7 +3,7 @@ require 'concurrent/runnable'
 
 module Concurrent
 
-  class Executor
+  class TimerTask
     include Runnable
 
     EXECUTION_INTERVAL = 60
@@ -45,9 +45,7 @@ module Concurrent
     end
     alias_method :terminate, :kill
 
-    def status
-      return @monitor.status unless @monitor.nil?
-    end
+    alias_method :cancel, :stop
 
     protected
 

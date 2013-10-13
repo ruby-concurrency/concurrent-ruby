@@ -60,7 +60,7 @@ Several features from Erlang, Go, Clojure, Java, and JavaScript have been implem
 * JavaScript inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
 * Java inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
 * Old school [events](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655(v=vs.85).aspx) from back in my Visual C++ days
-* Scheduled task execution with the [Executor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/executor.md) service
+* Repeated task execution with Java inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
 * Erlang inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
 
 ### Is it any good?

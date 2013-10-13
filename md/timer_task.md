@@ -7,7 +7,7 @@ problems. First, it is difficult to test the business logic of the task becuse t
 task itself is tightly couple with the threading. Second, an exception in the task
 can cause the entire thread to abend. In a long-running application where the task
 thread is intended to run for days/weeks/years a crashed task thread can pose a real
-problem. The `Executor` class alleviates both problems.
+problem. The `TimerTask` class alleviates both problems.
 
 When an executor is launched it starts a thread for monitoring the execution interval.
 The executor thread does not perform the task, however. Instead, the executor
@@ -17,25 +17,25 @@ executor thread can then log the success or failure of the task. The executor
 can even be configured with a timeout value allowing it to kill a task that runs
 to long and then log the error.
 
-One other advantage of the `Executor` class is that it forces the bsiness logic to
+One other advantage of the `TimerTask` class is that it forces the bsiness logic to
 be completely decoupled from the threading logic. The business logic can be tested
 separately then passed to the an executor for scheduling and running.
 
-The `Executor` is the yin to to the
+The `TimerTask` is the yin to to the
 [Supervisor's](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md)
 yang. Where the `Supervisor` is intended to manage long-running threads that operate
-continuously, the `Executor` is intended to manage fairly short operations that
+continuously, the `TimerTask` is intended to manage fairly short operations that
 occur repeatedly at regular intervals.
 
 Unlike some of the others concurrency objects in the library, executors do not
 run on the global thread pool. In my experience the types of tasks that will benefit
-from the `Executor` class tend to also be long running. For this reason they get
+from the `TimerTask` class tend to also be long running. For this reason they get
 their own thread every time the task is executed.
 
-## ExecutionContext
+## Concurrent::Runnable::Context
 
-When an executor is run the return value is an `ExecutionContext` object. An
-`ExecutionContext` object has several attribute readers (`#name`, `#execution_interval`,
+When an executor is run the return value is an `Concurrent::Runnable::Context` object. An
+`Concurrent::Runnable::Context` object has several attribute readers (`#name`, `#execution_interval`,
 and `#timeout_interval`). It also provides several `Thread` operations which can
 be performed against the internal thread. These include `#status`, `#join`, and
 `kill`.
@@ -60,11 +60,11 @@ A basic example:
 ```ruby
 require 'concurrent'
 
-ec = Concurrent::Executor.run('Foo'){ puts 'Boom!' }
+ec = Concurrent::TimerTask.run('Foo'){ puts 'Boom!' }
 
 ec.name               #=> "Foo"
-ec.execution_interval #=> 60 == Concurrent::Executor::EXECUTION_INTERVAL
-ec.timeout_interval   #=> 30 == Concurrent::Executor::TIMEOUT_INTERVAL
+ec.execution_interval #=> 60 == Concurrent::TimerTask::EXECUTION_INTERVAL
+ec.timeout_interval   #=> 30 == Concurrent::TimerTask::TIMEOUT_INTERVAL
 ec.status             #=> "sleep"
 
 # wait 60 seconds...
@@ -77,7 +77,7 @@ ec.kill #=> true
 Both the execution_interval and the timeout_interval can be configured:
 
 ```ruby
-ec = Concurrent::Executor.run('Foo', execution_interval: 5, timeout_interval: 5) do
+ec = Concurrent::TimerTask.run('Foo', execution_interval: 5, timeout_interval: 5) do
        puts 'Boom!'
      end
 
@@ -85,11 +85,11 @@ ec.execution_interval #=> 5
 ec.timeout_interval   #=> 5
 ```
 
-By default an `Executor` will wait for `:execution_interval` seconds before running the block.
+By default an `TimerTask` will wait for `:execution_interval` seconds before running the block.
 To run the block immediately set the `:run_now` option to `true`:
 
 ```ruby
-ec = Concurrent::Executor.run('Foo', run_now: true){ puts 'Boom!' }
+ec = Concurrent::TimerTask.run('Foo', run_now: true){ puts 'Boom!' }
 #=> 'Boom!''
 #=> ' INFO (2013-08-15 21:35:14) Foo: execution completed successfully'
 ec.status #=> "sleep"
@@ -99,13 +99,13 @@ ec.status #=> "sleep"
 A simple example with timeout and task exception:
 
 ```ruby
-ec = Concurrent::Executor.run('Foo', execution_interval: 1, timeout_interval: 1){ sleep(10) }
+ec = Concurrent::TimerTask.run('Foo', execution_interval: 1, timeout_interval: 1){ sleep(10) }
 
 #=> WARN (2013-08-02 23:45:26) Foo: execution timed out after 1 seconds
 #=> WARN (2013-08-02 23:45:28) Foo: execution timed out after 1 seconds
 #=> WARN (2013-08-02 23:45:30) Foo: execution timed out after 1 seconds
 
-ec = Concurrent::Executor.run('Foo', execution_interval: 1){ raise StandardError }
+ec = Concurrent::TimerTask.run('Foo', execution_interval: 1){ raise StandardError }
 
 #=> ERROR (2013-08-02 23:47:31) Foo: execution failed with error 'StandardError'
 #=> ERROR (2013-08-02 23:47:32) Foo: execution failed with error 'StandardError'
@@ -121,7 +121,7 @@ file_logger = proc do |name, level, msg|
   end
 end
 
-ec = Concurrent::Executor.run('Foo', execution_interval: 5, logger: file_logger) do
+ec = Concurrent::TimerTask.run('Foo', execution_interval: 5, logger: file_logger) do
        puts 'Boom!'
      end
 
@@ -138,13 +138,13 @@ It is also possible to access the default stdout logger from within a logger `pr
 
 ```ruby
 file_logger = proc do |name, level, msg|
-  Concurrent::Executor::STDOUT_LOGGER.call(name, level, msg)
+  Concurrent::TimerTask::STDOUT_LOGGER.call(name, level, msg)
   open('executor.log', 'a') do |f|
     f << ("%5s (%s) %s: %s\n" % [level.upcase, Time.now.strftime("%F %T"), name, msg])
   end
 end
 
-ec = Concurrent::Executor.run('Foo', execution_interval: 5, logger: file_logger) do
+ec = Concurrent::TimerTask.run('Foo', execution_interval: 5, logger: file_logger) do
        puts 'Boom!'
      end
 
