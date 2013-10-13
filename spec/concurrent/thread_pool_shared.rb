@@ -34,6 +34,7 @@ share_examples_for :thread_pool do
 
     it 'stops accepting new tasks' do
       subject.post{ sleep(1) }
+      sleep(0.1)
       subject.shutdown
       @expected = false
       subject.post{ @expected = true }.should be_false

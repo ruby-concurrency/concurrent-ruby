@@ -2,7 +2,9 @@ require 'thread'
 
 module Concurrent
 
-  module Running
+  module Runnable
+
+    LifecycleError = Class.new(StandardError)
 
     class Context
       attr_reader :runner, :thread
@@ -12,27 +14,10 @@ module Concurrent
           Thread.abort_on_exception = false
           runner.run
         end
-        #HACK: more consistent on JRuby and Rbx
-        sleep(0.1)
       end
     end
 
     def self.included(base)
-
-      def run!
-        return mutex.synchronize do
-          raise LifecycleError.new('already running') if @running
-          Context.new(self)
-        end
-      end
-
-      protected
-
-      def mutex
-        @mutex ||= Mutex.new
-      end
-
-      public
 
       class << base
 
@@ -43,15 +28,6 @@ module Concurrent
           return nil
         end
       end
-    end
-  end
-
-  module Runnable
-
-    LifecycleError = Class.new(StandardError)
-
-    def self.included(base)
-      base.send(:include, Running)
     end
 
     def run
@@ -92,6 +68,12 @@ module Concurrent
 
     def running?
       return @running == true
+    end
+
+    protected
+
+    def mutex
+      @mutex ||= Mutex.new
     end
   end
 end
