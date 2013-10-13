@@ -96,9 +96,8 @@ module Concurrent
         pending
         pool = FixedThreadPool.new(5)
         5.times{ pool << proc{ raise StandardError } }
-        sleep(5)
+        sleep(1)
         pool.length.should eq 5
-        pool.status.should_not include(nil)
       end
     end
   end
