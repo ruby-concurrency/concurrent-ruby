@@ -4,7 +4,7 @@ require_relative 'stresstest/support/word_sec.rb'
 namespace :stresstest do
 
   DEFAULT_NUM_TESTS = 1000
-  DEFAULT_NUM_THREADS = Concurrent::AbstractThreadPool::MAX_POOL_SIZE
+  DEFAULT_NUM_THREADS = Concurrent::FixedThreadPool::MAX_POOL_SIZE
   SPEC_DIR = File.join(File.dirname(__FILE__), 'stresstest')
 
   def rspec_command(args, glob)
