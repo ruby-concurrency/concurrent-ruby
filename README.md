@@ -199,24 +199,31 @@ sleep(1)
 #=> Zap!
 ```
 
-#### Executor
+#### TimerTask
 
 ```ruby
 require 'concurrent'
 
-ec = Concurrent::Executor.run('Foo'){ puts 'Boom!' }
+ec = Concurrent::TimerTask.run{ puts 'Boom!' }
 
-ec.name               #=> "Foo"
-ec.execution_interval #=> 60 == Concurrent::Executor::EXECUTION_INTERVAL
-ec.timeout_interval   #=> 30 == Concurrent::Executor::TIMEOUT_INTERVAL
+ec.execution_interval #=> 60 == Concurrent::TimerTask::EXECUTION_INTERVAL
+ec.timeout_interval   #=> 30 == Concurrent::TimerTask::TIMEOUT_INTERVAL
 ec.status             #=> "sleep"
 
 # wait 60 seconds...
 #=> 'Boom!'
-#=> ' INFO (2013-08-02 23:20:15) Foo: execution completed successfully'
 
 ec.kill #=> true
 ```
+
+## Todo
+
+* DelayedTask
+* More methods from Scala's Actor
+* More Erlang goodness
+  * gen_server
+  * gen_event
+  * gen_fsm
 
 ## Contributing
 
