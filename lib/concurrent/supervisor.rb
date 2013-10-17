@@ -280,7 +280,7 @@ module Concurrent
 
     def exceeded_max_restart_frequency?
       @restart_times.unshift(Time.now.to_i)
-      diff = delta(@restart_times.first, @restart_times.last)
+      diff = (@restart_times.first - @restart_times.last).abs
       if @restart_times.length >= @max_restart && diff <= @max_time
         return true
       elsif diff >= @max_time
