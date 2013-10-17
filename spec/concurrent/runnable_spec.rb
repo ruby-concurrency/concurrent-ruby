@@ -139,6 +139,39 @@ module Concurrent
       end
     end
 
+    context 'instance #run!' do
+
+      after(:each) do
+        @thread.kill if @thread
+      end
+
+      it 'raises an exception when already running' do
+        @thread = Thread.new{ subject.run }
+        @thread.join(0.1)
+        expect {
+          @thread = subject.run!
+        }.to raise_exception(Concurrent::Runnable::LifecycleError)
+        sleep(0.1)
+      end
+
+      it 'creates a new thread' do
+        Thread.should_receive(:new).with(no_args())
+        @thread = subject.run!
+      end
+
+      it 'calls the #run method on the new thread' do
+        subject.should_receive(:run)
+        @thread = subject.run!
+        sleep(0.1)
+      end
+
+      it 'returns the new thread' do
+        @thread = subject.run!
+        sleep(0.1)
+        @thread.should be_a(Thread)
+      end
+    end
+
     context 'module #run!' do
 
       let(:clazz) do

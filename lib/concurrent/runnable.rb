@@ -30,6 +30,16 @@ module Concurrent
       end
     end
 
+    def run!(abort_on_exception = false)
+      raise LifecycleError.new('already running') if @running
+      thread = Thread.new{
+        Thread.current.abort_on_exception = abort_on_exception
+        self.run
+      }
+      Thread.pass
+      return thread
+    end
+
     def run
       mutex.synchronize do
         raise LifecycleError.new('already running') if @running
