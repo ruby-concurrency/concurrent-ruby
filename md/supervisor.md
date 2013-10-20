@@ -119,11 +119,7 @@ intervals:
   intended to be used in applications that may run forever the `#max_restart` count must be
   timeboxed to prevent erroneous `Supervisor shutdown`. The default is 60 seconds.
 
-### Worker Types
-
-TBD...
-
-### Restart Strategies
+### Restart Strategy
 
 When a child thread dies the `Supervisor` will restart it, and possibly other children,
 with the expectation that the workers are capable of cleaning themselves up and running
@@ -147,6 +143,24 @@ worker's thread, spawn a new thread, and call the worker's `#run` method.
 When a restart is initiated under any strategy other than `:one_for_one` the
 `:max_restart` value will only be incremented by one, regardless of how many children
 are restarted.
+
+### Worker Restart Option
+
+When a worker dies the default behavior of the `Supervisor` is to restart one or more
+workers according to the restart strategy defined when the `Supervisor` is created
+(see above). This behavior can be modified on a per-worker basis using the `:restart`
+option when calling `#add_worker`. Three worker `:restart` options are supported:
+
+* `:permanent` means the worker is intended to run forever and will always be restarted
+  (this is the default)
+* `:temporary` workers are expected to stop on their own as a normal part of their operation
+  and will only be restarted on an abnormal exit
+* `:transient` workers will never be restarted
+
+### Worker Type
+
+Every worker added to a `Supervisor` is of either type `:worker` or `:supervisor`. The defauly
+value is `:worker`. Currently this type makes no functional difference. It is purely informational.
 
 ## Supervision Trees
 

@@ -1,20 +1,20 @@
 # Secret Agent Man
 
-Agents are inspired by [Clojure's](http://clojure.org/) [agent](http://clojure.org/agents) keyword.
-An agent is a single atomic value that represents an identity. The current value
-of the agent can be requested at any time (`deref`). Each agent has a work queue and operates on
+`Agent`s are inspired by [Clojure's](http://clojure.org/) [agent](http://clojure.org/agents) function.
+An `Agent` is a single atomic value that represents an identity. The current value
+of the `Agent` can be requested at any time (`deref`). Each `Agent` has a work queue and operates on
 the global thread pool (see below). Consumers can `post` code blocks to the
-agent. The code block (function) will receive the current value of the agent as its sole
-parameter. The return value of the block will become the new value of the agent. Agents support
-two error handling modes: fail and continue. A good example of an agent is a shared incrementing
+`Agent`. The code block (function) will receive the current value of the `Agent` as its sole
+parameter. The return value of the block will become the new value of the `Agent`. `Agent`s support
+two error handling modes: fail and continue. A good example of an `Agent` is a shared incrementing
 counter, such as the score in a video game.
 
-An agent must be initialize with an initial value. This value is always accessible via the `value`
-(or `deref`) methods. Code blocks sent to the agent will be processed in the order received. As
+An `Agent` must be initialize with an initial value. This value is always accessible via the `value`
+(or `deref`) methods. Code blocks sent to the `Agent` will be processed in the order received. As
 each block is processed the current value is updated with the result from the block. This update
 is an atomic operation so a `deref` will never block and will always return the current value.
 
-When an agent is created it may be given an optional `validate` block and zero or more `rescue`
+When an `Agent` is created it may be given an optional `validate` block and zero or more `rescue`
 blocks. When a new value is calculated the value will be checked against the validator, if present.
 If the validator returns `true` the new value will be accepted. If it returns `false` it will be
 rejected. If a block raises an exception during execution the list of `rescue` blocks will be
@@ -22,9 +22,28 @@ seacrhed in order until one matching the current exception is found. That `rescu
 then be called an passed the exception object. If no matching `rescue` block is found, or none
 were configured, then the exception will be suppressed.
 
-Agents also implement Ruby's [Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html).
-Code that observes an agent will receive a callback with the new value any time the value
+`Agent`s also implement Ruby's [Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html).
+Code that observes an `Agent` will receive a callback with the new value any time the value
 is changed.
+
+## Copy Options
+
+Object references in Ruby are mutable. This can lead to serious problems when
+the value of an `Agent` is a mutable reference. Which is always the case unless
+the value is a `Fixnum`, `Symbol`, or similar "primative" data type. Each
+`Agent` instance can be configured with a few options that can help protect the
+program from potentially dangerous operations. Each of these options can be
+optionally set when the `Agent` is created:
+
+* `:dup_on_deref` when true the `Agent` will call the `#dup` method on the
+  `value` object every time the `#value` methid is called (default: false)
+* `:freeze_on_deref` when true the `Agent` will call the `#freeze` method on the
+  `value` object every time the `#value` method is called (default: false)
+* `:copy_on_deref` when given a `Proc` object the `Proc` will be run every time
+  the `#value` method is called. The `Proc` will be given the current `value` as
+  its only parameter and the result returned by the block will be the return
+  value of the `#value` call. When `nil` this option will be ignored (default:
+  nil)
 
 ## Examples
 

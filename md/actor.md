@@ -13,7 +13,7 @@ A good definition of "actor" is:
 > communicates exclusively via message passing.
 
 The `Concurrent::Actor` class in this library is based solely on the
-[Actor](http://www.scala.com/some/path/to/actor) task
+[Actor](http://www.scala-lang.org/api/current/index.html#scala.actors.Actor) task
 defined in the Scala standard library. It does not implement all the features of
 Scala's `Actor` but its behavior for what *has* been implemented is nearly identical
 
@@ -50,7 +50,10 @@ load balance.
 
 ## Additional Reading
 
-TBD...
+* [API documentation](http://www.scala-lang.org/api/current/index.html#scala.actors.Actor)
+  for the original (now deprecated) Scala Actor
+* [Scala Actors: A Short Tutorial](http://www.scala-lang.org/old/node/242)
+* [Scala Actors 101](http://java.dzone.com/articles/scala-threadless-concurrent)
 
 ## Examples
 

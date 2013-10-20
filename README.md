@@ -216,6 +216,42 @@ ec.status             #=> "sleep"
 ec.kill #=> true
 ```
 
+#### Actor
+
+```ruby
+class FinanceActor < Concurrent::Actor
+  def act(query)
+    finance = Finance.new(query)
+    print "[#{Time.now}] RECEIVED '#{query}' to #{self} returned #{finance.update.suggested_symbols}\n\n"
+  end
+end
+
+financial, pool = FinanceActor.pool(5)
+
+pool << 'YAHOO'
+pool << 'Micosoft'
+pool << 'google'
+```
+
+#### Supervisor
+
+```ruby
+pong = Pong.new
+ping = Ping.new(10000, pong)
+pong.ping = ping
+
+task = Concurrent::TimerTask.new{ print "Boom!\n" }
+
+boss = Concurrent::Supervisor.new
+boss.add_worker(ping)
+boss.add_worker(pong)
+boss.add_worker(task)
+
+boss.run!
+
+ping << :pong
+```
+
 ## Todo
 
 * DelayedTask
