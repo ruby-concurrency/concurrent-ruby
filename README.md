@@ -55,7 +55,7 @@ Several features from Erlang, Go, Clojure, Java, and JavaScript have been implem
 
 * Clojure inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
 * Clojure inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
-* Scala inspired [Actor](http://www.scala-lang.org/api/current/index.html#scala.actors.Actor)
+* Scala inspired [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
 * Go inspired [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
 * JavaScript inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
 * Java inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
