@@ -9,8 +9,8 @@ This library provides:
 
 The Atomic class provides accessors for the contained "value" plus two update methods:
 
-* update will run the provided block, passing the current value and replacing it with the block result iff the value has not been changed in the mean time. It may run the block repeatedly if there are other concurrent updates in progress.
-* try_update will run the provided block, passing the current value and replacing it with the block result. If the value changes before the update can happen, it will throw Atomic::ConcurrentUpdateError.
+* update will run the provided block, passing the current value and replacing it with the block result if the value has not been changed in the meantime. It may run the block repeatedly if there are other concurrent updates in progress.
+* try_update will run the provided block, passing the current value and replacing it with the block result. If the value changes before the update can happen, it will throw an Atomic::ConcurrentUpdateError.
 
 The atomic repository is at http://github.com/headius/ruby-atomic.
 
