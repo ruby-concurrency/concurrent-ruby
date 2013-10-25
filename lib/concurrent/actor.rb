@@ -2,27 +2,47 @@ require 'thread'
 require 'observer'
 
 require 'concurrent/runnable'
+require 'concurrent/obligation'
 
 module Concurrent
 
-  # http://www.scala-lang.org/api/current/index.html#scala.actors.Actor
-  class Actor
-    include Observable
-    include Runnable
-
-    def initialize
-      @queue = Queue.new
-    end
+  module Postable
 
     def post(*message)
-      return false unless running?
-      @queue.push(message)
-      return @queue.length
+      return false if self.respond_to?(:running?) && ! running?
+      queue.push([message, nil])
+      return queue.length
     end
 
     def <<(message)
       post(*message)
       return self
+    end
+
+    def post!(*message)
+      contract = Contract.new
+      queue.push([message, contract])
+      return contract
+    end
+
+    private
+
+    def queue
+      @queue ||= Queue.new
+    end
+  end
+
+  class Actor
+    include Observable
+    include Runnable
+    include Postable
+
+    class Poolbox
+      include Postable
+
+      def initialize(queue)
+        @queue = queue
+      end
     end
 
     def self.pool(count, &block)
@@ -42,44 +62,29 @@ module Concurrent
       raise NotImplementedError.new("#{self.class} does not implement #act")
     end
 
-    class Poolbox
-
-      def initialize(queue)
-        @queue = queue
-      end
-
-      def post(*message)
-        @queue.push(message)
-        return @queue.length
-      end
-
-      def <<(message)
-        post(*message)
-        return self
-      end
-    end
-
     # @private
     def on_run # :nodoc:
-      @queue.clear
+      queue.clear
     end
 
     # @private
     def on_stop # :nodoc:
-      @queue.clear
-      @queue.push(:stop)
+      queue.clear
+      queue.push(:stop)
     end
 
     # @private
     def on_task # :nodoc:
-      message = @queue.pop
+      message = queue.pop
       return if message == :stop
       begin
-        result = act(*message)
+        result = act(*message.first)
+        message.last.complete(result, nil) if message.last
         changed
-        notify_observers(Time.now, message, result)
+        notify_observers(Time.now, message.first, result)
       rescue => ex
-        on_error(Time.now, message, ex)
+        message.last.complete(nil, ex) if message.last
+        on_error(Time.now, message.first, ex)
       end
     end
 

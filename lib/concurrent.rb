@@ -3,6 +3,7 @@ require 'concurrent/version'
 
 require 'concurrent/actor'
 require 'concurrent/agent'
+require 'concurrent/contract'
 require 'concurrent/event'
 require 'concurrent/future'
 require 'concurrent/goroutine'

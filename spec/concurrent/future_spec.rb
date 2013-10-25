@@ -28,7 +28,7 @@ module Concurrent
       Future.thread_pool = FixedThreadPool.new(1)
     end
 
-    it_should_behave_like Concurrent::Obligation
+    it_should_behave_like :obligation
 
     context '#initialize' do
 

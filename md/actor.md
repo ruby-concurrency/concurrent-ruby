@@ -146,6 +146,28 @@ pool.post('YAHOO')
 #>> [2013-10-18 09:35:28 -0400] RECEIVED 'YAHOO' to #<FinanceActor:0x0000010331af70>...
 ```
 
+The `#post!` method returns an `Obligation` (same API as `Future`) which can be queried
+for value/reason on fulfillment/rejection.
+
+```ruby
+class EverythingActor < Concurrent::Actor
+  def act(message)
+    sleep(1)
+    return 42
+  end
+end
+
+life = EverythingActor.new
+life.run!
+universe = life.post!('What do you get when you multiply six by nine?')
+universe.pending? #=> true
+
+# wait for it...
+
+universe.fulfilled? #=> true
+universe.value      #=> 42
+```
+
 ## Copyright
 
 *Concurrent Ruby* is Copyright &copy; 2013 [Jerry D'Antonio](https://twitter.com/jerrydantonio).

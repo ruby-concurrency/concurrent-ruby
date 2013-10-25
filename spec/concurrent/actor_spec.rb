@@ -70,6 +70,43 @@ module Concurrent
       end
     end
 
+    context '#post!' do
+
+      it 'returns an Obligation' do
+        actor = actor_class.new
+        actor = actor_class.new
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        obligation = actor.post!(nil)
+        obligation.should be_a(Obligation)
+        actor.stop
+      end
+
+      it 'fulfills the obligation on success' do
+        actor = actor_class.new
+        actor = actor_class.new{|msg| @expected = msg }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        obligation = actor.post!(42)
+        @thread.join(0.1)
+        obligation.should be_fulfilled
+        obligation.value.should == 42
+        actor.stop
+      end
+
+      it 'rejects the obligation on failure' do
+        actor = actor_class.new
+        actor = actor_class.new{|msg| raise StandardError.new('Boom!') }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        obligation = actor.post!(42)
+        @thread.join(0.1)
+        obligation.should be_rejected
+        obligation.reason.should be_a(StandardError)
+        actor.stop
+      end
+    end
+
     context '#run' do
 
       it 'empties the queue' do
@@ -197,7 +234,7 @@ module Concurrent
           clazz.pool(0)
         }.to raise_error(ArgumentError)
       end
-  
+
       it 'creates the requested number of actors' do
         mailbox, actors = clazz.pool(5)
         actors.size.should == 5
@@ -333,7 +370,7 @@ module Concurrent
         actor = actor_class.new
         supervisor = Supervisor.new
         supervisor.add_worker(actor)
-        
+
         actor.should_receive(:run).with(no_args())
         supervisor.run!
         sleep(0.1)
@@ -364,7 +401,7 @@ module Concurrent
         actor = actor_class.new
         supervisor = Supervisor.new
         supervisor.add_worker(actor)
-        
+
         supervisor.run!
         sleep(0.1)
 

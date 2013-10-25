@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-share_examples_for Concurrent::Obligation do
+share_examples_for :obligation do
 
   context '#state' do
 

@@ -15,7 +15,7 @@ module Concurrent
     def fulfilled?() return(@state == :fulfilled); end
     alias_method :realized?, :fulfilled?
 
-    # Has the promise been rejected?
+    # Has the obligation been rejected?
     # @return [Boolean]
     def rejected?() return(@state == :rejected); end
 
