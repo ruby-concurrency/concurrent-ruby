@@ -74,7 +74,6 @@ module Concurrent
 
       it 'returns an Obligation' do
         actor = actor_class.new
-        actor = actor_class.new
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
         obligation = actor.post!(nil)
@@ -83,7 +82,6 @@ module Concurrent
       end
 
       it 'fulfills the obligation on success' do
-        actor = actor_class.new
         actor = actor_class.new{|msg| @expected = msg }
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
@@ -95,7 +93,6 @@ module Concurrent
       end
 
       it 'rejects the obligation on failure' do
-        actor = actor_class.new
         actor = actor_class.new{|msg| raise StandardError.new('Boom!') }
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
@@ -103,6 +100,61 @@ module Concurrent
         @thread.join(0.1)
         obligation.should be_rejected
         obligation.reason.should be_a(StandardError)
+        actor.stop
+      end
+    end
+
+    context '#post?' do
+
+      it 'blocks for up to the given number of seconds' do
+        actor = actor_class.new{|msg| sleep }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        start = Time.now.to_i
+        expect {
+          actor.post?(2, nil)
+        }.to raise_error
+        elapsed = Time.now.to_i - start
+        elapsed.should >= 2
+        actor.stop
+      end
+
+      it 'raises Concurrent::TimeoutError when seconds is zero' do
+        actor = actor_class.new{|msg| 42 }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        expect {
+          actor.post?(0, nil)
+        }.to raise_error(Concurrent::TimeoutError)
+        actor.stop
+      end
+
+      it 'raises Concurrent::TimeoutError on timeout' do
+        actor = actor_class.new{|msg| sleep }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        expect {
+          actor.post?(1, nil)
+        }.to raise_error(Concurrent::TimeoutError)
+        actor.stop
+      end
+
+      it 'bubbles the exception on error' do
+        actor = actor_class.new{|msg| raise StandardError.new('Boom!') }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        expect {
+          actor.post?(1, nil)
+        }.to raise_error(StandardError)
+        actor.stop
+      end
+
+      it 'returns the result on success' do
+        actor = actor_class.new{|msg| 42 }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        expected = actor.post?(1, nil)
+        expected.should == 42
         actor.stop
       end
     end

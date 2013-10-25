@@ -168,6 +168,17 @@ universe.fulfilled? #=> true
 universe.value      #=> 42
 ```
 
+The `#post?` method is a blocking call. It takes a number of seconds to wait as the
+first parameter and any number of additional parameters as the message. If the message
+is processed within the given number of seconds the call returns the result of the
+operation. If message processing raises an exception the exception is raised again
+by the `#post?` method. If the call to `#post?` times out a `Concurrent::Timeout`
+exception is raised.
+
+```ruby
+# needs code examples...
+```
+
 ## Copyright
 
 *Concurrent Ruby* is Copyright &copy; 2013 [Jerry D'Antonio](https://twitter.com/jerrydantonio).

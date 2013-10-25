@@ -1,8 +1,9 @@
 require 'thread'
 require 'observer'
 
-require 'concurrent/runnable'
+require 'concurrent/event'
 require 'concurrent/obligation'
+require 'concurrent/runnable'
 
 module Concurrent
 
@@ -23,6 +24,23 @@ module Concurrent
       contract = Contract.new
       queue.push([message, contract])
       return contract
+    end
+
+    def post?(seconds, *message)
+      raise Concurrent::TimeoutError if seconds.to_f <= 0.0
+      event = Event.new
+      cback = Queue.new
+      queue.push([message, cback, event])
+      if event.wait(seconds)
+        result = cback.pop
+        if result.is_a?(Exception)
+          raise result
+        else
+          return result
+        end
+      else
+        raise Concurrent::TimeoutError
+      end
     end
 
     private
@@ -78,13 +96,19 @@ module Concurrent
       message = queue.pop
       return if message == :stop
       begin
+        result = ex = nil
         result = act(*message.first)
-        message.last.complete(result, nil) if message.last
         changed
         notify_observers(Time.now, message.first, result)
       rescue => ex
-        message.last.complete(nil, ex) if message.last
         on_error(Time.now, message.first, ex)
+      ensure
+        if message.last.is_a?(Contract)
+          message.last.complete(result, ex)
+        elsif message.last.is_a?(Event)
+          message[1].push(result || ex)
+          message.last.set
+        end
       end
     end
 
