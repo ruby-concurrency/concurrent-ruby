@@ -161,7 +161,7 @@ sleep(1)
 p.value #=> "Hello Jerry D'Antonio. Would you like to play a game?" 
 ```
 
-#### Thread Pools
+#### Thread Pools (Java)
 
 ```ruby
 require 'concurrent'
@@ -199,7 +199,7 @@ sleep(1)
 #=> Zap!
 ```
 
-#### TimerTask
+#### TimerTask (Java)
 
 ```ruby
 require 'concurrent'
@@ -216,7 +216,7 @@ ec.status             #=> "sleep"
 ec.kill #=> true
 ```
 
-#### Actor
+#### Actor (Scala)
 
 ```ruby
 class FinanceActor < Concurrent::Actor
@@ -233,7 +233,7 @@ pool << 'Micosoft'
 pool << 'google'
 ```
 
-#### Supervisor
+#### Supervisor (Erlang)
 
 ```ruby
 pong = Pong.new
@@ -254,8 +254,11 @@ ping << :pong
 
 ## Todo
 
-* DelayedTask
+* DelayedTask (aka ScheduledTask)
 * More methods from Scala's Actor
+* [Task Parallel Library (TPL)](http://msdn.microsoft.com/en-us/library/dd460717.aspx)
+  * [Data Parallelism](http://msdn.microsoft.com/en-us/library/dd537608.aspx)
+  * [Task Parallelism](http://msdn.microsoft.com/en-us/library/dd537609.aspx)
 * More Erlang goodness
   * gen_server
   * gen_event
