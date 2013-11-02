@@ -9,9 +9,11 @@ module Concurrent
 
   module Postable
 
+    Package = Struct.new(:message, :handler, :notifier)
+
     def post(*message)
       return false if self.respond_to?(:running?) && ! running?
-      queue.push([message, nil])
+      queue.push(Package.new(message))
       return queue.length
     end
 
@@ -22,6 +24,7 @@ module Concurrent
 
     def post!(*message)
       contract = Contract.new
+      queue.push(Package.new(message, contract))
       queue.push([message, contract])
       return contract
     end
@@ -30,7 +33,7 @@ module Concurrent
       raise Concurrent::TimeoutError if seconds.to_f <= 0.0
       event = Event.new
       cback = Queue.new
-      queue.push([message, cback, event])
+      queue.push(Package.new(message, cback, event))
       if event.wait(seconds)
         result = cback.pop
         if result.is_a?(Exception)
@@ -93,23 +96,23 @@ module Concurrent
 
     # @private
     def on_task # :nodoc:
-      message = queue.pop
-      return if message == :stop
+      package = queue.pop
+      return if package == :stop
+      result = ex = nil
       begin
-        result = ex = nil
-        result = act(*message.first)
+        result = act(*package.message)
       rescue => ex
-        on_error(Time.now, message.first, ex)
+        on_error(Time.now, package.message, ex)
       ensure
-        if message.last.is_a?(Contract)
-          message.last.complete(result, ex)
-        elsif message.last.is_a?(Event)
-          message[1].push(result || ex)
-          message.last.set
+        if package.handler.is_a?(Contract)
+          package.handler.complete(result, ex)
+        elsif package.notifier.is_a?(Event)
+          package.handler.push(result || ex)
+          package.notifier.set
         end
 
         changed
-        notify_observers(Time.now, message.first, result, ex)
+        notify_observers(Time.now, package.message, result, ex)
       end
     end
 
