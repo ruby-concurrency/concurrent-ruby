@@ -157,6 +157,89 @@ module Concurrent
         expected.should == 42
         actor.stop
       end
+
+      it 'attempts to cancel the operation on timeout' do
+        @expected = 0
+        actor = actor_class.new{|msg| sleep(0.5); @expected += 1 }
+        @thread = Thread.new{ actor.run }
+        @thread.join(0.1)
+        actor.post(nil) # block the actor
+        expect {
+          actor.post?(0.1, nil)
+        }.to raise_error(Concurrent::TimeoutError)
+        sleep(1.5)
+        @expected.should == 1
+        actor.stop
+      end
+    end
+
+    context '#forward' do
+
+      let(:sender_clazz) do
+        Class.new(Actor) do
+          def act(*message)
+            if message.first.is_a?(Exception)
+              raise message.first
+            else
+              return message.first
+            end
+          end
+        end
+      end
+
+      let(:receiver_clazz) do
+        Class.new(Actor) do
+          attr_reader :result
+          def act(*message)
+            @result = message.first
+          end
+        end
+      end
+
+      let(:sender) { sender_clazz.new }
+      let(:receiver) { receiver_clazz.new }
+
+      let(:observer) { double('observer') }
+
+      before(:each) do
+        @sender = Thread.new{ sender.run }
+        @receiver = Thread.new{ receiver.run }
+        sleep(0.1)
+      end
+
+      after(:each) do
+        sender.stop
+        receiver.stop
+        sleep(0.1)
+        @sender.kill unless @sender.nil?
+        @receiver.kill unless @receiver.nil?
+      end
+
+      it 'forwards the result to the receiver on success' do
+        sender.forward(receiver, 42)
+        sleep(0.1)
+        receiver.result.should eq 42
+      end
+
+      it 'does not forward on exception' do
+        sender.forward(receiver, StandardError.new)
+        sleep(0.1)
+        receiver.result.should be_nil
+      end
+
+      it 'notifies observers on success' do
+        observer.should_receive(:update).with(any_args())
+        sender.add_observer(observer)
+        sender.forward(receiver, 42)
+        sleep(0.1)
+      end
+
+      it 'notifies observers on exception' do
+        observer.should_not_receive(:update).with(any_args())
+        sender.add_observer(observer)
+        sender.forward(receiver, StandardError.new)
+        sleep(0.1)
+      end
     end
 
     context '#run' do

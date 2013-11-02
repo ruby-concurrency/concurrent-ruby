@@ -12,7 +12,7 @@ module Concurrent
     Package = Struct.new(:message, :handler, :notifier)
 
     def post(*message)
-      return false if self.respond_to?(:running?) && ! running?
+      return false unless ready?
       queue.push(Package.new(message))
       return queue.length
     end
@@ -23,13 +23,14 @@ module Concurrent
     end
 
     def post!(*message)
+      #return nil unless ready?
       contract = Contract.new
       queue.push(Package.new(message, contract))
-      queue.push([message, contract])
       return contract
     end
 
     def post?(seconds, *message)
+      #raise Concurrent::Runnable::LifecycleError unless ready?
       raise Concurrent::TimeoutError if seconds.to_f <= 0.0
       event = Event.new
       cback = Queue.new
@@ -42,7 +43,22 @@ module Concurrent
           return result
         end
       else
+        event.set # attempt to cancel
         raise Concurrent::TimeoutError
+      end
+    end
+
+    def forward(receiver, *message)
+      #return false unless ready?
+      queue.push(Package.new(message, receiver))
+      return queue.length
+    end
+
+    def ready?
+      if self.respond_to?(:running?) && ! running?
+        return false
+      else
+        return true
       end
     end
 
@@ -99,16 +115,21 @@ module Concurrent
       package = queue.pop
       return if package == :stop
       result = ex = nil
+      notifier = package.notifier
       begin
-        result = act(*package.message)
+        if notifier.nil? || (notifier.is_a?(Event) && ! notifier.set?)
+          result = act(*package.message)
+        end
       rescue => ex
         on_error(Time.now, package.message, ex)
       ensure
         if package.handler.is_a?(Contract)
           package.handler.complete(result, ex)
-        elsif package.notifier.is_a?(Event)
+        elsif notifier.is_a?(Event) && ! notifier.set?
           package.handler.push(result || ex)
           package.notifier.set
+        elsif package.handler.is_a?(Actor) && ex.nil?
+          package.handler.post(result)
         end
 
         changed
