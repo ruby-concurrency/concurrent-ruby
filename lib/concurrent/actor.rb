@@ -23,14 +23,14 @@ module Concurrent
     end
 
     def post!(*message)
-      #return nil unless ready?
+      return nil unless ready?
       contract = Contract.new
       queue.push(Package.new(message, contract))
       return contract
     end
 
     def post?(seconds, *message)
-      #raise Concurrent::Runnable::LifecycleError unless ready?
+      raise Concurrent::Runnable::LifecycleError unless ready?
       raise Concurrent::TimeoutError if seconds.to_f <= 0.0
       event = Event.new
       cback = Queue.new
@@ -49,7 +49,7 @@ module Concurrent
     end
 
     def forward(receiver, *message)
-      #return false unless ready?
+      return false unless ready?
       queue.push(Package.new(message, receiver))
       return queue.length
     end

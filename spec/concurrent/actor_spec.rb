@@ -72,6 +72,10 @@ module Concurrent
 
     context '#post!' do
 
+      it 'returns nil when not running' do
+        subject.post!.should be_false
+      end
+
       it 'returns an Obligation' do
         actor = actor_class.new
         @thread = Thread.new{ actor.run }
@@ -105,6 +109,12 @@ module Concurrent
     end
 
     context '#post?' do
+
+      it 'raises Concurrent::Runnable::LifecycleError when not running' do
+        expect {
+          subject.post?(1)
+        }.to raise_error(Concurrent::Runnable::LifecycleError)
+      end
 
       it 'blocks for up to the given number of seconds' do
         actor = actor_class.new{|msg| sleep }
@@ -213,6 +223,10 @@ module Concurrent
         sleep(0.1)
         @sender.kill unless @sender.nil?
         @receiver.kill unless @receiver.nil?
+      end
+
+      it 'returns false when sender not running' do
+        sender_clazz.new.forward(receiver).should be_false
       end
 
       it 'forwards the result to the receiver on success' do
