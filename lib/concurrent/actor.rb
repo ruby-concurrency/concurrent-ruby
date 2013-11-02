@@ -98,8 +98,6 @@ module Concurrent
       begin
         result = ex = nil
         result = act(*message.first)
-        changed
-        notify_observers(Time.now, message.first, result)
       rescue => ex
         on_error(Time.now, message.first, ex)
       ensure
@@ -109,6 +107,9 @@ module Concurrent
           message[1].push(result || ex)
           message.last.set
         end
+
+        changed
+        notify_observers(Time.now, message.first, result, ex)
       end
     end
 

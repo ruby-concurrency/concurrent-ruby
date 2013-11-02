@@ -196,31 +196,6 @@ module Concurrent
       end
     end
 
-    context 'message handling' do
-
-      it 'runs the constructor block once for every message' do
-        @expected = 0
-        actor = actor_class.new{|msg| @expected += 1 }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        10.times { actor.post(true) }
-        @thread.join(0.1)
-        @expected.should eq 10
-        actor.stop
-      end
-
-      it 'passes the message to the block' do
-        @expected = []
-        actor = actor_class.new{|msg| @expected << msg }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        10.times {|i| actor.post(i) }
-        @thread.join(0.1)
-        actor.stop
-        @expected.should eq (0..9).to_a
-      end
-    end
-
     context 'exception handling' do
 
       it 'supresses exceptions thrown when handling messages' do
@@ -234,12 +209,34 @@ module Concurrent
       end
     end
 
-    context 'observer notification' do
+    context 'observation' do
+
+      let(:actor_class) do
+        Class.new(Actor) do
+          def act(*message)
+            if message.first.is_a?(Exception)
+              raise message.first
+            else
+              return message.first
+            end
+          end
+        end
+      end
+
+      subject { Class.new(actor_class).new }
 
       let(:observer) do
         Class.new {
-          attr_reader :notice
-          def update(*args) @notice = args; end
+          attr_reader :time
+          attr_reader :message
+          attr_reader :value
+          attr_reader :reason
+          def update(time, message, value, reason)
+            @time = time
+            @message = message
+            @value = value
+            @reason = reason
+          end
         }.new
       end
 
@@ -248,32 +245,45 @@ module Concurrent
         subject.add_observer(observer)
         @thread = Thread.new{ subject.run }
         @thread.join(0.1)
-        10.times { subject.post(true) }
+        10.times { subject.post(42) }
         @thread.join(0.1)
       end
 
-      it 'does not notify observers when a message raises an exception' do
-        observer.should_not_receive(:update).with(any_args())
-        actor = actor_class.new{|msg| raise StandardError }
-        actor.add_observer(observer)
-        @thread = Thread.new{ actor.run }
+      it 'notifies observers when a message raises an exception' do
+        error = StandardError.new
+        observer.should_receive(:update).exactly(10).times.with(any_args())
+        subject.add_observer(observer)
+        @thread = Thread.new{ subject.run }
         @thread.join(0.1)
-        10.times { actor.post(true) }
+        10.times { subject.post(error) }
         @thread.join(0.1)
-        actor.stop
       end
 
-      it 'passes the time, message, and result to the observer' do
-        actor = actor_class.new{|*msg| msg }
-        actor.add_observer(observer)
-        @thread = Thread.new{ actor.run }
+      it 'passes the time, message, value, and reason to the observer on success' do
+        subject.add_observer(observer)
+        @thread = Thread.new{ subject.run }
         @thread.join(0.1)
-        actor.post(42)
+        subject.post(42)
         @thread.join(0.1)
-        observer.notice[0].should be_a(Time)
-        observer.notice[1].should == [42]
-        observer.notice[2].should == [42]
-        actor.stop
+
+        observer.time.should be_a(Time)
+        observer.message.should eq [42]
+        observer.value.should eq 42
+        observer.reason.should be_nil
+      end
+
+      it 'passes the time, message, value, and reason to the observer on exception' do
+        error = StandardError.new
+        subject.add_observer(observer)
+        @thread = Thread.new{ subject.run }
+        @thread.join(0.1)
+        subject.post(error)
+        @thread.join(0.1)
+
+        observer.time.should be_a(Time)
+        observer.message.should eq [error]
+        observer.value.should be_nil
+        observer.reason.should be_a(Exception)
       end
     end
 
