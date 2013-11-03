@@ -12,7 +12,7 @@ share_examples_for :runnable do
 
     it 'starts the (blocking) runner on the current thread when stopped' do
       @thread = Thread.new { subject.run }
-      @thread.join(1).should be_nil
+      @thread.join(0.1).should be_nil
     end
 
     it 'raises an exception when already running' do
