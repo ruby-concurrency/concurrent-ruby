@@ -30,6 +30,11 @@ module Concurrent
 
     it_should_behave_like :obligation
 
+    it 'includes Dereferenceable' do
+      future = Future.new{ nil }
+      future.should be_a(Dereferenceable)
+    end
+
     context '#initialize' do
 
       it 'spawns a new thread when a block is given' do

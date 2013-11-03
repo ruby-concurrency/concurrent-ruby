@@ -115,13 +115,13 @@ module Concurrent
     end
 
     # @private
-    def on_fulfill(value) # :nodoc:
+    def on_fulfill(result) # :nodoc:
       @lock.synchronize do
-        @value = @handler.call(value)
+        @value = @handler.call(result)
         @state = :fulfilled
         @reason = nil
       end
-      return @value
+      return self.value
     end
 
     # @private

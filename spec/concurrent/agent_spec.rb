@@ -23,6 +23,11 @@ module Concurrent
       Agent.thread_pool = FixedThreadPool.new(1)
     end
 
+    it 'includes Dereferenceable' do
+      agent = Agent.new(10)
+      agent.should be_a(Dereferenceable)
+    end
+
     context '#initialize' do
 
       it 'sets the value to the given initial state' do
@@ -268,7 +273,7 @@ module Concurrent
       end
     end
 
-    context 'dereference' do
+    context 'Dereferenceable' do
 
       it 'defaults :dup_on_deref to false' do
         value = 'value'
@@ -361,6 +366,36 @@ module Concurrent
 
         agent = Agent.new(value, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copy)
         agent.value.should eq frozen
+      end
+
+      it 'does not call #dup when #dup_on_deref is set and the value is nil' do
+        allow_message_expectations_on_nil
+        result = nil
+        result.should_not_receive(:dup).with(any_args())
+        agent = Agent.new(result, dup_on_deref: true)
+        agent.value
+      end
+
+      it 'does not call #freeze when #freeze_on_deref is set and the value is nil' do
+        allow_message_expectations_on_nil
+        result = nil
+        result.should_not_receive(:freeze).with(any_args())
+        agent = Agent.new(result, freeze_on_deref: true)
+        agent.value
+      end
+
+      it 'does not call the #copy_on_deref block when the value is nil' do
+        copier = proc { 42 }
+        agent = Agent.new(nil, copy_on_deref: copier)
+        agent.value.should be_nil
+      end
+
+      it 'does not lock when all options are false' do
+        agent = Agent.new(0)
+        mutex = double('mutex')
+        agent.stub(:mutex).and_return(mutex)
+        mutex.should_not_receive(:synchronize)
+        agent.value
       end
 
       it 'supports dereference flags with observers' do

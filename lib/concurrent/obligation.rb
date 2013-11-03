@@ -1,11 +1,13 @@
 require 'thread'
 require 'timeout'
 
+require 'concurrent/dereferenceable'
 require 'concurrent/event'
 
 module Concurrent
 
   module Obligation
+    include Dereferenceable
 
     attr_reader :state
     attr_reader :reason
@@ -25,9 +27,8 @@ module Concurrent
 
     def value(timeout = nil)
       event.wait(timeout) unless timeout == 0 || @state != :pending
-      return @value
+      super()
     end
-    alias_method :deref, :value
 
     protected
 
