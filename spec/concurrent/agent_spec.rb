@@ -362,6 +362,22 @@ module Concurrent
         agent = Agent.new(value, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copy)
         agent.value.should eq frozen
       end
+
+      it 'supports dereference flags with observers' do
+        result = 'result'
+        result.should_receive(:dup).and_return(result)
+        result.should_receive(:freeze).and_return(result)
+        copier = proc { result }
+
+        observer = double('observer')
+        observer.should_receive(:update).with(any_args())
+
+        agent = Agent.new(nil, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
+        agent.add_observer(observer)
+
+        agent << proc { 'original result' }
+        sleep(0.1)
+      end
     end
 
     context 'observation' do

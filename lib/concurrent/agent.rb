@@ -100,9 +100,9 @@ module Concurrent
           if @validator.nil? || @validator.call(result)
             @value = result
             changed
-            notify_observers(Time.now, @value)
           end
         end
+        notify_observers(Time.now, self.value) if self.changed?
       rescue Exception => ex
         try_rescue(ex)
       end
