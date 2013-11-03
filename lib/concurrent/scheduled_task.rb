@@ -1,14 +1,11 @@
 require 'observer'
-
 require 'concurrent/obligation'
-require 'concurrent/runnable'
 
 module Concurrent
 
   class ScheduledTask
     include Obligation
     include Observable
-    include Runnable
 
     attr_reader :schedule_time
 
@@ -30,9 +27,12 @@ module Concurrent
       end
 
       @state = :pending
-      @task = block
       @schedule_time.freeze
+      @task = block
       set_deref_options(opts)
+
+      @thread = Thread.new{ work }
+      @thread.abort_on_exception = false
     end
 
     def cancelled?
@@ -55,15 +55,16 @@ module Concurrent
         end
       end
     end
+    alias_method :stop, :cancel
 
     def add_observer(observer, func = :update)
-      return false unless @state == :pending || @state == :in_progress
+      return false unless [:pending, :in_progress].include?(@state)
       super
     end
 
     protected
 
-    def on_task
+    def work
       while (diff = @schedule_time.to_f - Time.now.to_f) > 0
         sleep( diff > 60 ? 60 : diff )
       end

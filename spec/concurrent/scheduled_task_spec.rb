@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'timecop'
 require_relative 'obligation_shared'
-require_relative 'runnable_shared'
 
 module Concurrent
 
@@ -9,32 +8,21 @@ module Concurrent
 
     context 'behavior' do
 
-      # runnable
-
-      subject { ScheduledTask.new(0.5){ nil } }
-      it_should_behave_like :runnable
-
       # obligation
 
       let!(:fulfilled_value) { 10 }
       let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
       let(:pending_subject) do
-        task = ScheduledTask.new(1){ fulfilled_value }
-        task.run!
-        task
+        ScheduledTask.new(1){ fulfilled_value }
       end
 
       let(:fulfilled_subject) do
-        task = ScheduledTask.new(0.1){ fulfilled_value }
-        task.run
-        task
+        ScheduledTask.new(0.1){ fulfilled_value }.tap(){ sleep(0.2) }
       end
 
       let(:rejected_subject) do
-        task = ScheduledTask.new(0.1){ raise rejected_reason }
-        task.run
-        task
+        ScheduledTask.new(0.1){ raise rejected_reason }.tap(){ sleep(0.2) }
       end
 
       it_should_behave_like :obligation
@@ -84,14 +72,12 @@ module Concurrent
 
       it 'returns false if the task has already been performed' do
         task = ScheduledTask.new(0.1){ 42 }
-        task.run!
         sleep(0.2)
         task.cancel.should be_false
       end
 
       it 'returns false if the task is already in progress' do
         task = ScheduledTask.new(0.1){ sleep(1); 42 }
-        task.run!
         sleep(0.2)
         task.cancel.should be_false
       end
@@ -99,7 +85,6 @@ module Concurrent
       it 'cancels the task if it has not yet started' do
         @expected = true
         task = ScheduledTask.new(0.3){ @expected = false }
-        task.run!
         sleep(0.1)
         task.cancel
         sleep(0.5)
@@ -108,26 +93,15 @@ module Concurrent
 
       it 'returns true on success' do
         task = ScheduledTask.new(0.3){ @expected = false }
-        task.run!
         sleep(0.1)
         task.cancel.should be_true
       end
 
       it 'sets the state to :cancelled when cancelled' do
         task = ScheduledTask.new(10){ 42 }
-        task.run!
         sleep(0.1)
         task.cancel
         task.should be_cancelled
-      end
-
-      it 'stops the runnable' do
-        task = ScheduledTask.new(0.2){ 42 }
-        task.run!
-        sleep(0.1)
-        task.cancel
-        sleep(0.2)
-        task.should_not be_running
       end
     end
 
@@ -135,16 +109,8 @@ module Concurrent
 
       it 'sets the state to :in_progress when the task is running' do
         task = ScheduledTask.new(0.1){ sleep(1); 42 }
-        task.run!
         sleep(0.2)
         task.should be_in_progress
-      end
-
-      it 'stops itself on task completion' do
-        task = ScheduledTask.new(0.1){ 42 }
-        task.run!
-        sleep(0.2)
-        task.should_not be_running
       end
     end
 
@@ -167,13 +133,11 @@ module Concurrent
 
       it 'returns true for an observer added while :pending' do
         task = ScheduledTask.new(1){ 42 }
-        task.run!
         task.add_observer(observer).should be_true
       end
 
       it 'returns true for an observer added while :in_progress' do
         task = ScheduledTask.new(0.1){ sleep(1); 42 }
-        task.run!
         sleep(0.2)
         task.add_observer(observer).should be_true
       end
@@ -185,7 +149,6 @@ module Concurrent
 
       it 'returns false for an observer added once :cancelled' do
         task = ScheduledTask.new(1){ 42 }
-        task.run!
         sleep(0.1)
         task.cancel
         sleep(0.1)
@@ -194,14 +157,12 @@ module Concurrent
 
       it 'returns false for an observer added once :fulfilled' do
         task = ScheduledTask.new(0.1){ 42 }
-        task.run!
         sleep(0.2)
         task.add_observer(observer).should be_false
       end
 
       it 'returns false for an observer added once :rejected' do
         task = ScheduledTask.new(0.1){ raise StandardError }
-        task.run!
         sleep(0.2)
         task.add_observer(observer).should be_false
       end
@@ -209,7 +170,6 @@ module Concurrent
       it 'notifies all observers on fulfillment' do
         task = ScheduledTask.new(0.1){ 42 }
         task.add_observer(observer)
-        task.run!
         sleep(0.2)
         task.value.should == 42
         task.reason.should be_nil
@@ -220,7 +180,6 @@ module Concurrent
       it 'notifies all observers on rejection' do
         task = ScheduledTask.new(0.1){ raise StandardError }
         task.add_observer(observer)
-        task.run!
         sleep(0.2)
         task.value.should be_nil
         task.reason.should be_a(StandardError)
@@ -247,7 +206,6 @@ module Concurrent
       it 'does not notify an observer added after cancellation' do
         observer.should_not_receive(:update).with(any_args())
         task = ScheduledTask.new(0.5){ 42 }
-        task.run!
         sleep(0.1)
         task.cancel
         sleep(0.1)
