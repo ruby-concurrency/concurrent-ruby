@@ -70,17 +70,17 @@ module Concurrent
       end
     end
 
-    context '#post!' do
+    context '#post?' do
 
       it 'returns nil when not running' do
-        subject.post!.should be_false
+        subject.post?.should be_false
       end
 
       it 'returns an Obligation' do
         actor = actor_class.new
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
-        obligation = actor.post!(nil)
+        obligation = actor.post?(nil)
         obligation.should be_a(Obligation)
         actor.stop
       end
@@ -89,7 +89,7 @@ module Concurrent
         actor = actor_class.new{|msg| @expected = msg }
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
-        obligation = actor.post!(42)
+        obligation = actor.post?(42)
         @thread.join(0.1)
         obligation.should be_fulfilled
         obligation.value.should == 42
@@ -100,7 +100,7 @@ module Concurrent
         actor = actor_class.new{|msg| raise StandardError.new('Boom!') }
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
-        obligation = actor.post!(42)
+        obligation = actor.post?(42)
         @thread.join(0.1)
         obligation.should be_rejected
         obligation.reason.should be_a(StandardError)
@@ -108,11 +108,11 @@ module Concurrent
       end
     end
 
-    context '#post?' do
+    context '#post!' do
 
       it 'raises Concurrent::Runnable::LifecycleError when not running' do
         expect {
-          subject.post?(1)
+          subject.post!(1)
         }.to raise_error(Concurrent::Runnable::LifecycleError)
       end
 
@@ -122,7 +122,7 @@ module Concurrent
         @thread.join(0.1)
         start = Time.now.to_i
         expect {
-          actor.post?(2, nil)
+          actor.post!(2, nil)
         }.to raise_error
         elapsed = Time.now.to_i - start
         elapsed.should >= 2
@@ -134,7 +134,7 @@ module Concurrent
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
         expect {
-          actor.post?(0, nil)
+          actor.post!(0, nil)
         }.to raise_error(Concurrent::TimeoutError)
         actor.stop
       end
@@ -144,7 +144,7 @@ module Concurrent
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
         expect {
-          actor.post?(1, nil)
+          actor.post!(1, nil)
         }.to raise_error(Concurrent::TimeoutError)
         actor.stop
       end
@@ -154,7 +154,7 @@ module Concurrent
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
         expect {
-          actor.post?(1, nil)
+          actor.post!(1, nil)
         }.to raise_error(StandardError)
         actor.stop
       end
@@ -163,7 +163,7 @@ module Concurrent
         actor = actor_class.new{|msg| 42 }
         @thread = Thread.new{ actor.run }
         @thread.join(0.1)
-        expected = actor.post?(1, nil)
+        expected = actor.post!(1, nil)
         expected.should == 42
         actor.stop
       end
@@ -175,7 +175,7 @@ module Concurrent
         @thread.join(0.1)
         actor.post(nil) # block the actor
         expect {
-          actor.post?(0.1, nil)
+          actor.post!(0.1, nil)
         }.to raise_error(Concurrent::TimeoutError)
         sleep(1.5)
         @expected.should == 1

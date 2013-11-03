@@ -22,14 +22,14 @@ module Concurrent
       return self
     end
 
-    def post!(*message)
+    def post?(*message)
       return nil unless ready?
       contract = Contract.new
       queue.push(Package.new(message, contract))
       return contract
     end
 
-    def post?(seconds, *message)
+    def post!(seconds, *message)
       raise Concurrent::Runnable::LifecycleError unless ready?
       raise Concurrent::TimeoutError if seconds.to_f <= 0.0
       event = Event.new
