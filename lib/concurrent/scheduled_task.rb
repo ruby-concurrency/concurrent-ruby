@@ -9,7 +9,7 @@ module Concurrent
 
     attr_reader :schedule_time
 
-    def initialize(schedule_time, &block)
+    def initialize(schedule_time, opts = {}, &block)
       now = Time.now
 
       if ! block_given?
@@ -29,6 +29,7 @@ module Concurrent
       @state = :pending
       @task = block
       @schedule_time.freeze
+      set_deref_options(opts)
     end
 
     def cancelled?
