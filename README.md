@@ -267,8 +267,6 @@ ping << :pong
 
 ## Todo
 
-* DelayedTask (aka ScheduledTask)
-* More methods from Scala's Actor
 * [Task Parallel Library (TPL)](http://msdn.microsoft.com/en-us/library/dd460717.aspx)
   * [Data Parallelism](http://msdn.microsoft.com/en-us/library/dd537608.aspx)
   * [Task Parallelism](http://msdn.microsoft.com/en-us/library/dd537609.aspx)
