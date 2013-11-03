@@ -6,6 +6,18 @@ Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency pat
 If you find this gem useful you should check out my [functional-ruby](https://github.com/jdantonio/functional-ruby)
 gem, too. This gem uses several of the tools in that gem.
 
+## Conference Presentations
+
+I've given several conference presentations on concurrent programming with this gem.
+Check them out:
+
+* ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
+  at [RubyConf 2013](http://rubyconf.org/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
+* ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
+  at [Cascadia Ruby 2013](http://cascadiaruby.com/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
+* I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
+  at [CodeMash 2014](http://codemash.org/)
+
 ## Introduction
 
 The old-school "lock and synchronize" approach to concurrency is dead. The future of concurrency
