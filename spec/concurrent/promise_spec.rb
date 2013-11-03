@@ -31,6 +31,11 @@ module Concurrent
 
     it_should_behave_like :obligation
 
+    it 'includes Dereferenceable' do
+      promise = Promise.new{ nil }
+      promise.should be_a(Dereferenceable)
+    end
+
     context '#then' do
 
       it 'returns a new Promise when :pending' do

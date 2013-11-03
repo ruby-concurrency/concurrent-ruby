@@ -5,8 +5,9 @@ module Concurrent
   class Contract
     include Obligation
 
-    def initialize
+    def initialize(opts = {})
       @state = :pending
+      set_deref_options(opts)
     end
 
     def complete(value, reason)

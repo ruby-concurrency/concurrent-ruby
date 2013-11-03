@@ -1,6 +1,7 @@
 require 'thread'
 require 'observer'
 
+require 'concurrent/dereferenceable'
 require 'concurrent/global_thread_pool'
 require 'concurrent/utilities'
 
@@ -14,6 +15,7 @@ module Concurrent
   # A good example of an agent is a shared incrementing counter, such as the score in a video game.
   class Agent
     include Observable
+    include Dereferenceable
     include UsesGlobalThreadPool
 
     TIMEOUT = 5
@@ -25,29 +27,13 @@ module Concurrent
       @value = initial
       @rescuers = []
       @validator = nil
-
       @timeout = opts[:timeout] || TIMEOUT
-      @dup_on_deref = opts[:dup_on_deref] || opts[:dup] || false
-      @freeze_on_deref = opts[:freeze_on_deref] || opts[:freeze] || false
-      @copy_on_deref = opts[:copy_on_deref] || opts[:copy]
-
-      @mutex = Mutex.new
+      set_deref_options(opts)
     end
-
-    def value(timeout = 0)
-      return @mutex.synchronize do
-        value = @value
-        value = @copy_on_deref.call(value) if @copy_on_deref
-        value = value.dup if @dup_on_deref
-        value = value.freeze if @freeze_on_deref
-        value
-      end
-    end
-    alias_method :deref, :value
 
     def rescue(clazz = nil, &block)
       unless block.nil?
-        @mutex.synchronize do
+        mutex.synchronize do
           @rescuers << Rescuer.new(clazz, block)
         end
       end
@@ -82,7 +68,7 @@ module Concurrent
 
     # @private
     def try_rescue(ex) # :nodoc:
-      rescuer = @mutex.synchronize do
+      rescuer = mutex.synchronize do
         @rescuers.find{|r| r.clazz.nil? || ex.is_a?(r.clazz) }
       end
       rescuer.block.call(ex) if rescuer
@@ -93,7 +79,7 @@ module Concurrent
     # @private
     def work(&handler) # :nodoc:
       begin
-        @mutex.synchronize do
+        mutex.synchronize do
           result = Concurrent::timeout(@timeout) do
             handler.call(@value)
           end
