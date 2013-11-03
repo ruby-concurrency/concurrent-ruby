@@ -1,3 +1,5 @@
+require 'observer'
+
 require 'concurrent/obligation'
 require 'concurrent/runnable'
 
@@ -5,6 +7,7 @@ module Concurrent
 
   class ScheduledTask
     include Obligation
+    include Observable
     include Runnable
 
     attr_reader :schedule_time
@@ -53,6 +56,11 @@ module Concurrent
       end
     end
 
+    def add_observer(observer, func = :update)
+      return false unless @state == :pending || @state == :in_progress
+      super
+    end
+
     protected
 
     def on_task
@@ -69,10 +77,16 @@ module Concurrent
           rescue => ex
             @reason = ex
             @state = :rejected
+          ensure
+            changed
           end
         end
       end
 
+      if self.changed?
+        notify_observers(Time.now, self.value, @reason)
+        delete_observers
+      end
       event.set
       self.stop
     end

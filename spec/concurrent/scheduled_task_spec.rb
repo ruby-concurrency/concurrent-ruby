@@ -147,5 +147,113 @@ module Concurrent
         task.should_not be_running
       end
     end
+
+    context 'observation' do
+
+      let(:clazz) do
+        Class.new do
+          attr_reader :value
+          attr_reader :reason
+          attr_reader :count
+          define_method(:update) do |time, value, reason|
+            @count = @count.to_i + 1
+            @value = value
+            @reason = reason
+          end
+        end
+      end
+
+      let(:observer) { clazz.new }
+
+      it 'returns true for an observer added while :pending' do
+        task = ScheduledTask.new(1){ 42 }
+        task.run!
+        task.add_observer(observer).should be_true
+      end
+
+      it 'returns true for an observer added while :in_progress' do
+        task = ScheduledTask.new(0.1){ sleep(1); 42 }
+        task.run!
+        sleep(0.2)
+        task.add_observer(observer).should be_true
+      end
+
+      it 'returns true for an observer added while not running' do
+        task = ScheduledTask.new(1){ 42 }
+        task.add_observer(observer).should be_true
+      end
+
+      it 'returns false for an observer added once :cancelled' do
+        task = ScheduledTask.new(1){ 42 }
+        task.run!
+        sleep(0.1)
+        task.cancel
+        sleep(0.1)
+        task.add_observer(observer).should be_false
+      end
+
+      it 'returns false for an observer added once :fulfilled' do
+        task = ScheduledTask.new(0.1){ 42 }
+        task.run!
+        sleep(0.2)
+        task.add_observer(observer).should be_false
+      end
+
+      it 'returns false for an observer added once :rejected' do
+        task = ScheduledTask.new(0.1){ raise StandardError }
+        task.run!
+        sleep(0.2)
+        task.add_observer(observer).should be_false
+      end
+
+      it 'notifies all observers on fulfillment' do
+        task = ScheduledTask.new(0.1){ 42 }
+        task.add_observer(observer)
+        task.run!
+        sleep(0.2)
+        task.value.should == 42
+        task.reason.should be_nil
+        observer.value.should == 42
+        observer.reason.should be_nil
+      end
+
+      it 'notifies all observers on rejection' do
+        task = ScheduledTask.new(0.1){ raise StandardError }
+        task.add_observer(observer)
+        task.run!
+        sleep(0.2)
+        task.value.should be_nil
+        task.reason.should be_a(StandardError)
+        observer.value.should be_nil
+        observer.reason.should be_a(StandardError)
+      end
+
+      it 'does not notify an observer added after fulfillment' do
+        observer.should_not_receive(:update).with(any_args())
+        task = ScheduledTask.new(0.1){ 42 }
+        sleep(0.2)
+        task.add_observer(observer)
+        sleep(0.1)
+      end
+
+      it 'does not notify an observer added after rejection' do
+        observer.should_not_receive(:update).with(any_args())
+        task = ScheduledTask.new(0.1){ raise StandardError }
+        sleep(0.2)
+        task.add_observer(observer)
+        sleep(0.1)
+      end
+
+      it 'does not notify an observer added after cancellation' do
+        observer.should_not_receive(:update).with(any_args())
+        task = ScheduledTask.new(0.5){ 42 }
+        task.run!
+        sleep(0.1)
+        task.cancel
+        sleep(0.1)
+        task.add_observer(observer)
+        sleep(0.5)
+      end
+    end
   end
 end
