@@ -390,6 +390,14 @@ module Concurrent
         agent.value.should be_nil
       end
 
+      it 'does not lock when all options are false' do
+        agent = Agent.new(0)
+        mutex = double('mutex')
+        agent.stub(:mutex).and_return(mutex)
+        mutex.should_not_receive(:synchronize)
+        agent.value
+      end
+
       it 'supports dereference flags with observers' do
         result = 'result'
         result.should_receive(:dup).and_return(result)
