@@ -6,18 +6,6 @@ Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency pat
 If you find this gem useful you should check out my [functional-ruby](https://github.com/jdantonio/functional-ruby)
 gem, too. This gem uses several of the tools in that gem.
 
-## Conference Presentations
-
-I've given several conference presentations on concurrent programming with this gem.
-Check them out:
-
-* ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
-  at [RubyConf 2013](http://rubyconf.org/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
-* ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
-  at [Cascadia Ruby 2013](http://cascadiaruby.com/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
-* I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
-  at [CodeMash 2014](http://codemash.org/)
-
 ## Introduction
 
 The old-school "lock and synchronize" approach to concurrency is dead. The
@@ -56,17 +44,19 @@ The project is hosted on the following sites:
 * [Dependency tracking on Gemnasium](https://gemnasium.com/jdantonio/concurrent-ruby)
 * [Follow me on Twitter](https://twitter.com/jerrydantonio)
 
-### Goals
+### Conference Presentations
 
-My history with high-performance, highly-concurrent programming goes back to my days with C/C++.
-I have the same scars as everyone else doing that kind of work with those languages.
-I'm fascinated by modern concurrency patterns like [Actors](http://en.wikipedia.org/wiki/Actor_model),
-[Agents](http://doc.akka.io/docs/akka/snapshot/java/agents.html), and
-[Promises](http://promises-aplus.github.io/promises-spec/). I'm equally fascinated by languages
-with strong concurrency support like [Erlang](http://www.erlang.org/doc/getting_started/conc_prog.html),
-[Go](http://golang.org/doc/articles/concurrency_patterns.html), and
-[Clojure](http://clojure.org/concurrent_programming). My goal is to implement those patterns in Ruby.
-Specifically:
+I've given several conference presentations on concurrent programming with this gem.
+Check them out:
+
+* ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
+  at [RubyConf 2013](http://rubyconf.org/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
+* ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
+  at [Cascadia Ruby 2013](http://cascadiaruby.com/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
+* I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
+  at [CodeMash 2014](http://codemash.org/)
+
+## Goals
 
 * Stay true to the spirit of the languages providing inspiration
 * But implement in a way that makes sense for Ruby
