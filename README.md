@@ -20,17 +20,32 @@ Check them out:
 
 ## Introduction
 
-The old-school "lock and synchronize" approach to concurrency is dead. The future of concurrency
-is asynchronous. Send out a bunch of independent [actors](http://en.wikipedia.org/wiki/Actor_model)
-to do your bidding and process the results when you are ready. Although the idea of the concurrent
-actor originated in the early 1970's it has only recently started catching on. Although there is
-no one "true" actor implementation (what *exactly* is "object oriented," what *exactly* is
-"concurrent programming"), many modern programming languages implement variations on the actor
-theme. This library implements a few of the most interesting and useful of those variations.
+The old-school "lock and synchronize" approach to concurrency is dead. The
+future of concurrency is asynchronous. Send out a bunch of independent
+[actors](http://en.wikipedia.org/wiki/Actor_model) to do your bidding and
+process the results when you are ready. Many modern programming languages (like
+[Erlang](http://www.erlang.org/doc/reference_manual/processes.html),
+[Clojure](http://clojure.org/concurrent_programming),
+[Scala](http://www.scala-lang.org/api/current/index.html#scala.actors.Actor),
+[Haskell](http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell),
+[F#](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx),
+[C#](http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx),
+[Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html)...)
+provide asynchronous concurrency mechanisms within their standard libraries, the
+runtime environment, or the language iteself. This library implements a few of
+the most interesting and useful of those variations.
 
-Remember, *there is no silver bullet in concurrent programming.* Concurrency is hard. Very hard.
+Remember, *there is no silver bullet in concurrent programming.* Concurrency is hard.
 These tools will help ease the burden, but at the end of the day it is essential that you
 *know what you are doing.*
+
+* Decouple business logic from concurrency logic
+* Test business logic separate from concurrency logic
+* Keep the intersection of business logic and concurrency and small as possible
+* Don't share mutable data unless absolutely necessary
+* Protect shared data as much as possible (prefer [immutability](https://github.com/harukizaemon/hamster))
+* Don't mix Ruby's [concurrency](http://ruby-doc.org/core-2.0.0/Thread.html)
+  [primitives](http://www.ruby-doc.org/core-2.0.0/Mutex.html) with asynchronous concurrency libraries
 
 The project is hosted on the following sites:
 
