@@ -1,12 +1,14 @@
 require 'thread'
 require 'observer'
 
+require 'concurrent/dereferenceable'
 require 'concurrent/runnable'
 require 'concurrent/utilities'
 
 module Concurrent
 
   class TimerTask
+    include Dereferenceable
     include Runnable
     include Observable
 
@@ -65,17 +67,18 @@ module Concurrent
     end
 
     def execute_task
+      @value = ex = nil
       @worker = Thread.new do
         Thread.current.abort_on_exception = false
         Thread.current[:result] = @task.call(*@block_args)
       end
       raise TimeoutError if @worker.join(@timeout_interval).nil?
-      changed
-      notify_observers(Time.now, @worker[:result], nil)
+      @value = @worker[:result]
     rescue Exception => ex
-      changed
-      notify_observers(Time.now, nil, ex)
+      # suppress
     ensure
+      changed
+      notify_observers(Time.now, self.value, ex)
       unless @worker.nil?
         Thread.kill(@worker)
         @worker = nil
