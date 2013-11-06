@@ -1,36 +1,29 @@
-# To Gobbler's Knob. It's Groundhog Day.
+# To Gobbler's Knob. It's Groundhog Day!
 
 A very common currency pattern is to run a thread that performs a task at regular
 intervals. The thread that peforms the task sleeps for the given interval then
-waked up and performs the task. Later, rinse, repeat... This pattern causes two
+wakes up and performs the task. Lather, rinse, repeat... This pattern causes two
 problems. First, it is difficult to test the business logic of the task becuse the
-task itself is tightly couple with the threading. Second, an exception in the task
-can cause the entire thread to abend. In a long-running application where the task
-thread is intended to run for days/weeks/years a crashed task thread can pose a real
-problem. The `TimerTask` class alleviates both problems.
+task itself is tightly coupled with the concurrency logic. Second, an exception in
+raised while performing the task can cause the entire thread to abend. In a
+long-running application where the task thread is intended to run for days/weeks/years
+a crashed task thread can pose a significant problem. `TimerTask` alleviates both problems.
 
-When a TimerTask is launched it starts a thread for monitoring the execution interval.
-The TimerTask thread does not perform the task, however. Instead, the TimerTask
-launches the task on a separat thread. The advantage of this approach is that if
-the task crashes it will only kill the task thread, not the TimerTask thread. The
-TimerTask thread can then log the success or failure of the task. The TimerTask
-can even be configured with a timeout value allowing it to kill a task that runs
-to long and then log the error.
+When a `TimerTask` is launched it starts a thread for monitoring the execution interval.
+The `TimerTask` thread does not perform the task, however. Instead, the TimerTask
+launches the task on a separate thread. Should the task experience an unrecoverable
+crash only the task thread will crash. This makes the `TimerTask` very fault tolerant
+Additionally, the `TimerTask` thread can respond to the success or failure of the task,
+performing logging or ancillary operations. `TimerTask` can also be configured with a
+timeout value allowing it to kill a task that runs too long.
 
-One other advantage of the `TimerTask` class is that it forces the bsiness logic to
-be completely decoupled from the threading logic. The business logic can be tested
-separately then passed to the a TimerTask for scheduling and running.
+One other advantage of `TimerTask` is it forces the bsiness logic to be completely decoupled
+from the concurrency logic. The business logic can be tested separately then passed to the
+`TimerTask` for scheduling and running.
 
-The `TimerTask` is the yin to to the
-[Supervisor's](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md)
-yang. Where the `Supervisor` is intended to manage long-running threads that operate
-continuously, the `TimerTask` is intended to manage fairly short operations that
-occur repeatedly at regular intervals.
-
-Unlike some of the others concurrency objects in the library, TimerTasks do not
-run on the global thread pool. In my experience the types of tasks that will benefit
-from the `TimerTask` class tend to also be long running. For this reason they get
-their own thread every time the task is executed.
+Unlike other abstraction in this library, `TimerTask` does not run on the global thread pool.
+In my experience the types of tasks that will benefit from `TimerTask` tend to also be long
+running. For this reason they get their own thread every time the task is executed.
 
 ## Observation
 

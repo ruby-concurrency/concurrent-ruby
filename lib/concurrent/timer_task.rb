@@ -73,7 +73,7 @@ module Concurrent
         Thread.current[:result] = @task.call(*@block_args)
       end
       raise TimeoutError if @worker.join(@timeout_interval).nil?
-      @value = @worker[:result]
+      mutex.synchronize { @value = @worker[:result] }
     rescue Exception => ex
       # suppress
     ensure
