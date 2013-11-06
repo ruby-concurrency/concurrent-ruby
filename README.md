@@ -114,27 +114,26 @@ require 'concurrent'
 
 ### Examples
 
-For complete examples, see the specific documentation linked above. Below are a few examples to whet your appetite.
+For complete examples, see the specific documentation for each abstraction.
+The examples below are just basic usage.
 
 #### Goroutine (Go)
+
+Full documentation: [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
 
 ```ruby
 require 'concurrent'
 
 go('foo'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Boom!\n" }
-go('bar'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Pow!\n" }
-go('baz'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Zap!\n" }
 sleep(0.5)
 
 #=> foo
-#=> bar
-#=> baz
 #=> Boom!
-#=> Pow!
-#=> Zap!
 ```
 
 #### Agent (Clojure)
+
+Full documentation: [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
 
 ```ruby
 require 'concurrent'
@@ -145,17 +144,11 @@ score.value #=> 10
 score << proc{|current| current + 100 }
 sleep(0.1)
 score.value #=> 110
-
-score << proc{|current| current * 2 }
-sleep(0.1)
-score.value #=> 220
-
-score << proc{|current| current - 50 }
-sleep(0.1)
-score.value #=> 170
 ```
 
 #### Future (Clojure)
+
+Full documentation: [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
 
 ```ruby
 require 'concurrent'
@@ -167,6 +160,8 @@ count.value #=> 10 (after blocking)
 ```
 
 #### Promise (JavaScript)
+
+Full documentation: [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
 
 ```ruby
 require 'concurrent'
@@ -181,6 +176,8 @@ p.value #=> "Hello Jerry D'Antonio. Would you like to play a game?"
 
 #### Thread Pools (Java)
 
+Full documentation: [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
+
 ```ruby
 require 'concurrent'
 
@@ -189,35 +186,23 @@ pool.size #=> 2
 
 pool.post{ sleep(0.5); print "Boom!\n" }
 pool.size #=> 2
-pool.post{ sleep(0.5); print "Pow!\n" }
-pool.size #=> 2
-pool.post{ sleep(0.5); print "Zap!\n" }
-pool.size #=> 2
 
 sleep(1)
-
 #=> Boom!
-#=> Pow!
-#=> Zap!
 
 pool = Concurrent::CachedThreadPool.new
 pool.size #=> 0
 
 pool << proc{ sleep(0.5); print "Boom!\n" }
 pool.size #=> 1
-pool << proc{ sleep(0.5); print "Pow!\n" }
-pool.size #=> 2
-pool << proc{ sleep(0.5); print "Zap!\n" }
-pool.size #=> 3
 
 sleep(1)
-
 #=> Boom!
-#=> Pow!
-#=> Zap!
 ```
 
 #### TimerTask (Java)
+
+Full documentation: [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md)
 
 ```ruby
 require 'concurrent'
@@ -234,7 +219,15 @@ ec.status             #=> "sleep"
 ec.kill #=> true
 ```
 
+#### ScheduledTask (Java)
+
+Full documentation: [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md)
+
+*TBD*
+
 #### Actor (Scala)
+
+Full documentation: [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
 
 ```ruby
 class FinanceActor < Concurrent::Actor
@@ -252,6 +245,8 @@ pool << 'google'
 ```
 
 #### Supervisor (Erlang)
+
+Full documentation: [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md)
 
 ```ruby
 pong = Pong.new
@@ -276,9 +271,9 @@ ping << :pong
   * [Data Parallelism](http://msdn.microsoft.com/en-us/library/dd537608.aspx)
   * [Task Parallelism](http://msdn.microsoft.com/en-us/library/dd537609.aspx)
 * More Erlang goodness
-  * gen_server
-  * gen_event
-  * gen_fsm
+  * [gen_server](http://www.erlang.org/doc/man/gen_server.html)
+  * [gen_event](http://www.erlang.org/doc/man/gen_event.html)
+  * [gen_fsm](http://www.erlang.org/doc/man/gen_fsm.html)
 
 ## Contributing
 
