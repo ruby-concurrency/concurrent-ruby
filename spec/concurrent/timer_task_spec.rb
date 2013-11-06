@@ -65,19 +65,6 @@ module Concurrent
           }.should raise_error
         end
 
-        it 'passes the options to the new TimerTask' do
-          opts = {
-            execution_interval: 100,
-            timeout_interval: 100,
-            run_now: false,
-            logger: proc{ nil },
-            block_args: %w[one two three]
-          }
-          @subject = TimerTask.new(opts){ nil }
-          TimerTask.should_receive(:new).with(opts).and_return(@subject)
-          Concurrent::TimerTask.run!(opts)
-        end
-
         it 'passes the block to the new TimerTask' do
           @expected = false
           block = proc{ @expected = true }
@@ -90,6 +77,30 @@ module Concurrent
           thread = Thread.new{ sleep(1) }
           Thread.should_receive(:new).with(any_args()).and_return(thread)
           @subject = TimerTask.run!{ nil }
+        end
+
+        specify '#execution_interval is writeable' do
+          @subject = TimerTask.new(execution_interval: 1) do |task|
+            task.execution_interval = 3
+          end
+          @subject.execution_interval.should == 1
+          @subject.execution_interval = 0.1
+          @subject.execution_interval.should == 0.1
+          @thread = Thread.new { @subject.run }
+          sleep(0.2)
+          @subject.execution_interval.should == 3
+        end
+
+        specify '#execution_interval is writeable' do
+          @subject = TimerTask.new(timeout_interval: 1, execution_interval: 0.1) do |task|
+            task.timeout_interval = 3
+          end
+          @subject.timeout_interval.should == 1
+          @subject.timeout_interval = 2
+          @subject.timeout_interval.should == 2
+          @thread = Thread.new { @subject.run }
+          sleep(0.2)
+          @subject.timeout_interval.should == 3
         end
       end
     end
@@ -126,15 +137,14 @@ module Concurrent
         @expected.should be_true
       end
 
-      it 'passes any given arguments to the execution block' do
-        args = [1,2,3,4]
+      it 'passes a "self" reference to the block as the sole argument' do
         @expected = nil
-        @subject = TimerTask.new(execution_interval: 0.5, args: args) do |*args|
-          @expected = args
+        @subject = TimerTask.new(execution_interval: 1, run_now: true) do |task|
+          @expected = task
         end
         @thread = Thread.new { @subject.run }
-        sleep(1)
-        @expected.should eq args
+        sleep(0.2)
+        @expected.should eq @subject
       end
 
       it 'kills the worker thread if the timeout is reached' do

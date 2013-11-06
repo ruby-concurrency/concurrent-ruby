@@ -15,8 +15,8 @@ module Concurrent
     EXECUTION_INTERVAL = 60
     TIMEOUT_INTERVAL = 30
 
-    attr_reader :execution_interval
-    attr_reader :timeout_interval
+    attr_accessor :execution_interval
+    attr_accessor :timeout_interval
 
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
@@ -24,9 +24,9 @@ module Concurrent
       @execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
       @timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
       @run_now = opts[:now] || opts[:run_now] || false
-      @block_args = opts[:args] || opts [:arguments] || []
 
       @task = block
+      set_deref_options(opts)
     end
 
     def kill
@@ -70,7 +70,7 @@ module Concurrent
       @value = ex = nil
       @worker = Thread.new do
         Thread.current.abort_on_exception = false
-        Thread.current[:result] = @task.call(*@block_args)
+        Thread.current[:result] = @task.call(self)
       end
       raise TimeoutError if @worker.join(@timeout_interval).nil?
       mutex.synchronize { @value = @worker[:result] }
