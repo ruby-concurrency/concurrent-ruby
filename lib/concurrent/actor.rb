@@ -82,6 +82,7 @@ module Concurrent
       end
     end
 
+    # FIXME: duplicate the block (thread safety)
     def self.pool(count, &block)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
