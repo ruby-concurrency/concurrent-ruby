@@ -28,7 +28,9 @@ approach.
 Actors are defined by subclassing the `Concurrent::Actor` class and overriding the
 `#act` method. The `#act` method can have any signature/arity but
 
-> def act(*args, &block)
+```ruby
+def act(*args, &block)
+```
 
 is the most flexible and least error-prone signature. The `#act` method is called in
 response to a message being post to the `Actor` instance (see *Behavior* below).
@@ -143,8 +145,9 @@ to confusion and difficult debugging.
 
 ### Observation
 
-The `Actor` superclass mixes in the Ruby standard library `Observable` module to
-provide consistent callbacks upon message processing completion. The normal
+The `Actor` superclass mixes in the Ruby standard library
+[Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html)
+module to provide consistent callbacks upon message processing completion. The normal
 `Observable` methods, including `#add_observer` behave normally. Once an observer
 is added to an `Actor` it will be notified of all messages processed *after*
 addition. Notification will *not* occur for any messages that have already been
