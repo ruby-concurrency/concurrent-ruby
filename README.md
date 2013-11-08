@@ -1,24 +1,91 @@
 # Concurrent Ruby [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
 
-Modern concurrency tools including agents, futures, promises, thread pools, supervisors, and more.
-Inspired by Erlang, Clojure, Scala, Go, Java, JavaScript, and classic concurrency patterns.
-
-## Introduction
-
-The old-school "lock and synchronize" approach to concurrency is dead. The
-future of concurrency is asynchronous. Send out a bunch of independent
-[actors](http://en.wikipedia.org/wiki/Actor_model) to do your bidding and
-process the results when you are ready. Many modern programming languages (like
+Modern concurrency tools for Ruby. Inspired by
 [Erlang](http://www.erlang.org/doc/reference_manual/processes.html),
 [Clojure](http://clojure.org/concurrent_programming),
 [Scala](http://www.scala-lang.org/api/current/index.html#scala.actors.Actor),
 [Haskell](http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell),
 [F#](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx),
 [C#](http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx),
-[Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html)...)
-provide asynchronous concurrency mechanisms within their standard libraries, the
-runtime environment, or the language iteself. This library implements a few of
-the most interesting and useful of those variations.
+[Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html),
+and classic concurrency patterns.
+
+The design goals of this gem are:
+
+* Stay true to the spirit of the languages providing inspiration
+* But implement in a way that makes sense for Ruby
+* Keep the semantics as idiomatic Ruby as possible
+* Support features that make sense in Ruby
+* Exclude features that don't make sense in Ruby
+* Be small, lean, and loosely coupled
+
+## Features (and Documentation)
+
+* Clojure-inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
+* Clojure-inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
+* Scala-inspired [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
+* Go-inspired [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
+* JavaScript-inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
+* Java-inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
+* Old school [events](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx) from back in my Visual C++ days
+* Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
+* Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
+* Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
+
+### Supported Ruby versions
+
+MRI 1.9.2, 1.9.3, 2.0, 2.1, and JRuby (1.9 mode). This library is pure Ruby and has no gem dependencies.
+It should be fully compatible with any Ruby interpreter that is 1.9.x compliant. I simply don't know enough
+about Rubinius or the others to fully support them. I can promise good karma and attribution on this page
+to anyone wishing to take responsibility for verifying compaitibility with any Ruby other than MRI.
+
+## Example
+
+Many more code examples can be found in the documentation for each class (linked above).
+This one simple example shows some of the power of this gem.
+
+```ruby
+require 'concurrent'
+require 'faker'
+
+class EchoActor < Concurrent::Actor
+  def act(*message)
+    puts "#{message} handled by #{self}"
+  end
+end
+
+mailbox, pool = EchoActor.pool(5)
+
+timer_proc = proc do
+  mailbox.post(Faker::Company.bs)
+end
+
+t1 = Concurrent::TimerTask.new(execution_interval: rand(5)+1, &timer_proc)
+t2 = Concurrent::TimerTask.new(execution_interval: rand(5)+1, &timer_proc)
+
+overlord = Concurrent::Supervisor.new
+
+overlord.add_worker(t1)
+overlord.add_worker(t2)
+pool.each{|actor| overlord.add_worker(actor)}
+
+overlord.run!
+
+#=> ["mesh proactive platforms"] handled by #<EchoActor:0x007fa5ac18bdf8>
+#=> ["maximize sticky portals"] handled by #<EchoActor:0x007fa5ac18bdd0>
+#=> ["morph bleeding-edge markets"] handled by #<EchoActor:0x007fa5ac18bd80>
+#=> ["engage clicks-and-mortar interfaces"] handled by #<EchoActor:0x007fa5ac18bd58>
+#=> ["monetize transparent infrastructures"] handled by #<EchoActor:0x007fa5ac18bd30>
+#=> ["morph sexy e-tailers"] handled by #<EchoActor:0x007fa5ac18bdf8>
+#=> ["exploit dot-com models"] handled by #<EchoActor:0x007fa5ac18bdd0>
+#=> ["incentivize virtual deliverables"] handled by #<EchoActor:0x007fa5ac18bd80>
+#=> ["enhance B2B models"] handled by #<EchoActor:0x007fa5ac18bd58>
+#=> ["envisioneer real-time architectures"] handled by #<EchoActor:0x007fa5ac18bd30>
+
+overlord.stop
+```
+
+## Disclaimer
 
 Remember, *there is no silver bullet in concurrent programming.* Concurrency is hard.
 These tools will help ease the burden, but at the end of the day it is essential that you
@@ -32,15 +99,6 @@ These tools will help ease the burden, but at the end of the day it is essential
 * Don't mix Ruby's [concurrency](http://ruby-doc.org/core-2.0.0/Thread.html)
   [primitives](http://www.ruby-doc.org/core-2.0.0/Mutex.html) with asynchronous concurrency libraries
 
-The project is hosted on the following sites:
-
-* [RubyGems project page](https://rubygems.org/gems/concurrent-ruby)
-* [Source code on GitHub](https://github.com/jdantonio/concurrent-ruby)
-* [YARD documentation on RubyDoc.info](http://rubydoc.info/github/jdantonio/concurrent-ruby/frames)
-* [Continuous integration on Travis-CI](https://travis-ci.org/jdantonio/concurrent-ruby)
-* [Dependency tracking on Gemnasium](https://gemnasium.com/jdantonio/concurrent-ruby)
-* [Follow me on Twitter](https://twitter.com/jerrydantonio)
-
 ### Conference Presentations
 
 I've given several conference presentations on concurrent programming with this gem.
@@ -52,225 +110,6 @@ Check them out:
   at [Cascadia Ruby 2013](http://cascadiaruby.com/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
 * I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
   at [CodeMash 2014](http://codemash.org/)
-
-## Goals
-
-* Stay true to the spirit of the languages providing inspiration
-* But implement in a way that makes sense for Ruby
-* Keep the semantics as idiomatic Ruby as possible
-* Support features that make sense in Ruby
-* Exclude features that don't make sense in Ruby
-* Keep everything small
-* Be as fast as reasonably possible
-
-## Features (and Documentation)
-
-Several features from Erlang, Go, Clojure, Java, and JavaScript have been implemented thus far:
-
-* Clojure inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
-* Clojure inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
-* Scala inspired [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
-* Go inspired [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
-* JavaScript inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
-* Java inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
-* Old school [events](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx) from back in my Visual C++ days
-* Repeated task execution with Java inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
-* Scheduled task execution with Java inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
-* Erlang inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
-
-### Is it any good?
-
-[Yes](http://news.ycombinator.com/item?id=3067434)
-
-### Supported Ruby versions
-
-MRI 1.9.2, 1.9.3, 2.0, 2.1, and JRuby (1.9 mode). This library is pure Ruby and has no gem dependencies.
-It should be fully compatible with any Ruby interpreter that is 1.9.x compliant. I simply don't know enough
-about Rubinius or the others to fully support them. I can promise good karma and attribution on this page
-to anyone wishing to take responsibility for verifying compaitibility with any Ruby other than MRI.
-
-### Install
-
-```shell
-gem install concurrent-ruby
-```
-
-or add the following line to Gemfile:
-
-```ruby
-gem 'concurrent-ruby'
-```
-
-and run `bundle install` from your shell.
-
-Once you've installed the gem you must `require` it in your project:
-
-```ruby
-require 'concurrent'
-```
-
-### Examples
-
-For complete examples, see the specific documentation for each abstraction.
-The examples below are just basic usage.
-
-#### Goroutine (Go)
-
-Full documentation: [Goroutine](https://github.com/jdantonio/concurrent-ruby/blob/master/md/goroutine.md)
-
-```ruby
-require 'concurrent'
-
-go('foo'){|echo| sleep(0.1); print "#{echo}\n"; sleep(0.1); print "Boom!\n" }
-sleep(0.5)
-
-#=> foo
-#=> Boom!
-```
-
-#### Agent (Clojure)
-
-Full documentation: [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
-
-```ruby
-require 'concurrent'
-
-score = Concurrent::Agent.new(10)
-score.value #=> 10
-
-score << proc{|current| current + 100 }
-sleep(0.1)
-score.value #=> 110
-```
-
-#### Future (Clojure)
-
-Full documentation: [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
-
-```ruby
-require 'concurrent'
-
-count = Concurrent::Future.new{ sleep(1); 10 }
-count.state #=> :pending
-# do stuff...
-count.value #=> 10 (after blocking)
-```
-
-#### Promise (JavaScript)
-
-Full documentation: [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
-
-```ruby
-require 'concurrent'
-
-p = Concurrent::Promise.new("Jerry", "D'Antonio"){|a, b| "#{a} #{b}" }.
-    then{|result| "Hello #{result}." }.
-    rescue(StandardError){|ex| puts "Boom!" }.
-    then{|result| "#{result} Would you like to play a game?"}
-sleep(1)
-p.value #=> "Hello Jerry D'Antonio. Would you like to play a game?" 
-```
-
-#### Thread Pools (Java)
-
-Full documentation: [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
-
-```ruby
-require 'concurrent'
-
-pool = Concurrent::FixedThreadPool.new(2)
-pool.size #=> 2
-
-pool.post{ sleep(0.5); print "Boom!\n" }
-pool.size #=> 2
-
-sleep(1)
-#=> Boom!
-
-pool = Concurrent::CachedThreadPool.new
-pool.size #=> 0
-
-pool << proc{ sleep(0.5); print "Boom!\n" }
-pool.size #=> 1
-
-sleep(1)
-#=> Boom!
-```
-
-#### TimerTask (Java)
-
-Full documentation: [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md)
-
-```ruby
-require 'concurrent'
-
-ec = Concurrent::TimerTask.run{ puts 'Boom!' }
-
-ec.execution_interval #=> 60 == Concurrent::TimerTask::EXECUTION_INTERVAL
-ec.timeout_interval   #=> 30 == Concurrent::TimerTask::TIMEOUT_INTERVAL
-ec.status             #=> "sleep"
-
-# wait 60 seconds...
-#=> 'Boom!'
-
-ec.kill #=> true
-```
-
-#### ScheduledTask (Java)
-
-Full documentation: [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md)
-
-*TBD*
-
-#### Actor (Scala)
-
-Full documentation: [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
-
-```ruby
-class FinanceActor < Concurrent::Actor
-  def act(query)
-    finance = Finance.new(query)
-    print "[#{Time.now}] RECEIVED '#{query}' to #{self} returned #{finance.update.suggested_symbols}\n\n"
-  end
-end
-
-financial, pool = FinanceActor.pool(5)
-
-pool << 'YAHOO'
-pool << 'Micosoft'
-pool << 'google'
-```
-
-#### Supervisor (Erlang)
-
-Full documentation: [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md)
-
-```ruby
-pong = Pong.new
-ping = Ping.new(10000, pong)
-pong.ping = ping
-
-task = Concurrent::TimerTask.new{ print "Boom!\n" }
-
-boss = Concurrent::Supervisor.new
-boss.add_worker(ping)
-boss.add_worker(pong)
-boss.add_worker(task)
-
-boss.run!
-
-ping << :pong
-```
-
-## Todo
-
-* [Task Parallel Library (TPL)](http://msdn.microsoft.com/en-us/library/dd460717.aspx)
-  * [Data Parallelism](http://msdn.microsoft.com/en-us/library/dd537608.aspx)
-  * [Task Parallelism](http://msdn.microsoft.com/en-us/library/dd537609.aspx)
-* More Erlang goodness
-  * [gen_server](http://www.erlang.org/doc/man/gen_server.html)
-  * [gen_event](http://www.erlang.org/doc/man/gen_event.html)
-  * [gen_fsm](http://www.erlang.org/doc/man/gen_fsm.html)
 
 ## Contributing
 
