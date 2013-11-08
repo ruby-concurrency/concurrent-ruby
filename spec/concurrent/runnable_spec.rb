@@ -155,7 +155,8 @@ module Concurrent
       end
 
       it 'creates a new thread' do
-        Thread.should_receive(:new).with(no_args())
+        t = Thread.new{ nil }
+        Thread.should_receive(:new).with(no_args()).and_return(t)
         @thread = subject.run!
       end
 

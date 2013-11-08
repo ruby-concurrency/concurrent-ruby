@@ -14,6 +14,7 @@ module Concurrent
           Thread.abort_on_exception = false
           runner.run
         end
+        @thread.join(0.1) # let the thread start
       end
     end
 
@@ -32,11 +33,11 @@ module Concurrent
 
     def run!(abort_on_exception = false)
       raise LifecycleError.new('already running') if @running
-      thread = Thread.new{
+      thread = Thread.new do
         Thread.current.abort_on_exception = abort_on_exception
         self.run
-      }
-      Thread.pass
+      end
+      thread.join(0.1) # let the thread start
       return thread
     end
 
