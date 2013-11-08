@@ -1,10 +1,7 @@
 # Concurrent Ruby [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
 
 Modern concurrency tools including agents, futures, promises, thread pools, supervisors, and more.
-Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
-
-If you find this gem useful you should check out my [functional-ruby](https://github.com/jdantonio/functional-ruby)
-gem, too. This gem uses several of the tools in that gem.
+Inspired by Erlang, Clojure, Scala, Go, Java, JavaScript, and classic concurrency patterns.
 
 ## Introduction
 
