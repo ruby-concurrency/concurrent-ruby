@@ -186,7 +186,7 @@ load balance.
 ## Examples
 
 Two `Actor`s playing a back and forth game of Ping Pong, adapted from the Scala example
-[here](http://www.somewhere.com/find/the/blog/post):
+[here](http://www.scala-lang.org/old/node/242):
 
 ```ruby
 class Ping < Concurrent::Actor
@@ -274,6 +274,29 @@ pool.post('YAHOO')
 #>> [2013-10-18 09:35:28 -0400] RECEIVED 'YAHOO' to #<FinanceActor:0x0000010331af70>...
 ```
 
+The `#post` method simply sends a message to an actor and returns. It's a
+fire-and-forget interaction.
+
+```ruby
+class EchoActor < Concurrent::Actor
+  def act(*message)
+    p message
+  end
+end
+
+echo = EchoActor.new
+echo.run!
+
+echo.post("Don't panic") #=> true
+#=> ["Don't panic"]
+
+echo.post(1, 2, 3, 4, 5) #=> true
+#=> [1, 2, 3, 4, 5]
+
+echo << "There's a frood who really knows where his towel is." #=> #<EchoActor:0x007fc8012b8448...
+#=> ["There's a frood who really knows where his towel is."]
+```
+
 The `#post?` method returns an `Obligation` (same API as `Future`) which can be queried
 for value/reason on fulfillment/rejection.
 
@@ -314,6 +337,41 @@ life.post!(1, 'Mostly harmless.')
 
 # wait for it...
 #=> Concurrent::TimeoutError: Concurrent::TimeoutError
+```
+
+And, of course, the `Actor` class mixes in Ruby's `Observable`.
+
+```ruby
+class ActorObserver
+  def update(time, message, result, ex)
+    if result
+      print "(#{time}) Message #{message} returned #{result}\n"
+    elsif ex.is_a?(Concurrent::TimeoutError)
+      print "(#{time}) Message #{message} timed out\n"
+    else
+      print "(#{time}) Message #{message} failed with error #{ex}\n"
+    end
+  end
+end
+
+class SimpleActor < Concurrent::Actor
+  def act(*message)
+    message
+  end
+end
+
+actor = SimpleActor.new
+actor.add_observer(ActorObserver.new)
+actor.run!
+
+actor.post(1)
+#=> (2013-11-07 18:35:33 -0500) Message [1] returned [1]
+
+actor.post(1,2,3)
+#=> (2013-11-07 18:35:54 -0500) Message [1, 2, 3] returned [1, 2, 3]
+
+actor.post('The Nightman Cometh')
+#=> (2013-11-07 18:36:11 -0500) Message ["The Nightman Cometh"] returned ["The Nightman Cometh"]
 ```
 
 ## Copyright

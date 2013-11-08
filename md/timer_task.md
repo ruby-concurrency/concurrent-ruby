@@ -25,6 +25,9 @@ Unlike other abstraction in this library, `TimerTask` does not run on the global
 In my experience the types of tasks that will benefit from `TimerTask` tend to also be long
 running. For this reason they get their own thread every time the task is executed.
 
+This class is based on the Java class
+[of the same name](http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html).
+
 ## Observation
 
 `TimerTask` supports notification through the Ruby standard library
@@ -41,37 +44,54 @@ A basic example:
 ```ruby
 require 'concurrent'
 
-ec = Concurrent::TimerTask.run{ puts 'Boom!' }
+task = Concurrent::TimerTask.new{ puts 'Boom!' }
+task.run!
 
-ec.execution_interval #=> 60 == Concurrent::TimerTask::EXECUTION_INTERVAL
-ec.timeout_interval   #=> 30 == Concurrent::TimerTask::TIMEOUT_INTERVAL
-ec.status             #=> "sleep"
+task.execution_interval #=> 60 (default)
+task.timeout_interval   #=> 30 (default)
 
 # wait 60 seconds...
 #=> 'Boom!'
 
-ec.kill #=> true
+task.stop #=> true
 ```
 
 Both the execution_interval and the timeout_interval can be configured:
 
 ```ruby
-ec = Concurrent::TimerTask.run(execution_interval: 5, timeout_interval: 5) do
+task = Concurrent::TimerTask.new(execution_interval: 5, timeout_interval: 5) do
        puts 'Boom!'
      end
 
-ec.runner.execution_interval #=> 5
-ec.runner.timeout_interval   #=> 5
+task.execution_interval #=> 5
+task.timeout_interval   #=> 5
 ```
 
 By default an `TimerTask` will wait for `:execution_interval` seconds before running the block.
 To run the block immediately set the `:run_now` option to `true`:
 
 ```ruby
-ec = Concurrent::TimerTask.run(run_now: true){ puts 'Boom!' }
-#=> 'Boom!''
-ec.thread.status #=> "sleep"
->> 
+task = Concurrent::TimerTask.new(run_now: true){ puts 'Boom!' }
+task.run!
+
+#=> 'Boom!'
+```
+
+The `TimerTask` class includes the `Dereferenceable` mixin module so the result of
+the last execution is always available via the `#value` method. Derefencing options
+can be passed to the `TimerTask` during construction or at any later time using the
+`#set_deref_options` method.
+
+```ruby
+task = Concurrent::TimerTask.new(
+  dup_on_deref: true,
+  execution_interval: 5
+){ Time.now }
+
+task.run!
+Time.now   #=> 2013-11-07 18:06:50 -0500
+sleep(10)
+task.value #=> 2013-11-07 18:06:55 -0500
 ```
 
 A simple example with observation:
@@ -89,29 +109,56 @@ class TaskObserver
   end
 end
 
-task = Concurrent::TimerTask.run!(execution_interval: 1, timeout_interval: 1){ 42 }
-task.runner.add_observer(TaskObserver.new)
+task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ 42 }
+task.add_observer(TaskObserver.new)
+task.run!
 
 #=> (2013-10-13 19:08:58 -0400) Execution successfully returned 42
 #=> (2013-10-13 19:08:59 -0400) Execution successfully returned 42
 #=> (2013-10-13 19:09:00 -0400) Execution successfully returned 42
-task.runner.stop
+task.stop
 
-task = Concurrent::TimerTask.run!(execution_interval: 1, timeout_interval: 1){ sleep }
-task.runner.add_observer(TaskObserver.new)
+task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ sleep }
+task.add_observer(TaskObserver.new)
+task.run!
 
 #=> (2013-10-13 19:07:25 -0400) Execution timed out
 #=> (2013-10-13 19:07:27 -0400) Execution timed out
 #=> (2013-10-13 19:07:29 -0400) Execution timed out
-task.runner.stop
+task.stop
 
-task = Concurrent::TimerTask.run!(execution_interval: 1){ raise StandardError }
-task.runner.add_observer(TaskObserver.new)
+task = Concurrent::TimerTask.new(execution_interval: 1){ raise StandardError }
+task.add_observer(TaskObserver.new)
+task.run!
 
 #=> (2013-10-13 19:09:37 -0400) Execution failed with error StandardError
 #=> (2013-10-13 19:09:38 -0400) Execution failed with error StandardError
 #=> (2013-10-13 19:09:39 -0400) Execution failed with error StandardError
-task.runner.stop
+task.stop
+```
+
+In some cases it may be necessary for a `TimerTask` to affect its own execution cycle.
+To facilitate this a reference to the task object is passed into the block as a block
+argument every time the task is executed.
+
+```ruby
+timer_task = Concurrent::TimerTask.new(execution_interval: 1) do |task|
+  task.execution_interval.times{ print 'Boom! ' }
+  print "\n"
+  task.execution_interval += 1
+  if task.execution_interval > 5
+    puts 'Stopping...'
+    task.stop
+  end
+end
+
+timer_task.run # blocking call - this task will stop itself
+#=> Boom!
+#=> Boom! Boom!
+#=> Boom! Boom! Boom!
+#=> Boom! Boom! Boom! Boom!
+#=> Boom! Boom! Boom! Boom! Boom!
+#=> Stopping...
 ```
 
 ## Copyright
