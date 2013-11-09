@@ -2,8 +2,29 @@ module Concurrent
 
   module Postable
 
-    Package = Struct.new(:message, :handler, :notifier)
+    # @!visibility private
+    Package = Struct.new(:message, :handler, :notifier) # :nodoc:
 
+    # Sends a message to and returns. It's a fire-and-forget interaction.
+    #
+    # @example
+    #   class EchoActor < Concurrent::Actor
+    #     def act(*message)
+    #       p message
+    #     end
+    #   end
+    #   
+    #   echo = EchoActor.new
+    #   echo.run!
+    #   
+    #   echo.post("Don't panic") #=> true
+    #   #=> ["Don't panic"]
+    #   
+    #   echo.post(1, 2, 3, 4, 5) #=> true
+    #   #=> [1, 2, 3, 4, 5]
+    #   
+    #   echo << "There's a frood who really knows where his towel is." #=> #<EchoActor:0x007fc8012b8448...
+    #   #=> ["There's a frood who really knows where his towel is."]
     def post(*message)
       return false unless ready?
       queue.push(Package.new(message))

@@ -1,7 +1,24 @@
 module Concurrent
 
+  # Object references in Ruby are mutable. This can lead to serious problems when
+  # the `#value` of a concurrent object is a mutable reference. Which is always the
+  # case unless the value is a `Fixnum`, `Symbol`, or similar "primitive" data type.
+  # Most classes in this library that expose a `#value` getter method do so using
+  # this mixin module.
   module Dereferenceable
 
+    # Set the options which define the operations #value performs before
+    # returning data to the caller (dereferencing).
+    #
+    # @note Many classes that include this module will call #set_deref_options
+    # from within the constructor, thus allowing these options to be set at
+    # object creation.
+    #
+    # @param [Hash] opts the options defining dereference behavior.
+    # @option opts [String] :dup_on_deref Call #dup before returning the data (default: false)
+    # @option opts [String] :freeze_on_deref Call #freeze before returning the data (default: false)
+    # @option opts [String] :copy_on_deref Call the given `Proc` passing the internal value and
+    #   returning the value returned from the proc (default: `nil`)
     def set_deref_options(opts = {})
       mutex.synchronize do
         @dup_on_deref = opts[:dup_on_deref] || opts[:dup] || false
@@ -11,6 +28,8 @@ module Concurrent
       end
     end
 
+    # Return the value this object represents after applying the options specified
+    # by the #set_deref_options method.
     def value
       return nil if @value.nil?
       return @value if @do_nothing_on_deref
@@ -26,7 +45,8 @@ module Concurrent
 
     protected
 
-    def mutex
+    # @private
+    def mutex # :nodoc:
       @mutex ||= Mutex.new
     end
   end
