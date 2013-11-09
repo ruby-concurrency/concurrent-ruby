@@ -19,7 +19,7 @@ The design goals of this gem are:
 * Exclude features that don't make sense in Ruby
 * Be small, lean, and loosely coupled
 
-## Features (and Documentation)
+## Features & Documentation
 
 * Clojure-inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
 * Clojure-inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
@@ -39,7 +39,7 @@ It should be fully compatible with any Ruby interpreter that is 1.9.x compliant.
 about Rubinius or the others to fully support them. I can promise good karma and attribution on this page
 to anyone wishing to take responsibility for verifying compaitibility with any Ruby other than MRI.
 
-## Example
+### Example
 
 Many more code examples can be found in the documentation for each class (linked above).
 This one simple example shows some of the power of this gem.
@@ -85,7 +85,7 @@ overlord.run!
 overlord.stop
 ```
 
-## Disclaimer
+### Disclaimer
 
 Remember, *there is no silver bullet in concurrent programming.* Concurrency is hard.
 These tools will help ease the burden, but at the end of the day it is essential that you
