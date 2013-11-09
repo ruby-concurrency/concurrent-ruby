@@ -399,10 +399,9 @@ module Concurrent
         actors.size.should == 5
       end
 
-      it 'passes the block to each actor' do
-        block = proc{ nil }
-        clazz.should_receive(:new).with(&block)
-        clazz.pool(1, &block)
+      it 'passes all optional arguments to the individual constructors' do
+        clazz.should_receive(:new).with(1, 2, 3).exactly(5).times
+        clazz.pool(5, 1, 2, 3)
       end
 
       it 'gives all actors the same mailbox' do
@@ -432,27 +431,26 @@ module Concurrent
       end
 
       it 'posts to the mailbox with Poolbox#post' do
-        @expected = false
-        mailbox, actors = clazz.pool(1){|msg| @expected = true }
+        mailbox, actors = clazz.pool(1)
         @thread = Thread.new{ actors.first.run }
         sleep(0.1)
         mailbox.post(42)
         sleep(0.1)
-        actors.each{|actor| actor.stop }
+        actors.first.last_message.should eq [42]
+        actors.first.stop
         @thread.kill
-        @expected.should be_true
       end
 
       it 'posts to the mailbox with Poolbox#<<' do
         @expected = false
-        mailbox, actors = clazz.pool(1){|msg| @expected = true }
+        mailbox, actors = clazz.pool(1)
         @thread = Thread.new{ actors.first.run }
         sleep(0.1)
         mailbox << 42
         sleep(0.1)
-        actors.each{|actor| actor.stop }
+        actors.first.last_message.should eq [42]
+        actors.first.stop
         @thread.kill
-        @expected.should be_true
       end
     end
 
