@@ -3,78 +3,23 @@ require 'observer'
 
 require 'concurrent/event'
 require 'concurrent/obligation'
+require 'concurrent/postable'
 require 'concurrent/runnable'
 
 module Concurrent
 
-  module Postable
-
-    Package = Struct.new(:message, :handler, :notifier)
-
-    def post(*message)
-      return false unless ready?
-      queue.push(Package.new(message))
-      return queue.length
-    end
-
-    def <<(message)
-      post(*message)
-      return self
-    end
-
-    def post?(*message)
-      return nil unless ready?
-      contract = Contract.new
-      queue.push(Package.new(message, contract))
-      return contract
-    end
-
-    def post!(seconds, *message)
-      raise Concurrent::Runnable::LifecycleError unless ready?
-      raise Concurrent::TimeoutError if seconds.to_f <= 0.0
-      event = Event.new
-      cback = Queue.new
-      queue.push(Package.new(message, cback, event))
-      if event.wait(seconds)
-        result = cback.pop
-        if result.is_a?(Exception)
-          raise result
-        else
-          return result
-        end
-      else
-        event.set # attempt to cancel
-        raise Concurrent::TimeoutError
-      end
-    end
-
-    def forward(receiver, *message)
-      return false unless ready?
-      queue.push(Package.new(message, receiver))
-      return queue.length
-    end
-
-    def ready?
-      if self.respond_to?(:running?) && ! running?
-        return false
-      else
-        return true
-      end
-    end
+  # @!parse include Observable
+  # @!parse include Postable
+  # @!parse include Runnable
+  class Actor
+    include Observable
+    include Postable
+    include Runnable
 
     private
 
-    def queue
-      @queue ||= Queue.new
-    end
-  end
-
-  class Actor
-    include Observable
-    include Runnable
-    include Postable
-
-    class Poolbox
+    # @api private
+    class Poolbox # :nodoc:
       include Postable
 
       def initialize(queue)
@@ -82,12 +27,13 @@ module Concurrent
       end
     end
 
-    # FIXME: duplicate the block (thread safety)
-    def self.pool(count, &block)
+    public
+
+    def self.pool(count, *args)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
       actors = count.times.collect do
-        actor = self.new(&block)
+        actor = self.new(*args)
         actor.instance_variable_set(:@queue, mailbox)
         actor
       end
