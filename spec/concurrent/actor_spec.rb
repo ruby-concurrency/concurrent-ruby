@@ -404,6 +404,10 @@ module Concurrent
         clazz.pool(5, 1, 2, 3)
       end
 
+      it 'passes a duplicate of the given block to each actor in the pool' do
+        pending
+      end
+
       it 'gives all actors the same mailbox' do
         mailbox, actors = clazz.pool(2)
         mbox1 = actors.first.instance_variable_get(:@queue)

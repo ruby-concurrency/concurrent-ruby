@@ -112,11 +112,15 @@ module Concurrent
     public
 
     # Create a pool of actors that share a common mailbox
-    def self.pool(count, *args)
+    def self.pool(count, *args, &block)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
       actors = count.times.collect do
-        actor = self.new(*args)
+        if block_given?
+          actor = self.new(*args, &block.dup)
+        else
+          actor = self.new(*args)
+        end
         actor.instance_variable_set(:@queue, mailbox)
         actor
       end
