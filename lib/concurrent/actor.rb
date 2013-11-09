@@ -31,7 +31,7 @@ module Concurrent
   # approach.
   # 
   # Actors are defined by subclassing the `Concurrent::Actor` class and overriding the
-  # #act method. The #act method can have any signature/arity but `def act(*args, &block)`
+  # #act method. The #act method can have any signature/arity but `def act(*args)`
   # is the most flexible and least error-prone signature. The #act method is called in
   # response to a message being post to the `Actor` instance (see *Behavior* below).
   #

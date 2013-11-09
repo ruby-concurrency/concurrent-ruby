@@ -29,7 +29,7 @@ Actors are defined by subclassing the `Concurrent::Actor` class and overriding t
 `#act` method. The `#act` method can have any signature/arity but
 
 ```ruby
-def act(*args, &block)
+def act(*args)
 ```
 
 is the most flexible and least error-prone signature. The `#act` method is called in
