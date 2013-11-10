@@ -13,6 +13,9 @@ module Concurrent
   #
   # @raise Concurrent::TimeoutError when the block operation does not complete
   #   in the allotted number of seconds.
+  #
+  # @note This method is intended to be a simpler and more reliable replacement
+  # to the Ruby standard library `Timeout::timeout` method.
   def timeout(seconds)
 
     thread = Thread.new do
