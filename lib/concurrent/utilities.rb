@@ -2,8 +2,17 @@ require 'thread'
 
 module Concurrent
 
+  # Error raised when an operations times out.
   TimeoutError = Class.new(StandardError)
 
+  # Wait the given number of seconds for the block operation to complete.
+  #
+  # @param [Integer] seconds The number of seconds to wait
+  #
+  # @return The result of the block operation
+  #
+  # @raise Concurrent::TimeoutError when the block operation does not complete
+  #   in the allotted number of seconds.
   def timeout(seconds)
 
     thread = Thread.new do
@@ -20,5 +29,4 @@ module Concurrent
     Thread.kill(thread) unless thread.nil?
   end
   module_function :timeout
-
 end
