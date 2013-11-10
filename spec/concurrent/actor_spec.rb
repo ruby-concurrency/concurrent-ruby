@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'postable_shared'
 require_relative 'runnable_shared'
 
 module Concurrent
@@ -19,242 +20,30 @@ module Concurrent
       end
     end
 
+    ## :runnable
     subject { Class.new(actor_class).new }
-
     it_should_behave_like :runnable
 
-    after(:each) do
-      subject.stop
-      @thread.kill unless @thread.nil?
-      sleep(0.1)
-    end
+    ## :postable
 
-    context '#post' do
+    let!(:postable_class){ actor_class }
 
-      it 'returns false when not running' do
-        subject.post.should be_false
-      end
-
-      it 'pushes a message onto the queue' do
-        @expected = false
-        actor = actor_class.new{|msg| @expected = msg }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        actor.post(true)
-        @thread.join(0.1)
-        @expected.should be_true
-        actor.stop
-      end
-
-      it 'returns the current size of the queue' do
-        actor = actor_class.new{|msg| sleep }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        actor.post(true).should == 1
-        @thread.join(0.1)
-        actor.post(true).should == 1
-        @thread.join(0.1)
-        actor.post(true).should == 2
-        actor.stop
-      end
-
-      it 'is aliased a <<' do
-        @expected = false
-        actor = actor_class.new{|msg| @expected = msg }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        actor << true
-        @thread.join(0.1)
-        @expected.should be_true
-        actor.stop
-      end
-    end
-
-    context '#post?' do
-
-      it 'returns nil when not running' do
-        subject.post?.should be_false
-      end
-
-      it 'returns an Obligation' do
-        actor = actor_class.new
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        obligation = actor.post?(nil)
-        obligation.should be_a(Obligation)
-        actor.stop
-      end
-
-      it 'fulfills the obligation on success' do
-        actor = actor_class.new{|msg| @expected = msg }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        obligation = actor.post?(42)
-        @thread.join(0.1)
-        obligation.should be_fulfilled
-        obligation.value.should == 42
-        actor.stop
-      end
-
-      it 'rejects the obligation on failure' do
-        actor = actor_class.new{|msg| raise StandardError.new('Boom!') }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        obligation = actor.post?(42)
-        @thread.join(0.1)
-        obligation.should be_rejected
-        obligation.reason.should be_a(StandardError)
-        actor.stop
-      end
-    end
-
-    context '#post!' do
-
-      it 'raises Concurrent::Runnable::LifecycleError when not running' do
-        expect {
-          subject.post!(1)
-        }.to raise_error(Concurrent::Runnable::LifecycleError)
-      end
-
-      it 'blocks for up to the given number of seconds' do
-        actor = actor_class.new{|msg| sleep }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        start = Time.now.to_i
-        expect {
-          actor.post!(2, nil)
-        }.to raise_error
-        elapsed = Time.now.to_i - start
-        elapsed.should >= 2
-        actor.stop
-      end
-
-      it 'raises Concurrent::TimeoutError when seconds is zero' do
-        actor = actor_class.new{|msg| 42 }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        expect {
-          actor.post!(0, nil)
-        }.to raise_error(Concurrent::TimeoutError)
-        actor.stop
-      end
-
-      it 'raises Concurrent::TimeoutError on timeout' do
-        actor = actor_class.new{|msg| sleep }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        expect {
-          actor.post!(1, nil)
-        }.to raise_error(Concurrent::TimeoutError)
-        actor.stop
-      end
-
-      it 'bubbles the exception on error' do
-        actor = actor_class.new{|msg| raise StandardError.new('Boom!') }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        expect {
-          actor.post!(1, nil)
-        }.to raise_error(StandardError)
-        actor.stop
-      end
-
-      it 'returns the result on success' do
-        actor = actor_class.new{|msg| 42 }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        expected = actor.post!(1, nil)
-        expected.should == 42
-        actor.stop
-      end
-
-      it 'attempts to cancel the operation on timeout' do
-        @expected = 0
-        actor = actor_class.new{|msg| sleep(0.5); @expected += 1 }
-        @thread = Thread.new{ actor.run }
-        @thread.join(0.1)
-        actor.post(nil) # block the actor
-        expect {
-          actor.post!(0.1, nil)
-        }.to raise_error(Concurrent::TimeoutError)
-        sleep(1.5)
-        @expected.should == 1
-        actor.stop
-      end
-    end
-
-    context '#forward' do
-
-      let(:sender_clazz) do
-        Class.new(Actor) do
-          def act(*message)
-            if message.first.is_a?(Exception)
-              raise message.first
-            else
-              return message.first
-            end
+    let(:sender_class) do
+      Class.new(Actor) do
+        def act(*message)
+          if message.first.is_a?(Exception)
+            raise message.first
+          else
+            return message.first
           end
         end
       end
-
-      let(:receiver_clazz) do
-        Class.new(Actor) do
-          attr_reader :result
-          def act(*message)
-            @result = message.first
-          end
-        end
-      end
-
-      let(:sender) { sender_clazz.new }
-      let(:receiver) { receiver_clazz.new }
-
-      let(:observer) { double('observer') }
-
-      before(:each) do
-        @sender = Thread.new{ sender.run }
-        @receiver = Thread.new{ receiver.run }
-        sleep(0.1)
-      end
-
-      after(:each) do
-        sender.stop
-        receiver.stop
-        sleep(0.1)
-        @sender.kill unless @sender.nil?
-        @receiver.kill unless @receiver.nil?
-      end
-
-      it 'returns false when sender not running' do
-        sender_clazz.new.forward(receiver).should be_false
-      end
-
-      it 'forwards the result to the receiver on success' do
-        sender.forward(receiver, 42)
-        sleep(0.1)
-        receiver.result.should eq 42
-      end
-
-      it 'does not forward on exception' do
-        sender.forward(receiver, StandardError.new)
-        sleep(0.1)
-        receiver.result.should be_nil
-      end
-
-      it 'notifies observers on success' do
-        observer.should_receive(:update).with(any_args())
-        sender.add_observer(observer)
-        sender.forward(receiver, 42)
-        sleep(0.1)
-      end
-
-      it 'notifies observers on exception' do
-        observer.should_not_receive(:update).with(any_args())
-        sender.add_observer(observer)
-        sender.forward(receiver, StandardError.new)
-        sleep(0.1)
-      end
     end
+
+    let(:sender) { sender_class.new }
+    let(:receiver) { postable_class.new }
+
+    it_should_behave_like :postable
 
     context '#run' do
 
@@ -394,9 +183,9 @@ module Concurrent
         }.to raise_error(ArgumentError)
       end
 
-      it 'creates the requested number of actors' do
-        mailbox, actors = clazz.pool(5)
-        actors.size.should == 5
+      it 'creates the requested number of pool' do
+        mailbox, pool = clazz.pool(5)
+        pool.size.should == 5
       end
 
       it 'passes all optional arguments to the individual constructors' do
@@ -405,55 +194,57 @@ module Concurrent
       end
 
       it 'passes a duplicate of the given block to each actor in the pool' do
-        pending
+        block = proc{ nil }
+        block.should_receive(:dup).exactly(5).times.and_return(proc{ nil })
+        mailbox, pool = Channel.pool(5, &block)
       end
 
-      it 'gives all actors the same mailbox' do
-        mailbox, actors = clazz.pool(2)
-        mbox1 = actors.first.instance_variable_get(:@queue)
-        mbox2 = actors.last.instance_variable_get(:@queue)
+      it 'gives all pool the same mailbox' do
+        mailbox, pool = clazz.pool(2)
+        mbox1 = pool.first.instance_variable_get(:@queue)
+        mbox2 = pool.last.instance_variable_get(:@queue)
         mbox1.should eq mbox2
       end
 
       it 'returns a Poolbox as the first retval' do
-        mailbox, actors = clazz.pool(2)
+        mailbox, pool = clazz.pool(2)
         mailbox.should be_a(Actor::Poolbox)
       end
 
-      it 'gives the Poolbox the same mailbox as the actors' do
-        mailbox, actors = clazz.pool(1)
+      it 'gives the Poolbox the same mailbox as the pool' do
+        mailbox, pool = clazz.pool(1)
         mbox1 = mailbox.instance_variable_get(:@queue)
-        mbox2 = actors.first.instance_variable_get(:@queue)
+        mbox2 = pool.first.instance_variable_get(:@queue)
         mbox1.should eq mbox2
       end
 
-      it 'returns an array of actors as the second retval' do
-        mailbox, actors = clazz.pool(2)
-        actors.each do |actor|
+      it 'returns an array of pool as the second retval' do
+        mailbox, pool = clazz.pool(2)
+        pool.each do |actor|
           actor.should be_a(clazz)
         end
       end
 
       it 'posts to the mailbox with Poolbox#post' do
-        mailbox, actors = clazz.pool(1)
-        @thread = Thread.new{ actors.first.run }
+        mailbox, pool = clazz.pool(1)
+        @thread = Thread.new{ pool.first.run }
         sleep(0.1)
         mailbox.post(42)
         sleep(0.1)
-        actors.first.last_message.should eq [42]
-        actors.first.stop
+        pool.first.last_message.should eq [42]
+        pool.first.stop
         @thread.kill
       end
 
       it 'posts to the mailbox with Poolbox#<<' do
         @expected = false
-        mailbox, actors = clazz.pool(1)
-        @thread = Thread.new{ actors.first.run }
+        mailbox, pool = clazz.pool(1)
+        @thread = Thread.new{ pool.first.run }
         sleep(0.1)
         mailbox << 42
         sleep(0.1)
-        actors.first.last_message.should eq [42]
-        actors.first.stop
+        pool.first.last_message.should eq [42]
+        pool.first.stop
         @thread.kill
       end
     end
@@ -466,10 +257,10 @@ module Concurrent
 
       context '#pool' do
 
-        it 'creates actors of the appropriate subclass' do
+        it 'creates pool of the appropriate subclass' do
           actor = Class.new(actor_class)
-          mailbox, actors = actor.pool(1)
-          actors.first.should be_a(actor)
+          mailbox, pool = actor.pool(1)
+          pool.first.should be_a(actor)
         end
       end
 

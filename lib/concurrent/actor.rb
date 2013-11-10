@@ -158,12 +158,12 @@ module Concurrent
       rescue => ex
         on_error(Time.now, package.message, ex)
       ensure
-        if package.handler.is_a?(Contract)
-          package.handler.complete(result, ex)
-        elsif notifier.is_a?(Event) && ! notifier.set?
+        if notifier.is_a?(Event) && ! notifier.set?
           package.handler.push(result || ex)
           package.notifier.set
-        elsif package.handler.is_a?(Actor) && ex.nil?
+        elsif package.handler.is_a?(Contract)
+          package.handler.complete(result, ex)
+        elsif package.handler.respond_to?(:post) && ex.nil?
           package.handler.post(result)
         end
 
