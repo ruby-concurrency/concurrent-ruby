@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'concurrent/goroutine'
 require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
@@ -60,24 +59,6 @@ module Concurrent
         Thread.should_receive(:new).with(no_args()).and_return(thread)
         $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
         subject << proc{ nil }
-      end
-    end
-
-    context 'operation' do
-
-      context 'goroutine' do
-
-        it 'gets a new thread' do
-          $GLOBAL_THREAD_POOL = subject
-
-          t = Thread.new{ nil }
-
-          Thread.should_receive(:new).with(no_args()).and_return(t)
-          go{ nil }
-
-          Thread.should_receive(:new).with(1,2,3).and_return(t)
-          go(1,2,3){ nil }
-        end
       end
     end
   end
