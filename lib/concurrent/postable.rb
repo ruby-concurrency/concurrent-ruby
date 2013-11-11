@@ -7,6 +7,14 @@ module Concurrent
 
     # Sends a message to and returns. It's a fire-and-forget interaction.
     #
+    # @param [Array] message one or more arguments representing a single message
+    #   to be sent to the receiver.
+    #
+    # @return [Object] false when the message cannot be queued else the number
+    #   of messages in the queue *after* this message has been post
+    #
+    # @raise ArgumentError when the message is empty
+    #
     # @example
     #   class EchoActor < Concurrent::Actor
     #     def act(*message)
@@ -26,6 +34,7 @@ module Concurrent
     #   echo << "There's a frood who really knows where his towel is." #=> #<EchoActor:0x007fc8012b8448...
     #   #=> ["There's a frood who really knows where his towel is."]
     def post(*message)
+      raise ArgumentError.new('empty message') if message.empty?
       return false unless ready?
       queue.push(Package.new(message))
       return queue.length
@@ -37,6 +46,7 @@ module Concurrent
     end
 
     def post?(*message)
+      raise ArgumentError.new('empty message') if message.empty?
       return nil unless ready?
       contract = Contract.new
       queue.push(Package.new(message, contract))
@@ -44,6 +54,7 @@ module Concurrent
     end
 
     def post!(seconds, *message)
+      raise ArgumentError.new('empty message') if message.empty?
       raise Concurrent::Runnable::LifecycleError unless ready?
       raise Concurrent::TimeoutError if seconds.to_f <= 0.0
       event = Event.new
@@ -63,6 +74,7 @@ module Concurrent
     end
 
     def forward(receiver, *message)
+      raise ArgumentError.new('empty message') if message.empty?
       return false unless ready?
       queue.push(Package.new(message, receiver))
       return queue.length

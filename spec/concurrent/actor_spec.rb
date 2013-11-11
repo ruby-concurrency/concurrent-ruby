@@ -31,8 +31,14 @@ module Concurrent
 
     context '#post' do
 
+      it 'raises an exception when the message is empty' do
+        expect {
+          subject.post
+        }.to raise_error(ArgumentError)
+      end
+
       it 'returns false when not running' do
-        subject.post.should be_false
+        subject.post(42).should be_false
       end
 
       it 'pushes a message onto the queue' do
@@ -72,8 +78,14 @@ module Concurrent
 
     context '#post?' do
 
+      it 'raises an exception when the message is empty' do
+        expect {
+          subject.post
+        }.to raise_error(ArgumentError)
+      end
+
       it 'returns nil when not running' do
-        subject.post?.should be_false
+        subject.post?(42).should be_nil
       end
 
       it 'returns an Obligation' do
@@ -110,9 +122,15 @@ module Concurrent
 
     context '#post!' do
 
+      it 'raises an exception when the message is empty' do
+        expect {
+          subject.post
+        }.to raise_error(ArgumentError)
+      end
+
       it 'raises Concurrent::Runnable::LifecycleError when not running' do
         expect {
-          subject.post!(1)
+          subject.post!(1, 42)
         }.to raise_error(Concurrent::Runnable::LifecycleError)
       end
 
@@ -225,8 +243,14 @@ module Concurrent
         @receiver.kill unless @receiver.nil?
       end
 
+      it 'raises an exception when the message is empty' do
+        expect {
+          subject.post
+        }.to raise_error(ArgumentError)
+      end
+
       it 'returns false when sender not running' do
-        sender_clazz.new.forward(receiver).should be_false
+        sender_clazz.new.forward(receiver, 42).should be_false
       end
 
       it 'forwards the result to the receiver on success' do
