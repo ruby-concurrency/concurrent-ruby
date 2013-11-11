@@ -43,15 +43,16 @@ module Concurrent
       return true
     end
 
-    # FIXME: If the event has not been set this will clear all waiting
-    # threads without properly releasing them.
-    #
-    # Reset back to the `unset` state. Has no effect if the `Event` has not
-    # yet been set.
+    # Reset a previously set event back to the `unset` state.
+    # Has no effect if the `Event` has not yet been set.
     #
     # @return [Boolean] should always return `true`
     def reset
-      @mutex.synchronize { @set = false; @waiters.clear }
+      return true unless set?
+      @mutex.synchronize do
+        @set = false
+        @waiters.clear # just in case there's garbage
+      end
       return true
     end
 
