@@ -31,6 +31,10 @@ The design goals of this gem are:
 * Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
 
+### Semantic Versioning
+
+*Beginning with v0.4.0 this gem will strictly adhere to the rules of semantic versioning.*
+
 ### Supported Ruby versions
 
 MRI 1.9.2, 1.9.3, 2.0, 2.1, and JRuby (1.9 mode). This library is pure Ruby and has no gem dependencies.
