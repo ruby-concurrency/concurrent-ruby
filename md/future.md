@@ -22,7 +22,7 @@ block indefinitely. If `0` the call will not block. Any other integer or float v
 maximum number of seconds to block.
 
 The `Future` class also includes the Ruby standard library
-[Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html) module. On fulfillment
+[Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html) module. On fulfillment
 or rejection all observers will be notified according to the normal `Observable` behavior. The observer
 callback function will be called with three parameters: the `Time` of fulfillment/rejection, the
 final `value`, and the final `reason`. Observers added after fulfillment/rejection will still be

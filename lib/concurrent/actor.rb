@@ -29,11 +29,36 @@ module Concurrent
   # Unlike most of the abstractions in this library, `Actor` takes an *object-oriented*
   # approach to asynchronous concurrency, rather than a *functional programming*
   # approach.
-  # 
-  # Actors are defined by subclassing the `Concurrent::Actor` class and overriding the
-  # #act method. The #act method can have any signature/arity but `def act(*args)`
-  # is the most flexible and least error-prone signature. The #act method is called in
-  # response to a message being post to the `Actor` instance (see *Behavior* below).
+  #   
+  # Because `Actor` mixes in the `Concurrent::Runnable` module subclasses have access to
+  # the `#on_error` method and can override it to implement custom error handling. The
+  # `Actor` base class does not use `#on_error` so as to avoid conflit with subclasses
+  # which override it. Generally speaking, `#on_error` should not be used. The `Actor`
+  # base class provides concictent, reliable, and robust error handling already, and
+  # error handling specifics are tied to the message posting method. Incorrect behavior
+  # in an `#on_error` override can lead to inconsistent `Actor` behavior that may lead
+  # to confusion and difficult debugging.
+  #   
+  # The `Actor` superclass mixes in the Ruby standard library
+  # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html Observable}
+  # module to provide consistent callbacks upon message processing completion. The normal
+  # `Observable` methods, including `#add_observer` behave normally. Once an observer
+  # is added to an `Actor` it will be notified of all messages processed *after*
+  # addition. Notification will *not* occur for any messages that have already been
+  # processed.
+  #   
+  # Observers will be notified regardless of whether the message processing is successful
+  # or not. The `#update` method of the observer will receive four arguments. The
+  # appropriate method signature is:
+  #   
+  #   def update(time, message, result, reason)
+  #   
+  # These four arguments represent:
+  #   
+  # * The time that message processing was completed
+  # * An array containing all elements of the original message, in order
+  # * The result of the call to `#act` (will be `nil` if an exception was raised)
+  # * Any exception raised by `#act` (or `nil` if message processing was successful)
   #
   # @example Actor Ping Pong
   #   class Ping < Concurrent::Actor
@@ -93,6 +118,8 @@ module Concurrent
   #   t2 = pong.run!
   #   
   #   ping << :pong
+  #
+  # @see http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
   class Actor
     include Observable
     include Postable
@@ -111,7 +138,42 @@ module Concurrent
 
     public
 
-    # Create a pool of actors that share a common mailbox
+    # Create a pool of actors that share a common mailbox.
+    #   
+    # Every `Actor` instance operates on its own thread. When one thread isn't enough capacity
+    # to manage all the messages being sent to an `Actor` a *pool* can be used instead. A pool
+    # is a collection of `Actor` instances, all of the same type, that shate a message queue.
+    # Messages from other threads are all sent to a single queue against which all `Actor`s
+    # load balance.
+    #
+    # @param [Integer] count the number of actors in the pool
+    # @param [Array] args zero or more arguments to pass to each actor in the pool
+    #
+    # @return [Array] two-element array with the shared mailbox as the first element
+    #   and an array of actors as the second element
+    #
+    # @raise ArgumentError if `count` is zero or less
+    #
+    # @example
+    #   class EchoActor < Concurrent::Actor
+    #     def act(*message)
+    #       puts "#{message} handled by #{self}"
+    #     end
+    #   end
+    #     
+    #   mailbox, pool = EchoActor.pool(5)
+    #   pool.each{|echo| echo.run! }
+    #     
+    #   10.times{|i| mailbox.post(i) }
+    #   #=> [0] handled by #<EchoActor:0x007fc8014fb8b8>
+    #   #=> [1] handled by #<EchoActor:0x007fc8014fb890>
+    #   #=> [2] handled by #<EchoActor:0x007fc8014fb868>
+    #   #=> [3] handled by #<EchoActor:0x007fc8014fb890>
+    #   #=> [4] handled by #<EchoActor:0x007fc8014fb840>
+    #   #=> [5] handled by #<EchoActor:0x007fc8014fb8b8>
+    #   #=> [6] handled by #<EchoActor:0x007fc8014fb8b8>
+    #   #=> [7] handled by #<EchoActor:0x007fc8014fb818>
+    #   #=> [8] handled by #<EchoActor:0x007fc8014fb890>
     def self.pool(count, *args)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
@@ -125,8 +187,20 @@ module Concurrent
 
     protected
 
+    # Actors are defined by subclassing the `Concurrent::Actor` class and overriding the
+    # #act method. The #act method can have any signature/arity but `def act(*args)`
+    # is the most flexible and least error-prone signature. The #act method is called in
+    # response to a message being post to the `Actor` instance (see *Behavior* below).
+    #
+    # @param [Array] message one or more arguments representing the message sent to the
+    #   actor via one of the Concurrent::Postable methods
+    #
+    # @return [Object] the result obtained when the message is successfully processed
+    #
+    # @raise NotImplementedError unless overridden in the `Actor` subclass
+    # 
     # @!visibility public
-    def act(*args)
+    def act(*message)
       raise NotImplementedError.new("#{self.class} does not implement #act")
     end
 

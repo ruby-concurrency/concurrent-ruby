@@ -31,7 +31,7 @@ This class is based on the Java class
 ## Observation
 
 `TimerTask` supports notification through the Ruby standard library
-[Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html)
+[Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html)
 module. On execution the `TimerTask` will notify the observers with thress arguments:
 time of execution, the result of the block (or nil on failure), and any raised
 exceptions (or nil on success). If the timeout interval is exceeded the observer
