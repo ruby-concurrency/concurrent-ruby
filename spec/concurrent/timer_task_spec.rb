@@ -26,7 +26,31 @@ module Concurrent
         it 'raises an exception if no block given' do
           lambda {
             @subject = Concurrent::TimerTask.new
-          }.should raise_error
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :execution_interval is not greater than zero' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(execution_interval: 0){ nil }
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :execution_interval is not an integer' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(execution_interval: 'one'){ nil }
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :timeout_interval is not greater than zero' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(timeout_interval: 0){ nil }
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :timeout_interval is not an integer' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(timeout_interval: 'one'){ nil }
+          }.should raise_error(ArgumentError)
         end
 
         it 'uses the default execution interval when no interval is given' do

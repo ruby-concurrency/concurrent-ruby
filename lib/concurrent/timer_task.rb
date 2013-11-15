@@ -157,11 +157,11 @@ module Concurrent
 
     # Number of seconds after the task completes before the task is
     # performed again.
-    attr_accessor :execution_interval
+    attr_reader :execution_interval
 
     # Number of seconds the task can run before it is considered to have failed.
     # Failed tasks are forcibly killed.
-    attr_accessor :timeout_interval
+    attr_reader :timeout_interval
 
     # Create a new TimerTask with the given task and configuration.
     #
@@ -191,12 +191,38 @@ module Concurrent
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
 
-      @execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
-      @timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
+      self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
+      self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
       @run_now = opts[:now] || opts[:run_now] || false
 
       @task = block
       set_deref_options(opts)
+    end
+
+    # Number of seconds after the task completes before the task is
+    # performed again.
+    #
+    # @param [Float] value number of seconds
+    #
+    # @raise ArgumentError when value is non-numeric or not greater than zero
+    def execution_interval=(value)
+      if (value = value.to_f) <= 0.0
+        raise ArgumentError.new("'execution_interval' must be non-negative number")
+      end
+      @execution_interval = value
+    end
+
+    # Number of seconds the task can run before it is considered to have failed.
+    # Failed tasks are forcibly killed.
+    #
+    # @param [Float] value number of seconds
+    #
+    # @raise ArgumentError when value is non-numeric or not greater than zero
+    def timeout_interval=(value)
+      if (value = value.to_f) <= 0.0
+        raise ArgumentError.new("'timeout_interval' must be non-negative number")
+      end
+      @timeout_interval = value
     end
 
     # Terminate with extreme prejudice. Useful in cases where `#stop` doesn't
