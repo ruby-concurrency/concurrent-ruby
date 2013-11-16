@@ -22,7 +22,7 @@ seacrhed in order until one matching the current exception is found. That `rescu
 then be called an passed the exception object. If no matching `rescue` block is found, or none
 were configured, then the exception will be suppressed.
 
-`Agent`s also implement Ruby's [Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html).
+`Agent`s also implement Ruby's [Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html).
 Code that observes an `Agent` will receive a callback with the new value any time the value
 is changed.
 

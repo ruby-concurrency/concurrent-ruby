@@ -146,7 +146,7 @@ to confusion and difficult debugging.
 ### Observation
 
 The `Actor` superclass mixes in the Ruby standard library
-[Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html)
+[Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html)
 module to provide consistent callbacks upon message processing completion. The normal
 `Observable` methods, including `#add_observer` behave normally. Once an observer
 is added to an `Actor` it will be notified of all messages processed *after*

@@ -10,8 +10,14 @@ share_examples_for :postable do
 
   context '#post' do
 
+    it 'raises an exception when the message is empty' do
+      expect {
+        subject.post
+      }.to raise_error(ArgumentError)
+    end
+
     it 'returns false when not running' do
-      subject.post.should be_false
+      subject.post(42).should be_false
     end
 
     it 'pushes a message onto the queue' do
@@ -52,7 +58,7 @@ share_examples_for :postable do
   context '#post?' do
 
     it 'returns nil when not running' do
-      subject.post?.should be_false
+      subject.post?(42).should be_false
     end
 
     it 'returns an Obligation' do
@@ -91,7 +97,7 @@ share_examples_for :postable do
 
     it 'raises Concurrent::Runnable::LifecycleError when not running' do
       expect {
-        subject.post!(1)
+        subject.post!(1, 'Hello World!')
       }.to raise_error(Concurrent::Runnable::LifecycleError)
     end
 
@@ -184,7 +190,7 @@ share_examples_for :postable do
     it 'returns false when sender not running' do
       sender.stop
       sleep(0.1)
-      sender.forward(receiver).should be_false
+      sender.forward(receiver, 'Hello World!').should be_false
     end
 
     it 'forwards the result to the receiver on success' do

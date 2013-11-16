@@ -2,7 +2,6 @@ require 'spec_helper'
 
 require 'concurrent/agent'
 require 'concurrent/future'
-require 'concurrent/goroutine'
 require 'concurrent/promise'
 
 if mri?
@@ -51,23 +50,6 @@ if mri?
       end
 
       context 'operation' do
-
-        context 'goroutine' do
-
-          it 'passes all arguments to the block' do
-            $GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
-
-            EventMachine.run do
-
-              @expected = nil
-              go(1, 2, 3){|a, b, c| @expected = [c, b, a] }
-              sleep(0.1)
-              @expected.should eq [3, 2, 1]
-
-              EventMachine.stop
-            end
-          end
-        end
 
         context Agent do
 

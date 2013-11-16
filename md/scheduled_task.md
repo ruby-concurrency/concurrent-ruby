@@ -45,7 +45,7 @@ The result of a `ScheduledTask` can be obtained either synchronously or asynchro
 `ScheduledTask` mixes in both the
 [Obligation](https://github.com/jdantonio/concurrent-ruby/blob/master/md/obligation.md)
 module and the
-[Observable](http://ruby-doc.org/stdlib-1.9.3/libdoc/observer/rdoc/Observable.html)
+[Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html)
 module from the Ruby standard library. With one exception `ScheduledTask` behaves
 identically to
 [Concurrent::Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)

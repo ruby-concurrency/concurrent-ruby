@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative 'runnable_shared'
+require_relative 'stoppable_shared'
 
 module Concurrent
 
@@ -19,6 +20,17 @@ module Concurrent
       it_should_behave_like :runnable
     end
 
+    context ':stoppable' do
+
+      subject do
+        task = TimerTask.new{ nil }
+        task.run!
+        task
+      end
+
+      it_should_behave_like :stoppable
+    end
+
     context 'created with #new' do
 
       context '#initialize' do
@@ -26,7 +38,31 @@ module Concurrent
         it 'raises an exception if no block given' do
           lambda {
             @subject = Concurrent::TimerTask.new
-          }.should raise_error
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :execution_interval is not greater than zero' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(execution_interval: 0){ nil }
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :execution_interval is not an integer' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(execution_interval: 'one'){ nil }
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :timeout_interval is not greater than zero' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(timeout_interval: 0){ nil }
+          }.should raise_error(ArgumentError)
+        end
+
+        it 'raises an exception if :timeout_interval is not an integer' do
+          lambda {
+            @subject = Concurrent::TimerTask.new(timeout_interval: 'one'){ nil }
+          }.should raise_error(ArgumentError)
         end
 
         it 'uses the default execution interval when no interval is given' do
