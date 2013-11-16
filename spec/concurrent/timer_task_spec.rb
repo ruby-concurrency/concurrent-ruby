@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative 'runnable_shared'
+require_relative 'stoppable_shared'
 
 module Concurrent
 
@@ -17,6 +18,17 @@ module Concurrent
       subject { TimerTask.new{ nil } }
 
       it_should_behave_like :runnable
+    end
+
+    context ':stoppable' do
+
+      subject do
+        task = TimerTask.new{ nil }
+        task.run!
+        task
+      end
+
+      it_should_behave_like :stoppable
     end
 
     context 'created with #new' do

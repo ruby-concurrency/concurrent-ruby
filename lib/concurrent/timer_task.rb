@@ -3,6 +3,7 @@ require 'observer'
 
 require 'concurrent/dereferenceable'
 require 'concurrent/runnable'
+require 'concurrent/stoppable'
 require 'concurrent/utilities'
 
 module Concurrent
@@ -147,6 +148,7 @@ module Concurrent
   class TimerTask
     include Dereferenceable
     include Runnable
+    include Stoppable
     include Observable
 
     # Default `:execution_interval`
@@ -255,6 +257,7 @@ module Concurrent
     end
 
     def on_stop # :nodoc:
+      stopper.call if stopper
       @monitor.wakeup if @monitor.alive?
       Thread.pass
     end
