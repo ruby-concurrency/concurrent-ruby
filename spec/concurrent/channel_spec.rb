@@ -1,10 +1,46 @@
 require 'spec_helper'
 require_relative 'postable_shared'
 require_relative 'runnable_shared'
+require_relative 'stoppable_shared'
 
 module Concurrent
 
   describe Channel do
+
+    context :runnable do
+      subject{ Channel.new{ nil } }
+      it_should_behave_like :runnable
+    end
+
+    context :stoppable do
+      subject do
+        task = Channel.new{ nil }
+        task.run!
+        task
+      end
+      it_should_behave_like :stoppable
+    end
+
+    context :postable do
+
+      let!(:postable_class){ Channel }
+
+      let(:sender) do
+        Channel.new do |*message|
+          if message.first.is_a?(Exception)
+            raise message.first
+          else
+            message.first
+          end
+        end
+      end
+
+      let(:receiver){ Channel.new{|*message| message.first } }
+
+      it_should_behave_like :postable
+    end
+
+    subject{ Channel.new{ nil } }
 
     context '#initialize' do
 
@@ -14,28 +50,6 @@ module Concurrent
         }.to raise_error(ArgumentError)
       end
     end
-
-    ## :runnable
-    subject{ Channel.new{ nil } }
-    it_should_behave_like :runnable
-
-    ## postable
-
-    let!(:postable_class){ Channel }
-
-    let(:sender) do
-      Channel.new do |*message|
-        if message.first.is_a?(Exception)
-          raise message.first
-        else
-          message.first
-        end
-      end
-    end
-
-    let(:receiver){ Channel.new{|*message| message.first } }
-
-    it_should_behave_like :postable
 
     context '#behavior' do
 
