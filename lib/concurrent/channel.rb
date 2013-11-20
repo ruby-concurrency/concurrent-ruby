@@ -15,7 +15,7 @@ module Concurrent
     protected
 
     def on_stop # :nodoc:
-      stopper.call if stopper
+      before_stop_proc.call if before_stop_proc
       super
     end
 

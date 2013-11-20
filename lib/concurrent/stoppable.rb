@@ -4,17 +4,17 @@ module Concurrent
 
   module Stoppable
 
-    def at_stop(&block)
+    def before_stop(&block)
       raise ArgumentError.new('no block given') unless block_given?
-      raise Runnable::LifecycleError.new('#at_stop already set') if @stopper
-      @stopper = block
+      raise Runnable::LifecycleError.new('#before_stop already set') if @before_stop_proc
+      @before_stop_proc = block
       return self
     end
 
     protected
 
-    def stopper
-      return @stopper
+    def before_stop_proc
+      return @before_stop_proc
     end
   end
 end
