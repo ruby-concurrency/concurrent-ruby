@@ -110,7 +110,9 @@ I've given several conference presentations on concurrent programming with this 
 Check them out:
 
 * ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
-  at [RubyConf 2013](http://rubyconf.org/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
+  at [RubyConf 2013](http://rubyconf.org/)
+  used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
+  and is available for viewing on [Confreaks](http://www.confreaks.com/videos/2872-rubyconf2013-advanced-concurrent-programming-in-ruby)
 * ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
   at [Cascadia Ruby 2013](http://cascadiaruby.com/)
   used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
