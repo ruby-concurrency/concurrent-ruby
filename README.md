@@ -30,6 +30,8 @@ The design goals of this gem are:
 * Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
 * Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
+* Actor variant called `Channel` loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
+  agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
 
 ### Semantic Versioning
 
@@ -110,7 +112,11 @@ Check them out:
 * ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
   at [RubyConf 2013](http://rubyconf.org/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
 * ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
-  at [Cascadia Ruby 2013](http://cascadiaruby.com/) used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
+  at [Cascadia Ruby 2013](http://cascadiaruby.com/)
+  used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
+  and is available for viewing on [Confreaks](http://www.confreaks.com/videos/2790-cascadiaruby2013-advanced-multithreading-in-ruby)
+* [Cleveland Ruby Brigade](http://www.meetup.com/ClevelandRuby/events/149981942/) meetup in December of 2013
+  used [this](https://github.com/jdantonio/concurrent-ruby-presentation/releases/tag/clerb-dec-2013) version of the presentation
 * I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
   at [CodeMash 2014](http://codemash.org/)
 
