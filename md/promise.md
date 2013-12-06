@@ -15,7 +15,7 @@ upon resolution. When a promise is rejected all its children will be summarily r
 
 Promises have three possible states: *pending*, *rejected*, and *fulfilled*. When a promise is created it is set
 to *pending* and will remain in that state until processing is complete. A completed promise is either *rejected*,
-indicating that an exception was thrown during processing, or *fulfilled*, indicating succedd. If a promise is
+indicating that an exception was thrown during processing, or *fulfilled*, indicating it succeeded. If a promise is
 *fulfilled* its `value` will be updated to reflect the result of the operation. If *rejected* the `reason` will
 be updated with a reference to the thrown exception. The predicate methods `pending?`, `rejected`, and `fulfilled?`
 can be called at any time to obtain the state of the promise, as can the `state` method, which returns a symbol.
