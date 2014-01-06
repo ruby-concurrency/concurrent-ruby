@@ -35,7 +35,7 @@ A fulfilled example:
 ```ruby
 require 'concurrent'
 
-count = Concurrent::Future{ sleep(10); 10 }
+count = Concurrent::Future.new{ sleep(10); 10 }
 count.state #=> :pending
 count.pending? #=> true
 
