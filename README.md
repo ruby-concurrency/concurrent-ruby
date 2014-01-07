@@ -30,7 +30,8 @@ The design goals of this gem are:
 * Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
 * Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
-* Actor variant called `Channel` loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
+* Actor variant [Channel](https://github.com/jdantonio/concurrent-ruby/blob/master/md/channel.md)
+  loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
   agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
 
 ### Semantic Versioning
