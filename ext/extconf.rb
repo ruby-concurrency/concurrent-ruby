@@ -14,6 +14,8 @@ require 'mkmf'
 extension_name = 'atomic_reference'
 dir_config(extension_name)
 
+have_header "libkern/OSAtomic.h"
+
 if CONFIG["GCC"] && CONFIG["GCC"] != ""
   case CONFIG["arch"]
   when /mswin32|mingw|solaris/
