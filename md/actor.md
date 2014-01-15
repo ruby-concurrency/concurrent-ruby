@@ -268,7 +268,7 @@ pool.each{|actor| overlord.add_worker(actor)}
 
 overlord.run! 
 
-pool.post('YAHOO')
+financial.post('YAHOO')
 
 #>> [2013-10-18 09:35:28 -0400] SENT 'YAHOO' from main to worker pool
 #>> [2013-10-18 09:35:28 -0400] RECEIVED 'YAHOO' to #<FinanceActor:0x0000010331af70>...
