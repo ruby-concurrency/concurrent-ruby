@@ -20,14 +20,16 @@ module Concurrent
     def initialize
       @set = false
       @mutex = Mutex.new
-      @waiters = []
+      @condition = ConditionVariable.new
     end
 
     # Is the object in the set state?
     #
     # @return [Boolean] indicating whether or not the `Event` has been set
     def set?
-      return @set == true
+      @mutex.synchronize do
+        @set
+      end
     end
 
     # Trigger the event, setting the state to `set` and releasing all threads
@@ -35,12 +37,13 @@ module Concurrent
     #
     # @return [Boolean] should always return `true`
     def set
-      return true if set?
       @mutex.synchronize do
+        return true if @set
         @set = true
-        @waiters.each {|waiter| waiter.run if waiter.status == 'sleep'}
+        @condition.broadcast
       end
-      return true
+
+      true
     end
 
     # Reset a previously set event back to the `unset` state.
@@ -48,12 +51,11 @@ module Concurrent
     #
     # @return [Boolean] should always return `true`
     def reset
-      return true unless set?
       @mutex.synchronize do
         @set = false
-        @waiters.clear # just in case there's garbage
       end
-      return true
+
+      true
     end
 
     # Wait a given number of seconds for the `Event` to be set by another
@@ -62,21 +64,11 @@ module Concurrent
     #
     # @return [Boolean] true if the `Event` was set before timeout else false
     def wait(timeout = nil)
-      return true if set?
-
-      @mutex.synchronize { @waiters << Thread.current }
-      return true if set? # if event was set while waiting for mutex
-
-      if timeout.nil?
-        slept = sleep
-      else
-        slept = sleep(timeout)
+      @mutex.synchronize do
+        return true if @set
+        @condition.wait(@mutex, timeout)
+        @set
       end
-    rescue
-      # let it fail
-    ensure
-      @mutex.synchronize { @waiters.delete(Thread.current) }
-      return set?
     end
   end
 end
