@@ -58,36 +58,37 @@ module Concurrent
 
     context 'fulfillment' do
 
+      before(:each) do
+        Future.thread_pool = ImmediateExecutor.new
+      end
+
       it 'passes all arguments to handler' do
-        @a = @b = @c = nil
-        f = Future.new(1, 2, 3) do |a, b, c|
-          @a, @b, @c = a, b, c
+        result = nil
+
+        Future.new(1, 2, 3) do |a, b, c|
+          result  = [a, b, c]
         end
-        sleep(0.1)
-        [@a, @b, @c].should eq [1, 2, 3]
+
+        result.should eq [1, 2, 3]
       end
 
       it 'sets the value to the result of the handler' do
         f = Future.new(10){|a| a * 2 }
-        sleep(0.1)
         f.value.should eq 20
       end
 
       it 'sets the state to :fulfilled when the block completes' do
         f = Future.new(10){|a| a * 2 }
-        sleep(0.1)
         f.should be_fulfilled
       end
 
       it 'sets the value to nil when the handler raises an exception' do
         f = Future.new{ raise StandardError }
-        sleep(0.1)
         f.value.should be_nil
       end
 
       it 'sets the state to :rejected when the handler raises an exception' do
         f = Future.new{ raise StandardError }
-        sleep(0.1)
         f.should be_rejected
       end
 
