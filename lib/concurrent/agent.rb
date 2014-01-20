@@ -28,6 +28,7 @@ module Concurrent
       @rescuers = []
       @validator = nil
       @timeout = opts[:timeout] || TIMEOUT
+      init_mutex
       set_deref_options(opts)
     end
 
