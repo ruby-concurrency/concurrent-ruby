@@ -41,9 +41,7 @@ The design goals of this gem are:
 ### Supported Ruby versions
 
 MRI 1.9.2, 1.9.3, 2.0, 2.1, and JRuby (1.9 mode). This library is pure Ruby and has no gem dependencies.
-It should be fully compatible with any Ruby interpreter that is 1.9.x compliant. I simply don't know enough
-about Rubinius or the others to fully support them. I can promise good karma and attribution on this page
-to anyone wishing to take responsibility for verifying compaitibility with any Ruby other than MRI.
+It should be fully compatible with any Ruby interpreter that is 1.9.x compliant.
 
 ### Example
 
@@ -105,6 +103,21 @@ These tools will help ease the burden, but at the end of the day it is essential
 * Don't mix Ruby's [concurrency](http://ruby-doc.org/core-2.0.0/Thread.html)
   [primitives](http://www.ruby-doc.org/core-2.0.0/Mutex.html) with asynchronous concurrency libraries
 
+## Contributors
+
+* [Michele Della Torre](https://github.com/mighe)
+* [Chip Miller](https://github.com/chip-miller)
+* [Jamie Hodge](https://github.com/jamiehodge)
+* [Zander Hill](https://github.com/zph)
+
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
 ### Conference Presentations
 
 I've given several conference presentations on concurrent programming with this gem.
@@ -123,39 +136,7 @@ Check them out:
 * I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
   at [CodeMash 2014](http://codemash.org/)
 
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
-
-## Copyright
+## License and Copyright
 
 *Concurrent Ruby* is Copyright &copy; 2013 [Jerry D'Antonio](https://twitter.com/jerrydantonio).
-It is free software and may be redistributed under the terms specified in the LICENSE file.
-
-## License
-
-Released under the MIT license.
-
-http://www.opensource.org/licenses/mit-license.php  
-
-> Permission is hereby granted, free of charge, to any person obtaining a copy  
-> of this software and associated documentation files (the "Software"), to deal  
-> in the Software without restriction, including without limitation the rights  
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell  
-> copies of the Software, and to permit persons to whom the Software is  
-> furnished to do so, subject to the following conditions:  
-> 
-> The above copyright notice and this permission notice shall be included in  
-> all copies or substantial portions of the Software.  
-> 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,  
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE  
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER  
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN  
-> THE SOFTWARE.  
+It is free software released under the [MIT License](http://www.opensource.org/licenses/MIT).
