@@ -12,6 +12,7 @@ module Concurrent
     include UsesGlobalThreadPool
 
     def initialize(*args, &block)
+      init_mutex
       unless block_given?
         @state = :fulfilled
       else

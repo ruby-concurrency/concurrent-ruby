@@ -29,6 +29,7 @@ module Concurrent
       @state = :pending
       @schedule_time.freeze
       @task = block
+      init_mutex
       set_deref_options(opts)
 
       @thread = Thread.new{ work }

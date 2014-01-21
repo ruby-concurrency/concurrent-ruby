@@ -198,6 +198,7 @@ module Concurrent
       @run_now = opts[:now] || opts[:run_now] || false
 
       @task = block
+      init_mutex
       set_deref_options(opts)
     end
 

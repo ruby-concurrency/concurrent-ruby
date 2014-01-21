@@ -7,6 +7,7 @@ module Concurrent
 
     def initialize(opts = {})
       @state = :pending
+      init_mutex
       set_deref_options(opts)
     end
 
