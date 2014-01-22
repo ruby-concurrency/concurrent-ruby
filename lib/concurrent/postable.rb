@@ -88,7 +88,7 @@ module Concurrent
       end
     end
 
-    private
+    protected
 
     # @private
     def queue # :nodoc:

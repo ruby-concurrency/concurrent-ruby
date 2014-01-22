@@ -9,20 +9,22 @@ module Concurrent
       @port = opts[:port] || 8787
       @host = opts[:host] || 'localhost'
 
+      @receivers = {}
+
       @dispatcher = ActorMethodDispatcher.new
       @drb_server = DRb.start_service(server_uri, @dispatcher)
     end
 
-    def add_new_actor(instance)
-
+    def add(name, instance)
+      @receivers[name] = instance
     end
 
 
     private
 
-      def server_uri
-        "druby://#{@host}:#{@port}"
-      end
+    def server_uri
+      "druby://#{@host}:#{@port}"
+    end
 
   end
 end
