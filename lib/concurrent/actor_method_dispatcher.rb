@@ -5,8 +5,12 @@ module Concurrent
 
   class ActorMethodDispatcher
 
-    def method_missing(meth, *args, &block)
-      # select an available actor and call the method.
+    def initialize
+      @receivers = {}
+    end
+
+    def add(name, instance)
+      @receivers[name] = instance
     end
   end
 end

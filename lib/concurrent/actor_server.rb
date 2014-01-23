@@ -4,27 +4,30 @@ require 'concurrent/actor_method_dispatcher'
 module Concurrent
 
   class ActorServer
+    extend Forwardable
+
+    def_delegator :@dispatcher, :add
 
     def initialize(opts = {})
       @port = opts[:port] || 8787
       @host = opts[:host] || 'localhost'
 
-      @receivers = {}
-
       @dispatcher = ActorMethodDispatcher.new
       @drb_server = DRb.start_service(server_uri, @dispatcher)
     end
 
-    def add(name, instance)
-      @receivers[name] = instance
+    def running?
+      @drb_server.alive?
     end
 
+    def stop
+      @drb_server.stop_service if running?
+    end
 
     private
 
     def server_uri
       "druby://#{@host}:#{@port}"
     end
-
   end
 end
