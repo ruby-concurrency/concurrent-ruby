@@ -13,7 +13,7 @@ module Concurrent
       @host = opts[:host] || 'localhost'
 
       @dispatcher = ActorMethodDispatcher.new
-      @drb_server = DRb.start_service(server_uri, @dispatcher)
+      start_drb_server
     end
 
     def running?
@@ -24,10 +24,18 @@ module Concurrent
       @drb_server.stop_service if running?
     end
 
+    def start
+      start_drb_server unless running?
+    end
+
     private
 
-    def server_uri
-      "druby://#{@host}:#{@port}"
-    end
+      def server_uri
+        "druby://#{@host}:#{@port}"
+      end
+
+      def start_drb_server
+        @drb_server = DRb.start_service(server_uri, @dispatcher)
+      end
   end
 end

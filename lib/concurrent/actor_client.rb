@@ -1,11 +1,14 @@
 require 'concurrent/actor'
 require 'concurrent/postable'
+require 'drb/drb'
 
 module Concurrent
 
   class ActorClient < Actor
 
     def initialize(recipient, host = 'localhost', port = 8787)
+      @recipient = recipient
+      @server    = DRbObject.new_with_uri("druby://#{@localhost}:#{@port}") # TODO - connection pool
     end
 
     protected
