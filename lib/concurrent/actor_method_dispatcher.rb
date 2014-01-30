@@ -12,5 +12,9 @@ module Concurrent
     def add(name, instance)
       @receivers[name] = instance
     end
+
+    def connected?
+      true
+    end
   end
 end

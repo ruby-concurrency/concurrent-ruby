@@ -18,15 +18,39 @@ module Concurrent
 
     def initialize(remote_id, host = DEFAULT_HOST, port = DEFAULT_PORT)
       @remote_id = remote_id
-      #@server    = DRbObject.new_with_uri("druby://#{@localhost}:#{@port}") # TODO - connection pool
+      @host      = host
+      @port      = port
+
+      establishes_connection
+    end
+
+    def connected?
+      log_error { @server.connected? }
     end
 
     protected
 
     def act(*message)
-      # send message to ActorServer over DRb
-      # process the result
-      # let Actor do the rest
+      log_error do
+        # send message to ActorServer over DRb
+        # process the result
+        # let Actor do the rest
+      end
+    end
+
+    private
+
+    def establishes_connection
+      log_error do
+        @server = DRbObject.new_with_uri("druby://#{@host}:#{@port}") # TODO - connection pool
+      end
+    end
+
+    def log_error
+      yield
+    rescue Exception => ex
+      self.last_connection_error = ex
+      false
     end
   end
 end

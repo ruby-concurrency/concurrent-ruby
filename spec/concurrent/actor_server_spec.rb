@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Concurrent::ActorServer do
 
-  subject { Concurrent::ActorServer.new(host: 'localhost', port: 8787) }
+  subject { Concurrent::ActorServer.new }
 
   context '#running?' do
     it 'returns true when the drb server is running' do

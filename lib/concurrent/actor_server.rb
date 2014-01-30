@@ -40,9 +40,6 @@ module Concurrent
       super && @drb_server.alive?
     end
 
-    def add(id, mailbox)
-    end
-
     protected
 
     def on_run

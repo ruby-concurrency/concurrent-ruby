@@ -4,15 +4,26 @@ module Concurrent
 
   describe RemoteActor do
 
+    let(:remote_id) { 1 }
+    let(:server)    { Concurrent::ActorServer.new }
+
+    subject { Concurrent::RemoteActor.new(remote_id) }
+
     context '#start' do
 
-      it 'establishes a remote DRb connection'
+      it 'establishes a remote DRb connection' do
+        subject.should be_connected
+      end
 
       it 'returns true on success'
 
       it 'returns false on failure'
 
-      it 'sets #last_connection_error on failure'
+      it 'sets #last_connection_error on failure' do
+        server.stop
+        subject.connected?
+        subject.last_connection_error.should_not be_nil
+      end
 
       it 'is #ready? once started'
     end
