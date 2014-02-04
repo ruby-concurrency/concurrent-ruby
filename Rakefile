@@ -57,7 +57,11 @@ else
       # this does essentially the same thing
       # as what RubyGems does
       ruby "extconf.rb"
-      sh "make"
+      if /mswin/ =~ RUBY_PLATFORM
+        sh "nmake"
+      else
+        sh "make"
+      end
     end
   end
 end

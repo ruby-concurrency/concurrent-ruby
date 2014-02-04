@@ -71,6 +71,14 @@ static VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE n
     if (__sync_bool_compare_and_swap(&DATA_PTR(self), expect_value, new_value)) {
 	return Qtrue;
     }
+#elif defined _MSC_VER && defined _M_AMD64
+    if (InterlockedCompareExchange64((LONGLONG*)&DATA_PTR(self), new_value, expect_value)) {
+	return Qtrue;
+    }
+#elif defined _MSC_VER && defined _M_IX86
+    if (InterlockedCompareExchange((LONG*)&DATA_PTR(self), new_value, expect_value)) {
+	return Qtrue;
+    }
 #else
 #error No CAS operation available for this platform
 #endif
