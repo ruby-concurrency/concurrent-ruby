@@ -17,11 +17,11 @@ module Concurrent
     end
 
     let(:fulfilled_subject) do
-      Future.new{ fulfilled_value }.tap(){ sleep(0.1) }
+      Future.new{ fulfilled_value }.tap{ sleep(0.1) }
     end
 
     let(:rejected_subject) do
-      Future.new{ raise rejected_reason }.tap(){ sleep(0.1) }
+      Future.new{ raise rejected_reason }.tap{ sleep(0.1) }
     end
 
     before(:each) do
@@ -38,12 +38,12 @@ module Concurrent
     context '#initialize' do
 
       it 'spawns a new thread when a block is given' do
-        Future.thread_pool.should_receive(:post).once.with(any_args())
+        Future.thread_pool.should_receive(:post).once.with(any_args)
         Future.new{ nil }
       end
 
       it 'does not spawns a new thread when no block given' do
-        Thread.should_not_receive(:new).with(any_args())
+        Thread.should_not_receive(:new).with(any_args)
         Future.new
       end
 
@@ -73,12 +73,12 @@ module Concurrent
       end
 
       it 'sets the value to the result of the handler' do
-        f = Future.new(10){|a| a * 2 }
+        f = Future.new(10){ |a| a * 2 }
         f.value.should eq 20
       end
 
       it 'sets the state to :fulfilled when the block completes' do
-        f = Future.new(10){|a| a * 2 }
+        f = Future.new(10){ |a| a * 2 }
         f.should be_fulfilled
       end
 
