@@ -37,12 +37,16 @@ module Concurrent
 
     context '#initialize' do
 
-      it 'spawns a new thread when a block is given' do
-        Future.thread_pool.should_receive(:post).once.with(any_args)
+      it 'sets the state to :unscheduled'
+
+      it 'does not spawn a new thread when a block is given' do
+        Future.thread_pool.should_not_receive(:post).once.with(any_args)
+        Thread.should_not_receive(:new).with(any_args)
         Future.new{ nil }
       end
 
-      it 'does not spawns a new thread when no block given' do
+      it 'does not spawn a new thread when no block given' do
+        Future.thread_pool.should_not_receive(:post).once.with(any_args)
         Thread.should_not_receive(:new).with(any_args)
         Future.new
       end
@@ -54,6 +58,29 @@ module Concurrent
       it 'immediately sets the value to nil when no block given' do
         Future.new.value.should be_nil
       end
+    end
+
+    context 'instance #execute' do
+
+      it 'does nothing unless the state is :unscheduled'
+
+      it 'spawns a new thread when a block was given on construction'
+
+      it 'sets the sate to :pending'
+
+      it 'returns self'
+
+    end
+
+    context 'class #execute' do
+
+      it 'creates a new Future'
+
+      it 'passes the block to Future'
+
+      it 'calls #execute on the new Future'
+
+      it 'returns the new Future'
     end
 
     context 'fulfillment' do
