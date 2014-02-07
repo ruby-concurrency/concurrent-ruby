@@ -26,11 +26,4 @@ Gem::Specification.new do |s|
   s.require_paths    = ['lib']
 
   s.required_ruby_version = '>= 1.9.2'
-  s.post_install_message  = <<-MSG
-    future = Concurrent::Future.new{ 'Hello, world!' }
-    puts future.value
-    #=> Hello, world!
-  MSG
-
-  s.add_development_dependency 'bundler'
 end
