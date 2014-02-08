@@ -11,10 +11,9 @@ module Concurrent
     include Observable
     include UsesGlobalThreadPool
 
-    def initialize(*args, &block)
+    def initialize(&block)
       init_mutex
       if block_given?
-        @args = args
         @state = :unscheduled
         @task = block
       else
@@ -45,8 +44,8 @@ module Concurrent
         return unless @state == :unscheduled
         @state = :pending
       end
-      Future.thread_pool.post(*@args) do
-        work(*@args, &@task)
+      Future.thread_pool.post do
+        work(&@task)
       end
       return self
     end
@@ -58,9 +57,9 @@ module Concurrent
     private
 
     # @private
-    def work(*args) # :nodoc:
+    def work # :nodoc:
       begin
-        @value = yield(*args)
+        @value = yield
         @state = :fulfilled
       rescue Exception => ex
         @reason = ex

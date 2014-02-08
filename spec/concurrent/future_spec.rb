@@ -122,34 +122,34 @@ module Concurrent
       end
 
       it 'passes all arguments to handler' do
-        @expected = nil
-        Future.new(1, 2, 3){|a, b, c| @expected = [a, b, c] }.execute
+        @expected = false
+        Future.new{ @expected = true }.execute
         sleep(0.1)
-        @expected.should eq [1, 2, 3]
+        @expected.should be_true
       end
 
       it 'sets the value to the result of the handler' do
-        f = Future.new(10){ |a| a * 2 }.execute
+        future = Future.new{ 42 }.execute
         sleep(0.1)
-        f.value.should eq 20
+        future.value.should eq 42
       end
 
       it 'sets the state to :fulfilled when the block completes' do
-        f = Future.new(10){ |a| a * 2 }.execute
+        future = Future.new{ 42 }.execute
         sleep(0.1)
-        f.should be_fulfilled
+        future.should be_fulfilled
       end
 
       it 'sets the value to nil when the handler raises an exception' do
-        f = Future.new{ raise StandardError }.execute
+        future = Future.new{ raise StandardError }.execute
         sleep(0.1)
-        f.value.should be_nil
+        future.value.should be_nil
       end
 
       it 'sets the state to :rejected when the handler raises an exception' do
-        f = Future.new{ raise StandardError }.execute
+        future = Future.new{ raise StandardError }.execute
         sleep(0.1)
-        f.should be_rejected
+        future.should be_rejected
       end
 
       context 'aliases' do
