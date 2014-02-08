@@ -13,15 +13,15 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Future.new{ sleep(3); fulfilled_value }
+      Future.new{ sleep(3); fulfilled_value }.execute
     end
 
     let(:fulfilled_subject) do
-      Future.new{ fulfilled_value }.tap{ sleep(0.1) }
+      Future.new{ fulfilled_value }.execute.tap{ sleep(0.1) }
     end
 
     let(:rejected_subject) do
-      Future.new{ raise rejected_reason }.tap{ sleep(0.1) }
+      Future.new{ raise rejected_reason }.execute.tap{ sleep(0.1) }
     end
 
     before(:each) do
@@ -37,16 +37,18 @@ module Concurrent
 
     context '#initialize' do
 
-      it 'sets the state to :unscheduled'
+      it 'sets the state to :unscheduled' do
+        Future.new{ nil }.should be_unscheduled
+      end
 
       it 'does not spawn a new thread when a block is given' do
-        Future.thread_pool.should_not_receive(:post).once.with(any_args)
+        Future.thread_pool.should_not_receive(:post).with(any_args)
         Thread.should_not_receive(:new).with(any_args)
         Future.new{ nil }
       end
 
       it 'does not spawn a new thread when no block given' do
-        Future.thread_pool.should_not_receive(:post).once.with(any_args)
+        Future.thread_pool.should_not_receive(:post).with(any_args)
         Thread.should_not_receive(:new).with(any_args)
         Future.new
       end
@@ -62,25 +64,55 @@ module Concurrent
 
     context 'instance #execute' do
 
-      it 'does nothing unless the state is :unscheduled'
+      it 'does nothing unless the state is :unscheduled' do
+        Future.should_not_receive(:thread_pool).with(any_args)
+        future = Future.new{ nil }
+        future.instance_variable_set(:@state, :pending)
+        future.execute
+        future.instance_variable_set(:@state, :rejected)
+        future.execute
+        future.instance_variable_set(:@state, :fulfilled)
+        future.execute
+      end
 
-      it 'spawns a new thread when a block was given on construction'
+      it 'spawns a new thread when a block was given on construction' do
+        Future.thread_pool.should_receive(:post).with(any_args)
+        future = Future.new{ nil }
+        future.execute
+      end
 
-      it 'sets the sate to :pending'
+      it 'sets the sate to :pending' do
+        future = Future.new{ nil }
+        future.execute
+        future.should be_pending
+      end
 
-      it 'returns self'
-
+      it 'returns self' do
+        future = Future.new{ nil }
+        future.execute.should eq future
+      end
     end
 
     context 'class #execute' do
 
-      it 'creates a new Future'
+      it 'creates a new Future' do
+        future = Future.execute{ nil }
+        future.should be_a(Future)
+      end
 
-      it 'passes the block to Future'
+      it 'passes the block to the new Future' do
+        @expected = false
+        future = Future.execute{ @expected = true }
+        sleep(0.1)
+        @expected.should be_true
+      end
 
-      it 'calls #execute on the new Future'
-
-      it 'returns the new Future'
+      it 'calls #execute on the new Future' do
+        future = Future.new{ nil }
+        Future.stub(:new).with(any_args).and_return(future)
+        future.should_receive(:execute).with(no_args)
+        Future.execute{ nil }
+      end
     end
 
     context 'fulfillment' do
@@ -90,32 +122,33 @@ module Concurrent
       end
 
       it 'passes all arguments to handler' do
-        result = nil
-
-        Future.new(1, 2, 3) do |a, b, c|
-          result  = [a, b, c]
-        end
-
-        result.should eq [1, 2, 3]
+        @expected = nil
+        Future.new(1, 2, 3){|a, b, c| @expected = [a, b, c] }.execute
+        sleep(0.1)
+        @expected.should eq [1, 2, 3]
       end
 
       it 'sets the value to the result of the handler' do
-        f = Future.new(10){ |a| a * 2 }
+        f = Future.new(10){ |a| a * 2 }.execute
+        sleep(0.1)
         f.value.should eq 20
       end
 
       it 'sets the state to :fulfilled when the block completes' do
-        f = Future.new(10){ |a| a * 2 }
+        f = Future.new(10){ |a| a * 2 }.execute
+        sleep(0.1)
         f.should be_fulfilled
       end
 
       it 'sets the value to nil when the handler raises an exception' do
-        f = Future.new{ raise StandardError }
+        f = Future.new{ raise StandardError }.execute
+        sleep(0.1)
         f.value.should be_nil
       end
 
       it 'sets the state to :rejected when the handler raises an exception' do
-        f = Future.new{ raise StandardError }
+        f = Future.new{ raise StandardError }.execute
+        sleep(0.1)
         f.should be_rejected
       end
 
@@ -149,7 +182,7 @@ module Concurrent
       let(:observer) { clazz.new }
 
       it 'notifies all observers on fulfillment' do
-        future = Future.new{ sleep(0.1); 42 }
+        future = Future.new{ sleep(0.1); 42 }.execute
         future.add_observer(observer)
         future.value.should == 42
         future.reason.should be_nil
@@ -159,7 +192,7 @@ module Concurrent
       end
 
       it 'notifies all observers on rejection' do
-        future = Future.new{ sleep(0.1); raise StandardError }
+        future = Future.new{ sleep(0.1); raise StandardError }.execute
         future.add_observer(observer)
         future.value.should be_nil
         future.reason.should be_a(StandardError)
@@ -169,7 +202,7 @@ module Concurrent
       end
 
       it 'notifies an observer added after fulfillment' do
-        future = Future.new{ 42 }
+        future = Future.new{ 42 }.execute
         sleep(0.1)
         future.value.should == 42
         future.add_observer(observer)
@@ -178,7 +211,7 @@ module Concurrent
       end
 
       it 'notifies an observer added after rejection' do
-        future = Future.new{ raise StandardError }
+        future = Future.new{ raise StandardError }.execute
         sleep(0.1)
         future.reason.should be_a(StandardError)
         future.add_observer(observer)
@@ -187,7 +220,7 @@ module Concurrent
       end
 
       it 'does not notify existing observers when a new observer added after fulfillment' do
-        future = Future.new{ 42 }
+        future = Future.new{ 42 }.execute
         future.add_observer(observer)
         sleep(0.1)
         future.value.should == 42
@@ -202,7 +235,7 @@ module Concurrent
       end
 
       it 'does not notify existing observers when a new observer added after rejection' do
-        future = Future.new{ raise StandardError }
+        future = Future.new{ raise StandardError }.execute
         future.add_observer(observer)
         sleep(0.1)
         future.reason.should be_a(StandardError)

@@ -117,14 +117,10 @@ if mri?
           it 'supports fulfillment' do
 
             EventMachine.run do
-
-              @a = @b = @c = nil
-              f = Future.new(1, 2, 3) do |a, b, c|
-                @a, @b, @c = a, b, c
-              end
+              @expected = false
+              f = Future.execute{ @expected = true }
               sleep(0.1)
-              [@a, @b, @c].should eq [1, 2, 3]
-
+              @expected.should be_true
               sleep(0.1)
               EventMachine.stop
             end

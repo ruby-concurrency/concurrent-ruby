@@ -13,16 +13,18 @@ module Concurrent
 
     def initialize(*args, &block)
       init_mutex
-      unless block_given?
-        @state = :fulfilled
+      if block_given?
+        @args = args
+        @state = :unscheduled
+        @task = block
       else
-        @value = nil
-        @state = :pending
-        Future.thread_pool.post(*args) do
-          work(*args, &block)
-        end
+        @state = :fulfilled
       end
     end
+
+    # Is the future still unscheduled?
+    # @return [Boolean]
+    def unscheduled?() return(@state == :unscheduled); end
 
     def add_observer(observer, func = :update)
       val = self.value
@@ -36,6 +38,21 @@ module Concurrent
         end
       end
       return func
+    end
+
+    def execute
+      mutex.synchronize do
+        return unless @state == :unscheduled
+        @state = :pending
+      end
+      Future.thread_pool.post(*@args) do
+        work(*@args, &@task)
+      end
+      return self
+    end
+
+    def self.execute(&block)
+      return Future.new(&block).execute
     end
 
     private
