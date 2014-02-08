@@ -35,7 +35,7 @@ A fulfilled example:
 ```ruby
 require 'concurrent'
 
-count = Concurrent::Future.new{ sleep(10); 10 }
+count = Concurrent::Future.new{ sleep(10); 10 }.execute
 count.state #=> :pending
 count.pending? #=> true
 
@@ -52,7 +52,7 @@ count.value #=> 10
 A rejected example:
 
 ```ruby
-count = Concurrent::Future.new{ sleep(10); raise StandardError.new("Boom!") }
+count = Concurrent::Future.execute{ sleep(10); raise StandardError.new("Boom!") }
 count.state #=> :pending
 count.pending? #=> true
 
@@ -80,6 +80,7 @@ end
 yahoo = Finance.new('YAHOO')
 future = Concurrent::Future.new { yahoo.update.suggested_symbols }
 future.add_observer(Ticker.new)
+future.execute
 
 # do important stuff...
 
