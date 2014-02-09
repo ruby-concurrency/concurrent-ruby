@@ -10,6 +10,10 @@ module Concurrent
     let!(:value) { 10 }
     subject { Future.new{ value }.execute.tap{ sleep(0.1) } }
 
+    before(:each) do
+      Future.thread_pool = FixedThreadPool.new(1)
+    end
+
     context 'behavior' do
 
       # uses_global_thread_pool
@@ -32,10 +36,6 @@ module Concurrent
 
       let(:rejected_subject) do
         Future.new{ raise rejected_reason }.execute.tap{ sleep(0.1) }
-      end
-
-      before(:each) do
-        Future.thread_pool = FixedThreadPool.new(1)
       end
 
       it_should_behave_like :obligation
@@ -100,10 +100,6 @@ module Concurrent
     end
 
     context 'class #execute' do
-
-      before(:each) do
-        Future.thread_pool = ImmediateExecutor.new
-      end
 
       it 'creates a new Future' do
         future = Future.execute{ nil }
