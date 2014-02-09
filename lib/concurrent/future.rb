@@ -11,14 +11,13 @@ module Concurrent
     include Observable
     include UsesGlobalThreadPool
 
-    def initialize(&block)
-      if ! block_given?
-        raise ArgumentError.new('no block given')
-      else
-        init_mutex
-        @state = :unscheduled
-        @task = block
-      end
+    def initialize(opts = {}, &block)
+      raise ArgumentError.new('no block given') unless block_given?
+
+      init_mutex
+      @state = :unscheduled
+      @task = block
+      set_deref_options(opts)
     end
 
     # Is the future still unscheduled?
@@ -50,8 +49,8 @@ module Concurrent
       return self
     end
 
-    def self.execute(&block)
-      return Future.new(&block).execute
+    def self.execute(opts = {}, &block)
+      return Future.new(opts, &block).execute
     end
 
     private

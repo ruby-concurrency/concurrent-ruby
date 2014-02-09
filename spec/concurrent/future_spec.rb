@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 require_relative 'uses_global_thread_pool_shared'
 
@@ -6,33 +7,46 @@ module Concurrent
 
   describe Future do
 
-    let!(:thread_pool_user){ Future }
-    it_should_behave_like Concurrent::UsesGlobalThreadPool
+    let!(:value) { 10 }
+    subject { Future.new{ value }.execute.tap{ sleep(0.1) } }
 
-    let!(:fulfilled_value) { 10 }
-    let!(:rejected_reason) { StandardError.new('mojo jojo') }
+    context 'behavior' do
 
-    let(:pending_subject) do
-      Future.new{ sleep(3); fulfilled_value }.execute
-    end
+      # uses_global_thread_pool
 
-    let(:fulfilled_subject) do
-      Future.new{ fulfilled_value }.execute.tap{ sleep(0.1) }
-    end
+      let!(:thread_pool_user){ Future }
+      it_should_behave_like Concurrent::UsesGlobalThreadPool
 
-    let(:rejected_subject) do
-      Future.new{ raise rejected_reason }.execute.tap{ sleep(0.1) }
-    end
+      # obligation
 
-    before(:each) do
-      Future.thread_pool = FixedThreadPool.new(1)
-    end
+      let!(:fulfilled_value) { 10 }
+      let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
-    it_should_behave_like :obligation
+      let(:pending_subject) do
+        Future.new{ sleep(3); fulfilled_value }.execute
+      end
 
-    it 'includes Dereferenceable' do
-      future = Future.new{ nil }
-      future.should be_a(Dereferenceable)
+      let(:fulfilled_subject) do
+        Future.new{ fulfilled_value }.execute.tap{ sleep(0.1) }
+      end
+
+      let(:rejected_subject) do
+        Future.new{ raise rejected_reason }.execute.tap{ sleep(0.1) }
+      end
+
+      before(:each) do
+        Future.thread_pool = FixedThreadPool.new(1)
+      end
+
+      it_should_behave_like :obligation
+
+      # dereferenceable
+      
+      def dereferenceable_subject(value, opts = {})
+        Future.new(opts){ value }.execute.tap{ sleep(0.1) }
+      end
+
+      it_should_behave_like :dereferenceable
     end
 
     context '#initialize' do
@@ -87,6 +101,10 @@ module Concurrent
 
     context 'class #execute' do
 
+      before(:each) do
+        Future.thread_pool = ImmediateExecutor.new
+      end
+
       it 'creates a new Future' do
         future = Future.execute{ nil }
         future.should be_a(Future)
@@ -94,8 +112,7 @@ module Concurrent
 
       it 'passes the block to the new Future' do
         @expected = false
-        future = Future.execute{ @expected = true }
-        sleep(0.1)
+        Future.execute{ @expected = true }.tap{ sleep(0.1) }
         @expected.should be_true
       end
 
@@ -147,11 +164,11 @@ module Concurrent
       context 'aliases' do
 
         it 'aliases #realized? for #fulfilled?' do
-          fulfilled_subject.should be_realized
+          subject.should be_realized
         end
 
         it 'aliases #deref for #value' do
-          fulfilled_subject.deref.should eq fulfilled_value
+          subject.deref.should eq value
         end
       end
     end

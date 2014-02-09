@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'timecop'
+require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 
 module Concurrent
@@ -26,6 +27,14 @@ module Concurrent
       end
 
       it_should_behave_like :obligation
+
+      # dereferenceable
+      
+      def dereferenceable_subject(value, opts = {})
+        ScheduledTask.execute(0.1, opts){ value }.tap{ sleep(0.2) }
+      end
+
+      it_should_behave_like :dereferenceable
     end
 
     context '#initialize' do
