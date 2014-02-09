@@ -26,10 +26,10 @@ module Concurrent
         @schedule_time = now + schedule_time.to_f
       end
 
+      init_mutex
       @state = :unscheduled
       @schedule_time.freeze
       @task = block
-      init_mutex
       set_deref_options(opts)
     end
 

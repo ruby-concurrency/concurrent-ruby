@@ -12,12 +12,12 @@ module Concurrent
     include UsesGlobalThreadPool
 
     def initialize(&block)
-      init_mutex
-      if block_given?
+      if ! block_given?
+        raise ArgumentError.new('no block given')
+      else
+        init_mutex
         @state = :unscheduled
         @task = block
-      else
-        @state = :fulfilled
       end
     end
 

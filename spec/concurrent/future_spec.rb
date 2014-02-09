@@ -41,24 +41,16 @@ module Concurrent
         Future.new{ nil }.should be_unscheduled
       end
 
-      it 'does not spawn a new thread when a block is given' do
+      it 'does not spawn a new thread' do
         Future.thread_pool.should_not_receive(:post).with(any_args)
         Thread.should_not_receive(:new).with(any_args)
         Future.new{ nil }
       end
 
-      it 'does not spawn a new thread when no block given' do
-        Future.thread_pool.should_not_receive(:post).with(any_args)
-        Thread.should_not_receive(:new).with(any_args)
-        Future.new
-      end
-
-      it 'immediately sets the state to :fulfilled when no block given' do
-        Future.new.should be_fulfilled
-      end
-
-      it 'immediately sets the value to nil when no block given' do
-        Future.new.value.should be_nil
+      it 'raises an exception when no block given' do
+        expect {
+          Future.new.execute
+        }.to raise_error(ArgumentError)
       end
     end
 
@@ -236,6 +228,7 @@ module Concurrent
 
       it 'does not notify existing observers when a new observer added after rejection' do
         future = Future.new{ raise StandardError }.execute
+        sleep(0.1)
         future.add_observer(observer)
         sleep(0.1)
         future.reason.should be_a(StandardError)
