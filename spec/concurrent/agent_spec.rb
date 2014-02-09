@@ -30,7 +30,7 @@ module Concurrent
       it_should_behave_like Concurrent::UsesGlobalThreadPool
 
       # dereferenceable
-      
+
       def dereferenceable_subject(value, opts = {})
         Agent.new(value, opts)
       end

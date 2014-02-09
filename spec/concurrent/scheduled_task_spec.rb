@@ -29,7 +29,7 @@ module Concurrent
       it_should_behave_like :obligation
 
       # dereferenceable
-      
+
       def dereferenceable_subject(value, opts = {})
         ScheduledTask.execute(0.1, opts){ value }.tap{ sleep(0.2) }
       end

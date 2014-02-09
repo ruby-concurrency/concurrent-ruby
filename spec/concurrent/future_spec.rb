@@ -41,7 +41,7 @@ module Concurrent
       it_should_behave_like :obligation
 
       # dereferenceable
-      
+
       def dereferenceable_subject(value, opts = {})
         Future.new(opts){ value }.execute.tap{ sleep(0.1) }
       end
