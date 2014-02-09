@@ -36,7 +36,7 @@ The design goals of this gem are:
 
 ### Semantic Versioning
 
-*Beginning with v0.4.0 this gem will strictly adhere to the rules of semantic versioning.*
+This gem adheres to the rules of [semantic versioning](http://semver.org/).
 
 ### Supported Ruby versions
 
