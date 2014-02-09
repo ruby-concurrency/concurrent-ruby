@@ -71,7 +71,7 @@ Successful task execution using seconds for scheduling:
 ```ruby
 require 'concurrent'
 
-task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }
+task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
 task.pending?      #=> true
 task.schedule_time #=> 2013-11-07 12:20:07 -0500
 
@@ -90,7 +90,7 @@ Failed task execution using a `Time` object for scheduling:
 require 'concurrent'
 
 t = Time.now + 2
-task = Concurrent::ScheduledTask.new(t){ raise StandardError.new('Call me maybe?') }
+task = Concurrent::ScheduledTask.execute(t){ raise StandardError.new('Call me maybe?') }
 task.pending?      #=> true
 task.schedule_time #=> 2013-11-07 12:22:01 -0500
 
@@ -117,6 +117,7 @@ observer = Class.new{
 
 task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }
 task.add_observer(observer)
+task.execute
 task.pending?      #=> true
 task.schedule_time #=> 2013-11-07 12:20:07 -0500
 
