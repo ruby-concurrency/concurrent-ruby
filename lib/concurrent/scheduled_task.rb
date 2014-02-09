@@ -26,14 +26,32 @@ module Concurrent
         @schedule_time = now + schedule_time.to_f
       end
 
-      @state = :pending
+      @state = :unscheduled
       @schedule_time.freeze
       @task = block
       init_mutex
       set_deref_options(opts)
+    end
 
-      @thread = Thread.new{ work }
-      @thread.abort_on_exception = false
+    # Is the future still unscheduled?
+    # @return [Boolean]
+    def unscheduled?() return(@state == :unscheduled); end
+
+    def execute
+      mutex.synchronize do
+        return unless @state == :unscheduled
+        @state = :pending
+      end
+
+      @thread = Thread.new do
+        Thread.current.abort_on_exception = false
+        work
+      end
+      return self
+    end
+
+    def self.execute(schedule_time, opts = {}, &block)
+      return ScheduledTask.new(schedule_time, opts, &block).execute
     end
 
     def cancelled?
@@ -69,7 +87,7 @@ module Concurrent
       while (diff = @schedule_time.to_f - Time.now.to_f) > 0
         sleep( diff > 60 ? 60 : diff )
       end
-      
+
       if @state == :pending
         mutex.synchronize do
           @state = :in_progress
