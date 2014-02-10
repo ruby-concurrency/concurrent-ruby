@@ -81,25 +81,29 @@ module Concurrent
         future.execute
       end
 
-      it 'spawns a new thread when a block was given on construction' do
+      it 'posts the block given on construction' do
         Future.thread_pool.should_receive(:post).with(any_args)
-        future = Future.new{ nil }
+        future = Future.new { nil }
         future.execute
       end
 
-      it 'sets the sate to :pending' do
-        future = Future.new{ nil }
+      it 'sets the state to :pending' do
+        future = Future.new { sleep(0.1) }
         future.execute
         future.should be_pending
       end
 
       it 'returns self' do
-        future = Future.new{ nil }
-        future.execute.should eq future
+        future = Future.new { nil }
+        future.execute.should be future
       end
     end
 
     context 'class #execute' do
+
+      before(:each) do
+        Future.thread_pool = ImmediateExecutor.new
+      end
 
       it 'creates a new Future' do
         future = Future.execute{ nil }
@@ -108,12 +112,12 @@ module Concurrent
 
       it 'passes the block to the new Future' do
         @expected = false
-        Future.execute{ @expected = true }.tap{ sleep(0.1) }
+        Future.execute { @expected = true }
         @expected.should be_true
       end
 
       it 'calls #execute on the new Future' do
-        future = Future.new{ nil }
+        future = double('future')
         Future.stub(:new).with(any_args).and_return(future)
         future.should_receive(:execute).with(no_args)
         Future.execute{ nil }
@@ -129,31 +133,26 @@ module Concurrent
       it 'passes all arguments to handler' do
         @expected = false
         Future.new{ @expected = true }.execute
-        sleep(0.1)
         @expected.should be_true
       end
 
       it 'sets the value to the result of the handler' do
         future = Future.new{ 42 }.execute
-        sleep(0.1)
         future.value.should eq 42
       end
 
       it 'sets the state to :fulfilled when the block completes' do
         future = Future.new{ 42 }.execute
-        sleep(0.1)
         future.should be_fulfilled
       end
 
       it 'sets the value to nil when the handler raises an exception' do
         future = Future.new{ raise StandardError }.execute
-        sleep(0.1)
         future.value.should be_nil
       end
 
       it 'sets the state to :rejected when the handler raises an exception' do
         future = Future.new{ raise StandardError }.execute
-        sleep(0.1)
         future.should be_rejected
       end
 
