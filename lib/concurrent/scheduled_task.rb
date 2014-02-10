@@ -33,7 +33,7 @@ module Concurrent
       set_deref_options(opts)
     end
 
-    # Is the future still unscheduled?
+    # Is the task still unscheduled?
     # @return [Boolean]
     def unscheduled?() return(@state == :unscheduled); end
 
