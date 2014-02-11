@@ -22,7 +22,7 @@ module Concurrent
 
     # Is the future still unscheduled?
     # @return [Boolean]
-    def unscheduled?() return(@state == :unscheduled); end
+    def unscheduled?() state == :unscheduled; end
 
     def add_observer(observer, func = :update)
       val = self.value

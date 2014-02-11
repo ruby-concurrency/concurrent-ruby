@@ -16,7 +16,7 @@ module Concurrent
         raise ArgumentError.new('no block given')
       elsif schedule_time.is_a?(Time)
         if schedule_time <= now
-          raise ArgumentError.new('schedule time must be in the future') 
+          raise ArgumentError.new('schedule time must be in the future')
         else
           @schedule_time = schedule_time.dup
         end
@@ -35,7 +35,9 @@ module Concurrent
 
     # Is the task still unscheduled?
     # @return [Boolean]
-    def unscheduled?() return(@state == :unscheduled); end
+    def unscheduled?
+      state == :unscheduled
+    end
 
     def execute
       mutex.synchronize do
@@ -55,11 +57,11 @@ module Concurrent
     end
 
     def cancelled?
-      return @state == :cancelled
+      state == :cancelled
     end
 
     def in_progress?
-      return @state == :in_progress
+      state == :in_progress
     end
 
     def cancel
@@ -77,7 +79,7 @@ module Concurrent
     alias_method :stop, :cancel
 
     def add_observer(observer, func = :update)
-      return false unless [:pending, :in_progress].include?(@state)
+      return false unless [:pending, :in_progress].include?(state)
       super
     end
 
@@ -88,18 +90,29 @@ module Concurrent
         sleep( diff > 60 ? 60 : diff )
       end
 
-      if @state == :pending
-        mutex.synchronize do
+      to_execute = false
+
+      mutex.synchronize do
+        if @state == :pending
           @state = :in_progress
-          begin
-            @value = @task.call
+          to_execute = true
+        end
+      end
+
+      if to_execute
+
+        success, val, reason = execute_task
+
+        mutex.synchronize do
+          if success
+            @value = val
             @state = :fulfilled
-          rescue => ex
-            @reason = ex
+          else
+            @reason = reason
             @state = :rejected
-          ensure
-            changed
           end
+
+          changed
         end
       end
 
@@ -109,6 +122,22 @@ module Concurrent
       end
       event.set
       self.stop
+    end
+
+    def execute_task
+      success = false
+      value = reason = nil
+
+      begin
+        value = @task.call
+        success = true
+      rescue => ex
+        reason = ex
+        success = false
+      end
+
+      [success, value, reason]
+
     end
   end
 end

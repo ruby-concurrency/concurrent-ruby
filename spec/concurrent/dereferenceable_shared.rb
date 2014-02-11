@@ -4,7 +4,7 @@ share_examples_for :dereferenceable do
 
   it 'defaults :dup_on_deref to false' do
     value = 'value'
-    value.should_not_receive(:dup).with(any_args())
+    value.should_not_receive(:dup).with(any_args)
 
     subject = dereferenceable_subject(value)
     subject.value.should eq 'value'
@@ -30,7 +30,7 @@ share_examples_for :dereferenceable do
 
   it 'defaults :freeze_on_deref to false' do
     value = 'value'
-    value.should_not_receive(:freeze).with(any_args())
+    value.should_not_receive(:freeze).with(any_args)
 
     subject = dereferenceable_subject(value)
     subject.value.should eq 'value'
@@ -88,8 +88,8 @@ share_examples_for :dereferenceable do
     frozen = 'frozen'
     copy = proc{|val| copied }
 
-    copied.should_receive(:dup).at_least(:once).with(no_args()).and_return(dup)
-    dup.should_receive(:freeze).at_least(:once).with(no_args()).and_return(frozen)
+    copied.should_receive(:dup).at_least(:once).with(no_args).and_return(dup)
+    dup.should_receive(:freeze).at_least(:once).with(no_args).and_return(frozen)
 
     subject = dereferenceable_subject(value, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copy)
     subject.value.should eq frozen
@@ -98,7 +98,7 @@ share_examples_for :dereferenceable do
   it 'does not call #dup when #dup_on_deref is set and the value is nil' do
     allow_message_expectations_on_nil
     result = nil
-    result.should_not_receive(:dup).with(any_args())
+    result.should_not_receive(:dup).with(any_args)
     subject = dereferenceable_subject(result, dup_on_deref: true)
     subject.value
   end
@@ -106,7 +106,7 @@ share_examples_for :dereferenceable do
   it 'does not call #freeze when #freeze_on_deref is set and the value is nil' do
     allow_message_expectations_on_nil
     result = nil
-    result.should_not_receive(:freeze).with(any_args())
+    result.should_not_receive(:freeze).with(any_args)
     subject = dereferenceable_subject(result, freeze_on_deref: true)
     subject.value
   end
@@ -117,11 +117,11 @@ share_examples_for :dereferenceable do
     subject.value.should be_nil
   end
 
-  it 'does not lock when all options are false' do
+  it 'locks when all options are false' do
     subject = dereferenceable_subject(0)
     mutex = double('mutex')
     subject.stub(:mutex).and_return(mutex)
-    mutex.should_not_receive(:synchronize)
+    mutex.should_receive(:synchronize).at_least(:once)
     subject.value
   end
 
@@ -133,7 +133,7 @@ share_examples_for :dereferenceable do
     copier = proc { result }
 
     observer = double('observer')
-    observer.should_receive(:update).with(any_args())
+    observer.should_receive(:update).with(any_args)
 
     subject = dereferenceable_subject(nil, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
     subject.add_observer(observer)

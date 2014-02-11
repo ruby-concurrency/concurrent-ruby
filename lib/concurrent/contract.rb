@@ -14,7 +14,7 @@ module Concurrent
     def complete(value, reason)
       @value = value
       @reason = reason
-      @state = ( reason ? :rejected : :fulfilled )
+      self.state = ( reason ? :rejected : :fulfilled )
       event.set
     end
   end
