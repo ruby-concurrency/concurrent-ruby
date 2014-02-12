@@ -3,6 +3,7 @@ require 'thread'
 require 'concurrent/global_thread_pool'
 require 'concurrent/obligation'
 require 'concurrent/copy_on_write_observer_set'
+require 'concurrent/safe_task_executor'
 
 module Concurrent
 
@@ -13,28 +14,24 @@ module Concurrent
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
 
-      init_mutex
+      init_obligation
       @observers = CopyOnWriteObserverSet.new
       @state = :unscheduled
       @task = block
       set_deref_options(opts)
     end
 
-    # Is the future still unscheduled?
-    # @return [Boolean]
-    def unscheduled?() state == :unscheduled; end
-
     def add_observer(observer, func = :update)
-      val = self.value
+      direct_notification = false
       mutex.synchronize do
         if event.set?
-          Future.thread_pool.post(func, Time.now, val, @reason) do |f, *args|
-            observer.send(f, *args)
-          end
+          direct_notification = true
         else
           @observers.add_observer(observer, func)
         end
       end
+
+      observer.send(func, Time.now, self.value, @reason) if direct_notification
       func
     end
 
@@ -43,9 +40,9 @@ module Concurrent
         return unless @state == :unscheduled
         @state = :pending
       end
-      Future.thread_pool.post do
-        work(&@task)
-      end
+
+      Future.thread_pool.post { work }
+
       self
     end
 
@@ -57,19 +54,16 @@ module Concurrent
 
     # @private
     def work # :nodoc:
-      begin
-        @value = yield
-        @state = :fulfilled
-      rescue Exception => ex
-        @reason = ex
-        @state = :rejected
-      ensure
-        val = self.value
-        mutex.synchronize do
-          event.set
-          @observers.notify_and_delete_observers(Time.now, val, @reason)
-        end
+
+      success, val, reason = SafeTaskExecutor.new(@task).execute
+
+      mutex.synchronize do
+        set_state(success, val, reason)
+        event.set
       end
+
+      @observers.notify_and_delete_observers(Time.now, self.value, @reason)
     end
+
   end
 end

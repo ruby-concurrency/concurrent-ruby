@@ -170,6 +170,10 @@ module Concurrent
 
     context 'observation' do
 
+      before(:each) do
+        Future.thread_pool = ImmediateExecutor.new
+      end
+
       let(:clazz) do
         Class.new do
           attr_reader :value
@@ -186,53 +190,45 @@ module Concurrent
       let(:observer) { clazz.new }
 
       it 'notifies all observers on fulfillment' do
-        future = Future.new{ sleep(0.1); 42 }.execute
+        future = Future.new{ 42 }
         future.add_observer(observer)
-        future.value.should == 42
-        future.reason.should be_nil
-        sleep(0.1)
+
+        future.execute
+
         observer.value.should == 42
         observer.reason.should be_nil
       end
 
       it 'notifies all observers on rejection' do
-        future = Future.new{ sleep(0.1); raise StandardError }.execute
+        future = Future.new{ raise StandardError }
         future.add_observer(observer)
-        future.value.should be_nil
-        future.reason.should be_a(StandardError)
-        sleep(0.1)
+
+        future.execute
+
         observer.value.should be_nil
         observer.reason.should be_a(StandardError)
       end
 
       it 'notifies an observer added after fulfillment' do
         future = Future.new{ 42 }.execute
-        sleep(0.1)
-        future.value.should == 42
         future.add_observer(observer)
-        sleep(0.1)
         observer.value.should == 42
       end
 
       it 'notifies an observer added after rejection' do
         future = Future.new{ raise StandardError }.execute
-        sleep(0.1)
-        future.reason.should be_a(StandardError)
         future.add_observer(observer)
-        sleep(0.1)
         observer.reason.should be_a(StandardError)
       end
 
       it 'does not notify existing observers when a new observer added after fulfillment' do
         future = Future.new{ 42 }.execute
         future.add_observer(observer)
-        sleep(0.1)
-        future.value.should == 42
+
         observer.count.should == 1
 
         o2 = clazz.new
         future.add_observer(o2)
-        sleep(0.1)
 
         observer.count.should == 1
         o2.value.should == 42
@@ -240,19 +236,48 @@ module Concurrent
 
       it 'does not notify existing observers when a new observer added after rejection' do
         future = Future.new{ raise StandardError }.execute
-        sleep(0.1)
         future.add_observer(observer)
-        sleep(0.1)
-        future.reason.should be_a(StandardError)
+
         observer.count.should == 1
 
         o2 = clazz.new
         future.add_observer(o2)
-        sleep(0.1)
 
         observer.count.should == 1
         o2.reason.should be_a(StandardError)
       end
+
+      context 'deadlock avoidance' do
+
+        def reentrant_observer(future)
+          obs = Object.new
+          obs.define_singleton_method(:update) do |time, value, reason|
+            @value = future.value
+          end
+          obs.define_singleton_method(:value) { @value }
+          obs
+        end
+
+        it 'should notify observers outside mutex lock' do
+          future = Future.new{ 42 }
+          obs = reentrant_observer(future)
+
+          future.add_observer(obs)
+          future.execute
+
+          obs.value.should eq 42
+        end
+
+        it 'should notify a new observer added after fulfillment outside lock' do
+          future = Future.new{ 42 }.execute
+          obs = reentrant_observer(future)
+
+          future.add_observer(obs)
+
+          obs.value.should eq 42
+        end
+      end
+
     end
   end
 end

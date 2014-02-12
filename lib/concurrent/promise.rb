@@ -41,7 +41,7 @@ module Concurrent
       @children = []
       @rescuers = []
 
-      init_mutex
+      init_obligation
       realize(*args) if root?
     end
 

@@ -1,5 +1,6 @@
 require 'observer'
 require 'concurrent/obligation'
+require 'concurrent/safe_task_executor'
 
 module Concurrent
 
@@ -26,17 +27,11 @@ module Concurrent
         @schedule_time = now + schedule_time.to_f
       end
 
-      init_mutex
+      init_obligation
       @state = :unscheduled
       @schedule_time.freeze
       @task = block
       set_deref_options(opts)
-    end
-
-    # Is the task still unscheduled?
-    # @return [Boolean]
-    def unscheduled?
-      state == :unscheduled
     end
 
     def execute
@@ -100,18 +95,10 @@ module Concurrent
       end
 
       if to_execute
-
-        success, val, reason = execute_task
+        success, val, reason = SafeTaskExecutor.new(@task).execute
 
         mutex.synchronize do
-          if success
-            @value = val
-            @state = :fulfilled
-          else
-            @reason = reason
-            @state = :rejected
-          end
-
+          set_state(success, val, reason)
           changed
         end
       end
@@ -124,20 +111,5 @@ module Concurrent
       self.stop
     end
 
-    def execute_task
-      success = false
-      value = reason = nil
-
-      begin
-        value = @task.call
-        success = true
-      rescue => ex
-        reason = ex
-        success = false
-      end
-
-      [success, value, reason]
-
-    end
   end
 end

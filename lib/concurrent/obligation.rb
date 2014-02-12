@@ -25,6 +25,10 @@ module Concurrent
     # @return [Boolean]
     def pending?() state == :pending; end
 
+    # Is the obligation still unscheduled?
+    # @return [Boolean]
+    def unscheduled?() state == :unscheduled; end
+
     def value(timeout = nil)
       event.wait(timeout) unless timeout == 0 || state != :pending
       super()
@@ -40,8 +44,23 @@ module Concurrent
 
     protected
 
+    def init_obligation
+      init_mutex
+      @event = Event.new
+    end
+
     def event
-      @event ||= Event.new
+      @event
+    end
+
+    def set_state(success, val, reason)
+      if success
+        @value = val
+        @state = :fulfilled
+      else
+        @reason = reason
+        @state = :rejected
+      end
     end
 
   end

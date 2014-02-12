@@ -39,7 +39,7 @@ module Concurrent
 
     context '#initialize' do
 
-      it 'accepts a number of seconds (from now) as the shcedule time' do
+      it 'accepts a number of seconds (from now) as the schedule time' do
         Timecop.freeze do
           now = Time.now
           task = ScheduledTask.new(60){ nil }.execute
