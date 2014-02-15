@@ -9,9 +9,6 @@ module Concurrent
   module Obligation
     include Dereferenceable
 
-    attr_reader :state
-    attr_reader :reason
-
     # Has the obligation been fulfilled?
     # @return [Boolean]
     def fulfilled?() state == :fulfilled; end
@@ -42,6 +39,10 @@ module Concurrent
       mutex.synchronize { @state = value }
     end
 
+    def reason
+      mutex.synchronize { @reason }
+    end
+
     protected
 
     def init_obligation
@@ -53,9 +54,9 @@ module Concurrent
       @event
     end
 
-    def set_state(success, val, reason)
+    def set_state(success, value, reason)
       if success
-        @value = val
+        @value = value
         @state = :fulfilled
       else
         @reason = reason

@@ -31,7 +31,7 @@ module Concurrent
         end
       end
 
-      observer.send(func, Time.now, self.value, @reason) if direct_notification
+      observer.send(func, Time.now, self.value, reason) if direct_notification
       func
     end
 
@@ -62,7 +62,7 @@ module Concurrent
         event.set
       end
 
-      @observers.notify_and_delete_observers(Time.now, self.value, @reason)
+      @observers.notify_and_delete_observers(Time.now, self.value, reason)
     end
 
   end

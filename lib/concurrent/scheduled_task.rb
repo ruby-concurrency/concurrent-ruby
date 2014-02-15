@@ -104,7 +104,7 @@ module Concurrent
       end
 
       if self.changed?
-        notify_observers(Time.now, self.value, @reason)
+        notify_observers(Time.now, self.value, reason)
         delete_observers
       end
       event.set
