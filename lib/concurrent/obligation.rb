@@ -26,8 +26,16 @@ module Concurrent
     # @return [Boolean]
     def unscheduled?() state == :unscheduled; end
 
+    def completed?
+      [:fulfilled, :rejected].include? state
+    end
+
+    def incomplete?
+      [:unscheduled, :pending].include? state
+    end
+
     def value(timeout = nil)
-      event.wait(timeout) unless timeout == 0 || state != :pending
+      event.wait(timeout) if timeout != 0 && incomplete?
       super()
     end
 
@@ -62,6 +70,14 @@ module Concurrent
         @reason = reason
         @state = :rejected
       end
+    end
+
+    def value=(value)
+      @value = value
+    end
+
+    def reason=(reason)
+      @reason = reason
     end
 
   end
