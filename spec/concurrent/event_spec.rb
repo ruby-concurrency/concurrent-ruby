@@ -118,7 +118,7 @@ module Concurrent
         subject.reset
         @expected = false
         Thread.new{ subject.wait(0.5); @expected = true}
-        sleep(2)
+        sleep(1)
         @expected.should be_true
       end
 
@@ -128,22 +128,20 @@ module Concurrent
       end
 
       it 'triggers multiple waiting threads' do
+        latch = CountDownLatch.new(5)
         subject.reset
-        @expected = []
-        5.times{ Thread.new{ subject.wait; @expected << Thread.current.object_id } }
+        5.times{ Thread.new{ subject.wait; latch.count_down } }
         subject.set
-        sleep(1)
-        @expected.length.should eq 5
+        latch.wait(0.2).should be_true
       end
 
       it 'behaves appropriately if wait begins while #set is processing' do
         subject.reset
-        @expected = []
+        latch = CountDownLatch.new(5)
         5.times{ Thread.new{ subject.wait(5) } }
         subject.set
-        5.times{ Thread.new{ subject.wait; @expected << Thread.current.object_id } }
-        sleep(1)
-        @expected.length.should eq 5
+        5.times{ Thread.new{ subject.wait; latch.count_down } }
+        latch.wait(0.2).should be_true
       end
     end
   end
