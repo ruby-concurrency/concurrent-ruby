@@ -11,25 +11,11 @@ module Concurrent
     attr_reader :schedule_time
 
     def initialize(schedule_time, opts = {}, &block)
-      now = Time.now
-
-      if ! block_given?
-        raise ArgumentError.new('no block given')
-      elsif schedule_time.is_a?(Time)
-        if schedule_time <= now
-          raise ArgumentError.new('schedule time must be in the future')
-        else
-          @schedule_time = schedule_time.dup
-        end
-      elsif schedule_time.to_f <= 0.0
-        raise ArgumentError.new('seconds must be greater than zero')
-      else
-        @schedule_time = now + schedule_time.to_f
-      end
+      raise ArgumentError.new('no block given') unless block_given?
 
       init_obligation
       @state = :unscheduled
-      @schedule_time.freeze
+      @schedule_time = adjust_schedule_time(schedule_time, Time.now).freeze
       @task = block
       set_deref_options(opts)
     end
@@ -44,7 +30,8 @@ module Concurrent
         Thread.current.abort_on_exception = false
         work
       end
-      return self
+
+      self
     end
 
     def self.execute(schedule_time, opts = {}, &block)
@@ -60,9 +47,8 @@ module Concurrent
     end
 
     def cancel
-      return false if mutex.locked?
-      return mutex.synchronize do
-        if @state == :pending
+      mutex.synchronize do
+        if [:unscheduled, :pending].include? @state
           @state = :cancelled
           event.set
           true
@@ -70,11 +56,13 @@ module Concurrent
           false
         end
       end
+
     end
+
     alias_method :stop, :cancel
 
     def add_observer(observer, func = :update)
-      return false unless [:pending, :in_progress].include?(state)
+      return false unless [:unscheduled, :pending, :in_progress].include?(state)
       super
     end
 
@@ -109,6 +97,18 @@ module Concurrent
       end
       event.set
       self.stop
+    end
+
+    private
+
+    def adjust_schedule_time(schedule_time, now)
+      if schedule_time.is_a?(Time)
+        raise ArgumentError.new('schedule time must be in the future') if schedule_time <= now
+        schedule_time.dup
+      else
+        raise ArgumentError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
+        now + schedule_time.to_f
+      end
     end
 
   end
