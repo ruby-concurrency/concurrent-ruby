@@ -6,7 +6,6 @@ module Concurrent
 
   class ScheduledTask
     include Obligation
-    include Observable
 
     attr_reader :schedule_time
 
@@ -14,6 +13,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
 
       init_obligation
+      @observers = CopyOnWriteObserverSet.new
       @state = :unscheduled
       @schedule_time = adjust_schedule_time(schedule_time, Time.now).freeze
       @task = block
@@ -21,17 +21,10 @@ module Concurrent
     end
 
     def execute
-      mutex.synchronize do
-        return unless @state == :unscheduled
-        @state = :pending
+      if compare_and_set_state(:pending, :unscheduled)
+        Thread.new { work }
+        self
       end
-
-      @thread = Thread.new do
-        Thread.current.abort_on_exception = false
-        work
-      end
-
-      self
     end
 
     def self.execute(schedule_time, opts = {}, &block)
@@ -48,58 +41,48 @@ module Concurrent
 
     def cancel
       mutex.synchronize do
-        if [:unscheduled, :pending].include? @state
-          @state = :cancelled
-          event.set
-          true
-        else
-          false
-        end
-      end
+        return false unless [:unscheduled, :pending].include? @state
 
+        @state = :cancelled
+        event.set
+        true
+      end
     end
 
     alias_method :stop, :cancel
 
     def add_observer(observer, func = :update)
-      return false unless [:unscheduled, :pending, :in_progress].include?(state)
-      super
+      mutex.synchronize do
+        return false unless [:unscheduled, :pending, :in_progress].include?(@state)
+        @observers.add_observer(observer, func)
+      end
     end
 
     protected
 
     def work
-      while (diff = @schedule_time.to_f - Time.now.to_f) > 0
-        sleep( diff > 60 ? 60 : diff )
-      end
+      sleep_until_scheduled_time
 
-      to_execute = false
-
-      mutex.synchronize do
-        if @state == :pending
-          @state = :in_progress
-          to_execute = true
-        end
-      end
-
-      if to_execute
+      if compare_and_set_state(:in_progress, :pending)
         success, val, reason = SafeTaskExecutor.new(@task).execute
 
         mutex.synchronize do
           set_state(success, val, reason)
-          changed
+          event.set
         end
+
+        @observers.notify_and_delete_observers(Time.now, self.value, reason)
       end
 
-      if self.changed?
-        notify_observers(Time.now, self.value, reason)
-        delete_observers
-      end
-      event.set
-      self.stop
     end
 
     private
+
+    def sleep_until_scheduled_time
+      while (diff = @schedule_time.to_f - Time.now.to_f) > 0
+        sleep(diff > 60 ? 60 : diff)
+      end
+    end
 
     def adjust_schedule_time(schedule_time, now)
       if schedule_time.is_a?(Time)
@@ -108,6 +91,17 @@ module Concurrent
       else
         raise ArgumentError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
         now + schedule_time.to_f
+      end
+    end
+
+    def compare_and_set_state(next_state, expected_current)
+      mutex.synchronize do
+        if @state == expected_current
+          @state = next_state
+          true
+        else
+          false
+        end
       end
     end
 
