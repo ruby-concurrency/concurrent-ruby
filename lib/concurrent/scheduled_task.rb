@@ -40,9 +40,7 @@ module Concurrent
     end
 
     def cancel
-      mutex.synchronize do
-        return false unless [:unscheduled, :pending].include? @state
-
+      if_state(:unscheduled, :pending) do
         @state = :cancelled
         event.set
         true
@@ -52,8 +50,7 @@ module Concurrent
     alias_method :stop, :cancel
 
     def add_observer(observer, func = :update)
-      mutex.synchronize do
-        return false unless [:unscheduled, :pending, :in_progress].include?(@state)
+      if_state(:unscheduled, :pending, :in_progress) do
         @observers.add_observer(observer, func)
       end
     end
@@ -91,17 +88,6 @@ module Concurrent
       else
         raise ArgumentError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
         now + schedule_time.to_f
-      end
-    end
-
-    def compare_and_set_state(next_state, expected_current)
-      mutex.synchronize do
-        if @state == expected_current
-          @state = next_state
-          true
-        else
-          false
-        end
       end
     end
 

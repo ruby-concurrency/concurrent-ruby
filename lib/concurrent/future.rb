@@ -36,14 +36,10 @@ module Concurrent
     end
 
     def execute
-      mutex.synchronize do
-        return unless @state == :unscheduled
-        @state = :pending
+      if compare_and_set_state(:pending, :unscheduled)
+        Future.thread_pool.post { work }
+        self
       end
-
-      Future.thread_pool.post { work }
-
-      self
     end
 
     def self.execute(opts = {}, &block)

@@ -12,6 +12,8 @@ module Concurrent
         def initialize
           init_mutex
         end
+
+        public :compare_and_set_state, :if_state, :mutex
       end
 
     end
@@ -133,6 +135,56 @@ module Concurrent
         event.should_not_receive(:wait)
 
         obligation.value(5).should be_nil
+      end
+
+    end
+
+    describe '#compare_and_set_state' do
+
+      before(:each) { obligation.state = :unscheduled }
+
+      context 'unexpected state' do
+        it 'should return false if state is not the expected one' do
+          obligation.compare_and_set_state(:pending, :rejected).should be_false
+        end
+
+        it 'should not change the state if current is not the expected one' do
+          obligation.compare_and_set_state(:pending, :rejected)
+          obligation.state.should eq :unscheduled
+        end
+      end
+
+      context 'expected state' do
+        it 'should return true if state is the expected one' do
+          obligation.compare_and_set_state(:pending, :unscheduled).should be_true
+        end
+
+        it 'should not change the state if current is not the expected one' do
+          obligation.compare_and_set_state(:pending, :unscheduled)
+          obligation.state.should eq :pending
+        end
+      end
+
+    end
+
+    describe '#if_state' do
+
+      before(:each) { obligation.state = :unscheduled }
+
+      it 'should raise without block' do
+        expect { obligation.if_state(:pending) }.to raise_error(ArgumentError)
+      end
+
+      it 'should return false if state is not expected' do
+        obligation.if_state(:pending, :rejected) { 42 }.should be_false
+      end
+
+      it 'should the block value if state is expected' do
+        obligation.if_state(:rejected, :unscheduled) { 42 }.should eq 42
+      end
+
+      it 'should execute the block within the mutex' do
+        obligation.if_state(:unscheduled) { obligation.mutex.should be_locked }
       end
 
     end

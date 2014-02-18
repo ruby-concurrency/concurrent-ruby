@@ -80,5 +80,35 @@ module Concurrent
       @reason = reason
     end
 
+    # atomic compare and set operation
+    # state is set to next_state only if current state is == expected_current
+    # @param [Symbol] next_state
+    # @param [Symbol] expected_current
+    # @return [Boolean] true is state is changed, false otherwise
+    def compare_and_set_state(next_state, expected_current)
+      mutex.synchronize do
+        if @state == expected_current
+          @state = next_state
+          true
+        else
+          false
+        end
+      end
+    end
+
+    # executes the block within mutex if current state is included in expected_states
+    # @return block value if executed, false otherwise
+    def if_state(*expected_states)
+      raise ArgumentError.new('no block given') unless block_given?
+
+      mutex.synchronize do
+        if expected_states.include? @state
+          yield
+        else
+          false
+        end
+      end
+    end
+
   end
 end
