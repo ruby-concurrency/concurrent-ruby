@@ -80,12 +80,8 @@ module Concurrent
     def rescue(clazz = nil, &block)
       return self if fulfilled? || rescued? || block.nil?
       @lock.synchronize do
-        rescuer = Rescuer.new(clazz, block)
-        if pending?
-          @rescuers << rescuer
-        else
-          try_rescue(reason, rescuer)
-        end
+        @rescuers << Rescuer.new(clazz, block)
+        try_rescue(reason) unless pending?
       end
       return self
     end

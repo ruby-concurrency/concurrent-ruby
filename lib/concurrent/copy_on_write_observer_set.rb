@@ -8,16 +8,20 @@ module Concurrent
     end
 
     def add_observer(observer, func=:update)
-      new_observers = observers.dup
-      new_observers[observer] = func
-      self.observers = new_observers
+      @mutex.synchronize do
+        new_observers = @observers.dup
+        new_observers[observer] = func
+        @observers = new_observers
+      end
       func
     end
 
     def delete_observer(observer)
-      new_observers = observers.dup
-      new_observers.delete(observer)
-      self.observers = new_observers
+      @mutex.synchronize do
+        new_observers = @observers.dup
+        new_observers.delete(observer)
+        @observers = new_observers
+      end
       observer
     end
 
@@ -63,7 +67,6 @@ module Concurrent
           @observers = {}
           old_observers
         end
-
       end
 
   end

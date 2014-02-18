@@ -42,38 +42,38 @@ module Concurrent
       it 'accepts a number of seconds (from now) as the schedule time' do
         Timecop.freeze do
           now = Time.now
-          task = ScheduledTask.new(60){ nil }.execute
+          task = ScheduledTask.new(60){ nil }
           task.schedule_time.to_i.should eq now.to_i + 60
         end
       end
 
       it 'accepts a time object as the schedule time' do
         schedule = Time.now + (60*10)
-        task = ScheduledTask.new(schedule){ nil }.execute
+        task = ScheduledTask.new(schedule){ nil }
         task.schedule_time.should eq schedule
       end
 
       it 'raises an exception when seconds is less than zero' do
         expect {
-          ScheduledTask.new(-1){ nil }.execute
+          ScheduledTask.new(-1){ nil }
         }.to raise_error(ArgumentError)
       end
 
       it 'raises an exception when schedule time is in the past' do
         expect {
-          ScheduledTask.new(Time.now - 60){ nil }.execute
+          ScheduledTask.new(Time.now - 60){ nil }
         }.to raise_error(ArgumentError)
       end
 
       it 'raises an exception when no block given' do
         expect {
-          ScheduledTask.new(1).execute
+          ScheduledTask.new(1)
         }.to raise_error(ArgumentError)
       end
 
       it 'sets the initial state to :unscheduled' do
-        task = ScheduledTask.new(1){ nil }.execute
-        task.should be_pending
+        task = ScheduledTask.new(1){ nil }
+        task.should be_unscheduled
       end
     end
 
@@ -144,6 +144,16 @@ module Concurrent
         task.cancel.should be_false
       end
 
+      it 'cancels the task if it has not yet scheduled' do
+        @expected = true
+        task = ScheduledTask.new(0.1){ @expected = false }
+        task.cancel
+        task.execute
+        sleep(0.5)
+        @expected.should be_true
+      end
+
+
       it 'cancels the task if it has not yet started' do
         @expected = true
         task = ScheduledTask.new(0.3){ @expected = false }.execute
@@ -193,8 +203,13 @@ module Concurrent
 
       let(:observer) { clazz.new }
 
+      it 'returns true for an observer added while :unscheduled' do
+        task = ScheduledTask.new(0.1){ 42 }
+        task.add_observer(observer).should be_true
+      end
+
       it 'returns true for an observer added while :pending' do
-        task = ScheduledTask.new(1){ 42 }.execute
+        task = ScheduledTask.new(0.1){ 42 }.execute
         task.add_observer(observer).should be_true
       end
 
@@ -204,16 +219,9 @@ module Concurrent
         task.add_observer(observer).should be_true
       end
 
-      it 'returns true for an observer added while not running' do
-        task = ScheduledTask.new(1){ 42 }.execute
-        task.add_observer(observer).should be_true
-      end
-
       it 'returns false for an observer added once :cancelled' do
-        task = ScheduledTask.new(1){ 42 }.execute
-        sleep(0.1)
+        task = ScheduledTask.new(1){ 42 }
         task.cancel
-        sleep(0.1)
         task.add_observer(observer).should be_false
       end
 
@@ -250,7 +258,7 @@ module Concurrent
       end
 
       it 'does not notify an observer added after fulfillment' do
-        observer.should_not_receive(:update).with(any_args())
+        observer.should_not_receive(:update).with(any_args)
         task = ScheduledTask.new(0.1){ 42 }.execute
         sleep(0.2)
         task.add_observer(observer)
@@ -258,7 +266,7 @@ module Concurrent
       end
 
       it 'does not notify an observer added after rejection' do
-        observer.should_not_receive(:update).with(any_args())
+        observer.should_not_receive(:update).with(any_args)
         task = ScheduledTask.new(0.1){ raise StandardError }.execute
         sleep(0.2)
         task.add_observer(observer)
@@ -266,14 +274,13 @@ module Concurrent
       end
 
       it 'does not notify an observer added after cancellation' do
-        observer.should_not_receive(:update).with(any_args())
-        task = ScheduledTask.new(0.5){ 42 }.execute
-        sleep(0.1)
+        observer.should_not_receive(:update).with(any_args)
+        task = ScheduledTask.new(0.1){ 42 }.execute
         task.cancel
-        sleep(0.1)
         task.add_observer(observer)
-        sleep(0.5)
+        sleep(0.2)
       end
+
     end
   end
 end

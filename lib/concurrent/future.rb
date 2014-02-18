@@ -31,19 +31,15 @@ module Concurrent
         end
       end
 
-      observer.send(func, Time.now, self.value, @reason) if direct_notification
+      observer.send(func, Time.now, self.value, reason) if direct_notification
       func
     end
 
     def execute
-      mutex.synchronize do
-        return unless @state == :unscheduled
-        @state = :pending
+      if compare_and_set_state(:pending, :unscheduled)
+        Future.thread_pool.post { work }
+        self
       end
-
-      Future.thread_pool.post { work }
-
-      self
     end
 
     def self.execute(opts = {}, &block)
@@ -62,7 +58,7 @@ module Concurrent
         event.set
       end
 
-      @observers.notify_and_delete_observers(Time.now, self.value, @reason)
+      @observers.notify_and_delete_observers(Time.now, self.value, reason)
     end
 
   end

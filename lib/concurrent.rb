@@ -1,5 +1,6 @@
 require 'concurrent/version'
 
+require 'concurrent/count_down_latch'
 require 'concurrent/copy_on_notify_observer_set'
 require 'concurrent/copy_on_write_observer_set'
 require 'concurrent/safe_task_executor'
