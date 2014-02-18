@@ -107,6 +107,7 @@ These tools will help ease the burden, but at the end of the day it is essential
 
 * [Michele Della Torre](https://github.com/mighe)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
+* [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)
 * [Jamie Hodge](https://github.com/jamiehodge)
 * [Zander Hill](https://github.com/zph)
