@@ -34,7 +34,10 @@ module Concurrent
 
     end
 
-    def dataflow(*inputs, &block)
+    def self.dataflow(*inputs, &block)
+      raise ArgumentError.new('no block given') unless block_given?
+      raise ArgumentError.new('not all dependencies are Futures') unless inputs.all? { |input| input.is_a? Future }
+
       result = Concurrent::Future.new do
         values = inputs.map { |input| input.value }
         block.call(*values)
@@ -53,14 +56,10 @@ module Concurrent
       result
     end
 
-    module_function :dataflow
-
   end
 
-  def dataflow(*inputs, &block)
+  def self.dataflow(*inputs, &block)
     Dataflow::dataflow(*inputs, &block)
   end
-  
-  module_function :dataflow
 
 end
