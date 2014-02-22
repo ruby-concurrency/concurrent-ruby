@@ -34,27 +34,33 @@ module Concurrent
 
     end
 
+    def dataflow(*inputs, &block)
+      result = Concurrent::Future.new do
+        values = inputs.map { |input| input.value }
+        block.call(*values)
+      end
+
+      if inputs.empty?
+        result.execute
+      else
+        counter = Dataflow::DependencyCounter.new(inputs.size) { result.execute }
+
+        inputs.each do |input|
+          input.add_observer counter
+        end
+      end
+
+      result
+    end
+
+    module_function :dataflow
+
   end
 
   def dataflow(*inputs, &block)
-    result = Concurrent::Future.new do
-      values = inputs.map { |input| input.value }
-      block.call(*values)
-    end
-
-    if inputs.empty?
-      result.execute
-    else
-      counter = Dataflow::DependencyCounter.new(inputs.size) { result.execute }
-
-      inputs.each do |input|
-        input.add_observer counter
-      end
-    end
-
-    result
+    Dataflow::dataflow(*inputs, &block)
   end
-
+  
   module_function :dataflow
 
 end
