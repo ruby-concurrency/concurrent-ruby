@@ -73,15 +73,16 @@ module Concurrent
     # @return [Promise] the new promise
     def then(&block)
       block = Proc.new{ |result| result } if block.nil?
+      child = Promise.new(self, &block)
 
-      child = @lock.synchronize do
-        @children << Promise.new(self, &block)
-        @children.last.on_reject(@reason) if rejected?
-        push(@children.last)
-        @children.last
+      @lock.synchronize do
+        child.state = :pending if @state == :pending
+        @children << child
+        child.on_reject(@reason) if rejected?
+        push(child)
       end
 
-      return child
+      child
     end
 
     # Add a rescue handler to be run if the promise is rejected (via raised

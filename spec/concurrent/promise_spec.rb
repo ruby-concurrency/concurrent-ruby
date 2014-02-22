@@ -132,40 +132,60 @@ module Concurrent
       end
     end
 
-    context '#then' do
+    describe '#then' do
 
-      it 'returns a new Promise when :unscheduled' do
-        p1 = Promise.new { nil }
-        p2 = p1.then{}
-        p2.should be_a(Promise)
-        p1.should_not eq p2
+      context 'unscheduled' do
+
+        let(:p1) { Promise.new {nil} }
+        let(:child) { p1.then{} }
+
+        it 'returns a new promise' do
+          child.should be_a Promise
+          p1.should_not be child
         end
 
-      it 'returns a new Promise when :pending' do
-        p1 = pending_subject
-        p2 = p1.then{}
-        p2.should be_a(Promise)
-        p1.should_not eq p2
+        it 'returns an unscheduled promise' do
+          child.should be_unscheduled
+        end
       end
 
-      it 'returns a new Promise when :fulfilled' do
-        p1 = fulfilled_subject
-        p2 = p1.then{}
-        p2.should be_a(Promise)
-        p1.should_not eq p2
+      context 'pending' do
+
+        let(:child) { pending_subject.then{} }
+
+        it 'returns a new promise' do
+          child.should be_a Promise
+          pending_subject.should_not be child
+        end
+
+        it 'returns a pending promise' do
+          child.should be_pending
+        end
       end
 
-      it 'returns a new Promise when :rejected' do
-        p1 = rejected_subject
-        p2 = p1.then{}
-        p2.should be_a(Promise)
-        p1.should_not eq p2
+      context 'fulfilled' do
+        it 'returns a new Promise' do
+          p1 = fulfilled_subject
+          p2 = p1.then{}
+          p2.should be_a(Promise)
+          p1.should_not eq p2
+        end
       end
 
-      it 'immediately rejects new promises when self has been rejected' do
-        p = rejected_subject
-        p.then.should be_rejected
+      context 'rejected' do
+        it 'returns a new Promise when :rejected' do
+          p1 = rejected_subject
+          p2 = p1.then{}
+          p2.should be_a(Promise)
+          p1.should_not eq p2
+        end
+
+        it 'immediately rejects new promises' do
+          p = rejected_subject
+          p.then.should be_rejected
+        end
       end
+
 
       it 'accepts a nil block' do
         lambda {
@@ -177,7 +197,7 @@ module Concurrent
         p = pending_subject
         p1 = p.then{}
         p2 = p.then{}
-        p1.object_id.should_not eq p2.object_id
+        p1.should_not be p2
       end
     end
 
