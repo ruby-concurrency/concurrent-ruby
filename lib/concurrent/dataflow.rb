@@ -2,19 +2,36 @@ require 'concurrent/future'
 
 module Concurrent
 
-  class CountingObserver
+  module Dataflow
 
-    def initialize(count, &block)
-      @count = count
-      @block = block
+    class AtomicCounter
+
+      def initialize(init)
+        @counter = init
+        @mutex = Mutex.new
+      end
+
+      def decrement
+        @mutex.synchronize do
+          @counter -= 1
+        end
+      end
+
     end
 
-    def update(time, value, reason)
-      @count -= 1
+    class DependencyCounter
 
-      if @count <= 0
-        @block.call()
+      def initialize(count, &block)
+        @counter = AtomicCounter.new(count)
+        @block = block
       end
+
+      def update(time, value, reason)
+        if @counter.decrement == 0
+          @block.call()
+        end
+      end
+
     end
 
   end
@@ -28,10 +45,10 @@ module Concurrent
     if inputs.empty?
       result.execute
     else
-      barrier = Concurrent::CountingObserver.new(inputs.size) { result.execute }
+      counter = Dataflow::DependencyCounter.new(inputs.size) { result.execute }
 
       inputs.each do |input|
-        input.add_observer barrier
+        input.add_observer counter
       end
     end
 
