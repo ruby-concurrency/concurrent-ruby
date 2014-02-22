@@ -34,15 +34,30 @@ module Concurrent
 
       @lock = Mutex.new
       @handler = block || Proc.new{|result| result }
-      @state = :pending
-      @value = nil
-      @reason = nil
+      @state = :unscheduled
       @rescued = false
       @children = []
       @rescuers = []
+      @args = args
 
       init_obligation
-      realize(*args) if root?
+    end
+
+    # @return [Promise]
+    def execute
+      if root?
+        if compare_and_set_state(:pending, :unscheduled)
+          @chain.each { |c| c.state = :pending }
+          realize(*@args)
+        end
+      else
+        parent.execute
+      end
+      self
+    end
+
+    def self.execute(*args, &block)
+      new(*args, &block).execute
     end
 
     def rescued?
@@ -57,13 +72,15 @@ module Concurrent
     #
     # @return [Promise] the new promise
     def then(&block)
+      block = Proc.new{ |result| result } if block.nil?
+
       child = @lock.synchronize do
-        block = Proc.new{|result| result } if block.nil?
         @children << Promise.new(self, &block)
         @children.last.on_reject(@reason) if rejected?
         push(@children.last)
         @children.last
       end
+
       return child
     end
 
