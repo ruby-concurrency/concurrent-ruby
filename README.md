@@ -33,6 +33,7 @@ The design goals of this gem are:
 * Actor variant [Channel](https://github.com/jdantonio/concurrent-ruby/blob/master/md/channel.md)
   loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
   agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
+* [Dataflow](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dataflow.md) loosely based on the syntax of Akka and Habanero Java
 
 ### Semantic Versioning
 
@@ -111,6 +112,7 @@ These tools will help ease the burden, but at the end of the day it is essential
 * [Chip Miller](https://github.com/chip-miller)
 * [Jamie Hodge](https://github.com/jamiehodge)
 * [Zander Hill](https://github.com/zph)
+* [Chris Seaton](https://github.com/chrisseaton)
 
 ## Contributing
 

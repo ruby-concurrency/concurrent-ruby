@@ -1,6 +1,48 @@
 # Dataflow
 
+Dataflow allows you to create a task that will be scheduled then all of its data
+dependencies are available. Data dependencies are `Future` values. The dataflow
+task itself is also a `Future` value, so you can build up a graph of these
+tasks, each of which is run when all the data and other tasks it depends on are
+available or completed.
+
+Our syntax is somewhat related to that of Akka's `flow` and Habanero Java's
+`DataDrivenFuture`. However unlike Akka we don't schedule a task at all until it
+is ready to run, and unlike Habanero Java we pass the data values into the task
+instead of dereferencing them again in the task.
+
+The theory of dataflow goes back to the 80s. In the terminology of the
+literature, our implementation is coarse-grained, in that each task can be many
+instructions, and dynamic in that you can create more tasks within other tasks.
+
+## Example
+
+A dataflow task is created with the `dataflow` method, passing in a block.
+
+```ruby
+task = Concurrent::dataflow { 14 }
+```
+
+This produces a simple `Future` value. The task will run immediately, as it has
+no dependencies. We can also specify `Future` values that must be available
+before a task will run. When we do this we get the value of those futures passed
+to our block.
+
+```ruby
+a = Concurrent::dataflow { 1 }
+b = Concurrent::dataflow { 2 }
+c = Concurrent::dataflow(a, b) { |av, bv| av + bv }
+```
+
+Using the `dataflow` method you can build up a directed acyclic graph (DAG) of
+tasks that depend on each other, and have the tasks run as soon as their
+dependencies are ready and there is CPU capacity to schedule them. This can help
+you create a program that uses more of the CPU resources available to you.
+
 ## Derivation
+
+This section describes how we could derive dataflow from other primitives in
+this library.
 
 Consider a naive fibonacci calculator.
 
