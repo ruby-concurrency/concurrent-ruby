@@ -20,7 +20,10 @@ module Concurrent
   end
 
   def dataflow(*inputs, &block)
-    result = Concurrent::Future.new(&block)
+    result = Concurrent::Future.new do
+      values = inputs.map { |input| input.value }
+      block.call(*values)
+    end
 
     if inputs.empty?
       result.execute

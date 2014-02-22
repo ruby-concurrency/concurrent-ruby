@@ -1,8 +1,6 @@
 # Dataflow
 
-## Example
-
-In this example we'll derive the `dataflow` method.
+## Derivation
 
 Consider a naive fibonacci calculator.
 
@@ -116,6 +114,37 @@ def fib(n)
     n2 = fib(n - 2)
     dataflow(n1, n2) { n1.value + n2.value }
   end
+end
+
+f = fib(14)
+sleep(0.5)
+puts f.value
+```
+
+Since we know that the futures the dataflow computation depends on are already
+going to be available when the future is executed, we might as well pass the
+values into the block so we don't have to reference the futures inside the
+block. This allows us to write the dataflow block as straight non-concurrent
+code without reference to futures.
+
+```ruby
+def dataflow(*inputs, &block)
+  result = Concurrent::Future.new do
+    values = inputs.map { |input| input.value }
+    block.call(*values)
+  end
+
+  if inputs.empty?
+    result.execute
+  else
+    barrier = Concurrent::CountingObserver.new(inputs.size) { result.execute }
+
+    inputs.each do |input|
+      input.add_observer barrier
+    end
+  end
+
+  result
 end
 
 f = fib(14)
