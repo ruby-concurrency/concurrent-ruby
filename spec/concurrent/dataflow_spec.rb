@@ -68,7 +68,7 @@ module Concurrent
           d = Future.new{0}
           f = Dataflow::dataflow(d){0}
           d.execute
-          f.value.should  == 0
+          f.value.should eq 0
         end
 
         it 'if there is more than one' do
@@ -77,7 +77,7 @@ module Concurrent
           f = Dataflow::dataflow(d1, d2){0}
           d1.execute
           d2.execute
-          f.value.should  == 0
+          f.value.should eq 0
         end
 
       end
@@ -88,7 +88,7 @@ module Concurrent
           d = Future.new{0}
           d.execute
           f = Dataflow::dataflow(d){0}
-          f.value.should  == 0
+          f.value.should eq 0
         end
 
         it 'if there is more than one' do
@@ -97,7 +97,7 @@ module Concurrent
           d1.execute
           d2.execute
           f = Dataflow::dataflow(d1, d2){0}
-          f.value.should  == 0
+          f.value.should eq 0
         end
 
       end
@@ -110,7 +110,7 @@ module Concurrent
             v
           end
           d.execute
-          f.value.should  == 14
+          f.value.should eq 14
         end
 
         it 'if there is more than one' do
@@ -121,7 +121,7 @@ module Concurrent
           end
           d1.execute
           d2.execute
-          f.value.should  == 16
+          f.value.should eq 16
         end
 
       end
