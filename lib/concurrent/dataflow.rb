@@ -19,10 +19,6 @@ module Concurrent
 
   end
 
-end
-
-module Kernel
-
   def dataflow(*inputs, &block)
     result = Concurrent::Future.new(&block)
 
@@ -38,5 +34,7 @@ module Kernel
 
     result
   end
+
+  module_function :dataflow
 
 end
