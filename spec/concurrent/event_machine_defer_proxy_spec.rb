@@ -140,7 +140,7 @@ if mri?
               EventMachine.run do
 
                 @a = @b = @c = nil
-                p = Promise.new(1, 2, 3) do |a, b, c|
+                p = Promise.execute(1, 2, 3) do |a, b, c|
                   @a, @b, @c = a, b, c
                 end
                 sleep(0.1)
@@ -155,7 +155,7 @@ if mri?
 
               EventMachine.run do
                 @expected = nil
-                Promise.new(10){|a| a * 2 }.then{|result| @expected = result}
+                Promise.new(10){|a| a * 2 }.then{|result| @expected = result}.execute
                 sleep(0.1)
                 @expected.should eq 20
 
@@ -168,7 +168,7 @@ if mri?
 
               EventMachine.run do
 
-                p = Promise.new(10){|a| a * 2 }.then{|result| result * 2}
+                p = Promise.execute(10){|a| a * 2 }.then{|result| result * 2}
                 sleep(0.1)
                 p.value.should eq 40
 
@@ -184,7 +184,7 @@ if mri?
 
               EventMachine.run do
 
-                p = Promise.new{ raise StandardError.new('Boom!') }
+                p = Promise.execute{ raise StandardError.new('Boom!') }
                 sleep(0.1)
                 p.reason.should be_a(Exception)
                 p.reason.should.to_s =~ /Boom!/
@@ -200,7 +200,7 @@ if mri?
               EventMachine.run do
 
                 @expected = nil
-                Promise.new{ raise StandardError }.
+                Promise.execute{ raise StandardError }.
                   on_error(StandardError){|ex| @expected = 1 }.
                   on_error(StandardError){|ex| @expected = 2 }.
                   on_error(StandardError){|ex| @expected = 3 }
@@ -217,7 +217,7 @@ if mri?
               EventMachine.run do
 
                 @expected = nil
-                Promise.new{ raise StandardError }.
+                Promise.execute{ raise StandardError }.
                   on_error(ArgumentError){|ex| @expected = ex }.
                   on_error(LoadError){|ex| @expected = ex }.
                   on_error(Exception){|ex| @expected = ex }
