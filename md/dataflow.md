@@ -55,7 +55,7 @@ def fib(n)
   end
 end
 
-puts fib(14)
+puts fib(14) #=> 377
 ```
 
 We could modify this to use futures.
@@ -71,10 +71,12 @@ def fib(n)
   end
 end
 
-f = fib(14)
-f.execute
+f = fib(14) #=> #<Concurrent::Future:0x000001019ef5a0 ...
+f.execute   #=> #<Concurrent::Future:0x000001019ef5a0 ...
+
 sleep(0.5)
-puts f.value
+
+puts f.value #=> 377
 ```
 
 One of the drawbacks of this approach is that all the futures start, and then
@@ -128,9 +130,10 @@ end
 We can wrap this up in a dataflow utility.
 
 ```ruby
-f = fib(14)
+f = fib(14) #=> #<Concurrent::Future:0x00000101fca308 ...
 sleep(0.5)
-puts f.value
+
+puts f.value #=> 377
 
 def dataflow(*inputs, &block)
   result = Concurrent::Future.new(&block)
@@ -158,9 +161,10 @@ def fib(n)
   end
 end
 
-f = fib(14)
+f = fib(14) #=> #<Concurrent::Future:0x00000101fca308 ...
 sleep(0.5)
-puts f.value
+
+puts f.value #=> 377
 ```
 
 Since we know that the futures the dataflow computation depends on are already
@@ -179,7 +183,7 @@ def dataflow(*inputs, &block)
   if inputs.empty?
     result.execute
   else
-    barrier = Concurrent::CountingObserver.new(inputs.size) { result.execute }
+    barrier = CountingObserver.new(inputs.size) { result.execute }
 
     inputs.each do |input|
       input.add_observer barrier
@@ -189,7 +193,8 @@ def dataflow(*inputs, &block)
   result
 end
 
-f = fib(14)
+f = fib(14) #=> #<Concurrent::Future:0x000001019a26d8 ...
 sleep(0.5)
-puts f.value
+
+puts f.value #=> 377
 ```

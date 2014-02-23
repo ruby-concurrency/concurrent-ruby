@@ -107,12 +107,12 @@ These tools will help ease the burden, but at the end of the day it is essential
 ## Contributors
 
 * [Michele Della Torre](https://github.com/mighe)
+* [Chris Seaton](https://github.com/chrisseaton)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)
 * [Jamie Hodge](https://github.com/jamiehodge)
 * [Zander Hill](https://github.com/zph)
-* [Chris Seaton](https://github.com/chrisseaton)
 
 ## Contributing
 
