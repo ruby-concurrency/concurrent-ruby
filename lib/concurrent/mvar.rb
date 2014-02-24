@@ -4,14 +4,17 @@ module Concurrent
 
   class MVar
 
+    include Dereferenceable
+
     EMPTY = Object.new
     TIMEOUT = Object.new
 
-    def initialize(value=EMPTY)
+    def initialize(value = EMPTY, opts = {})
       @value = value
       @mutex = Mutex.new
       @empty_condition = ConditionVariable.new
       @full_condition = ConditionVariable.new
+      set_deref_options(opts)
     end
 
     def take(timeout = nil)
@@ -24,7 +27,7 @@ module Concurrent
           value = @value
           @value = EMPTY
           @empty_condition.signal
-          value
+          apply_deref_options(value)
         else
           TIMEOUT
         end
@@ -40,7 +43,7 @@ module Concurrent
         if empty?
           @value = value
           @full_condition.signal
-          value
+          apply_deref_options(value)
         else
           TIMEOUT
         end
@@ -59,7 +62,7 @@ module Concurrent
           value = @value
           @value = yield value
           @full_condition.signal
-          value
+          apply_deref_options(value)
         else
           TIMEOUT
         end
@@ -72,7 +75,7 @@ module Concurrent
           value = @value
           @value = EMPTY
           @empty_condition.signal
-          value
+          apply_deref_options(value)
         else
           EMPTY
         end
@@ -93,8 +96,10 @@ module Concurrent
 
     def set!(value)
       @mutex.synchronize do
+        old_value = @value
         @value = value
         @full_condition.signal
+        apply_deref_options(old_value)
       end
     end
 
@@ -109,7 +114,7 @@ module Concurrent
         else
           @full_condition.signal
         end
-        value
+        apply_deref_options(value)
       end
     end
 

@@ -4,6 +4,18 @@ module Concurrent
 
   describe MVar do
 
+    context 'behavior' do
+
+      # dereferenceable
+
+      def dereferenceable_subject(value, opts = {})
+        MVar.new(value, opts)
+      end
+
+      it_should_behave_like :dereferenceable
+      
+    end
+
     context '#initialize' do
 
       it 'accepts no initial value' do
@@ -231,6 +243,16 @@ module Concurrent
         m.set! 14
         m.should be_full
         m.take.should eq 14
+      end
+
+      it 'returns EMPTY on an empty MVar' do
+        m = MVar.new
+        m.set!(2).should eq MVar::EMPTY
+      end
+
+      it 'returns the original value on a full MVar' do
+        m = MVar.new(14)
+        m.set!(2).should eq 14
       end
 
     end

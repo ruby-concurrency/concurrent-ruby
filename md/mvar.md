@@ -10,12 +10,17 @@ On top of the fundamental `#put` and `#take` operations, we also provide a
 operations all support timeouts.
 
 We also support non-blocking operations `#try_put!` and `#try_take!`, a `#set!`
-that ignores existing values, and a `#modify!` that yields `MVar::EMPTY` if the
+that ignores existing values, a `#value` that returns the value without removing
+it or returns `MVar::EMPTY`, and a `#modify!` that yields `MVar::EMPTY` if the
 `MVar` is empty and can be used to set `MVar::EMPTY`. You shouldn't use these
 operations in the first instance.
 
-`MVar is related to M-structures in Id, MVar in Haskell and SyncVar in Scala.
-`See
+`MVar` is a Dereferenceable.
+
+`MVar` is related to M-structures in Id, `MVar` in Haskell and `SyncVar` in
+Scala.
+
+See:
 
 1.  P. Barth, R. Nikhil, and Arvind. M-Structures: Extending a parallel, non-
 strict, functional language with state. In Proceedings of the 5th ACM Conference
