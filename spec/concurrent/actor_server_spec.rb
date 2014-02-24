@@ -46,5 +46,10 @@ describe Concurrent::ActorServer do
       subject.pool('foo', MyActor)
       subject.instance_variable_get('@actor_pool')['foo'].size.should == 1
     end
+
+    it 'sets the pool size with a specific size' do
+      subject.pool('foo', MyActor, 10)
+      subject.instance_variable_get('@actor_pool')['foo'].size.should == 10
+    end
   end
 end
