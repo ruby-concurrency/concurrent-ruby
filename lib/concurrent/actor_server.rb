@@ -28,16 +28,20 @@ module Concurrent
       # it makes the method more explicit. But I also admit I still retain a few
       # habits from many years programming in compiled languages like C++ and Java.
       # -Jerry
-      #@host = opts[:host] || DEFAULT_HOST
-      #@port = opts[:port] || DEFAULT_PORT
-      @host = host
-      @port = port
 
+      @host       = host
+      @port       = port
+      @actor_pool = {}
       @dispatcher = ActorMethodDispatcher.new
     end
 
     def running?
       super && @drb_server.alive?
+    end
+
+    def pool(name, klass, number = 1)
+      @actor_pool[name.to_s] = [] unless @actor_pool.has_key?(name.to_s)
+      number.times { @actor_pool[name.to_s] << klass.new }
     end
 
     protected
