@@ -233,14 +233,16 @@ module Concurrent
 
       it 'passes the result of each block to all its children' do
         expected = nil
-        Promise.new(10){|a| a * 2 }.then{|result| expected = result}.execute
+        Promise.new(10){ |a| a * 2 }.then{ |result| expected = result}.execute
         sleep(0.1)
         expected.should eq 20
       end
 
       it 'sets the promise value to the result if its block' do
-        p = Promise.new(10){|a| a * 2 }.then{|result| result * 2}.execute
+        root = Promise.new(10) { |a| a * 2 }
+        p = root.then{ |result| result * 2}.execute
         sleep(0.1)
+        root.value.should eq 20
         p.value.should eq 40
       end
 
@@ -255,6 +257,21 @@ module Concurrent
         Promise.new(10){|a| a * 2 }.then.then{|result| expected = result}.execute
         sleep(0.1)
         expected.should eq 20
+      end
+
+      it 'can manage long chain' do
+        root = Promise.new(10) { |a| a * 2}
+        p1 = root.then { |b| b * 3 }
+        p2 = root.then { |c| c + 2 }
+        p3 = p1.then { |d| d + 7 }
+
+        root.execute
+        sleep(0.1)
+
+        root.value.should eq 20
+        p1.value.should eq 60
+        p2.value.should eq 22
+        p3.value.should eq 67
       end
     end
 
