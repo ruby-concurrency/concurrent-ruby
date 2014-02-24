@@ -34,6 +34,7 @@ The design goals of this gem are:
   loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
   agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
 * [Dataflow](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dataflow.md) loosely based on the syntax of Akka and Habanero Java
+* [MVar](https://github.com/jdantonio/concurrent-ruby/blob/master/md/mvar.md) inspired by Haskell
 
 ### Semantic Versioning
 
