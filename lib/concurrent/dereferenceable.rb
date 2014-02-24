@@ -32,18 +32,22 @@ module Concurrent
     # by the #set_deref_options method.
     def value
       mutex.synchronize do
-        return nil if @value.nil?
-        return @value if @do_nothing_on_deref
-        value = @value
-        value = @copy_on_deref.call(value) if @copy_on_deref
-        value = value.dup if @dup_on_deref
-        value = value.freeze if @freeze_on_deref
-        value
+        apply_deref_options(@value)
       end
     end
     alias_method :deref, :value
 
     protected
+
+    def apply_deref_options(value)
+      return nil if value.nil?
+      return value if @do_nothing_on_deref
+      value = value
+      value = @copy_on_deref.call(value) if @copy_on_deref
+      value = value.dup if @dup_on_deref
+      value = value.freeze if @freeze_on_deref
+      value
+    end
 
     def mutex # :nodoc:
       @mutex
