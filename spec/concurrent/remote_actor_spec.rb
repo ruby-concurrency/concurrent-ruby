@@ -6,10 +6,22 @@ module Concurrent
 
     let(:remote_id) { 1 }
     let(:server)    { Concurrent::ActorServer.new }
+    subject         { Concurrent::RemoteActor.new(remote_id) }
 
-    subject { Concurrent::RemoteActor.new(remote_id) }
+    class MyRemoteActor < Concurrent::Actor
+      attr_accessor :last_message
+      def act(*message)
+        @last_message = message.first
+      end
+    end
+
+    let(:remote_actor_class) { MyRemoteActor }
+
+    before { server.pool('foo', MyRemoteActor) }
 
     context '#start' do
+
+      before { server.run! }
 
       it 'establishes a remote DRb connection' do
         subject.should be_connected
@@ -20,9 +32,6 @@ module Concurrent
       it 'returns false on failure'
 
       it 'sets #last_connection_error on failure' do
-        server.stop
-        subject.connected?
-        subject.last_connection_error.should_not be_nil
       end
 
       it 'is #ready? once started'
@@ -48,52 +57,10 @@ module Concurrent
 
     context 'messaging' do
 
-      let!(:remote_id) { 'foo' }
-
-      let(:remote_actor_class) do
-        Class.new(Concurrent::Actor) do
-          attr_accessor :last_message
-          def act(*message)
-            @last_message = message.first
-          end
-        end
-      end
-
-      let(:here) do
-        RemoteActor.new(remote_id)
-      end
-
-      let(:there) do
-        remote_actor_class.new
-      end
-
-      let(:server) do
-        ActorServer.new
-      end
-
-      before(:each) do
-        server.add(remote_id, there)
-        server.run!
-        here.run!
-      end
-
-      after(:each) do
-        here.stop
-        server.stop
-      end
-
       it 'does not forward messages when DRb is not connected'
 
       specify '#post forwards to the remote actor' do
-        here.post('expected')
-        sleep(1)
-        there.last_message.should eq 'expected'
-      end
-
-      specify '#<< forwards to the remote actor' do
-        here << 'expected'
-        sleep(1)
-        there.last_message.should eq 'expected'
+        subject.post('expected')
       end
 
       specify '#post? forwards to the remote actor'

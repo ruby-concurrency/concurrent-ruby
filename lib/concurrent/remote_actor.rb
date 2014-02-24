@@ -25,7 +25,10 @@ module Concurrent
     end
 
     def connected?
-      log_error { @server.connected? }
+      log_error do
+        @server.running?
+        true
+      end
     end
 
     protected
@@ -49,7 +52,7 @@ module Concurrent
     def log_error
       yield
     rescue Exception => ex
-      self.last_connection_error = ex
+      self.last_connection_error = ex.message
       false
     end
   end
