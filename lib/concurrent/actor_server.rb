@@ -18,6 +18,8 @@ module Concurrent
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 8787
 
+    attr_accessor :actor_pool
+
     def_delegator :@dispatcher, :add
 
     def initialize(host = DEFAULT_HOST, port = DEFAULT_PORT)
@@ -39,9 +41,8 @@ module Concurrent
       super && @drb_server.alive?
     end
 
-    def pool(name, klass, number = 1)
-      @actor_pool[name.to_s] = [] unless @actor_pool.has_key?(name.to_s)
-      number.times { @actor_pool[name.to_s] << klass.new }
+    def pool(name, actor, pool_size = 1)
+      @actor_pool[name] = new_actor_pool(actor, pool_size)
     end
 
     protected
@@ -68,6 +69,16 @@ module Concurrent
 
     def start_drb_server
       @drb_server = DRb.start_service(server_uri, @dispatcher)
+    end
+
+    def new_actor_pool(actor, size)
+      supervisor = Concurrent::Supervisor.new
+      actors, pool = actor.pool(size)
+
+      pool.each{ |a| supervisor.add_worker(a) }
+      supervisor.run!
+
+      { supervisor: supervisor, actors: actors, pool: pool }
     end
   end
 end

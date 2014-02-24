@@ -5,7 +5,7 @@ describe Concurrent::ActorServer do
   subject { Concurrent::ActorServer.new }
   before  { subject.run! }
 
-  class MyActor; end
+  class MyActor < Concurrent::Actor; end
 
   context '#running?' do
     it 'returns true when the drb server is running' do
@@ -42,14 +42,20 @@ describe Concurrent::ActorServer do
 
   context '#pool' do
 
+    it 'creates a poolbox instance' do
+      subject.pool('foo', MyActor, 10)
+      subject.actor_pool['foo'][:actors].should be_instance_of Concurrent::Actor::Poolbox
+    end
+
+
     it 'sets the default pool size to one' do
+      MyActor.should_receive(:pool).with(1).and_return([[], []])
       subject.pool('foo', MyActor)
-      subject.instance_variable_get('@actor_pool')['foo'].size.should == 1
     end
 
     it 'sets the pool size with a specific size' do
+      MyActor.should_receive(:pool).with(10).and_return([[], []])
       subject.pool('foo', MyActor, 10)
-      subject.instance_variable_get('@actor_pool')['foo'].size.should == 10
     end
   end
 end
