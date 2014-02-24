@@ -5,7 +5,10 @@ describe Concurrent::ActorServer do
   subject { Concurrent::ActorServer.new }
   before  { subject.run! }
 
-  class MyActor < Concurrent::Actor; end
+  class MyActor < Concurrent::Actor
+    def act(msg)
+    end
+  end
 
   context '#running?' do
     it 'returns true when the drb server is running' do
@@ -47,7 +50,6 @@ describe Concurrent::ActorServer do
       subject.actor_pool['foo'][:actors].should be_instance_of Concurrent::Actor::Poolbox
     end
 
-
     it 'sets the default pool size to one' do
       MyActor.should_receive(:pool).with(1).and_return([[], []])
       subject.pool('foo', MyActor)
@@ -56,6 +58,14 @@ describe Concurrent::ActorServer do
     it 'sets the pool size with a specific size' do
       MyActor.should_receive(:pool).with(10).and_return([[], []])
       subject.pool('foo', MyActor, 10)
+    end
+  end
+
+  context '#post' do
+    before { subject.pool('foo', MyActor, 10) }
+
+    it 'sends the message to the actor pool' do
+      subject.post('foo', '').should == 1
     end
   end
 end

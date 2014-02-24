@@ -34,7 +34,6 @@ module Concurrent
       @host       = host
       @port       = port
       @actor_pool = {}
-      @dispatcher = ActorMethodDispatcher.new
     end
 
     def running?
@@ -43,6 +42,12 @@ module Concurrent
 
     def pool(name, actor, pool_size = 1)
       @actor_pool[name] = new_actor_pool(actor, pool_size)
+    end
+
+    def post(name, *args)
+      return if @actor_pool[name].nil?
+
+      @actor_pool[name][:actors].post(args)
     end
 
     protected
@@ -68,7 +73,7 @@ module Concurrent
     end
 
     def start_drb_server
-      @drb_server = DRb.start_service(server_uri, @dispatcher)
+      @drb_server = DRb.start_service(server_uri, self)
     end
 
     def new_actor_pool(actor, size)
