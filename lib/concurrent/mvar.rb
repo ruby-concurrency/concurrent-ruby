@@ -20,7 +20,7 @@ module Concurrent
         @full_condition.wait(@mutex, timeout) if empty?
 
         # If we timed out we'll still be empty
-        if not empty?
+        if full?
           value = @value
           @value = EMPTY
           @empty_condition.signal
@@ -36,7 +36,7 @@ module Concurrent
     def put(value, timeout = nil)
       @mutex.synchronize do
         # Unless the value is empty, wait for empty to be signalled
-        @empty_condition.wait(@mutex, timeout) unless empty?
+        @empty_condition.wait(@mutex, timeout) if full?
 
         # If we timed out we won't be empty
         if empty?
@@ -51,6 +51,10 @@ module Concurrent
 
     def empty?
       @value == EMPTY
+    end
+
+    def full?
+      not empty?
     end
 
   end

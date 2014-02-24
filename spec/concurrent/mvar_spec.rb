@@ -96,7 +96,7 @@ module Concurrent
 
     end
 
-    context '#empty' do
+    context '#empty?' do
 
       it 'returns true on an empty MVar' do
         m = MVar.new
@@ -106,6 +106,20 @@ module Concurrent
       it 'returns false on a full MVar' do
         m = MVar.new(14)
         m.should_not be_empty
+      end
+
+    end
+
+    context '#full?' do
+
+      it 'returns false on an empty MVar' do
+        m = MVar.new
+        m.should_not be_full
+      end
+
+      it 'returns true on a full MVar' do
+        m = MVar.new(14)
+        m.should be_full
       end
 
     end
