@@ -178,6 +178,101 @@ module Concurrent
 
     end
 
+    context '#try_put!' do
+
+      it 'returns true an empty MVar' do
+        m = MVar.new
+        m.try_put!(14).should eq true
+      end
+
+      it 'returns false on a full MVar' do
+        m = MVar.new(14)
+        m.try_put!(14).should eq false
+      end
+
+      it 'sets an empty MVar to be full' do
+        m = MVar.new
+        m.try_put! 14
+        m.should be_full
+      end
+
+    end
+
+    context '#try_take!' do
+
+      it 'returns EMPTY an empty MVar' do
+        m = MVar.new
+        m.try_take!.should eq MVar::EMPTY
+      end
+
+      it 'returns the value on a full MVar' do
+        m = MVar.new(14)
+        m.try_take!.should eq 14
+      end
+
+      it 'sets a full MVar to be empty' do
+        m = MVar.new(14)
+        m.try_take!
+        m.should be_empty
+      end
+
+    end
+
+    context '#set!' do
+
+      it 'sets an empty MVar to be full' do
+        m = MVar.new
+        m.set! 14
+        m.should be_full
+      end
+
+      it 'sets a full MVar to be full' do
+        m = MVar.new(2)
+        m.set! 14
+        m.should be_full
+        m.take.should eq 14
+      end
+
+    end
+
+    context '#modify!' do
+
+      it 'raises an exception when no block given' do
+        m = MVar.new(14)
+        expect { m.modify! }.to raise_error(ArgumentError)
+      end
+
+      it 'modifies a full MVar' do
+        m = MVar.new(14)
+        m.modify!{ |v| v + 2 }
+        m.take.should eq 16
+      end
+
+      it 'modifies an empty MVar' do
+        m = MVar.new
+        m.modify!{ |v| 14 }
+        m.take.should eq 14
+      end
+
+      it 'can be used to set a full MVar to empty' do
+        m = MVar.new(14)
+        m.modify!{ |v| MVar::EMPTY }
+        m.should be_empty
+      end
+
+      it 'can be used to set an empty MVar to empty' do
+        m = MVar.new
+        m.modify!{ |v| MVar::EMPTY }
+        m.should be_empty
+      end
+
+      it 'returns the unmodified value' do
+        m = MVar.new(14)
+        m.modify!{ |v| v + 2 }.should eq 14
+      end
+
+    end
+
   end
 
 end

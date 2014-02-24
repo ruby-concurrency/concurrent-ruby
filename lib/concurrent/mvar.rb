@@ -66,6 +66,53 @@ module Concurrent
       end
     end
 
+    def try_take!
+      @mutex.synchronize do
+        if full?
+          value = @value
+          @value = EMPTY
+          @empty_condition.signal
+          value
+        else
+          EMPTY
+        end
+      end
+    end
+
+    def try_put!(value)
+      @mutex.synchronize do
+        if empty?
+          @value = value
+          @full_condition.signal
+          true
+        else
+          false
+        end
+      end
+    end
+
+    def set!(value)
+      @mutex.synchronize do
+        @value = value
+        @full_condition.signal
+      end
+    end
+
+    def modify!(timeout = nil)
+      raise ArgumentError.new('no block given') unless block_given?
+
+      @mutex.synchronize do
+        value = @value
+        @value = yield value
+        if @value == EMPTY
+          @empty_condition.signal
+        else
+          @full_condition.signal
+        end
+        value
+      end
+    end
+
     def empty?
       @value == EMPTY
     end
