@@ -29,8 +29,6 @@ module Concurrent
           TIMEOUT
         end
       end
-
-      
     end
 
     def put(value, timeout = nil)
@@ -41,6 +39,25 @@ module Concurrent
         # If we timed out we won't be empty
         if empty?
           @value = value
+          @full_condition.signal
+          value
+        else
+          TIMEOUT
+        end
+      end
+    end
+
+    def modify(timeout = nil)
+      raise ArgumentError.new('no block given') unless block_given?
+
+      @mutex.synchronize do
+        # If the value isn't empty, wait for full to be signalled
+        @full_condition.wait(@mutex, timeout) if empty?
+
+        # If we timed out we'll still be empty
+        if full?
+          value = @value
+          @value = yield value
           @full_condition.signal
           value
         else

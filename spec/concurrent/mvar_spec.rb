@@ -124,6 +124,60 @@ module Concurrent
 
     end
 
+    context '#modify' do
+
+      it 'raises an exception when no block given' do
+        m = MVar.new(14)
+        expect { m.modify }.to raise_error(ArgumentError)
+      end
+
+      it 'modifies a full MVar' do
+        m = MVar.new(14)
+        m.modify{ |v| v + 2 }
+        m.take.should eq 16
+      end
+
+      it 'returns the unmodified value' do
+        m = MVar.new(14)
+        m.modify{ |v| v + 2 }.should eq 14
+      end
+
+      it 'waits for another thread to #put' do
+        m = MVar.new
+
+        putter = Thread.new {
+          sleep(0.5)
+          m.put 14 
+        }
+
+        m.modify{ |v| v + 2 }.should eq 14
+      end
+
+      it 'is atomic' do
+        m = MVar.new(0)
+
+        # #modify conceptually does #take and #put - but it should be atomic.
+        # Check that another #put can't sneak it during the #modify.
+
+        modifier = Thread.new {
+          m.modify do |v|
+            sleep(1)
+            1
+          end
+        }
+
+        sleep(0.5)
+        m.put(2, 1).should eq MVar::TIMEOUT
+        m.take.should eq 1
+      end
+
+      it 'returns TIMEOUT on timeout on an empty MVar' do
+        m = MVar.new
+        m.modify(0.5){ |v| v + 2 }.should eq MVar::TIMEOUT
+      end
+
+    end
+
   end
 
 end
