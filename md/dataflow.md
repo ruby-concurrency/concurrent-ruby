@@ -193,6 +193,16 @@ def dataflow(*inputs, &block)
   result
 end
 
+def fib(n)
+  if n < 2
+    dataflow { n }
+  else
+    n1 = fib(n - 1)
+    n2 = fib(n - 2)
+    dataflow(n1, n2) { |v1, v2| v1 + v2 }
+  end
+end
+
 f = fib(14) #=> #<Concurrent::Future:0x000001019a26d8 ...
 sleep(0.5)
 
