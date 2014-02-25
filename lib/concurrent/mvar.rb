@@ -12,18 +12,17 @@ module Concurrent
     def initialize(value = EMPTY, opts = {})
       @value = value
       @mutex = Mutex.new
-      @empty_condition = ConditionVariable.new
-      @full_condition = ConditionVariable.new
+      @empty_condition = Condition.new
+      @full_condition = Condition.new
       set_deref_options(opts)
     end
 
     def take(timeout = nil)
       @mutex.synchronize do
-        # If the value isn't empty, wait for full to be signalled
-        @full_condition.wait(@mutex, timeout) if empty?
+        wait_for_full(timeout)
 
         # If we timed out we'll still be empty
-        if full?
+        if unlocked_full?
           value = @value
           @value = EMPTY
           @empty_condition.signal
@@ -36,11 +35,10 @@ module Concurrent
 
     def put(value, timeout = nil)
       @mutex.synchronize do
-        # Unless the value is empty, wait for empty to be signalled
-        @empty_condition.wait(@mutex, timeout) if full?
+        wait_for_empty(timeout)
 
         # If we timed out we won't be empty
-        if empty?
+        if unlocked_empty?
           @value = value
           @full_condition.signal
           apply_deref_options(value)
@@ -54,11 +52,10 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
 
       @mutex.synchronize do
-        # If the value isn't empty, wait for full to be signalled
-        @full_condition.wait(@mutex, timeout) if empty?
+        wait_for_full(timeout)
 
         # If we timed out we'll still be empty
-        if full?
+        if unlocked_full?
           value = @value
           @value = yield value
           @full_condition.signal
@@ -71,7 +68,7 @@ module Concurrent
 
     def try_take!
       @mutex.synchronize do
-        if full?
+        if unlocked_full?
           value = @value
           @value = EMPTY
           @empty_condition.signal
@@ -84,7 +81,7 @@ module Concurrent
 
     def try_put!(value)
       @mutex.synchronize do
-        if empty?
+        if unlocked_empty?
           @value = value
           @full_condition.signal
           true
@@ -103,13 +100,13 @@ module Concurrent
       end
     end
 
-    def modify!(timeout = nil)
+    def modify!
       raise ArgumentError.new('no block given') unless block_given?
 
       @mutex.synchronize do
         value = @value
         @value = yield value
-        if @value == EMPTY
+        if unlocked_empty?
           @empty_condition.signal
         else
           @full_condition.signal
@@ -119,11 +116,35 @@ module Concurrent
     end
 
     def empty?
-      @value == EMPTY
+      @mutex.synchronize { @value == EMPTY }
     end
 
     def full?
       not empty?
+    end
+
+    private
+
+    def unlocked_empty?
+      @value == EMPTY
+    end
+
+    def unlocked_full?
+      ! unlocked_empty?
+    end
+
+    def wait_for_full(timeout)
+      remaining = Condition::Result.new(timeout)
+      while unlocked_empty? && remaining.can_wait?
+        remaining = @full_condition.wait(@mutex, remaining.remaining_time)
+      end
+    end
+
+    def wait_for_empty(timeout)
+      remaining = Condition::Result.new(timeout)
+      while unlocked_full? && remaining.can_wait?
+        remaining = @empty_condition.wait(@mutex, remaining.remaining_time)
+      end
     end
 
   end

@@ -148,7 +148,7 @@ module Concurrent
     context 'spurious wake ups' do
 
       before(:each) do
-        def subject.wake_up
+        def subject.simulate_spurious_wake_up
           @mutex.synchronize do
             @condition.signal
             @condition.broadcast
@@ -161,7 +161,7 @@ module Concurrent
         Thread.new { subject.wait; @expected = true }
 
         sleep(0.1)
-        subject.wake_up
+        subject.simulate_spurious_wake_up
 
         sleep(0.1)
         @expected.should be_false
@@ -172,7 +172,7 @@ module Concurrent
         Thread.new { subject.wait(0.5); @expected = true }
 
         sleep(0.1)
-        subject.wake_up
+        subject.simulate_spurious_wake_up
 
         sleep(0.1)
         @expected.should be_false

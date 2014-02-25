@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'dereferenceable_shared'
 
 module Concurrent
 
@@ -16,7 +17,7 @@ module Concurrent
       
     end
 
-    context '#initialize' do
+    describe '#initialize' do
 
       it 'accepts no initial value' do
         m = MVar.new
@@ -40,7 +41,7 @@ module Concurrent
 
     end
 
-    context '#take' do
+    describe '#take' do
 
       it 'sets the MVar to empty' do
         m = MVar.new(14)
@@ -57,8 +58,8 @@ module Concurrent
         m = MVar.new
 
         putter = Thread.new {
-          sleep(0.5)
-          m.put 14 
+          sleep(0.1)
+          m.put 14
         }
 
         m.take.should eq 14
@@ -66,12 +67,12 @@ module Concurrent
 
       it 'returns TIMEOUT on timeout on an empty MVar' do
         m = MVar.new
-        m.take(0.5).should eq MVar::TIMEOUT
+        m.take(0.1).should eq MVar::TIMEOUT
       end
 
     end
 
-    context '#put' do
+    describe '#put' do
 
       it 'sets the MVar to be empty' do
         m = MVar.new(14)
@@ -89,7 +90,7 @@ module Concurrent
         m = MVar.new(14)
 
         putter = Thread.new {
-          sleep(0.5)
+          sleep(0.1)
           m.take
         }
 
@@ -98,7 +99,7 @@ module Concurrent
 
       it 'returns TIMEOUT on timeout on a full MVar' do
         m = MVar.new(14)
-        m.put(14, 0.5).should eq MVar::TIMEOUT
+        m.put(14, 0.1).should eq MVar::TIMEOUT
       end
 
       it 'returns the value' do
@@ -108,7 +109,7 @@ module Concurrent
 
     end
 
-    context '#empty?' do
+    describe '#empty?' do
 
       it 'returns true on an empty MVar' do
         m = MVar.new
@@ -122,7 +123,7 @@ module Concurrent
 
     end
 
-    context '#full?' do
+    describe '#full?' do
 
       it 'returns false on an empty MVar' do
         m = MVar.new
@@ -136,7 +137,7 @@ module Concurrent
 
     end
 
-    context '#modify' do
+    describe '#modify' do
 
       it 'raises an exception when no block given' do
         m = MVar.new(14)
@@ -158,7 +159,7 @@ module Concurrent
         m = MVar.new
 
         putter = Thread.new {
-          sleep(0.5)
+          sleep(0.1)
           m.put 14 
         }
 
@@ -173,24 +174,24 @@ module Concurrent
 
         modifier = Thread.new {
           m.modify do |v|
-            sleep(1)
+            sleep(0.5)
             1
           end
         }
 
-        sleep(0.5)
-        m.put(2, 1).should eq MVar::TIMEOUT
+        sleep(0.1)
+        m.put(2, 0.5).should eq MVar::TIMEOUT
         m.take.should eq 1
       end
 
       it 'returns TIMEOUT on timeout on an empty MVar' do
         m = MVar.new
-        m.modify(0.5){ |v| v + 2 }.should eq MVar::TIMEOUT
+        m.modify(0.1){ |v| v + 2 }.should eq MVar::TIMEOUT
       end
 
     end
 
-    context '#try_put!' do
+    describe '#try_put!' do
 
       it 'returns true an empty MVar' do
         m = MVar.new
@@ -210,7 +211,7 @@ module Concurrent
 
     end
 
-    context '#try_take!' do
+    describe '#try_take!' do
 
       it 'returns EMPTY an empty MVar' do
         m = MVar.new
@@ -230,7 +231,7 @@ module Concurrent
 
     end
 
-    context '#set!' do
+    describe '#set!' do
 
       it 'sets an empty MVar to be full' do
         m = MVar.new
@@ -257,7 +258,7 @@ module Concurrent
 
     end
 
-    context '#modify!' do
+    describe '#modify!' do
 
       it 'raises an exception when no block given' do
         m = MVar.new(14)
@@ -292,6 +293,86 @@ module Concurrent
         m = MVar.new(14)
         m.modify!{ |v| v + 2 }.should eq 14
       end
+
+    end
+
+    context 'spurious wake ups' do
+
+      let(:m) { MVar.new }
+
+      before(:each) do
+        def m.simulate_spurious_wake_up
+          @mutex.synchronize do
+            @full_condition.broadcast
+            @empty_condition.broadcast
+          end
+        end
+      end
+
+      describe '#take' do
+        it 'waits for another thread to #put' do
+          Thread.new { sleep(0.5); m.put 14 }
+          Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
+
+          m.take.should eq 14
+        end
+
+        it 'returns TIMEOUT on timeout on an empty MVar' do
+          result = nil
+          Thread.new { result = m.take(0.3) }
+          sleep(0.1)
+          Thread.new { m.simulate_spurious_wake_up }
+          sleep(0.1)
+          result.should be_nil
+          sleep(0.2)
+          result.should eq MVar::TIMEOUT
+        end
+      end
+
+      describe '#modify' do
+
+        it 'waits for another thread to #put' do
+          Thread.new { sleep(0.5); m.put 14 }
+          Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
+
+          m.modify{ |v| v + 2 }.should eq 14
+        end
+
+        it 'returns TIMEOUT on timeout on an empty MVar' do
+          result = nil
+          Thread.new { result = m.modify(0.3){ |v| v + 2 } }
+          sleep(0.1)
+          Thread.new { m.simulate_spurious_wake_up }
+          sleep(0.1)
+          result.should be_nil
+          sleep(0.2)
+          result.should eq MVar::TIMEOUT
+        end
+      end
+
+      describe '#put' do
+
+        before(:each) { m.put(42) }
+
+        it 'waits for another thread to #take' do
+          Thread.new { sleep(0.5); m.take }
+          Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
+
+          m.put(14).should eq 14
+        end
+
+        it 'returns TIMEOUT on timeout on a full MVar' do
+          result = nil
+          Thread.new { result = m.put(14, 0.3) }
+          sleep(0.1)
+          Thread.new { m.simulate_spurious_wake_up }
+          sleep(0.1)
+          result.should be_nil
+          sleep(0.2)
+          result.should eq MVar::TIMEOUT
+        end
+      end
+
 
     end
 
