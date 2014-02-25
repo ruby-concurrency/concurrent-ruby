@@ -94,6 +94,11 @@ module Concurrent
       child
     end
 
+    def on_success(&block)
+      raise ArgumentError.new('no block given') unless block_given?
+      self.then &block
+    end
+
     # Add a rescue handler to be run if the promise is rejected (via raised
     # exception). Multiple rescue handlers may be added to a Promise.
     # Rescue blocks will be checked in order and the first one with a

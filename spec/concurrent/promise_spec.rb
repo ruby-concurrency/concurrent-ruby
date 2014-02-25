@@ -9,6 +9,7 @@ module Concurrent
     let!(:thread_pool_user){ Promise }
     it_should_behave_like Concurrent::UsesGlobalThreadPool
 
+    let(:empty_root) { Promise.new { nil } }
     let!(:fulfilled_value) { 10 }
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
@@ -17,12 +18,11 @@ module Concurrent
     end
 
     let(:fulfilled_subject) do
-      Promise.new{ fulfilled_value }.execute.tap{ sleep(0.1) }
+      Promise.fulfil(fulfilled_value)
     end
 
     let(:rejected_subject) do
-      Promise.new{ raise rejected_reason }.
-        rescue{ nil }.execute.tap(){ sleep(0.1) }
+      Promise.reject( rejected_reason )
     end
 
     before(:each) do
@@ -169,8 +169,6 @@ module Concurrent
 
     describe '#then' do
 
-      let(:empty_root) { Promise.new { nil } }
-
       it 'returns a new promise when a block is passed' do
         child = empty_root.then { nil }
         child.should be_a Promise
@@ -250,6 +248,18 @@ module Concurrent
         p1 = p.then{}
         p2 = p.then{}
         p1.should_not be p2
+      end
+    end
+
+    describe 'on_success' do
+      it 'should have a block' do
+        expect { empty_root.on_success }.to raise_error(ArgumentError)
+      end
+
+      it 'returns a new promise' do
+        child = empty_root.on_success { nil }
+        child.should be_a Promise
+        child.should_not be empty_root
       end
     end
 
@@ -460,7 +470,7 @@ module Concurrent
 
       it 'matches a rescue handler added after rejection' do
         @expected = false
-        p = Promise.new{ aise StandardError }.execute
+        p = Promise.new{ raise StandardError }.execute
         sleep(0.1)
         p.rescue(StandardError){ @expected = true }
         @expected.should be_true
