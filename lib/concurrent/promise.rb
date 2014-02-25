@@ -37,7 +37,6 @@ module Concurrent
       @state = :unscheduled
       @rescued = false
       @children = []
-      @rescuers = []
       @args = args
 
       init_obligation
@@ -55,7 +54,7 @@ module Concurrent
     def execute
       if root?
         if compare_and_set_state(:pending, :unscheduled)
-          @chain.each { |c| c.state = :pending }
+          set_pending
           realize(*@args)
         end
       else
@@ -72,15 +71,10 @@ module Concurrent
       return @rescued
     end
 
-    # Create a new child Promise. The block argument for the child will
-    # be the result of fulfilling its parent. If the child will
-    # immediately be rejected if the parent has already been rejected.
-    #
-    # @param block [Proc] the block to call when attempting fulfillment
-    #
+
     # @return [Promise] the new promise
-    def then(*rescuers, &block)
-      raise ArgumentError.new('rescuers and block are both missing') if rescuers.empty? && !block_given?
+    def then(rescuer = nil, &block)
+      raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
       block = Proc.new{ |result| result } if block.nil?
       child = Promise.new(self, &block)
 
@@ -94,28 +88,16 @@ module Concurrent
       child
     end
 
+    # @return [Promise]
     def on_success(&block)
       raise ArgumentError.new('no block given') unless block_given?
       self.then &block
     end
 
-    # Add a rescue handler to be run if the promise is rejected (via raised
-    # exception). Multiple rescue handlers may be added to a Promise.
-    # Rescue blocks will be checked in order and the first one with a
-    # matching Exception class will be processed. The block argument
-    # will be the exception that caused the rejection.
-    #
-    # @param clazz [Class] The class of exception to rescue
-    # @param block [Proc] the block to call if the rescue is matched
-    #
-    # @return [self] so that additional chaining can occur
-    def rescue(clazz = nil, &block)
-      return self if fulfilled? || rescued? || block.nil?
-      @lock.synchronize do
-        @rescuers << Rescuer.new(clazz, block)
-        try_rescue(reason) unless pending?
-      end
-      return self
+
+    # @return [Promise]
+    def rescue(rescuer)
+      self.then(rescuer)
     end
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
@@ -126,8 +108,10 @@ module Concurrent
     attr_reader :handler
     attr_reader :rescuers
 
-    # @private
-    Rescuer = Struct.new(:clazz, :block)
+    def set_pending
+      self.state = :pending
+      @children.each { |c| c.set_pending }
+    end
 
     # @private
     def root? # :nodoc:
@@ -145,11 +129,9 @@ module Concurrent
 
     # @private
     def on_fulfill(result) # :nodoc:
-      @lock.synchronize do
-        @value = @handler.call(result)
-        @state = :fulfilled
-        @reason = nil
-      end
+      success, value, reason = SafeTaskExecutor.new(Proc.new{ @handler.call(result) }).execute
+      set_state!(success, value, reason)
+      @children.each{ |child| child.on_fulfill(self.value) }
       return self.value
     end
 
@@ -159,7 +141,7 @@ module Concurrent
       @state = :rejected
       @reason = reason
       try_rescue(reason)
-      @children.each{|child| child.on_reject(reason) }
+      @children.each{ |child| child.on_reject(reason) }
     end
 
     # @private

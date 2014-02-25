@@ -6,7 +6,6 @@ require 'concurrent/condition'
 require 'concurrent/copy_on_notify_observer_set'
 require 'concurrent/copy_on_write_observer_set'
 require 'concurrent/safe_task_executor'
-require 'concurrent/rescuer'
 
 require 'concurrent/actor'
 require 'concurrent/agent'
