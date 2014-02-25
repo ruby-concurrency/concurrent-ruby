@@ -22,6 +22,7 @@ require 'concurrent/scheduled_task'
 require 'concurrent/stoppable'
 require 'concurrent/supervisor'
 require 'concurrent/timer_task'
+require 'concurrent/tvar'
 require 'concurrent/utilities'
 
 require 'concurrent/global_thread_pool'
