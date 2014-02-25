@@ -169,6 +169,30 @@ module Concurrent
 
     describe '#then' do
 
+      let(:empty_root) { Promise.new { nil } }
+
+      it 'returns a new promise when a block is passed' do
+        child = empty_root.then { nil }
+        child.should be_a Promise
+        child.should_not be empty_root
+      end
+
+      it 'returns a new promise when a rescuer list is passed' do
+        child = empty_root.then(Rescuer.new(ArgumentError){}, Rescuer.new(StandardError){})
+        child.should be_a Promise
+        child.should_not be empty_root
+      end
+
+      it 'returns a new promise when a block and rescuers are passed' do
+        child = empty_root.then(Rescuer.new(StandardError)) { nil }
+        child.should be_a Promise
+        child.should_not be empty_root
+      end
+
+      it 'should have block or rescuers' do
+        expect { empty_root.then }.to raise_error(ArgumentError)
+      end
+
       context 'unscheduled' do
 
         let(:p1) { Promise.new {nil} }
@@ -217,15 +241,8 @@ module Concurrent
 
         it 'immediately rejects new promises' do
           p = rejected_subject
-          p.then.should be_rejected
+          p.then {}.should be_rejected
         end
-      end
-
-
-      it 'accepts a nil block' do
-        lambda {
-          pending_subject.then
-        }.should_not raise_error
       end
 
       it 'can be called more than once' do
@@ -289,7 +306,7 @@ module Concurrent
 
       it 'passes the last result through when a promise has no block' do
         expected = nil
-        Promise.new(10){|a| a * 2 }.then.then{|result| expected = result}.execute
+        Promise.new(10){|a| a * 2 }.then(Rescuer.new(StandardError)).then{|result| expected = result}.execute
         sleep(0.1)
         expected.should eq 20
       end

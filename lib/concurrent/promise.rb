@@ -79,7 +79,8 @@ module Concurrent
     # @param block [Proc] the block to call when attempting fulfillment
     #
     # @return [Promise] the new promise
-    def then(&block)
+    def then(*rescuers, &block)
+      raise ArgumentError.new('rescuers and block are both missing') if rescuers.empty? && !block_given?
       block = Proc.new{ |result| result } if block.nil?
       child = Promise.new(self, &block)
 
