@@ -92,7 +92,7 @@ end
 
 That should work. Except we said we'd like these transfer to run concurrently,
 and in parallel. With a single lock like that we'll only let one transfer take
-place at a time. Perhaps we need more locks? We could have one per account
+place at a time. Perhaps we need more locks? We could have one per account:
 
 ```ruby
 a.lock.synchronize do
@@ -107,7 +107,7 @@ However this is vulnerable to deadlock. If we tried to transfer from a to b, at
 the same time as from b to a, it's possible that the first transfer locks a, the
 second transfer locks b, and then they both sit there waiting forever to get the
 other lock. Perhaps we can solve that by applying a total ordering to the locks
-- always acquire them in the same order?
+and always acquire them in the same order?
 
 ```ruby
 locks_needed = [a.lock, b.lock]
