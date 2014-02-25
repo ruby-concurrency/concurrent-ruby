@@ -43,6 +43,14 @@ module Concurrent
       init_obligation
     end
 
+    def self.fulfil(value)
+      Promise.new.tap { |p| p.send(:set_state!, true, value, nil) }
+    end
+
+    def self.reject(reason)
+      Promise.new.tap { |p| p.send(:set_state!, false, nil, reason) }
+    end
+
     # @return [Promise]
     def execute
       if root?
@@ -181,5 +189,13 @@ module Concurrent
         end
       end
     end
+
+    def set_state!(success, value, reason)
+      mutex.synchronize do
+        set_state(success, value, reason)
+        event.set
+      end
+    end
+
   end
 end

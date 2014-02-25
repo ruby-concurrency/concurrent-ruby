@@ -36,12 +36,71 @@ module Concurrent
       promise.should be_a(Dereferenceable)
     end
 
-    context '#after creation' do
-      it 'should be unscheduled' do
-        p = Promise.new { nil }
-        p.should be_unscheduled
+    context 'initializers' do
+      describe '.fulfil' do
+
+        subject { Promise.fulfil(10) }
+
+        it 'should return a Promise' do
+          subject.should be_a Promise
+        end
+
+        it 'should return a fulfilled Promise' do
+          subject.should be_fulfilled
+        end
+
+        it 'should return a Promise with set value' do
+          subject.value.should eq 10
+        end
+      end
+
+      describe '.reject' do
+
+        let(:reason) { ArgumentError.new }
+        subject { Promise.reject(reason) }
+
+        it 'should return a Promise' do
+          subject.should be_a Promise
+        end
+
+        it 'should return a rejected Promise' do
+          subject.should be_rejected
+        end
+
+        it 'should return a Promise with set reason' do
+          subject.reason.should be reason
+        end
+      end
+
+      describe '.new' do
+        it 'should return an unscheduled Promise' do
+          p = Promise.new { nil }
+          p.should be_unscheduled
+        end
+      end
+
+      describe '.execute' do
+        it 'creates a new Promise' do
+          p = Promise.execute{ nil }
+          p.should be_a(Promise)
+        end
+
+        it 'passes the block to the new Promise' do
+          @expected = false
+          Promise.execute { @expected = true }
+          sleep(0.1)
+          @expected.should be_true
+        end
+
+        it 'calls #execute on the new Promise' do
+          p = double('promise')
+          Promise.stub(:new).with(any_args).and_return(p)
+          p.should_receive(:execute).with(no_args)
+          Promise.execute{ nil }
+        end
       end
     end
+
 
     context '#execute' do
 
@@ -105,30 +164,6 @@ module Concurrent
           end
         end
 
-      end
-    end
-
-
-
-    context 'class #execute' do
-
-      it 'creates a new Promise' do
-        p = Promise.execute{ nil }
-        p.should be_a(Promise)
-      end
-
-      it 'passes the block to the new Promise' do
-        @expected = false
-        Promise.execute { @expected = true }
-        sleep(0.1)
-        @expected.should be_true
-      end
-
-      it 'calls #execute on the new Promise' do
-        p = double('promise')
-        Promise.stub(:new).with(any_args).and_return(p)
-        p.should_receive(:execute).with(no_args)
-        Promise.execute{ nil }
       end
     end
 
