@@ -105,7 +105,7 @@ module Concurrent
 
     def notify_child(child)
       if_state(:fulfilled) { child.on_fulfill(apply_deref_options(@value)) }
-      if_state(:rejected) { child.on_fulfill(reason) }
+      if_state(:rejected) { child.on_reject(@reason) }
     end
 
     # @private

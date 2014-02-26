@@ -281,7 +281,7 @@ module Concurrent
 
       it 'passes the result of each block to all its children' do
         expected = nil
-        Promise.new{ 20 }.then{ |result| expected = result}.execute
+        Promise.new{ 20 }.then{ |result| expected = result }.execute
         sleep(0.1)
         expected.should eq 20
       end
@@ -325,9 +325,25 @@ module Concurrent
 
     context 'rejection' do
 
-      before(:each) { pending }
+      it 'passes the reason to all its children' do
+        expected = nil
+        Promise.new{ raise ArgumentError }.then(Proc.new{ |reason| expected = reason }).execute
+        sleep(0.1)
+        expected.should be_a ArgumentError
+      end
 
-      it 'should be tested'
+      it 'sets the promise value to the result if its block' do
+        root = Promise.new{ raise ArgumentError }
+        p = root.then(Proc.new{ |reason| 42 }).execute
+        sleep(0.1)
+        p.value.should eq 42
+      end
+
+      it 'sets the promise state to :rejected if the block completes' do
+        p = Promise.new{ raise ArgumentError }.execute
+        sleep(0.1)
+        p.should be_rejected
+      end
 
     end
 
