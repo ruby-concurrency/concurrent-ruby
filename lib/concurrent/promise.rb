@@ -24,20 +24,16 @@ module Concurrent
     #
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
-    def initialize(*args, &block)
-      if args.first.is_a?(Promise)
-        @parent = args.first
-      else
-        @parent = nil
-        @chain = [self]
-      end
+    def initialize(options = {}, &block)
+      @parent = options.fetch(:parent) { nil }
+      @on_fulfil = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
+      @on_reject = options.fetch(:on_reject) { Proc.new{ |result| result } }
 
       @lock = Mutex.new
       @handler = block || Proc.new{|result| result }
       @state = :unscheduled
       @rescued = false
       @children = []
-      @args = args
 
       init_obligation
     end
@@ -55,7 +51,7 @@ module Concurrent
       if root?
         if compare_and_set_state(:pending, :unscheduled)
           set_pending
-          realize(*@args)
+          realize(@handler)
         end
       else
         parent.execute
@@ -63,12 +59,8 @@ module Concurrent
       self
     end
 
-    def self.execute(*args, &block)
-      new(*args, &block).execute
-    end
-
-    def rescued?
-      return @rescued
+    def self.execute(&block)
+      new(&block).execute
     end
 
 
@@ -76,13 +68,11 @@ module Concurrent
     def then(rescuer = nil, &block)
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
       block = Proc.new{ |result| result } if block.nil?
-      child = Promise.new(self, &block)
+      child = Promise.new(parent: self, on_fulfill: block, on_reject: rescuer)
 
       @lock.synchronize do
         child.state = :pending if @state == :pending
         @children << child
-        child.on_reject(@reason) if rejected?
-        push(child)
       end
 
       child
@@ -119,62 +109,28 @@ module Concurrent
     end
 
     # @private
-    def push(promise) # :nodoc:
-      if root?
-        @chain << promise
-      else
-        @parent.push(promise)
-      end
+    def on_fulfill(result)
+      realize Proc.new{ @on_fulfil.call(result) }
+      nil
     end
 
     # @private
-    def on_fulfill(result) # :nodoc:
-      success, value, reason = SafeTaskExecutor.new(Proc.new{ @handler.call(result) }).execute
-      set_state!(success, value, reason)
-      @children.each{ |child| child.on_fulfill(self.value) }
-      return self.value
+    def on_reject(reason)
+      realize Proc.new{ @on_reject.call(reason) }
+      nil
+    end
+
+    def notify_child(child)
+      if_state(:fulfilled) { child.on_fulfill(apply_deref_options(@value)) }
+      if_state(:rejected) { child.on_fulfill(reason) }
     end
 
     # @private
-    def on_reject(reason) # :nodoc:
-      @value = nil
-      @state = :rejected
-      @reason = reason
-      try_rescue(reason)
-      @children.each{ |child| child.on_reject(reason) }
-    end
-
-    # @private
-    def try_rescue(ex, *rescuers) # :nodoc:
-      rescuers = @rescuers if rescuers.empty?
-      rescuer = rescuers.find{|r| r.clazz.nil? || ex.is_a?(r.clazz) }
-      if rescuer
-        rescuer.block.call(ex)
-        @rescued = true
-      end
-    rescue Exception => ex
-      # supress
-    end
-
-    # @private
-    def realize(*args) # :nodoc:
-      Promise.thread_pool.post(@chain, @lock, args) do |chain, lock, args|
-        result = args.length == 1 ? args.first : args
-        index = 0
-        loop do
-          current = lock.synchronize{ chain[index] }
-          unless current.rejected?
-            begin
-              result = current.on_fulfill(result)
-            rescue Exception => ex
-              current.on_reject(ex)
-            ensure
-              event.set
-            end
-          end
-          index += 1
-          Thread.pass while index >= chain.length
-        end
+    def realize(task)
+      Promise.thread_pool.post do
+        success, value, reason = SafeTaskExecutor.new( task ).execute
+        set_state!(success, value, reason)
+        @children.each{ |child| notify_child(child) }
       end
     end
 

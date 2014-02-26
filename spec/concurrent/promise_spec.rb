@@ -86,10 +86,9 @@ module Concurrent
         end
 
         it 'passes the block to the new Promise' do
-          @expected = false
-          Promise.execute { @expected = true }
+          p = Promise.execute { 20 }
           sleep(0.1)
-          @expected.should be_true
+          p.value.should eq 20
         end
 
         it 'calls #execute on the new Promise' do
@@ -235,11 +234,6 @@ module Concurrent
           p2.should be_a(Promise)
           p1.should_not eq p2
         end
-
-        it 'immediately rejects new promises' do
-          p = rejected_subject
-          p.then {}.should be_rejected
-        end
       end
 
       it 'can be called more than once' do
@@ -273,22 +267,15 @@ module Concurrent
 
     context 'fulfillment' do
 
-      it 'passes all arguments to the first promise in the chain' do
-        expected = nil
-        Promise.new(1, 2, 3) { |a, b, c| expected = [a, b, c] }.execute
-        sleep(0.1)
-        expected.should eq [1, 2, 3]
-      end
-
       it 'passes the result of each block to all its children' do
         expected = nil
-        Promise.new(10){ |a| a * 2 }.then{ |result| expected = result}.execute
+        Promise.new{ 20 }.then{ |result| expected = result}.execute
         sleep(0.1)
         expected.should eq 20
       end
 
       it 'sets the promise value to the result if its block' do
-        root = Promise.new(10) { |a| a * 2 }
+        root = Promise.new{ 20 }
         p = root.then{ |result| result * 2}.execute
         sleep(0.1)
         root.value.should eq 20
@@ -296,20 +283,20 @@ module Concurrent
       end
 
       it 'sets the promise state to :fulfilled if the block completes' do
-        p = Promise.new(10){|a| a * 2 }.then{|result| result * 2}.execute
+        p = Promise.new{ 10 * 2 }.then{|result| result * 2}.execute
         sleep(0.1)
         p.should be_fulfilled
       end
 
       it 'passes the last result through when a promise has no block' do
         expected = nil
-        Promise.new(10){|a| a * 2 }.then(Proc.new{}).then{|result| expected = result}.execute
+        Promise.new{ 20 }.then(Proc.new{}).then{|result| expected = result}.execute
         sleep(0.1)
         expected.should eq 20
       end
 
       it 'can manage long chain' do
-        root = Promise.new(10) { |a| a * 2}
+        root = Promise.new { 20 }
         p1 = root.then { |b| b * 3 }
         p2 = root.then { |c| c + 2 }
         p3 = p1.then { |d| d + 7 }
@@ -328,142 +315,6 @@ module Concurrent
 
       before(:each) { pending }
 
-      it 'sets the promise reason the error object on exception' do
-        p = Promise.new{ raise StandardError.new('Boom!') }.execute
-        sleep(0.1)
-        p.reason.should be_a(StandardError)
-        p.reason.should.to_s =~ /Boom!/
-      end
-
-      it 'sets the promise state to :rejected on exception' do
-        p = Promise.new{ raise StandardError.new('Boom!') }.execute
-        sleep(0.1)
-        p.should be_rejected
-      end
-
-      it 'recursively rejects all children' do
-        root = Promise.new{ raise StandardError.new('Boom!') }
-        promises = 10.times.collect{ root.then{ true } }
-        root.execute
-        sleep(0.5)
-        promises.each{|p| p.should be_rejected }
-      end
-
-      it 'skips processing rejected promises' do
-        root = Promise.new{ raise StandardError.new('Boom!') }
-        promises = 3.times.collect{ root.then{ true } }
-        root.execute
-        sleep(0.5)
-        promises.each{|p| p.value.should_not be_true }
-      end
-
-      it 'calls the first exception block with a matching class' do
-        @expected = nil
-        Promise.new{ raise StandardError }.
-          rescue(StandardError){|ex| @expected = 1 }.
-          rescue(StandardError){|ex| @expected = 2 }.
-          rescue(StandardError){|ex| @expected = 3 }.execute
-        sleep(0.1)
-        @expected.should eq 1
-      end
-
-      it 'matches all with a rescue with no class given' do
-        @expected = nil
-        Promise.new{ raise NoMethodError }.
-          rescue(LoadError){|ex| @expected = 1 }.
-          rescue{|ex| @expected = 2 }.
-          rescue(StandardError){|ex| @expected = 3 }.execute
-        sleep(0.1)
-        @expected.should eq 2
-      end
-
-      it 'searches associated rescue handlers in order' do
-        Promise.thread_pool = CachedThreadPool.new
-
-        @expected = nil
-        Promise.new{ raise ArgumentError }.
-          rescue(ArgumentError){|ex| @expected = 1 }.
-          rescue(LoadError){|ex| @expected = 2 }.
-          rescue(StandardError){|ex| @expected = 3 }.execute
-        sleep(0.1)
-        @expected.should eq 1
-
-        @expected = nil
-        Promise.new{ raise LoadError }.
-          rescue(ArgumentError){|ex| @expected = 1 }.
-          rescue(LoadError){|ex| @expected = 2 }.
-          rescue(StandardError){|ex| @expected = 3 }.execute
-        sleep(0.1)
-        @expected.should eq 2
-
-        @expected = nil
-        Promise.new{ raise StandardError }.
-          rescue(ArgumentError){|ex| @expected = 1 }.
-          rescue(LoadError){|ex| @expected = 2 }.
-          rescue(StandardError){|ex| @expected = 3 }.execute
-        sleep(0.1)
-        @expected.should eq 3
-      end
-
-      it 'passes the exception object to the matched block' do
-        @expected = nil
-        Promise.new{ raise StandardError }.
-          rescue(ArgumentError){|ex| @expected = ex }.
-          rescue(LoadError){|ex| @expected = ex }.
-          rescue(StandardError){|ex| @expected = ex }.execute
-        sleep(0.1)
-        @expected.should be_a(StandardError)
-      end
-
-      it 'ignores rescuers without a block' do
-        @expected = nil
-        Promise.new{ raise StandardError }.
-          rescue(StandardError).
-          rescue(StandardError){|ex| @expected = ex }.execute
-        sleep(0.1)
-        @expected.should be_a(StandardError)
-      end
-
-      it 'supresses the exception if no rescue matches' do
-        lambda {
-          Promise.new{ raise StandardError }.
-            rescue(ArgumentError){|ex| @expected = ex }.
-            rescue(NotImplementedError){|ex| @expected = ex }.
-            rescue(NoMethodError){|ex| @expected = ex }.execute
-          sleep(0.1)
-        }.should_not raise_error
-      end
-
-      it 'supresses exceptions thrown from rescue handlers' do
-        lambda {
-          Promise.new{ raise ArgumentError }.
-          rescue(StandardError){ raise StandardError }.execute
-          sleep(0.1)
-        }.should_not raise_error
-      end
-
-      it 'calls matching rescue handlers on all children' do
-        latch = CountDownLatch.new(5)
-        @expected = []
-        Promise.new{ sleep(0.1); raise StandardError }.
-          then{ sleep(0.1) }.rescue{ latch.count_down }.
-          then{ sleep(0.1) }.rescue{ latch.count_down }.
-          then{ sleep(0.1) }.rescue{ latch.count_down }.
-          then{ sleep(0.1) }.rescue{ latch.count_down }.
-          then{ sleep(0.1) }.rescue{ latch.count_down }.execute
-
-        latch.wait(1).should be_true
-        latch.count.should eq 0
-
-      end
-
-      it 'matches a rescue handler added after rejection' do
-        @expected = false
-        p = Promise.new{ raise StandardError }.execute
-        sleep(0.1)
-        p.rescue(StandardError){ @expected = true }
-        @expected.should be_true
-      end
     end
 
     context 'aliases' do
