@@ -35,6 +35,7 @@ The design goals of this gem are:
   agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
 * [Dataflow](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dataflow.md) loosely based on the syntax of Akka and Habanero Java
 * [MVar](https://github.com/jdantonio/concurrent-ruby/blob/master/md/mvar.md) inspired by Haskell
+* [Thread local variables](https://github.com/jdantonio/concurrent-ruby/blob/master/md/threadlocalvar.md) with default value
 
 ### Semantic Versioning
 
