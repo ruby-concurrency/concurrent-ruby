@@ -12,7 +12,6 @@
 
 require 'rake'
 require 'rake/testtask'
-require "rake/extensiontask"
 
 task :default => :test
 
@@ -40,19 +39,20 @@ if defined?(JRUBY_VERSION)
   end
 
   desc "Compile the extension"
-  task :compile => "pkg/classes" do |t|
+  task :compile_java => "pkg/classes" do |t|
     ant.javac :srcdir => "ext", :destdir => t.prerequisites.first,
       :source => "1.5", :target => "1.5", :debug => true,
       :classpath => "${java.class.path}:${sun.boot.class.path}"
   end
 
   desc "Build the jar"
-  task :jar => :compile do
+  task :jar => :compile_java do
     ant.jar :basedir => "pkg/classes", :destfile => "lib/atomic_reference.jar", :includes => "**/*.class"
   end
 
   task :compile => :jar
 else
+  require "rake/extensiontask"
   Rake::ExtensionTask.new "atomic" do |ext|
     ext.ext_dir = 'ext'
     ext.name ='atomic_reference'
