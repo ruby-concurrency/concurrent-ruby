@@ -10,10 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'test/unit'
+require 'minitest/autorun'
 require 'atomic'
 
-class TestAtomic < Test::Unit::TestCase
+class TestAtomic < MiniTest::Test
   def test_construct
     atomic = Atomic.new
     assert_equal nil, atomic.value
@@ -58,7 +58,7 @@ class TestAtomic < Test::Unit::TestCase
   def test_try_update_fails
     # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
     atomic = Atomic.new(1000)
-    assert_raise Atomic::ConcurrentUpdateError do
+    assert_raises Atomic::ConcurrentUpdateError do
       # assigning within block exploits implementation detail for test
       atomic.try_update{|v| atomic.value = 1001 ; v + 1}
     end

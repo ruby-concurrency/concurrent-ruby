@@ -12,6 +12,7 @@
 
 require 'rake'
 require 'rake/testtask'
+require "rake/extensiontask"
 
 task :default => :test
 
@@ -50,16 +51,13 @@ if defined?(JRUBY_VERSION)
     ant.jar :basedir => "pkg/classes", :destfile => "lib/atomic_reference.jar", :includes => "**/*.class"
   end
 
-  task :package => :jar
+  task :compile => :jar
 else
-  task :package do
-    Dir.chdir("ext") do
-      # this does essentially the same thing
-      # as what RubyGems does
-      ruby "extconf.rb"
-      sh "make"
-    end
+  Rake::ExtensionTask.new "atomic" do |ext|
+    ext.ext_dir = 'ext'
+    ext.name ='atomic_reference'
   end
 end
 
-task :test => :package
+task :package => :compile
+task :test => :compile

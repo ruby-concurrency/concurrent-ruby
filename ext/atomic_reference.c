@@ -15,6 +15,10 @@
 #include <atomic.h>
 #endif
 
+#ifdef HAVE_LIBKERN_OSATOMIC_H
+#include <libkern/OSAtomic.h>
+#endif
+
 static void ir_mark(void *value) {
     rb_gc_mark_maybe((VALUE) value);
 }
