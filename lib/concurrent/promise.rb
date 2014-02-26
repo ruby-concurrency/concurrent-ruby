@@ -9,19 +9,6 @@ module Concurrent
     include Obligation
     include UsesGlobalThreadPool
 
-    # Creates a new promise object. "A promise represents the eventual
-    # value returned from the single completion of an operation."
-    # Promises can be chained in a tree structure where each promise
-    # has zero or more children. Promises are resolved asynchronously
-    # in the order they are added to the tree. Parents are guaranteed
-    # to be resolved before their children. The result of each promise
-    # is passed to each of its children upon resolution. When
-    # a promise is rejected all its children will be summarily rejected.
-    # A promise that is neither resolved or rejected is pending.
-    #
-    # @param args [Array] zero or more arguments for the block
-    # @param block [Proc] the block to call when attempting fulfillment
-    #
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(options = {}, &block)
@@ -29,7 +16,6 @@ module Concurrent
       @on_fulfil = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
       @on_reject = options.fetch(:on_reject) { Proc.new{ |result| result } }
 
-      @lock = Mutex.new
       @handler = block || Proc.new{|result| result }
       @state = :unscheduled
       @rescued = false
@@ -54,7 +40,7 @@ module Concurrent
           realize(@handler)
         end
       else
-        parent.execute
+        @parent.execute
       end
       self
     end
@@ -70,8 +56,10 @@ module Concurrent
       block = Proc.new{ |result| result } if block.nil?
       child = Promise.new(parent: self, on_fulfill: block, on_reject: rescuer)
 
-      @lock.synchronize do
+      mutex.synchronize do
         child.state = :pending if @state == :pending
+        child.on_fulfill(apply_deref_options(@value)) if @state == :fulfilled
+        child.on_reject(@reason) if @state == :rejected
         @children << child
       end
 
@@ -84,19 +72,14 @@ module Concurrent
       self.then &block
     end
 
-
     # @return [Promise]
-    def rescue(rescuer)
-      self.then(rescuer)
+    def rescue(&block)
+      self.then(block)
     end
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
     protected
-
-    attr_reader :parent
-    attr_reader :handler
-    attr_reader :rescuers
 
     def set_pending
       self.state = :pending

@@ -225,6 +225,12 @@ module Concurrent
           p2.should be_a(Promise)
           p1.should_not eq p2
         end
+
+        it 'notifies fulfilment to new child' do
+          child = fulfilled_subject.then(Proc.new{ 7 }) { |v| v + 5 }
+          child.value.should eq fulfilled_value + 5
+        end
+
       end
 
       context 'rejected' do
@@ -234,6 +240,12 @@ module Concurrent
           p2.should be_a(Promise)
           p1.should_not eq p2
         end
+
+        it 'notifies rejection to new child' do
+          child = rejected_subject.then(Proc.new{ 7 }) { |v| v + 5 }
+          child.value.should eq 7
+        end
+
       end
 
       it 'can be called more than once' do
@@ -259,7 +271,7 @@ module Concurrent
     context '#rescue' do
 
       it 'returns a new promise' do
-        child = empty_root.rescue(Proc.new{ nil })
+        child = empty_root.rescue { nil }
         child.should be_a Promise
         child.should_not be empty_root
       end
@@ -315,11 +327,11 @@ module Concurrent
 
       before(:each) { pending }
 
+      it 'should be tested'
+
     end
 
     context 'aliases' do
-
-      before(:each) { pending }
 
       it 'aliases #realized? for #fulfilled?' do
         fulfilled_subject.should be_realized
@@ -330,17 +342,13 @@ module Concurrent
       end
 
       it 'aliases #catch for #rescue' do
-        @expected = nil
-        Promise.new{ raise StandardError }.catch{ @expected = true }.execute
-        sleep(0.1)
-        @expected.should be_true
+        child = rejected_subject.catch { 7 }
+        child.value.should eq 7
       end
 
       it 'aliases #on_error for #rescue' do
-        @expected = nil
-        Promise.new{ raise StandardError }.on_error{ @expected = true }.execute
-        sleep(0.1)
-        @expected.should be_true
+        child = rejected_subject.on_error { 7 }
+        child.value.should eq 7
       end
     end
   end
