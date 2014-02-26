@@ -67,12 +67,10 @@ static VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE n
         return Qtrue;
     }
 #endif
-#elif HAVE_GCC_CAS
+#else
     if (__sync_bool_compare_and_swap(&DATA_PTR(self), expect_value, new_value)) {
 	return Qtrue;
     }
-#else
-#error No CAS operation available for this platform
 #endif
     return Qfalse;
 }
