@@ -16,20 +16,22 @@ module Concurrent
       @on_fulfil = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
       @on_reject = options.fetch(:on_reject) { Proc.new{ |result| result } }
 
-      @handler = block || Proc.new{|result| result }
+      @promise_body = block || Proc.new{|result| result }
       @state = :unscheduled
-      @rescued = false
       @children = []
 
       init_obligation
     end
 
+    # @return [Promise]
     def self.fulfil(value)
-      Promise.new.tap { |p| p.send(:set_state!, true, value, nil) }
+      Promise.new.tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
 
+
+    # @return [Promise]
     def self.reject(reason)
-      Promise.new.tap { |p| p.send(:set_state!, false, nil, reason) }
+      Promise.new.tap { |p| p.send(:synchronized_set_state!, false, nil, reason) }
     end
 
     # @return [Promise]
@@ -37,7 +39,7 @@ module Concurrent
       if root?
         if compare_and_set_state(:pending, :unscheduled)
           set_pending
-          realize(@handler)
+          realize(@promise_body)
         end
       else
         @parent.execute
@@ -82,8 +84,10 @@ module Concurrent
     protected
 
     def set_pending
-      self.state = :pending
-      @children.each { |c| c.set_pending }
+      mutex.synchronize do
+        @state = :pending
+        @children.each { |c| c.set_pending }
+      end
     end
 
     # @private
@@ -112,15 +116,24 @@ module Concurrent
     def realize(task)
       Promise.thread_pool.post do
         success, value, reason = SafeTaskExecutor.new( task ).execute
-        set_state!(success, value, reason)
-        @children.each{ |child| notify_child(child) }
+
+        children_to_notify = mutex.synchronize do
+          set_state!(success, value, reason)
+          @children
+        end
+
+        children_to_notify.each{ |child| notify_child(child) }
       end
     end
 
     def set_state!(success, value, reason)
+      set_state(success, value, reason)
+      event.set
+    end
+
+    def synchronized_set_state!(success, value, reason)
       mutex.synchronize do
-        set_state(success, value, reason)
-        event.set
+        set_state!(success, value, reason)
       end
     end
 
