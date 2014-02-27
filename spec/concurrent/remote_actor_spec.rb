@@ -31,8 +31,9 @@ module Concurrent
         subject.post('foo').should be_true
       end
 
-      it 'returns false on failure' do
-        #subject.stop
+      it 'returns false when not running' do
+        subject.stop
+        subject.post('foo').should be_false
       end
 
       it 'sets #last_connection_error on failure' do
