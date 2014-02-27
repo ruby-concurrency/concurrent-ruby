@@ -307,6 +307,12 @@ module Concurrent
         expected.should eq 20
       end
 
+      it 'uses result as fulfillment value when a promise has no block' do
+        p = Promise.new{ 20 }.then(Proc.new{}).execute
+        sleep(0.1)
+        p.value.should eq 20
+      end
+
       it 'can manage long chain' do
         root = Promise.new { 20 }
         p1 = root.then { |b| b * 3 }
@@ -343,6 +349,13 @@ module Concurrent
         p = Promise.new{ raise ArgumentError }.execute
         sleep(0.1)
         p.should be_rejected
+      end
+
+      it 'uses reason as rejection reason when a promise has no rescue callable' do
+        p = Promise.new{ raise ArgumentError }.then { |val| val }.execute
+        sleep(0.1)
+        p.should be_rejected
+        p.reason.should be_a ArgumentError
       end
 
     end
