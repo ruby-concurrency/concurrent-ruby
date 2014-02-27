@@ -18,7 +18,7 @@ module Concurrent
     end
 
     let(:fulfilled_subject) do
-      Promise.fulfil(fulfilled_value)
+      Promise.fulfill(fulfilled_value)
     end
 
     let(:rejected_subject) do
@@ -37,9 +37,9 @@ module Concurrent
     end
 
     context 'initializers' do
-      describe '.fulfil' do
+      describe '.fulfill' do
 
-        subject { Promise.fulfil(10) }
+        subject { Promise.fulfill(10) }
 
         it 'should return a Promise' do
           subject.should be_a Promise
@@ -226,7 +226,7 @@ module Concurrent
           p1.should_not eq p2
         end
 
-        it 'notifies fulfilment to new child' do
+        it 'notifies fulfillment to new child' do
           child = fulfilled_subject.then(Proc.new{ 7 }) { |v| v + 5 }
           child.value.should eq fulfilled_value + 5
         end

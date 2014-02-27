@@ -13,7 +13,7 @@ module Concurrent
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(options = {}, &block)
       @parent = options.fetch(:parent) { nil }
-      @on_fulfil = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
+      @on_fulfill = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
       @on_reject = options.fetch(:on_reject) { Proc.new{ |result| result } }
 
       @promise_body = block || Proc.new{|result| result }
@@ -24,7 +24,7 @@ module Concurrent
     end
 
     # @return [Promise]
-    def self.fulfil(value)
+    def self.fulfill(value)
       Promise.new.tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
 
@@ -97,7 +97,7 @@ module Concurrent
 
     # @private
     def on_fulfill(result)
-      realize Proc.new{ @on_fulfil.call(result) }
+      realize Proc.new{ @on_fulfill.call(result) }
       nil
     end
 
