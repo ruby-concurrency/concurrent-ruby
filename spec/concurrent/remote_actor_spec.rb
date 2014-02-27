@@ -27,30 +27,47 @@ module Concurrent
         subject.should be_connected
       end
 
-      it 'returns true on success'
+      it 'returns true on success' do
+        subject.post('foo').should be_true
+      end
 
-      it 'returns false on failure'
+      it 'returns false on failure' do
+        #subject.stop
+      end
 
       it 'sets #last_connection_error on failure' do
       end
 
-      it 'is #ready? once started'
+      it 'is #ready? once started' do
+        subject.should be_ready
+      end
     end
 
     context '#stop' do
 
-      it 'shuts down an active DRb connection'
+      it 'shuts down an active DRb connection' do
+        subject.stop
+        subject.instance_variable_get('@server').should be_nil
+      end
 
-      it 'returns true'
+      it 'returns true' do
+        subject.stop.should be_true
+      end
 
-      it 'is not #ready? when not running'
+      it 'is not #ready? when not running' do
+        subject.stop
+        subject.should_not be_ready
+      end
     end
 
     context 'DRb error while running' do
 
-      it 'is not #running? after DRb error'
+      it 'is not #running? after DRb error' do
 
-      it 'is not #ready? after DRb error'
+      end
+
+      it 'is not #ready? after DRb error' do
+      end
 
       it 'sets #last_connection_error to the raised exception'
     end

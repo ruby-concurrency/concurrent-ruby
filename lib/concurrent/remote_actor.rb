@@ -27,17 +27,34 @@ module Concurrent
     def connected?
       log_error do
         @server.running?
-        true
       end
+    end
+
+    def ready?
+      connected?
+    end
+
+    def post(*message)
+      return false unless ready?
+
+      super(@remote_id, message)
+      true
+    end
+
+    def stop
+      @server = nil
+      true
+    end
+
+    def start
+      establishes_connection
     end
 
     protected
 
     def act(*message)
       log_error do
-        # send message to ActorServer over DRb
-        # process the result
-        # let Actor do the rest
+        @server.post(@remote_id, message)
       end
     end
 
