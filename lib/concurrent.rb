@@ -33,8 +33,6 @@ require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'
 
-require 'concurrent/event_machine_defer_proxy' if defined?(EventMachine)
-
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.
 # 
