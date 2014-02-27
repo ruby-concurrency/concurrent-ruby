@@ -12,9 +12,11 @@ module Concurrent
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(options = {}, &block)
+      options.delete_if {|k, v| v.nil?}
+
       @parent = options.fetch(:parent) { nil }
       @on_fulfill = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
-      @on_reject = options.fetch(:on_reject) { Proc.new{ |result| result } }
+      @on_reject = options.fetch(:on_reject) { Proc.new{ |reason| raise reason } }
 
       @promise_body = block || Proc.new{|result| result }
       @state = :unscheduled
