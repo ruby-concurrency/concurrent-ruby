@@ -139,7 +139,7 @@ if mri?
 
               EventMachine.run do
                 @expected = nil
-                Promise.fulfil(20).then{|result| @expected = result}.execute
+                Promise.fulfill(20).then{|result| @expected = result}.execute
                 sleep(0.1)
                 @expected.should eq 20
 
@@ -152,7 +152,7 @@ if mri?
 
               EventMachine.run do
 
-                p = Promise.fulfil(20).then{|result| result * 2}
+                p = Promise.fulfill(20).then{|result| result * 2}
                 sleep(0.1)
                 p.value.should eq 40
 
