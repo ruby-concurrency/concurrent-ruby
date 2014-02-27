@@ -2,11 +2,13 @@ module Concurrent
 
   module ThreadLocalSymbolAllocator
 
+    COUNTER = AtomicCounter.new
+
     protected
 
     def allocate_symbol
-      # Warning: this will space leak if you create ThreadLocalVars in a loop - not sure what to do about it
-      @symbol = "thread_local_symbol_#{self.object_id}_#{Time.now.hash}".to_sym
+      # Warning: this symbol may never be deallocated
+      @symbol = :"thread_local_symbol_#{COUNTER.increment}"
     end
 
   end
