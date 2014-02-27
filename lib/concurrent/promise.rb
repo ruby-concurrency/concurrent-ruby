@@ -119,7 +119,7 @@ module Concurrent
 
         children_to_notify = mutex.synchronize do
           set_state!(success, value, reason)
-          @children
+          @children.dup
         end
 
         children_to_notify.each{ |child| notify_child(child) }
