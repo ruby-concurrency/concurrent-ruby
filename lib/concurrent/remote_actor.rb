@@ -31,15 +31,24 @@ module Concurrent
     end
 
     def ready?
-      connected?
+      super && connected?
     end
 
-    def post(*message)
-      return false unless ready?
+    #def post(*message)
+      #return false unless ready?
 
-      super(@remote_id, message)
-      true
-    end
+      #super(@remote_id, message)
+      #true
+    #end
+
+    #def post?(*message)
+    #end
+
+    #def post!(seconds, *message)
+    #end
+
+    #def forward(receiver, *message)
+    #end
 
     def stop
       @server = nil
@@ -53,9 +62,21 @@ module Concurrent
     protected
 
     def act(*message)
-      log_error do
-        @server.post(@remote_id, message)
-      end
+      # at this point we have no way of knowing which of the "post" variant methods was called
+      #   we could be here because of #post, #post?, #post!, or #forward
+      # the Actor parent class will handle the method-specific behavior
+      #   this method simply needs to call across the network
+      # this method in a local actor blocks then either returns the result or raises an exception
+      #   so this methods should do the same
+      #   which means that a DRb error here should be raised normally
+      #   which means my #last_connection_error was probably a completely wrong approach
+
+      # we don't want to catch errors here, we want them to bubble up to the Actor superclass
+      #log_error do
+        #@server.post(@remote_id, message)
+      #end
+      
+      @server.post(@remote_id, *message)
     end
 
     private

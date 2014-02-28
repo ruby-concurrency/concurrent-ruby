@@ -1,5 +1,5 @@
 require 'drb/drb'
-require 'concurrent/actor_method_dispatcher'
+#require 'concurrent/actor_method_dispatcher'
 require 'concurrent/runnable'
 
 module Concurrent
@@ -7,30 +7,15 @@ module Concurrent
   class ActorServer
     extend Forwardable
     include Runnable
-    # Concurrent::Runnable is a mixin I created to provide consistent start/stop
-    # behavior for all classes in this library. Just aboutverything in this library
-    # that is managed by Supervisor uses Runnable. Runnable provides a couple of
-    # callback methods that can be used to inject behavior into the object lifecycle.
-    # The most important callback is #on_task which is what is called in the main
-    # run loop. It's where we can put the main behavior of the class. Take a look
-    # at the Actor class as one example of how Runnable can be used.
 
     DEFAULT_HOST = 'localhost'
     DEFAULT_PORT = 8787
 
     attr_accessor :actor_pool
 
-    def_delegator :@dispatcher, :add
+    #def_delegator :@dispatcher, :add
 
     def initialize(host = DEFAULT_HOST, port = DEFAULT_PORT)
-      # This is a Rubyism I always struggle with, but I don't have strong feelings
-      # about it so I can go either way. In my mind 'options' are optional. Since
-      # both host and port are required for this to work I like the idea of making
-      # them individual parameters rather than values in an options hash. To me
-      # it makes the method more explicit. But I also admit I still retain a few
-      # habits from many years programming in compiled languages like C++ and Java.
-      # -Jerry
-
       @host       = host
       @port       = port
       @actor_pool = {}
@@ -44,10 +29,34 @@ module Concurrent
       @actor_pool[name] = new_actor_pool(actor, pool_size)
     end
 
+    # for clarity we may want to give this a different name
+    # it isn't the same method as Actor#post
     def post(name, *args)
-      return if @actor_pool[name].nil?
+      #return if @actor_pool[name].nil?
 
-      @actor_pool[name][:actors].post(args)
+      #@actor_pool[name][:actors].post(args)
+
+      # this method needs to block and return the result
+      #   or communicate the exception back to the caller
+      # I'm fairly certain that DRb will catch exceptions, send them back,
+      #   let the client code re-raise the exception
+      # so I think we can just let exceptions be raised
+      #
+      # so if we want this method to 1) return on success or 2) raise exceptions
+      #   then we should be able to just call #post! on the pool
+      #   and let it behave normally
+      #   one problem: #post! requires a timeout value as the first parameter
+      #   one option is to configure the timeout on the server,
+      #     but this could lead to weird behavior on the client
+      #   another option is to update Postable#post! with a "block indefinitely" option
+      #   for this spike I'll just set a long timeout and worry about it later
+
+      raise ArgumentError.new("no registration for #{name}") unless @actor_pool[name]
+      # this will block for 30 seconds and return the result
+      # if an error is raised by the actor it will be raised by #post!
+      # it post! reaches the timeout it will raise Concurrent::TimeoutError
+      # DRb should catch the exception and marshall it back to the client
+      return @actor_pool[name][:actors].post!(30, *args)
     end
 
     protected
