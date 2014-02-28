@@ -1,6 +1,6 @@
 require 'concurrent/version'
 
-require 'concurrent/atomic_counter'
+require 'concurrent/atomic'
 require 'concurrent/count_down_latch'
 require 'concurrent/condition'
 require 'concurrent/copy_on_notify_observer_set'

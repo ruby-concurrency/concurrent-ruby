@@ -2,7 +2,7 @@ module Concurrent
 
   module ThreadLocalSymbolAllocator
 
-    COUNTER = AtomicCounter.new
+    COUNTER = AtomicFixnum.new
 
     protected
 

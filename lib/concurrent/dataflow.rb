@@ -1,4 +1,4 @@
-require 'concurrent/atomic_counter'
+require 'concurrent/atomic'
 require 'concurrent/future'
 
 module Concurrent
@@ -6,7 +6,7 @@ module Concurrent
   class DependencyCounter
 
     def initialize(count, &block)
-      @counter = AtomicCounter.new(count)
+      @counter = AtomicFixnum.new(count)
       @block = block
     end
 
