@@ -23,7 +23,7 @@ require 'concurrent/runnable'
 require 'concurrent/scheduled_task'
 require 'concurrent/stoppable'
 require 'concurrent/supervisor'
-require 'concurrent/threadlocalvar'
+require 'concurrent/thread_local_var'
 require 'concurrent/timer_task'
 require 'concurrent/utilities'
 
