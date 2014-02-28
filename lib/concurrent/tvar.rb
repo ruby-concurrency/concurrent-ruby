@@ -1,6 +1,12 @@
+require 'concurrent/threadlocalvar'
+
 module Concurrent
 
   ABORTED = Object.new
+
+  CURRENT_TRANSACTION = ThreadLocalVar.new(nil)
+
+  UndoLogEntry = Struct.new(:tvar, :value)
 
   class TVar
 
@@ -29,8 +35,6 @@ module Concurrent
     end
 
   end
-
-  UndoLogEntry = Struct.new(:tvar, :value)
 
   class Transaction
 
@@ -74,11 +78,11 @@ module Concurrent
     end
 
     def self.current
-      Thread.current.thread_variable_get(:transaction)
+      CURRENT_TRANSACTION.value
     end
 
     def self.current=(transaction)
-      Thread.current.thread_variable_set(:transaction, transaction)
+      CURRENT_TRANSACTION.value = transaction
     end
 
   end
