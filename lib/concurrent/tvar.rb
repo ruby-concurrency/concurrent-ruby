@@ -87,8 +87,7 @@ module Concurrent
 
   end
 
-  class AbortException < Exception
-  end
+  AbortError = Class.new(StandardError)
 
   def atomically
     raise ArgumentError.new('no block given') unless block_given?
@@ -116,7 +115,7 @@ module Concurrent
 
           begin
             result = yield
-          rescue AbortException => e
+          rescue AbortError => e
             transaction.abort
             result = ABORTED
           rescue => e
@@ -144,7 +143,7 @@ module Concurrent
   end
 
   def abort_transaction
-    raise AbortException.new
+    raise AbortError.new
   end
 
   module_function :atomically, :abort_transaction
