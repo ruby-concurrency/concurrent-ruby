@@ -158,22 +158,6 @@ If for some reason an appliction would be better served by *not* having a global
 `NullThreadPool` is provided. The `NullThreadPool` is compatible with the global thread pool but
 it is not an actual thread pool. Instead it spawns a new thread on every call to the `post` method.
 
-### EventMachine
-
-The [EventMachine](http://rubyeventmachine.com/) library (source [online](https://github.com/eventmachine/eventmachine))
-is an awesome library for creating evented applications. EventMachine provides its own thread pool
-and the authors recommend using their pool rather than using Ruby's `Thread`. No sweat,
-`concurrent-ruby` is fully compatible with EventMachine. Simple require `eventmachine`
-*before* requiring `concurrent-ruby` then replace the global thread pool with an instance
-of `EventMachineDeferProxy`:
-
-```ruby
-require 'eventmachine' # do this FIRST
-require 'concurrent'
-
-$GLOBAL_THREAD_POOL = EventMachineDeferProxy.new
-```
-
 ## Per-class Thread Pools
 
 Many of the classes in this library use the global thread pool rather than creating new threads.

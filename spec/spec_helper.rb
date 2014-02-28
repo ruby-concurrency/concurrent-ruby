@@ -14,8 +14,6 @@ SimpleCov.start do
   add_filter '/tasks/'
 end
 
-require 'eventmachine'
-
 require 'concurrent'
 
 # import all the support files

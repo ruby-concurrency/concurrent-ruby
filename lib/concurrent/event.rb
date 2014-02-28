@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/utilities'
+require 'concurrent/condition'
 
 module Concurrent
 
@@ -20,7 +21,7 @@ module Concurrent
     def initialize
       @set = false
       @mutex = Mutex.new
-      @condition = ConditionVariable.new
+      @condition = Condition.new
     end
 
     # Is the object in the set state?
@@ -66,7 +67,12 @@ module Concurrent
     def wait(timeout = nil)
       @mutex.synchronize do
         return true if @set
-        @condition.wait(@mutex, timeout)
+
+        remaining = Condition::Result.new(timeout)
+        while !@set && remaining.can_wait?
+          remaining = @condition.wait(@mutex, remaining.remaining_time)
+        end
+
         @set
       end
     end

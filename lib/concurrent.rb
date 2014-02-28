@@ -1,6 +1,8 @@
 require 'concurrent/version'
 
+require 'concurrent/atomic_counter'
 require 'concurrent/count_down_latch'
+require 'concurrent/condition'
 require 'concurrent/copy_on_notify_observer_set'
 require 'concurrent/copy_on_write_observer_set'
 require 'concurrent/safe_task_executor'
@@ -21,6 +23,7 @@ require 'concurrent/runnable'
 require 'concurrent/scheduled_task'
 require 'concurrent/stoppable'
 require 'concurrent/supervisor'
+require 'concurrent/threadlocalvar'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
 require 'concurrent/utilities'
@@ -30,8 +33,6 @@ require 'concurrent/global_thread_pool'
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'
-
-require 'concurrent/event_machine_defer_proxy' if defined?(EventMachine)
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.

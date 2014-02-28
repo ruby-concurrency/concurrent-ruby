@@ -4,7 +4,6 @@ gemspec
 
 group :development do
   gem 'rake'
-  gem 'eventmachine'
   gem 'countloc', :platforms => :mri
 end
 

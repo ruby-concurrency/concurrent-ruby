@@ -9,93 +9,88 @@ module Concurrent
     include Obligation
     include UsesGlobalThreadPool
 
-    # Creates a new promise object. "A promise represents the eventual
-    # value returned from the single completion of an operation."
-    # Promises can be chained in a tree structure where each promise
-    # has zero or more children. Promises are resolved asynchronously
-    # in the order they are added to the tree. Parents are guaranteed
-    # to be resolved before their children. The result of each promise
-    # is passed to each of its children upon resolution. When
-    # a promise is rejected all its children will be summarily rejected.
-    # A promise that is neither resolved or rejected is pending.
-    #
-    # @param args [Array] zero or more arguments for the block
-    # @param block [Proc] the block to call when attempting fulfillment
-    #
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
-    def initialize(*args, &block)
-      if args.first.is_a?(Promise)
-        @parent = args.first
-      else
-        @parent = nil
-        @chain = [self]
-      end
+    def initialize(options = {}, &block)
+      options.delete_if {|k, v| v.nil?}
 
-      @lock = Mutex.new
-      @handler = block || Proc.new{|result| result }
-      @state = :pending
-      @value = nil
-      @reason = nil
-      @rescued = false
+      @parent = options.fetch(:parent) { nil }
+      @on_fulfill = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
+      @on_reject = options.fetch(:on_reject) { Proc.new{ |reason| raise reason } }
+
+      @promise_body = block || Proc.new{|result| result }
+      @state = :unscheduled
       @children = []
-      @rescuers = []
 
       init_obligation
-      realize(*args) if root?
     end
 
-    def rescued?
-      return @rescued
+    # @return [Promise]
+    def self.fulfill(value)
+      Promise.new.tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
 
-    # Create a new child Promise. The block argument for the child will
-    # be the result of fulfilling its parent. If the child will
-    # immediately be rejected if the parent has already been rejected.
-    #
-    # @param block [Proc] the block to call when attempting fulfillment
-    #
+
+    # @return [Promise]
+    def self.reject(reason)
+      Promise.new.tap { |p| p.send(:synchronized_set_state!, false, nil, reason) }
+    end
+
+    # @return [Promise]
+    def execute
+      if root?
+        if compare_and_set_state(:pending, :unscheduled)
+          set_pending
+          realize(@promise_body)
+        end
+      else
+        @parent.execute
+      end
+      self
+    end
+
+    def self.execute(&block)
+      new(&block).execute
+    end
+
+
     # @return [Promise] the new promise
-    def then(&block)
-      child = @lock.synchronize do
-        block = Proc.new{|result| result } if block.nil?
-        @children << Promise.new(self, &block)
-        @children.last.on_reject(@reason) if rejected?
-        push(@children.last)
-        @children.last
+    def then(rescuer = nil, &block)
+      raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
+      block = Proc.new{ |result| result } if block.nil?
+      child = Promise.new(parent: self, on_fulfill: block, on_reject: rescuer)
+
+      mutex.synchronize do
+        child.state = :pending if @state == :pending
+        child.on_fulfill(apply_deref_options(@value)) if @state == :fulfilled
+        child.on_reject(@reason) if @state == :rejected
+        @children << child
       end
-      return child
+
+      child
     end
 
-    # Add a rescue handler to be run if the promise is rejected (via raised
-    # exception). Multiple rescue handlers may be added to a Promise.
-    # Rescue blocks will be checked in order and the first one with a
-    # matching Exception class will be processed. The block argument
-    # will be the exception that caused the rejection.
-    #
-    # @param clazz [Class] The class of exception to rescue
-    # @param block [Proc] the block to call if the rescue is matched
-    #
-    # @return [self] so that additional chaining can occur
-    def rescue(clazz = nil, &block)
-      return self if fulfilled? || rescued? || block.nil?
-      @lock.synchronize do
-        @rescuers << Rescuer.new(clazz, block)
-        try_rescue(reason) unless pending?
-      end
-      return self
+    # @return [Promise]
+    def on_success(&block)
+      raise ArgumentError.new('no block given') unless block_given?
+      self.then &block
+    end
+
+    # @return [Promise]
+    def rescue(&block)
+      self.then(block)
     end
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
     protected
 
-    attr_reader :parent
-    attr_reader :handler
-    attr_reader :rescuers
-
-    # @private
-    Rescuer = Struct.new(:clazz, :block)
+    def set_pending
+      mutex.synchronize do
+        @state = :pending
+        @children.each { |c| c.set_pending }
+      end
+    end
 
     # @private
     def root? # :nodoc:
@@ -103,65 +98,46 @@ module Concurrent
     end
 
     # @private
-    def push(promise) # :nodoc:
-      if root?
-        @chain << promise
-      else
-        @parent.push(promise)
-      end
+    def on_fulfill(result)
+      realize Proc.new{ @on_fulfill.call(result) }
+      nil
     end
 
     # @private
-    def on_fulfill(result) # :nodoc:
-      @lock.synchronize do
-        @value = @handler.call(result)
-        @state = :fulfilled
-        @reason = nil
-      end
-      return self.value
+    def on_reject(reason)
+      realize Proc.new{ @on_reject.call(reason) }
+      nil
+    end
+
+    def notify_child(child)
+      if_state(:fulfilled) { child.on_fulfill(apply_deref_options(@value)) }
+      if_state(:rejected) { child.on_reject(@reason) }
     end
 
     # @private
-    def on_reject(reason) # :nodoc:
-      @value = nil
-      @state = :rejected
-      @reason = reason
-      try_rescue(reason)
-      @children.each{|child| child.on_reject(reason) }
-    end
+    def realize(task)
+      Promise.thread_pool.post do
+        success, value, reason = SafeTaskExecutor.new( task ).execute
 
-    # @private
-    def try_rescue(ex, *rescuers) # :nodoc:
-      rescuers = @rescuers if rescuers.empty?
-      rescuer = rescuers.find{|r| r.clazz.nil? || ex.is_a?(r.clazz) }
-      if rescuer
-        rescuer.block.call(ex)
-        @rescued = true
-      end
-    rescue Exception => ex
-      # supress
-    end
-
-    # @private
-    def realize(*args) # :nodoc:
-      Promise.thread_pool.post(@chain, @lock, args) do |chain, lock, args|
-        result = args.length == 1 ? args.first : args
-        index = 0
-        loop do
-          current = lock.synchronize{ chain[index] }
-          unless current.rejected?
-            begin
-              result = current.on_fulfill(result)
-            rescue Exception => ex
-              current.on_reject(ex)
-            ensure
-              event.set
-            end
-          end
-          index += 1
-          Thread.pass while index >= chain.length
+        children_to_notify = mutex.synchronize do
+          set_state!(success, value, reason)
+          @children.dup
         end
+
+        children_to_notify.each{ |child| notify_child(child) }
       end
     end
+
+    def set_state!(success, value, reason)
+      set_state(success, value, reason)
+      event.set
+    end
+
+    def synchronized_set_state!(success, value, reason)
+      mutex.synchronize do
+        set_state!(success, value, reason)
+      end
+    end
+
   end
 end

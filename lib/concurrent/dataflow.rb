@@ -1,20 +1,7 @@
+require 'concurrent/atomic_counter'
 require 'concurrent/future'
 
 module Concurrent
-
-  class AtomicCounter
-
-    def initialize(init)
-      @counter = init
-      @mutex = Mutex.new
-    end
-
-    def decrement
-      @mutex.synchronize do
-        @counter -= 1
-      end
-    end
-  end
 
   class DependencyCounter
 
