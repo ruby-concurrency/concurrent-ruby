@@ -31,19 +31,23 @@ module Concurrent
     # Return the value this object represents after applying the options specified
     # by the #set_deref_options method.
     def value
-      return nil if @value.nil?
-      return @value if @do_nothing_on_deref
       mutex.synchronize do
-        value = @value
-        value = @copy_on_deref.call(value) if @copy_on_deref
-        value = value.dup if @dup_on_deref
-        value = value.freeze if @freeze_on_deref
-        value
+        apply_deref_options(@value)
       end
     end
     alias_method :deref, :value
 
     protected
+
+    def apply_deref_options(value)
+      return nil if value.nil?
+      return value if @do_nothing_on_deref
+      value = value
+      value = @copy_on_deref.call(value) if @copy_on_deref
+      value = value.dup if @dup_on_deref
+      value = value.freeze if @freeze_on_deref
+      value
+    end
 
     def mutex # :nodoc:
       @mutex

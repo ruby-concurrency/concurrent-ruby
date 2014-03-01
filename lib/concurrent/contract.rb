@@ -7,14 +7,14 @@ module Concurrent
 
     def initialize(opts = {})
       @state = :pending
-      init_mutex
+      init_obligation
       set_deref_options(opts)
     end
 
     def complete(value, reason)
       @value = value
       @reason = reason
-      @state = ( reason ? :rejected : :fulfilled )
+      self.state = ( reason ? :rejected : :fulfilled )
       event.set
     end
   end

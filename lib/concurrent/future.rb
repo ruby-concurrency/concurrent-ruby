@@ -1,62 +1,65 @@
 require 'thread'
-require 'observer'
 
 require 'concurrent/global_thread_pool'
 require 'concurrent/obligation'
+require 'concurrent/copy_on_write_observer_set'
+require 'concurrent/safe_task_executor'
 
 module Concurrent
 
   class Future
     include Obligation
-    include Observable
     include UsesGlobalThreadPool
 
-    def initialize(*args, &block)
-      init_mutex
-      unless block_given?
-        @state = :fulfilled
-      else
-        @value = nil
-        @state = :pending
-        Future.thread_pool.post(*args) do
-          work(*args, &block)
-        end
-      end
+    def initialize(opts = {}, &block)
+      raise ArgumentError.new('no block given') unless block_given?
+
+      init_obligation
+      @observers = CopyOnWriteObserverSet.new
+      @state = :unscheduled
+      @task = block
+      set_deref_options(opts)
     end
 
     def add_observer(observer, func = :update)
-      val = self.value
+      direct_notification = false
       mutex.synchronize do
         if event.set?
-          Future.thread_pool.post(func, Time.now, val, @reason) do |f, *args|
-            observer.send(f, *args)
-          end
+          direct_notification = true
         else
-          super
+          @observers.add_observer(observer, func)
         end
       end
-      return func
+
+      observer.send(func, Time.now, self.value, reason) if direct_notification
+      func
+    end
+
+    def execute
+      if compare_and_set_state(:pending, :unscheduled)
+        Future.thread_pool.post { work }
+        self
+      end
+    end
+
+    def self.execute(opts = {}, &block)
+      return Future.new(opts, &block).execute
     end
 
     private
 
     # @private
-    def work(*args) # :nodoc:
-      begin
-        @value = yield(*args)
-        @state = :fulfilled
-      rescue Exception => ex
-        @reason = ex
-        @state = :rejected
-      ensure
-        val = self.value
-        mutex.synchronize do
-          event.set
-          changed
-          notify_observers(Time.now, val, @reason)
-          delete_observers
-        end
+    def work # :nodoc:
+
+      success, val, reason = SafeTaskExecutor.new(@task).execute
+
+      mutex.synchronize do
+        set_state(success, val, reason)
+        event.set
       end
+
+      @observers.notify_and_delete_observers(Time.now, self.value, reason)
     end
+
   end
 end

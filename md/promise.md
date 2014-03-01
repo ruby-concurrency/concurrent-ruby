@@ -1,6 +1,5 @@
 # Promises, Promises...
 
-A promise is the most powerful and versatile of the concurrency objects in this library.
 Promises are inspired by the JavaScript [Promises/A](http://wiki.commonjs.org/wiki/Promises/A)
 and [Promises/A+](http://promises-aplus.github.io/promises-spec/) specifications.
 
@@ -9,16 +8,24 @@ and [Promises/A+](http://promises-aplus.github.io/promises-spec/) specifications
 Promises are similar to futures and share many of the same behaviours. Promises are far more robust,
 however. Promises can be chained in a tree structure where each promise may have zero or more children.
 Promises are chained using the `then` method. The result of a call to `then` is always another promise.
-Promises are resolved asynchronously in the order they are added to the tree. Parents are guaranteed
-to be resolved before their children. The result of each promise is passed to each of its children
-upon resolution. When a promise is rejected all its children will be summarily rejected.
+Promises are resolved asynchronously (with respect to the main thread) but in a strict order:
+parents are guaranteed to be resolved before their children, children before their younger siblings.
+The `then` method takes two parameters: an optional block to be executed upon parent resolution and an
+optional callable to be executed upon parent failure. The result of each promise is passed to each of its
+children upon resolution. When a promise is rejected all its children will be summarily rejected and will
+receive the reason.
 
-Promises have three possible states: *pending*, *rejected*, and *fulfilled*. When a promise is created it is set
-to *pending* and will remain in that state until processing is complete. A completed promise is either *rejected*,
-indicating that an exception was thrown during processing, or *fulfilled*, indicating it succeeded. If a promise is
-*fulfilled* its `value` will be updated to reflect the result of the operation. If *rejected* the `reason` will
-be updated with a reference to the thrown exception. The predicate methods `pending?`, `rejected`, and `fulfilled?`
-can be called at any time to obtain the state of the promise, as can the `state` method, which returns a symbol.
+Promises have four possible states: *unscheduled*, *pending*, *rejected*, and *fulfilled*.
+A Promise created using `.new` will be *unscheduled*. It is scheduled by calling the `execute` method.
+Upon execution the Promise and all its children will be set to *pending*. When a promise is *pending* it will remain in that
+state until processing is complete. A completed Promise is either *rejected*, indicating that an exception
+was thrown during processing, or *fulfilled*, indicating it succeeded.
+If a Promise is *fulfilled* its `value` will be updated to reflect the result of the operation.
+If *rejected* the `reason` will be updated with a reference to the thrown exception.
+The predicate methods `unscheduled?`, `pending?`, `rejected?`, and `fulfilled?`
+can be called at any time to obtain the state of the Promise, as can the `state` method, which returns a symbol.
+A Promise created using `.execute` will be *pending*, a Promise created using `.fulfill(value)` will be *fulfilled*
+with the given value and a Promise created using `.reject(reason)` will be *rejected* with the given reason.
 
 Retrieving the value of a promise is done through the `value` (alias: `deref`) method. Obtaining the value of
 a promise is a potentially blocking operation. When a promise is *rejected* a call to `value` will return `nil`
@@ -41,40 +48,67 @@ require 'concurrent'
 Then create one
 
 ```ruby
-p = Promise.new("Jerry", "D'Antonio") do |first, last|
-      "#{last}, #{first}"
+p = Promise.execute do
+      # do something
+      42
     end
 ```
 
 Promises can be chained using the `then` method. The `then` method
-accepts a block but no arguments. The result of the each promise is
-passed as the block argument to chained promises
+accepts a block, to be executed on fulfillment, and a callable argument to be executed on rejection.
+The result of the each promise is passed as the block argument to chained promises.
 
 ```ruby
-p = Concurrent::Promise.new(10){|x| x * 2}.then{|result| result - 10 }
+p = Concurrent::Promise.new{10}.then{|x| x * 2}.then{|result| result - 10 }.execute
 ```
 
 And so on, and so on, and so on...
 
 ```ruby
-p = Concurrent::Promise.new(10){|x| x * 2}.
+p = Concurrent::Promise.fulfill(20).
     then{|result| result - 10 }.
     then{|result| result * 3 }.
-    then{|result| result % 5 }
+    then{|result| result % 5 }.execute
 ```
 
-Promises are executed asynchronously so a newly-created promise *should* always be in the pending state
+The initial state of a newly created Promise depends on the state of its parent:
+- if parent is *unscheduled* the child will be *unscheduled*
+- if parent is *pending* the child will be *pending*
+- if parent is *fulfilled* the child will be *pending*
+- if parent is *rejected* the child will be *pending* (but will ultimately be *rejected*)
+
+Promises are executed asynchronously from the main thread. By the time a child Promise finishes initialization
+it may be in a different state that its parent (by the time a child is created its parent may have completed
+execution and changed state). Despite being asynchronous, however, the order of execution of Promise objects
+in a chain (or tree) is strictly defined.
+
+There are multiple ways to create and execute a new `Promise`. Both ways provide identical behavior:
 
 ```ruby
-p = Concurrent::Promise.new{ "Hello, world!" }
-p.state   #=> :pending
+# create, operate, then execute
+p1 = Concurrent::Promise.new{ "Hello World!" }
+p1.state #=> :unscheduled
+p1.execute
+
+# create and immediately execute
+p2 = Concurrent::Promise.new{ "Hello World!" }.execute
+
+# execute during creation
+p3 = Concurrent::Promise.execute{ "Hello World!" }
+```
+
+Once the `execute` method is called a `Promise` becomes `pending`:
+
+```ruby
+p = Concurrent::Promise.execute{ "Hello, world!" }
+p.state    #=> :pending
 p.pending? #=> true
 ```
 
-Wait a little bit, and the promise will resolve and provide a value
+Wait a little bit, and the promise will resolve and provide a value:
 
 ```ruby
-p = Concurrent::Promise.new{ "Hello, world!" }
+p = Concurrent::Promise.execute{ "Hello, world!" }
 sleep(0.1)
 
 p.state      #=> :fulfilled
@@ -83,10 +117,10 @@ p.value      #=> "Hello, world!"
 ```
 
 If an exception occurs, the promise will be rejected and will provide
-a reason for the rejection
+a reason for the rejection:
 
 ```ruby
-p = Concurrent::Promise.new{ raise StandardError.new("Here comes the Boom!") }
+p = Concurrent::Promise.execute{ raise StandardError.new("Here comes the Boom!") }
 sleep(0.1)
 
 p.state     #=> :rejected
@@ -96,96 +130,34 @@ p.reason    #=> "#<StandardError: Here comes the Boom!>"
 
 ### Rejection
 
-Much like the economy, rejection exhibits a trickle-down effect. When
-a promise is rejected all its children will be rejected
+When a promise is rejected all its children will be rejected and will receive the rejection `reason` as the
+rejection callable parameter:
 
 ```ruby
-p = [ Concurrent::Promise.new{ Thread.pass; raise StandardError } ]
+p = [ Concurrent::Promise.execute{ Thread.pass; raise StandardError } ]
 
-10.times{|i| p << p.first.then{ i } }
-sleep(0.1)
-
-p.length      #=> 11
-p.first.state #=> :rejected
-p.last.state  #=> :rejected
-```
-
-Once a promise is rejected it will not accept any children. Calls
-to `then` will continually return `self`
-
-```ruby
-p = Concurrent::Promise.new{ raise StandardError }
-sleep(0.1)
-
-p.object_id        #=> 32960556
-p.then{}.object_id #=> 32960556
-p.then{}.object_id #=> 32960556
-```
-
-### Error Handling
-
-Promises support error handling callbacks is a style mimicing Ruby's
-own exception handling mechanism, namely `rescue`
-
-```ruby
-Concurrent::Promise.new{ "dangerous operation..." }.rescue{|ex| puts "Bam!" }
-
-# -or- (for the Java/C# crowd)
-Concurrent::Promise.new{ "dangerous operation..." }.catch{|ex| puts "Boom!" }
-
-# -or- (for the hipsters)
-Concurrent::Promise.new{ "dangerous operation..." }.on_error{|ex| puts "Pow!" }
-```
-
-As with Ruby's `rescue` mechanism, a promise's `rescue` method can
-accept an optional Exception class argument (defaults to `Exception`
-when not specified)
-
-```ruby
-Concurrent::Promise.new{ "dangerous operation..." }.rescue(ArgumentError){|ex| puts "Bam!" }
-```
-
-Calls to `rescue` can also be chained
-
-```ruby
-Concurrent::Promise.new{ "dangerous operation..." }.
-  rescue(ArgumentError){|ex| puts "Bam!" }.
-  rescue(NoMethodError){|ex| puts "Boom!" }.
-  rescue(StandardError){|ex| puts "Pow!" }
-```
-
-When there are multiple `rescue` handlers the first one to match the thrown
-exception will be triggered
-
-```ruby
-Concurrent::Promise.new{ raise NoMethodError }.
-  rescue(ArgumentError){|ex| puts "Bam!" }.
-  rescue(NoMethodError){|ex| puts "Boom!" }.
-  rescue(StandardError){|ex| puts "Pow!" }
+c1 = p.then(Proc.new{ |reason| 42 })
+c2 = p.then(Proc.new{ |reason| raise 'Boom!' })
 
 sleep(0.1)
 
-#=> Boom!
+c1.state  #=> :rejected
+c2.state  #=> :rejected
 ```
 
-Trickle-down rejection also applies to rescue handlers. When a promise is rejected,
-for any reason, its rescue handlers will be triggered. Rejection of the parent counts.
+Once a promise is rejected it will continue to accept children that will receive immediately
+rejection (they will be executed asynchronously).
 
-```ruby
-Concurrent::Promise.new{ Thread.pass; raise StandardError }.
-  then{ true }.rescue{ puts 'Boom!' }.
-  then{ true }.rescue{ puts 'Boom!' }.
-  then{ true }.rescue{ puts 'Boom!' }.
-  then{ true }.rescue{ puts 'Boom!' }.
-  then{ true }.rescue{ puts 'Boom!' }
-sleep(0.1)
+### Aliases
 
-#=> Boom!
-#=> Boom!
-#=> Boom!
-#=> Boom!
-#=> Boom!
-```
+The `then` method is the most generic alias: it accepts a block to be executed upon parent fulfillment
+and a callable to be executed upon parent rejection. At least one of them should be passed.
+The default block is `{ |result| result }` that fulfills the child with the parent value.
+The default callable is `{ |reason| raise reason }` that rejects the child with the parent reason.
+
+`on_success { |result| ... }` is the same as `then {|result| ... }`
+`rescue { |reason| ... }` is the same as `then(Proc.new { |reason| ... } )`
+`rescue` is aliased by `catch` and `on_error`
 
 ## Copyright
 

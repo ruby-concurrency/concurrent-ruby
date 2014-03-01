@@ -21,6 +21,11 @@ A *timeout* value can be passed to `value` to limit how long the call will block
 block indefinitely. If `0` the call will not block. Any other integer or float value will indicate the
 maximum number of seconds to block.
 
+The constructor can also be given zero or more processing options. Currently the
+only supported options are those recognized by the
+[Dereferenceable](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dereferenceable.md)
+module.
+
 The `Future` class also includes the Ruby standard library
 [Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html) module. On fulfillment
 or rejection all observers will be notified according to the normal `Observable` behavior. The observer
@@ -35,7 +40,7 @@ A fulfilled example:
 ```ruby
 require 'concurrent'
 
-count = Concurrent::Future.new{ sleep(10); 10 }
+count = Concurrent::Future.new{ sleep(10); 10 }.execute
 count.state #=> :pending
 count.pending? #=> true
 
@@ -52,7 +57,7 @@ count.value #=> 10
 A rejected example:
 
 ```ruby
-count = Concurrent::Future.new{ sleep(10); raise StandardError.new("Boom!") }
+count = Concurrent::Future.execute{ sleep(10); raise StandardError.new("Boom!") }
 count.state #=> :pending
 count.pending? #=> true
 
@@ -80,6 +85,7 @@ end
 yahoo = Finance.new('YAHOO')
 future = Concurrent::Future.new { yahoo.update.suggested_symbols }
 future.add_observer(Ticker.new)
+future.execute
 
 # do important stuff...
 

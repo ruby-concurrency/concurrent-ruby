@@ -1,96 +1,99 @@
 require 'observer'
 require 'concurrent/obligation'
+require 'concurrent/safe_task_executor'
 
 module Concurrent
 
   class ScheduledTask
     include Obligation
-    include Observable
+
+    SchedulingError = Class.new(ArgumentError)
 
     attr_reader :schedule_time
 
     def initialize(schedule_time, opts = {}, &block)
-      now = Time.now
+      raise SchedulingError.new('no block given') unless block_given?
+      calculate_schedule_time!(schedule_time) # raise exception if in past
 
-      if ! block_given?
-        raise ArgumentError.new('no block given')
-      elsif schedule_time.is_a?(Time)
-        if schedule_time <= now
-          raise ArgumentError.new('schedule time must be in the future') 
-        else
-          @schedule_time = schedule_time.dup
-        end
-      elsif schedule_time.to_f <= 0.0
-        raise ArgumentError.new('seconds must be greater than zero')
-      else
-        @schedule_time = now + schedule_time.to_f
-      end
-
-      @state = :pending
-      @schedule_time.freeze
+      init_obligation
+      @observers = CopyOnWriteObserverSet.new
+      @state = :unscheduled
+      @intended_schedule_time = schedule_time
+      @schedule_time = nil
       @task = block
-      init_mutex
       set_deref_options(opts)
+    end
 
-      @thread = Thread.new{ work }
-      @thread.abort_on_exception = false
+    def execute
+      if compare_and_set_state(:pending, :unscheduled)
+        @schedule_time = calculate_schedule_time!(@intended_schedule_time).freeze
+        Thread.new { work }
+        self
+      end
+    end
+
+    def self.execute(schedule_time, opts = {}, &block)
+      return ScheduledTask.new(schedule_time, opts, &block).execute
     end
 
     def cancelled?
-      return @state == :cancelled
+      state == :cancelled
     end
 
     def in_progress?
-      return @state == :in_progress
+      state == :in_progress
     end
 
     def cancel
-      return false if mutex.locked?
-      return mutex.synchronize do
-        if @state == :pending
-          @state = :cancelled
-          event.set
-          true
-        else
-          false
-        end
+      if_state(:unscheduled, :pending) do
+        @state = :cancelled
+        event.set
+        true
       end
     end
+
     alias_method :stop, :cancel
 
     def add_observer(observer, func = :update)
-      return false unless [:pending, :in_progress].include?(@state)
-      super
+      if_state(:unscheduled, :pending, :in_progress) do
+        @observers.add_observer(observer, func)
+      end
     end
 
     protected
 
     def work
-      while (diff = @schedule_time.to_f - Time.now.to_f) > 0
-        sleep( diff > 60 ? 60 : diff )
-      end
-      
-      if @state == :pending
+      sleep_until_scheduled_time
+
+      if compare_and_set_state(:in_progress, :pending)
+        success, val, reason = SafeTaskExecutor.new(@task).execute
+
         mutex.synchronize do
-          @state = :in_progress
-          begin
-            @value = @task.call
-            @state = :fulfilled
-          rescue => ex
-            @reason = ex
-            @state = :rejected
-          ensure
-            changed
-          end
+          set_state(success, val, reason)
+          event.set
         end
+
+        @observers.notify_and_delete_observers(Time.now, self.value, reason)
       end
 
-      if self.changed?
-        notify_observers(Time.now, self.value, @reason)
-        delete_observers
+    end
+
+    private
+
+    def sleep_until_scheduled_time
+      while (diff = @schedule_time.to_f - Time.now.to_f) > 0
+        sleep(diff > 60 ? 60 : diff)
       end
-      event.set
-      self.stop
+    end
+
+    def calculate_schedule_time!(schedule_time, now = Time.now)
+      if schedule_time.is_a?(Time)
+        raise SchedulingError.new('schedule time must be in the future') if schedule_time <= now
+        schedule_time.dup
+      else
+        raise SchedulingError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
+        now + schedule_time.to_f
+      end
     end
   end
 end
