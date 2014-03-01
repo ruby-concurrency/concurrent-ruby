@@ -32,7 +32,7 @@ server.run!
 sleep(0.1) # give it a chance to start
 
 puts "Starting the RemoteActor ..."
-client = Concurrent::RemoteActor.new(:echo, 'localhost', 9999)
+client = Concurrent::RemoteActor.new(:echo, host: 'localhost', port: 9999)
 client.run!
 sleep(0.1) # give it a chance to start
 

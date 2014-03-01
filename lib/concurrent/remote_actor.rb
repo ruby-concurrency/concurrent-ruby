@@ -4,62 +4,57 @@ require 'drb/drb'
 
 module Concurrent
 
-  # For some odd reason the class name ActorClient was bothering me. It perfectly
-  # describes the rols of the class so it shouldn't bother me, but it does. I'm
-  # not sure I like RemoteActor better, though. You know what they say,
-  # the hardest part is naming things...
-  # -Jerry
-  class RemoteActor < Actor
+  class RemoteActorDrbProxy
 
     DEFAULT_HOST = ActorServer::DEFAULT_HOST
     DEFAULT_PORT = ActorServer::DEFAULT_PORT
 
-    attr_accessor :last_connection_error
-
-    def initialize(remote_id, host = DEFAULT_HOST, port = DEFAULT_PORT)
-      @remote_id = remote_id
-      @host      = host
-      @port      = port
-
-      establishes_connection
-    end
-
-    def connected?
-      log_error do
-        @server.running?
-      end
-    end
-
-    def ready?
-      super && connected?
-    end
-
-    #def post(*message)
-      #return false unless ready?
-
-      #super(@remote_id, message)
-      #true
-    #end
-
-    #def post?(*message)
-    #end
-
-    #def post!(seconds, *message)
-    #end
-
-    #def forward(receiver, *message)
-    #end
-
-    def stop
-      @server = nil
-      true
+    def initialize(opts = {})
+      @host = opts.fetch(:host, DEFAULT_HOST)
+      @port = opts.fetch(:port, DEFAULT_PORT)
     end
 
     def start
-      establishes_connection
+      @server ||= DRbObject.new_with_uri("druby://#{@host}:#{@port}") # TODO - connection pool
+    end
+
+    def running?
+      ! @server.nil?
+    end
+
+    def stop
+      @server = nil
+    end
+
+    def send(remote_id, *message)
+      @server.post(remote_id, *message) if running?
+    end
+  end
+
+  class RemoteActor < Actor
+
+    def initialize(remote_id, opts = {})
+      @remote_id = remote_id
+      @proxy = opts.fetch(:proxy, RemoteActorDrbProxy.new(opts))
+    end
+
+    def connected?
+      @proxy.running?
+    end
+
+    def running?
+      super && connected?
     end
 
     protected
+
+    def on_run
+      @proxy.start
+    end
+
+    def on_stop
+      @proxy.stop
+    end
 
     def act(*message)
       # at this point we have no way of knowing which of the "post" variant methods was called
@@ -70,28 +65,8 @@ module Concurrent
       #   so this methods should do the same
       #   which means that a DRb error here should be raised normally
       #   which means my #last_connection_error was probably a completely wrong approach
-
-      # we don't want to catch errors here, we want them to bubble up to the Actor superclass
-      #log_error do
-        #@server.post(@remote_id, message)
-      #end
       
-      @server.post(@remote_id, *message)
-    end
-
-    private
-
-    def establishes_connection
-      log_error do
-        @server = DRbObject.new_with_uri("druby://#{@host}:#{@port}") # TODO - connection pool
-      end
-    end
-
-    def log_error
-      yield
-    rescue Exception => ex
-      self.last_connection_error = ex.message
-      false
+      @proxy.send(@remote_id, *message)
     end
   end
 end
