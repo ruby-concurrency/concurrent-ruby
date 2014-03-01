@@ -47,7 +47,7 @@ module Concurrent
   module JavaAtomicFixnum
 
     def allocate_storage(init)
-      @atomic = java.utli.concurrent.atomic.AtomicLong.new(init)
+      @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
     end
 
     def value
@@ -79,7 +79,7 @@ module Concurrent
       allocate_storage(init)
     end
 
-    if defined? java.utli.concurrent.atomic.AtomicLong.new
+    if defined? java.util
       include JavaAtomicFixnum
     else
       include MutexAtomicFixnum
@@ -89,5 +89,4 @@ module Concurrent
     alias_method :down, :decrement
 
   end
-
 end
