@@ -8,12 +8,17 @@ is loosely based on Java's
 
 ## Scheduling
 
-The scheduled time of task execution is set on object construction. The first
-parameter to `#new` is the task execution time. The time can be a numeric (floating
-point or integer) representing a number of seconds in the future or it can ba a
-`Time` object representing the approximate time of execution. Any other value,
-a numeric equal to or less than zero, or a time in the past will result in
-an `ArgumentError` being raised.
+The *intended* schedule time of task execution is set on object construction
+with first argument. The time can be a numeric (floating point or integer) representing
+a number of seconds in the future or it can ba a `Time` object representing the approximate
+time of execution. Any other value, a numeric equal to or less than zero, or a time in the
+past will result in an exception.
+
+The *actual* schedule time of task execution is set when the `execute` method is called.
+If the *intended* schedule time was given as a number of seconds then the *actual* schedule
+time will be calculated from the current time. If the *intended* schedule time was given
+as a `Time` object the current time will be checked against the *intended* schedule time.
+If the *intended* schedule time is now in the past an exception will be raised.
 
 The constructor can also be given zero or more processing options. Currently the
 only supported options are those recognized by the
@@ -71,24 +76,34 @@ Successful task execution using seconds for scheduling:
 ```ruby
 require 'concurrent'
 
-task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
-task.pending?      #=> true
+task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }
+task.state         #=> :unscheduled
+task.schedule_time #=> nil
+task.execute
+task.state         #=> pending
 task.schedule_time #=> 2013-11-07 12:20:07 -0500
 
 # wait for it...
 sleep(3)
 
-task.pending?   #=> false
-task.fulfilled? #=> true
-task.rejected?  #=> false
-task.value      #=> 'What does the fox say?'
+task.unscheduled? #=> false
+task.pending?     #=> false
+task.fulfilled?   #=> true
+task.rejected?    #=> false
+task.value        #=> 'What does the fox say?'
+```
+
+A `ScheduledTask` can be created and executed in one line:
+
+```ruby
+task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
+task.state         #=> pending
+task.schedule_time #=> 2013-11-07 12:20:07 -0500
 ```
 
 Failed task execution using a `Time` object for scheduling:
 
 ```ruby
-require 'concurrent'
-
 t = Time.now + 2
 task = Concurrent::ScheduledTask.execute(t){ raise StandardError.new('Call me maybe?') }
 task.pending?      #=> true
@@ -97,18 +112,38 @@ task.schedule_time #=> 2013-11-07 12:22:01 -0500
 # wait for it...
 sleep(3)
 
-task.pending?   #=> false
-task.fulfilled? #=> false
-task.rejected?  #=> true
-task.value      #=> nil
-task.reason     #=> #<StandardError: Call me maybe?> 
+task.unscheduled? #=> false
+task.pending?     #=> false
+task.fulfilled?   #=> false
+task.rejected?    #=> true
+task.value        #=> nil
+task.reason       #=> #<StandardError: Call me maybe?> 
+```
+
+An exception will be thrown on creation if the schedule time is in the past:
+
+```ruby
+task = Concurrent::ScheduledTask.new(Time.now - 10){ nil }
+  #=> ArgumentError: schedule time must be in the future
+
+task = Concurrent::ScheduledTask.execute(-10){ nil }
+  #=> ArgumentError: seconds must be greater than zero
+```
+
+An exception will also be thrown when `#execute` is called if the current time has
+progressed past the intended schedule time:
+
+```ruby
+task = Concurrent::ScheduledTask.new(Time.now + 10){ nil }
+sleep(20)
+
+task.execute
+  #=> ArgumentError: schedule time must be in the future
 ```
 
 Task execution with observation:
 
 ```ruby
-require 'concurrent'
-
 observer = Class.new{
   def update(time, value, reason)
     puts "The task completed at #{time} with value '#{value}'"
