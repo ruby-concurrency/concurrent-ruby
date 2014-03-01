@@ -1,4 +1,4 @@
-# Thread local variables
+# Thread Local Variables
 
 A `ThreadLocalVar` is a variable where the value is different for each thread.
 Each variable may have a default value, but when you modify the variable only

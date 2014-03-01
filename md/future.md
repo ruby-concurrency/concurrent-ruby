@@ -1,4 +1,4 @@
-# We're Sending You Back to the Future!
+# Future
 
 `Future`s are inspired by [Clojure's](http://clojure.org/) [future](http://clojuredocs.org/clojure_core/clojure.core/future)
 function. A future represents a promise to complete an action at some time in the future.

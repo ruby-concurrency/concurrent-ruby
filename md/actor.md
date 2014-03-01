@@ -1,4 +1,4 @@
-# All the world's a stage
+# Actor
 
 Actor-based concurrency is all the rage in some circles. Originally described in
 1973, the actor model is a paradigm for creating asynchronous, concurrent objects

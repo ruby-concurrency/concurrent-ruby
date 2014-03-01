@@ -1,4 +1,4 @@
-# Secret Agent Man
+# Agent
 
 `Agent`s are inspired by [Clojure's](http://clojure.org/) [agent](http://clojure.org/agents) function.
 An `Agent` is a single atomic value that represents an identity. The current value

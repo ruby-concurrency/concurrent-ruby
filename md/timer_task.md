@@ -1,4 +1,4 @@
-# To Gobbler's Knob. It's Groundhog Day!
+# TimerTask
 
 A very common currency pattern is to run a thread that performs a task at regular
 intervals. The thread that peforms the task sleeps for the given interval then

@@ -1,4 +1,4 @@
-# I'm late! For a very important date!
+# ScheduledTask
 
 `ScheduledTask` is a close relative of `Concurrent::Future` but with one
 important difference. A `Future` is set to execute as soon as possible

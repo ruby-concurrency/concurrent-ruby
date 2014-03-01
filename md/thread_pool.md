@@ -1,4 +1,4 @@
-# We're Going to Need a Bigger Boat
+# Thread Pools
 
 Thread pools are neither a new idea nor an implementation of the actor pattern. Nevertheless, thread
 pools are still an extremely relevant concurrency tool. Every time a thread is created then

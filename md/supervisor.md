@@ -1,4 +1,4 @@
-# You don't need to get no supervisor! You the supervisor today!
+# Supervisor
 
 One of Erlang's claim to fame is its fault tolerance. Erlang systems have been known
 to exhibit near-mythical levels of uptime. One of the main reasons is the pervaisve

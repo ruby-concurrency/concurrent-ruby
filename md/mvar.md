@@ -1,4 +1,4 @@
-# MVar
+# MVar (M-Structure)
 
 An `MVar` is a synchronized single element container. They are empty or contain
 one item. Taking a value from an empty `MVar` blocks, as does putting a value

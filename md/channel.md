@@ -1,4 +1,4 @@
-# Change the dang channel!
+# Channel
 
 `Channel` is a functional programming variation of `Actor`, based very loosely on the
 [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)

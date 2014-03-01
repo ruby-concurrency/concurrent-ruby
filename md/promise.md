@@ -1,4 +1,4 @@
-# Promises, Promises...
+# Promise
 
 Promises are inspired by the JavaScript [Promises/A](http://wiki.commonjs.org/wiki/Promises/A)
 and [Promises/A+](http://promises-aplus.github.io/promises-spec/) specifications.
