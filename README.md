@@ -23,21 +23,26 @@ The design goals of this gem are:
 
 ## Features & Documentation
 
-* Clojure-inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
 * Clojure-inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
+* Clojure-inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
 * Scala-inspired [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
 * JavaScript-inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
-* Java-inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
-* Old school [events](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx) from back in my Visual C++ days
-* Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
-* Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
+* Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md)
+* Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md)
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
-* Actor variant [Channel](https://github.com/jdantonio/concurrent-ruby/blob/master/md/channel.md)
+* An actor variant called [Channel](https://github.com/jdantonio/concurrent-ruby/blob/master/md/channel.md)
   loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
   agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
 * [Dataflow](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dataflow.md) loosely based on the syntax of Akka and Habanero Java
-* [MVar](https://github.com/jdantonio/concurrent-ruby/blob/master/md/mvar.md) inspired by Haskell
-* [Thread local variables](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_local_var.md) with default value
+* [MVar](https://github.com/jdantonio/concurrent-ruby/blob/master/md/mvar.md) (imperative data structure with implicit synchronization) inspired by Haskell
+* And many utility classes including 
+  [Thread local variables](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_local_var.md),
+  Java-inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md),
+  [CountDownLatch](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html) to synchronize multiple threads on a set of operations,
+  [AtomicFixnum](http://wiki.osdev.org/Atomic_operation) thread-safe counter,
+  old school [event](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx) synchronization,
+  thread-safe replacements for [Observable](http://ruby-doc.org/stdlib-2.1.0/libdoc/observer/rdoc/Observable.html),
+  and more.
 
 ### Semantic Versioning
 
