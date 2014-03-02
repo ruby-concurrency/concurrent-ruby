@@ -17,10 +17,12 @@ module Concurrent
 
       attr_reader :remaining_time
 
+      # @return [Boolean] true if current thread has been waken up by a #signal or a #broadcast call, otherwise false
       def woken_up?
         @remaining_time.nil? || @remaining_time > 0
       end
 
+      # @return [Boolean] true if current thread has been waken up due to a timeout, otherwise false
       def timed_out?
         @remaining_time != nil && @remaining_time <= 0
       end
