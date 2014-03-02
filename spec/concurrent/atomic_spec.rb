@@ -52,7 +52,27 @@ module Concurrent
         counter.decrement
         counter.value.should eq 10
       end
+    end
 
+    context '#value=' do
+
+      it 'sets the #value to the given `Fixnum`' do
+        atomic = AtomicFixnum.new(0)
+        atomic.value = 10
+        atomic.value.should eq 10
+      end
+
+      it 'returns the new value' do
+        atomic = AtomicFixnum.new(0)
+        (atomic.value = 10).should eq 10
+      end
+
+      it 'raises and exception if the value is not a `Fixnum`' do
+        atomic = AtomicFixnum.new(0)
+        expect {
+          atomic.value = 'foo'
+        }.to raise_error(ArgumentError)
+      end
     end
 
     context '#increment' do

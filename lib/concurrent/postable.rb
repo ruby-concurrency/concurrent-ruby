@@ -90,7 +90,7 @@ module Concurrent
 
     private
 
-    # @private
+    # @!visibility private
     def queue # :nodoc:
       @queue ||= Queue.new
     end
