@@ -23,26 +23,24 @@ The design goals of this gem are:
 
 ## Features & Documentation
 
-* Clojure-inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
-* Clojure-inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
-* Scala-inspired [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
-* JavaScript-inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
-* Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md)
-* Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md)
-* Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
-* An actor variant called [Channel](https://github.com/jdantonio/concurrent-ruby/blob/master/md/channel.md)
-  loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
-  agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
-* [Dataflow](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dataflow.md) loosely based on the syntax of Akka and Habanero Java
-* [MVar](https://github.com/jdantonio/concurrent-ruby/blob/master/md/mvar.md) (imperative data structure with implicit synchronization) inspired by Haskell
-* And many utility classes including 
-  [Thread local variables](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_local_var.md),
-  Java-inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md),
-  [CountDownLatch](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html) to synchronize multiple threads on a set of operations,
-  [AtomicFixnum](http://wiki.osdev.org/Atomic_operation) thread-safe counter,
-  old school [event](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx) synchronization,
-  thread-safe replacements for [Observable](http://ruby-doc.org/stdlib-2.1.0/libdoc/observer/rdoc/Observable.html),
-  and more.
+There are many concurrency abstractions in this library. These abstractions can be broadly categorized
+into several general categories.
+
+Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki) for more information.
+
+* Asynchronous concurrency abstractions including [Actor](https://github.com/jdantonio/concurrent-ruby/wiki/Actor),
+  [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent), [Channel](https://github.com/jdantonio/concurrent-ruby/wiki/Channel),
+  [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future), [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
+  [ScheculedTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
+  and [TimerTask](https://github.com/jdantonio/concurrent-ruby/wiki/TimerTask) 
+* Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
+  for managing long-running threads
+* Thread-save variables including [M-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/MVar-(M-Structure)),
+  [thread-local variables](https://github.com/jdantonio/concurrent-ruby/wiki/ThreadLocalVar), and atomic counters
+* Thread synchronization classes and algorithms including [dataflow](https://github.com/jdantonio/concurrent-ruby/wiki/Dataflow), 
+  timeout, condition, countdown latch, dependency counter, and event
+* Java-inspired [thread pools](https://github.com/jdantonio/concurrent-ruby/wiki/Thread%20Pools)
+* And many more...
 
 ### Semantic Versioning
 
