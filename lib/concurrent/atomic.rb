@@ -59,11 +59,11 @@ module Concurrent
     end
 
     def increment
-      @atomic.incrementAndGet
+      @atomic.increment_and_get
     end
 
     def decrement
-      @atomic.decrementAndGet
+      @atomic.decrement_and_get
     end
 
     def compare_and_set(expect, update)
