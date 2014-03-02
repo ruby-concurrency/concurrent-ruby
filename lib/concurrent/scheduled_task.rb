@@ -24,6 +24,7 @@ module Concurrent
       set_deref_options(opts)
     end
 
+    # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
         @schedule_time = calculate_schedule_time!(@intended_schedule_time).freeze
@@ -32,6 +33,7 @@ module Concurrent
       end
     end
 
+    # @since 0.5.0
     def self.execute(schedule_time, opts = {}, &block)
       return ScheduledTask.new(schedule_time, opts, &block).execute
     end

@@ -35,6 +35,7 @@ module Concurrent
       func
     end
 
+    # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
         Future.thread_pool.post { work }
@@ -42,13 +43,14 @@ module Concurrent
       end
     end
 
+    # @since 0.5.0
     def self.execute(opts = {}, &block)
       return Future.new(opts, &block).execute
     end
 
     private
 
-    # @private
+    # @!visibility private
     def work # :nodoc:
 
       success, val, reason = SafeTaskExecutor.new(@task).execute
