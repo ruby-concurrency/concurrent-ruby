@@ -36,7 +36,7 @@ into several general categories:
   and [TimerTask](https://github.com/jdantonio/concurrent-ruby/wiki/TimerTask) 
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
   for managing long-running threads
-* Thread-save variables including [M-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/MVar-(M-Structure)),
+* Thread-safe variables including [M-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/MVar-(M-Structure)),
   [thread-local variables](https://github.com/jdantonio/concurrent-ruby/wiki/ThreadLocalVar), and atomic counters
 * Thread synchronization classes and algorithms including [dataflow](https://github.com/jdantonio/concurrent-ruby/wiki/Dataflow), 
   timeout, condition, countdown latch, dependency counter, and event
