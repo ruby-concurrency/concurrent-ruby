@@ -52,7 +52,7 @@ module Concurrent
 
     # @!visibility private
     def allocate_storage(init) # :nodoc:
-      @atomic = java.utli.concurrent.atomic.AtomicLong.new(init)
+      @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
     end
 
     def value
@@ -65,11 +65,11 @@ module Concurrent
     end
 
     def increment
-      @atomic.incrementAndGet
+      @atomic.increment_and_get
     end
 
     def decrement
-      @atomic.decrementAndGet
+      @atomic.decrement_and_get
     end
 
     # @!visibility private
@@ -113,7 +113,7 @@ module Concurrent
       allocate_storage(init)
     end
 
-    if defined? java.utli.concurrent.atomic.AtomicLong.new
+    if defined? java.util
       include JavaAtomicFixnum
     else
       include MutexAtomicFixnum
