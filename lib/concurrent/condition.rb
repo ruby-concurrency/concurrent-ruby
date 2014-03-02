@@ -1,4 +1,13 @@
 module Concurrent
+
+  # Condition is a better implementation of standard Ruby ConditionVariable.
+  # The biggest difference is the wait return value: Condition#wait returns
+  # Condition::Result which make possible to know if waiting thread has been woken up
+  # by an another thread (using #signal or #broadcast) or due to timeout.
+  #
+  # Every #wait must be guarded by a locked Mutex or a ThreadError will be risen.
+  # Although it's not mandatory, it's recommended to call also #signal and #broadcast within
+  # the same mutex
   class Condition
 
     class Result
@@ -24,6 +33,9 @@ module Concurrent
       @condition = ConditionVariable.new
     end
 
+    # @param [Mutex] the locked mutex guarding the wait
+    # @param [Object] timeout nil means no timeout
+    # @return [Result]
     def wait(mutex, timeout = nil)
       start_time = Time.now.to_f
       @condition.wait(mutex, timeout)
@@ -35,11 +47,15 @@ module Concurrent
       end
     end
 
+    # Wakes up a waiting thread
+    # @return [true]
     def signal
       @condition.signal
       true
     end
 
+    # Wakes up all waiting threads
+    # @return [true]
     def broadcast
       @condition.broadcast
       true
