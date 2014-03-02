@@ -26,7 +26,7 @@ module Concurrent
   # The excluded features mostly deal with Scala's message semantics, strong typing,
   # and other characteristics of Scala that don't really apply to Ruby.
   # 
-  # Unlike many of the abstractions in this library, +Actor+ takes an **object-oriented**
+  # Unlike many of the abstractions in this library, +Actor+ takes an *object-oriented*
   # approach to asynchronous concurrency, rather than a *functional programming*
   # approach.
   #   
