@@ -11,16 +11,36 @@ module Concurrent
   # all message-passing methods of that class. `Channel` also supports pools with a shared
   # mailbox.
   #
-  # @see Concurrent::Actor
-  # @see Concurrent::Postable
-  # @see Concurrent::Runnable
-  # @see Concurrent::Stoppable
-  #
-  # @see {http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx Async and Parallel Design Patterns in F#: Agents}
-  # @see {http://msdn.microsoft.com/en-us/library/ee370357.aspx Control.MailboxProcessor<'Msg> Class (F#)}
+  # @example Basic usage
+  #   channel = Concurrent::Channel.new do |msg|
+  #     sleep(1)
+  #     puts "#{msg}\n"
+  #   end
+  #   
+  #   channel.run! => #<Thread:0x007fa123d95fc8 sleep>
+  #   
+  #   channel.post("Hello, World!") => 1
+  #   # wait...
+  #   => Hello, World!
+  #   
+  #   future = channel.post? "Don't Panic." => #<Concurrent::Contract:0x007fa123d6d9d8 @state=:pending...
+  #   future.pending? => true
+  #   # wait...
+  #   => "Don't Panic."
+  #   future.fulfilled? => true
+  #   
+  #   channel.stop => true  
+  #   
+  # @see http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx Async and Parallel Design Patterns in F#: Agents
+  # @see http://msdn.microsoft.com/en-us/library/ee370357.aspx Control.MailboxProcessor<'Msg> Class (F#)
   class Channel < Actor
     include Stoppable
 
+    # Initialize a new object with a block operation to be performed in response
+    # to every received message.
+    #
+    # @yield [message] Removes the next message from the queue and processes it
+    # @yieldparam [Array] msg The next message post to the channel
     def initialize(&block)
       raise ArgumentError.new('no block given') unless block_given?
       super()
@@ -36,7 +56,7 @@ module Concurrent
 
     private
 
-    def act(*message)
+    def act(*message) # :nodoc:
       return @task.call(*message)
     end
   end

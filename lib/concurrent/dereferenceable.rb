@@ -15,10 +15,10 @@ module Concurrent
     # object creation.
     #
     # @param [Hash] opts the options defining dereference behavior.
-    # @option opts [String] :dup_on_deref Call #dup before returning the data (default: false)
-    # @option opts [String] :freeze_on_deref Call #freeze before returning the data (default: false)
-    # @option opts [String] :copy_on_deref Call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc (default: `nil`)
+    # @option opts [String] :dup_on_deref (false) call #dup before returning the data
+    # @option opts [String] :freeze_on_deref (false) call #freeze before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
+    #   returning the value returned from the proc
     def set_deref_options(opts = {})
       mutex.synchronize do
         @dup_on_deref = opts[:dup_on_deref] || opts[:dup]

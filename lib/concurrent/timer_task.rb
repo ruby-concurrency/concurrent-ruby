@@ -46,8 +46,6 @@ module Concurrent
   # the observer will receive a `Concurrent::TimeoutError` object as the third argument.
   #
   # @example Basic usage
-  #   require 'concurrent'
-  #   
   #   task = Concurrent::TimerTask.new{ puts 'Boom!' }
   #   task.run!
   #   

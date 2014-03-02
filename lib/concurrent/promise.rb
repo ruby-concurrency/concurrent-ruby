@@ -37,6 +37,7 @@ module Concurrent
     end
 
     # @return [Promise]
+    # @since 0.5.0
     def execute
       if root?
         if compare_and_set_state(:pending, :unscheduled)
@@ -49,6 +50,7 @@ module Concurrent
       self
     end
 
+    # @since 0.5.0
     def self.execute(&block)
       new(&block).execute
     end

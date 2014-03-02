@@ -35,7 +35,7 @@ module Concurrent
       @condition = ConditionVariable.new
     end
 
-    # @param [Mutex] the locked mutex guarding the wait
+    # @param [Mutex] mutex the locked mutex guarding the wait
     # @param [Object] timeout nil means no timeout
     # @return [Result]
     def wait(mutex, timeout = nil)
