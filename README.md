@@ -129,24 +129,6 @@ These tools will help ease the burden, but at the end of the day it is essential
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-### Conference Presentations
-
-I've given several conference presentations on concurrent programming with this gem.
-Check them out:
-
-* ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
-  at [RubyConf 2013](http://rubyconf.org/)
-  used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
-  and is available for viewing on [Confreaks](http://www.confreaks.com/videos/2872-rubyconf2013-advanced-concurrent-programming-in-ruby)
-* ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
-  at [Cascadia Ruby 2013](http://cascadiaruby.com/)
-  used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
-  and is available for viewing on [Confreaks](http://www.confreaks.com/videos/2790-cascadiaruby2013-advanced-multithreading-in-ruby)
-* [Cleveland Ruby Brigade](http://www.meetup.com/ClevelandRuby/events/149981942/) meetup in December of 2013
-  used [this](https://github.com/jdantonio/concurrent-ruby-presentation/releases/tag/clerb-dec-2013) version of the presentation
-* I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
-  at [CodeMash 2014](http://codemash.org/)
-
 ## License and Copyright
 
 *Concurrent Ruby* is Copyright &copy; 2013 [Jerry D'Antonio](https://twitter.com/jerrydantonio).
