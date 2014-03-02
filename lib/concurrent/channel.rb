@@ -3,12 +3,12 @@ require 'concurrent/stoppable'
 
 module Concurrent
 
-  # `Channel` is a functional programming variation of `Actor`, based very loosely on the
-  # *MailboxProcessor* agent in F#. `Actor` is used to create objects that receive messages
+  # +Channel+ is a functional programming variation of +Actor+, based very loosely on the
+  # *MailboxProcessor* agent in F#. +Actor+ is used to create objects that receive messages
   # from other threads then processes those messages based on the behavior of the class.
-  # `Channel` creates objects that receive messages and processe them using the block
-  # given at construction. `Channel` is implemented as a subclass of `Actor` and supports
-  # all message-passing methods of that class. `Channel` also supports pools with a shared
+  # +Channel+ creates objects that receive messages and processe them using the block
+  # given at construction. +Channel+ is implemented as a subclass of +Actor+ and supports
+  # all message-passing methods of that class. +Channel+ also supports pools with a shared
   # mailbox.
   #
   # @example Basic usage

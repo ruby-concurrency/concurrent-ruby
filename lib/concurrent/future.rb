@@ -50,7 +50,7 @@ module Concurrent
 
     private
 
-    # @private
+    # @!visibility private
     def work # :nodoc:
 
       success, val, reason = SafeTaskExecutor.new(@task).execute

@@ -94,18 +94,18 @@ module Concurrent
       end
     end
 
-    # @private
+    # @!visibility private
     def root? # :nodoc:
       @parent.nil?
     end
 
-    # @private
+    # @!visibility private
     def on_fulfill(result)
       realize Proc.new{ @on_fulfill.call(result) }
       nil
     end
 
-    # @private
+    # @!visibility private
     def on_reject(reason)
       realize Proc.new{ @on_reject.call(reason) }
       nil
@@ -116,7 +116,7 @@ module Concurrent
       if_state(:rejected) { child.on_reject(@reason) }
     end
 
-    # @private
+    # @!visibility private
     def realize(task)
       Promise.thread_pool.post do
         success, value, reason = SafeTaskExecutor.new( task ).execute

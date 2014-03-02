@@ -33,7 +33,7 @@ module Concurrent
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   #
-  # @see http://ruby-doc.org/stdlib-2.1.1/libdoc/observer/rdoc/Observable.html Ruby `Observable` module
+  # @see http://ruby-doc.org/stdlib-2.1.1/libdoc/observer/rdoc/Observable.html Ruby +Observable+ module
   class Agent
     include Observable
     include Dereferenceable
@@ -50,9 +50,9 @@ module Concurrent
     # @param [Object] initial the initial value
     # @param [Hash] opts the options used to define the behavior at update and deref
     # @option opts [Fixnum] :timeout (TIMEOUT) maximum number of seconds before an update is cancelled
-    # @option opts [String] :dup_on_deref (false) call #dup before returning the data
-    # @option opts [String] :freeze_on_deref (false) call #freeze before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
+    # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
+    # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
       @value = initial
@@ -65,9 +65,9 @@ module Concurrent
 
     # Specifies a block operation to be performed when an update operation raises
     # an exception. Rescue blocks will be checked in order they were added. The first
-    # block for which the raised exception "is-a" subclass of the given `clazz` will
-    # be called. If no `clazz` is given the block will match any caught exception.
-    # This behavior is intended to be identical to Ruby's `begin/rescue/end` behavior.
+    # block for which the raised exception "is-a" subclass of the given +clazz+ will
+    # be called. If no +clazz+ is given the block will match any caught exception.
+    # This behavior is intended to be identical to Ruby's +begin/rescue/end+ behavior.
     # Any number of rescue handlers can be added. If no rescue handlers are added then
     # caught exceptions will be suppressed.
     #
@@ -136,10 +136,10 @@ module Concurrent
 
     private
 
-    # @private
+    # @!visibility private
     Rescuer = Struct.new(:clazz, :block) # :nodoc:
 
-    # @private
+    # @!visibility private
     def try_rescue(ex) # :nodoc:
       rescuer = mutex.synchronize do
         @rescuers.find{|r| ex.is_a?(r.clazz) }
@@ -149,7 +149,7 @@ module Concurrent
       # supress
     end
 
-    # @private
+    # @!visibility private
     def work(&handler) # :nodoc:
       begin
         mutex.synchronize do
