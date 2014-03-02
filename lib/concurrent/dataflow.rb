@@ -3,7 +3,8 @@ require 'concurrent/future'
 
 module Concurrent
 
-  class DependencyCounter
+  # @!visibility private
+  class DependencyCounter # :nodoc:
 
     def initialize(count, &block)
       @counter = AtomicFixnum.new(count)
