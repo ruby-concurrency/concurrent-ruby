@@ -23,10 +23,11 @@ The design goals of this gem are:
 
 ## Features & Documentation
 
-There are many concurrency abstractions in this library. These abstractions can be broadly categorized
-into several general categories.
+Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki) for more information
+or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
 
-Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki) for more information.
+There are many concurrency abstractions in this library. These abstractions can be broadly categorized
+into several general categories:
 
 * Asynchronous concurrency abstractions including [Actor](https://github.com/jdantonio/concurrent-ruby/wiki/Actor),
   [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent), [Channel](https://github.com/jdantonio/concurrent-ruby/wiki/Channel),
