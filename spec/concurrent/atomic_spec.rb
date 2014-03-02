@@ -19,6 +19,14 @@ module Concurrent
           AtomicFixnum.new(10.01)
         }.should raise_error(ArgumentError)
       end
+
+      if jruby?
+
+        it 'supports JRuby-optimizations' do
+          java.util.concurrent.atomic.AtomicLong.should_receive(:new).with(any_args)
+          AtomicFixnum.new(10)
+        end
+      end
     end
 
     context '#value' do
@@ -69,7 +77,7 @@ module Concurrent
       it 'is aliased as #down' do
         AtomicFixnum.new(10).down.should eq 9
       end
-      
+
     end
   end
 end
