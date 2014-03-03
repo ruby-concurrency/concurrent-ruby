@@ -1,8 +1,6 @@
 require 'thread'
 
 require 'concurrent/global_thread_pool'
-require 'concurrent/obligation'
-require 'concurrent/copy_on_write_observer_set'
 require 'concurrent/safe_task_executor'
 
 module Concurrent
@@ -40,7 +38,7 @@ module Concurrent
   # @see http://ruby-doc.org/stdlib-2.1.1/libdoc/observer/rdoc/Observable.html Ruby Observable module
   # @see http://clojuredocs.org/clojure_core/clojure.core/future Clojure's future function
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
-  class Future
+  class Future < IVar
     include Obligation
     include UsesGlobalThreadPool
 
@@ -56,35 +54,9 @@ module Concurrent
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-
-      init_obligation
-      @observers = CopyOnWriteObserverSet.new
+      super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      set_deref_options(opts)
-    end
-
-    # Add +observer+ as an observer on this object so that it will receive notifications.
-    #
-    # Upon completion the +Future+ will notify all observers in a thread-say way. The +func+
-    # method of the observer will be called with three arguments: the +Time+ at which the
-    # +Future+ completed the asynchronous operation, the final +value+ (or +nil+ on rejection),
-    # and the final +reason+ (or +nil+ on fulfillment).
-    #
-    # @param [Object] observer the object that will be notified of changes
-    # @param [Symbol] func symbol naming the method to call when this +Observable+ has changes
-    def add_observer(observer, func = :update)
-      direct_notification = false
-      mutex.synchronize do
-        if event.set?
-          direct_notification = true
-        else
-          @observers.add_observer(observer, func)
-        end
-      end
-
-      observer.send(func, Time.now, self.value, reason) if direct_notification
-      func
     end
 
     # Execute an +:unscheduled+ +Future+. Immediately sets the state to +:pending+ and
@@ -120,15 +92,9 @@ module Concurrent
 
     # @!visibility private
     def work # :nodoc:
-
       success, val, reason = SafeTaskExecutor.new(@task).execute
-
-      mutex.synchronize do
-        set_state(success, val, reason)
-        event.set
-      end
-
-      @observers.notify_and_delete_observers(Time.now, self.value, reason)
+      complete(val, reason)
     end
+    
   end
 end
