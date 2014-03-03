@@ -4,7 +4,7 @@ module Concurrent
 
   describe RemoteActor do
 
-    let(:remote_id) { 1 }
+    let(:remote_id) { 'foo' }
     let(:server)    { Concurrent::ActorServer.new }
     subject         { Concurrent::RemoteActor.new(remote_id) }
 
