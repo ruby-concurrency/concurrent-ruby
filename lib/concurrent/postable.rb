@@ -48,9 +48,9 @@ module Concurrent
     def post?(*message)
       raise ArgumentError.new('empty message') if message.empty?
       return nil unless ready?
-      contract = Contract.new
-      queue.push(Package.new(message, contract))
-      return contract
+      ivar = IVar.new
+      queue.push(Package.new(message, ivar))
+      return ivar
     end
 
     def post!(seconds, *message)
