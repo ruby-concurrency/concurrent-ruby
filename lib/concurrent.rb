@@ -9,7 +9,6 @@ require 'concurrent/safe_task_executor'
 
 require 'concurrent/actor'
 require 'concurrent/agent'
-require 'concurrent/contract'
 require 'concurrent/channel'
 require 'concurrent/dataflow'
 require 'concurrent/dereferenceable'

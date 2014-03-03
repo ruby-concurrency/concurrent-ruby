@@ -17,7 +17,7 @@ module Concurrent
 
     context 'behavior' do
 
-      # obligation
+    # obligation
 
     let!(:fulfilled_value) { 10 }
     let(:rejected_reason) { StandardError.new('Boom!') }
