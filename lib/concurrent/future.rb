@@ -111,6 +111,24 @@ module Concurrent
       end
     end
 
+    # Create a new +Future+ object with the given block, execute it, and return the
+    # +:pending+ object.
+    #
+    # @yield the asynchronous operation to perform
+    #
+    # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
+    # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
+    #   returning the value returned from the proc
+    #
+    # @return [Future] the newly created +Future+ in the +:pending+ state
+    #
+    # @raise [ArgumentError] if no block is given
+    #
+    # @example
+    #   future = Concurrent::Future.execute{ sleep(1); 42 }
+    #   future.state #=> :pending
+    #
     # @since 0.5.0
     def self.execute(opts = {}, &block)
       return Future.new(opts, &block).execute
