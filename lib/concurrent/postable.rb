@@ -37,7 +37,7 @@ module Concurrent
       raise ArgumentError.new('empty message') if message.empty?
       return false unless ready?
       queue.push(Package.new(message))
-      return queue.length
+      return true
     end
 
     def <<(message)

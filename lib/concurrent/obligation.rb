@@ -43,26 +43,25 @@ module Concurrent
       mutex.synchronize { @state }
     end
 
-    def state=(value)
-      mutex.synchronize { @state = value }
-    end
-
     def reason
       mutex.synchronize { @reason }
     end
 
     protected
 
-    def init_obligation
+    # @!visibility private
+    def init_obligation # :nodoc:
       init_mutex
       @event = Event.new
     end
 
-    def event
+    # @!visibility private
+    def event # :nodoc:
       @event
     end
 
-    def set_state(success, value, reason)
+    # @!visibility private
+    def set_state(success, value, reason) # :nodoc:
       if success
         @value = value
         @state = :fulfilled
@@ -72,20 +71,21 @@ module Concurrent
       end
     end
 
-    def value=(value)
-      @value = value
-    end
-
-    def reason=(reason)
-      @reason = reason
+    # @!visibility private
+    def state=(value) # :nodoc:
+      mutex.synchronize { @state = value }
     end
 
     # atomic compare and set operation
     # state is set to next_state only if current state is == expected_current
+    #
     # @param [Symbol] next_state
     # @param [Symbol] expected_current
+    # 
     # @return [Boolean] true is state is changed, false otherwise
-    def compare_and_set_state(next_state, expected_current)
+    #
+    # @!visibility private
+    def compare_and_set_state(next_state, expected_current) # :nodoc:
       mutex.synchronize do
         if @state == expected_current
           @state = next_state
@@ -97,8 +97,11 @@ module Concurrent
     end
 
     # executes the block within mutex if current state is included in expected_states
+    #
     # @return block value if executed, false otherwise
-    def if_state(*expected_states)
+    #
+    # @!visibility private
+    def if_state(*expected_states) # :nodoc:
       raise ArgumentError.new('no block given') unless block_given?
 
       mutex.synchronize do
@@ -109,6 +112,5 @@ module Concurrent
         end
       end
     end
-
   end
 end

@@ -13,9 +13,9 @@ module Concurrent
           init_mutex
         end
 
-        public :compare_and_set_state, :if_state, :mutex
+        public :state=, :compare_and_set_state, :if_state, :mutex
+        attr_writer :value, :reason
       end
-
     end
 
     let (:obligation) { obligation_class.new }
