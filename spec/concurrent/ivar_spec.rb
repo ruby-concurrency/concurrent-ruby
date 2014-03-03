@@ -10,7 +10,7 @@ module Concurrent
     let!(:value) { 10 }
     
     subject do
-      i = IVar.new{ value }
+      i = IVar.new
       i.set(14)
       i
     end
@@ -48,12 +48,29 @@ module Concurrent
       # dereferenceable
 
       def dereferenceable_subject(value, opts = {})
-        i = IVar.new(opts)
-        i.set(value)
-        i
+        IVar.new(value, opts)
       end
 
       it_should_behave_like :dereferenceable
+    end
+
+    context '#initialize' do
+
+      it 'does not have to set an initial value' do
+        i = IVar.new
+        i.should be_incomplete
+      end
+
+      it 'does not set an initial value if you pass NO_VALUE' do
+        i = IVar.new(IVar::NO_VALUE)
+        i.should be_incomplete
+      end
+
+      it 'can set an initial value' do
+        i = IVar.new(14)
+        i.should be_completed
+      end
+
     end
 
     context '#set' do

@@ -8,11 +8,18 @@ module Concurrent
   class IVar
     include Obligation
 
-    def initialize(opts = {})
-      @state = :pending
+    NO_VALUE = Object.new
+
+    def initialize(value = NO_VALUE, opts = {})
       init_obligation
       @observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
+
+      if value == NO_VALUE
+        @state = :pending
+      else
+        set(value)
+      end
     end
 
     def add_observer(observer, func = :update)
