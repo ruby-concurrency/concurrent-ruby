@@ -46,6 +46,7 @@ module Concurrent
     #
     # @yield the asynchronous operation to perform
     #
+    # @param [Hash] opts the options to create a message with
     # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
     # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
