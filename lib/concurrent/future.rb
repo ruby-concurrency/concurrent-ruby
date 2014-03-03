@@ -1,38 +1,18 @@
 require 'thread'
 
 require 'concurrent/global_thread_pool'
-require 'concurrent/obligation'
-require 'concurrent/copy_on_write_observer_set'
 require 'concurrent/safe_task_executor'
 
 module Concurrent
 
-  class Future
-    include Obligation
+  class Future < IVar
     include UsesGlobalThreadPool
 
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-
-      init_obligation
-      @observers = CopyOnWriteObserverSet.new
+      super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      set_deref_options(opts)
-    end
-
-    def add_observer(observer, func = :update)
-      direct_notification = false
-      mutex.synchronize do
-        if event.set?
-          direct_notification = true
-        else
-          @observers.add_observer(observer, func)
-        end
-      end
-
-      observer.send(func, Time.now, self.value, reason) if direct_notification
-      func
     end
 
     # @since 0.5.0
@@ -52,15 +32,8 @@ module Concurrent
 
     # @!visibility private
     def work # :nodoc:
-
       success, val, reason = SafeTaskExecutor.new(@task).execute
-
-      mutex.synchronize do
-        set_state(success, val, reason)
-        event.set
-      end
-
-      @observers.notify_and_delete_observers(Time.now, self.value, reason)
+      complete(val, reason)
     end
 
   end
