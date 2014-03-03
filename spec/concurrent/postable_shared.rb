@@ -31,15 +31,11 @@ share_examples_for :postable do
       postable.stop
     end
 
-    it 'returns the current size of the queue' do
+    it 'returns true on success' do
       postable = postable_class.new{|msg| sleep }
       @thread = Thread.new{ postable.run }
-      @thread.join(0.1)
-      postable.post(true).should == 1
-      @thread.join(0.1)
-      postable.post(true).should == 1
-      @thread.join(0.1)
-      postable.post(true).should == 2
+      5.times{ @thread.join(0.1); break if postable.running? }
+      postable.post(true).should be_true
       postable.stop
     end
 
