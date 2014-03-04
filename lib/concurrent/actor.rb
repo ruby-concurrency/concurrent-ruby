@@ -236,7 +236,7 @@ module Concurrent
           package.handler.push(result || ex)
           package.notifier.set
         elsif package.handler.is_a?(IVar)
-          package.handler.complete(result, ex)
+          package.handler.complete(! result.nil?, result, ex)
         elsif package.handler.respond_to?(:post) && ex.nil?
           package.handler.post(result)
         end

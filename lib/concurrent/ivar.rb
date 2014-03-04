@@ -5,6 +5,8 @@ require 'concurrent/copy_on_write_observer_set'
 
 module Concurrent
 
+  MultipleAssignmentError = Class.new(StandardError)
+
   class IVar
     include Obligation
 
@@ -28,6 +30,8 @@ module Concurrent
       else
         set(value)
       end
+
+      @workCounter = AtomicFixnum.new
     end
 
     # Add an observer on this object that will receive notification on update.
@@ -55,16 +59,21 @@ module Concurrent
     end
 
     def set(value)
-      complete(value, nil)
+      complete(true, value, nil)
     end
 
-    def complete(value, reason)
+    def fail(reason = nil)
+      complete(false, nil, reason)
+    end
+
+    def complete(success, value, reason)
       mutex.synchronize do
-        set_state(reason.nil?, value, reason)
+        raise MultipleAssignmentError.new('multiple assignment') if [:fulfilled, :rejected].include? @state
+        set_state(success, value, reason)
         event.set
       end
 
-      @observers.notify_and_delete_observers(Time.now, self.value, reason)
+      @observers.notify_and_delete_observers(Time.now, value, reason)
     end
 
   end

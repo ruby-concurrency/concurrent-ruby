@@ -26,20 +26,20 @@ module Concurrent
       @i = IVar.new
       Thread.new do
         sleep(3)
-        @i.complete(fulfilled_value, nil)
+        @i.set(fulfilled_value)
       end
       @i
     end
 
     let(:fulfilled_subject) do
       i = IVar.new
-      i.complete(fulfilled_value, nil)
+      i.set(fulfilled_value)
       i
     end
 
     let(:rejected_subject) do
       i = IVar.new
-      i.complete(nil, rejected_reason)
+      i.fail(rejected_reason)
       i
     end
 
@@ -75,10 +75,46 @@ module Concurrent
 
     context '#set' do
 
+      it 'sets the state to be fulfilled' do
+        i = IVar.new
+        i.set(14)
+        i.should be_fulfilled
+      end
+
       it 'sets the value' do
         i = IVar.new
         i.set(14)
         i.value.should eq 14
+      end
+
+      it 'raises an exception if set more than once' do
+        i = IVar.new
+        i.set(14)
+        expect {i.set(2)}.to raise_error(MultipleAssignmentError)
+        i.value.should eq 14
+      end
+
+    end
+
+    context '#fail' do
+
+      it 'sets the state to be rejected' do
+        i = IVar.new
+        i.fail
+        i.should be_rejected
+      end
+
+      it 'sets the value to be nil' do
+        i = IVar.new
+        i.fail
+        i.value.should be_nil
+      end
+
+      it 'raises an exception if set more than once' do
+        i = IVar.new
+        i.fail
+        expect {i.fail}.to raise_error(MultipleAssignmentError)
+        i.value.should be_nil
       end
 
     end
