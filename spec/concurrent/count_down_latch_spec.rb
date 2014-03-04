@@ -7,7 +7,23 @@ module Concurrent
     let(:latch) { CountDownLatch.new(3) }
     let(:zero_count_latch) { CountDownLatch.new(0) }
 
+    context '#initialize' do
+
+      it 'raises an exception if the initial count is less than zero' do
+        expect {
+          CountDownLatch.new(-1)
+        }.to raise_error(ArgumentError)
+      end
+
+      it 'raises an exception if the initial count is not an integer' do
+        expect {
+          CountDownLatch.new('foo')
+        }.to raise_error(ArgumentError)
+      end
+    end
+
     describe '#count' do
+
       it 'should be the value passed to the constructor' do
         latch.count.should eq 3
       end
@@ -24,6 +40,7 @@ module Concurrent
     end
 
     describe '#wait' do
+
       context 'count set to zero' do
         it 'should return true immediately' do
           result = zero_count_latch.wait
@@ -37,6 +54,7 @@ module Concurrent
       end
 
       context 'non zero count' do
+
         it 'should block thread until counter is set to zero' do
           3.times do
             Thread.new { sleep(0.1); latch.count_down }
@@ -64,8 +82,6 @@ module Concurrent
           latch.count.should eq 3
         end
       end
-
     end
-
   end
 end
