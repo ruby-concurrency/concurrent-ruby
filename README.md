@@ -23,8 +23,9 @@ The design goals of this gem are:
 
 ## Features & Documentation
 
-Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki) for more information
-or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
+Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki)
+or the [API documentation](http://rubydoc.info/github/jdantonio/concurrent-ruby/master/frames)
+for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
 
 There are many concurrency abstractions in this library. These abstractions can be broadly categorized
 into several general categories:
