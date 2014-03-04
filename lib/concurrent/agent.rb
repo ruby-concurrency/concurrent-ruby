@@ -35,7 +35,6 @@ module Concurrent
   #
   # @see http://ruby-doc.org/stdlib-2.1.1/libdoc/observer/rdoc/Observable.html Ruby +Observable+ module
   class Agent
-    include Observable
     include Dereferenceable
     include UsesGlobalThreadPool
 
@@ -57,8 +56,9 @@ module Concurrent
     def initialize(initial, opts = {})
       @value = initial
       @rescuers = []
-      @validator = nil
+      @validator = Proc.new { |result| true }
       @timeout = opts.fetch(:timeout, TIMEOUT).freeze
+      @observers = CopyOnWriteObserverSet.new
       init_mutex
       set_deref_options(opts)
     end
@@ -90,7 +90,7 @@ module Concurrent
           @rescuers << Rescuer.new(clazz, block)
         end
       end
-      return self
+      self
     end
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
@@ -105,7 +105,7 @@ module Concurrent
     # @yieldreturn [Boolean] true if the value is valid else false
     def validate(&block)
       @validator = block unless block.nil?
-      return self
+      self
     end
     alias_method :validates, :validate
     alias_method :validate_with, :validate
@@ -129,10 +129,18 @@ module Concurrent
     # @yieldreturn [Object] the new value
     def <<(block)
       self.post(&block)
-      return self
+      self
+    end
+
+    def add_observer(observer, func=:update)
+      @observers.add_observer(observer, func)
     end
 
     alias_method :add_watch, :add_observer
+
+    def delete_observer(observer)
+      @observers.delete_observer(observer)
+    end
 
     private
 
@@ -152,16 +160,19 @@ module Concurrent
     # @!visibility private
     def work(&handler) # :nodoc:
       begin
+
+        should_notify = false
+
         mutex.synchronize do
           result = Concurrent::timeout(@timeout) do
             handler.call(@value)
           end
-          if @validator.nil? || @validator.call(result)
+          if @validator.call(result)
             @value = result
-            changed
+            should_notify = true
           end
         end
-        notify_observers(Time.now, self.value) if self.changed?
+        @observers.notify_observers(Time.now, self.value) if should_notify
       rescue Exception => ex
         try_rescue(ex)
       end
