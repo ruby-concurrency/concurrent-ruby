@@ -30,8 +30,6 @@ module Concurrent
       else
         set(value)
       end
-
-      @workCounter = AtomicFixnum.new
     end
 
     # Add an observer on this object that will receive notification on update.
