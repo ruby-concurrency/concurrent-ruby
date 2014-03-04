@@ -134,16 +134,17 @@ module Concurrent
     end
 
     def wait_for_full(timeout)
-      remaining = Condition::Result.new(timeout)
-      while unlocked_empty? && remaining.can_wait?
-        remaining = @full_condition.wait(@mutex, remaining.remaining_time)
-      end
+      wait_while(@full_condition, timeout) { unlocked_empty? }
     end
 
     def wait_for_empty(timeout)
+      wait_while(@empty_condition, timeout) { unlocked_full? }
+    end
+
+    def wait_while(condition, timeout)
       remaining = Condition::Result.new(timeout)
-      while unlocked_full? && remaining.can_wait?
-        remaining = @empty_condition.wait(@mutex, remaining.remaining_time)
+      while yield && remaining.can_wait?
+        remaining = condition.wait(@mutex, remaining.remaining_time)
       end
     end
 
