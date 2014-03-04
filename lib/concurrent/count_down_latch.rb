@@ -19,7 +19,7 @@ module Concurrent
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
       @mutex = Mutex.new
-      @condition = ConditionVariable.new
+      @condition = Condition.new
       @count = count
     end
 
@@ -30,7 +30,12 @@ module Concurrent
     # @return [Boolean] +true+ if the +count+ reaches zero else false on +timeout+
     def wait(timeout = nil)
       @mutex.synchronize do
-        @condition.wait(@mutex, timeout) if @count > 0
+
+        remaining = Condition::Result.new(timeout)
+        while @count > 0 && remaining.can_wait?
+          remaining = @condition.wait(@mutex, remaining.remaining_time)
+        end
+
         @count == 0
       end
     end
