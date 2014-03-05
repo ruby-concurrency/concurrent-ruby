@@ -3,7 +3,7 @@ require 'rbconfig'
 
 module Concurrent
 
-  describe Future do
+  describe ThreadLocalVar do
 
     subject{ ThreadLocalVar.new }
 
@@ -31,7 +31,7 @@ module Concurrent
         it 'uses ThreadLocalJavaStorage' do
           subject.class.ancestors.should include(Concurrent::ThreadLocalJavaStorage)
         end
-      elsif RbConfig::CONFIG['ruby_version'] =~ /^1\.9/
+      elsif rbx? || RbConfig::CONFIG['ruby_version'] =~ /^1\.9/
         it 'uses ThreadLocalOldStorage' do
           subject.class.ancestors.should include(Concurrent::ThreadLocalOldStorage)
         end
