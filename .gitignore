@@ -1,3 +1,4 @@
+.*.sw?
 lib/atomic_reference.jar
 /nbproject
 ext/*.bundle
