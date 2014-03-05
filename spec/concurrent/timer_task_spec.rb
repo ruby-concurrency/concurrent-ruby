@@ -87,7 +87,37 @@ module Concurrent
       end
 
       context '#kill' do
-        pending
+
+        it 'kills its threads while sleeping' do
+          Thread.should_receive(:kill).at_least(:once).times.with(any_args)
+          task = TimerTask.new(run_now: false){ nil }
+          task.run!
+          sleep(0.1)
+          task.kill
+        end
+
+        it 'kills its threads once executing' do
+          Thread.should_receive(:kill).at_least(2).times.with(any_args)
+          task = TimerTask.new(run_now: true){ nil }
+          task.run!
+          sleep(0.1)
+          task.kill
+        end
+
+        it 'returns true on success' do
+          task = TimerTask.new(run_now: false){ nil }
+          task.run!
+          sleep(0.1)
+          task.kill.should be_true
+        end
+
+        it 'returns false on exception' do
+          Thread.stub(:kill).with(any_args).and_raise(StandardError)
+          task = TimerTask.new(run_now: false){ nil }
+          task.run!
+          sleep(0.1)
+          task.kill.should be_false
+        end
       end
     end
 
