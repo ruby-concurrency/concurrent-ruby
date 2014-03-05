@@ -32,8 +32,6 @@ module Concurrent
   #
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
-  #
-  # @see http://ruby-doc.org/stdlib-2.1.1/libdoc/observer/rdoc/Observable.html Ruby +Observable+ module
   class Agent
     include Dereferenceable
     include UsesGlobalThreadPool
