@@ -8,7 +8,8 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
 
 SimpleCov.start do
   project_name 'concurrent-ruby'
-  add_filter '/md/'
+  add_filter '/coverage/'
+  add_filter '/doc/'
   add_filter '/pkg/'
   add_filter '/spec/'
   add_filter '/tasks/'
