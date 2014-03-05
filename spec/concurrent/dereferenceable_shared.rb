@@ -124,4 +124,22 @@ share_examples_for :dereferenceable do
     mutex.should_receive(:synchronize).at_least(:once)
     subject.value
   end
+
+  it 'supports dereference flags with observers' do
+    if dereferenceable_subject(0).respond_to?(:add_observer)
+
+      result = 'result'
+      result.should_receive(:dup).and_return(result)
+      result.should_receive(:freeze).and_return(result)
+      copier = proc { result }
+
+      observer = double('observer')
+      observer.should_receive(:update).with(any_args)
+
+      subject = dereferenceable_observable(dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
+
+      subject.add_observer(observer)
+      execute_dereferenceable(subject)
+    end
+  end
 end

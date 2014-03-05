@@ -51,24 +51,16 @@ module Concurrent
         IVar.new(value, opts)
       end
 
-      it_should_behave_like :dereferenceable
+      def dereferenceable_observable(opts = {})
+        IVar.new(IVar::NO_VALUE, opts)
+      end
 
-      it 'supports dereference flags with observers' do
-
-        result = 'result'
-        result.should_receive(:dup).and_return(result)
-        result.should_receive(:freeze).and_return(result)
-        copier = proc { result }
-
-        observer = double('observer')
-        observer.should_receive(:update).with(any_args)
-
-        subject = IVar.new(IVar::NO_VALUE, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
-        subject.add_observer(observer)
-
-        subject.set(result)
+      def execute_dereferenceable(subject)
+        subject.set('value')
         sleep(0.1)
       end
+
+      it_should_behave_like :dereferenceable
     end
 
     context '#initialize' do

@@ -46,24 +46,16 @@ module Concurrent
         Future.new(opts){ value }.execute.tap{ sleep(0.1) }
       end
 
-      it_should_behave_like :dereferenceable
+      def dereferenceable_observable(opts = {})
+        Future.new(opts){ 'value' }
+      end
 
-      it 'supports dereference flags with observers' do
-
-        result = 'result'
-        result.should_receive(:dup).and_return(result)
-        result.should_receive(:freeze).and_return(result)
-        copier = proc { result }
-
-        observer = double('observer')
-        observer.should_receive(:update).with(any_args)
-
-        subject = Future.new(dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier){ result }
-        subject.add_observer(observer)
-
+      def execute_dereferenceable(subject)
         subject.execute
         sleep(0.1)
       end
+
+      it_should_behave_like :dereferenceable
     end
 
     context '#initialize' do

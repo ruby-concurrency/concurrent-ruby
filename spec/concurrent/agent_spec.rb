@@ -35,24 +35,16 @@ module Concurrent
         Agent.new(value, opts)
       end
 
-      it_should_behave_like :dereferenceable
+      def dereferenceable_observable(opts = {})
+        Agent.new(0, opts)
+      end
 
-      it 'supports dereference flags with observers' do
-
-        result = 'result'
-        result.should_receive(:dup).and_return(result)
-        result.should_receive(:freeze).and_return(result)
-        copier = proc { result }
-
-        observer = double('observer')
-        observer.should_receive(:update).with(any_args)
-
-        subject = Agent.new(0, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
-        subject.add_observer(observer)
-
-        subject << proc { 'original result' }
+      def execute_dereferenceable(subject)
+        subject << proc { 'value' }
         sleep(0.1)
       end
+
+      it_should_behave_like :dereferenceable
     end
 
     context '#initialize' do
