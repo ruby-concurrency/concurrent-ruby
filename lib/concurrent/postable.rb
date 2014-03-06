@@ -1,3 +1,5 @@
+require 'concurrent/event'
+
 module Concurrent
 
   module Postable
@@ -37,12 +39,12 @@ module Concurrent
       raise ArgumentError.new('empty message') if message.empty?
       return false unless ready?
       queue.push(Package.new(message))
-      return true
+      true
     end
 
     def <<(message)
       post(*message)
-      return self
+      self
     end
 
     def post?(*message)
@@ -50,7 +52,7 @@ module Concurrent
       return nil unless ready?
       ivar = IVar.new
       queue.push(Package.new(message, ivar))
-      return ivar
+      ivar
     end
 
     def post!(seconds, *message)
@@ -77,14 +79,14 @@ module Concurrent
       raise ArgumentError.new('empty message') if message.empty?
       return false unless ready?
       queue.push(Package.new(message, receiver))
-      return queue.length
+      queue.length
     end
 
     def ready?
       if self.respond_to?(:running?) && ! running?
-        return false
+        false
       else
-        return true
+        true
       end
     end
 

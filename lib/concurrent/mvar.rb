@@ -1,3 +1,4 @@
+require 'concurrent/dereferenceable'
 require 'concurrent/event'
 
 module Concurrent

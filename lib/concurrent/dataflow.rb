@@ -13,7 +13,7 @@ module Concurrent
 
     def update(time, value, reason)
       if @counter.decrement == 0
-        @block.call()
+        @block.call
       end
     end
   end

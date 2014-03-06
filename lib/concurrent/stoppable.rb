@@ -8,13 +8,13 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       raise Runnable::LifecycleError.new('#before_stop already set') if @before_stop_proc
       @before_stop_proc = block
-      return self
+      self
     end
 
     protected
 
     def before_stop_proc
-      return @before_stop_proc
+      @before_stop_proc
     end
   end
 end

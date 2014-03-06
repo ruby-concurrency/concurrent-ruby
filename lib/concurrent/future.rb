@@ -1,5 +1,6 @@
 require 'thread'
 
+require 'concurrent/obligation'
 require 'concurrent/global_thread_pool'
 require 'concurrent/safe_task_executor'
 

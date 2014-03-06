@@ -11,20 +11,28 @@ module Concurrent
 
     # Has the obligation been fulfilled?
     # @return [Boolean]
-    def fulfilled?() state == :fulfilled; end
+    def fulfilled?
+      state == :fulfilled
+    end
     alias_method :realized?, :fulfilled?
 
     # Has the obligation been rejected?
     # @return [Boolean]
-    def rejected?() state == :rejected; end
+    def rejected?
+      state == :rejected
+    end
 
     # Is obligation completion still pending?
     # @return [Boolean]
-    def pending?() state == :pending; end
+    def pending?
+      state == :pending
+    end
 
     # Is the obligation still unscheduled?
     # @return [Boolean]
-    def unscheduled?() state == :unscheduled; end
+    def unscheduled?
+      state == :unscheduled
+    end
 
     def completed?
       [:fulfilled, :rejected].include? state
