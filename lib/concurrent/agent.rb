@@ -170,7 +170,8 @@ module Concurrent
             should_notify = true
           end
         end
-        @observers.notify_observers(Time.now, self.value) if should_notify
+        time = Time.now
+        @observers.notify_observers{ [time, self.value] } if should_notify
       rescue Exception => ex
         try_rescue(ex)
       end

@@ -71,8 +71,8 @@ module Concurrent
         event.set
       end
 
-      @observers.notify_and_delete_observers(Time.now, value, reason)
+      time = Time.now
+      @observers.notify_and_delete_observers{ [time, self.value, reason] }
     end
-
   end
 end

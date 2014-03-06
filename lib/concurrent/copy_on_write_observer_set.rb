@@ -50,8 +50,8 @@ module Concurrent
     # Notifies all registered observers with optional args
     # @param [Object] args arguments to be passed to each observer
     # @return [CopyOnWriteObserverSet] self
-    def notify_observers(*args)
-      notify_to(observers, *args)
+    def notify_observers(*args, &block)
+      notify_to(observers, *args, &block)
       self
     end
 
@@ -59,35 +59,39 @@ module Concurrent
     #
     # @param [Object] args arguments to be passed to each observer
     # @return [CopyOnWriteObserverSet] self
-    def notify_and_delete_observers(*args)
+    def notify_and_delete_observers(*args, &block)
       old = clear_observers_and_return_old
-      notify_to(old, *args)
+      notify_to(old, *args, &block)
       self
     end
 
     private
 
-      def notify_to(observers, *args)
-        observers.each do |observer, function|
-          observer.send function, *args
+    def notify_to(observers, *args)
+      raise ArgumentError.new('cannot give arguments and a block') if block_given? && ! args.empty?
+      observers.each do |observer, function|
+        if block_given?
+          observer.send(function, *[yield].flatten)
+        else
+          observer.send(function, *args)
         end
       end
+    end
 
-      def observers
-        @mutex.synchronize { @observers }
+    def observers
+      @mutex.synchronize { @observers }
+    end
+
+    def observers=(new_set)
+      @mutex.synchronize { @observers = new_set}
+    end
+
+    def clear_observers_and_return_old
+      @mutex.synchronize do
+        old_observers = @observers
+        @observers = {}
+        old_observers
       end
-
-      def observers=(new_set)
-        @mutex.synchronize { @observers = new_set}
-      end
-
-      def clear_observers_and_return_old
-        @mutex.synchronize do
-          old_observers = @observers
-          @observers = {}
-          old_observers
-        end
-      end
-
+    end
   end
 end
