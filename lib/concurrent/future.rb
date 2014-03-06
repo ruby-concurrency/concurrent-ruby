@@ -107,6 +107,8 @@ module Concurrent
       return Future.new(opts, &block).execute
     end
 
+    protected :set, :fail, :complete
+
     private
 
     # @!visibility private
