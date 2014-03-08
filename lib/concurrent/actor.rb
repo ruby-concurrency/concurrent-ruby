@@ -19,36 +19,36 @@ module Concurrent
   # 
   #   An independent, concurrent, single-purpose, computational entity that communicates exclusively via message passing.
   # 
-  # The `Concurrent::Actor` class in this library is based solely on the
+  # The +Concurrent::Actor+ class in this library is based solely on the
   # {http://www.scala-lang.org/api/current/index.html#scala.actors.Actor Actor} trait
   # defined in the Scala standard library. It does not implement all the features of
-  # Scala's `Actor` but its behavior for what *has* been implemented is nearly identical.
+  # Scala's +Actor+ but its behavior for what *has* been implemented is nearly identical.
   # The excluded features mostly deal with Scala's message semantics, strong typing,
   # and other characteristics of Scala that don't really apply to Ruby.
   # 
-  # Unlike most of the abstractions in this library, `Actor` takes an *object-oriented*
+  # Unlike many of the abstractions in this library, +Actor+ takes an *object-oriented*
   # approach to asynchronous concurrency, rather than a *functional programming*
   # approach.
   #   
-  # Because `Actor` mixes in the `Concurrent::Runnable` module subclasses have access to
-  # the `#on_error` method and can override it to implement custom error handling. The
-  # `Actor` base class does not use `#on_error` so as to avoid conflit with subclasses
-  # which override it. Generally speaking, `#on_error` should not be used. The `Actor`
+  # Because +Actor+ mixes in the +Concurrent::Runnable+ module subclasses have access to
+  # the +#on_error+ method and can override it to implement custom error handling. The
+  # +Actor+ base class does not use +#on_error+ so as to avoid conflit with subclasses
+  # which override it. Generally speaking, +#on_error+ should not be used. The +Actor+
   # base class provides concictent, reliable, and robust error handling already, and
   # error handling specifics are tied to the message posting method. Incorrect behavior
-  # in an `#on_error` override can lead to inconsistent `Actor` behavior that may lead
+  # in an +#on_error+ override can lead to inconsistent +Actor+ behavior that may lead
   # to confusion and difficult debugging.
   #   
-  # The `Actor` superclass mixes in the Ruby standard library
+  # The +Actor+ superclass mixes in the Ruby standard library
   # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html Observable}
   # module to provide consistent callbacks upon message processing completion. The normal
-  # `Observable` methods, including `#add_observer` behave normally. Once an observer
-  # is added to an `Actor` it will be notified of all messages processed *after*
+  # +Observable+ methods, including +#add_observer+ behave normally. Once an observer
+  # is added to an +Actor+ it will be notified of all messages processed *after*
   # addition. Notification will *not* occur for any messages that have already been
   # processed.
   #   
   # Observers will be notified regardless of whether the message processing is successful
-  # or not. The `#update` method of the observer will receive four arguments. The
+  # or not. The +#update+ method of the observer will receive four arguments. The
   # appropriate method signature is:
   #   
   #   def update(time, message, result, reason)
@@ -57,8 +57,8 @@ module Concurrent
   #   
   # * The time that message processing was completed
   # * An array containing all elements of the original message, in order
-  # * The result of the call to `#act` (will be `nil` if an exception was raised)
-  # * Any exception raised by `#act` (or `nil` if message processing was successful)
+  # * The result of the call to +#act+ (will be +nil+ if an exception was raised)
+  # * Any exception raised by +#act+ (or +nil+ if message processing was successful)
   #
   # @example Actor Ping Pong
   #   class Ping < Concurrent::Actor
@@ -140,10 +140,10 @@ module Concurrent
 
     # Create a pool of actors that share a common mailbox.
     #   
-    # Every `Actor` instance operates on its own thread. When one thread isn't enough capacity
-    # to manage all the messages being sent to an `Actor` a *pool* can be used instead. A pool
-    # is a collection of `Actor` instances, all of the same type, that shate a message queue.
-    # Messages from other threads are all sent to a single queue against which all `Actor`s
+    # Every +Actor+ instance operates on its own thread. When one thread isn't enough capacity
+    # to manage all the messages being sent to an +Actor+ a *pool* can be used instead. A pool
+    # is a collection of +Actor+ instances, all of the same type, that shate a message queue.
+    # Messages from other threads are all sent to a single queue against which all +Actor+s
     # load balance.
     #
     # @param [Integer] count the number of actors in the pool
@@ -152,7 +152,7 @@ module Concurrent
     # @return [Array] two-element array with the shared mailbox as the first element
     #   and an array of actors as the second element
     #
-    # @raise ArgumentError if `count` is zero or less
+    # @raise ArgumentError if +count+ is zero or less
     #
     # @example
     #   class EchoActor < Concurrent::Actor
@@ -191,35 +191,35 @@ module Concurrent
 
     protected
 
-    # Actors are defined by subclassing the `Concurrent::Actor` class and overriding the
-    # #act method. The #act method can have any signature/arity but `def act(*args)`
+    # Actors are defined by subclassing the +Concurrent::Actor+ class and overriding the
+    # #act method. The #act method can have any signature/arity but +def act(*args)+
     # is the most flexible and least error-prone signature. The #act method is called in
-    # response to a message being post to the `Actor` instance (see *Behavior* below).
+    # response to a message being post to the +Actor+ instance (see *Behavior* below).
     #
     # @param [Array] message one or more arguments representing the message sent to the
     #   actor via one of the Concurrent::Postable methods
     #
     # @return [Object] the result obtained when the message is successfully processed
     #
-    # @raise NotImplementedError unless overridden in the `Actor` subclass
+    # @raise NotImplementedError unless overridden in the +Actor+ subclass
     # 
     # @!visibility public
     def act(*message)
       raise NotImplementedError.new("#{self.class} does not implement #act")
     end
 
-    # @private
+    # @!visibility private
     def on_run # :nodoc:
       queue.clear
     end
 
-    # @private
+    # @!visibility private
     def on_stop # :nodoc:
       queue.clear
       queue.push(:stop)
     end
 
-    # @private
+    # @!visibility private
     def on_task # :nodoc:
       package = queue.pop
       return if package == :stop
@@ -235,8 +235,8 @@ module Concurrent
         if notifier.is_a?(Event) && ! notifier.set?
           package.handler.push(result || ex)
           package.notifier.set
-        elsif package.handler.is_a?(Contract)
-          package.handler.complete(result, ex)
+        elsif package.handler.is_a?(IVar)
+          package.handler.complete(! result.nil?, result, ex)
         elsif package.handler.respond_to?(:post) && ex.nil?
           package.handler.post(result)
         end
@@ -246,7 +246,7 @@ module Concurrent
       end
     end
 
-    # @private
+    # @!visibility private
     def on_error(time, msg, ex) # :nodoc:
     end
   end

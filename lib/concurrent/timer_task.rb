@@ -15,39 +15,37 @@ module Concurrent
   # task itself is tightly coupled with the concurrency logic. Second, an exception in
   # raised while performing the task can cause the entire thread to abend. In a
   # long-running application where the task thread is intended to run for days/weeks/years
-  # a crashed task thread can pose a significant problem. `TimerTask` alleviates both problems.
+  # a crashed task thread can pose a significant problem. +TimerTask+ alleviates both problems.
   # 
-  # When a `TimerTask` is launched it starts a thread for monitoring the execution interval.
-  # The `TimerTask` thread does not perform the task, however. Instead, the TimerTask
+  # When a +TimerTask+ is launched it starts a thread for monitoring the execution interval.
+  # The +TimerTask+ thread does not perform the task, however. Instead, the TimerTask
   # launches the task on a separate thread. Should the task experience an unrecoverable
-  # crash only the task thread will crash. This makes the `TimerTask` very fault tolerant
-  # Additionally, the `TimerTask` thread can respond to the success or failure of the task,
-  # performing logging or ancillary operations. `TimerTask` can also be configured with a
+  # crash only the task thread will crash. This makes the +TimerTask+ very fault tolerant
+  # Additionally, the +TimerTask+ thread can respond to the success or failure of the task,
+  # performing logging or ancillary operations. +TimerTask+ can also be configured with a
   # timeout value allowing it to kill a task that runs too long.
   # 
-  # One other advantage of `TimerTask` is it forces the bsiness logic to be completely decoupled
+  # One other advantage of +TimerTask+ is it forces the bsiness logic to be completely decoupled
   # from the concurrency logic. The business logic can be tested separately then passed to the
-  # `TimerTask` for scheduling and running.
+  # +TimerTask+ for scheduling and running.
   # 
-  # In some cases it may be necessary for a `TimerTask` to affect its own execution cycle.
+  # In some cases it may be necessary for a +TimerTask+ to affect its own execution cycle.
   # To facilitate this a reference to the task object is passed into the block as a block
   # argument every time the task is executed.
   # 
-  # The `TimerTask` class includes the `Dereferenceable` mixin module so the result of
-  # the last execution is always available via the `#value` method. Derefencing options
-  # can be passed to the `TimerTask` during construction or at any later time using the
-  # `#set_deref_options` method.
+  # The +TimerTask+ class includes the +Dereferenceable+ mixin module so the result of
+  # the last execution is always available via the +#value+ method. Derefencing options
+  # can be passed to the +TimerTask+ during construction or at any later time using the
+  # +#set_deref_options+ method.
   # 
-  # `TimerTask` supports notification through the Ruby standard library
+  # +TimerTask+ supports notification through the Ruby standard library
   # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html Observable}
-  # module. On execution the `TimerTask` will notify the observers
+  # module. On execution the +TimerTask+ will notify the observers
   # with threes arguments: time of execution, the result of the block (or nil on failure),
   # and any raised exceptions (or nil on success). If the timeout interval is exceeded
-  # the observer will receive a `Concurrent::TimeoutError` object as the third argument.
+  # the observer will receive a +Concurrent::TimeoutError+ object as the third argument.
   #
   # @example Basic usage
-  #   require 'concurrent'
-  #   
   #   task = Concurrent::TimerTask.new{ puts 'Boom!' }
   #   task.run!
   #   
@@ -59,7 +57,7 @@ module Concurrent
   #   
   #   task.stop #=> true
   #
-  # @example Configuring `:execution_interval` and `:timeout_interval`
+  # @example Configuring +:execution_interval+ and +:timeout_interval+
   #   task = Concurrent::TimerTask.new(execution_interval: 5, timeout_interval: 5) do
   #          puts 'Boom!'
   #        end
@@ -67,13 +65,13 @@ module Concurrent
   #   task.execution_interval #=> 5
   #   task.timeout_interval   #=> 5
   #
-  # @example Immediate execution with `:run_now`
+  # @example Immediate execution with +:run_now+
   #   task = Concurrent::TimerTask.new(run_now: true){ puts 'Boom!' }
   #   task.run!
   #   
   #   #=> 'Boom!'
   #
-  # @example Last `#value` and `Dereferenceable` mixin
+  # @example Last +#value+ and +Dereferenceable+ mixin
   #   task = Concurrent::TimerTask.new(
   #     dup_on_deref: true,
   #     execution_interval: 5
@@ -151,10 +149,10 @@ module Concurrent
     include Stoppable
     include Observable
 
-    # Default `:execution_interval`
+    # Default +:execution_interval+
     EXECUTION_INTERVAL = 60
 
-    # Default `:timeout_interval`
+    # Default +:timeout_interval+
     TIMEOUT_INTERVAL = 30
 
     # Number of seconds after the task completes before the task is
@@ -180,12 +178,12 @@ module Concurrent
     #
     # @yield to the block after :execution_interval seconds have passed since
     #   the last yield
-    # @yieldparam task a reference to the `TimerTask` instance so that the
-    #   block can control its own lifecycle. Necessary since `self` will
+    # @yieldparam task a reference to the +TimerTask+ instance so that the
+    #   block can control its own lifecycle. Necessary since +self+ will
     #   refer to the execution context of the block rather than the running
-    #   `TimerTask`.
+    #   +TimerTask+.
     #
-    # @note Calls Concurrent::Dereferenceable#set_deref_options passing `opts`.
+    # @note Calls Concurrent::Dereferenceable#set_deref_options passing +opts+.
     #   All options supported by Concurrent::Dereferenceable can be set
     #   during object initialization.
     #
@@ -228,12 +226,12 @@ module Concurrent
       @timeout_interval = value
     end
 
-    # Terminate with extreme prejudice. Useful in cases where `#stop` doesn't
+    # Terminate with extreme prejudice. Useful in cases where +#stop+ doesn't
     # work because one of the threads becomes unresponsive.
     #
-    # @return [Boolean] indicating whether or not the `TimerTask` was killed
+    # @return [Boolean] indicating whether or not the +TimerTask+ was killed
     #
-    # @note Do not use this method unless `#stop` has failed.
+    # @note Do not use this method unless +#stop+ has failed.
     def kill
       return true unless running?
       mutex.synchronize do

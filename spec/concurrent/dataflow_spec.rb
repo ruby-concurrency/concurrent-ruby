@@ -30,7 +30,7 @@ module Concurrent
       Concurrent::dataflow(d){0}
     end
 
-    it 'raises an exception if any dependencies are not Futures' do
+    it 'raises an exception if any dependencies are not IVars' do
       expect { Concurrent::dataflow(nil) }.to raise_error(ArgumentError)
       expect { Concurrent::dataflow(Future.execute{0}, nil) }.to raise_error(ArgumentError)
       expect { Concurrent::dataflow(nil, Future.execute{0}) }.to raise_error(ArgumentError)

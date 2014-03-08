@@ -20,10 +20,12 @@ module Concurrent
     WorkerContext = Struct.new(:worker, :type, :restart) do
       attr_accessor :thread
       attr_accessor :terminated
+
       def alive?() return thread && thread.alive?; end
+
       def needs_restart?
         return false if thread && thread.alive?
-        return false if terminated == true
+        return false if terminated
         case self.restart
         when :permanent
           return true
@@ -42,12 +44,12 @@ module Concurrent
         self.supervisors += 1 if context.type == :supervisor
         self.workers += 1 if context.type == :worker
       end
-      def active() sleeping + running + aborting end;
-      def sleeping() @status.reduce(0){|x, s| x += (s == 'sleep' ? 1 : 0) } end;
-      def running() @status.reduce(0){|x, s| x += (s == 'run' ? 1 : 0) } end;
-      def aborting() @status.reduce(0){|x, s| x += (s == 'aborting' ? 1 : 0) } end;
-      def stopped() @status.reduce(0){|x, s| x += (s == false ? 1 : 0) } end;
-      def abend() @status.reduce(0){|x, s| x += (s.nil? ? 1 : 0) } end;
+      def active() sleeping + running + aborting end
+      def sleeping() @status.reduce(0){|x, s| x += (s == 'sleep' ? 1 : 0) } end
+      def running() @status.reduce(0){|x, s| x += (s == 'run' ? 1 : 0) } end
+      def aborting() @status.reduce(0){|x, s| x += (s == 'aborting' ? 1 : 0) } end
+      def stopped() @status.reduce(0){|x, s| x += (s == false ? 1 : 0) } end
+      def abend() @status.reduce(0){|x, s| x += (s.nil? ? 1 : 0) } end
     end
 
     attr_reader :monitor_interval
@@ -100,12 +102,13 @@ module Concurrent
         @running = true
       end
       monitor
-      return true
+      true
     end
 
     def stop
-      return true unless @running
       @mutex.synchronize do
+        return true unless @running
+
         @running = false
         unless @monitor.nil?
           @monitor.run if @monitor.status == 'sleep'
@@ -122,24 +125,25 @@ module Concurrent
         end
         prune_workers
       end
-      return true
+
+      true
     end
 
     def running?
-      return @running == true
+      @mutex.synchronize { @running }
     end
 
     def length
-      return @workers.length
+      @mutex.synchronize { @workers.length }
     end
     alias_method :size, :length
 
     def current_restart_count
-      return @restart_times.length
+      @restart_times.length
     end
 
     def count
-      return @mutex.synchronize do
+      @mutex.synchronize do
         @count.status = @workers.collect{|w| w.thread ? w.thread.status : false }
         @count.dup.freeze
       end
@@ -147,7 +151,7 @@ module Concurrent
 
     def add_worker(worker, opts = {})
       return nil if worker.nil? || ! behaves_as_worker?(worker)
-      return @mutex.synchronize {
+      @mutex.synchronize {
         restart = opts[:restart] || :permanent
         type = opts[:type] || (worker.is_a?(Supervisor) ? :supervisor : nil) || :worker
         raise ArgumentError.new(":#{restart} is not a valid restart option") unless CHILD_RESTART_OPTIONS.include?(restart)
@@ -155,21 +159,21 @@ module Concurrent
         context = WorkerContext.new(worker, type, restart)
         @workers << context
         @count.add(context)
-        worker.run if running?
+        worker.run if @running
         context.object_id
       }
     end
     alias_method :add_child, :add_worker
 
     def add_workers(workers, opts = {})
-      return workers.collect do |worker|
+      workers.collect do |worker|
         add_worker(worker, opts)
       end
     end
     alias_method :add_children, :add_workers
 
     def remove_worker(worker_id)
-      return @mutex.synchronize do
+      @mutex.synchronize do
         index, context = find_worker(worker_id)
         break(nil) if context.nil?
         break(false) if context.alive?
@@ -180,8 +184,9 @@ module Concurrent
     alias_method :remove_child, :remove_worker
 
     def stop_worker(worker_id)
-      return true unless running?
-      return @mutex.synchronize do
+      @mutex.synchronize do
+        return true unless @running
+
         index, context = find_worker(worker_id)
         break(nil) if index.nil?
         context.terminated = true
@@ -193,8 +198,9 @@ module Concurrent
     alias_method :stop_child, :stop_worker
 
     def start_worker(worker_id)
-      return false unless running?
-      return @mutex.synchronize do
+      @mutex.synchronize do
+        return false unless @running
+
         index, context = find_worker(worker_id)
         break(nil) if context.nil?
         context.terminated = false
@@ -205,8 +211,9 @@ module Concurrent
     alias_method :start_child, :start_worker
 
     def restart_worker(worker_id)
-      return false unless running?
-      return @mutex.synchronize do
+      @mutex.synchronize do
+        return false unless @running
+
         index, context = find_worker(worker_id)
         break(nil) if context.nil?
         break(false) if context.restart == :temporary
@@ -221,7 +228,7 @@ module Concurrent
     private
 
     def behaves_as_worker?(obj)
-      return WORKER_API.each do |method, arity|
+      WORKER_API.each do |method, arity|
         break(false) unless obj.respond_to?(method) && obj.method(method).arity == arity
         true
       end
@@ -247,7 +254,7 @@ module Concurrent
         Thread.current.abort_on_exception = false
         context.worker.run
       end
-      return context
+      context
     end
 
     def terminate_worker(context)
@@ -272,9 +279,9 @@ module Concurrent
     def find_worker(worker_id)
       index = @workers.find_index{|worker| worker.object_id == worker_id}
       if index.nil?
-        return [nil, nil]
+        [nil, nil]
       else
-        return [index, @workers[index]]
+        [index, @workers[index]]
       end
     end
 
@@ -286,7 +293,7 @@ module Concurrent
       elsif diff >= @max_time
         @restart_times.pop
       end
-      return false
+      false
     end
 
     #----------------------------------------------------------------

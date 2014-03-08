@@ -126,19 +126,20 @@ share_examples_for :dereferenceable do
   end
 
   it 'supports dereference flags with observers' do
-    pending
-    result = 'result'
-    result.should_receive(:dup).and_return(result)
-    result.should_receive(:freeze).and_return(result)
-    copier = proc { result }
+    if dereferenceable_subject(0).respond_to?(:add_observer)
 
-    observer = double('observer')
-    observer.should_receive(:update).with(any_args)
+      result = 'result'
+      result.should_receive(:dup).and_return(result)
+      result.should_receive(:freeze).and_return(result)
+      copier = proc { result }
 
-    subject = dereferenceable_subject(nil, dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
-    subject.add_observer(observer)
+      observer = double('observer')
+      observer.should_receive(:update).with(any_args)
 
-    subject << proc { 'original result' }
-    sleep(0.1)
+      subject = dereferenceable_observable(dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
+
+      subject.add_observer(observer)
+      execute_dereferenceable(subject)
+    end
   end
 end
