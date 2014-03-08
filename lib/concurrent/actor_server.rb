@@ -1,5 +1,4 @@
 require 'drb/drb'
-#require 'concurrent/actor_method_dispatcher'
 require 'concurrent/runnable'
 
 module Concurrent
@@ -12,8 +11,6 @@ module Concurrent
     DEFAULT_PORT = 8787
 
     attr_accessor :actor_pool
-
-    #def_delegator :@dispatcher, :add
 
     def initialize(host = DEFAULT_HOST, port = DEFAULT_PORT)
       @host       = host
@@ -32,10 +29,6 @@ module Concurrent
     # for clarity we may want to give this a different name
     # it isn't the same method as Actor#post
     def post(name, *args)
-      #return if @actor_pool[name].nil?
-
-      #@actor_pool[name][:actors].post(args)
-
       # this method needs to block and return the result
       #   or communicate the exception back to the caller
       # I'm fairly certain that DRb will catch exceptions, send them back,
@@ -52,11 +45,13 @@ module Concurrent
       #   for this spike I'll just set a long timeout and worry about it later
 
       raise ArgumentError.new("no registration for #{name}") unless @actor_pool[name]
-      # this will block for 30 seconds and return the result
-      # if an error is raised by the actor it will be raised by #post!
-      # it post! reaches the timeout it will raise Concurrent::TimeoutError
-      # DRb should catch the exception and marshall it back to the client
-      return @actor_pool[name][:actors].post!(30, *args)
+      return @actor_pool[name][:actors].post(*args)
+    end
+
+    def post!(name, timeout, *args)
+      raise ArgumentError.new("no registration for #{name}") unless @actor_pool[name]
+
+      return @actor_pool[name][:actors].post!(timeout, *args)
     end
 
     protected

@@ -67,5 +67,9 @@ describe Concurrent::ActorServer do
     it 'sends the message to the actor pool' do
       subject.post('foo', '').should == 1
     end
+
+    it 'raises an exception when the actor does not exist' do
+      expect { subject.post('f', '') }.to raise_error(ArgumentError)
+    end
   end
 end
