@@ -1,8 +1,33 @@
 require 'spec_helper'
+require_relative 'actor_shared'
 
 module Concurrent
 
   describe RemoteActor do
+
+    context 'behavior' do
+
+      # actor
+
+      let(:actor_server) do
+        clazz = Class.new(Concurrent::Actor){
+          def act(*message)
+            actor_shared_test_message_processor(*message)
+          end
+        }
+        server = Concurrent::ActorServer.new('localhost', 9999)
+        server.pool(:echo, clazz)
+        server
+      end
+
+      let(:actor_client) do
+        client = Concurrent::RemoteActor.new(:echo, host: 'localhost', port: 9999)
+        client.run!
+        client
+      end
+
+      it_should_behave_like :actor
+    end
 
     let(:remote_id) { 1 }
     let(:server)    { Concurrent::ActorServer.new }
