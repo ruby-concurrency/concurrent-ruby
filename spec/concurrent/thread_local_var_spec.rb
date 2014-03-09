@@ -1,8 +1,11 @@
 require 'spec_helper'
+require 'rbconfig'
 
 module Concurrent
 
-  describe Future do
+  describe ThreadLocalVar do
+
+    subject{ ThreadLocalVar.new }
 
     context '#initialize' do
 
@@ -24,6 +27,19 @@ module Concurrent
         t2.value.should eq 14
       end
 
+      if jruby?
+        it 'uses ThreadLocalJavaStorage' do
+          subject.class.ancestors.should include(Concurrent::ThreadLocalJavaStorage)
+        end
+      elsif rbx? || RbConfig::CONFIG['ruby_version'] =~ /^1\.9/
+        it 'uses ThreadLocalOldStorage' do
+          subject.class.ancestors.should include(Concurrent::ThreadLocalOldStorage)
+        end
+      else
+        it 'uses ThreadLocalNewStorage' do
+          subject.class.ancestors.should include(Concurrent::ThreadLocalNewStorage)
+        end
+      end
     end
 
     context '#value' do
@@ -76,7 +92,7 @@ module Concurrent
           b2.wait
           v.value
         end
-        
+
         t2 = Thread.new do
           b1.count_down
           b1.wait
@@ -85,7 +101,7 @@ module Concurrent
           b2.wait
           v.value
         end
-        
+
         t1.value.should eq 1
         t2.value.should eq 2
       end

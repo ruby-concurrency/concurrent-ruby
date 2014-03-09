@@ -14,7 +14,6 @@ module Concurrent
       end
 
       it_should_behave_like :dereferenceable
-      
     end
 
     describe '#initialize' do

@@ -46,7 +46,33 @@ module Concurrent
         Future.new(opts){ value }.execute.tap{ sleep(0.1) }
       end
 
+      def dereferenceable_observable(opts = {})
+        Future.new(opts){ 'value' }
+      end
+
+      def execute_dereferenceable(subject)
+        subject.execute
+        sleep(0.1)
+      end
+
       it_should_behave_like :dereferenceable
+    end
+
+    context 'subclassing' do
+      
+      subject{ Future.execute{ 42 } }
+
+      it 'protects #set' do
+        expect{ subject.set(100) }.to raise_error
+      end
+
+      it 'protects #fail' do
+        expect{ subject.fail }.to raise_error
+      end
+
+      it 'protects #complete' do
+        expect{ subject.complete(true, 100, nil) }.to raise_error
+      end
     end
 
     context '#initialize' do
@@ -277,7 +303,6 @@ module Concurrent
           obs.value.should eq 42
         end
       end
-
     end
   end
 end

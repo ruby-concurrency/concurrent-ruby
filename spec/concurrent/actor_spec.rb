@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'actor_shared'
 require_relative 'postable_shared'
 require_relative 'runnable_shared'
 
@@ -6,44 +7,64 @@ module Concurrent
 
   describe Actor do
 
-    let(:actor_class) do
-      Class.new(Actor) do
-        attr_reader :last_message
-        def initialize(&block)
-          @task = block
-          super()
-        end
-        def act(*message)
-          @last_message = message
-          @task.call(*message) unless @task.nil?
-        end
-      end
-    end
+    context 'behavior' do
 
-    ## :runnable
-    subject { Class.new(actor_class).new }
-    it_should_behave_like :runnable
-
-    ## :postable
-
-    let!(:postable_class){ actor_class }
-
-    let(:sender_class) do
-      Class.new(Actor) do
-        def act(*message)
-          if message.first.is_a?(Exception)
-            raise message.first
-          else
-            return message.first
+      let(:actor_class) do
+        Class.new(Actor) do
+          attr_reader :last_message
+          def initialize(&block)
+            @task = block
+            super()
+          end
+          def act(*message)
+            @last_message = message
+            @task.call(*message) unless @task.nil?
           end
         end
       end
+
+      ## :runnable
+
+      subject { Class.new(actor_class).new }
+      it_should_behave_like :runnable
+
+      ## :postable
+
+      let!(:postable_class){ actor_class }
+
+      let(:sender_class) do
+        Class.new(Actor) do
+          def act(*message)
+            if message.first.is_a?(Exception)
+              raise message.first
+            else
+              return message.first
+            end
+          end
+        end
+      end
+
+      let(:sender) { sender_class.new }
+      let(:receiver) { postable_class.new }
+
+      it_should_behave_like :postable
+
+      # actor
+
+      let(:actor_server) do
+        @server = Class.new(Concurrent::Actor){
+          def act(*message)
+            actor_shared_test_message_processor(*message)
+          end
+        }.new
+      end
+
+      let(:actor_client) do
+        @server || actor_server
+      end
+
+      it_should_behave_like :actor
     end
-
-    let(:sender) { sender_class.new }
-    let(:receiver) { postable_class.new }
-
-    it_should_behave_like :postable
 
     context '#run' do
 
