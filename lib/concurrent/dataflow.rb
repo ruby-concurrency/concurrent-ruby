@@ -36,19 +36,17 @@ module Concurrent
   # @example Parallel Fibonacci calculator
   #   def fib(n)
   #     if n < 2
-  #       Concurrent::Future.new { n }
+  #       Concurrent::dataflow { n }
   #     else
-  #       n1 = fib(n - 1).execute
-  #       n2 = fib(n - 2).execute
-  #       Concurrent::Future.new { n1.value + n2.value }
+  #       n1 = fib(n - 1)
+  #       n2 = fib(n - 2)
+  #       Concurrent::dataflow(n1, n2) { |v1, v2| v1 + v2 }
   #     end
   #   end
-  #   
-  #   f = fib(14) #=> #<Concurrent::Future:0x000001019ef5a0 ...
-  #   f.execute   #=> #<Concurrent::Future:0x000001019ef5a0 ...
-  #   
+  #
+  #   f = fib(14) #=> #<Concurrent::Future:0x000001019a26d8 ...
   #   sleep(0.5)
-  #   
+  #
   #   f.value #=> 377
   #
   # @param [Future] inputs zero or more +Future+ operations that this dataflow depends upon
