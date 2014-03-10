@@ -117,7 +117,7 @@ end
 
 GRAND_TOTAL = ACCOUNT_TOTALS.inject(0, :+)
 
-TRANSFERS = (0..1_000_000).map do
+TRANSFERS = (0..10_000_000).map do
   Transfer.new(
     RANDOM.rand(ACCOUNT_TOTALS.size),
     RANDOM.rand(ACCOUNT_TOTALS.size),

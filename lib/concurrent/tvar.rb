@@ -1,3 +1,5 @@
+require 'set'
+
 require 'concurrent/threadlocalvar'
 
 module Concurrent
@@ -6,12 +8,15 @@ module Concurrent
 
   CURRENT_TRANSACTION = ThreadLocalVar.new(nil)
 
+  ReadLogEntry = Struct.new(:tvar, :version)
   UndoLogEntry = Struct.new(:tvar, :value)
 
   class TVar
 
     def initialize(value)
       @value = value
+      @version = 0
+      @lock = Mutex.new
     end
 
     def value
@@ -34,25 +39,64 @@ module Concurrent
       @value = value
     end
 
+    def unsafe_version
+      @version
+    end
+
+    def unsafe_increment_version
+      @version += 1
+    end
+
+    def unsafe_lock
+      @lock
+    end
+
   end
 
   class Transaction
 
-    LOCK = Mutex.new
-
     def initialize
+      @write_set = Set.new
+      @read_log = []
       @undo_log = []
-
-      LOCK.lock
     end
 
     def read(tvar)
-      validate
+      Concurrent::abort_transaction unless valid?
+      @read_log.push(ReadLogEntry.new(tvar, tvar.unsafe_version))
       tvar.unsafe_value
     end
 
     def write(tvar, value)
+      # Have we already written to this TVar?
+
+      unless @write_set.include? tvar
+        # Try to lock the TVar
+
+        unless tvar.unsafe_lock.try_lock
+          # Someone else is writing to this TVar - abort
+          Concurrent::abort_transaction
+        end
+
+        # We've locked it - add it to the write set
+
+        @write_set.add(tvar)
+
+        # If we previously wrote to it, check the version hasn't changed
+
+        @read_log.each do |log_entry|
+          if log_entry.tvar == tvar and tvar.unsafe_version > log_entry.version
+            Concurrent::abort_transaction
+          end
+        end
+      end
+
+      # Record the current value of the TVar so we can undo it later
+
       @undo_log.push(UndoLogEntry.new(tvar, tvar.unsafe_value))
+
+      # Write the new value to the TVar
+
       tvar.unsafe_value = value
     end
 
@@ -65,16 +109,33 @@ module Concurrent
     end
 
     def commit
-      validate
+      return false unless valid?
+
+      @write_set.each do |tvar|
+        tvar.unsafe_increment_version
+      end
+
       unlock
+      
       true
     end
 
-    def validate
+    def valid?
+      @read_log.each do |log_entry|
+        unless @write_set.include? log_entry.tvar
+          if log_entry.tvar.unsafe_version > log_entry.version
+            return false
+          end
+        end
+      end
+
+      true
     end
 
     def unlock
-      LOCK.unlock
+      @write_set.each do |tvar|
+        tvar.unsafe_lock.unlock
+      end
     end
 
     def self.current
