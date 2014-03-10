@@ -34,6 +34,15 @@ module Concurrent
         ScheduledTask.execute(0.1, opts){ value }.tap{ sleep(0.2) }
       end
 
+      def dereferenceable_observable(opts = {})
+        ScheduledTask.new(0.1, opts){ 'value' }
+      end
+
+      def execute_dereferenceable(subject)
+        subject.execute
+        sleep(0.2)
+      end
+
       it_should_behave_like :dereferenceable
     end
 
@@ -42,38 +51,43 @@ module Concurrent
       it 'accepts a number of seconds (from now) as the schedule time' do
         Timecop.freeze do
           now = Time.now
-          task = ScheduledTask.new(60){ nil }
+          task = ScheduledTask.new(60){ nil }.execute
           task.schedule_time.to_i.should eq now.to_i + 60
         end
       end
 
       it 'accepts a time object as the schedule time' do
         schedule = Time.now + (60*10)
-        task = ScheduledTask.new(schedule){ nil }
+        task = ScheduledTask.new(schedule){ nil }.execute
         task.schedule_time.should eq schedule
       end
 
       it 'raises an exception when seconds is less than zero' do
         expect {
           ScheduledTask.new(-1){ nil }
-        }.to raise_error(ArgumentError)
+        }.to raise_error(ScheduledTask::SchedulingError)
       end
 
       it 'raises an exception when schedule time is in the past' do
         expect {
           ScheduledTask.new(Time.now - 60){ nil }
-        }.to raise_error(ArgumentError)
+        }.to raise_error(ScheduledTask::SchedulingError)
       end
 
       it 'raises an exception when no block given' do
         expect {
           ScheduledTask.new(1)
-        }.to raise_error(ArgumentError)
+        }.to raise_error(ScheduledTask::SchedulingError)
       end
 
       it 'sets the initial state to :unscheduled' do
         task = ScheduledTask.new(1){ nil }
         task.should be_unscheduled
+      end
+
+      it 'sets the #schedule_time to nil prior to execution' do
+        task = ScheduledTask.new(1){ nil }
+        task.schedule_time.should be_nil
       end
     end
 
@@ -88,6 +102,27 @@ module Concurrent
         task.execute
         task.instance_variable_set(:@state, :fulfilled)
         task.execute
+      end
+
+      it 'calculates the #schedule_time on execution' do
+        Timecop.freeze do
+          now = Time.now
+          task = ScheduledTask.new(5){ nil }
+          Timecop.travel(10)
+          task.execute
+          task.schedule_time.to_i.should eq now.to_i + 15
+        end
+      end
+
+      it 'raises an exception if expected schedule time is in the past' do
+        Timecop.freeze do
+          schedule = Time.now + (10)
+          task = ScheduledTask.new(schedule){ nil }
+          Timecop.travel(60)
+          expect {
+            task.execute
+          }.to raise_error(ScheduledTask::SchedulingError)
+        end
       end
 
       it 'spawns a new thread when a block was given on construction' do

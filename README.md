@@ -1,4 +1,7 @@
-# Concurrent Ruby [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
+# Concurrent Ruby
+[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.png)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/jdantonio/concurrent-ruby.png)](https://codeclimate.com/github/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
+
+***NOTE:*** *A few API updates in v0.5.0 are not backward-compatible. Please see the [release notes](https://github.com/jdantonio/concurrent-ruby/wiki/API-Updates-in-v0.5.0).*
 
 Modern concurrency tools for Ruby. Inspired by
 [Erlang](http://www.erlang.org/doc/reference_manual/processes.html),
@@ -21,21 +24,28 @@ The design goals of this gem are:
 
 ## Features & Documentation
 
-* Clojure-inspired [Agent](https://github.com/jdantonio/concurrent-ruby/blob/master/md/agent.md)
-* Clojure-inspired [Future](https://github.com/jdantonio/concurrent-ruby/blob/master/md/future.md)
-* Scala-inspired [Actor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/actor.md)
-* JavaScript-inspired [Promise](https://github.com/jdantonio/concurrent-ruby/blob/master/md/promise.md)
-* Java-inspired [Thread Pools](https://github.com/jdantonio/concurrent-ruby/blob/master/md/thread_pool.md)
-* Old school [events](http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx) from back in my Visual C++ days
-* Repeated task execution with Java-inspired [TimerTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/timer_task.md) service
-* Scheduled task execution with Java-inspired [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/blob/master/md/scheduled_task.md) service
-* Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/blob/master/md/supervisor.md) for managing long-running threads
-* Actor variant [Channel](https://github.com/jdantonio/concurrent-ruby/blob/master/md/channel.md)
-  loosely based on the [MailboxProcessor](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx)
-  agent in [F#](http://msdn.microsoft.com/en-us/library/ee370357.aspx)
-* [Dataflow](https://github.com/jdantonio/concurrent-ruby/blob/master/md/dataflow.md) loosely based on the syntax of Akka and Habanero Java
-* [MVar](https://github.com/jdantonio/concurrent-ruby/blob/master/md/mvar.md) inspired by Haskell
-* [Thread local variables](https://github.com/jdantonio/concurrent-ruby/blob/master/md/threadlocalvar.md) with default value
+Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki)
+or the [API documentation](http://rubydoc.info/github/jdantonio/concurrent-ruby/master/frames)
+for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
+
+There are many concurrency abstractions in this library. These abstractions can be broadly categorized
+into several general categories:
+
+* Asynchronous concurrency abstractions including [Actor](https://github.com/jdantonio/concurrent-ruby/wiki/Actor),
+  [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent), [Channel](https://github.com/jdantonio/concurrent-ruby/wiki/Channel),
+  [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future), [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
+  [ScheculedTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
+  and [TimerTask](https://github.com/jdantonio/concurrent-ruby/wiki/TimerTask) 
+* Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
+  for managing long-running threads
+* Thread-safe variables including [M-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/MVar-(M-Structure)),
+  [I-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/IVar-(I-Structure)),
+  [thread-local variables](https://github.com/jdantonio/concurrent-ruby/wiki/ThreadLocalVar),
+  and atomic counters
+* Thread synchronization classes and algorithms including [dataflow](https://github.com/jdantonio/concurrent-ruby/wiki/Dataflow), 
+  timeout, condition, countdown latch, dependency counter, and event
+* Java-inspired [thread pools](https://github.com/jdantonio/concurrent-ruby/wiki/Thread%20Pools)
+* And many more...
 
 ### Semantic Versioning
 
@@ -123,24 +133,6 @@ These tools will help ease the burden, but at the end of the day it is essential
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-
-### Conference Presentations
-
-I've given several conference presentations on concurrent programming with this gem.
-Check them out:
-
-* ["Advanced Concurrent Programming in Ruby"](http://rubyconf.org/program#jerry-dantonio)
-  at [RubyConf 2013](http://rubyconf.org/)
-  used [this](https://github.com/jdantonio/concurrent-ruby-presentation) version of the presentation
-  and is available for viewing on [Confreaks](http://www.confreaks.com/videos/2872-rubyconf2013-advanced-concurrent-programming-in-ruby)
-* ["Advanced Multithreading in Ruby"](http://cascadiaruby.com/#advanced-multithreading-in-ruby)
-  at [Cascadia Ruby 2013](http://cascadiaruby.com/)
-  used [this](https://github.com/jdantonio/concurrent-ruby-presentation/tree/cascadia-ruby-2013) version of the presentation
-  and is available for viewing on [Confreaks](http://www.confreaks.com/videos/2790-cascadiaruby2013-advanced-multithreading-in-ruby)
-* [Cleveland Ruby Brigade](http://www.meetup.com/ClevelandRuby/events/149981942/) meetup in December of 2013
-  used [this](https://github.com/jdantonio/concurrent-ruby-presentation/releases/tag/clerb-dec-2013) version of the presentation
-* I'll be giving ["Advanced Concurrent Programming in Ruby"](http://codemash.org/sessions)
-  at [CodeMash 2014](http://codemash.org/)
 
 ## License and Copyright
 

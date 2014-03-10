@@ -84,6 +84,55 @@ shared_examples "an observer set" do
         observer_set.notify_observers(4, 'a')
       end
     end
+
+    context 'with a block' do
+
+      before(:each) do
+        observer.stub(:update).with(any_args)
+        another_observer.stub(:update).with(any_args)
+      end
+
+      it 'calls the block once for every observer' do
+
+        counter = double('block call counter')
+        expect(counter).to receive(:called).with(no_args).exactly(2).times
+
+        observer_set.add_observer(observer)
+        observer_set.add_observer(another_observer)
+
+        observer_set.notify_observers{ counter.called }
+      end
+
+      it 'passes the block return value to the update method' do
+
+        expect(observer).to receive(:update).with(1, 2, 3, 4)
+        observer_set.add_observer(observer)
+        observer_set.notify_observers{ [1, 2, 3, 4] }
+      end
+
+      it 'accepts blocks returning a single value' do
+
+        expect(observer).to receive(:update).with(:foo)
+        observer_set.add_observer(observer)
+        observer_set.notify_observers{ :foo }
+      end
+
+      it 'accepts block return values that include arrays' do
+
+        expect(observer).to receive(:update).with(1, [2, 3], 4)
+        observer_set.add_observer(observer)
+        observer_set.notify_observers{ [1, [2, 3], 4] }
+      end
+
+      it 'raises an exception if given both arguments and a block' do
+
+        observer_set.add_observer(observer)
+
+        expect {
+          observer_set.notify_observers(1, 2, 3, 4){ nil }
+        }.to raise_error(ArgumentError)
+      end
+    end
   end
 
   context '#count_observers' do

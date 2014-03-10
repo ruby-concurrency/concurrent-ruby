@@ -138,11 +138,6 @@ module Concurrent
         let(:c2) { root.then { nil } }
         let(:c2_1) { c2.then { nil } }
 
-        before(:each) do
-          #fixme: brittle test: without this line children will be not initialized
-          [root, c1, c2, c2_1].each { |p| p.should be_unscheduled }
-        end
-
         context 'when called on the root' do
           it 'should set all promises to :pending' do
             root.execute

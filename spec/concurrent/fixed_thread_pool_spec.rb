@@ -82,7 +82,6 @@ module Concurrent
     context 'exception handling' do
 
       it 'restarts threads that experience exception' do
-        pending
         pool = FixedThreadPool.new(5)
         5.times{ pool << proc{ raise StandardError } }
         sleep(1)

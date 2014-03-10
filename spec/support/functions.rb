@@ -15,3 +15,7 @@ end
 def jruby?
   RbConfig::CONFIG['ruby_install_name']=~ /^jruby$/i 
 end
+
+def rbx?
+  RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i 
+end

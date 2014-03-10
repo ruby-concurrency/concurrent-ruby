@@ -7,26 +7,33 @@ module Concurrent
   class ScheduledTask
     include Obligation
 
+    SchedulingError = Class.new(ArgumentError)
+
     attr_reader :schedule_time
 
     def initialize(schedule_time, opts = {}, &block)
-      raise ArgumentError.new('no block given') unless block_given?
+      raise SchedulingError.new('no block given') unless block_given?
+      calculate_schedule_time!(schedule_time) # raise exception if in past
 
       init_obligation
       @observers = CopyOnWriteObserverSet.new
       @state = :unscheduled
-      @schedule_time = adjust_schedule_time(schedule_time, Time.now).freeze
+      @intended_schedule_time = schedule_time
+      @schedule_time = nil
       @task = block
       set_deref_options(opts)
     end
 
+    # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
+        @schedule_time = calculate_schedule_time!(@intended_schedule_time).freeze
         Thread.new { work }
         self
       end
     end
 
+    # @since 0.5.0
     def self.execute(schedule_time, opts = {}, &block)
       return ScheduledTask.new(schedule_time, opts, &block).execute
     end
@@ -68,7 +75,8 @@ module Concurrent
           event.set
         end
 
-        @observers.notify_and_delete_observers(Time.now, self.value, reason)
+        time = Time.now
+        @observers.notify_and_delete_observers{ [time, self.value, reason] }
       end
 
     end
@@ -81,15 +89,14 @@ module Concurrent
       end
     end
 
-    def adjust_schedule_time(schedule_time, now)
+    def calculate_schedule_time!(schedule_time, now = Time.now)
       if schedule_time.is_a?(Time)
-        raise ArgumentError.new('schedule time must be in the future') if schedule_time <= now
+        raise SchedulingError.new('schedule time must be in the future') if schedule_time <= now
         schedule_time.dup
       else
-        raise ArgumentError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
+        raise SchedulingError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
         now + schedule_time.to_f
       end
     end
-
   end
 end

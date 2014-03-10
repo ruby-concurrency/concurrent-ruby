@@ -62,13 +62,12 @@ share_examples_for :thread_pool do
     end
 
     it 'allows threads to exit normally' do
-      before_thread_count = Thread.list.size
       10.times{ subject << proc{ nil } }
+      subject.length.should > 0
       sleep(0.1)
-      Thread.list.size.should > before_thread_count
       subject.shutdown
       sleep(1)
-      Thread.list.size.should == before_thread_count
+      subject.length.should == 0
     end
   end
 
