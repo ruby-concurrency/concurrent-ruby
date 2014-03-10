@@ -110,6 +110,20 @@ shared_examples "an observer set" do
         observer_set.notify_observers{ [1, 2, 3, 4] }
       end
 
+      it 'accepts blocks returning a single value' do
+
+        expect(observer).to receive(:update).with(:foo)
+        observer_set.add_observer(observer)
+        observer_set.notify_observers{ :foo }
+      end
+
+      it 'accepts block return values that include arrays' do
+
+        expect(observer).to receive(:update).with(1, [2, 3], 4)
+        observer_set.add_observer(observer)
+        observer_set.notify_observers{ [1, [2, 3], 4] }
+      end
+
       it 'raises an exception if given both arguments and a block' do
 
         observer_set.add_observer(observer)

@@ -43,11 +43,11 @@ module Concurrent
   #       Concurrent::dataflow(n1, n2) { |v1, v2| v1 + v2 }
   #     end
   #   end
-  #
+  #   
   #   f = fib(14) #=> #<Concurrent::Future:0x000001019a26d8 ...
-  #   sleep(0.5)
-  #
-  #   f.value #=> 377
+  #   
+  #   # wait up to 1 second for the answer...
+  #   f.value(1) #=> 377
   #
   # @param [Future] inputs zero or more +Future+ operations that this dataflow depends upon
   #

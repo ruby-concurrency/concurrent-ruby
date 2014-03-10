@@ -72,11 +72,8 @@ module Concurrent
     def notify_to(observers, *args)
       raise ArgumentError.new('cannot give arguments and a block') if block_given? && ! args.empty?
       observers.each do |observer, function|
-        if block_given?
-          observer.send(function, *[yield].flatten)
-        else
-          observer.send(function, *args)
-        end
+        args = yield if block_given?
+        observer.send(function, *args)
       end
     end
   end
