@@ -124,38 +124,38 @@ TRANSFERS = (0..1_000_000).map do
     RANDOM.rand(100))
 end
 
-THREADS = 8
-TRANSFER_PER_THREAD = TRANSFERS.size / THREADS
-
 def test(bank_class)
-  puts bank_class
-  bank = bank_class.new(ACCOUNT_TOTALS)
+  (1..8).each do |threads|
+    transfer_per_thread = TRANSFERS.size / threads
 
-  puts "total before: #{bank.grand_total}"
+    bank = bank_class.new(ACCOUNT_TOTALS)
+    total_before = bank.grand_total
 
-  start_barrier = Concurrent::CountDownLatch.new(THREADS)
-  finish_barrier = Concurrent::CountDownLatch.new(THREADS)
+    start_barrier = Concurrent::CountDownLatch.new(threads)
+    finish_barrier = Concurrent::CountDownLatch.new(threads)
 
-  (1..THREADS).each do |n|
-    Thread.new do
-      start_barrier.count_down
-      start_barrier.wait
+    (1..threads).each do |n|
+      Thread.new do
+        start_barrier.count_down
+        start_barrier.wait
 
-      TRANSFERS[(n*TRANSFER_PER_THREAD)..((n+1)*TRANSFER_PER_THREAD)].each do |transfer|
-        bank.transfer(transfer.from, transfer.to, transfer.sum)
+        TRANSFERS[(n*transfer_per_thread)..((n+1)*transfer_per_thread)].each do |transfer|
+          bank.transfer(transfer.from, transfer.to, transfer.sum)
+        end
+
+        finish_barrier.count_down
       end
-
-      finish_barrier.count_down
     end
+
+    start = Time.now
+    start_barrier.wait
+    finish_barrier.wait
+    time = Time.new - start
+
+    raise "error" unless bank.grand_total == total_before or bank_class == UnsynchronizedBank
+
+    puts "#{bank_class} #{threads} #{time}"
   end
-
-  start = Time.now
-  start_barrier.wait
-  finish_barrier.wait
-  time = Time.new - start
-
-  puts "total after:  #{bank.grand_total}"
-  puts "took #{time}s"
 end
 
 test UnsynchronizedBank
