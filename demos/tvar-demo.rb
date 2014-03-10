@@ -1,3 +1,4 @@
+require 'monitor'
 require 'concurrent'
 
 class UnsynchronizedBank
@@ -123,7 +124,7 @@ TRANSFERS = (0..1_000_000).map do
     RANDOM.rand(100))
 end
 
-THREADS = 4
+THREADS = 8
 TRANSFER_PER_THREAD = TRANSFERS.size / THREADS
 
 def test(bank_class)
