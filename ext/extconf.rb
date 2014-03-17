@@ -16,7 +16,19 @@ dir_config(extension_name)
 
 have_header "libkern/OSAtomic.h"
 
-if CONFIG["GCC"] && CONFIG["GCC"] != ""
+def compiler_is_gcc
+  if CONFIG["GCC"] && CONFIG["GCC"] != ""
+    return true
+  elsif ( # This could stand to be more generic...  but I am afraid.
+    CONFIG["CC"] =~ /\bgcc\b/
+  )
+    return true
+  end
+  return false
+end
+
+
+if compiler_is_gcc
   case CONFIG["arch"]
   when /mswin32|mingw|solaris/
       $CFLAGS += " -march=native"
