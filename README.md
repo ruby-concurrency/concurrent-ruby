@@ -1,4 +1,7 @@
 atomic: An atomic reference implementation for JRuby, Rubinius, and MRI.
+========================================================================
+
+[![Build Status](https://travis-ci.org/headius/ruby-atomic.png?branch=master)](https://travis-ci.org/headius/ruby-atomic)
 
 Summary
 =======
