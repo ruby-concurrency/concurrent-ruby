@@ -28,38 +28,43 @@ share_examples_for :obligation do
     let!(:supports_timeout) { pending_subject.method(:value).arity != 0 }
 
     it 'returns nil when reaching the optional timeout value' do
-      break unless supports_timeout
-      f = pending_subject
-      f.value(0).should be_nil
-      f.should be_pending
+      if supports_timeout
+        f = pending_subject
+        f.value(0).should be_nil
+        f.should be_pending
+      end
     end
 
     it 'returns immediately when timeout is zero' do
-      break unless supports_timeout
-      Concurrent.should_not_receive(:timeout).with(any_args())
-      f = pending_subject
-      f.value(0).should be_nil
-      f.should be_pending
+      if supports_timeout
+        Concurrent.should_not_receive(:timeout).with(any_args())
+        f = pending_subject
+        f.value(0).should be_nil
+        f.should be_pending
+      end
     end
 
     it 'returns the value when fulfilled before timeout' do
-      break unless supports_timeout
-      f = pending_subject
-      f.value(10).should be_true
-      f.should be_fulfilled
+      if supports_timeout
+        f = pending_subject
+        f.value(10).should be_true
+        f.should be_fulfilled
+      end
     end
 
     it 'returns nil when timeout reached' do
-      break unless supports_timeout
-      f = pending_subject
-      f.value(0.1).should be_nil
-      f.should be_pending
+      if supports_timeout
+        f = pending_subject
+        f.value(0.1).should be_nil
+        f.should be_pending
+      end
     end
 
     it 'is nil when :pending' do
-      break unless supports_timeout
-      expected = pending_subject.value(0)
-      expected.should be_nil
+      if supports_timeout
+        expected = pending_subject.value(0)
+        expected.should be_nil
+      end
     end
 
     it 'blocks the caller when :pending and timeout is nil' do
