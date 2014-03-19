@@ -7,6 +7,7 @@ describe Concurrent::ActorServer do
 
   class MyActor < Concurrent::Actor
     def act(msg)
+      :success
     end
   end
 
@@ -65,7 +66,7 @@ describe Concurrent::ActorServer do
     before { subject.pool('foo', MyActor, 10) }
 
     it 'sends the message to the actor pool' do
-      subject.post('foo', '').should == 1
+      subject.post('foo', '').should == :success
     end
 
     it 'raises an exception when the actor does not exist' do

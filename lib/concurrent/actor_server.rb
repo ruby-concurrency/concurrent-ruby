@@ -56,7 +56,7 @@ module Concurrent
       # if an error is raised by the actor it will be raised by #post!
       # it post! reaches the timeout it will raise Concurrent::TimeoutError
       # DRb should catch the exception and marshall it back to the client
-      return @actor_pool[name][:actors].post!(30, *args)
+      return @actor_pool[name][:actors].post!(40, *args)
     end
 
     protected
