@@ -6,22 +6,21 @@ require_relative 'runnable_shared'
 module Concurrent
 
   describe Actor do
-
-    context 'behavior' do
-
-      let(:actor_class) do
-        Class.new(Actor) do
-          attr_reader :last_message
-          def initialize(&block)
-            @task = block
-            super()
-          end
-          def act(*message)
-            @last_message = message
-            @task.call(*message) unless @task.nil?
-          end
+    let(:actor_class) do
+      Class.new(Actor) do
+        attr_reader :last_message
+        def initialize(&block)
+          @task = block
+          super()
+        end
+        def act(*message)
+          @last_message = message
+          @task.call(*message) unless @task.nil?
         end
       end
+    end
+
+    context 'behavior' do
 
       ## :runnable
 
