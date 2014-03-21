@@ -64,8 +64,8 @@ module Concurrent
       return @state == :running
     end
 
-    def wait_for_termination(timeout = nil)
-      return @terminator.wait(timeout)
+    def wait_for_termination(timeout)
+      return @terminator.wait(timeout.to_i)
     end
 
     def shutdown
@@ -97,6 +97,7 @@ module Concurrent
         @state == :running ? @busy.length + @idle.length : 0
       end
     end
+    alias_method :size, :length
 
     def on_worker_exit(worker)
       @mutex.synchronize do
