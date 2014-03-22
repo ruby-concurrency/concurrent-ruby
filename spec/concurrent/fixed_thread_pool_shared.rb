@@ -51,6 +51,20 @@ share_examples_for :fixed_thread_pool do
     end
   end
 
+  context '#kill' do
+
+    it 'attempts to kill all in-progress tasks' do
+      thread_count = [subject.length, 5].max
+      @expected = false
+      thread_count.times{ subject.post{ sleep(1) } }
+      subject.post{ @expected = true }
+      sleep(0.1)
+      subject.kill
+      sleep(0.1)
+      @expected.should be_false
+    end
+  end
+
   context 'exception handling' do
 
     it 'restarts threads that experience exception' do
