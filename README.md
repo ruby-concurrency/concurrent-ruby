@@ -3,24 +3,37 @@
 
 ***NOTE:*** *A few API updates in v0.5.0 are not backward-compatible. Please see the [release notes](https://github.com/jdantonio/concurrent-ruby/wiki/API-Updates-in-v0.5.0).*
 
+<table>
+<tr>
+<td align="left" valign="top">
+<p>
 Modern concurrency tools for Ruby. Inspired by
-[Erlang](http://www.erlang.org/doc/reference_manual/processes.html),
-[Clojure](http://clojure.org/concurrent_programming),
-[Scala](http://www.scala-lang.org/api/current/index.html#scala.actors.Actor),
-[Haskell](http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell),
-[F#](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx),
-[C#](http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx),
-[Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html),
+<a href="http://www.erlang.org/doc/reference_manual/processes.html">Erlang</a>,
+<a href="http://clojure.org/concurrent_programming">Clojure</a>,
+<a href="http://www.scala-lang.org/api/current/index.html#scala.actors.Actor">Scala</a>,
+<a href="http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell">Haskell</a>,
+<a href="http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx">F#</a>,
+<a href="http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx">C#</a>,
+<a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html">Java</a>,
 and classic concurrency patterns.
-
+</p>
+<p>
 The design goals of this gem are:
-
-* Stay true to the spirit of the languages providing inspiration
-* But implement in a way that makes sense for Ruby
-* Keep the semantics as idiomatic Ruby as possible
-* Support features that make sense in Ruby
-* Exclude features that don't make sense in Ruby
-* Be small, lean, and loosely coupled
+<ul>
+<li>Stay true to the spirit of the languages providing inspiration</li>
+<li>But implement in a way that makes sense for Ruby</li>
+<li>Keep the semantics as idiomatic Ruby as possible</li>
+<li>Support features that make sense in Ruby</li>
+<li>Exclude features that don't make sense in Ruby</li>
+<li>Be small, lean, and loosely coupled</li>
+</ul>
+</p>
+</td>
+<td align="right" valign="top">
+<img src="https://raw.githubusercontent.com/wiki/jdantonio/concurrent-ruby/logo/concurrent-ruby-logo-200x200.png"/>
+</td>
+</tr>
+</table>
 
 ## Features & Documentation
 
@@ -138,3 +151,6 @@ These tools will help ease the burden, but at the end of the day it is essential
 
 *Concurrent Ruby* is Copyright &copy; 2013 [Jerry D'Antonio](https://twitter.com/jerrydantonio).
 It is free software released under the [MIT License](http://www.opensource.org/licenses/MIT).
+
+The *Concurrent Ruby* logo was designed by [David Jones](https://twitter.com/zombyboy).
+It is Copyright &copy; 2014 Jerry D'Antonio. All Rights Reserved.
