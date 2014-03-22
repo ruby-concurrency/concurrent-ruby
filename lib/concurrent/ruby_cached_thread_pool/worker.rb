@@ -2,7 +2,7 @@ require 'thread'
 
 module Concurrent
 
-  class CachedThreadPool
+  class RubyCachedThreadPool
 
     class Worker
 

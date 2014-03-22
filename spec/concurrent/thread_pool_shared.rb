@@ -83,17 +83,6 @@ share_examples_for :thread_pool do
       @expected.should be_false
     end
 
-    it 'attempts to kill all in-progress tasks' do
-      pending('works for FixedThreadPool but broken for CachedThreadPool')
-      @expected = false
-      subject.length.times{ subject.post{ sleep(1) } }
-      subject.post{ @expected = true }
-      sleep(0.1)
-      subject.kill
-      sleep(0.1)
-      @expected.should be_false
-    end
-
     it 'rejects all pending tasks' do
       subject.post{ sleep(1) }
       sleep(0.1)
