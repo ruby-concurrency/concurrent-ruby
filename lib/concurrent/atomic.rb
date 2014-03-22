@@ -1,10 +1,17 @@
 module Concurrent
 
-  # @!visibility private
-  module MutexAtomicFixnum # :nodoc:
+  class MutexAtomicFixnum
 
-    # @!visibility private
-    def allocate_storage(init) # :nodoc:
+    # Creates a new +MutexAtomicFixnum+ with the given initial value.
+    #
+    # @param [Fixnum] init the initial value
+    # @raise [ArgumentError] if the initial value is not a +Fixnum+
+    def initialize(init = 0)
+      raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
+      allocate_storage(init)
+    end
+
+    def allocate_storage(init)
       @value = init
       @mutex = Mutex.new
     end
@@ -34,8 +41,10 @@ module Concurrent
       end
     end
 
-    # @!visibility private
-    def compare_and_set(expect, update) # :nodoc:
+    alias_method :up, :increment
+    alias_method :down, :decrement
+
+    def compare_and_set(expect, update)
       @mutex.synchronize do
         if @value == expect
           @value = update
@@ -47,34 +56,48 @@ module Concurrent
     end
   end
 
-  # @!visibility private
-  module JavaAtomicFixnum # :nodoc:
+  if defined? java.util
 
-    # @!visibility private
-    def allocate_storage(init) # :nodoc:
-      @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
-    end
+    class JavaAtomicFixnum
 
-    def value
-      @atomic.get
-    end
+      # Creates a new +JavaAtomicFixnum+ with the given initial value.
+      #
+      # @param [Fixnum] init the initial value
+      # @raise [ArgumentError] if the initial value is not a +Fixnum+
+      def initialize(init = 0)
+        raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
+        allocate_storage(init)
+      end
 
-    def value=(value)
-      raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
-      @atomic.set(value)
-    end
+      # @!visibility private
+      def allocate_storage(init) # :nodoc:
+        @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
+      end
 
-    def increment
-      @atomic.increment_and_get
-    end
+      def value
+        @atomic.get
+      end
 
-    def decrement
-      @atomic.decrement_and_get
-    end
+      def value=(value)
+        raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
+        @atomic.set(value)
+      end
 
-    # @!visibility private
-    def compare_and_set(expect, update) # :nodoc:
-      @atomic.compare_and_set(expect, update)
+      def increment
+        @atomic.increment_and_get
+      end
+
+      def decrement
+        @atomic.decrement_and_get
+      end
+
+      alias_method :up, :increment
+      alias_method :down, :decrement
+
+      # @!visibility private
+      def compare_and_set(expect, update) # :nodoc:
+        @atomic.compare_and_set(expect, update)
+      end
     end
   end
 
@@ -102,24 +125,10 @@ module Concurrent
   #
   # @since 0.5.0
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
-  class AtomicFixnum
 
-    # Creates a new +AtomicFixnum+ with the given initial value.
-    #
-    # @param [Fixnum] init the initial value
-    # @raise [ArgumentError] if the initial value is not a +Fixnum+
-    def initialize(init = 0)
-      raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
-      allocate_storage(init)
-    end
-
-    if defined? java.util
-      include JavaAtomicFixnum
-    else
-      include MutexAtomicFixnum
-    end
-
-    alias_method :up, :increment
-    alias_method :down, :decrement
+  if defined? java.util
+    AtomicFixnum = Class.new(JavaAtomicFixnum)
+  else
+    AtomicFixnum = Class.new(MutexAtomicFixnum)
   end
 end
