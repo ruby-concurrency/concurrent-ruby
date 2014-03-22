@@ -12,7 +12,7 @@ end
 group :testing do
   gem 'rspec', '~> 2.14.1'
   gem 'simplecov', '~> 0.8.2'
-  gem 'coveralls', '~> 0.7.0', platforms: :jruby, require: false
+  gem 'coveralls', '~> 0.7.0', require: false
   gem 'faker', '~> 1.3.0'
   gem 'timecop', '~> 0.7.1'
 end
