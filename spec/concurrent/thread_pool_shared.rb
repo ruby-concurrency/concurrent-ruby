@@ -85,53 +85,47 @@ share_examples_for :thread_pool do
 
     it 'attempts to kill all in-progress tasks' do
       @expected = false
-      subject.post{ sleep(1); @expected = true }
+      subject.length.times{ subject.post{ sleep(1) } }
+      subject.post{ @expected = true }
       sleep(0.1)
       subject.kill
-      sleep(1)
+      sleep(0.1)
       @expected.should be_false
     end
 
     it 'rejects all pending tasks' do
-      @expected = false
-      subject.post{ sleep(0.5) }
-      subject.post{ sleep(0.5); @expected = true }
+      subject.post{ sleep(1) }
       sleep(0.1)
       subject.kill
-      sleep(1)
-      @expected.should be_false
+      sleep(0.1)
+      subject.post{ nil }.should be_false
     end
 
     it 'kills all threads' do
-      before_thread_count = Thread.list.size
-      100.times { subject << proc{ sleep(1) } }
-      sleep(0.1)
-      Thread.list.size.should > before_thread_count
-      subject.kill
-      sleep(0.1)
-      Thread.list.size.should == before_thread_count
+      unless jruby?
+        before_thread_count = Thread.list.size
+        100.times { subject << proc{ sleep(1) } }
+        sleep(0.1)
+        Thread.list.size.should > before_thread_count
+        subject.kill
+        sleep(0.1)
+        Thread.list.size.should == before_thread_count
+      end
     end
   end
 
   context '#wait_for_termination' do
 
-    it 'immediately returns true when no threads running' do
+    it 'immediately returns true when no operations are pending' do
       subject.shutdown
-      subject.wait_for_termination.should be_true
+      subject.wait_for_termination(0).should be_true
     end
 
     it 'returns true after shutdown has complete' do
-      10.times { subject << proc{ sleep(0.1) } }
+      10.times { subject << proc{ nil } }
       sleep(0.1)
       subject.shutdown
-      subject.wait_for_termination.should be_true
-    end
-
-    it 'blocks indefinitely when timeout is nil' do
-      subject.post{ sleep(1) }
-      sleep(0.1)
-      subject.shutdown
-      subject.wait_for_termination(nil).should be_true
+      subject.wait_for_termination(1).should be_true
     end
 
     it 'returns true when shutdown sucessfully completes before timeout' do
@@ -142,10 +136,10 @@ share_examples_for :thread_pool do
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
-      subject.post{ sleep }
+      (subject.length + 10).times{ subject.post{ sleep } }
       sleep(0.1)
       subject.shutdown
-      subject.wait_for_termination(1).should be_false
+      subject.wait_for_termination(0).should be_false
     end
   end
 
@@ -158,7 +152,7 @@ share_examples_for :thread_pool do
     end
 
     it 'returns true when the block is added to the queue' do
-      subject.post{ sleep }.should be_true
+      subject.post{ nil }.should be_true
     end
 
     it 'calls the block with the given arguments' do

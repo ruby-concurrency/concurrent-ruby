@@ -47,4 +47,12 @@ module Concurrent
       }.to raise_error
     end
   end
+
+  describe '#processor_count' do
+
+    it 'retuns a positive integer' do
+      Concurrent::processor_count.should be_a Integer
+      Concurrent::processor_count.should >= 1
+    end
+  end
 end
