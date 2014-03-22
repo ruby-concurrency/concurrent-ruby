@@ -1,10 +1,14 @@
 require 'simplecov'
-require 'coveralls'
 
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-  SimpleCov::Formatter::HTMLFormatter,
-  Coveralls::SimpleCov::Formatter
-]
+if defined? java.lang
+  require 'coveralls'
+  SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+    SimpleCov::Formatter::HTMLFormatter,
+    Coveralls::SimpleCov::Formatter
+  ]
+else
+  SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+end
 
 SimpleCov.start do
   project_name 'concurrent-ruby'
