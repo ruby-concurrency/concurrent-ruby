@@ -34,4 +34,13 @@ RSpec.configure do |config|
       thread.kill unless thread == Thread.current
     end
   end
+
+  config.after(:suite) do
+    if mri?
+      GC.start
+    elsif defined? java.lang
+      java.lang.System.gc
+    end
+    sleep(0.1)
+  end
 end

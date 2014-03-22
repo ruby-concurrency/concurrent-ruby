@@ -126,7 +126,7 @@ share_examples_for :thread_pool do
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
-      (subject.length + 10).times{ subject.post{ sleep } }
+      (subject.length + 10).times{ subject.post{ sleep(1) } }
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(0).should be_false

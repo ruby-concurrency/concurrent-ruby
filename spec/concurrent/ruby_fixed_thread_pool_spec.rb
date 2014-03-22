@@ -7,6 +7,11 @@ module Concurrent
 
     subject { described_class.new(5) }
 
+    after(:each) do
+      subject.kill
+      sleep(0.1)
+    end
+
     it_should_behave_like :fixed_thread_pool
 
     context 'worker creation and caching' do
@@ -14,7 +19,7 @@ module Concurrent
       it 'creates new workers when there are none available' do
         pool = described_class.new(5)
         pool.current_length.should eq 0
-        5.times{ pool << proc{ sleep } }
+        5.times{ pool << proc{ sleep(1) } }
         sleep(0.1)
         pool.current_length.should eq 5
         pool.kill
@@ -22,7 +27,7 @@ module Concurrent
 
       it 'never creates more than :num_threads threads' do
         pool = described_class.new(5)
-        100.times{ pool << proc{ sleep } }
+        100.times{ pool << proc{ sleep(1) } }
         sleep(0.1)
         pool.current_length.should eq 5
         pool.kill

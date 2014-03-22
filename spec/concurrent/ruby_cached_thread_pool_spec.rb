@@ -45,7 +45,7 @@ module Concurrent
 
       it 'creates new workers when there are none available' do
         subject.length.should eq 0
-        5.times{ sleep(0.1); subject << proc{ sleep } }
+        5.times{ sleep(0.1); subject << proc{ sleep(1) } }
         sleep(1)
         subject.length.should eq 5
       end
@@ -54,14 +54,14 @@ module Concurrent
         5.times{ subject << proc{ sleep(0.1) } }
         sleep(1)
         subject.length.should >= 5
-        3.times{ subject << proc{ sleep } }
+        3.times{ subject << proc{ sleep(1) } }
         sleep(0.1)
         subject.length.should >= 5
       end
 
       it 'never creates more than :max_threads threads' do
         pool = described_class.new(max: 5)
-        100.times{ sleep(0.01); pool << proc{ sleep } }
+        100.times{ sleep(0.01); pool << proc{ sleep(1) } }
         sleep(0.1)
         pool.length.should eq 5
         pool.kill
