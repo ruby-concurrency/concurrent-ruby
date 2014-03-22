@@ -9,6 +9,8 @@ require 'concurrent/safe_task_executor'
 require 'concurrent/ivar'
 
 require 'concurrent/actor'
+require 'concurrent/actor_method_dispatcher'
+require 'concurrent/actor_server'
 require 'concurrent/agent'
 require 'concurrent/channel'
 require 'concurrent/dataflow'
@@ -20,6 +22,7 @@ require 'concurrent/mvar'
 require 'concurrent/obligation'
 require 'concurrent/postable'
 require 'concurrent/promise'
+require 'concurrent/remote_actor'
 require 'concurrent/runnable'
 require 'concurrent/scheduled_task'
 require 'concurrent/stoppable'
@@ -35,9 +38,9 @@ require 'concurrent/immediate_executor'
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.
-# 
+#
 # The design goals of this gem are:
-# 
+#
 # * Stay true to the spirit of the languages providing inspiration
 # * But implement in a way that makes sense for Ruby
 # * Keep the semantics as idiomatic Ruby as possible
