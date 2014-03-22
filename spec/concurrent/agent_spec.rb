@@ -18,7 +18,7 @@ module Concurrent
     end
 
     before(:each) do
-      Agent.thread_pool = FixedThreadPool.new(1)
+      Agent.thread_pool = NullThreadPool.new
     end
 
     context 'behavior' do
@@ -392,7 +392,7 @@ module Concurrent
     context 'stress test' do
 
       before(:each) do
-        Agent.thread_pool = FixedThreadPool.new(5)
+        Agent.thread_pool = NullThreadPool.new
       end
 
       specify do

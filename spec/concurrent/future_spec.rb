@@ -11,7 +11,7 @@ module Concurrent
     subject { Future.new{ value }.execute.tap{ sleep(0.1) } }
 
     before(:each) do
-      Future.thread_pool = FixedThreadPool.new(1)
+      Future.thread_pool = NullThreadPool.new
     end
 
     context 'behavior' do

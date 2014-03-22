@@ -14,7 +14,7 @@ module Concurrent
     subject { NullThreadPool.new }
 
     after(:all) do
-      $GLOBAL_THREAD_POOL = FixedThreadPool.new(1)
+      $GLOBAL_THREAD_POOL = NullThreadPool.new
     end
 
     context '#post' do

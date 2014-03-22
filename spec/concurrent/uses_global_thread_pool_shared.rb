@@ -3,7 +3,7 @@ require 'spec_helper'
 share_examples_for Concurrent::UsesGlobalThreadPool do
 
   before(:each) do
-    $GLOBAL_THREAD_POOL = Concurrent::FixedThreadPool.new(1)
+    $GLOBAL_THREAD_POOL = Concurrent::NullThreadPool.new
   end
 
   it 'defaults to the global thread pool' do
@@ -22,8 +22,8 @@ share_examples_for Concurrent::UsesGlobalThreadPool do
     subject2 = Class.new(thread_pool_user){ include Concurrent::UsesGlobalThreadPool }
     subject3 = Class.new(thread_pool_user){ include Concurrent::UsesGlobalThreadPool }
 
-    subject1.thread_pool = Concurrent::FixedThreadPool.new(1)
-    subject2.thread_pool = Concurrent::CachedThreadPool.new
+    subject1.thread_pool = Concurrent::NullThreadPool.new
+    subject2.thread_pool = Concurrent::NullThreadPool.new
     subject3.thread_pool = Concurrent::NullThreadPool.new
 
     subject1.thread_pool.should_not eq subject2.thread_pool
@@ -51,11 +51,11 @@ share_examples_for Concurrent::UsesGlobalThreadPool do
     thread_pool_user.thread_pool = Concurrent::NullThreadPool.new
     thread_pool_user.thread_pool.should_not eq $GLOBAL_THREAD_POOL
 
-    $GLOBAL_THREAD_POOL = Concurrent::FixedThreadPool.new(1)
+    $GLOBAL_THREAD_POOL = Concurrent::NullThreadPool.new
     thread_pool_user.thread_pool = $GLOBAL_THREAD_POOL
     thread_pool_user.thread_pool.should eq $GLOBAL_THREAD_POOL
 
-    $GLOBAL_THREAD_POOL = Concurrent::CachedThreadPool.new
+    $GLOBAL_THREAD_POOL = Concurrent::NullThreadPool.new
     thread_pool_user.thread_pool.should eq $GLOBAL_THREAD_POOL
 
     $GLOBAL_THREAD_POOL = Concurrent::NullThreadPool.new
