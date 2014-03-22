@@ -140,7 +140,7 @@ module Concurrent
         subject.post { @expected << 2 }
         subject.post { @expected << 3 }
         sleep(0.1)
-        @expected.should eq [1, 2, 3]
+        @expected.sort.should eq [1, 2, 3]
       end
 
       it 'passes the current value to the handler' do
