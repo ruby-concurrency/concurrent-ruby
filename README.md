@@ -30,7 +30,7 @@ The design goals of this gem are:
 </p>
 </td>
 <td align="right" valign="top">
-<img src="https://raw.githubusercontent.com/wiki/jdantonio/concurrent-ruby/logo/concurrent-ruby-logo-200x200.png"/>
+<img src="https://raw.githubusercontent.com/wiki/jdantonio/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
 </td>
 </tr>
 </table>
