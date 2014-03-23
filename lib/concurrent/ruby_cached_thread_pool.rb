@@ -140,8 +140,8 @@ module Concurrent
       @mutex.synchronize do
         break if @state == :shutdown
         @state = :shutdown
-          @idle.each{|worker| worker.kill }
-          @busy.each{|worker| worker.kill }
+        @idle.each{|worker| worker.kill }
+        @busy.each{|worker| worker.kill }
         @terminator.set
       end
     end
@@ -156,6 +156,8 @@ module Concurrent
       end
     end
     alias_method :size, :length
+    alias_method :current_size, :length
+    alias_method :current_length, :length
 
     # @!visibility private
     def on_worker_exit(worker) # :nodoc:

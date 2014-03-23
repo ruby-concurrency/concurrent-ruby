@@ -5,9 +5,21 @@ require 'concurrent/ruby_fixed_thread_pool/worker'
 
 module Concurrent
 
+  # @!macro fixed_thread_pool
+  #
+  # @note To prevent deadlocks and race conditions, no threads will be allocated
+  #   on construction. Threads will be allocated once the first task is post to
+  #   the pool. Additionally, threads that crash will be removed from the pool and
+  #   replaced. Thus the +#length+ and +#current_length+ may occasionally be
+  #   different.
   class RubyFixedThreadPool
 
-    def initialize(num_threads, opts = {})
+    # Create a new thread pool.
+    #
+    # @param [Integer] num_threads the number of threads to allocate
+    #
+    # @raise [ArgumentError] if +num_threads+ is less than or equal to zero
+    def initialize(num_threads)
       @num_threads = num_threads.to_i
       raise ArgumentError.new('number of threads must be greater than zero') if @num_threads < 1
 
@@ -18,34 +30,67 @@ module Concurrent
       @mutex = Mutex.new
     end
 
+    # Is the thread pool running?
+    #
+    # @return [Boolean] +true+ when running, +false+ when shutting down or shutdown
     def running?
       return @state == :running
     end
 
+    # Is the thread pool shutdown?
+    #
+    # @return [Boolean] +true+ when shutdown, +false+ when shutting down or running
     def shutdown?
       return @state != :running
     end
 
+    # Block until thread pool shutdown is complete or until +timeout+ seconds have
+    # passed.
+    #
+    # @note Does not initiate shutdown or termination. Either +shutdown+ or +kill+
+    #   must be called before this method (or on another thread).
+    #
+    # @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
+    #
+    # @return [Boolean] +true+ if shutdown complete or false on +timeout+
     def wait_for_termination(timeout)
       return @terminator.wait(timeout.to_i)
     end
 
-    def post(*args, &block)
-      raise ArgumentError.new('no block given') if block.nil?
+    # Submit a task to the thread pool for asynchronous processing.
+    #
+    # @param [Array] args zero or more arguments to be passed to the block
+    #
+    # @yield the asynchronous task to perform
+    #
+    # @return [Boolean] +true+ if the task is queued, +false+ if the thread pool
+    #   is not running
+    #
+    # @raise [ArgumentError] if no block is given
+    def post(*args, &task)
+      raise ArgumentError.new('no block given') if task.nil?
       @mutex.synchronize do
         break false unless @state == :running
-        @queue << [args, block]
+        @queue << [args, task]
         clean_pool
         fill_pool
         true
       end
     end
 
-    def <<(block)
-      self.post(&block)
+    # Submit a task to the thread pool for asynchronous processing.
+    #
+    # @param [Proc] task the asynchronous task to perform
+    #
+    # @return [self] returns itself
+    def <<(task)
+      self.post(&task)
       return self
     end
 
+    # Begin an orderly shutdown. Tasks already in the queue will be executed,
+    # but no new tasks will be accepted. Has no additional effect if the
+    # thread pool is not running.
     def shutdown
       @mutex.synchronize do
         break unless @state == :running
@@ -59,6 +104,10 @@ module Concurrent
       end
     end
 
+    # Begin an immediate shutdown. In-progress tasks will be allowed to
+    # complete but enqueued tasks will be dismissed and no new tasks
+    # will be accepted. Has no additional effect if the thread pool is
+    # not running.
     def kill
       @mutex.synchronize do
         break if @state == :shutdown
@@ -69,6 +118,10 @@ module Concurrent
       end
     end
 
+    # The number of threads allocated for the pool.
+    #
+    # @return [Integer] the number of threads allocated for a running pool,
+    #   zero when the pool is shutdown
     def length
       @mutex.synchronize do
         @state == :running ? @num_threads : 0
@@ -76,6 +129,10 @@ module Concurrent
     end
     alias_method :size, :length
 
+    # The number of threads currently in the pool.
+    #
+    # @return [Integer] the number of threads currently operating when the
+    #   pool is running, zero when the pool is shutdown
     def current_length
       @mutex.synchronize do
         @state == :running ? @pool.length : 0
@@ -83,7 +140,8 @@ module Concurrent
     end
     alias_method :current_size, :current_length
 
-    def create_worker_thread
+    # @!visibility private
+    def create_worker_thread # :nodoc:
       wrkr = Worker.new(@queue, self)
       Thread.new(wrkr, self) do |worker, parent|
         Thread.current.abort_on_exception = false
@@ -93,26 +151,31 @@ module Concurrent
       return wrkr
     end
 
-    def fill_pool
+    # @!visibility private
+    def fill_pool # :nodoc:
       return unless @state == :running
       while @pool.length < @num_threads
         @pool << create_worker_thread
       end
     end
 
-    def clean_pool
+    # @!visibility private
+    def clean_pool # :nodoc:
       @pool.reject! {|worker| worker.dead? } 
     end
 
-    def drain_pool
+    # @!visibility private
+    def drain_pool # :nodoc:
       @pool.each {|worker| worker.kill }
       @pool.clear
     end
 
-    def on_start_task(worker)
+    # @!visibility private
+    def on_start_task(worker) # :nodoc:
     end
 
-    def on_end_task(worker)
+    # @!visibility private
+    def on_end_task(worker) # :nodoc:
       @mutex.synchronize do
         break unless @state == :running
         clean_pool
@@ -120,7 +183,8 @@ module Concurrent
       end
     end
 
-    def on_worker_exit(worker)
+    # @!visibility private
+    def on_worker_exit(worker) # :nodoc:
       @mutex.synchronize do
         @pool.delete(worker)
         if @pool.empty? && @state != :running
