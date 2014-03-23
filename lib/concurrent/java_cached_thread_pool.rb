@@ -59,7 +59,7 @@ if defined? java.util
       #
       # @raise [ArgumentError] if no task is given
       def post(*args)
-        raise ArgumentError.new('no block given') unless task_given?
+        raise ArgumentError.new('no block given') unless block_given?
         @executor.submit{ yield(*args) }
         return true
       rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
