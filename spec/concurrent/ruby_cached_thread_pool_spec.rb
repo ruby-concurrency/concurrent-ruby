@@ -67,8 +67,8 @@ module Concurrent
         pool.kill
       end
 
-      it 'sets :max_threads to DEFAULT_POOL_SIZE when not given' do
-        described_class.new.max_threads.should eq described_class::DEFAULT_POOL_SIZE
+      it 'sets :max_threads to DEFAULT_MAX_POOL_SIZE when not given' do
+        described_class.new.max_threads.should eq described_class::DEFAULT_MAX_POOL_SIZE
       end
     end
 

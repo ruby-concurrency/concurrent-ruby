@@ -23,6 +23,8 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
+  # @since 0.6.0
+  #
   # @see Concurrent::Dereferenceable
   #
   # @see http://clojuredocs.org/clojure_core/clojure.core/delay

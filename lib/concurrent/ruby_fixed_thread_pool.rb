@@ -22,6 +22,10 @@ module Concurrent
       return @state == :running
     end
 
+    def shutdown?
+      return @state != :running
+    end
+
     def wait_for_termination(timeout)
       return @terminator.wait(timeout.to_i)
     end
