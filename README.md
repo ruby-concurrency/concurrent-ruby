@@ -66,7 +66,8 @@ This gem adheres to the rules of [semantic versioning](http://semver.org/).
 
 ### Supported Ruby versions
 
-MRI 1.9.2, 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x. This library is pure Ruby and has no gem dependencies.
+MRI 1.9.2, 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x.
+This library is pure Ruby and has no gem dependencies.
 It should be fully compatible with any Ruby interpreter that is 1.9.x compliant.
 
 ### Example
@@ -114,20 +115,6 @@ overlord.run!
 
 overlord.stop
 ```
-
-### Disclaimer
-
-Remember, *there is no silver bullet in concurrent programming.* Concurrency is hard.
-These tools will help ease the burden, but at the end of the day it is essential that you
-*know what you are doing.*
-
-* Decouple business logic from concurrency logic
-* Test business logic separate from concurrency logic
-* Keep the intersection of business logic and concurrency and small as possible
-* Don't share mutable data unless absolutely necessary
-* Protect shared data as much as possible (prefer [immutability](https://github.com/harukizaemon/hamster))
-* Don't mix Ruby's [concurrency](http://ruby-doc.org/core-2.0.0/Thread.html)
-  [primitives](http://www.ruby-doc.org/core-2.0.0/Mutex.html) with asynchronous concurrency libraries
 
 ## Contributors
 
