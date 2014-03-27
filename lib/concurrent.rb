@@ -10,6 +10,7 @@ require 'concurrent/ivar'
 
 require 'concurrent/actor'
 require 'concurrent/agent'
+require 'concurrent/async'
 require 'concurrent/channel'
 require 'concurrent/dataflow'
 require 'concurrent/delay'
