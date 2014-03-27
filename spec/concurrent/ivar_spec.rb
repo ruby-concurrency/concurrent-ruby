@@ -103,6 +103,10 @@ module Concurrent
         i.value.should eq 14
       end
 
+      it 'returns self' do
+        i = IVar.new
+        i.set(42).should eq i
+      end
     end
 
     context '#fail' do
@@ -126,6 +130,16 @@ module Concurrent
         i.value.should be_nil
       end
 
+      it 'defaults the reason to a StandardError' do
+        i = IVar.new
+        i.fail
+        i.reason.should be_a StandardError
+      end
+
+      it 'returns self' do
+        i = IVar.new
+        i.fail.should eq i
+      end
     end
 
     context 'observation' do
