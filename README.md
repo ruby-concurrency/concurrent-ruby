@@ -70,7 +70,7 @@ MRI 1.9.2, 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x.
 This library is pure Ruby and has no gem dependencies.
 It should be fully compatible with any Ruby interpreter that is 1.9.x compliant.
 
-### Example
+### Examples
 
 Many more code examples can be found in the documentation for each class (linked above).
 This one simple example shows some of the power of this gem.
@@ -119,7 +119,7 @@ ticker.extend(Concurrent::Async)
 hpq = ticker.async.get_year_end_closing('HPQ', 2013)
 ibm = ticker.await.get_year_end_closing('IBM', 2013)
 hpq.value #=> 27.98
-ibm.value #187.57
+ibm.value #=> 187.57
 ```
 
 ## Contributors
