@@ -4,9 +4,14 @@ module Concurrent
 
   describe Async do
 
-    subject do
-      Class.new {
+    before(:each) do
+      Concurrent::Future.thread_pool = Concurrent::NullThreadPool.new
+    end
+
+    let(:async_class) do
+      Class.new do
         include Concurrent::Async
+        attr_accessor :accessor
         def echo(msg)
           msg
         end
@@ -19,8 +24,13 @@ module Concurrent
         def wait(seconds)
           sleep(seconds)
         end
-      }.new
+        def with_block
+          yield
+        end
+      end
     end
+
+    subject { async_class.new }
 
     context '#validate_argc' do
 
@@ -135,6 +145,21 @@ module Concurrent
         val.should be_rejected
       end
 
+      it 'supports attribute accessors' do
+        subject.async.accessor = :foo
+        sleep(0.1)
+        val = subject.async.accessor
+        sleep(0.1)
+        val.value.should eq :foo
+        subject.accessor.should eq :foo
+      end
+
+      it 'supports methods with blocks' do
+        val = subject.async.with_block{ :foo }
+        sleep(0.1)
+        val.value.should eq :foo
+      end
+
       it 'is aliased as #future' do
         val = subject.future.wait(5)
         val.should be_a Concurrent::Future
@@ -153,10 +178,6 @@ module Concurrent
           expect { subject.async.method(:bogus) }.to raise_error(NameError)
           expect { subject.async.bogus }.to raise_error(NameError)
           expect { subject.async.method(:bogus) }.to raise_error(NameError)
-        end
-
-        it 'uses the same mutex as #await' do
-          subject.await.mutex.should eq subject.async.mutex
         end
       end
     end
@@ -206,6 +227,18 @@ module Concurrent
         val.should be_rejected
       end
 
+      it 'supports attribute accessors' do
+        subject.await.accessor = :foo
+        val = subject.await.accessor
+        val.value.should eq :foo
+        subject.accessor.should eq :foo
+      end
+
+      it 'supports methods with blocks' do
+        val = subject.await.with_block{ :foo }
+        val.value.should eq :foo
+      end
+
       it 'is aliased as #defer' do
         val = subject.defer.echo(5)
         val.should be_a Concurrent::IVar
@@ -224,10 +257,26 @@ module Concurrent
           expect { subject.await.bogus }.to raise_error(NameError)
           expect { subject.await.method(:bogus) }.to raise_error(NameError)
         end
+      end
+    end
 
-        it 'uses the same mutex as #async' do
-          subject.await.mutex.should eq subject.async.mutex
-        end
+    context 'locking' do
+
+      it 'uses the same mutex for both #async and #await' do
+        object = Class.new {
+          include Concurrent::Async
+          attr_reader :bucket
+          def gather(seconds, first, *rest)
+            sleep(seconds)
+            (@bucket ||= []).concat([first])
+            @bucket.concat(rest)
+          end
+        }.new
+
+        object.async.gather(0.5, :a, :b)
+        sleep(0.1)
+        object.await.gather(0, :c, :d)
+        object.bucket.should eq [:a, :b, :c, :d]
       end
     end
   end
