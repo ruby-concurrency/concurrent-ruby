@@ -42,9 +42,9 @@ or the [API documentation](http://rubydoc.info/github/jdantonio/concurrent-ruby/
 for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
 
 There are many concurrency abstractions in this library. These abstractions can be broadly categorized
-into several general categories:
+into several general groups:
 
-* Asynchronous concurrency abstractions including [Actor](https://github.com/jdantonio/concurrent-ruby/wiki/Actor),
+* Asynchronous concurrency abstractions including [Async](https://github.com/jdantonio/concurrent-ruby/wiki/Async),
   [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent), [Channel](https://github.com/jdantonio/concurrent-ruby/wiki/Channel),
   [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future), [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
   [ScheculedTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
@@ -77,49 +77,56 @@ This one simple example shows some of the power of this gem.
 
 ```ruby
 require 'concurrent'
-require 'faker'
+require 'thread'   # for Queue
+require 'open-uri' # for open(uri)
 
-class EchoActor < Concurrent::Actor
-  def act(*message)
-    puts "#{message} handled by #{self}"
+class Ticker
+  def get_year_end_closing(symbol, year)
+    uri = "http://ichart.finance.yahoo.com/table.csv?s=#{symbol}&a=11&b=01&c=#{year}&d=11&e=31&f=#{year}&g=m"
+    data = open(uri) {|f| f.collect{|line| line.strip } }
+    data[1].split(',')[4].to_f
   end
 end
 
-mailbox, pool = EchoActor.pool(5)
+# Future
+price = Concurrent::Future.execute{ Ticker.new.get_year_end_closing('TWTR', 2013) }
+price.state #=> :pending
+sleep(1)    # do other stuff
+price.value #=> 63.65
+price.state #=> :fulfilled
 
-timer_proc = proc do
-  mailbox.post(Faker::Company.bs)
-end
+# Promise
+prices = Concurrent::Promise.new{ puts Ticker.new.get_year_end_closing('AAPL', 2013) }.
+           then{ puts Ticker.new.get_year_end_closing('MSFT', 2013) }.
+           then{ puts Ticker.new.get_year_end_closing('GOOG', 2013) }.
+           then{ puts Ticker.new.get_year_end_closing('AMZN', 2013) }.execute
+prices.state #=> :pending
+sleep(1)     # do other stuff
+#=> 561.02
+#=> 37.41
+#=> 1120.71
+#=> 398.79
 
-t1 = Concurrent::TimerTask.new(execution_interval: rand(5)+1, &timer_proc)
-t2 = Concurrent::TimerTask.new(execution_interval: rand(5)+1, &timer_proc)
+# ScheduledTask
+task = Concurrent::ScheduledTask.execute(2){ Ticker.new.get_year_end_closing('INTC', 2013) }
+task.state #=> :pending
+sleep(3)   # do other stuff
+task.value #=> 25.96
 
-overlord = Concurrent::Supervisor.new
-
-overlord.add_worker(t1)
-overlord.add_worker(t2)
-pool.each{|actor| overlord.add_worker(actor)}
-
-overlord.run!
-
-#=> ["mesh proactive platforms"] handled by #<EchoActor:0x007fa5ac18bdf8>
-#=> ["maximize sticky portals"] handled by #<EchoActor:0x007fa5ac18bdd0>
-#=> ["morph bleeding-edge markets"] handled by #<EchoActor:0x007fa5ac18bd80>
-#=> ["engage clicks-and-mortar interfaces"] handled by #<EchoActor:0x007fa5ac18bd58>
-#=> ["monetize transparent infrastructures"] handled by #<EchoActor:0x007fa5ac18bd30>
-#=> ["morph sexy e-tailers"] handled by #<EchoActor:0x007fa5ac18bdf8>
-#=> ["exploit dot-com models"] handled by #<EchoActor:0x007fa5ac18bdd0>
-#=> ["incentivize virtual deliverables"] handled by #<EchoActor:0x007fa5ac18bd80>
-#=> ["enhance B2B models"] handled by #<EchoActor:0x007fa5ac18bd58>
-#=> ["envisioneer real-time architectures"] handled by #<EchoActor:0x007fa5ac18bd30>
-
-overlord.stop
+# Async
+ticker = Ticker.new
+ticker.extend(Concurrent::Async)
+hpq = ticker.async.get_year_end_closing('HPQ', 2013)
+ibm = ticker.await.get_year_end_closing('IBM', 2013)
+hpq.value #=> 27.98
+ibm.value #187.57
 ```
 
 ## Contributors
 
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
+* [Lucas Allan](https://github.com/lucasallan)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)
