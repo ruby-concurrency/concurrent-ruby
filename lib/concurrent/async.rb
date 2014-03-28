@@ -60,7 +60,7 @@ module Concurrent
     # @param [Symbol] method the method to check the object for
     # @param [Array] args zero or more arguments for the arity check
     #
-    # @raise [NoMethodError] the object does not respond to +method+ method
+    # @raise [NameError] the object does not respond to +method+ method
     # @raise [ArgumentError] the given +args+ do not match the arity of +method+
     #
     # @note This check is imperfect because of the way Ruby reports the arity of
