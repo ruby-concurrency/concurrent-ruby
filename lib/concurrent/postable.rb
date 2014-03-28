@@ -75,6 +75,7 @@ module Concurrent
       end
     end
 
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def forward(receiver, *message)
       raise ArgumentError.new('empty message') if message.empty?
       return false unless ready?
@@ -82,6 +83,7 @@ module Concurrent
       queue.length
     end
 
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def ready?
       if self.respond_to?(:running?) && ! running?
         false

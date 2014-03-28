@@ -30,6 +30,14 @@ module Concurrent
   #   future.fulfilled? => true
   #   
   #   channel.stop => true  
+  #
+  # @note +Actor+ is being replaced with a completely new framework prior to v1.0.0.
+  #       Subsequently +Channel+ will be rewritten to no longer inherit from +Actor+
+  #       and no longer include +Stoppable+. The +forward+ method from +Postable+
+  #       will also be deprecated. The +pool+ method will likely be removed as
+  #       well (in lieu of an internal thread pool). The other messaging methods
+  #       (+post+, +post?+, and +post!+) will remain and will behave as they do
+  #       now.
   #   
   # @see http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx Async and Parallel Design Patterns in F#: Agents
   # @see http://msdn.microsoft.com/en-us/library/ee370357.aspx Control.MailboxProcessor<'Msg> Class (F#)
