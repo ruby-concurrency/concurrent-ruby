@@ -62,14 +62,16 @@ module Concurrent
   # @note Thread safe guarantees can only be made when asynchronous method calls
   #       are not mixed with synchronous method calls. Use only synchronous calls
   #       when the object is used exclusively on a single thread. Use only
-  #       asynchronous calls when the object is shared between threads.
+  #       +async+ and +await+ when the object is shared between threads. Once you
+  #       call a method using +async+, you should no longer call any methods
+  #       directly on the object. Use +async+ and +await+ exclusively from then on.
+  #       With careful programming it is possible to switch back and forth but it's
+  #       also very easy to create race conditions and break your application.
+  #       Basically, it's "async all the way down."
   #
   # @since 0.6.0
   #
   # @see Concurrent::Obligation
-  #
-  # @see http://msdn.microsoft.com/en-us/library/hh191443.aspx Asynchronous Programming with Async and Await (C# and Visual Basic)
-  # @see http://msdn.microsoft.com/en-us/magazine/jj991977.aspx Best Practices in Asynchronous Programming
   module Async
 
     # Check for the presence of a method on an object and determine if a given
