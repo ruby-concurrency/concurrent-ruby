@@ -108,9 +108,6 @@ module Concurrent
     # @!visibility private
     class AwaitDelegator # :nodoc:
 
-      # The lock used when delegating methods to the wrapped object.
-      attr_reader :mutex
-
       # Create a new delegator object wrapping the given +delegate+ and
       # protecting it with the given +mutex+.
       #
@@ -153,15 +150,17 @@ module Concurrent
 
         self.send(method, *args)
       end
+
+      # The lock used when delegating methods to the wrapped object.
+      #
+      # @!visibility private
+      attr_reader :mutex # :nodoc:
     end
 
     # Delegates asynchronous, thread-safe method calls to the wrapped object.
     #
     # @!visibility private
     class AsyncDelegator # :nodoc:
-
-      # The lock used when delegating methods to the wrapped object.
-      attr_reader :mutex
 
       # Create a new delegator object wrapping the given +delegate+ and
       # protecting it with the given +mutex+.
@@ -199,6 +198,13 @@ module Concurrent
 
         self.send(method, *args)
       end
+
+      private
+
+      # The lock used when delegating methods to the wrapped object.
+      #
+      # @!visibility private
+      attr_reader :mutex # :nodoc:
     end
 
     # Causes the chained method call to be performed asynchronously on the
@@ -229,7 +235,7 @@ module Concurrent
     #
     # @see Concurrent::Future
     def async
-      @__async_delegator__ ||= AsyncDelegator.new(self, Mutex.new)
+      @__async_delegator__ ||= AsyncDelegator.new(self, await.mutex)
     end
     alias_method :future, :async
 
@@ -261,7 +267,7 @@ module Concurrent
     #
     # @see Concurrent::IVar
     def await
-      @__await_delegator__ ||= AwaitDelegator.new(self, async.mutex)
+      @__await_delegator__ ||= AwaitDelegator.new(self, Mutex.new)
     end
     alias_method :defer, :await
   end
