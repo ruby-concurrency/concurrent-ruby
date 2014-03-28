@@ -135,29 +135,29 @@ module Concurrent
         val.should be_rejected
       end
 
-      it 'defines the method after the first call' do
-        pending('failing inconsistently')
-        expect { subject.async.method(:echo) }.to raise_error(NameError)
-        subject.async.echo(:foo)
-        sleep(0.1)
-        expect { subject.async.method(:echo) }.not_to raise_error
-      end
-
-      it 'does not define the method on name/arity exception' do
-        pending('failing inconsistently')
-        expect { subject.async.method(:bogus) }.to raise_error(NameError)
-        expect { subject.async.bogus }.to raise_error(NameError)
-        expect { subject.async.method(:bogus) }.to raise_error(NameError)
-      end
-
-      it 'uses the same mutex as #await' do
-        subject.await.mutex.should eq subject.async.mutex
-      end
-
       it 'is aliased as #future' do
         val = subject.future.wait(5)
         val.should be_a Concurrent::Future
-        val.should be_pending
+      end
+
+      context '#method_missing' do
+
+        it 'defines the method after the first call' do
+          expect { subject.async.method(:echo) }.to raise_error(NameError)
+          subject.async.echo(:foo)
+          sleep(0.1)
+          expect { subject.async.method(:echo) }.not_to raise_error
+        end
+
+        it 'does not define the method on name/arity exception' do
+          expect { subject.async.method(:bogus) }.to raise_error(NameError)
+          expect { subject.async.bogus }.to raise_error(NameError)
+          expect { subject.async.method(:bogus) }.to raise_error(NameError)
+        end
+
+        it 'uses the same mutex as #await' do
+          subject.await.mutex.should eq subject.async.mutex
+        end
       end
     end
 
@@ -206,28 +206,28 @@ module Concurrent
         val.should be_rejected
       end
 
-      it 'defines the method after the first call' do
-        pending('failing inconsistently')
-        expect { subject.await.method(:echo) }.to raise_error(NameError)
-        subject.await.echo(:foo)
-        expect { subject.await.method(:echo) }.not_to raise_error
-      end
-
-      it 'does not define the method on name/arity exception' do
-        pending('failing inconsistently')
-        expect { subject.await.method(:bogus) }.to raise_error(NameError)
-        expect { subject.await.bogus }.to raise_error(NameError)
-        expect { subject.await.method(:bogus) }.to raise_error(NameError)
-      end
-
-      it 'uses the same mutex as #async' do
-        subject.await.mutex.should eq subject.async.mutex
-      end
-
       it 'is aliased as #defer' do
         val = subject.defer.echo(5)
         val.should be_a Concurrent::IVar
-        val.should be_fulfilled
+      end
+
+      context '#method_missing' do
+
+        it 'defines the method after the first call' do
+          expect { subject.await.method(:echo) }.to raise_error(NameError)
+          subject.await.echo(:foo)
+          expect { subject.await.method(:echo) }.not_to raise_error
+        end
+
+        it 'does not define the method on name/arity exception' do
+          expect { subject.await.method(:bogus) }.to raise_error(NameError)
+          expect { subject.await.bogus }.to raise_error(NameError)
+          expect { subject.await.method(:bogus) }.to raise_error(NameError)
+        end
+
+        it 'uses the same mutex as #async' do
+          subject.await.mutex.should eq subject.async.mutex
+        end
       end
     end
   end

@@ -7,6 +7,11 @@ module Concurrent
   # A mixin module that provides simple asynchronous behavior to any standard
   # class/object or object. 
   #
+  #   Scenario:
+  #     As a stateful, plain old Ruby class/object
+  #     I want safe, asynchronous behavior
+  #     So my long-running methods don't block the main thread
+  #
   # Stateful, mutable objects must be managed carefully when used asynchronously.
   # But Ruby is an object-oriented language so designing with objects and classes
   # plays to Ruby's strengths and is often more natural to many Ruby programmers.
@@ -25,7 +30,7 @@ module Concurrent
   #
   # Very loosely based on the +async+ and +await+ keywords in C#.
   #
-  # @example
+  # @example Defining an asynchronous class
   #   class Echo
   #     include Concurrent::Async
   #
@@ -41,6 +46,18 @@ module Concurrent
   #
   #   horn.async.echo('one') # asynchronous, non-blocking, thread-safe
   #   horn.await.echo('two') # synchronous, blocking, thread-safe
+  #
+  # @example Monkey-patching an existing object
+  #   numbers = 1_000_000.times.collect{ rand }
+  #   numbers.extend(Concurrent::Async)
+  #   
+  #   future = numbers.async.max
+  #   future.state #=> :pending
+  #   
+  #   sleep(2)
+  #   
+  #   future.state #=> :fulfilled
+  #   future.value #=> 0.999999138918843
   #
   # @note Thread safe guarantees can only be made when asynchronous method calls
   #       are not mixed with synchronous method calls. Use only synchronous calls
@@ -119,7 +136,7 @@ module Concurrent
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
 
-        AwaitDelegator.send(:define_method, method) do |*args|
+        self.define_singleton_method(method) do |*args|
           Async::validate_argc(@delegate, method, *args)
           ivar = Concurrent::IVar.new
           value, reason = nil, nil
@@ -171,7 +188,7 @@ module Concurrent
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
 
-        AsyncDelegator.send(:define_method, method) do |*args|
+        self.define_singleton_method(method) do |*args|
           Async::validate_argc(@delegate, method, *args)
           Concurrent::Future.execute do
             mutex.synchronize do
