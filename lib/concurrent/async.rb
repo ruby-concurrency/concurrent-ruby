@@ -47,6 +47,8 @@ module Concurrent
   #       when the object is used exclusively on a single thread. Use only
   #       asynchronous calls when the object is shared between threads.
   #
+  # @since 0.6.0
+  #
   # @see Concurrent::Obligation
   #
   # @see http://msdn.microsoft.com/en-us/library/hh191443.aspx Asynchronous Programming with Async and Await (C# and Visual Basic)
@@ -111,7 +113,7 @@ module Concurrent
       #
       # @return [IVar] the result of the method call
       #
-      # @raise [NoMethodError] the object does not respond to +method+ method
+      # @raise [NameError] the object does not respond to +method+ method
       # @raise [ArgumentError] the given +args+ do not match the arity of +method+
       def method_missing(method, *args, &block)
         super unless @delegate.respond_to?(method)
@@ -128,7 +130,7 @@ module Concurrent
           rescue => reason
             # caught
           ensure
-            ivar.complete(reason.nil?, value, reason)
+            return ivar.complete(reason.nil?, value, reason)
           end
         end
 
@@ -163,7 +165,7 @@ module Concurrent
       #
       # @return [IVar] the result of the method call
       #
-      # @raise [NoMethodError] the object does not respond to +method+ method
+      # @raise [NameError] the object does not respond to +method+ method
       # @raise [ArgumentError] the given +args+ do not match the arity of +method+
       def method_missing(method, *args, &block)
         super unless @delegate.respond_to?(method)
@@ -205,7 +207,7 @@ module Concurrent
     #
     # @return [Concurrent::Future] the pending result of the asynchronous operation
     #
-    # @raise [NoMethodError] the object does not respond to +method+ method
+    # @raise [NameError] the object does not respond to +method+ method
     # @raise [ArgumentError] the given +args+ do not match the arity of +method+
     #
     # @see Concurrent::Future
@@ -237,7 +239,7 @@ module Concurrent
     #
     # @return [Concurrent::IVar] the completed result of the synchronous operation
     #
-    # @raise [NoMethodError] the object does not respond to +method+ method
+    # @raise [NameError] the object does not respond to +method+ method
     # @raise [ArgumentError] the given +args+ do not match the arity of +method+
     #
     # @see Concurrent::IVar
