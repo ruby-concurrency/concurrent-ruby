@@ -60,7 +60,7 @@ module Concurrent
       complete(true, value, nil)
     end
 
-    def fail(reason = nil)
+    def fail(reason = StandardError.new)
       complete(false, nil, reason)
     end
 
@@ -73,6 +73,7 @@ module Concurrent
 
       time = Time.now
       @observers.notify_and_delete_observers{ [time, self.value, reason] }
+      self
     end
   end
 end
