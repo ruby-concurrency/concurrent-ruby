@@ -13,7 +13,7 @@ module Concurrent
     #  
     #   On creation a +CachedThreadPool+ has zero running threads. New threads are
     #   created on the pool as new operations are +#post+. The size of the pool
-    #   will grow until +#max_threads+ threads are in the pool or until the number
+    #   will grow until +#max_length+ threads are in the pool or until the number
     #   of threads exceeds the number of running and pending operations. When a new
     #   operation is post to the pool the first available idle thread will be tasked
     #   with the new operation.

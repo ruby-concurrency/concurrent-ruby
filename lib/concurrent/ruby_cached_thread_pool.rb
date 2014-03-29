@@ -17,7 +17,17 @@ module Concurrent
     DEFAULT_THREAD_IDLETIME = 60
 
     # The maximum number of threads that may be created in the pool.
-    attr_accessor :max_threads
+    attr_reader :max_length
+
+    # The minimum number of threads that may be created in the pool.
+    attr_reader :min_length
+
+    attr_reader :largest_length
+
+    attr_reader :scheduled_task_count
+    attr_reader :completed_task_count
+
+    attr_reader :idletime
 
     # Create a new thread pool.
     #
@@ -33,8 +43,8 @@ module Concurrent
       @idletime = (opts[:thread_idletime] || opts[:idletime] || DEFAULT_THREAD_IDLETIME).to_i
       raise ArgumentError.new('idletime must be greater than zero') if @idletime <= 0
 
-      @max_threads = opts[:max_threads] || opts[:max] || DEFAULT_MAX_POOL_SIZE
-      raise ArgumentError.new('maximum_number of threads must be greater than zero') if @max_threads <= 0
+      @max_length = opts[:max_threads] || opts[:max] || DEFAULT_MAX_POOL_SIZE
+      raise ArgumentError.new('maximum_number of threads must be greater than zero') if @max_length <= 0
 
       @state = :running
       @pool = []
@@ -43,6 +53,10 @@ module Concurrent
 
       @busy = []
       @idle = []
+      @scheduled_task_count = 0
+      @completed_task_count = 0
+      @min_length = 0
+      @largest_length = 0
     end
 
     # Is the thread pool running?
@@ -86,18 +100,20 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       @mutex.synchronize do
         break false unless @state == :running
+        @scheduled_task_count += 1
 
         if @idle.empty?
-          if @idle.length + @busy.length < @max_threads
+          if @idle.length + @busy.length < @max_length
             worker = create_worker_thread
           else
-            worker = @busy.shift
+            worker = @busy.pop
           end
         else
           worker = @idle.pop
         end
 
         @busy.push(worker)
+        @largest_length = [@idle.length + @busy.length, @largest_length].max
         worker.signal(*args, &task)
 
         prune_stale_workers
@@ -152,11 +168,9 @@ module Concurrent
     #   zero when the pool is shutdown
     def length
       @mutex.synchronize do
-        @state == :running ? @busy.length + @idle.length : 0
+        @state != :shutdown ? @busy.length + @idle.length : 0
       end
     end
-    alias_method :size, :length
-    alias_method :current_size, :length
     alias_method :current_length, :length
 
     # @!visibility private
@@ -172,11 +186,14 @@ module Concurrent
     end
 
     # @!visibility private
-    def on_end_task(worker) # :nodoc:
+    def on_end_task(worker, success) # :nodoc:
       @mutex.synchronize do
+        @completed_task_count += 1 #if success
         break unless @state == :running
-        @busy.delete(worker)
-        @idle.push(worker)
+        unless worker.tasks_remaining?
+          @busy.delete(worker)
+          @idle.push(worker)
+        end
       end
     end
 

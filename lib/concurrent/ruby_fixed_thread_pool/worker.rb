@@ -39,13 +39,12 @@ module Concurrent
             break
           end
 
-          @parent.on_start_task(self)
           begin
             task.last.call(*task.first)
-          rescue
+          rescue => ex
             # let it fail
           ensure
-            @parent.on_end_task(self)
+            @parent.on_end_task(self, ex.nil?)
           end
         end
       end

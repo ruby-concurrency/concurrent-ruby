@@ -5,6 +5,35 @@ if defined? java.util
     # @!macro cached_thread_pool
     module JavaAbstractThreadPool
 
+      def min_length
+        @executor.getCorePoolSize
+      end
+
+      def max_length
+        @executor.getMaximumPoolSize
+      end
+
+      def length
+        @executor.getPoolSize
+      end
+      alias_method :current_length, :length
+
+      def largest_length
+        @executor.getLargestPoolSize
+      end
+
+      def scheduled_task_count
+        @executor.getTaskCount
+      end
+
+      def completed_task_count
+        @executor.getCompletedTaskCount
+      end
+
+      def idletime
+        @executor.getKeepAliveTime(java.util.concurrent.TimeUnit::SECONDS)
+      end
+
       # Is the thread pool running?
       #
       # @return [Boolean] +true+ when running, +false+ when shutting down or shutdown
@@ -86,15 +115,6 @@ if defined? java.util
         @executor.shutdownNow
         return nil
       end
-
-      # The number of threads currently in the pool.
-      #
-      # @return [Integer] a non-zero value when the pool is running,
-      #   zero when the pool is shutdown
-      def length
-        running? ? 1 : 0
-      end
-      alias_method :size, :length
     end
   end
 end

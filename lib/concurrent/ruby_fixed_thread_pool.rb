@@ -14,20 +14,33 @@ module Concurrent
   #   different.
   class RubyFixedThreadPool
 
+    attr_reader :scheduled_task_count
+    attr_reader :completed_task_count
+
+    attr_reader :largest_length
+    attr_reader :min_length
+    attr_reader :max_length
+
+    attr_reader :idletime
+
     # Create a new thread pool.
     #
     # @param [Integer] num_threads the number of threads to allocate
     #
     # @raise [ArgumentError] if +num_threads+ is less than or equal to zero
     def initialize(num_threads)
-      @num_threads = num_threads.to_i
-      raise ArgumentError.new('number of threads must be greater than zero') if @num_threads < 1
+      raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
 
       @state = :running
       @pool = []
       @terminator = Event.new
       @queue = Queue.new
       @mutex = Mutex.new
+      @scheduled_task_count = 0
+      @completed_task_count = 0
+      @largest_length = 0
+      @min_length = @max_length = num_threads
+      @idletime = 0
     end
 
     # Is the thread pool running?
@@ -71,6 +84,7 @@ module Concurrent
       raise ArgumentError.new('no block given') if task.nil?
       @mutex.synchronize do
         break false unless @state == :running
+        @scheduled_task_count += 1
         @queue << [args, task]
         clean_pool
         fill_pool
@@ -118,65 +132,21 @@ module Concurrent
       end
     end
 
-    # The number of threads allocated for the pool.
+    # The number of threads currently in the pool.
     #
     # @return [Integer] the number of threads allocated for a running pool,
     #   zero when the pool is shutdown
     def length
       @mutex.synchronize do
-        @state == :running ? @num_threads : 0
+        @state != :shutdown ? @pool.length : 0
       end
     end
-    alias_method :size, :length
+    alias_method :current_length, :length
 
-    # The number of threads currently in the pool.
-    #
-    # @return [Integer] the number of threads currently operating when the
-    #   pool is running, zero when the pool is shutdown
-    def current_length
+    # @!visibility private
+    def on_end_task(worker, success) # :nodoc:
       @mutex.synchronize do
-        @state == :running ? @pool.length : 0
-      end
-    end
-    alias_method :current_size, :current_length
-
-    # @!visibility private
-    def create_worker_thread # :nodoc:
-      wrkr = Worker.new(@queue, self)
-      Thread.new(wrkr, self) do |worker, parent|
-        Thread.current.abort_on_exception = false
-        worker.run
-        parent.on_worker_exit(worker)
-      end
-      return wrkr
-    end
-
-    # @!visibility private
-    def fill_pool # :nodoc:
-      return unless @state == :running
-      while @pool.length < @num_threads
-        @pool << create_worker_thread
-      end
-    end
-
-    # @!visibility private
-    def clean_pool # :nodoc:
-      @pool.reject! {|worker| worker.dead? } 
-    end
-
-    # @!visibility private
-    def drain_pool # :nodoc:
-      @pool.each {|worker| worker.kill }
-      @pool.clear
-    end
-
-    # @!visibility private
-    def on_start_task(worker) # :nodoc:
-    end
-
-    # @!visibility private
-    def on_end_task(worker) # :nodoc:
-      @mutex.synchronize do
+        @completed_task_count += 1 #if success
         break unless @state == :running
         clean_pool
         fill_pool
@@ -192,6 +162,39 @@ module Concurrent
           @terminator.set
         end
       end
+    end
+
+    protected
+
+    # @!visibility private
+    def create_worker_thread # :nodoc:
+      wrkr = Worker.new(@queue, self)
+      Thread.new(wrkr, self) do |worker, parent|
+        Thread.current.abort_on_exception = false
+        worker.run
+        parent.on_worker_exit(worker)
+      end
+      return wrkr
+    end
+
+    # @!visibility private
+    def fill_pool # :nodoc:
+      return unless @state == :running
+      while @pool.length < @max_length
+        @pool << create_worker_thread
+      end
+      @largest_length = @max_length
+    end
+
+    # @!visibility private
+    def clean_pool # :nodoc:
+      @pool.reject! {|worker| worker.dead? } 
+    end
+
+    # @!visibility private
+    def drain_pool # :nodoc:
+      @pool.each {|worker| worker.kill }
+      @pool.clear
     end
   end
 end
