@@ -271,6 +271,6 @@ module Concurrent
     def await
       @__await_delegator__ ||= AwaitDelegator.new(self, Mutex.new)
     end
-    alias_method :defer, :await
+    alias_method :delay, :await
   end
 end

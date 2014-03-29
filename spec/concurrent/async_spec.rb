@@ -239,8 +239,8 @@ module Concurrent
         val.value.should eq :foo
       end
 
-      it 'is aliased as #defer' do
-        val = subject.defer.echo(5)
+      it 'is aliased as #delay' do
+        val = subject.delay.echo(5)
         val.should be_a Concurrent::IVar
       end
 
