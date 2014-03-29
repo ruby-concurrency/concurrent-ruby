@@ -1,20 +1,13 @@
 require 'spec_helper'
-require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
 
-  describe UsesGlobalThreadPool do
+  describe PerThreadExecutor do
 
-    let!(:thread_pool_user){ Class.new{ include UsesGlobalThreadPool } }
-    it_should_behave_like Concurrent::UsesGlobalThreadPool
-  end
-
-  describe NullThreadPool do
-
-    subject { NullThreadPool.new }
+    subject { PerThreadExecutor.new }
 
     after(:all) do
-      $GLOBAL_THREAD_POOL = NullThreadPool.new
+      Concurrent.configuration.global_thread_pool = PerThreadExecutor.new
     end
 
     context '#post' do
@@ -22,7 +15,7 @@ module Concurrent
       it 'creates a new thread for a call without arguments' do
         thread = Thread.new{ nil }
         Thread.should_receive(:new).with(no_args()).and_return(thread)
-        $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
+        Concurrent.configuration.global_thread_pool.should_not_receive(:post).with(any_args())
         subject.post{ nil }
       end
 
@@ -36,7 +29,7 @@ module Concurrent
       it 'creates a new thread for a call with arguments' do
         thread = Thread.new{ nil }
         Thread.should_receive(:new).with(1,2,3).and_return(thread)
-        $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
+        Concurrent.configuration.global_thread_pool.should_not_receive(:post).with(any_args())
         subject.post(1,2,3){ nil }
       end
 
@@ -57,7 +50,7 @@ module Concurrent
       it 'aliases #<<' do
         thread = Thread.new{ nil }
         Thread.should_receive(:new).with(no_args()).and_return(thread)
-        $GLOBAL_THREAD_POOL.should_not_receive(:post).with(any_args())
+        Concurrent.configuration.global_thread_pool.should_not_receive(:post).with(any_args())
         subject << proc{ nil }
       end
     end

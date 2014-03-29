@@ -5,7 +5,7 @@ module Concurrent
   describe Async do
 
     before(:each) do
-      Concurrent::Future.thread_pool = Concurrent::NullThreadPool.new
+      Concurrent::Future.thread_pool = Concurrent::PerThreadExecutor.new
     end
 
     let(:async_class) do

@@ -1,7 +1,7 @@
 require 'thread'
 
 require 'concurrent/obligation'
-require 'concurrent/global_thread_pool'
+require 'concurrent/uses_global_thread_pool'
 require 'concurrent/safe_task_executor'
 
 module Concurrent

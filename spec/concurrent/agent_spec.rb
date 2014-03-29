@@ -18,7 +18,7 @@ module Concurrent
     end
 
     before(:each) do
-      Agent.thread_pool = NullThreadPool.new
+      Agent.thread_pool = PerThreadExecutor.new
     end
 
     context 'behavior' do
