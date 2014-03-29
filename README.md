@@ -44,9 +44,11 @@ for more information or join our [mailing list](http://groups.google.com/group/c
 There are many concurrency abstractions in this library. These abstractions can be broadly categorized
 into several general groups:
 
-* Asynchronous concurrency abstractions including [Async](https://github.com/jdantonio/concurrent-ruby/wiki/Async),
-  [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent), [Channel](https://github.com/jdantonio/concurrent-ruby/wiki/Channel),
-  [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future), [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
+* Asynchronous concurrency abstractions including
+  [Async](https://github.com/jdantonio/concurrent-ruby/wiki/Async),
+  [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent),
+  [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future),
+  [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
   [ScheculedTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
   and [TimerTask](https://github.com/jdantonio/concurrent-ruby/wiki/TimerTask) 
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
