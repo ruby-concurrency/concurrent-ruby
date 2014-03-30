@@ -14,7 +14,7 @@ module Concurrent
     #   number of seconds a thread may be idle before it is reclaimed
     #
     # @raise [ArgumentError] if +max_threads+ is less than or equal to zero
-    # @raise [ArgumentError] if +thread_idletime+ is less than or equal to zero
+    # @raise [ArgumentError] if +idletime+ is less than or equal to zero
     def initialize(opts = {})
       max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i

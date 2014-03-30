@@ -16,7 +16,7 @@ if defined? java.util
       #   number of seconds a thread may be idle before it is reclaimed
       #
       # @raise [ArgumentError] if +max_threads+ is less than or equal to zero
-      # @raise [ArgumentError] if +thread_idletime+ is less than or equal to zero
+      # @raise [ArgumentError] if +idletime+ is less than or equal to zero
       #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool--
       def initialize(opts = {})

@@ -1,7 +1,7 @@
 require 'thread'
 
 require 'concurrent/event'
-require 'concurrent/ruby_thread_pool_executor/worker'
+require 'concurrent/ruby_thread_pool_worker'
 
 module Concurrent
 
@@ -60,8 +60,8 @@ module Concurrent
       @largest_length = 0
 
       #@busy = 0
-      @prune_interval = 1
-      @last_prune_time = Time.now.to_i - (@prune_interval * 2)
+      @gc_interval = opts.fetch(:gc_interval, 1).to_i # undocumented
+      @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
     end
 
     def length
@@ -120,11 +120,11 @@ module Concurrent
         break false unless @state == :running
         @scheduled_task_count += 1
         @queue << [args, task]
-        #if Time.now.to_i - @prune_interval > @last_prune_time
+        if Time.now.to_f - @gc_interval >= @last_gc_time
           prune_pool
           grow_pool
-          #@last_prune_time = Time.now.to_i
-        #end
+          @last_gc_time = Time.now.to_f
+        end
         true
       end
     end
@@ -202,7 +202,7 @@ module Concurrent
     def prune_pool # :nodoc:
       @pool.delete_if do |worker|
         worker.dead? ||
-          (@idletime == 0 ? false : Time.now.to_i - @idletime > worker.last_activity)
+          (@idletime == 0 ? false : Time.now.to_f - @idletime > worker.last_activity)
       end
     end
 
@@ -228,7 +228,7 @@ module Concurrent
 
     # @!visibility private
     def create_worker_thread # :nodoc:
-      wrkr = Worker.new(@queue, self)
+      wrkr = RubyThreadPoolWorker.new(@queue, self)
       Thread.new(wrkr, self) do |worker, parent|
         Thread.current.abort_on_exception = false
         worker.run

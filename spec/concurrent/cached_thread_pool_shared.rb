@@ -106,7 +106,7 @@ share_examples_for :cached_thread_pool do
 
   context 'garbage collection' do
 
-    subject{ described_class.new(idletime: 1, max_threads: 5) }
+    subject{ described_class.new(idletime: 1, max_threads: 5, gc_interval: 0) }
 
     it 'removes from pool any thread that has been idle too long' do
       3.times { subject << proc{ sleep(0.1) } }
@@ -114,7 +114,7 @@ share_examples_for :cached_thread_pool do
       subject.length.should eq 3
       sleep(2)
       subject << proc{ nil }
-      #sleep(0.1)
+      sleep(0.1)
       subject.length.should < 3
     end
 
@@ -124,12 +124,14 @@ share_examples_for :cached_thread_pool do
       subject.length.should eq 3
       sleep(2)
       subject << proc{ nil }
-      #sleep(0.1)
+      sleep(0.1)
       subject.length.should < 3
     end
   end
 
   context 'worker creation and caching' do
+
+    subject{ described_class.new(idletime: 1, max_threads: 5, gc_interval: 0) }
 
     it 'creates new workers when there are none available' do
       subject.length.should eq 0
