@@ -81,7 +81,7 @@ module Concurrent
     #
     # @raise [ArgumentError] if no block is given
     def post(*args, &task)
-      raise ArgumentError.new('no block given') if task.nil?
+      raise ArgumentError.new('no block given') unless block_given?
       @mutex.synchronize do
         break false unless @state == :running
         @scheduled_task_count += 1

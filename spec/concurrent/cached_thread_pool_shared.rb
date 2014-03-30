@@ -23,7 +23,7 @@ share_examples_for :cached_thread_pool do
 
     it 'raises an exception when the pool size is less than one' do
       lambda {
-        described_class.new(max: 0)
+        described_class.new(max_threads: 0)
       }.should raise_error(ArgumentError)
     end
 
@@ -74,37 +74,24 @@ share_examples_for :cached_thread_pool do
     end
   end
 
-  context '#length' do
-
-    it 'returns zero for a new thread pool' do
-      subject.length.should eq 0
-    end
-
-    it 'returns :max_length while running' do
-      10.times{ subject.post{ sleep(0.1) } }
-      sleep(1)
-      subject.length.should eq max_threads
-    end
-  end
-
   context '#largest_length' do
 
     it 'returns zero on creation' do
       subject.largest_length.should eq 0
     end
 
-    it 'returns :max_threads while running' do
+    it 'returns a non-zero number once tasks have been received' do
       10.times{ subject.post{ sleep(0.1) } }
-      sleep(1)
-      subject.largest_length.should eq max_threads
+      sleep(0.1)
+      subject.largest_length.should > 0
     end
 
-    it 'returns :max_threads once shutdown' do
+    it 'returns a non-zero number after shutdown if tasks have been received' do
       10.times{ subject.post{ sleep(0.1) } }
-      sleep(1)
+      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.largest_length.should eq max_threads
+      subject.largest_length.should > 0
     end
   end
 
@@ -119,10 +106,11 @@ share_examples_for :cached_thread_pool do
 
   context 'garbage collection' do
 
-    subject{ described_class.new(idletime: 1) }
+    subject{ described_class.new(idletime: 1, max_threads: 5) }
 
     it 'removes from pool any thread that has been idle too long' do
       3.times { subject << proc{ sleep(0.1) } }
+      sleep(0.1)
       subject.length.should eq 3
       sleep(2)
       subject << proc{ nil }
@@ -131,7 +119,8 @@ share_examples_for :cached_thread_pool do
 
     it 'removes from pool any dead thread' do
       3.times { subject << proc{ sleep(0.1); raise Exception } }
-      subject.length.should == 3
+      sleep(0.1)
+      subject.length.should eq 3
       sleep(2)
       subject << proc{ nil }
       subject.length.should < 3
@@ -157,7 +146,7 @@ share_examples_for :cached_thread_pool do
     end
 
     it 'never creates more than :max_threads threads' do
-      pool = described_class.new(max: 5)
+      pool = described_class.new(max_threads: 5)
       100.times{ sleep(0.01); pool << proc{ sleep(1) } }
       sleep(0.1)
       pool.length.should eq 5

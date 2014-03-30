@@ -1,12 +1,11 @@
 if defined? java.util
 
-  require 'concurrent/java_abstract_thread_pool'
+  require 'concurrent/java_thread_pool_executor'
 
   module Concurrent
 
     # @!macro cached_thread_pool
-    class JavaCachedThreadPool
-      include JavaAbstractThreadPool
+    class JavaCachedThreadPool < JavaThreadPoolExecutor
 
       # The maximum number of threads that may be created in the pool
       # (unless overridden during construction).
@@ -29,22 +28,11 @@ if defined? java.util
         @max_length = opts[:max_threads] || opts[:max] || DEFAULT_MAX_POOL_SIZE
         raise ArgumentError.new('maximum_number of threads must be greater than zero') if @max_length <= 0
 
-        #@executor = java.util.concurrent.Executors.newCachedThreadPool
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
           0, @max_length,
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           java.util.concurrent.SynchronousQueue.new,
           java.util.concurrent.ThreadPoolExecutor::AbortPolicy.new)
-
-        #p = java.util.concurrent.Executors.newCachedThreadPool
-        #p.getCorePoolSize #=> 0
-        #p.getMaximumPoolSize #=> 2147483647
-        #p.getKeepAliveTime(java.util.concurrent.TimeUnit::SECONDS) #=> 60
-        #p.getQueue #=> #<Java::JavaUtilConcurrent::SynchronousQueue:0x68ec7913>
-
-        #p.getActiveCount #=> 0
-        #p.getQueue.size #=> 0
-        #p.getRejectedExecutionHandler #=> #<Java::JavaUtilConcurrent::ThreadPoolExecutor::AbortPolicy:0x57f897a7>
       end
     end
   end

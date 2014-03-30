@@ -2,8 +2,60 @@ if defined? java.util
 
   module Concurrent
 
-    # @!macro cached_thread_pool
-    module JavaAbstractThreadPool
+    # @!macro thread_pool_executor
+    class JavaThreadPoolExecutor
+
+      # The maximum number of threads that will be created in the pool
+      # (unless overridden during construction).
+      DEFAULT_MAX_POOL_SIZE = java.lang.Integer::MAX_VALUE # 2147483647
+
+      # The minimum number of threads that will be created in the pool
+      # (unless overridden during construction).
+      DEFAULT_MIN_POOL_SIZE = 0
+
+      DEFAULT_MAX_QUEUE_SIZE = 0
+
+      # The maximum number of seconds a thread in the pool may remain idle before
+      # being reclaimed (unless overridden during construction).
+      DEFAULT_THREAD_IDLETIMEOUT = 60
+
+      OVERFLOW_POLICIES = {
+        abort: java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
+        discard: java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
+        caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
+      }.freeze
+
+      # The maximum number of threads that may be created in the pool.
+      attr_reader :max_length
+
+      attr_reader :max_queue
+
+      # Create a new thread pool.
+      #
+      # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
+      def initialize(opts = {})
+        min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+        @max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+        idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
+        @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+        overflow_policy = opts.fetch(:overflow_policy, :abort)
+
+        raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
+        raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(overflow_policy)
+
+        if min_length == 0 && max_queue == 0
+          queue = java.util.concurrent.SynchronousQueue.new
+        elsif max_queue == 0
+          queue = java.util.concurrent.LinkedBlockingQueue.new
+        else
+          queue = java.util.concurrent.LinkedBlockingQueue.new(max_queue)
+        end
+
+        @executor = java.util.concurrent.ThreadPoolExecutor.new(
+          min_length, @max_length,
+          idletime, java.util.concurrent.TimeUnit::SECONDS,
+          queue, OVERFLOW_POLICIES[overflow_policy].new)
+      end
 
       def min_length
         @executor.getCorePoolSize
@@ -32,6 +84,14 @@ if defined? java.util
 
       def idletime
         @executor.getKeepAliveTime(java.util.concurrent.TimeUnit::SECONDS)
+      end
+
+      def queue_length
+        @executor.getQueue.size
+      end
+
+      def remaining_capacity
+        @executor.getQueue.remainingCapacity
       end
 
       # Is the thread pool running?

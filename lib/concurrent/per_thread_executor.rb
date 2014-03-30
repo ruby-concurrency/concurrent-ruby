@@ -3,6 +3,7 @@ module Concurrent
   class PerThreadExecutor
 
     def self.post(*args)
+      raise ArgumentError.new('no block given') unless block_given?
       Thread.new(*args) do
         Thread.current.abort_on_exception = false
         yield(*args)
