@@ -114,6 +114,7 @@ share_examples_for :cached_thread_pool do
       subject.length.should eq 3
       sleep(2)
       subject << proc{ nil }
+      #sleep(0.1)
       subject.length.should < 3
     end
 
@@ -123,6 +124,7 @@ share_examples_for :cached_thread_pool do
       subject.length.should eq 3
       sleep(2)
       subject << proc{ nil }
+      #sleep(0.1)
       subject.length.should < 3
     end
   end

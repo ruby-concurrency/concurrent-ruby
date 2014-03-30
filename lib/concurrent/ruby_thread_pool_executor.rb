@@ -1,3 +1,8 @@
+require 'thread'
+
+require 'concurrent/event'
+require 'concurrent/ruby_thread_pool_executor/worker'
+
 module Concurrent
 
   # @!macro thread_pool_executor
@@ -21,6 +26,14 @@ module Concurrent
 
     # The maximum number of threads that may be created in the pool.
     attr_reader :max_length
+    attr_reader :min_length
+
+    attr_reader :largest_length
+
+    attr_reader :scheduled_task_count
+    attr_reader :completed_task_count
+
+    attr_reader :idletime
 
     attr_reader :max_queue
 
@@ -28,37 +41,35 @@ module Concurrent
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
     def initialize(opts = {})
-      min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+      @min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
       @max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
-      idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
+      @idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
-      overflow_policy = opts.fetch(:overflow_policy, :abort)
+      @overflow_policy = opts.fetch(:overflow_policy, :abort)
 
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
-      raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(overflow_policy)
-    end
+      raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(@overflow_policy)
 
-    def min_length
-    end
+      @state = :running
+      @pool = []
+      @terminator = Event.new
+      @queue = Queue.new
+      @mutex = Mutex.new
+      @scheduled_task_count = 0
+      @completed_task_count = 0
+      @largest_length = 0
 
-    def max_length
+      #@busy = 0
+      @prune_interval = 1
+      @last_prune_time = Time.now.to_i - (@prune_interval * 2)
     end
 
     def length
+      @mutex.synchronize do
+        @state != :shutdown ? @pool.length : 0
+      end
     end
     alias_method :current_length, :length
-
-    def largest_length
-    end
-
-    def scheduled_task_count
-    end
-
-    def completed_task_count
-    end
-
-    def idletime
-    end
 
     def queue_length
     end
@@ -70,18 +81,14 @@ module Concurrent
     #
     # @return [Boolean] +true+ when running, +false+ when shutting down or shutdown
     def running?
+      @mutex.synchronize { @state == :running }
     end
 
     # Is the thread pool shutdown?
     #
     # @return [Boolean] +true+ when shutdown, +false+ when shutting down or running
     def shutdown?
-    end
-
-    # Were all tasks completed before shutdown?
-    #
-    # @return [Boolean] +true+ if shutdown and all tasks completed else +false+
-    def terminated?
+      @mutex.synchronize { @state != :running }
     end
 
     # Block until thread pool shutdown is complete or until +timeout+ seconds have
@@ -94,6 +101,7 @@ module Concurrent
     #
     # @return [Boolean] +true+ if shutdown complete or false on +timeout+
     def wait_for_termination(timeout)
+      return @terminator.wait(timeout.to_i)
     end
 
     # Submit a task to the thread pool for asynchronous processing.
@@ -106,7 +114,19 @@ module Concurrent
     #   is not running
     #
     # @raise [ArgumentError] if no task is given
-    def post(*args)
+    def post(*args, &task)
+      raise ArgumentError.new('no block given') unless block_given?
+      @mutex.synchronize do
+        break false unless @state == :running
+        @scheduled_task_count += 1
+        @queue << [args, task]
+        #if Time.now.to_i - @prune_interval > @last_prune_time
+          prune_pool
+          grow_pool
+          #@last_prune_time = Time.now.to_i
+        #end
+        true
+      end
     end
 
     # Submit a task to the thread pool for asynchronous processing.
@@ -115,12 +135,24 @@ module Concurrent
     #
     # @return [self] returns itself
     def <<(task)
+      self.post(&task)
+      return self
     end
 
     # Begin an orderly shutdown. Tasks already in the queue will be executed,
     # but no new tasks will be accepted. Has no additional effect if the
     # thread pool is not running.
     def shutdown
+      @mutex.synchronize do
+        break unless @state == :running
+        if @pool.empty?
+          @state = :shutdown
+          @terminator.set
+        else
+          @state = :shuttingdown
+          @pool.length.times{ @queue << :stop }
+        end
+      end
     end
 
     # Begin an immediate shutdown. In-progress tasks will be allowed to
@@ -128,6 +160,81 @@ module Concurrent
     # will be accepted. Has no additional effect if the thread pool is
     # not running.
     def kill
+      @mutex.synchronize do
+        break if @state == :shutdown
+        @state = :shutdown
+        @queue.clear
+        drain_pool
+        @terminator.set
+      end
+    end
+
+    ## @!visibility private
+    #def on_start_task # :nodoc:
+      #@mutex.synchronize do
+        #@busy += 1
+      #end
+    #end
+
+    # @!visibility private
+    def on_end_task # :nodoc:
+      @mutex.synchronize do
+        #@busy -= 1
+        @completed_task_count += 1 #if success
+        break unless @state == :running
+      end
+    end
+
+    # @!visibility private
+    def on_worker_exit(worker) # :nodoc:
+      @mutex.synchronize do
+        @pool.delete(worker)
+        if @pool.empty? && @state != :running
+          @state = :shutdown
+          @terminator.set
+        end
+      end
+    end
+
+    protected
+
+    # @!visibility private
+    def prune_pool # :nodoc:
+      @pool.delete_if do |worker|
+        worker.dead? ||
+          (@idletime == 0 ? false : Time.now.to_i - @idletime > worker.last_activity)
+      end
+    end
+
+    # @!visibility private
+    def grow_pool # :nodoc:
+      if @min_length > @pool.length
+        additional = @min_length - @pool.length
+      elsif @pool.length < @max_length && ! @queue.empty?
+        # NOTE: does not take into account idle threads
+        additional = 1
+      else
+        additional = 0
+      end
+      additional.times{ @pool << create_worker_thread }
+      @largest_length = [@largest_length, @pool.length].max
+    end
+
+    # @!visibility private
+    def drain_pool # :nodoc:
+      @pool.each {|worker| worker.kill }
+      @pool.clear
+    end
+
+    # @!visibility private
+    def create_worker_thread # :nodoc:
+      wrkr = Worker.new(@queue, self)
+      Thread.new(wrkr, self) do |worker, parent|
+        Thread.current.abort_on_exception = false
+        worker.run
+        parent.on_worker_exit(worker)
+      end
+      return wrkr
     end
   end
 end

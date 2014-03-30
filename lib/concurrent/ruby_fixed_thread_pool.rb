@@ -47,14 +47,14 @@ module Concurrent
     #
     # @return [Boolean] +true+ when running, +false+ when shutting down or shutdown
     def running?
-      return @state == :running
+      @mutex.synchronize { @state == :running }
     end
 
     # Is the thread pool shutdown?
     #
     # @return [Boolean] +true+ when shutdown, +false+ when shutting down or running
     def shutdown?
-      return @state != :running
+      @mutex.synchronize { @state != :running }
     end
 
     # Block until thread pool shutdown is complete or until +timeout+ seconds have

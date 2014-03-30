@@ -108,13 +108,6 @@ if defined? java.util
         @executor.isShutdown
       end
 
-      # Were all tasks completed before shutdown?
-      #
-      # @return [Boolean] +true+ if shutdown and all tasks completed else +false+
-      def terminated?
-        @executor.isTerminated
-      end
-
       # Block until thread pool shutdown is complete or until +timeout+ seconds have
       # passed.
       #
@@ -174,6 +167,15 @@ if defined? java.util
       def kill
         @executor.shutdownNow
         return nil
+      end
+
+      protected
+
+      # Were all tasks completed before shutdown?
+      #
+      # @return [Boolean] +true+ if shutdown and all tasks completed else +false+
+      def terminated?
+        @executor.isTerminated
       end
     end
   end
