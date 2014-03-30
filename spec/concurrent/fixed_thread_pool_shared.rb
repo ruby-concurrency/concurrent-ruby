@@ -3,7 +3,8 @@ require_relative 'thread_pool_shared'
 
 share_examples_for :fixed_thread_pool do
 
-  subject { described_class.new(5) }
+  let!(:num_threads){ 5 }
+  subject { described_class.new(num_threads) }
 
   after(:each) do
     subject.kill
@@ -21,33 +22,82 @@ share_examples_for :fixed_thread_pool do
     end
   end
 
+  context '#min_length' do
+
+    it 'returns :num_threads on creation' do
+      subject.min_length.should eq num_threads
+    end
+
+    it 'returns :num_threads while running' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
+      subject.min_length.should eq num_threads
+    end
+
+    it 'returns :num_threads once shutdown' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
+      subject.shutdown
+      subject.wait_for_termination(1)
+      subject.min_length.should eq num_threads
+    end
+  end
+
+  context '#max_length' do
+
+    it 'returns :num_threads on creation' do
+      subject.max_length.should eq num_threads
+    end
+
+    it 'returns :num_threads while running' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
+      subject.max_length.should eq num_threads
+    end
+
+    it 'returns :num_threads once shutdown' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
+      subject.shutdown
+      subject.wait_for_termination(1)
+      subject.max_length.should eq num_threads
+    end
+  end
+
   context '#length' do
 
-    let(:pool_length) { 3 }
-    subject { described_class.new(pool_length) }
+    it 'returns :num_threads while running' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
+      subject.length.should eq num_threads
+    end
+  end
 
-    it 'returns zero on start' do
-      subject.shutdown
-      subject.length.should eq 0
+  context '#largest_length' do
+
+    it 'returns zero on creation' do
+      subject.largest_length.should eq 0
     end
 
-    it 'returns the length of the pool when running' do
-      pool_length.times do |i|
-        subject.post{ sleep(1) }
-        sleep(0.1)
-        subject.length.should eq pool_length
-      end
+    it 'returns :num_threads while running' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
+      subject.largest_length.should eq num_threads
     end
 
-    it 'returns zero while shutting down' do
-      subject.post{ sleep(1) }
+    it 'returns :num_threads once shutdown' do
+      10.times{ subject.post{ nil } }
+      sleep(0.1)
       subject.shutdown
-      subject.length.should eq 0
+      subject.wait_for_termination(1)
+      subject.largest_length.should eq num_threads
     end
+  end
 
-    it 'returns zero once shut down' do
-      subject.shutdown
-      subject.length.should eq 0
+  context '#idletime' do
+
+    it 'returns zero' do
+      subject.idletime.should eq 0
     end
   end
 
@@ -72,6 +122,26 @@ share_examples_for :fixed_thread_pool do
       count.times{ subject << proc{ raise StandardError } }
       sleep(1)
       subject.length.should eq count
+    end
+  end
+
+  context 'worker creation and caching' do
+
+    it 'creates new workers when there are none available' do
+      pool = described_class.new(5)
+      pool.current_length.should eq 0
+      5.times{ pool << proc{ sleep(1) } }
+      sleep(0.1)
+      pool.current_length.should eq 5
+      pool.kill
+    end
+
+    it 'never creates more than :num_threads threads' do
+      pool = described_class.new(5)
+      100.times{ pool << proc{ sleep(1) } }
+      sleep(0.1)
+      pool.current_length.should eq 5
+      pool.kill
     end
   end
 end

@@ -16,17 +16,23 @@ if defined? java.util
         @num_threads = num_threads.to_i
         raise ArgumentError.new('number of threads must be greater than zero') if @num_threads < 1
 
-        @executor = java.util.concurrent.Executors.newFixedThreadPool(@num_threads)
-      end
+        #@executor = java.util.concurrent.Executors.newFixedThreadPool(@num_threads)
+        @executor = java.util.concurrent.ThreadPoolExecutor.new(
+          @num_threads, @num_threads,
+          0, java.util.concurrent.TimeUnit::SECONDS,
+          java.util.concurrent.LinkedBlockingQueue.new,
+          java.util.concurrent.ThreadPoolExecutor::AbortPolicy.new)
 
-      # The number of threads currently in the pool.
-      #
-      # @return [Integer] a non-zero value when the pool is running,
-      #   zero when the pool is shutdown
-      def length
-        running? ? @num_threads : 0
+        #p = java.util.concurrent.Executors.newFixedThreadPool(10)
+        #p.getCorePoolSize #=> 10
+        #p.getMaximumPoolSize #=> 10
+        #p.getKeepAliveTime(java.util.concurrent.TimeUnit::SECONDS) #=> 0
+        #p.getQueue #=> #<Java::JavaUtilConcurrent::LinkedBlockingQueue:0x97dabf4>
+
+        #p.getActiveCount #=> 0
+        #p.getQueue.size #=> 0
+        #p.getRejectedExecutionHandler #=> #<Java::JavaUtilConcurrent::ThreadPoolExecutor::AbortPolicy:0x7e41986c>
       end
-      alias_method :size, :length
     end
   end
 end

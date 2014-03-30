@@ -13,9 +13,11 @@ module Concurrent
         @resource = ConditionVariable.new
         @tasks = Queue.new
       end
-     
-      def idle?
-        return ! @idletime.nil?
+
+      def tasks_remaining?
+        return @mutex.synchronize do
+          ! @tasks.empty?
+        end
       end
 
       def dead?
@@ -65,7 +67,6 @@ module Concurrent
         loop do
           task = @mutex.synchronize do
             @resource.wait(@mutex, 60) if @tasks.empty?
-
             @tasks.pop(true)
           end
 
@@ -76,13 +77,12 @@ module Concurrent
             break
           end
 
-          #@parent.on_start_task(self)
           begin
             task.last.call(*task.first)
-          rescue
+          rescue => ex
             # let it fail
           ensure
-            @parent.on_end_task(self)
+            @parent.on_end_task(self, ex.nil?)
           end
         end
       end
