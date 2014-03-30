@@ -12,11 +12,10 @@ if defined? java.util
       #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
       def initialize(num_threads = Concurrent::processor_count)
-        @num_threads = num_threads.to_i
-        raise ArgumentError.new('number of threads must be greater than zero') if @num_threads < 1
+        raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
 
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
-          @num_threads, @num_threads,
+          num_threads, num_threads,
           0, java.util.concurrent.TimeUnit::SECONDS,
           java.util.concurrent.LinkedBlockingQueue.new,
           java.util.concurrent.ThreadPoolExecutor::AbortPolicy.new)
