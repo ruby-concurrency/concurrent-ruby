@@ -5,7 +5,7 @@ module Concurrent
 
   describe RubyCachedThreadPool do
 
-    subject { described_class.new(max_threads: 5) }
+    subject { described_class.new(max_threads: 5, gc_interval: 0) }
 
     after(:each) do
       subject.kill

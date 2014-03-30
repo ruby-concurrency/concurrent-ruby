@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'global_thread_pool_shared'
 
 module Concurrent
 
@@ -9,6 +10,8 @@ module Concurrent
     after(:all) do
       Concurrent.configuration.global_thread_pool = PerThreadExecutor.new
     end
+
+    it_should_behave_like :global_thread_pool
 
     context '#post' do
 

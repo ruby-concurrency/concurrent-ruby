@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative 'global_thread_pool_shared'
 
 share_examples_for :thread_pool do
 
@@ -6,6 +7,8 @@ share_examples_for :thread_pool do
     subject.kill
     sleep(0.1)
   end
+
+  it_should_behave_like :global_thread_pool
 
   context '#scheduled_task_count' do
 
@@ -49,6 +52,18 @@ share_examples_for :thread_pool do
       subject.wait_for_termination(1)
       subject.completed_task_count.should eq 10
     end
+  end
+
+  context '#max_queue' do
+    pending
+  end
+
+  context '#queue_length' do
+    pending
+  end
+
+  context '#remaining_capacity' do
+    pending
   end
 
   context '#overload_policy' do
