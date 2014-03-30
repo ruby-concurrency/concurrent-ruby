@@ -1,4 +1,5 @@
 require 'concurrent/version'
+require 'concurrent/configuration'
 
 require 'concurrent/atomic'
 require 'concurrent/count_down_latch'
@@ -10,14 +11,16 @@ require 'concurrent/ivar'
 
 require 'concurrent/actor'
 require 'concurrent/agent'
-require 'concurrent/channel'
+require 'concurrent/async'
 require 'concurrent/dataflow'
+require 'concurrent/delay'
 require 'concurrent/dereferenceable'
 require 'concurrent/event'
 require 'concurrent/future'
 require 'concurrent/mvar'
 require 'concurrent/obligation'
 require 'concurrent/postable'
+require 'concurrent/processor_count'
 require 'concurrent/promise'
 require 'concurrent/runnable'
 require 'concurrent/scheduled_task'
@@ -28,11 +31,12 @@ require 'concurrent/timer_task'
 require 'concurrent/tvar'
 require 'concurrent/utilities'
 
-require 'concurrent/global_thread_pool'
-
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'
+require 'concurrent/per_thread_executor'
+require 'concurrent/thread_pool_executor'
+require 'concurrent/uses_global_thread_pool'
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.

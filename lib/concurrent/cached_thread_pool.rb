@@ -1,143 +1,45 @@
-require 'thread'
-
-require 'concurrent/event'
-require 'concurrent/cached_thread_pool/worker'
+require 'concurrent/ruby_cached_thread_pool'
 
 module Concurrent
 
-  class CachedThreadPool
-
-    MIN_POOL_SIZE = 1
-    MAX_POOL_SIZE = 256
-
-    DEFAULT_THREAD_IDLETIME = 60
-
-    attr_accessor :max_threads
-
-    def initialize(opts = {})
-      @idletime = (opts[:idletime] || DEFAULT_THREAD_IDLETIME).to_i
-      raise ArgumentError.new('idletime must be greater than zero') if @idletime <= 0
-
-      @max_threads = opts[:max_threads] || opts[:max] || MAX_POOL_SIZE
-      if @max_threads < MIN_POOL_SIZE || @max_threads > MAX_POOL_SIZE
-        raise ArgumentError.new("size must be from #{MIN_POOL_SIZE} to #{MAX_POOL_SIZE}")
-      end
-
-      @state = :running
-      @pool = []
-      @terminator = Event.new
-      @mutex = Mutex.new
-
-      @busy = []
-      @idle = []
+  if defined? java.util
+    require 'concurrent/java_cached_thread_pool'
+    # @!macro [attach] cached_thread_pool
+    #   A thread pool that dynamically grows and shrinks to fit the current workload.
+    #   New threads are created as needed, existing threads are reused, and threads
+    #   that remain idle for too long are killed and removed from the pool. These
+    #   pools are particularly suited to applications that perform a high volume of
+    #   short-lived tasks.
+    #  
+    #   On creation a +CachedThreadPool+ has zero running threads. New threads are
+    #   created on the pool as new operations are +#post+. The size of the pool
+    #   will grow until +#max_length+ threads are in the pool or until the number
+    #   of threads exceeds the number of running and pending operations. When a new
+    #   operation is post to the pool the first available idle thread will be tasked
+    #   with the new operation.
+    #  
+    #   Should a thread crash for any reason the thread will immediately be removed
+    #   from the pool. Similarly, threads which remain idle for an extended period
+    #   of time will be killed and reclaimed. Thus these thread pools are very
+    #   efficient at reclaiming unused resources.
+    #  
+    #   The API and behavior of this class are based on Java's +CachedThreadPool+
+    #
+    #   @note When running on the JVM (JRuby) this class will inherit from +JavaCachedThreadPool+.
+    #     On all other platforms it will inherit from +RubyCachedThreadPool+.
+    #
+    #   @see Concurrent::RubyCachedThreadPool
+    #   @see Concurrent::JavaCachedThreadPool
+    #  
+    #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
+    #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+    #   @see http://stackoverflow.com/questions/17957382/fixedthreadpool-vs-cachedthreadpool-the-lesser-of-two-evils
+    class CachedThreadPool < JavaCachedThreadPool
     end
-
-    def <<(block)
-      self.post(&block)
-      return self
-    end
-
-    def post(*args, &block)
-      raise ArgumentError.new('no block given') if block.nil?
-      @mutex.synchronize do
-        break false unless @state == :running
-
-        if @idle.empty?
-          if @idle.length + @busy.length < @max_threads
-            worker = create_worker_thread
-          else
-            worker = @busy.shift
-          end
-        else
-          worker = @idle.pop
-        end
-
-        @busy.push(worker)
-        worker.signal(*args, &block)
-
-        prune_stale_workers
-        true
-      end
-    end
-
-    def running?
-      return @state == :running
-    end
-
-    def wait_for_termination(timeout = nil)
-      return @terminator.wait(timeout)
-    end
-
-    def shutdown
-      @mutex.synchronize do
-        break unless @state == :running
-        if @idle.empty? && @busy.empty?
-          @state = :shutdown
-          @terminator.set
-        else
-          @state = :shuttingdown
-          @idle.each{|worker| worker.stop }
-          @busy.each{|worker| worker.stop }
-        end
-      end
-    end
-
-    def kill
-      @mutex.synchronize do
-        break if @state == :shutdown
-        @state = :shutdown
-          @idle.each{|worker| worker.kill }
-          @busy.each{|worker| worker.kill }
-        @terminator.set
-      end
-    end
-
-    def length
-      @mutex.synchronize do
-        @state == :running ? @busy.length + @idle.length : 0
-      end
-    end
-
-    def on_worker_exit(worker)
-      @mutex.synchronize do
-        @idle.delete(worker)
-        @busy.delete(worker)
-        if @idle.empty? && @busy.empty? && @state != :running
-          @state = :shutdown
-          @terminator.set
-        end
-      end
-    end
-
-    def on_end_task(worker)
-      @mutex.synchronize do
-        break unless @state == :running
-        @busy.delete(worker)
-        @idle.push(worker)
-      end
-    end
-
-    protected
-
-    def create_worker_thread
-      wrkr = Worker.new(self)
-      Thread.new(wrkr, self) do |worker, parent|
-        Thread.current.abort_on_exception = false
-        worker.run
-        parent.on_worker_exit(worker)
-      end
-      return wrkr
-    end
-
-    def prune_stale_workers
-      @idle.reject! do |worker|
-        if worker.idletime > @idletime
-          worker.stop
-          true
-        else
-          worker.dead?
-        end
-      end
+  else
+    # @!macro cached_thread_pool
+    class CachedThreadPool < RubyCachedThreadPool
     end
   end
 end

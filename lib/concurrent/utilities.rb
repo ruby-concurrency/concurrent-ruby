@@ -1,3 +1,4 @@
+require 'rbconfig'
 require 'thread'
 
 module Concurrent

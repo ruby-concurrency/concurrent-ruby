@@ -34,4 +34,7 @@ RSpec.configure do |config|
       thread.kill unless thread == Thread.current
     end
   end
+
+  config.after(:suite) do
+  end
 end

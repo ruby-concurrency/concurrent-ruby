@@ -119,6 +119,8 @@ module Concurrent
   #   
   #   ping << :pong
   #
+  # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
+  #
   # @see http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
   class Actor
     include Observable
@@ -174,6 +176,8 @@ module Concurrent
     #   #=> [6] handled by #<EchoActor:0x007fc8014fb8b8>
     #   #=> [7] handled by #<EchoActor:0x007fc8014fb818>
     #   #=> [8] handled by #<EchoActor:0x007fc8014fb890>
+    #
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def self.pool(count, *args, &block)
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
@@ -202,6 +206,8 @@ module Concurrent
     # @return [Object] the result obtained when the message is successfully processed
     #
     # @raise NotImplementedError unless overridden in the +Actor+ subclass
+    #
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     # 
     # @!visibility public
     def act(*message)
@@ -209,17 +215,23 @@ module Concurrent
     end
 
     # @!visibility private
+    #
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def on_run # :nodoc:
       queue.clear
     end
 
     # @!visibility private
+    #
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def on_stop # :nodoc:
       queue.clear
       queue.push(:stop)
     end
 
     # @!visibility private
+    #
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def on_task # :nodoc:
       package = queue.pop
       return if package == :stop
@@ -247,6 +259,8 @@ module Concurrent
     end
 
     # @!visibility private
+    #
+    # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def on_error(time, msg, ex) # :nodoc:
     end
   end

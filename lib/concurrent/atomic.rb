@@ -3,8 +3,7 @@ module Concurrent
   # @!visibility private
   module MutexAtomicFixnum # :nodoc:
 
-    # @!visibility private
-    def allocate_storage(init) # :nodoc:
+    def allocate_storage(init)
       @value = init
       @mutex = Mutex.new
     end
@@ -34,8 +33,7 @@ module Concurrent
       end
     end
 
-    # @!visibility private
-    def compare_and_set(expect, update) # :nodoc:
+    def compare_and_set(expect, update)
       @mutex.synchronize do
         if @value == expect
           @value = update
@@ -50,8 +48,7 @@ module Concurrent
   # @!visibility private
   module JavaAtomicFixnum # :nodoc:
 
-    # @!visibility private
-    def allocate_storage(init) # :nodoc:
+    def allocate_storage(init)
       @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
     end
 
@@ -72,8 +69,7 @@ module Concurrent
       @atomic.decrement_and_get
     end
 
-    # @!visibility private
-    def compare_and_set(expect, update) # :nodoc:
+    def compare_and_set(expect, update)
       @atomic.compare_and_set(expect, update)
     end
   end

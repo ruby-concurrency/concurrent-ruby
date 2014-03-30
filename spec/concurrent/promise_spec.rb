@@ -26,7 +26,7 @@ module Concurrent
     end
 
     before(:each) do
-      Promise.thread_pool = FixedThreadPool.new(1)
+      Promise.thread_pool = PerThreadExecutor.new
     end
 
     it_should_behave_like :obligation

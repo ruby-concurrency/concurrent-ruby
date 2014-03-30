@@ -1,6 +1,6 @@
 require 'thread'
 
-require 'concurrent/global_thread_pool'
+require 'concurrent/uses_global_thread_pool'
 require 'concurrent/obligation'
 
 module Concurrent

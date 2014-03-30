@@ -196,7 +196,7 @@ module Concurrent
       it 'passes a duplicate of the given block to each actor in the pool' do
         block = proc{ nil }
         block.should_receive(:dup).exactly(5).times.and_return(proc{ nil })
-        mailbox, pool = Channel.pool(5, &block)
+        mailbox, pool = clazz.pool(5, &block)
       end
 
       it 'gives all pool the same mailbox' do
