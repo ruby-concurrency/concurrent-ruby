@@ -1,4 +1,4 @@
-#require 'concurrent/ruby_thread_pool_executor'
+require 'concurrent/ruby_thread_pool_executor'
 
 module Concurrent
 
@@ -23,8 +23,8 @@ module Concurrent
     class ThreadPoolExecutor < JavaThreadPoolExecutor
     end
   else
-    ## @!macro thread_pool_executor
-    #class ThreadPoolExecutor < RubyThreadPoolExecutor
-    #end
+    # @!macro thread_pool_executor
+    class ThreadPoolExecutor < RubyThreadPoolExecutor
+    end
   end
 end
