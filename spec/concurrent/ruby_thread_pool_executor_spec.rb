@@ -1,6 +1,5 @@
 require 'spec_helper'
-
-require_relative 'thread_pool_shared'
+require_relative 'thread_pool_executor_shared'
 
 module Concurrent
 
@@ -21,6 +20,6 @@ module Concurrent
       )
     end
 
-    it_should_behave_like :thread_pool
+    it_should_behave_like :thread_pool_executor
   end
 end

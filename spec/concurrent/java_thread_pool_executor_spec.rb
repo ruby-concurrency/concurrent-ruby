@@ -2,7 +2,7 @@ require 'spec_helper'
 
 if jruby?
 
-  require_relative 'thread_pool_shared'
+  require_relative 'thread_pool_executor_shared'
 
   module Concurrent
 
@@ -23,7 +23,7 @@ if jruby?
         )
       end
 
-      it_should_behave_like :thread_pool
+      it_should_behave_like :thread_pool_executor
     end
   end
 end
