@@ -62,41 +62,5 @@ module Concurrent
         end
       end
     end
-
-    context 'spurious wake ups' do
-
-      before(:each) do
-        def subject.simulate_spurious_wake_up
-          @mutex.synchronize do
-            @condition.broadcast
-          end
-        end
-      end
-
-      it 'should resist to spurious wake ups without timeout' do
-        @expected = false
-        Thread.new { exchanger.exchange(1); @expected = true }
-
-        sleep(0.1)
-        subject.simulate_spurious_wake_up
-
-        sleep(0.1)
-        @expected.should be_false
-      end
-
-      it 'should resist to spurious wake ups with timeout' do
-        @expected = false
-        Thread.new { exchanger.exchange(1, 0.3); @expected = true }
-
-        sleep(0.1)
-        subject.simulate_spurious_wake_up
-
-        sleep(0.1)
-        @expected.should be_false
-
-        sleep(0.2)
-        @expected.should be_true
-      end
-    end
   end
 end
