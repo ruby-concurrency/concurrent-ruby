@@ -17,13 +17,55 @@ if jruby?
         JavaThreadPoolExecutor.new(
           min_threads: 2,
           max_threads: 5,
-          idletime: 1,
+          idletime: 60,
           max_queue: 10,
-          overflow_policy: :abort
+          overflow_policy: :discard
         )
       end
 
       it_should_behave_like :thread_pool_executor
+
+      context '#overload_policy' do
+
+        specify ':abort maps to AbortPolicy' do
+          clazz = java.util.concurrent.ThreadPoolExecutor::AbortPolicy
+          policy = clazz.new
+          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          JavaThreadPoolExecutor.new(
+            min_threads: 2,
+            max_threads: 5,
+            idletime: 60,
+            max_queue: 10,
+            overflow_policy: :abort
+          )
+        end
+
+        specify ':discard maps to DiscardPolicy' do
+          clazz = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
+          policy = clazz.new
+          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          JavaThreadPoolExecutor.new(
+            min_threads: 2,
+            max_threads: 5,
+            idletime: 60,
+            max_queue: 10,
+            overflow_policy: :discard
+          )
+        end
+
+        specify ':caller_runs maps to CallerRunsPolicy' do
+          clazz = java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
+          policy = clazz.new
+          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          JavaThreadPoolExecutor.new(
+            min_threads: 2,
+            max_threads: 5,
+            idletime: 60,
+            max_queue: 10,
+            overflow_policy: :caller_runs
+          )
+        end
+      end
     end
   end
 end

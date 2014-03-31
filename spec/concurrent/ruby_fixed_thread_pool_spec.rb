@@ -5,7 +5,7 @@ module Concurrent
 
   describe RubyFixedThreadPool do
 
-    subject { described_class.new(5) }
+    subject { described_class.new(5, overflow_policy: :discard) }
 
     after(:each) do
       subject.kill

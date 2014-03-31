@@ -1,7 +1,6 @@
 if defined? java.util
 
   require 'concurrent/java_thread_pool_executor'
-  require 'concurrent/utilities'
 
   module Concurrent
 
@@ -10,15 +9,25 @@ if defined? java.util
 
       # Create a new thread pool.
       #
+      # @param [Hash] opts the options defining pool behavior.
+      # @option opts [Symbol] :overflow_policy (+:abort+) the overflow policy
+      #
+      # @raise [ArgumentError] if +num_threads+ is less than or equal to zero
+      # @raise [ArgumentError] if +overflow_policy+ is not a known policy
+      #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
-      def initialize(num_threads = Concurrent::processor_count)
+      def initialize(num_threads, opts = {})
+        @overflow_policy = opts.fetch(:overflow_policy, :abort)
+        @max_queue = 0
+
         raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
+        raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
 
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
           num_threads, num_threads,
-          0, java.util.concurrent.TimeUnit::SECONDS,
+          @max_queue, java.util.concurrent.TimeUnit::SECONDS,
           java.util.concurrent.LinkedBlockingQueue.new,
-          java.util.concurrent.ThreadPoolExecutor::AbortPolicy.new)
+          OVERFLOW_POLICIES[@overflow_policy].new)
       end
     end
   end

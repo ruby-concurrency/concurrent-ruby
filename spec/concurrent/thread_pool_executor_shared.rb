@@ -32,9 +32,34 @@ share_examples_for :thread_pool_executor do
       subject.max_queue.should eq described_class::DEFAULT_MAX_QUEUE_SIZE
     end
 
+    it 'accepts all valid overflow policies' do
+      Concurrent::RubyThreadPoolExecutor::OVERFLOW_POLICIES.each do |policy|
+        subject = described_class.new(overflow_policy: policy)
+        subject.overflow_policy.should eq policy
+      end
+    end
+
     it 'defaults :overflow_policy to :abort' do
       subject = described_class.new
       subject.overflow_policy.should eq :abort
+    end
+
+    it 'raises an exception if :min_threads is less than zero' do
+      expect {
+        described_class.new(min_threads: -1)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises an exception if :max_threads is not greater than zero' do
+      expect {
+        described_class.new(max_threads: 0)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises an exception if given an invalid :overflow_policy' do
+      expect {
+        described_class.new(overflow_policy: :bogus)
+      }.to raise_error(ArgumentError)
     end
   end
 
@@ -69,7 +94,8 @@ share_examples_for :thread_pool_executor do
       described_class.new(
         min_threads: 2,
         max_threads: 5,
-        max_queue: expected_max
+        max_queue: expected_max,
+        overflow_policy: :discard
       )
     end
 
@@ -136,9 +162,5 @@ share_examples_for :thread_pool_executor do
       subject.wait_for_termination(1)
       subject.remaining_capacity.should eq expected_max
     end
-  end
-
-  context '#overload_policy' do
-    pending
   end
 end

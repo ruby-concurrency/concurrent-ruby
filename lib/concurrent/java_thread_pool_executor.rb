@@ -2,6 +2,8 @@ if defined? java.util
 
   module Concurrent
 
+    RejectedExecutionError = Class.new(StandardError) unless defined? RejectedExecutionError
+
     # @!macro thread_pool_executor
     class JavaThreadPoolExecutor
 
@@ -37,13 +39,14 @@ if defined? java.util
       # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
       def initialize(opts = {})
         min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
-        @max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+        max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
         idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
         @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
         @overflow_policy = opts.fetch(:overflow_policy, :abort)
 
-        raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
-        raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(overflow_policy)
+        raise ArgumentError.new('max_threads must be greater than zero') if max_length <= 0
+        raise ArgumentError.new('min_threads cannot be less than zero') if min_length < 0
+        raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
 
         if min_length == 0 && @max_queue == 0
           queue = java.util.concurrent.SynchronousQueue.new
@@ -54,7 +57,7 @@ if defined? java.util
         end
 
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
-          min_length, @max_length,
+          min_length, max_length,
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           queue, OVERFLOW_POLICIES[@overflow_policy].new)
       end
@@ -100,7 +103,7 @@ if defined? java.util
       #
       # @return [Boolean] +true+ when running, +false+ when shutting down or shutdown
       def running?
-        ! (shutdown? || terminated?)
+        ! (@executor.isShutdown || @executor.isTerminated || @executor.isTerminating)
       end
 
       # Is the thread pool shutdown?
@@ -135,10 +138,14 @@ if defined? java.util
       # @raise [ArgumentError] if no task is given
       def post(*args)
         raise ArgumentError.new('no block given') unless block_given?
-        @executor.submit{ yield(*args) }
-        return true
+        if running?
+          @executor.submit{ yield(*args) }
+          true
+        else
+          false
+        end
       rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
-        return false
+        raise RejectedExecutionError
       end
 
       # Submit a task to the thread pool for asynchronous processing.
@@ -149,17 +156,15 @@ if defined? java.util
       def <<(task)
         @executor.submit(&task)
       rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
-        # do nothing
-      ensure
-        return self
+        raise RejectedExecutionError
       end
 
       # Begin an orderly shutdown. Tasks already in the queue will be executed,
       # but no new tasks will be accepted. Has no additional effect if the
       # thread pool is not running.
       def shutdown
-        @executor.getQueue.clear
         @executor.shutdown
+        @executor.getQueue.clear
         return nil
       end
 
@@ -168,18 +173,9 @@ if defined? java.util
       # will be accepted. Has no additional effect if the thread pool is
       # not running.
       def kill
-        @executor.getQueue.clear
         @executor.shutdownNow
+        @executor.getQueue.clear
         return nil
-      end
-
-      protected
-
-      # Were all tasks completed before shutdown?
-      #
-      # @return [Boolean] +true+ if shutdown and all tasks completed else +false+
-      def terminated?
-        @executor.isTerminated
       end
     end
   end
