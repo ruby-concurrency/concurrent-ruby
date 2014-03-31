@@ -5,6 +5,8 @@ require 'concurrent/ruby_thread_pool_worker'
 
 module Concurrent
 
+  RejectedExecutionError = Class.new(StandardError) unless defined? RejectedExecutionError
+
   # @!macro thread_pool_executor
   class RubyThreadPoolExecutor
 
@@ -37,6 +39,8 @@ module Concurrent
 
     attr_reader :max_queue
 
+    attr_reader :overflow_policy
+
     # Create a new thread pool.
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
@@ -48,6 +52,7 @@ module Concurrent
       @overflow_policy = opts.fetch(:overflow_policy, :abort)
 
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
+      raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
       raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(@overflow_policy)
 
       @state = :running
@@ -59,7 +64,6 @@ module Concurrent
       @completed_task_count = 0
       @largest_length = 0
 
-      #@busy = 0
       @gc_interval = opts.fetch(:gc_interval, 1).to_i # undocumented
       @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
     end
@@ -72,9 +76,11 @@ module Concurrent
     alias_method :current_length, :length
 
     def queue_length
+      @queue.length
     end
 
     def remaining_capacity
+      @mutex.synchronize { @max_queue == 0 ? -1 : @max_queue - @queue.length }
     end
 
     # Is the thread pool running?
@@ -118,6 +124,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       @mutex.synchronize do
         break false unless @state == :running
+        return handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
         @scheduled_task_count += 1
         @queue << [args, task]
         if Time.now.to_f - @gc_interval >= @last_gc_time
@@ -145,6 +152,7 @@ module Concurrent
     def shutdown
       @mutex.synchronize do
         break unless @state == :running
+        @queue.clear
         if @pool.empty?
           @state = :shutdown
           @terminator.set
@@ -162,24 +170,16 @@ module Concurrent
     def kill
       @mutex.synchronize do
         break if @state == :shutdown
-        @state = :shutdown
         @queue.clear
+        @state = :shutdown
         drain_pool
         @terminator.set
       end
     end
 
-    ## @!visibility private
-    #def on_start_task # :nodoc:
-      #@mutex.synchronize do
-        #@busy += 1
-      #end
-    #end
-
     # @!visibility private
     def on_end_task # :nodoc:
       @mutex.synchronize do
-        #@busy -= 1
         @completed_task_count += 1 #if success
         break unless @state == :running
       end
@@ -197,6 +197,23 @@ module Concurrent
     end
 
     protected
+
+    # @!visibility private
+    def handle_overflow(*args) # :nodoc:
+      case @overflow_policy
+      when :abort
+        raise RejectedExecutionError
+      when :discard
+        false
+      when :caller_runs
+        begin
+          yield(*args)
+        rescue
+          # let it fail
+        end
+        true
+      end
+    end
 
     # @!visibility private
     def prune_pool # :nodoc:

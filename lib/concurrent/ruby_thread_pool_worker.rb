@@ -49,7 +49,6 @@ module Concurrent
         end
 
         begin
-          #@parent.on_start_task
           task.last.call(*task.first)
         rescue => ex
           # let it fail

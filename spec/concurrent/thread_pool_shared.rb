@@ -54,22 +54,6 @@ share_examples_for :thread_pool do
     end
   end
 
-  context '#max_queue' do
-    pending
-  end
-
-  context '#queue_length' do
-    pending
-  end
-
-  context '#remaining_capacity' do
-    pending
-  end
-
-  context '#overload_policy' do
-    pending
-  end
-
   context '#length' do
 
     it 'returns zero on creation' do

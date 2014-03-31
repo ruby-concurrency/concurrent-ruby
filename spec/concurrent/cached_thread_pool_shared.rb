@@ -4,7 +4,12 @@ require_relative 'thread_pool_shared'
 share_examples_for :cached_thread_pool do
 
   let!(:max_threads){ 5 }
-  subject { described_class.new(max_threads: max_threads) }
+  subject do
+    described_class.new(
+      max_threads: max_threads,
+      overflow_policy: :discard
+    )
+  end
 
   after(:each) do
     subject.kill
@@ -106,14 +111,19 @@ share_examples_for :cached_thread_pool do
 
   context 'worker creation and caching' do
 
-    subject{ described_class.new(idletime: 1, max_threads: 5) }
+    subject do
+      described_class.new(
+        idletime: 1,
+        max_threads: 5,
+        overflow_policy: :discard
+      )
+    end
 
     it 'never creates more than :max_threads threads' do
-      pool = described_class.new(max_threads: 5)
-      100.times{ pool << proc{ sleep(1) } }
+      100.times{ subject << proc{ sleep(1) } }
       sleep(0.1)
-      pool.length.should eq 5
-      pool.kill
+      subject.length.should eq 5
+      subject.kill
     end
   end
 end
