@@ -25,5 +25,5 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
 
-  s.required_ruby_version = '>= 1.9.2'
+  s.required_ruby_version = '>= 1.9.3'
 end
