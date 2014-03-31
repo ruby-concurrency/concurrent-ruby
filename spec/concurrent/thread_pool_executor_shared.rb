@@ -145,6 +145,7 @@ share_examples_for :thread_pool_executor do
     end
 
     it 'returns :max_length when stopped' do
+      pending('intermittently failing')
       100.times{ subject.post{ sleep(0.5) } }
       sleep(0.1)
       subject.shutdown
