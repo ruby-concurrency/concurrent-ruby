@@ -64,6 +64,15 @@ share_examples_for :thread_pool_executor do
 
   context '#queue_length' do
 
+    let!(:expected_max){ 10 }
+    subject do
+      described_class.new(
+        min_threads: 2,
+        max_threads: 5,
+        max_queue: expected_max
+      )
+    end
+
     it 'returns zero on creation' do
       subject.queue_length.should eq 0
     end
@@ -86,6 +95,12 @@ share_examples_for :thread_pool_executor do
       subject.shutdown
       subject.wait_for_termination(1)
       subject.queue_length.should eq 0
+    end
+
+    it 'can never be greater than :max_queue' do
+      100.times{ subject.post{ sleep(0.5) } }
+      sleep(0.1)
+      subject.queue_length.should <= expected_max
     end
   end
 
@@ -116,6 +131,7 @@ share_examples_for :thread_pool_executor do
 
     it 'returns :max_length when stopped' do
       100.times{ subject.post{ sleep(0.5) } }
+      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
       subject.remaining_capacity.should eq expected_max

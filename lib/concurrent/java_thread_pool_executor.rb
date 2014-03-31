@@ -158,8 +158,8 @@ if defined? java.util
       # but no new tasks will be accepted. Has no additional effect if the
       # thread pool is not running.
       def shutdown
-        @executor.shutdown
         @executor.getQueue.clear
+        @executor.shutdown
         return nil
       end
 
@@ -168,8 +168,8 @@ if defined? java.util
       # will be accepted. Has no additional effect if the thread pool is
       # not running.
       def kill
-        @executor.shutdownNow
         @executor.getQueue.clear
+        @executor.shutdownNow
         return nil
       end
 
