@@ -122,9 +122,9 @@ module Concurrent
         @queue << [args, task]
         if Time.now.to_f - @gc_interval >= @last_gc_time
           prune_pool
-          grow_pool
           @last_gc_time = Time.now.to_f
         end
+        grow_pool
         true
       end
     end
@@ -216,7 +216,10 @@ module Concurrent
       else
         additional = 0
       end
-      additional.times{ @pool << create_worker_thread }
+      additional.times do
+        break if @pool.length >= @max_length
+        @pool << create_worker_thread
+      end
       @largest_length = [@largest_length, @pool.length].max
     end
 

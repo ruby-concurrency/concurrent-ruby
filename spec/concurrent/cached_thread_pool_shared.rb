@@ -131,7 +131,7 @@ share_examples_for :cached_thread_pool do
 
   context 'worker creation and caching' do
 
-    subject{ described_class.new(idletime: 1, max_threads: 5, gc_interval: 0) }
+    subject{ described_class.new(idletime: 1, max_threads: 5) }
 
     it 'creates new workers when there are none available' do
       subject.length.should eq 0
@@ -151,7 +151,7 @@ share_examples_for :cached_thread_pool do
 
     it 'never creates more than :max_threads threads' do
       pool = described_class.new(max_threads: 5)
-      100.times{ sleep(0.01); pool << proc{ sleep(1) } }
+      100.times{ pool << proc{ sleep(1) } }
       sleep(0.1)
       pool.length.should eq 5
       pool.kill
