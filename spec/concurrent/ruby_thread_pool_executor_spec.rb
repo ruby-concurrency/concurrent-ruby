@@ -122,27 +122,33 @@ module Concurrent
         end
 
         specify '#post does not create any new threads when the queue is at capacity' do
-          2.times{ subject.post{ sleep(1) } }
-          sleep(0.1)
-          expected = Thread.list.length
-          subject.post{ nil }
-          Thread.list.length.should eq expected
+          initial = Thread.list.length
+          5.times{ subject.post{ sleep(0.1) } }
+          Thread.list.length.should < initial + 5
         end
 
         specify '#post executes the task on the current thread when the queue is at capacity' do
-          2.times{ subject.post{ sleep(1) } }
+          subject.should_receive(:handle_overflow).with(any_args).at_least(:once)
+          5.times{ subject.post{ sleep(0.1) } }
+        end
+
+        specify '#post executes the task on the current thread when the queue is at capacity' do
+          bucket = []
+          5.times{|i| subject.post{ bucket.push(i) } }
           sleep(0.1)
-          expected = false
-          subject.post{ expected = true }
-          expected.should be_true
+          bucket.sort.should eq [0, 1, 2, 3, 4]
         end
 
         specify '#<< executes the task on the current thread when the queue is at capacity' do
-          2.times{ subject.post{ sleep(1) } }
+          subject.should_receive(:handle_overflow).with(any_args).at_least(:once)
+          5.times{ subject << proc { sleep(0.1) } }
+        end
+
+        specify '#post executes the task on the current thread when the queue is at capacity' do
+          bucket = []
+          5.times{|i| subject << proc { bucket.push(i) } }
           sleep(0.1)
-          expected = false
-          subject << proc { expected = true }
-          expected.should be_true
+          bucket.sort.should eq [0, 1, 2, 3, 4]
         end
       end
     end
