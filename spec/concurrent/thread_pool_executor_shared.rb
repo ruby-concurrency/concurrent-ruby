@@ -144,18 +144,6 @@ share_examples_for :thread_pool_executor do
       subject.remaining_capacity.should eq expected_max
     end
 
-    it 'returns :max_length when no tasks are enqueued' do
-      5.times{ subject.post{ nil } }
-      sleep(0.1)
-      subject.remaining_capacity.should eq eq expected_max
-    end
-
-    it 'returns the remaining capacity when tasks are enqueued' do
-      pending('intermittently failing')
-      100.times{ subject.post{ sleep(0.5) } }
-      subject.remaining_capacity.should < expected_max
-    end
-
     it 'returns :max_length when stopped' do
       100.times{ subject.post{ sleep(0.5) } }
       sleep(0.1)
