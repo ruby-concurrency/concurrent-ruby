@@ -1,4 +1,5 @@
-require 'concurrent/per_thread_executor'
+require 'concurrent/thread_pool_executor'
+require 'concurrent/processor_count'
 
 module Concurrent
   class << self
@@ -13,7 +14,16 @@ module Concurrent
     attr_accessor :global_thread_pool
 
     def initialize
-      @global_thread_pool = Concurrent::PerThreadExecutor.new
+      cores = Concurrent::processor_count
+      thread_pool_config = {
+        min_threads: [2, cores].max,
+        max_threads: [20, cores * 15].max,
+        idletime: 5 * 60,       # 5 minutes
+        max_queue: 0,           # unlimited
+        overflow_policy: :abort # raise an exception
+      }
+
+      @global_thread_pool = Concurrent::ThreadPoolExecutor.new(thread_pool_config)
     end
   end
 
