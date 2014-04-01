@@ -25,8 +25,31 @@ module Concurrent
 
       @global_thread_pool = Concurrent::ThreadPoolExecutor.new(thread_pool_config)
     end
+
+    def global_thread_pool=(executor)
+      finalize_executor(@global_thread_pool)
+    rescue
+      # suppress
+    ensure
+      @global_thread_pool = executor
+    end
+
+    private
+
+    def finalize_executor(executor)
+      if executor.respond_to?(:shutdown)
+        executor.shutdown
+      elsif executor.respond_to?(:kill)
+        executor.kill
+      end
+    end
   end
 
   # create the default configuration on load
   self.configuration = Configuration.new
+
+  # set an exit hook to shutdown the global thread pool
+  at_exit do
+    self.configuration.global_thread_pool = nil
+  end
 end
