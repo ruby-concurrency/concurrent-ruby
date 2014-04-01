@@ -4,9 +4,7 @@ module Concurrent
 
   describe 'dataflow' do
 
-    before(:each) do
-      Future.thread_pool = ImmediateExecutor.new
-    end
+    let(:executor) { ImmediateExecutor.new }
 
     it 'raises an exception when no block given' do
       expect { Concurrent::dataflow }.to raise_error(ArgumentError)
@@ -19,13 +17,13 @@ module Concurrent
     end
 
     it 'accepts uncompleted dependencies' do
-      d = Future.new{0}
+      d = Future.new(executor: executor){0}
       Concurrent::dataflow(d){0}
       d.execute
     end
 
     it 'accepts completed dependencies' do
-      d = Future.new{0}
+      d = Future.new(executor: executor){0}
       d.execute
       Concurrent::dataflow(d){0}
     end
@@ -43,15 +41,15 @@ module Concurrent
     context 'does not schedule the Future' do
 
       specify 'if no dependencies are completed' do
-        d = Future.new{0}
+        d = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d){0}
         f.should be_unscheduled
         d.execute
       end
 
       specify 'if one dependency of two is completed' do
-        d1 = Future.new{0}
-        d2 = Future.new{0}
+        d1 = Future.new(executor: executor){0}
+        d2 = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d1, d2){0}
         d1.execute
         f.should be_unscheduled
@@ -62,15 +60,15 @@ module Concurrent
     context 'schedules the Future when all dependencies are available' do
 
       specify 'if there is just one' do
-        d = Future.new{0}
+        d = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d){0}
         d.execute
         f.value.should eq 0
       end
 
       specify 'if there is more than one' do
-        d1 = Future.new{0}
-        d2 = Future.new{0}
+        d1 = Future.new(executor: executor){0}
+        d2 = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d1, d2){0}
         d1.execute
         d2.execute
@@ -81,15 +79,15 @@ module Concurrent
     context 'counts already executed dependencies' do
 
       specify 'if there is just one' do
-        d = Future.new{0}
+        d = Future.new(executor: executor){0}
         d.execute
         f = Concurrent::dataflow(d){0}
         f.value.should eq 0
       end
 
       specify 'if there is more than one' do
-        d1 = Future.new{0}
-        d2 = Future.new{0}
+        d1 = Future.new(executor: executor){0}
+        d2 = Future.new(executor: executor){0}
         d1.execute
         d2.execute
         f = Concurrent::dataflow(d1, d2){0}
@@ -100,7 +98,7 @@ module Concurrent
     context 'passes the values of dependencies into the block' do
 
       specify 'if there is just one' do
-        d = Future.new{14}
+        d = Future.new(executor: executor){14}
         f = Concurrent::dataflow(d) do |v|
           v
         end
@@ -109,8 +107,8 @@ module Concurrent
       end
 
       specify 'if there is more than one' do
-        d1 = Future.new{14}
-        d2 = Future.new{2}
+        d1 = Future.new(executor: executor){14}
+        d2 = Future.new(executor: executor){2}
         f = Concurrent::dataflow(d1, d2) do |v1, v2|
           v1 + v2
         end

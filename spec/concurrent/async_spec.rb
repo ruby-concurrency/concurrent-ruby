@@ -4,9 +4,7 @@ module Concurrent
 
   describe Async do
 
-    before(:each) do
-      Concurrent::Future.thread_pool = Concurrent::PerThreadExecutor.new
-    end
+    let(:executor) { PerThreadExecutor.new }
 
     let(:async_class) do
       Class.new do
@@ -30,7 +28,11 @@ module Concurrent
       end
     end
 
-    subject { async_class.new }
+    subject do
+      obj = async_class.new
+      obj.executor = executor
+      obj
+    end
 
     context '#validate_argc' do
 
@@ -98,6 +100,20 @@ module Concurrent
       end
     end
 
+    context '#executor' do
+
+      it 'returns the default executor when #executor= has never been called'
+
+      it 'returns the memo after #executor= has been called'
+    end
+
+    context '#executor=' do
+
+      it 'memoizes the given executor'
+
+      it 'raises an exception if called multiple times'
+    end
+
     context '#async' do
 
       it 'raises an error when calling a method that does not exist' do
@@ -123,6 +139,8 @@ module Concurrent
         val.should be_a Concurrent::Future
         val.should be_pending
       end
+
+      it 'runs the Future on the memoized executor'
 
       it 'sets the value on success' do
         val = subject.async.echo(:foo)

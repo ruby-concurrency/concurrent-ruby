@@ -1,7 +1,7 @@
 require 'thread'
 
+require 'concurrent/configuration'
 require 'concurrent/obligation'
-require 'concurrent/uses_global_thread_pool'
 require 'concurrent/safe_task_executor'
 
 module Concurrent
@@ -41,7 +41,7 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
   class Future < IVar
     include Obligation
-    include UsesGlobalThreadPool
+    include OptionsParser
 
     # Create a new +Future+ in the +:unscheduled+ state.
     #
@@ -62,7 +62,7 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      @is_task = task?(opts)
+      @executor = get_executor_from_options(opts)
     end
 
     # Execute an +:unscheduled+ +Future+. Immediately sets the state to +:pending+ and
@@ -84,11 +84,7 @@ module Concurrent
     # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        if @is_task
-          Future.thread_pool.post{ work }
-        else
-          Concurrent::operation{ work }
-        end
+        @executor.post{ work }
         self
       end
     end

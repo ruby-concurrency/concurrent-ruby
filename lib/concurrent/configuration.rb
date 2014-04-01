@@ -63,6 +63,19 @@ module Concurrent
     end
   end
 
+  module OptionsParser
+
+    def get_executor_from_options(opts = {})
+      if opts.has_key?(:executor)
+        opts[:executor]
+      elsif opts[:operation] == true || opts[:task] == false
+        Concurrent.configuration.global_operation_pool
+      else
+        Concurrent.configuration.global_task_pool
+      end
+    end
+  end
+
   def task(*args, &block)
     Concurrent.configuration.global_task_pool.post(*args, &block)
   end
