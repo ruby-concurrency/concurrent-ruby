@@ -32,6 +32,8 @@ require 'concurrent/timer_task'
 require 'concurrent/tvar'
 require 'concurrent/utilities'
 
+require 'concurrent/channel/unbuffered_channel'
+
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'
