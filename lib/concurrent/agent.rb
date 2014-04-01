@@ -65,7 +65,7 @@ module Concurrent
       @validator = Proc.new { |result| true }
       @timeout = opts.fetch(:timeout, TIMEOUT).freeze
       @observers = CopyOnWriteObserverSet.new
-      @executor = get_executor_from_options(opts)
+      @executor = get_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end

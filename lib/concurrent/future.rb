@@ -64,7 +64,7 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      @executor = get_executor_from_options(opts)
+      @executor = get_executor_from(opts)
     end
 
     # Execute an +:unscheduled+ +Future+. Immediately sets the state to +:pending+ and

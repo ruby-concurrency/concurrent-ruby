@@ -15,7 +15,7 @@ module Concurrent
 
   describe OptionsParser do
 
-    context 'get_executor_from_options' do
+    context 'get_executor_from' do
       pending
     end
   end

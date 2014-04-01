@@ -34,7 +34,7 @@ module Concurrent
     def initialize(opts = {}, &block)
       opts.delete_if {|k, v| v.nil?}
 
-      @executor = get_executor_from_options(opts)
+      @executor = get_executor_from(opts)
       @parent = opts.fetch(:parent) { nil }
       @on_fulfill = opts.fetch(:on_fulfill) { Proc.new{ |result| result } }
       @on_reject = opts.fetch(:on_reject) { Proc.new{ |reason| raise reason } }
