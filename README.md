@@ -145,7 +145,7 @@ ibm.value #=> 187.57
 
 ## License and Copyright
 
-*Concurrent Ruby* is Copyright &copy; 2013 [Jerry D'Antonio](https://twitter.com/jerrydantonio).
+*Concurrent Ruby* is Copyright &copy; 2014 [Jerry D'Antonio](https://twitter.com/jerrydantonio).
 It is free software released under the [MIT License](http://www.opensource.org/licenses/MIT).
 
 The *Concurrent Ruby* logo was designed by [David Jones](https://twitter.com/zombyboy).
