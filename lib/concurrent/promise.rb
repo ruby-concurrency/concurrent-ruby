@@ -1,22 +1,43 @@
 require 'thread'
 
-require 'concurrent/uses_global_thread_pool'
+require 'concurrent/configuration'
 require 'concurrent/obligation'
 
 module Concurrent
 
   class Promise
     include Obligation
-    include UsesGlobalThreadPool
+    include OptionsParser
 
+    # Initialize a new Promise with the provided options.
+    #
+    # @param [Object] initial the initial value
+    # @param [Hash] opts the options used to define the behavior at update and deref
+    #
+    # @option opts [Promise] :parent the parent +Promise+ when building a chain/tree
+    # @option opts [Proc] :on_fulfill fulfillment handler
+    # @option opts [Proc] :on_reject rejection handler
+    #
+    # @option opts [Boolean] :operation (false) when +true+ will execute the future on the global
+    #   operation pool (for long-running operations), when +false+ will execute the future on the
+    #   global task pool (for short-running tasks)
+    # @option opts [object] :executor when provided will run all operations on
+    #   this executor rather than the global thread pool (overrides :operation)
+    #
+    # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
+    # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
+    #   returning the value returned from the proc
+    #
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
-    def initialize(options = {}, &block)
-      options.delete_if {|k, v| v.nil?}
+    def initialize(opts = {}, &block)
+      opts.delete_if {|k, v| v.nil?}
 
-      @parent = options.fetch(:parent) { nil }
-      @on_fulfill = options.fetch(:on_fulfill) { Proc.new{ |result| result } }
-      @on_reject = options.fetch(:on_reject) { Proc.new{ |reason| raise reason } }
+      @executor = get_executor_from_options(opts)
+      @parent = opts.fetch(:parent) { nil }
+      @on_fulfill = opts.fetch(:on_fulfill) { Proc.new{ |result| result } }
+      @on_reject = opts.fetch(:on_reject) { Proc.new{ |reason| raise reason } }
 
       @promise_body = block || Proc.new{|result| result }
       @state = :unscheduled
@@ -26,14 +47,14 @@ module Concurrent
     end
 
     # @return [Promise]
-    def self.fulfill(value)
-      Promise.new.tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
+    def self.fulfill(value, opts = {})
+      Promise.new(opts).tap{ |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
 
 
     # @return [Promise]
-    def self.reject(reason)
-      Promise.new.tap { |p| p.send(:synchronized_set_state!, false, nil, reason) }
+    def self.reject(reason, opts = {})
+      Promise.new(opts).tap{ |p| p.send(:synchronized_set_state!, false, nil, reason) }
     end
 
     # @return [Promise]
@@ -51,16 +72,20 @@ module Concurrent
     end
 
     # @since 0.5.0
-    def self.execute(&block)
-      new(&block).execute
+    def self.execute(opts = {}, &block)
+      new(opts, &block).execute
     end
-
 
     # @return [Promise] the new promise
     def then(rescuer = nil, &block)
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
       block = Proc.new{ |result| result } if block.nil?
-      child = Promise.new(parent: self, on_fulfill: block, on_reject: rescuer)
+      child = Promise.new(
+        parent: self,
+        executor: @executor,
+        on_fulfill: block,
+        on_reject: rescuer
+      )
 
       mutex.synchronize do
         child.state = :pending if @state == :pending
@@ -118,7 +143,7 @@ module Concurrent
 
     # @!visibility private
     def realize(task)
-      Promise.thread_pool.post do
+      @executor.post do
         success, value, reason = SafeTaskExecutor.new( task ).execute
 
         children_to_notify = mutex.synchronize do
@@ -140,6 +165,5 @@ module Concurrent
         set_state!(success, value, reason)
       end
     end
-
   end
 end
