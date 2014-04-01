@@ -60,6 +60,8 @@ if defined? java.util
           min_length, max_length,
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           queue, OVERFLOW_POLICIES[@overflow_policy].new)
+
+        at_exit { self.kill }
       end
 
       def min_length

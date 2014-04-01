@@ -28,6 +28,8 @@ if defined? java.util
           @max_queue, java.util.concurrent.TimeUnit::SECONDS,
           java.util.concurrent.LinkedBlockingQueue.new,
           OVERFLOW_POLICIES[@overflow_policy].new)
+
+        at_exit { self.kill }
       end
     end
   end
