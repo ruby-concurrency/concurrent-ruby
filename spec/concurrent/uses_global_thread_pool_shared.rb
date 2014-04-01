@@ -3,12 +3,12 @@ require 'spec_helper'
 share_examples_for Concurrent::UsesGlobalThreadPool do
 
   before(:each) do
-    Concurrent.configuration.global_thread_pool = Concurrent::PerThreadExecutor.new
+    Concurrent.configuration.global_task_pool = Concurrent::PerThreadExecutor.new
   end
 
   it 'defaults to the global thread pool' do
     clazz = Class.new(thread_pool_user)
-    clazz.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    clazz.thread_pool.should eq Concurrent.configuration.global_task_pool
   end
 
   it 'sets and gets the thread pool for the class' do
@@ -33,32 +33,32 @@ share_examples_for Concurrent::UsesGlobalThreadPool do
 
   it 'uses the new global thread pool after the global thread pool is changed' do
     per_thread_executor = Concurrent::PerThreadExecutor.new
-    thread_pool_user.thread_pool = Concurrent.configuration.global_thread_pool
+    thread_pool_user.thread_pool = Concurrent.configuration.global_task_pool
 
-    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_task_pool
     thread_pool_user.thread_pool.should_not eq per_thread_executor
 
-    Concurrent.configuration.global_thread_pool = per_thread_executor
+    Concurrent.configuration.global_task_pool = per_thread_executor
 
-    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_task_pool
     thread_pool_user.thread_pool.should eq per_thread_executor
   end
 
   it 'responds to multiple changes in the global thread pool' do
-    thread_pool_user.thread_pool = Concurrent.configuration.global_thread_pool
-    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    thread_pool_user.thread_pool = Concurrent.configuration.global_task_pool
+    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_task_pool
 
     thread_pool_user.thread_pool = Concurrent::PerThreadExecutor.new
-    thread_pool_user.thread_pool.should_not eq Concurrent.configuration.global_thread_pool
+    thread_pool_user.thread_pool.should_not eq Concurrent.configuration.global_task_pool
 
-    Concurrent.configuration.global_thread_pool = Concurrent::PerThreadExecutor.new
-    thread_pool_user.thread_pool = Concurrent.configuration.global_thread_pool
-    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    Concurrent.configuration.global_task_pool = Concurrent::PerThreadExecutor.new
+    thread_pool_user.thread_pool = Concurrent.configuration.global_task_pool
+    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_task_pool
 
-    Concurrent.configuration.global_thread_pool = Concurrent::PerThreadExecutor.new
-    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    Concurrent.configuration.global_task_pool = Concurrent::PerThreadExecutor.new
+    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_task_pool
 
-    Concurrent.configuration.global_thread_pool = Concurrent::PerThreadExecutor.new
-    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_thread_pool
+    Concurrent.configuration.global_task_pool = Concurrent::PerThreadExecutor.new
+    thread_pool_user.thread_pool.should eq Concurrent.configuration.global_task_pool
   end
 end

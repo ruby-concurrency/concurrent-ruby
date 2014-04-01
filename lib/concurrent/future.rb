@@ -48,6 +48,9 @@ module Concurrent
     # @yield the asynchronous operation to perform
     #
     # @param [Hash] opts the options to create a message with
+    # @option opts [Boolean] :operation (false) when +true+ will execute the future on the global
+    #   operation pool (for long-running operations), when +false+ will execute the future on the
+    #   global task pool (for short-running tasks)
     # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
     # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
@@ -59,6 +62,7 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
+      @is_task = task?(opts)
     end
 
     # Execute an +:unscheduled+ +Future+. Immediately sets the state to +:pending+ and
@@ -80,7 +84,11 @@ module Concurrent
     # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        Future.thread_pool.post { work }
+        if @is_task
+          Future.thread_pool.post{ work }
+        else
+          Concurrent::operation{ work }
+        end
         self
       end
     end
@@ -105,7 +113,7 @@ module Concurrent
     #
     # @since 0.5.0
     def self.execute(opts = {}, &block)
-      return Future.new(opts, &block).execute
+      Future.new(opts, &block).execute
     end
 
     protected :set, :fail, :complete
@@ -117,6 +125,5 @@ module Concurrent
       success, val, reason = SafeTaskExecutor.new(@task).execute
       complete(success, val, reason)
     end
-    
   end
 end
