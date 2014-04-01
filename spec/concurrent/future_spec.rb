@@ -8,6 +8,7 @@ module Concurrent
 
     let!(:value) { 10 }
     let(:executor) { PerThreadExecutor.new }
+
     subject do
       Future.new(executor: executor){
         value
