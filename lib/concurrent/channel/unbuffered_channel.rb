@@ -5,7 +5,11 @@ module Concurrent
       @mutex = Mutex.new
       @condition = Condition.new
 
-      @wait_set = []
+      @probe_set = []
+    end
+
+    def probe_set_size
+      @mutex.synchronize { @probe_set.size }
     end
 
     def push(value)
@@ -21,19 +25,20 @@ module Concurrent
 
     def select(probe)
       @mutex.synchronize do
-        @wait_set << probe
+        @probe_set << probe
         @condition.signal
       end
     end
 
     def remove_probe(probe)
+      @mutex.synchronize { @probe_set.delete(probe) }
     end
 
     private
       def first_waiting_probe
         @mutex.synchronize do
-          @condition.wait(@mutex) while @wait_set.empty?
-          @wait_set.shift
+          @condition.wait(@mutex) while @probe_set.empty?
+          @probe_set.shift
         end
       end
 

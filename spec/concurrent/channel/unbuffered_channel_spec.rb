@@ -4,7 +4,8 @@ module Concurrent
 
   describe UnbufferedChannel do
 
-    let!(:channel) { subject } # let is not thread safe, let! creates the object before ensuring uniqueness
+    let(:channel) { subject }
+    let(:probe) { Probe.new }
 
     context 'with one thread' do
 
@@ -58,8 +59,6 @@ module Concurrent
 
     describe 'select' do
 
-      let(:probe) { Probe.new }
-
       it 'does not block' do
         t = Thread.new { channel.select(probe) }
 
@@ -97,5 +96,26 @@ module Concurrent
       end
 
     end
+
+    describe 'probe set' do
+
+      it 'has size zero after creation' do
+        channel.probe_set_size.should eq 0
+      end
+
+      it 'increases size after a select' do
+        channel.select(probe)
+        channel.probe_set_size.should eq 1
+      end
+
+      it 'decreases size after a removal' do
+        channel.select(probe)
+        channel.remove_probe(probe)
+        channel.probe_set_size.should eq 0
+      end
+
+    end
+
+
   end
 end
