@@ -35,12 +35,12 @@ module Concurrent
     end
 
     private
-      def first_waiting_probe
-        @mutex.synchronize do
-          @condition.wait(@mutex) while @probe_set.empty?
-          @probe_set.shift
-        end
+    def first_waiting_probe
+      @mutex.synchronize do
+        @condition.wait(@mutex) while @probe_set.empty?
+        @probe_set.shift
       end
+    end
 
   end
 end
