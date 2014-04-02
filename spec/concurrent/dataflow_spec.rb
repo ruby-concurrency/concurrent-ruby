@@ -6,6 +6,12 @@ module Concurrent
 
     let(:executor) { ImmediateExecutor.new }
 
+    before(:each) do
+      Concurrent.configure do |config|
+        config.global_operation_pool = Concurrent::ImmediateExecutor.new
+      end
+    end
+
     it 'raises an exception when no block given' do
       expect { Concurrent::dataflow }.to raise_error(ArgumentError)
     end

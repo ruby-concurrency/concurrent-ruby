@@ -15,28 +15,30 @@ module Concurrent
     attr_accessor :global_operation_pool
 
     def initialize
-      task_pool_config = {
+    end
+
+    def cores
+      @cores ||= Concurrent::processor_count
+    end
+
+    def global_task_pool
+      @global_task_pool ||= Concurrent::ThreadPoolExecutor.new(
         min_threads: [2, cores].max,
         max_threads: [20, cores * 15].max,
         idletime: 2 * 60,                  # 2 minutes
         max_queue: 0,                      # unlimited
         overflow_policy: :abort            # raise an exception
-      }
+      )
+    end
 
-      operation_pool_config = {
+    def global_operation_pool
+      @global_operation_pool = Concurrent::ThreadPoolExecutor.new(
         min_threads: [2, cores].max,
         max_threads: [2, cores].max,
         idletime: 10 * 60,                 # 10 minutes
         max_queue: [20, cores * 15].max,
         overflow_policy: :abort            # raise an exception
-      }
-
-      @global_task_pool = Concurrent::ThreadPoolExecutor.new(task_pool_config)
-      @global_operation_pool = Concurrent::ThreadPoolExecutor.new(operation_pool_config)
-    end
-
-    def cores
-      @cores ||= Concurrent::processor_count
+      )
     end
 
     def global_task_pool=(executor)

@@ -22,6 +22,17 @@ module Concurrent
 
   describe Configuration do
 
+    context 'configure' do
+
+      it 'raises an exception if called twice'
+
+      it 'raises an exception if called after tasks post to the thread pool'
+
+      it 'raises an exception if called after operations post to the thread pool'
+
+      it 'allows reconfiguration if set to :test mode'
+    end
+
     context '#global_task_pool' do
       pending
     end
