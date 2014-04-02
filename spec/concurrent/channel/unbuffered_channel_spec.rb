@@ -31,6 +31,7 @@ module Concurrent
     end
 
     context 'cooperating threads' do
+
       it 'passes the pushed value to thread waiting on pop' do
         result = nil
 
@@ -41,7 +42,60 @@ module Concurrent
 
         result.should eq 42
       end
+
+      it 'passes the pushed value to only one thread' do
+        result = []
+
+        Thread.new { channel.push 37 }
+        Thread.new { result << channel.pop }
+        Thread.new { result << channel.pop }
+
+        sleep(0.05)
+
+        result.should have(1).items
+      end
     end
 
+    describe 'select' do
+
+      let(:probe) { Probe.new }
+
+      it 'does not block' do
+        t = Thread.new { channel.select(probe) }
+
+        sleep(0.05)
+
+        t.status.should eq false
+      end
+
+      it 'gets notified by writer thread' do
+        channel.select(probe)
+
+        Thread.new { channel.push 82 }
+
+        probe.value.should eq 82
+      end
+
+      it 'ignores already set probes and waits for a new one' do
+        probe.set(27)
+
+        channel.select(probe)
+
+        t = Thread.new { channel.push 72 }
+
+        sleep(0.05)
+
+        t.status.should eq 'sleep'
+
+        new_probe = Probe.new
+
+        channel.select(new_probe)
+
+        sleep(0.05)
+
+        new_probe.value.should eq 72
+      end
+
+    end
   end
 end
