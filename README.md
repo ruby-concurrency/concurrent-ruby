@@ -49,7 +49,7 @@ into several general groups:
   [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent),
   [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future),
   [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
-  [ScheculedTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
+  [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
   and [TimerTask](https://github.com/jdantonio/concurrent-ruby/wiki/TimerTask) 
 * Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
   for managing long-running threads
