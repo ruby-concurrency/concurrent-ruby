@@ -284,10 +284,7 @@ module Concurrent
     private
 
     def executor
-      @__async__executor__ ||= Concurrent::ThreadPoolExecutor.new(
-        min_threads: 1, max_threads: 1, idletime: 0,
-        max_queue: 0, overflow_policy: :caller_runs
-      )
+      @__async__executor__ ||= Concurrent.configuration.global_task_pool
     end
   end
 end
