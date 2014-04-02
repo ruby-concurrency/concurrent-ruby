@@ -1,6 +1,8 @@
 require 'thread'
+require 'concurrent/configuration'
 require 'concurrent/ivar'
 require 'concurrent/future'
+require 'concurrent/thread_pool_executor'
 
 module Concurrent
 
@@ -169,8 +171,9 @@ module Concurrent
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
       # @param [Mutex] mutex the mutex lock to use when delegating method calls
-      def initialize(delegate, mutex)
+      def initialize(delegate, executor, mutex)
         @delegate = delegate
+        @executor = executor
         @mutex = mutex
       end
 
@@ -191,7 +194,7 @@ module Concurrent
 
         self.define_singleton_method(method) do |*args|
           Async::validate_argc(@delegate, method, *args)
-          Concurrent::Future.execute do
+          Concurrent::Future.execute(executor: @executor) do
             mutex.synchronize do
               @delegate.send(method, *args, &block)
             end
@@ -237,7 +240,7 @@ module Concurrent
     #
     # @see Concurrent::Future
     def async
-      @__async_delegator__ ||= AsyncDelegator.new(self, await.mutex)
+      @__async_delegator__ ||= AsyncDelegator.new(self, executor, await.mutex)
     end
     alias_method :future, :async
 
@@ -272,5 +275,16 @@ module Concurrent
       @__await_delegator__ ||= AwaitDelegator.new(self, Mutex.new)
     end
     alias_method :delay, :await
+
+    def executor=(executor)
+      raise ArgumentError.new('executor has already been set') unless @__async__executor__.nil?
+      @__async__executor__ = executor
+    end
+
+    private
+
+    def executor
+      @__async__executor__ ||= Concurrent.configuration.global_task_pool
+    end
   end
 end

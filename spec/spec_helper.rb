@@ -33,6 +33,11 @@ RSpec.configure do |config|
     Thread.list.each do |thread|
       thread.kill unless thread == Thread.current
     end
+
+    Concurrent.configure do |config|
+      config.global_task_pool = nil
+      config.global_operation_pool = nil
+    end
   end
 
   config.after(:suite) do

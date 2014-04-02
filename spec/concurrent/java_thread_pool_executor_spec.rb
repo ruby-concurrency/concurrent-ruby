@@ -25,6 +25,8 @@ if jruby?
 
       it_should_behave_like :thread_pool_executor
 
+      it 'defines an #at_exit shutdown hook'
+
       context '#overload_policy' do
 
         specify ':abort maps to AbortPolicy' do

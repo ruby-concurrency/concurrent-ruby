@@ -1,8 +1,8 @@
 require 'thread'
 require 'observer'
 
+require 'concurrent/configuration'
 require 'concurrent/dereferenceable'
-require 'concurrent/uses_global_thread_pool'
 require 'concurrent/utilities'
 
 module Concurrent
@@ -34,7 +34,7 @@ module Concurrent
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   class Agent
     include Dereferenceable
-    include UsesGlobalThreadPool
+    include OptionsParser
 
     # The default timeout value (in seconds); used when no timeout option
     # is given at initialization
@@ -46,7 +46,15 @@ module Concurrent
     #
     # @param [Object] initial the initial value
     # @param [Hash] opts the options used to define the behavior at update and deref
+    #
     # @option opts [Fixnum] :timeout (TIMEOUT) maximum number of seconds before an update is cancelled
+    #
+    # @option opts [Boolean] :operation (false) when +true+ will execute the future on the global
+    #   operation pool (for long-running operations), when +false+ will execute the future on the
+    #   global task pool (for short-running tasks)
+    # @option opts [object] :executor when provided will run all operations on
+    #   this executor rather than the global thread pool (overrides :operation)
+    #
     # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
     # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
@@ -57,6 +65,7 @@ module Concurrent
       @validator = Proc.new { |result| true }
       @timeout = opts.fetch(:timeout, TIMEOUT).freeze
       @observers = CopyOnWriteObserverSet.new
+      @executor = get_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end
@@ -116,7 +125,7 @@ module Concurrent
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
     def post(&block)
-      Agent.thread_pool.post{ work(&block) } unless block.nil?
+      @executor.post{ work(&block) } unless block.nil?
     end
 
     # Update the current value with the result of the given block operation

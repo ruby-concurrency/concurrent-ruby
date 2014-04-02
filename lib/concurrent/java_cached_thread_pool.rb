@@ -36,6 +36,8 @@ if defined? java.util
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           java.util.concurrent.SynchronousQueue.new,
           OVERFLOW_POLICIES[@overflow_policy].new)
+
+        at_exit { self.kill }
       end
     end
   end

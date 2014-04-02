@@ -1,14 +1,13 @@
 require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
-require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
 
   describe IVar do
 
     let!(:value) { 10 }
-    
+
     subject do
       i = IVar.new
       i.set(14)
@@ -17,33 +16,33 @@ module Concurrent
 
     context 'behavior' do
 
-    # obligation
+      # obligation
 
-    let!(:fulfilled_value) { 10 }
-    let(:rejected_reason) { StandardError.new('Boom!') }
+      let!(:fulfilled_value) { 10 }
+      let(:rejected_reason) { StandardError.new('Boom!') }
 
-    let(:pending_subject) do
-      @i = IVar.new
-      Thread.new do
-        sleep(3)
-        @i.set(fulfilled_value)
+      let(:pending_subject) do
+        @i = IVar.new
+        Thread.new do
+          sleep(3)
+          @i.set(fulfilled_value)
+        end
+        @i
       end
-      @i
-    end
 
-    let(:fulfilled_subject) do
-      i = IVar.new
-      i.set(fulfilled_value)
-      i
-    end
+      let(:fulfilled_subject) do
+        i = IVar.new
+        i.set(fulfilled_value)
+        i
+      end
 
-    let(:rejected_subject) do
-      i = IVar.new
-      i.fail(rejected_reason)
-      i
-    end
+      let(:rejected_subject) do
+        i = IVar.new
+        i.fail(rejected_reason)
+        i
+      end
 
-    it_should_behave_like :obligation
+      it_should_behave_like :obligation
 
       # dereferenceable
 

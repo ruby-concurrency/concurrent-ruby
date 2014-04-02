@@ -1,7 +1,7 @@
 require 'thread'
 
+require 'concurrent/configuration'
 require 'concurrent/obligation'
-require 'concurrent/uses_global_thread_pool'
 require 'concurrent/safe_task_executor'
 
 module Concurrent
@@ -41,13 +41,18 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
   class Future < IVar
     include Obligation
-    include UsesGlobalThreadPool
+    include OptionsParser
 
     # Create a new +Future+ in the +:unscheduled+ state.
     #
     # @yield the asynchronous operation to perform
     #
     # @param [Hash] opts the options to create a message with
+    # @option opts [Boolean] :operation (false) when +true+ will execute the future on the global
+    #   operation pool (for long-running operations), when +false+ will execute the future on the
+    #   global task pool (for short-running tasks)
+    # @option opts [object] :executor when provided will run all operations on
+    #   this executor rather than the global thread pool (overrides :operation)
     # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
     # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
@@ -59,6 +64,7 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
+      @executor = get_executor_from(opts)
     end
 
     # Execute an +:unscheduled+ +Future+. Immediately sets the state to +:pending+ and
@@ -80,7 +86,7 @@ module Concurrent
     # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        Future.thread_pool.post { work }
+        @executor.post{ work }
         self
       end
     end
@@ -105,7 +111,7 @@ module Concurrent
     #
     # @since 0.5.0
     def self.execute(opts = {}, &block)
-      return Future.new(opts, &block).execute
+      Future.new(opts, &block).execute
     end
 
     protected :set, :fail, :complete
@@ -117,6 +123,5 @@ module Concurrent
       success, val, reason = SafeTaskExecutor.new(@task).execute
       complete(success, val, reason)
     end
-    
   end
 end

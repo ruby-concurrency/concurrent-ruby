@@ -1,32 +1,26 @@
 require 'spec_helper'
 require_relative 'obligation_shared'
-require_relative 'uses_global_thread_pool_shared'
 
 module Concurrent
 
   describe Promise do
 
-    let!(:thread_pool_user){ Promise }
-    it_should_behave_like Concurrent::UsesGlobalThreadPool
+    let(:executor) { PerThreadExecutor.new }
 
-    let(:empty_root) { Promise.new { nil } }
+    let(:empty_root) { Promise.new(executor: executor){ nil } }
     let!(:fulfilled_value) { 10 }
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Promise.new{ sleep(0.3); fulfilled_value }.execute
+      Promise.new(executor: executor){ sleep(0.3); fulfilled_value }.execute
     end
 
     let(:fulfilled_subject) do
-      Promise.fulfill(fulfilled_value)
+      Promise.fulfill(fulfilled_value, executor: executor)
     end
 
     let(:rejected_subject) do
-      Promise.reject( rejected_reason )
-    end
-
-    before(:each) do
-      Promise.thread_pool = PerThreadExecutor.new
+      Promise.reject(rejected_reason, executor: executor)
     end
 
     it_should_behave_like :obligation
@@ -74,28 +68,28 @@ module Concurrent
 
       describe '.new' do
         it 'should return an unscheduled Promise' do
-          p = Promise.new { nil }
+          p = Promise.new(executor: executor){ nil }
           p.should be_unscheduled
         end
       end
 
       describe '.execute' do
         it 'creates a new Promise' do
-          p = Promise.execute{ nil }
+          p = Promise.execute(executor: executor){ nil }
           p.should be_a(Promise)
         end
 
         it 'passes the block to the new Promise' do
-          p = Promise.execute { 20 }
+          p = Promise.execute(executor: executor){ 20 }
           sleep(0.1)
           p.value.should eq 20
         end
 
         it 'calls #execute on the new Promise' do
           p = double('promise')
-          Promise.stub(:new).with(any_args).and_return(p)
+          Promise.stub(:new).with({executor: executor}).and_return(p)
           p.should_receive(:execute).with(no_args)
-          Promise.execute{ nil }
+          Promise.execute(executor: executor){ nil }
         end
       end
     end
@@ -105,15 +99,14 @@ module Concurrent
       context 'unscheduled' do
 
         it 'sets the promise to :pending' do
-          p = Promise.new { sleep(0.1) }.execute
+          p = Promise.new(executor: executor){ sleep(0.1) }.execute
           p.should be_pending
         end
 
         it 'posts the block given in construction' do
-          Promise.thread_pool.should_receive(:post).with(any_args)
-          Promise.new { nil }.execute
+          executor.should_receive(:post).with(any_args)
+          Promise.new(executor: executor){ nil }.execute
         end
-
       end
 
       context 'pending' do
@@ -124,16 +117,14 @@ module Concurrent
         end
 
         it 'does not posts again' do
-          Promise.thread_pool.should_receive(:post).with(any_args).once
+          executor.should_receive(:post).with(any_args).once
           pending_subject.execute
         end
-
       end
-
 
       describe 'with children' do
 
-        let(:root) { Promise.new { sleep(0.1); nil } }
+        let(:root) { Promise.new(executor: executor){ sleep(0.1); nil } }
         let(:c1) { root.then { nil } }
         let(:c2) { root.then { nil } }
         let(:c2_1) { c2.then { nil } }
@@ -157,7 +148,6 @@ module Concurrent
             [root, c1, c2, c2_1].each { |p| p.should be_pending }
           end
         end
-
       end
     end
 
@@ -187,7 +177,7 @@ module Concurrent
 
       context 'unscheduled' do
 
-        let(:p1) { Promise.new {nil} }
+        let(:p1) { Promise.new(executor: executor){nil} }
         let(:child) { p1.then{} }
 
         it 'returns a new promise' do
@@ -226,7 +216,6 @@ module Concurrent
           child = fulfilled_subject.then(Proc.new{ 7 }) { |v| v + 5 }
           child.value.should eq fulfilled_value + 5
         end
-
       end
 
       context 'rejected' do
@@ -241,7 +230,6 @@ module Concurrent
           child = rejected_subject.then(Proc.new{ 7 }) { |v| v + 5 }
           child.value.should eq 7
         end
-
       end
 
       it 'can be called more than once' do
@@ -277,13 +265,13 @@ module Concurrent
 
       it 'passes the result of each block to all its children' do
         expected = nil
-        Promise.new{ 20 }.then{ |result| expected = result }.execute
+        Promise.new(executor: executor){ 20 }.then{ |result| expected = result }.execute
         sleep(0.1)
         expected.should eq 20
       end
 
       it 'sets the promise value to the result if its block' do
-        root = Promise.new{ 20 }
+        root = Promise.new(executor: executor){ 20 }
         p = root.then{ |result| result * 2}.execute
         sleep(0.1)
         root.value.should eq 20
@@ -291,26 +279,26 @@ module Concurrent
       end
 
       it 'sets the promise state to :fulfilled if the block completes' do
-        p = Promise.new{ 10 * 2 }.then{|result| result * 2}.execute
+        p = Promise.new(executor: executor){ 10 * 2 }.then{|result| result * 2}.execute
         sleep(0.1)
         p.should be_fulfilled
       end
 
       it 'passes the last result through when a promise has no block' do
         expected = nil
-        Promise.new{ 20 }.then(Proc.new{}).then{|result| expected = result}.execute
+        Promise.new(executor: executor){ 20 }.then(Proc.new{}).then{|result| expected = result}.execute
         sleep(0.1)
         expected.should eq 20
       end
 
       it 'uses result as fulfillment value when a promise has no block' do
-        p = Promise.new{ 20 }.then(Proc.new{}).execute
+        p = Promise.new(executor: executor){ 20 }.then(Proc.new{}).execute
         sleep(0.1)
         p.value.should eq 20
       end
 
       it 'can manage long chain' do
-        root = Promise.new { 20 }
+        root = Promise.new(executor: executor){ 20 }
         p1 = root.then { |b| b * 3 }
         p2 = root.then { |c| c + 2 }
         p3 = p1.then { |d| d + 7 }
@@ -329,27 +317,27 @@ module Concurrent
 
       it 'passes the reason to all its children' do
         expected = nil
-        Promise.new{ raise ArgumentError }.then(Proc.new{ |reason| expected = reason }).execute
+        Promise.new(executor: executor){ raise ArgumentError }.then(Proc.new{ |reason| expected = reason }).execute
         sleep(0.1)
         expected.should be_a ArgumentError
       end
 
       it 'sets the promise value to the result if its block' do
-        root = Promise.new{ raise ArgumentError }
+        root = Promise.new(executor: executor){ raise ArgumentError }
         p = root.then(Proc.new{ |reason| 42 }).execute
         sleep(0.1)
         p.value.should eq 42
       end
 
       it 'sets the promise state to :rejected if the block completes' do
-        p = Promise.new{ raise ArgumentError }.execute
+        p = Promise.new(executor: executor){ raise ArgumentError }.execute
         sleep(0.1)
         p.should be_rejected
       end
 
       it 'uses reason as rejection reason when a promise has no rescue callable' do
         pending('intermittently failing')
-        p = Promise.new{ raise ArgumentError }.then { |val| val }.execute
+        p = Promise.new(executor: executor){ raise ArgumentError }.then { |val| val }.execute
         sleep(0.1)
         p.should be_rejected
         p.reason.should be_a ArgumentError
