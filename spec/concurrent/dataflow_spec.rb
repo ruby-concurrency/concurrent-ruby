@@ -8,7 +8,7 @@ module Concurrent
 
     before(:each) do
       Concurrent.configure do |config|
-        config.global_operation_pool = Concurrent::ImmediateExecutor.new
+        config.global_task_pool = Concurrent::PerThreadExecutor.new
       end
     end
 
