@@ -11,7 +11,7 @@ module Concurrent
       context 'without timeout' do
         it 'should block' do
           t = Thread.new { exchanger.exchange(1) }
-          sleep(0.05)
+          sleep(0.1)
           t.status.should eq 'sleep'
         end
 
@@ -51,12 +51,12 @@ module Concurrent
         it 'should block until timeout' do
           value = 0
 
-          t = Thread.new { value = exchanger.exchange(2, 0.1) }
+          t = Thread.new { value = exchanger.exchange(2, 0.2) }
 
-          sleep(0.05)
+          sleep(0.1)
           t.status.should eq 'sleep'
 
-          sleep(0.06)
+          sleep(0.2)
 
           value.should be_nil
         end
