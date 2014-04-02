@@ -64,7 +64,7 @@ module Concurrent
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('not all dependencies are IVars') unless inputs.all? { |input| input.is_a? IVar }
 
-    result = Future.new(executor: PerThreadExecutor.new) do
+    result = Future.new do
       values = inputs.map { |input| input.value }
       block.call(*values)
     end
