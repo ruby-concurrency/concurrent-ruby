@@ -68,7 +68,7 @@ module Concurrent
   module OptionsParser
 
     def get_executor_from(opts = {})
-      if opts.has_key?(:executor)
+      if opts[:executor]
         opts[:executor]
       elsif opts[:operation] == true || opts[:task] == false
         Concurrent.configuration.global_operation_pool
