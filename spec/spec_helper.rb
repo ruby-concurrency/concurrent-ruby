@@ -27,16 +27,12 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
+    reset_gem_configuration
   end
 
   config.after(:each) do
     Thread.list.each do |thread|
       thread.kill unless thread == Thread.current
-    end
-
-    Concurrent.configure do |config|
-      config.global_task_pool = nil
-      config.global_operation_pool = nil
     end
   end
 

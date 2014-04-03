@@ -2,23 +2,6 @@ require 'spec_helper'
 
 module Concurrent
 
-  describe 'module functions' do
-
-    let(:executor){ ImmediateExecutor.new }
-
-    specify '#task posts to the global task pool' do
-      Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
-      executor.should_receive(:post).with(1, 2, 3)
-      Concurrent::task(1, 2, 3){|a, b, c| nil }
-    end
-
-    specify '#operation posts to the global operation pool' do
-      Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
-      executor.should_receive(:post).with(1, 2, 3)
-      Concurrent::operation(1, 2, 3){|a, b, c| nil }
-    end
-  end
-
   describe OptionsParser do
 
     subject do
@@ -92,39 +75,60 @@ module Concurrent
 
   describe Configuration do
 
-    context 'configure' do
+    context 'global task pool' do
 
-      it 'raises an exception if called twice'
+      specify 'reader creates a default pool when first called if none exists' do
+        Concurrent.configuration.global_task_pool.should_not be_nil
+        Concurrent.configuration.global_task_pool.should respond_to(:post)
+      end
 
-      it 'raises an exception if called after tasks post to the thread pool'
+      specify 'writer memoizes the given executor' do
+        executor = ImmediateExecutor.new
+        Concurrent.configure do |config|
+          config.global_task_pool = executor
+        end
+        Concurrent.configuration.global_task_pool.should eq executor
+      end
 
-      it 'raises an exception if called after operations post to the thread pool'
-
-      it 'allows reconfiguration if set to :test mode'
+      specify 'writer raises an exception if called twice' do
+        executor = ImmediateExecutor.new
+        Concurrent.configure do |config|
+          config.global_task_pool = executor
+        end
+        expect {
+          Concurrent.configure do |config|
+            config.global_task_pool = executor
+          end
+        }.to raise_error(ConfigurationError)
+      end
     end
 
-    context '#global_task_pool' do
-      pending
-    end
+    context 'global operation pool' do
 
-    context '#global_task_pool=' do
-      pending
-    end
+      specify 'reader creates a default pool when first called if none exists' do
+        Concurrent.configuration.global_operation_pool.should_not be_nil
+        Concurrent.configuration.global_operation_pool.should respond_to(:post)
+      end
 
-    context '#global_operation_pool' do
-      pending
-    end
+      specify 'writer memoizes the given executor' do
+        executor = ImmediateExecutor.new
+        Concurrent.configure do |config|
+          config.global_operation_pool = executor
+        end
+        Concurrent.configuration.global_operation_pool.should eq executor
+      end
 
-    context '#global_operation_pool=' do
-      pending
-    end
-
-    context 'cores' do
-      pending
-    end
-
-    context '#at_exit shutdown hook' do
-      pending
+      specify 'writer raises an exception if called twice' do
+        executor = ImmediateExecutor.new
+        Concurrent.configure do |config|
+          config.global_operation_pool = executor
+        end
+        expect {
+          Concurrent.configure do |config|
+            config.global_operation_pool = executor
+          end
+        }.to raise_error(ConfigurationError)
+      end
     end
   end
 end

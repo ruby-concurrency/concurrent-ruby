@@ -19,3 +19,7 @@ end
 def rbx?
   RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i 
 end
+
+def reset_gem_configuration
+  Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
+end
