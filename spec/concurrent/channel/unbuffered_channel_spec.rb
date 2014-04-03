@@ -4,7 +4,7 @@ module Concurrent
 
   describe UnbufferedChannel do
 
-    let(:channel) { subject }
+    let!(:channel) { subject }
     let(:probe) { Probe.new }
 
     context 'with one thread' do
@@ -37,9 +37,9 @@ module Concurrent
         result = nil
 
         Thread.new { channel.push 42 }
-        Thread.new { result = channel.pop }
+        Thread.new { result = channel.pop; }
 
-        sleep(0.05)
+        sleep(0.1)
 
         result.should eq 42
       end
@@ -51,9 +51,20 @@ module Concurrent
         Thread.new { result << channel.pop }
         Thread.new { result << channel.pop }
 
-        sleep(0.05)
+        sleep(0.1)
 
         result.should have(1).items
+      end
+
+      it 'gets the pushed value when ready' do
+        result = nil
+
+        Thread.new { result = channel.pop; }
+        Thread.new { channel.push 57 }
+
+        sleep(0.1)
+
+        result.should eq 57
       end
     end
 
