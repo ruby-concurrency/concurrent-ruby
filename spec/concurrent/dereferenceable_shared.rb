@@ -127,8 +127,6 @@ share_examples_for :dereferenceable do
 
   it 'supports dereference flags with observers' do
     if dereferenceable_subject(0).respond_to?(:add_observer)
-      pending('intermittently failing')
-      # Concurrent::Agent behavior it should behave like dereferenceable supports dereference flags with observers
 
       result = 'result'
       result.should_receive(:dup).and_return(result)

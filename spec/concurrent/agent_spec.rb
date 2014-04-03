@@ -33,7 +33,7 @@ module Concurrent
       end
 
       def execute_dereferenceable(subject)
-        subject << proc { 'value' }
+        subject.post{|value| 10 }
         sleep(0.1)
       end
 
@@ -41,6 +41,8 @@ module Concurrent
     end
 
     context '#initialize' do
+
+      let(:executor) { ImmediateExecutor.new }
 
       it 'sets the value to the given initial state' do
         Agent.new(10).value.should eq 10
@@ -54,13 +56,29 @@ module Concurrent
         Agent.new(0).timeout.should eq Agent::TIMEOUT
       end
 
-      it 'uses the executor given with the :executor option'
+      it 'uses the executor given with the :executor option' do
+        executor.should_receive(:post).with(any_args).and_return(0)
+        agent = Agent.new(0, executor: executor)
+        agent.post{|value| 0 }
+      end
 
-      it 'uses the global operation pool when :operation is true'
+      it 'uses the global operation pool when :operation is true' do
+        Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
+        agent = Agent.new(0, operation: true)
+        agent.post{|value| 0 }
+      end
 
-      it 'uses the global task pool when :task is true'
+      it 'uses the global task pool when :task is true' do
+        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        agent = Agent.new(0, task: true)
+        agent.post{|value| 0 }
+      end
 
-      it 'uses the global task pool by default'
+      it 'uses the global task pool by default' do
+        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        agent = Agent.new(0)
+        agent.post{|value| 0 }
+      end
     end
 
     context '#rescue' do
