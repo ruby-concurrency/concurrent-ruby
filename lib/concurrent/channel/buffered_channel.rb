@@ -1,3 +1,5 @@
+require_relative 'waitable_list'
+
 module Concurrent
   class BufferedChannel
 
@@ -6,13 +8,13 @@ module Concurrent
       @condition = Condition.new
       @buffer_condition = Condition.new
 
-      @probe_set = []
+      @probe_set = WaitableList.new
       @buffer = []
       @size = size
     end
 
     def probe_set_size
-      @mutex.synchronize { @probe_set.size }
+      @probe_set.size
     end
 
     def buffer_queue_size
@@ -34,7 +36,7 @@ module Concurrent
       @mutex.synchronize do
 
         if @buffer.empty?
-          @probe_set << probe
+          @probe_set.push(probe)
           true
         else
           shift_buffer if probe.set_unless_assigned peek_buffer
@@ -44,7 +46,7 @@ module Concurrent
     end
 
     def remove_probe(probe)
-      @mutex.synchronize { @probe_set.delete(probe) }
+      @probe_set.delete(probe)
     end
 
     private
@@ -81,7 +83,7 @@ module Concurrent
           push_into_buffer(value)
           true
         else
-          @probe_set.shift.set_unless_assigned(value)
+          @probe_set.first.set_unless_assigned(value)
         end
       end
     end

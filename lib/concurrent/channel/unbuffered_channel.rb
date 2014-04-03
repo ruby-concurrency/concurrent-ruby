@@ -1,19 +1,18 @@
+require_relative 'waitable_list'
+
 module Concurrent
   class UnbufferedChannel
 
     def initialize
-      @mutex = Mutex.new
-      @condition = Condition.new
-
-      @probe_set = []
+      @probe_set = WaitableList.new
     end
 
     def probe_set_size
-      @mutex.synchronize { @probe_set.size }
+      @probe_set.size
     end
 
     def push(value)
-      until first_waiting_probe.set_unless_assigned(value)
+      until @probe_set.first.set_unless_assigned(value)
       end
     end
 
@@ -24,22 +23,11 @@ module Concurrent
     end
 
     def select(probe)
-      @mutex.synchronize do
-        @probe_set << probe
-        @condition.signal
-      end
+      @probe_set.push(probe)
     end
 
     def remove_probe(probe)
-      @mutex.synchronize { @probe_set.delete(probe) }
-    end
-
-    private
-    def first_waiting_probe
-      @mutex.synchronize do
-        @condition.wait(@mutex) while @probe_set.empty?
-        @probe_set.shift
-      end
+      @probe_set.delete(probe)
     end
 
   end
