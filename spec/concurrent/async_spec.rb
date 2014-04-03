@@ -100,18 +100,31 @@ module Concurrent
       end
     end
 
-    context '#executor' do
+    context 'executor' do
 
-      it 'returns the default executor when #executor= has never been called'
+      it 'returns the default executor when #executor= has never been called' do
+        Concurrent.configuration.should_receive(:global_task_pool).
+          and_return(ImmediateExecutor.new)
+        subject = async_class.new
+        subject.async.echo(:foo)
+      end
 
-      it 'returns the memo after #executor= has been called'
-    end
+      it 'returns the memo after #executor= has been called' do
+        executor = ImmediateExecutor.new
+        executor.should_receive(:post)
+        subject = async_class.new
+        subject.executor = executor
+        subject.async.echo(:foo)
+      end
 
-    context '#executor=' do
-
-      it 'memoizes the given executor'
-
-      it 'raises an exception if called multiple times'
+      it 'raises an exception if #executor= is called multiple times' do
+        executor = ImmediateExecutor.new
+        subject = async_class.new
+        subject.executor = executor
+        expect {
+          subject.executor = executor
+        }.to raise_error(ArgumentError)
+      end
     end
 
     context '#async' do
@@ -140,7 +153,13 @@ module Concurrent
         val.should be_pending
       end
 
-      it 'runs the Future on the memoized executor'
+      it 'runs the Future on the memoized executor' do
+        executor = ImmediateExecutor.new
+        executor.should_receive(:post).with(any_args)
+        subject = async_class.new
+        subject.executor = executor
+        subject.async.echo(:foo)
+      end
 
       it 'sets the value on success' do
         val = subject.async.echo(:foo)
