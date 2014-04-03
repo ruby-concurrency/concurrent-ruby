@@ -75,23 +75,37 @@ module Concurrent
 
     context '#initialize' do
 
+        let(:executor) { ImmediateExecutor.new }
+
       it 'sets the state to :unscheduled' do
         Future.new(executor: executor){ nil }.should be_unscheduled
       end
 
       it 'raises an exception when no block given' do
         expect {
-          Future.new(executor: executor).execute
+          Future.new.execute
         }.to raise_error(ArgumentError)
       end
 
-      it 'uses the executor given with the :executor option'
+      it 'uses the executor given with the :executor option' do
+        executor.should_receive(:post)
+        Future.execute(executor: executor){ nil }
+      end
 
-      it 'uses the global operation pool when :operation is true'
+      it 'uses the global operation pool when :operation is true' do
+        Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
+        Future.execute(operation: true){ nil }
+      end
 
-      it 'uses the global task pool when :task is true'
+      it 'uses the global task pool when :task is true' do
+        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        Future.execute(task: true){ nil }
+      end
 
-      it 'uses the global task pool by default'
+      it 'uses the global task pool by default' do
+        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        Future.execute{ nil }
+      end
     end
 
     context 'instance #execute' do
