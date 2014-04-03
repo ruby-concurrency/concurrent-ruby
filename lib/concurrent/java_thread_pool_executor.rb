@@ -61,6 +61,7 @@ if defined? java.util
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           queue, OVERFLOW_POLICIES[@overflow_policy].new)
 
+        # without this the process may fail to exit
         at_exit { self.kill }
       end
 

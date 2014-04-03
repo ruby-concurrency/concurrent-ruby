@@ -17,8 +17,6 @@ if jruby?
 
       it_should_behave_like :fixed_thread_pool
 
-      it 'defines an #at_exit shutdown hook'
-
       context '#initialize' do
 
         it 'sets :min_length correctly' do

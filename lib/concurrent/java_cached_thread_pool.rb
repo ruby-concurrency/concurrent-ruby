@@ -37,6 +37,7 @@ if defined? java.util
           java.util.concurrent.SynchronousQueue.new,
           OVERFLOW_POLICIES[@overflow_policy].new)
 
+        # without this the process may fail to exit
         at_exit { self.kill }
       end
     end

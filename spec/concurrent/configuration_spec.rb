@@ -4,12 +4,18 @@ module Concurrent
 
   describe 'module functions' do
 
-    context '#task' do
-      pending
+    let(:executor){ ImmediateExecutor.new }
+
+    specify '#task posts to the global task pool' do
+      Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+      executor.should_receive(:post).with(1, 2, 3)
+      Concurrent::task(1, 2, 3){|a, b, c| nil }
     end
 
-    context '#operation' do
-      pending
+    specify '#operation posts to the global operation pool' do
+      Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
+      executor.should_receive(:post).with(1, 2, 3)
+      Concurrent::operation(1, 2, 3){|a, b, c| nil }
     end
   end
 
