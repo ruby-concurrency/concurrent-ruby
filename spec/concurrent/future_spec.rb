@@ -57,7 +57,7 @@ module Concurrent
     end
 
     context 'subclassing' do
-      
+
       subject{ Future.execute(executor: executor){ 42 } }
 
       it 'protects #set' do
@@ -75,7 +75,7 @@ module Concurrent
 
     context '#initialize' do
 
-        let(:executor) { ImmediateExecutor.new }
+      let(:executor) { ImmediateExecutor.new }
 
       it 'sets the state to :unscheduled' do
         Future.new(executor: executor){ nil }.should be_unscheduled
@@ -111,6 +111,7 @@ module Concurrent
     context 'instance #execute' do
 
       it 'does nothing unless the state is :unscheduled' do
+        executor = ImmediateExecutor.new
         executor.should_not_receive(:post).with(any_args)
         future = Future.new(executor: executor){ nil }
         future.instance_variable_set(:@state, :pending)

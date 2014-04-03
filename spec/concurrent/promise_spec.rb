@@ -125,9 +125,9 @@ module Concurrent
       describe 'with children' do
 
         let(:root) { Promise.new(executor: executor){ sleep(0.1); nil } }
-        let(:c1) { root.then { nil } }
-        let(:c2) { root.then { nil } }
-        let(:c2_1) { c2.then { nil } }
+        let(:c1) { root.then { sleep(0.1); nil } }
+        let(:c2) { root.then { sleep(0.1); nil } }
+        let(:c2_1) { c2.then { sleep(0.1); nil } }
 
         context 'when called on the root' do
           it 'should set all promises to :pending' do
@@ -142,7 +142,6 @@ module Concurrent
 
         context 'when called on a child' do
           it 'should set all promises to :pending' do
-            pending('intermittently failing')
             c2_1.execute
 
             [root, c1, c2, c2_1].each { |p| p.should be_pending }
@@ -336,8 +335,7 @@ module Concurrent
       end
 
       it 'uses reason as rejection reason when a promise has no rescue callable' do
-        pending('intermittently failing')
-        p = Promise.new(executor: executor){ raise ArgumentError }.then { |val| val }.execute
+        p = Promise.new(executor: ImmediateExecutor.new){ raise ArgumentError }.then{ |val| val }.execute
         sleep(0.1)
         p.should be_rejected
         p.reason.should be_a ArgumentError
