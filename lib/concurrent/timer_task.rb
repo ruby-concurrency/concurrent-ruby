@@ -9,9 +9,9 @@ require 'concurrent/utilities'
 module Concurrent
 
   # A very common currency pattern is to run a thread that performs a task at regular
-  # intervals. The thread that peforms the task sleeps for the given interval then
+  # intervals. The thread that performs the task sleeps for the given interval then
   # wakes up and performs the task. Lather, rinse, repeat... This pattern causes two
-  # problems. First, it is difficult to test the business logic of the task becuse the
+  # problems. First, it is difficult to test the business logic of the task because the
   # task itself is tightly coupled with the concurrency logic. Second, an exception in
   # raised while performing the task can cause the entire thread to abend. In a
   # long-running application where the task thread is intended to run for days/weeks/years
@@ -25,7 +25,7 @@ module Concurrent
   # performing logging or ancillary operations. +TimerTask+ can also be configured with a
   # timeout value allowing it to kill a task that runs too long.
   # 
-  # One other advantage of +TimerTask+ is it forces the bsiness logic to be completely decoupled
+  # One other advantage of +TimerTask+ is it forces the business logic to be completely decoupled
   # from the concurrency logic. The business logic can be tested separately then passed to the
   # +TimerTask+ for scheduling and running.
   # 
@@ -147,7 +147,6 @@ module Concurrent
     include Dereferenceable
     include Runnable
     include Stoppable
-    include Observable
 
     # Default +:execution_interval+
     EXECUTION_INTERVAL = 60
@@ -171,7 +170,7 @@ module Concurrent
     # @option opts [Integer] :timeout_interval number of seconds a task can
     #   run before it is considered to have failed (default: TIMEOUT_INTERVAL)
     # @option opts [Boolean] :run_now Whether to run the task immediately
-    #   upon instanciation or to wait until the first #execution_interval
+    #   upon instantiation or to wait until the first #execution_interval
     #   has passed (default: false)
     #
     # @raise ArgumentError when no block is given.
@@ -193,9 +192,10 @@ module Concurrent
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
       self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
-      @run_now = opts[:now] || opts[:run_now] || false
+      @run_now = opts[:now] || opts[:run_now]
 
       @task = block
+      @observers = CopyOnWriteObserverSet.new
       init_mutex
       set_deref_options(opts)
     end
@@ -224,6 +224,10 @@ module Concurrent
         raise ArgumentError.new("'timeout_interval' must be non-negative number")
       end
       @timeout_interval = value
+    end
+
+    def add_observer(observer, func = :update)
+      @observers.add_observer(observer, func)
     end
 
     # Terminate with extreme prejudice. Useful in cases where +#stop+ doesn't
@@ -278,11 +282,10 @@ module Concurrent
       end
       raise TimeoutError if @worker.join(@timeout_interval).nil?
       mutex.synchronize { @value = @worker[:result] }
-    rescue Exception => ex
-      # suppress
+    rescue Exception => e
+      ex = e
     ensure
-      changed
-      notify_observers(Time.now, self.value, ex)
+      @observers.notify_observers(Time.now, self.value, ex)
       unless @worker.nil?
         Thread.kill(@worker)
         @worker = nil
