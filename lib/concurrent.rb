@@ -36,6 +36,7 @@ require 'concurrent/channel/probe'
 require 'concurrent/channel/channel'
 require 'concurrent/channel/unbuffered_channel'
 require 'concurrent/channel/buffered_channel'
+require 'concurrent/channel/ring_buffer'
 
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
