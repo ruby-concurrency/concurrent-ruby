@@ -32,6 +32,9 @@ require 'concurrent/timer_task'
 require 'concurrent/tvar'
 require 'concurrent/utilities'
 
+require 'concurrent/actor_context'
+require 'concurrent/simple_actor_ref'
+
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'
