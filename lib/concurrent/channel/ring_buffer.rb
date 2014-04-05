@@ -21,7 +21,7 @@ module Concurrent
       @mutex.synchronize do
         wait_while_full
         @buffer[@last] = value
-        @last += 1
+        @last = (@last + 1) % @buffer.size
         @count += 1
         @condition.signal
       end
@@ -32,7 +32,7 @@ module Concurrent
         wait_while_empty
         result = @buffer[@first]
         @buffer[@first] = nil
-        @first += 1
+        @first = (@first + 1) % @buffer.size
         @count -= 1
         @condition.signal
         result

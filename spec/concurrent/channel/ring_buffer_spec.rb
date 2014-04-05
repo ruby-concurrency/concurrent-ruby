@@ -85,5 +85,17 @@ module Concurrent
       end
     end
 
+    context 'circular condition' do
+      it 'can filled many times' do
+        capacity.times { buffer.put 3 }
+        capacity.times { buffer.take }
+
+        buffer.put 'hi'
+
+        buffer.take.should eq 'hi'
+        buffer.capacity.should eq capacity
+      end
+    end
+
   end
 end
