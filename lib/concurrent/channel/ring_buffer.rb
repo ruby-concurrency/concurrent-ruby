@@ -17,6 +17,14 @@ module Concurrent
       @mutex.synchronize { @count }
     end
 
+    def full?
+      @mutex.synchronize { @count == @buffer.size }
+    end
+
+    def empty?
+      @mutex.synchronize { @count == 0 }
+    end
+
     def put(value)
       @mutex.synchronize do
         wait_while_full

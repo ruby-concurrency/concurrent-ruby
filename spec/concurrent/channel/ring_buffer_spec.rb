@@ -7,6 +7,10 @@ module Concurrent
     let(:capacity) { 3 }
     let(:buffer) { RingBuffer.new( capacity ) }
 
+    def fill_buffer
+      capacity.times { buffer.put 3 }
+    end
+
     describe '#capacity' do
       it 'returns the value passed in constructor' do
         buffer.capacity.should eq capacity
@@ -35,9 +39,31 @@ module Concurrent
       end
     end
 
+    describe '#empty?' do
+      it 'is true when count is zero' do
+        buffer.empty?.should be_true
+      end
+
+      it 'is false when count is not zero' do
+        buffer.put 82
+        buffer.empty?.should be_false
+      end
+    end
+
+    describe '#full?' do
+      it 'is true when count is capacity' do
+        fill_buffer
+        buffer.full?.should be_true
+      end
+
+      it 'is false when count is not capacity' do
+        buffer.full?.should be_false
+      end
+    end
+
     describe '#put' do
       it 'block when buffer is full' do
-        capacity.times { buffer.put 27 }
+        fill_buffer
 
         t = Thread.new { buffer.put 32 }
 
@@ -87,7 +113,7 @@ module Concurrent
 
     context 'circular condition' do
       it 'can filled many times' do
-        capacity.times { buffer.put 3 }
+        fill_buffer
         capacity.times { buffer.take }
 
         buffer.put 'hi'
