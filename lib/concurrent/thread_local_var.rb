@@ -75,7 +75,7 @@ module Concurrent
 
     NIL_SENTINEL = Object.new
 
-    if defined? java.lang
+    if RUBY_PLATFORM == 'java'
       include ThreadLocalJavaStorage
     elsif Thread.current.respond_to?(:thread_variable_set)
       include ThreadLocalNewStorage

@@ -2,7 +2,7 @@ require 'concurrent/ruby_fixed_thread_pool'
 
 module Concurrent
 
-  if defined? java.util
+  if RUBY_PLATFORM == 'java'
     require 'concurrent/java_fixed_thread_pool'
     # @!macro [attach] fixed_thread_pool
     #
@@ -11,7 +11,7 @@ module Concurrent
     #   tasks +#post+ to the thread pool are enqueued until a thread becomes available.
     #   Should a thread crash for any reason the thread will immediately be removed
     #   from the pool and replaced.
-    #  
+    #
     #   The API and behavior of this class are based on Java's +FixedThreadPool+
     #
     #   @note When running on the JVM (JRuby) this class will inherit from +JavaFixedThreadPool+.
@@ -19,7 +19,7 @@ module Concurrent
     #
     #   @see Concurrent::RubyFixedThreadPool
     #   @see Concurrent::JavaFixedThreadPool
-    #  
+    #
     #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
     #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
     #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html

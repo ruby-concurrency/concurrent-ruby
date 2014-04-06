@@ -1,4 +1,4 @@
-if defined? java.util
+if RUBY_PLATFORM == 'java'
 
   module Concurrent
 
