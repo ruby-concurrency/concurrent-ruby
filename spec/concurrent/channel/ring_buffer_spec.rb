@@ -5,7 +5,7 @@ module Concurrent
   describe RingBuffer do
 
     let(:capacity) { 3 }
-    let(:buffer) { RingBuffer.new( capacity ) }
+    let(:buffer) { RingBuffer.new(capacity) }
 
     def fill_buffer
       capacity.times { buffer.put 3 }
@@ -108,6 +108,28 @@ module Concurrent
         buffer.take.should eq 'hi'
         buffer.take.should eq 'foo'
         buffer.take.should eq 'bar'
+      end
+    end
+
+    describe '#peek' do
+      context 'buffer empty' do
+        it 'returns nil when buffer is empty' do
+          buffer.peek.should be_nil
+        end
+      end
+
+      context 'not empty' do
+
+        before(:each) { buffer.put 'element' }
+
+        it 'returns the first value' do
+          buffer.peek.should eq 'element'
+        end
+
+        it 'does not change buffer' do
+          buffer.peek
+          buffer.count.should eq 1
+        end
       end
     end
 

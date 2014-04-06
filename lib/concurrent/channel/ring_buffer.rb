@@ -47,6 +47,10 @@ module Concurrent
       end
     end
 
+    def peek
+      @mutex.synchronize { @buffer[@first] }
+    end
+
     private
 
     def wait_while_full
