@@ -12,7 +12,7 @@ module Concurrent
     end
 
     def push(value)
-      until @probe_set.first.set_unless_assigned(value)
+      until @probe_set.take.set_unless_assigned(value)
       end
     end
 
@@ -23,7 +23,7 @@ module Concurrent
     end
 
     def select(probe)
-      @probe_set.push(probe)
+      @probe_set.put(probe)
     end
 
     def remove_probe(probe)

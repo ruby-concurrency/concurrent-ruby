@@ -36,7 +36,7 @@ module Concurrent
       @mutex.synchronize do
 
         if @buffer.empty?
-          @probe_set.push(probe)
+          @probe_set.put(probe)
           true
         else
           shift_buffer if probe.set_unless_assigned peek_buffer
@@ -83,7 +83,7 @@ module Concurrent
           push_into_buffer(value)
           true
         else
-          @probe_set.first.set_unless_assigned(value)
+          @probe_set.take.set_unless_assigned(value)
         end
       end
     end

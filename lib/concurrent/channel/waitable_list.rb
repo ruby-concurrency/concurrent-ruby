@@ -16,7 +16,7 @@ module Concurrent
       @mutex.synchronize { @list.empty? }
     end
 
-    def push(value)
+    def put(value)
       @mutex.synchronize do
         @list << value
         @condition.signal
@@ -27,7 +27,7 @@ module Concurrent
       @mutex.synchronize { @list.delete(value) }
     end
 
-    def first
+    def take
       @mutex.synchronize do
         @condition.wait(@mutex) while @list.empty?
         @list.shift
