@@ -16,6 +16,21 @@ module Concurrent
 
     it_should_behave_like :actor_ref
 
+    context 'construction' do
+
+      it 'supports :args being nil' do
+        subject = shared_actor_test_class.spawn
+        actor = subject.instance_variable_get(:@actor)
+        actor.argv.should be_empty
+      end
+
+      it 'passes all :args option to the constructor' do
+        subject = shared_actor_test_class.spawn(args: [1, 2, 3, 4])
+        actor = subject.instance_variable_get(:@actor)
+        actor.argv.should eq [1, 2, 3, 4]
+      end
+    end
+
     context 'supervision' do
 
       it 'does not start a new thread on construction' do

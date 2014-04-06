@@ -15,8 +15,13 @@ module Concurrent
 
     def self.included(base)
 
-      def base.spawn
-        Concurrent::SimpleActorRef.new(self.new)
+      class << base
+        protected :new
+
+        def spawn(opts = {})
+          args = opts.fetch(:args, [])
+          Concurrent::SimpleActorRef.new(self.new(*args))
+        end
       end
     end
   end

@@ -10,9 +10,15 @@ module Concurrent
       end
     end
 
+    it 'protects #initialize' do
+      expect {
+        described_class.new
+      }.to raise_error(NoMethodError)
+    end
+
     context 'callbacks' do
 
-      subject { described_class.new }
+      subject { described_class.send(:new) }
 
       specify { subject.should respond_to :on_start }
 

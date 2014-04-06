@@ -3,6 +3,10 @@ require 'spec_helper'
 def shared_actor_test_class
   Class.new do
     include Concurrent::ActorContext
+    attr_reader :argv
+    def initialize(*args)
+      @argv = args
+    end
     def receive(*msg)
       case msg.first
       when :poison
