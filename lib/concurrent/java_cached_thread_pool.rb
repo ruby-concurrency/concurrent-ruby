@@ -1,4 +1,4 @@
-if defined? java.util
+if RUBY_PLATFORM == 'java'
 
   require 'concurrent/java_thread_pool_executor'
 
