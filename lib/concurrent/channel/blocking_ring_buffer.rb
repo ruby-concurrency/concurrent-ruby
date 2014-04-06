@@ -1,5 +1,5 @@
 module Concurrent
-  class RingBuffer
+  class BlockingRingBuffer
 
     def initialize(capacity)
       @buffer = Array.new(capacity)

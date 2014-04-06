@@ -2,10 +2,10 @@ require 'spec_helper'
 
 module Concurrent
 
-  describe RingBuffer do
+  describe BlockingRingBuffer do
 
     let(:capacity) { 3 }
-    let(:buffer) { RingBuffer.new(capacity) }
+    let(:buffer) { BlockingRingBuffer.new(capacity) }
 
     def fill_buffer
       capacity.times { buffer.put 3 }
