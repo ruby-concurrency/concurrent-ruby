@@ -7,7 +7,7 @@ module Concurrent
     def on_start
     end
 
-    def on_restart
+    def on_reset
     end
 
     def on_shutdown

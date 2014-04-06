@@ -65,7 +65,7 @@ module Concurrent
         @actor.on_start
         @thread = new_worker_thread
       elsif ! @thread.alive?
-        @actor.on_restart
+        @actor.on_reset
         @thread = new_worker_thread
       end
     end

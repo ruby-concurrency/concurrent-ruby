@@ -22,7 +22,7 @@ module Concurrent
 
       specify { subject.should respond_to :on_start }
 
-      specify { subject.should respond_to :on_restart }
+      specify { subject.should respond_to :on_reset }
 
       specify { subject.should respond_to :on_shutdown }
     end

@@ -64,7 +64,7 @@ module Concurrent
         subject << :foo
       end
 
-      it 'does not restart the thread after shutdown' do
+      it 'does not reset the thread after shutdown' do
         thread = Thread.new{ nil }
         Thread.should_receive(:new).once.with(no_args).and_return(thread)
         subject << :foo
@@ -82,9 +82,9 @@ module Concurrent
         subject << :foo
       end
 
-      it 'calls #on_restart when the thread is restarted' do
+      it 'calls #on_reset when the thread is reseted' do
         actor = subject.instance_variable_get(:@actor)
-        actor.should_receive(:on_restart).once.with(no_args)
+        actor.should_receive(:on_reset).once.with(no_args)
         subject << :terminate
         sleep(0.1)
         subject << :foo
