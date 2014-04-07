@@ -1,5 +1,4 @@
 require 'concurrent/copy_on_notify_observer_set'
-require 'concurrent/utilities'
 
 module Concurrent
 
