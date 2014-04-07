@@ -9,8 +9,7 @@ module Concurrent
       @buffer_condition = Condition.new
 
       @probe_set = WaitableList.new
-      @buffer = []
-      @size = size
+      @buffer = RingBuffer.new(size)
     end
 
     def probe_set_size
@@ -18,7 +17,7 @@ module Concurrent
     end
 
     def buffer_queue_size
-      @mutex.synchronize { @buffer.size }
+      @mutex.synchronize { @buffer.count }
     end
 
     def push(value)
@@ -51,28 +50,20 @@ module Concurrent
 
     private
 
-    def buffer_full?
-      @buffer.size == @size
-    end
-
-    def buffer_empty?
-      @buffer.empty?
-    end
-
     def push_into_buffer(value)
-      @buffer_condition.wait(@mutex) while buffer_full?
-      @buffer << value
+      @buffer_condition.wait(@mutex) while @buffer.full?
+      @buffer.offer value
       @buffer_condition.broadcast
     end
 
     def peek_buffer
-      @buffer_condition.wait(@mutex) while buffer_empty?
-      @buffer.first
+      @buffer_condition.wait(@mutex) while @buffer.empty?
+      @buffer.peek
     end
 
     def shift_buffer
-      @buffer_condition.wait(@mutex) while buffer_empty?
-      result = @buffer.shift
+      @buffer_condition.wait(@mutex) while @buffer.empty?
+      result = @buffer.poll
       @buffer_condition.broadcast
       result
     end
