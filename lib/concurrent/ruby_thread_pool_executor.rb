@@ -90,6 +90,14 @@ module Concurrent
       @mutex.synchronize { @state == :running }
     end
 
+    # Returns an array with the status of each thread in the pool
+    #
+    # This method is deprecated and will be removed soon.
+    def status
+      warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
+      @mutex.synchronize { @pool.collect { |worker| worker.status } }
+    end
+    
     # Is the thread pool shutdown?
     #
     # @return [Boolean] +true+ when shutdown, +false+ when shutting down or running
