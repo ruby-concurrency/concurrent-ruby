@@ -100,6 +100,14 @@ share_examples_for :cached_thread_pool do
     end
   end
 
+  context '#status' do
+
+    it 'returns an array' do
+      subject.stub(:warn)
+      subject.status.should be_kind_of(Array)
+    end
+  end
+
   context '#idletime' do
 
     subject{ described_class.new(idletime: 42) }
