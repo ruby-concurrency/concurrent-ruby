@@ -52,6 +52,7 @@ module Concurrent
 
     def shutdown
       @mutex.synchronize do
+        return if @stopped
         @stopped = true
         if @thread && @thread.alive?
           @thread.kill 
