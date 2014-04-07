@@ -2,7 +2,7 @@ module Concurrent
   class BlockingRingBuffer
 
     def initialize(capacity)
-      @buffer = Array.new(capacity)
+      @buffer = RingBuffer.new(capacity)
       @first = @last = 0
       @count = 0
       @mutex = Mutex.new
@@ -10,27 +10,25 @@ module Concurrent
     end
 
     def capacity
-      @mutex.synchronize { @buffer.size }
+      @mutex.synchronize { @buffer.capacity }
     end
 
     def count
-      @mutex.synchronize { @count }
+      @mutex.synchronize { @buffer.count }
     end
 
     def full?
-      @mutex.synchronize { @count == @buffer.size }
+      @mutex.synchronize { @buffer.full? }
     end
 
     def empty?
-      @mutex.synchronize { @count == 0 }
+      @mutex.synchronize { @buffer.empty? }
     end
 
     def put(value)
       @mutex.synchronize do
         wait_while_full
-        @buffer[@last] = value
-        @last = (@last + 1) % @buffer.size
-        @count += 1
+        @buffer.offer(value)
         @condition.signal
       end
     end
@@ -38,27 +36,24 @@ module Concurrent
     def take
       @mutex.synchronize do
         wait_while_empty
-        result = @buffer[@first]
-        @buffer[@first] = nil
-        @first = (@first + 1) % @buffer.size
-        @count -= 1
+        result = @buffer.poll
         @condition.signal
         result
       end
     end
 
     def peek
-      @mutex.synchronize { @buffer[@first] }
+      @mutex.synchronize { @buffer.peek }
     end
 
     private
 
     def wait_while_full
-      @condition.wait(@mutex) while @count == @buffer.size
+      @condition.wait(@mutex) while @buffer.full?
     end
 
     def wait_while_empty
-      @condition.wait(@mutex) while @count == 0
+      @condition.wait(@mutex) while @buffer.empty?
     end
 
   end
