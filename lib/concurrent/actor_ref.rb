@@ -4,21 +4,14 @@ module Concurrent
 
   module ActorRef
 
-    def running?
-      true
-    end
-
-    def shutdown?
-      false
-    end
-
-    def post(*msg, &block)
-      raise NotImplementedError
-    end
-
-    def post!(*msg)
-      raise NotImplementedError
-    end
+    #NOTE: Required API methods
+    #      Must be implemented in all subclasses
+    #def post(*msg, &block)
+    #def post!(*msg)
+    #def running?
+    #def shutdown?
+    #def shutdown
+    #def join(timeout = nil)
 
     def <<(message)
       post(*message)
