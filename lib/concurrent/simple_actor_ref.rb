@@ -95,6 +95,7 @@ module Concurrent
         begin
           result = @actor.receive(*message.payload)
         rescue @exception_class => ex
+          @actor.on_error(Time.now, message.payload, ex)
           @actor.on_reset if @reset_on_error
         ensure
           now = Time.now

@@ -231,6 +231,24 @@ share_examples_for :actor_ref do
     end
   end
 
+  context '#on_error' do
+
+    specify 'is not called on success' do
+      actor = subject.instance_variable_get(:@actor)
+      actor.should_not_receive(:on_error).with(any_args)
+      subject.post(:foo)
+      sleep(0.1)
+    end
+
+    specify 'is called when a message raises an exception' do
+      actor = subject.instance_variable_get(:@actor)
+      actor.should_receive(:on_error).
+        with(anything, [:poison], an_instance_of(StandardError))
+      subject.post(:poison)
+      sleep(0.1)
+    end
+  end
+
   context 'observation' do
 
     let(:observer_class) do

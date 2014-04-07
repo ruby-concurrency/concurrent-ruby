@@ -13,6 +13,9 @@ module Concurrent
     def on_shutdown
     end
 
+    def on_error(time, message, exception)
+    end
+
     def self.included(base)
 
       class << base
