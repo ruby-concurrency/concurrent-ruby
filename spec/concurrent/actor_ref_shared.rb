@@ -169,6 +169,57 @@ share_examples_for :actor_ref do
     end
   end
 
+  context '#join' do
+
+    it 'blocks until shutdown when no limit is given' do
+      start = Time.now
+      subject << :foo # start the actor's thread
+      Thread.new{ sleep(1); subject.shutdown }
+      subject.join
+      stop = Time.now
+
+      subject.should be_shutdown
+      stop.should >= start + 1
+      stop.should <= start + 2
+    end
+
+    it 'blocks for no more than the given number of seconds' do
+      start = Time.now
+      subject << :foo # start the actor's thread
+      Thread.new{ sleep(5); subject.shutdown }
+      subject.join(1)
+      stop = Time.now
+
+      stop.should >= start + 1
+      stop.should <= start + 2
+    end
+
+    it 'returns true when shutdown has completed before timeout' do
+      subject << :foo # start the actor's thread
+      Thread.new{ sleep(1); subject.shutdown }
+      subject.join.should be_true
+    end
+
+    it 'returns false on timeout' do
+      subject << :foo # start the actor's thread
+      Thread.new{ sleep(5); subject.shutdown }
+      subject.join(1).should be_false
+    end
+
+    it 'returns immediately when already shutdown' do
+      start = Time.now
+      subject << :foo # start the actor's thread
+      sleep(0.1)
+      subject.shutdown
+      sleep(0.1)
+
+      start = Time.now
+      subject.join
+      Time.now.should >= start
+      Time.now.should <= start + 0.1
+    end
+  end
+
   context 'observation' do
 
     let(:observer_class) do

@@ -1,6 +1,7 @@
 require 'thread'
 
 require 'concurrent/actor_ref'
+require 'concurrent/event'
 require 'concurrent/ivar'
 
 module Concurrent
@@ -13,7 +14,7 @@ module Concurrent
       @mutex = Mutex.new
       @queue = Queue.new
       @thread = nil
-      @stopped = false
+      @stop_event = Event.new
       @abort_on_exception = opts.fetch(:abort_on_exception, true)
       @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
@@ -21,17 +22,17 @@ module Concurrent
     end
 
     def running?
-      @mutex.synchronize{ @stopped == false }
+      ! @stop_event.set?
     end
 
     def shutdown?
-      @mutex.synchronize{ @stopped == true }
+      @stop_event.set?
     end
 
     def post(*msg, &block)
       raise ArgumentError.new('message cannot be empty') if msg.empty?
       @mutex.synchronize do
-        supervise unless @stopped == true
+        supervise unless shutdown?
       end
       ivar = IVar.new
       @queue.push(Message.new(msg, ivar, block))
@@ -52,13 +53,17 @@ module Concurrent
 
     def shutdown
       @mutex.synchronize do
-        return if @stopped
-        @stopped = true
+        return if shutdown?
         if @thread && @thread.alive?
           @thread.kill 
           @actor.on_shutdown
         end
+        @stop_event.set
       end
+    end
+
+    def join(timeout = nil)
+      @stop_event.wait(timeout)
     end
 
     private
