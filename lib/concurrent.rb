@@ -39,6 +39,9 @@ require 'concurrent/channel/buffered_channel'
 require 'concurrent/channel/ring_buffer'
 require 'concurrent/channel/blocking_ring_buffer'
 
+require 'concurrent/actor_context'
+require 'concurrent/simple_actor_ref'
+
 require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'

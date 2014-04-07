@@ -56,7 +56,7 @@ into several general groups:
 * Thread-safe variables including [M-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/MVar-(M-Structure)),
   [I-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/IVar-(I-Structure)),
   [thread-local variables](https://github.com/jdantonio/concurrent-ruby/wiki/ThreadLocalVar),
-  and atomic counters
+  atomic counters, and [software transactional memory](https://github.com/jdantonio/concurrent-ruby/wiki/TVar-(STM))
 * Thread synchronization classes and algorithms including [dataflow](https://github.com/jdantonio/concurrent-ruby/wiki/Dataflow), 
   timeout, condition, countdown latch, dependency counter, and event
 * Java-inspired [thread pools](https://github.com/jdantonio/concurrent-ruby/wiki/Thread%20Pools)

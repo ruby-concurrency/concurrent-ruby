@@ -34,7 +34,7 @@ module Concurrent
   # @see http://docs.oracle.com/javase/6/docs/api/java/lang/Runtime.html#availableProcessors()
   # @see http://msdn.microsoft.com/en-us/library/aa394373(v=vs.85).aspx
   def processor_count
-    if defined? java.lang
+    if RUBY_PLATFORM == 'java'
       java.lang.Runtime.getRuntime.availableProcessors
     else
       @@processor_count ||= begin

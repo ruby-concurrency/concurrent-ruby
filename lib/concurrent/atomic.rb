@@ -109,7 +109,7 @@ module Concurrent
       allocate_storage(init)
     end
 
-    if defined? java.util
+    if RUBY_PLATFORM == 'java'
       include JavaAtomicFixnum
     else
       include MutexAtomicFixnum

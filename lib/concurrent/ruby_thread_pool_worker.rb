@@ -25,6 +25,13 @@ module Concurrent
       @mutex.synchronize { @last_activity }
     end
 
+    def status
+      @mutex.synchronize do
+        return 'not running' if @thread.nil?
+        @thread.status
+      end
+    end
+
     # @!visibility private
     def kill # :nodoc:
       @mutex.synchronize do

@@ -1,4 +1,4 @@
-if defined? java.util
+if RUBY_PLATFORM == 'java'
 
   module Concurrent
 
@@ -100,6 +100,15 @@ if defined? java.util
 
       def remaining_capacity
         @max_queue == 0 ? -1 : @executor.getQueue.remainingCapacity
+      end
+
+      # This method is deprecated and will be removed soon.
+      # This method is supost to return the threads status, but Java API doesn't
+      # provide a way to get the thread status. So we return an empty Array instead.
+      def status
+        warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
+        warn "Calls to `status` return an empty Array. Java ThreadPoolExecutor does not provide thread's status."
+        []
       end
 
       # Is the thread pool running?
