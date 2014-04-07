@@ -115,6 +115,17 @@ share_examples_for :actor_ref do
       expected_value.should be_nil
       expected_reason.should be_a StandardError
     end
+
+    it 'supresses exceptions thrown by the callback' do
+      expected = nil
+      subject.post(:foo){|time, value, reason| raise StandardError }
+      sleep(0.1)
+
+      subject.post(:bar){|time, value, reason| expected = value }
+      sleep(0.1)
+
+      expected.should eq :bar
+    end
   end
 
   context '#post!' do

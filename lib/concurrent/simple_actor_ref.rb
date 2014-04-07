@@ -99,7 +99,13 @@ module Concurrent
         ensure
           now = Time.now
           message.ivar.complete(ex.nil?, result, ex)
-          message.callback.call(now, result, ex) if message.callback
+
+          begin
+            message.callback.call(now, result, ex) if message.callback
+          rescue @exception_class => ex
+            # suppress
+          end
+
           observers.notify_observers(now, message.payload, result, ex)
         end
       end
