@@ -179,6 +179,7 @@ module Concurrent
     #
     # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def self.pool(count, *args, &block)
+      warn '[DEPRECATED] `Actor` is deprecated and will be replaced with `ActorContext`.'
       raise ArgumentError.new('count must be greater than zero') unless count > 0
       mailbox = Queue.new
       actors = count.times.collect do
@@ -211,6 +212,7 @@ module Concurrent
     # 
     # @!visibility public
     def act(*message)
+      warn '[DEPRECATED] `Actor` is deprecated and will be replaced with `ActorContext`.'
       raise NotImplementedError.new("#{self.class} does not implement #act")
     end
 
@@ -218,6 +220,7 @@ module Concurrent
     #
     # @deprecated +Actor+ is being replaced with a completely new framework prior to v1.0.0
     def on_run # :nodoc:
+      warn '[DEPRECATED] `Actor` is deprecated and will be replaced with `ActorContext`.'
       queue.clear
     end
 
