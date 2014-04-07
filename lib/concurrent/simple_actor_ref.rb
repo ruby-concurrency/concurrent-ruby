@@ -8,12 +8,16 @@ module Concurrent
   class SimpleActorRef
     include ActorRef
 
-    def initialize(actor)
+    def initialize(actor, opts = {})
       @actor = actor
       @mutex = Mutex.new
       @queue = Queue.new
       @thread = nil
       @stopped = false
+      @abort_on_exception = opts.fetch(:abort_on_exception, true)
+      @reset_on_error = opts.fetch(:reset_on_error, true)
+      @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
+      @observers = CopyOnNotifyObserverSet.new
     end
 
     def running?
@@ -72,7 +76,7 @@ module Concurrent
 
     def new_worker_thread
       Thread.new do
-        Thread.current.abort_on_exception = true
+        Thread.current.abort_on_exception = @abort_on_exception
         run_message_loop
       end
     end
@@ -84,11 +88,13 @@ module Concurrent
 
         begin
           result = @actor.receive(*message.payload)
-        rescue => ex
-          # suppress
+        rescue @exception_class => ex
+          @actor.on_reset if @reset_on_error
         ensure
+          now = Time.now
           message.ivar.complete(ex.nil?, result, ex)
-          message.callback.call(Time.now, result, ex) if message.callback
+          message.callback.call(now, result, ex) if message.callback
+          observers.notify_observers(now, message.payload, result, ex)
         end
       end
     end

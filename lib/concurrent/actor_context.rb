@@ -20,7 +20,7 @@ module Concurrent
 
         def spawn(opts = {})
           args = opts.fetch(:args, [])
-          Concurrent::SimpleActorRef.new(self.new(*args))
+          Concurrent::SimpleActorRef.new(self.new(*args), opts)
         end
       end
     end
