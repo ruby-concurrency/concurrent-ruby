@@ -6,6 +6,12 @@ module Concurrent
 
   describe Actor do
 
+    before do
+      # suppress deprecation warnings.
+      Concurrent::Actor.any_instance.stub(:warn)
+      Concurrent::Actor.stub(:warn)
+    end
+
     let(:actor_class) do
       Class.new(Actor) do
         attr_reader :last_message
