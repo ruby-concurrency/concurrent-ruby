@@ -41,10 +41,10 @@ module Concurrent
       ivar
     end
 
-    def post!(seconds, *msg)
-      raise Concurrent::TimeoutError if seconds == 0
+    def post!(timeout, *msg)
+      raise Concurrent::TimeoutError if timeout == 0
       ivar = self.post(*msg)
-      ivar.value(seconds)
+      ivar.value(timeout)
       if ivar.incomplete?
         raise Concurrent::TimeoutError
       elsif ivar.reason
@@ -64,8 +64,8 @@ module Concurrent
       end
     end
 
-    def join(timeout = nil)
-      @stop_event.wait(timeout)
+    def join(limit = nil)
+      @stop_event.wait(limit)
     end
 
     private

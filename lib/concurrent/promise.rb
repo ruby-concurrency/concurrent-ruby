@@ -11,7 +11,6 @@ module Concurrent
 
     # Initialize a new Promise with the provided options.
     #
-    # @param [Object] initial the initial value
     # @param [Hash] opts the options used to define the behavior at update and deref
     #
     # @option opts [Promise] :parent the parent +Promise+ when building a chain/tree
