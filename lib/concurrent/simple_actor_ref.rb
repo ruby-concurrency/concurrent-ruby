@@ -19,6 +19,8 @@ module Concurrent
       @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
       @observers = CopyOnNotifyObserverSet.new
+
+      @actor.define_singleton_method(:shutdown, &method(:set_stop_event))
     end
 
     def running?
@@ -70,6 +72,10 @@ module Concurrent
 
     Message = Struct.new(:payload, :ivar, :callback)
 
+    def set_stop_event
+      @stop_event.set
+    end
+
     def supervise
       if @thread.nil?
         @actor.on_start
@@ -109,7 +115,10 @@ module Concurrent
 
           observers.notify_observers(now, message.payload, result, ex)
         end
+
+        break if @stop_event.set?
       end
+      @actor.on_shutdown
     end
   end
 end

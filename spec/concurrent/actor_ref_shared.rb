@@ -16,6 +16,8 @@ def shared_actor_test_class
         raise StandardError
       when :bullet
         raise Exception
+      when :stop
+        shutdown
       when :terminate
         Thread.current.kill
       when :sleep
@@ -45,6 +47,13 @@ share_examples_for :actor_ref do
 
     specify do
       subject.shutdown
+      sleep(0.1)
+      subject.should be_shutdown
+    end
+
+    it 'defines a shutdown method on the actor(s)' do
+      subject << :foo
+      subject << :stop
       sleep(0.1)
       subject.should be_shutdown
     end
