@@ -123,7 +123,7 @@ module Concurrent
   #
   # @see http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
   class Actor
-    include Observable
+    include ::Observable
     include Postable
     include Runnable
 

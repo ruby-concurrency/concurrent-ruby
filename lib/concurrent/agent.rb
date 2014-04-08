@@ -1,8 +1,8 @@
 require 'thread'
-require 'observer'
 
 require 'concurrent/configuration'
 require 'concurrent/dereferenceable'
+require 'concurrent/observable'
 require 'concurrent/utilities'
 
 module Concurrent
@@ -34,6 +34,7 @@ module Concurrent
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   class Agent
     include Dereferenceable
+    include Concurrent::Observable
     include OptionsParser
 
     # The default timeout value (in seconds); used when no timeout option
@@ -64,7 +65,7 @@ module Concurrent
       @rescuers = []
       @validator = Proc.new { |result| true }
       @timeout = opts.fetch(:timeout, TIMEOUT).freeze
-      @observers = CopyOnWriteObserverSet.new
+      observers = CopyOnWriteObserverSet.new
       @executor = get_executor_from(opts)
       init_mutex
       set_deref_options(opts)
@@ -139,16 +140,6 @@ module Concurrent
       self
     end
 
-    def add_observer(observer, func=:update)
-      @observers.add_observer(observer, func)
-    end
-
-    alias_method :add_watch, :add_observer
-
-    def delete_observer(observer)
-      @observers.delete_observer(observer)
-    end
-
     private
 
     # @!visibility private
@@ -180,7 +171,7 @@ module Concurrent
           end
         end
         time = Time.now
-        @observers.notify_observers{ [time, self.value] } if should_notify
+        observers.notify_observers{ [time, self.value] } if should_notify
       rescue Exception => ex
         try_rescue(ex)
       end

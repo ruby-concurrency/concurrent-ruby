@@ -1,7 +1,7 @@
 require 'thread'
-require 'observer'
 
 require 'concurrent/dereferenceable'
+require 'concurrent/observable'
 require 'concurrent/runnable'
 require 'concurrent/stoppable'
 require 'concurrent/utilities'
@@ -145,6 +145,7 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html
   class TimerTask
     include Dereferenceable
+    include Concurrent::Observable
     include Runnable
     include Stoppable
 
@@ -195,7 +196,7 @@ module Concurrent
       @run_now = opts[:now] || opts[:run_now]
 
       @task = block
-      @observers = CopyOnWriteObserverSet.new
+      observers = CopyOnWriteObserverSet.new
       init_mutex
       set_deref_options(opts)
     end
@@ -224,10 +225,6 @@ module Concurrent
         raise ArgumentError.new("'timeout_interval' must be non-negative number")
       end
       @timeout_interval = value
-    end
-
-    def add_observer(observer, func = :update)
-      @observers.add_observer(observer, func)
     end
 
     # Terminate with extreme prejudice. Useful in cases where +#stop+ doesn't
@@ -285,7 +282,7 @@ module Concurrent
     rescue Exception => e
       ex = e
     ensure
-      @observers.notify_observers(Time.now, self.value, ex)
+      observers.notify_observers(Time.now, self.value, ex)
       unless @worker.nil?
         Thread.kill(@worker)
         @worker = nil

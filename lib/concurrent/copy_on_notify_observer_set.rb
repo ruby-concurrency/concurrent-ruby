@@ -18,6 +18,7 @@ module Concurrent
     def add_observer(observer, func=:update)
       @mutex.synchronize { @observers[observer] = func }
     end
+    alias_method :add_watch, :add_observer
 
     # @param [Object] observer the observer to remove
     # @return [Object] the deleted observer

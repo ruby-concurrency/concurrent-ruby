@@ -1,11 +1,12 @@
-require 'observer'
 require 'concurrent/obligation'
+require 'concurrent/observable'
 require 'concurrent/safe_task_executor'
 
 module Concurrent
 
   class ScheduledTask
     include Obligation
+    include Concurrent::Observable
 
     SchedulingError = Class.new(ArgumentError)
 
@@ -16,7 +17,7 @@ module Concurrent
       calculate_schedule_time!(schedule_time) # raise exception if in past
 
       init_obligation
-      @observers = CopyOnWriteObserverSet.new
+      observers = CopyOnWriteObserverSet.new
       @state = :unscheduled
       @intended_schedule_time = schedule_time
       @schedule_time = nil
@@ -58,7 +59,7 @@ module Concurrent
 
     def add_observer(observer, func = :update)
       if_state(:unscheduled, :pending, :in_progress) do
-        @observers.add_observer(observer, func)
+        observers.add_observer(observer, func)
       end
     end
 
@@ -76,7 +77,7 @@ module Concurrent
         end
 
         time = Time.now
-        @observers.notify_and_delete_observers{ [time, self.value, reason] }
+        observers.notify_and_delete_observers{ [time, self.value, reason] }
       end
 
     end

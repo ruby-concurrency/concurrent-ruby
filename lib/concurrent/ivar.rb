@@ -1,7 +1,7 @@
 require 'thread'
 
 require 'concurrent/obligation'
-require 'concurrent/copy_on_write_observer_set'
+require 'concurrent/observable'
 
 module Concurrent
 
@@ -9,6 +9,7 @@ module Concurrent
 
   class IVar
     include Obligation
+    include Concurrent::Observable
 
     NO_VALUE = Object.new
 
@@ -22,7 +23,7 @@ module Concurrent
     #   returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
       init_obligation
-      @observers = CopyOnWriteObserverSet.new
+      observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
 
       if value == NO_VALUE
@@ -48,7 +49,7 @@ module Concurrent
         if event.set?
           direct_notification = true
         else
-          @observers.add_observer(observer, func)
+          observers.add_observer(observer, func)
         end
       end
 
@@ -72,7 +73,7 @@ module Concurrent
       end
 
       time = Time.now
-      @observers.notify_and_delete_observers{ [time, self.value, reason] }
+      observers.notify_and_delete_observers{ [time, self.value, reason] }
       self
     end
   end

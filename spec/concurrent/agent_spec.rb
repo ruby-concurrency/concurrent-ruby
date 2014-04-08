@@ -398,14 +398,6 @@ module Concurrent
         sleep(0.1)
         @expected.should be_true
       end
-
-      it 'aliases #add_watch for #add_observer' do
-        agent = Agent.new(0, executor: executor)
-        agent.add_watch(observer)
-        agent.post { 10 }
-        sleep(0.1)
-        observer.value.should eq 10
-      end
     end
   end
 end
