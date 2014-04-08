@@ -59,7 +59,8 @@ module Concurrent
     def self.included(base)
 
       class << base
-        protected :new
+
+        protected :new unless $DEBUG
 
         # Create a single, unregistered actor. The actor will run on its own, dedicated
         # thread. The thread will be started the first time a message is post to the actor.
