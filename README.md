@@ -126,6 +126,7 @@ ibm.value #=> 187.57
 
 ## Contributors
 
+* [Jerry D'Antonio](https://github.com/jdantonio)
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Lucas Allan](https://github.com/lucasallan)
@@ -145,8 +146,8 @@ ibm.value #=> 187.57
 
 ## License and Copyright
 
-*Concurrent Ruby* is Copyright &copy; 2014 [Jerry D'Antonio](https://twitter.com/jerrydantonio).
-It is free software released under the [MIT License](http://www.opensource.org/licenses/MIT).
+*Concurrent Ruby* is free software released under the [MIT License](http://www.opensource.org/licenses/MIT).
 
-The *Concurrent Ruby* logo was designed by [David Jones](https://twitter.com/zombyboy).
-It is Copyright &copy; 2014 Jerry D'Antonio. All Rights Reserved.
+The *Concurrent Ruby* [logo](https://github.com/jdantonio/concurrent-ruby/wiki/Logo)
+was designed by [David Jones](https://twitter.com/zombyboy).
+It is Copyright &copy; 2014 [Jerry D'Antonio](https://twitter.com/jerrydantonio). All Rights Reserved.
