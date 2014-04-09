@@ -33,7 +33,6 @@ require 'concurrent/timer_task'
 require 'concurrent/tvar'
 require 'concurrent/utilities'
 
-require 'concurrent/channel/probe'
 require 'concurrent/channel/channel'
 require 'concurrent/channel/unbuffered_channel'
 require 'concurrent/channel/buffered_channel'

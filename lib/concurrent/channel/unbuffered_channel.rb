@@ -17,7 +17,7 @@ module Concurrent
     end
 
     def pop
-      probe = Probe.new
+      probe = Channel::Probe.new
       select(probe)
       probe.value
     end

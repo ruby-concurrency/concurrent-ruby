@@ -5,7 +5,7 @@ module Concurrent
   describe UnbufferedChannel do
 
     let!(:channel) { subject }
-    let(:probe) { Probe.new }
+    let(:probe) { Channel::Probe.new }
 
     context 'with one thread' do
 
@@ -97,7 +97,7 @@ module Concurrent
 
         t.status.should eq 'sleep'
 
-        new_probe = Probe.new
+        new_probe = Channel::Probe.new
 
         channel.select(new_probe)
 

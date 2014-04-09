@@ -2,9 +2,9 @@ require 'spec_helper'
 
 module Concurrent
 
-  describe Probe do
+  describe Channel::Probe do
 
-    let(:probe) { Probe.new }
+    let(:probe) { Channel::Probe.new }
 
     describe '#set_unless_assigned' do
       context 'empty probe' do

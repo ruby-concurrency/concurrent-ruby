@@ -19,7 +19,7 @@ module Concurrent
 
         it 'cleans up' do
           channels = [ UnbufferedChannel.new, UnbufferedChannel.new]
-          channels.each { |ch| ch.stub(:remove_probe).with( an_instance_of(Probe) )}
+          channels.each { |ch| ch.stub(:remove_probe).with( an_instance_of(Channel::Probe) )}
 
           Thread.new { channels[1].push 77 }
 
@@ -27,7 +27,7 @@ module Concurrent
 
           value.should eq 77
 
-          channels.each { |ch| expect(ch).to have_received(:remove_probe).with( an_instance_of(Probe) ) }
+          channels.each { |ch| expect(ch).to have_received(:remove_probe).with( an_instance_of(Channel::Probe) ) }
         end
       end
 

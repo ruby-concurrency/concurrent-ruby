@@ -6,7 +6,7 @@ module Concurrent
 
     let(:size) { 2 }
     let!(:channel) { BufferedChannel.new(size) }
-    let(:probe) { Probe.new }
+    let(:probe) { Channel::Probe.new }
 
     context 'without timeout' do
 
