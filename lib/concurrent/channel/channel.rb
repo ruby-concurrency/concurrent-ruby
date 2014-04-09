@@ -31,7 +31,7 @@ module Concurrent
     def self.select(*channels)
       probe = Probe.new
       channels.each { |channel| channel.select(probe) }
-      result = probe.value
+      result = probe.composite_value
       channels.each { |channel| channel.remove_probe(probe) }
       result
     end

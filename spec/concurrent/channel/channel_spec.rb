@@ -12,9 +12,10 @@ module Concurrent
 
           Thread.new { channels[1].push 77 }
 
-          value = Channel.select(*channels)
+          value, channel = Channel.select(*channels)
 
           value.should eq 77
+          channel.should be channels[1]
         end
 
         it 'cleans up' do
@@ -23,9 +24,10 @@ module Concurrent
 
           Thread.new { channels[1].push 77 }
 
-          value = Channel.select(*channels)
+          value, channel = Channel.select(*channels)
 
           value.should eq 77
+          channel.should be channels[1]
 
           channels.each { |ch| expect(ch).to have_received(:remove_probe).with( an_instance_of(Channel::Probe) ) }
         end
