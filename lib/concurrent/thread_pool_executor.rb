@@ -8,10 +8,10 @@ module Concurrent
     #
     #   A thread pool...
     #
-    #   The API and behavior of this class are based on Java's +ThreadPoolExecutor+
+    #   The API and behavior of this class are based on Java's `ThreadPoolExecutor`
     #
-    #   @note When running on the JVM (JRuby) this class will inherit from +JavaThreadPoolExecutor+.
-    #     On all other platforms it will inherit from +RubyThreadPoolExecutor+.
+    #   @note When running on the JVM (JRuby) this class will inherit from `JavaThreadPoolExecutor`.
+    #     On all other platforms it will inherit from `RubyThreadPoolExecutor`.
     #
     #   @see Concurrent::RubyThreadPoolExecutor
     #   @see Concurrent::JavaThreadPoolExecutor

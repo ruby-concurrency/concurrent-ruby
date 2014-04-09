@@ -8,14 +8,14 @@ module Concurrent
     # Create a new thread pool.
     #
     # @param [Hash] opts the options defining pool behavior.
-    # @option opts [Integer] :max_threads (+DEFAULT_MAX_POOL_SIZE+) maximum number
+    # @option opts [Integer] :max_threads (`DEFAULT_MAX_POOL_SIZE`) maximum number
     #   of threads which may be created in the pool
-    # @option opts [Integer] :idletime (+DEFAULT_THREAD_IDLETIMEOUT+) maximum
+    # @option opts [Integer] :idletime (`DEFAULT_THREAD_IDLETIMEOUT`) maximum
     #   number of seconds a thread may be idle before it is reclaimed
     #
-    # @raise [ArgumentError] if +max_threads+ is less than or equal to zero
-    # @raise [ArgumentError] if +idletime+ is less than or equal to zero
-    # @raise [ArgumentError] if +overflow_policy+ is not a known policy
+    # @raise [ArgumentError] if `max_threads` is less than or equal to zero
+    # @raise [ArgumentError] if `idletime` is less than or equal to zero
+    # @raise [ArgumentError] if `overflow_policy` is not a known policy
     def initialize(opts = {})
       max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i

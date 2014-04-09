@@ -113,27 +113,27 @@ if RUBY_PLATFORM == 'java'
 
       # Is the thread pool running?
       #
-      # @return [Boolean] +true+ when running, +false+ when shutting down or shutdown
+      # @return [Boolean] `true` when running, `false` when shutting down or shutdown
       def running?
         ! (@executor.isShutdown || @executor.isTerminated || @executor.isTerminating)
       end
 
       # Is the thread pool shutdown?
       #
-      # @return [Boolean] +true+ when shutdown, +false+ when shutting down or running
+      # @return [Boolean] `true` when shutdown, `false` when shutting down or running
       def shutdown?
         @executor.isShutdown
       end
 
-      # Block until thread pool shutdown is complete or until +timeout+ seconds have
+      # Block until thread pool shutdown is complete or until `timeout` seconds have
       # passed.
       #
-      # @note Does not initiate shutdown or termination. Either +shutdown+ or +kill+
+      # @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
       #   must be called before this method (or on another thread).
       #
       # @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
       #
-      # @return [Boolean] +true+ if shutdown complete or false on +timeout+
+      # @return [Boolean] `true` if shutdown complete or false on `timeout`
       def wait_for_termination(timeout)
         @executor.awaitTermination(timeout.to_i, java.util.concurrent.TimeUnit::SECONDS)
       end
@@ -144,7 +144,7 @@ if RUBY_PLATFORM == 'java'
       #
       # @yield the asynchronous task to perform
       #
-      # @return [Boolean] +true+ if the task is queued, +false+ if the thread pool
+      # @return [Boolean] `true` if the task is queued, `false` if the thread pool
       #   is not running
       #
       # @raise [ArgumentError] if no task is given

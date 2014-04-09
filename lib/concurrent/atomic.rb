@@ -79,14 +79,14 @@ module Concurrent
   # briefly but no explicit locking is required.
   #
   # @!method value()
-  #   Retrieves the current +Fixnum+ value
+  #   Retrieves the current `Fixnum` value
   #   @return [Fixnum] the current value
   #
   # @!method value=(value)
   #   Explicitly sets the value
   #   @param [Fixnum] value the new value to be set
   #   @return [Fixnum] the current value
-  #   @raise [ArgumentError] if the new value is not a +Fixnum+
+  #   @raise [ArgumentError] if the new value is not a `Fixnum`
   #
   # @!method increment()
   #   Increases the current value by 1
@@ -100,10 +100,10 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
   class AtomicFixnum
 
-    # Creates a new +AtomicFixnum+ with the given initial value.
+    # Creates a new `AtomicFixnum` with the given initial value.
     #
     # @param [Fixnum] init the initial value
-    # @raise [ArgumentError] if the initial value is not a +Fixnum+
+    # @raise [ArgumentError] if the initial value is not a `Fixnum`
     def initialize(init = 0)
       raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
       allocate_storage(init)

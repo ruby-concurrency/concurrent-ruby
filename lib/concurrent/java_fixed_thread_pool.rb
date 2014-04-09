@@ -10,10 +10,10 @@ if RUBY_PLATFORM == 'java'
       # Create a new thread pool.
       #
       # @param [Hash] opts the options defining pool behavior.
-      # @option opts [Symbol] :overflow_policy (+:abort+) the overflow policy
+      # @option opts [Symbol] :overflow_policy (`:abort`) the overflow policy
       #
-      # @raise [ArgumentError] if +num_threads+ is less than or equal to zero
-      # @raise [ArgumentError] if +overflow_policy+ is not a known policy
+      # @raise [ArgumentError] if `num_threads` is less than or equal to zero
+      # @raise [ArgumentError] if `overflow_policy` is not a known policy
       #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
       def initialize(num_threads, opts = {})

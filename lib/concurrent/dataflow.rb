@@ -20,13 +20,13 @@ module Concurrent
   end
 
   # Dataflow allows you to create a task that will be scheduled then all of its
-  # data dependencies are available. Data dependencies are +Future+ values. The
-  # dataflow task itself is also a +Future+ value, so you can build up a graph of
+  # data dependencies are available. Data dependencies are `Future` values. The
+  # dataflow task itself is also a `Future` value, so you can build up a graph of
   # these tasks, each of which is run when all the data and other tasks it depends
   # on are available or completed.
   #
-  # Our syntax is somewhat related to that of Akka's +flow+ and Habanero Java's
-  # +DataDrivenFuture+. However unlike Akka we don't schedule a task at all until
+  # Our syntax is somewhat related to that of Akka's `flow` and Habanero Java's
+  # `DataDrivenFuture`. However unlike Akka we don't schedule a task at all until
   # it is ready to run, and unlike Habanero Java we pass the data values into the
   # task instead of dereferencing them again in the task.
   #
@@ -50,16 +50,16 @@ module Concurrent
   #   # wait up to 1 second for the answer...
   #   f.value(1) #=> 377
   #
-  # @param [Future] inputs zero or more +Future+ operations that this dataflow depends upon
+  # @param [Future] inputs zero or more `Future` operations that this dataflow depends upon
   #
   # @yield The operation to perform once all the dependencies are met
-  # @yieldparam [Future] inputs each of the +Future+ inputs to the dataflow
+  # @yieldparam [Future] inputs each of the `Future` inputs to the dataflow
   # @yieldreturn [Object] the result of the block operation
   #
   # @return [Object] the result of all the operations
   #
   # @raise [ArgumentError] if no block is given
-  # @raise [ArgumentError] if any of the inputs are not +IVar+s
+  # @raise [ArgumentError] if any of the inputs are not `IVar`s
   def dataflow(*inputs, &block)
     dataflow_with(Concurrent.configuration.global_task_pool, *inputs, &block)
   end

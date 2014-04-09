@@ -32,14 +32,14 @@ module Concurrent
   class Delay
     include Obligation
 
-    # Create a new +Delay+ in the +:pending+ state.
+    # Create a new `Delay` in the `:pending` state.
     #
     # @yield the delayed operation to perform
     #
     # @param [Hash] opts the options to create a message with
-    # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
-    # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
+    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     #
     # @raise [ArgumentError] if no block is given
@@ -54,17 +54,17 @@ module Concurrent
 
     # Return the (possibly memoized) value of the delayed operation.
     # 
-    # If the state is +:pending+ then the calling thread will block while the
-    # operation is performed. All other threads simultaneously calling +#value+
-    # will block as well. Once the operation is complete (either +:fulfilled+ or
-    # +:rejected+) all waiting threads will unblock and the new value will be
+    # If the state is `:pending` then the calling thread will block while the
+    # operation is performed. All other threads simultaneously calling `#value`
+    # will block as well. Once the operation is complete (either `:fulfilled` or
+    # `:rejected`) all waiting threads will unblock and the new value will be
     # returned.
     #
-    # If the state is not +:pending+ when +#value+ is called the (possibly memoized)
+    # If the state is not `:pending` when `#value` is called the (possibly memoized)
     # value will be returned without blocking and without performing the operation
     # again.
     #
-    # Regardless of the final disposition all +Dereferenceable+ options set during
+    # Regardless of the final disposition all `Dereferenceable` options set during
     # object construction will be honored.
     #
     # @return [Object] the (possibly memoized) result of the block operation

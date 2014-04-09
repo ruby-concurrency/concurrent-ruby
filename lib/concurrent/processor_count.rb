@@ -5,7 +5,7 @@ module Concurrent
   # Number of processors seen by the OS and used for process scheduling. For performance
   # reasons the calculated value will be memoized on the first call.
   #
-  # When running under JRuby the Java runtime call +java.lang.Runtime.getRuntime.availableProcessors+
+  # When running under JRuby the Java runtime call `java.lang.Runtime.getRuntime.availableProcessors`
   # will be used. According to the Java documentation this "value may change
   # during a particular invocation of the virtual machine... [applications]
   # should therefore occasionally poll this property." Subsequently the result
