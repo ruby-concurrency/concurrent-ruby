@@ -7,8 +7,7 @@ module Concurrent
     let (:described_class) do
       Class.new do
         include Concurrent::Observable
-        def observers() super; end
-        def observers=(set) super; end
+        public :observers, :observers=
       end
     end
 
@@ -19,8 +18,8 @@ module Concurrent
       subject.observers = observer_set
     end
 
-    it 'uses CopyOnNotifyObserverSet by default' do
-      described_class.new.observers.should be_a CopyOnNotifyObserverSet
+    it 'does not initialize set by by default' do
+      described_class.new.observers.should be_nil
     end
 
     it 'uses the given observer set' do

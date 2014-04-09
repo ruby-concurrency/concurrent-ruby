@@ -23,7 +23,7 @@ module Concurrent
     #   returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
       init_obligation
-      observers = CopyOnWriteObserverSet.new
+      self.observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
 
       if value == NO_VALUE

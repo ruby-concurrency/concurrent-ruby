@@ -17,7 +17,7 @@ module Concurrent
       calculate_schedule_time!(schedule_time) # raise exception if in past
 
       init_obligation
-      observers = CopyOnWriteObserverSet.new
+      self.observers = CopyOnWriteObserverSet.new
       @state = :unscheduled
       @intended_schedule_time = schedule_time
       @schedule_time = nil

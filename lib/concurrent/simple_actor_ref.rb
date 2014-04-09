@@ -18,7 +18,7 @@ module Concurrent
       @abort_on_exception = opts.fetch(:abort_on_exception, true)
       @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
-      observers = CopyOnNotifyObserverSet.new
+      self.observers = CopyOnNotifyObserverSet.new
 
       @actor.define_singleton_method(:shutdown, &method(:set_stop_event))
     end

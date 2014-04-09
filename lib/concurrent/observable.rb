@@ -24,9 +24,5 @@ module Concurrent
     protected
 
     attr_accessor :observers
-
-    def observers
-      @observers ||= CopyOnNotifyObserverSet.new
-    end
   end
 end

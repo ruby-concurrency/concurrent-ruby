@@ -196,7 +196,7 @@ module Concurrent
       @run_now = opts[:now] || opts[:run_now]
 
       @task = block
-      observers = CopyOnWriteObserverSet.new
+      self.observers = CopyOnWriteObserverSet.new
       init_mutex
       set_deref_options(opts)
     end
