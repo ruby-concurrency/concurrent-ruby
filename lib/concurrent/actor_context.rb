@@ -60,8 +60,6 @@ module Concurrent
 
       class << base
 
-        protected :new unless $DEBUG
-
         # Create a single, unregistered actor. The actor will run on its own, dedicated
         # thread. The thread will be started the first time a message is post to the actor.
         # Should the thread ever die it will be restarted the next time a message is post.
