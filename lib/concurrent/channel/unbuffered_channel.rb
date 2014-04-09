@@ -12,7 +12,7 @@ module Concurrent
     end
 
     def push(value)
-      until @probe_set.take.set_unless_assigned(value)
+      until @probe_set.take.set_unless_assigned(value, self)
       end
     end
 
