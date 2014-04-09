@@ -8,8 +8,8 @@ require 'concurrent/utilities'
 module Concurrent
 
   # An agent is a single atomic value that represents an identity. The current value
-  # of the agent can be requested at any time (#deref). Each agent has a work queue and operates on
-  # the global thread pool. Consumers can #post code blocks to the agent. The code block (function)
+  # of the agent can be requested at any time (`#deref`). Each agent has a work queue and operates on
+  # the global thread pool. Consumers can `#post` code blocks to the agent. The code block (function)
   # will receive the current value of the agent as its sole parameter. The return value of the block
   # will become the new value of the agent. Agents support two error handling modes: fail and continue.
   # A good example of an agent is a shared incrementing counter, such as the score in a video game.
@@ -50,15 +50,15 @@ module Concurrent
     #
     # @option opts [Fixnum] :timeout (TIMEOUT) maximum number of seconds before an update is cancelled
     #
-    # @option opts [Boolean] :operation (false) when +true+ will execute the future on the global
-    #   operation pool (for long-running operations), when +false+ will execute the future on the
+    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
+    #   operation pool (for long-running operations), when `false` will execute the future on the
     #   global task pool (for short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
     #
-    # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
-    # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
+    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
       @value = initial
@@ -73,9 +73,9 @@ module Concurrent
 
     # Specifies a block operation to be performed when an update operation raises
     # an exception. Rescue blocks will be checked in order they were added. The first
-    # block for which the raised exception "is-a" subclass of the given +clazz+ will
-    # be called. If no +clazz+ is given the block will match any caught exception.
-    # This behavior is intended to be identical to Ruby's +begin/rescue/end+ behavior.
+    # block for which the raised exception "is-a" subclass of the given `clazz` will
+    # be called. If no `clazz` is given the block will match any caught exception.
+    # This behavior is intended to be identical to Ruby's `begin/rescue/end` behavior.
     # Any number of rescue handlers can be added. If no rescue handlers are added then
     # caught exceptions will be suppressed.
     #

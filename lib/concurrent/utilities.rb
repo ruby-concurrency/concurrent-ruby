@@ -16,7 +16,7 @@ module Concurrent
   #   in the allotted number of seconds.
   #
   # @note This method is intended to be a simpler and more reliable replacement
-  # to the Ruby standard library +Timeout::timeout+ method.
+  # to the Ruby standard library `Timeout::timeout` method.
   def timeout(seconds)
 
     thread = Thread.new do

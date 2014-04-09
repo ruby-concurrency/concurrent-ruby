@@ -2,7 +2,7 @@ require 'concurrent/observable'
 
 module Concurrent
 
-  # Base class for classes that encapsulate +ActorContext+ objects.
+  # Base class for classes that encapsulate `ActorContext` objects.
   #
   # @see Concurrent::ActorContext
   module ActorRef
@@ -20,8 +20,8 @@ module Concurrent
     #
     #   @yield a callback operation to be performed when the operation is complete.
     #   @yieldparam [Time] time the date/time at which the error occurred
-    #   @yieldparam [Object] result the result of message processing or +nil+ on error
-    #   @yieldparam [Exception] exception the exception object that was raised or +nil+ on success
+    #   @yieldparam [Object] result the result of message processing or `nil` on error
+    #   @yieldparam [Exception] exception the exception object that was raised or `nil` on success
     #
     #   @return [IVar] a future that will eventually contain the result of message processing
 
@@ -39,21 +39,21 @@ module Concurrent
 
     # @!method running?()
     #   Is the actor running and processing messages?
-    #   @return [Boolean] +true+ if running else +false+
+    #   @return [Boolean] `true` if running else `false`
 
     # @!method shutdown?()
     #   Is the actor shutdown and no longer processing messages?
-    #   @return [Boolean] +true+ if shutdown else +false+
+    #   @return [Boolean] `true` if shutdown else `false`
 
     # @!method shutdown()
     #   Shutdown the actor, gracefully exit all threads, and stop processing messages.
-    #   @return [Boolean] +true+ if shutdown is successful else +false+
+    #   @return [Boolean] `true` if shutdown is successful else `false`
 
     # @!method join(limit = nil)
     #   Suspend the current thread until the actor has been shutdown
     #   @param [Integer] limit the maximum number of seconds to block waiting for the
-    #     actor to shutdown. Block indefinitely when +nil+ or not given
-    #   @return [Boolean] +true+ if the actor shutdown before the limit expired else +false+
+    #     actor to shutdown. Block indefinitely when `nil` or not given
+    #   @return [Boolean] `true` if the actor shutdown before the limit expired else `false`
     #   @see http://www.ruby-doc.org/core-2.1.1/Thread.html#method-i-join
 
     def <<(message)

@@ -97,12 +97,12 @@ module Concurrent
   # A mixin module for parsing options hashes related to gem-level configuration.
   module OptionsParser
 
-    # Get the requested +Executor+ based on the values set in the options hash.
+    # Get the requested `Executor` based on the values set in the options hash.
     #
     # @param [Hash] opts the options defining the requested executor
-    # @option opts [Executor] :executor (+nil+) when set use the given +Executor+ instance
-    # @option opts [Boolean] :operation (+false+) when true use the global operation pool
-    # @option opts [Boolean] :task (+true+) when true use the global task pool
+    # @option opts [Executor] :executor (`nil`) when set use the given `Executor` instance
+    # @option opts [Boolean] :operation (`false`) when true use the global operation pool
+    # @option opts [Boolean] :task (`true`) when true use the global task pool
     #
     # @return [Executor] the requested thread pool (default: global task pool)
     def get_executor_from(opts = {})
@@ -118,12 +118,12 @@ module Concurrent
 
   private
 
-  # Attempt to properly shutdown the given executor using the +shutdown+ or
-  # +kill+ method when available.
+  # Attempt to properly shutdown the given executor using the `shutdown` or
+  # `kill` method when available.
   #
   # @param [Executor] executor the executor to shutdown
   #
-  # @return [Boolean] +true+ if the executor is successfully shut down or +nil+, else +false+
+  # @return [Boolean] `true` if the executor is successfully shut down or `nil`, else `false`
   def self.finalize_executor(executor)
     return true if executor.nil?
     if executor.respond_to?(:shutdown)

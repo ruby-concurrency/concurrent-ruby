@@ -8,14 +8,14 @@ module Concurrent
     #
     #   A thread pool with a set number of threads. The number of threads in the pool
     #   is set on construction and remains constant. When all threads are busy new
-    #   tasks +#post+ to the thread pool are enqueued until a thread becomes available.
+    #   tasks `#post` to the thread pool are enqueued until a thread becomes available.
     #   Should a thread crash for any reason the thread will immediately be removed
     #   from the pool and replaced.
     #
-    #   The API and behavior of this class are based on Java's +FixedThreadPool+
+    #   The API and behavior of this class are based on Java's `FixedThreadPool`
     #
-    #   @note When running on the JVM (JRuby) this class will inherit from +JavaFixedThreadPool+.
-    #     On all other platforms it will inherit from +RubyFixedThreadPool+.
+    #   @note When running on the JVM (JRuby) this class will inherit from `JavaFixedThreadPool`.
+    #     On all other platforms it will inherit from `RubyFixedThreadPool`.
     #
     #   @see Concurrent::RubyFixedThreadPool
     #   @see Concurrent::JavaFixedThreadPool

@@ -11,9 +11,9 @@ module Concurrent
     #   pools are particularly suited to applications that perform a high volume of
     #   short-lived tasks.
     #
-    #   On creation a +CachedThreadPool+ has zero running threads. New threads are
-    #   created on the pool as new operations are +#post+. The size of the pool
-    #   will grow until +#max_length+ threads are in the pool or until the number
+    #   On creation a `CachedThreadPool` has zero running threads. New threads are
+    #   created on the pool as new operations are `#post`. The size of the pool
+    #   will grow until `#max_length` threads are in the pool or until the number
     #   of threads exceeds the number of running and pending operations. When a new
     #   operation is post to the pool the first available idle thread will be tasked
     #   with the new operation.
@@ -23,10 +23,10 @@ module Concurrent
     #   of time will be killed and reclaimed. Thus these thread pools are very
     #   efficient at reclaiming unused resources.
     #
-    #   The API and behavior of this class are based on Java's +CachedThreadPool+
+    #   The API and behavior of this class are based on Java's `CachedThreadPool`
     #
-    #   @note When running on the JVM (JRuby) this class will inherit from +JavaCachedThreadPool+.
-    #     On all other platforms it will inherit from +RubyCachedThreadPool+.
+    #   @note When running on the JVM (JRuby) this class will inherit from `JavaCachedThreadPool`.
+    #     On all other platforms it will inherit from `RubyCachedThreadPool`.
     #
     #   @see Concurrent::RubyCachedThreadPool
     #   @see Concurrent::JavaCachedThreadPool

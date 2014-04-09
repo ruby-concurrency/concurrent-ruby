@@ -17,20 +17,20 @@ module Concurrent
   # Stateful, mutable objects must be managed carefully when used asynchronously.
   # But Ruby is an object-oriented language so designing with objects and classes
   # plays to Ruby's strengths and is often more natural to many Ruby programmers.
-  # The +Async+ module is a way to mix simple yet powerful asynchronous capabilities
+  # The `Async` module is a way to mix simple yet powerful asynchronous capabilities
   # into any plain old Ruby object or class. These capabilities provide a reasonable
   # level of thread safe guarantees when used correctly.
   #
   # When this module is mixed into a class or object it provides to new methods:
-  # +async+ and +await+. These methods are thread safe with respect to the enclosing
+  # `async` and `await`. These methods are thread safe with respect to the enclosing
   # object. The former method allows methods to be called asynchronously by posting
   # to the global thread pool. The latter allows a method to be called synchronously
   # on the current thread but does so safely with respect to any pending asynchronous
-  # method calls. Both methods return an +Obligation+ which can be inspected for
-  # the result of the method call. Calling a method with +async+ will return a
-  # +:pending+ +Obligation+ whereas +await+ will return a +:complete+ +Obligation+.
+  # method calls. Both methods return an `Obligation` which can be inspected for
+  # the result of the method call. Calling a method with `async` will return a
+  # `:pending` `Obligation` whereas `await` will return a `:complete` `Obligation`.
   #
-  # Very loosely based on the +async+ and +await+ keywords in C#.
+  # Very loosely based on the `async` and `await` keywords in C#.
   #
   # @example Defining an asynchronous class
   #   class Echo
@@ -64,9 +64,9 @@ module Concurrent
   # @note Thread safe guarantees can only be made when asynchronous method calls
   #       are not mixed with synchronous method calls. Use only synchronous calls
   #       when the object is used exclusively on a single thread. Use only
-  #       +async+ and +await+ when the object is shared between threads. Once you
-  #       call a method using +async+, you should no longer call any methods
-  #       directly on the object. Use +async+ and +await+ exclusively from then on.
+  #       `async` and `await` when the object is shared between threads. Once you
+  #       call a method using `async`, you should no longer call any methods
+  #       directly on the object. Use `async` and `await` exclusively from then on.
   #       With careful programming it is possible to switch back and forth but it's
   #       also very easy to create race conditions and break your application.
   #       Basically, it's "async all the way down."
@@ -83,14 +83,14 @@ module Concurrent
     # @param [Symbol] method the method to check the object for
     # @param [Array] args zero or more arguments for the arity check
     #
-    # @raise [NameError] the object does not respond to +method+ method
-    # @raise [ArgumentError] the given +args+ do not match the arity of +method+
+    # @raise [NameError] the object does not respond to `method` method
+    # @raise [ArgumentError] the given `args` do not match the arity of `method`
     #
     # @note This check is imperfect because of the way Ruby reports the arity of
     #   methods with a variable number of arguments. It is possible to determine
     #   if too few arguments are given but impossible to determine if too many
     #   arguments are given. This check may also fail to recognize dynamic behavior
-    #   of the object, such as methods simulated with +method_missing+.
+    #   of the object, such as methods simulated with `method_missing`.
     #
     # @see http://www.ruby-doc.org/core-2.1.1/Method.html#method-i-arity Method#arity
     # @see http://ruby-doc.org/core-2.1.0/Object.html#method-i-respond_to-3F Object#respond_to?
@@ -112,8 +112,8 @@ module Concurrent
     # @!visibility private
     class AwaitDelegator # :nodoc:
 
-      # Create a new delegator object wrapping the given +delegate+ and
-      # protecting it with the given +mutex+.
+      # Create a new delegator object wrapping the given `delegate` and
+      # protecting it with the given `mutex`.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
       # @param [Mutex] mutex the mutex lock to use when delegating method calls
@@ -124,15 +124,15 @@ module Concurrent
 
       # Delegates method calls to the wrapped object. For performance,
       # dynamically defines the given method on the delegator so that
-      # all future calls to +method+ will not be directed here.
+      # all future calls to `method` will not be directed here.
       #
       # @param [Symbol] method the method being called
       # @param [Array] args zero or more arguments to the method
       #
       # @return [IVar] the result of the method call
       #
-      # @raise [NameError] the object does not respond to +method+ method
-      # @raise [ArgumentError] the given +args+ do not match the arity of +method+
+      # @raise [NameError] the object does not respond to `method` method
+      # @raise [ArgumentError] the given `args` do not match the arity of `method`
       def method_missing(method, *args, &block)
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
@@ -166,8 +166,8 @@ module Concurrent
     # @!visibility private
     class AsyncDelegator # :nodoc:
 
-      # Create a new delegator object wrapping the given +delegate+ and
-      # protecting it with the given +mutex+.
+      # Create a new delegator object wrapping the given `delegate` and
+      # protecting it with the given `mutex`.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
       # @param [Mutex] mutex the mutex lock to use when delegating method calls
@@ -179,15 +179,15 @@ module Concurrent
 
       # Delegates method calls to the wrapped object. For performance,
       # dynamically defines the given method on the delegator so that
-      # all future calls to +method+ will not be directed here.
+      # all future calls to `method` will not be directed here.
       #
       # @param [Symbol] method the method being called
       # @param [Array] args zero or more arguments to the method
       #
       # @return [IVar] the result of the method call
       #
-      # @raise [NameError] the object does not respond to +method+ method
-      # @raise [ArgumentError] the given +args+ do not match the arity of +method+
+      # @raise [NameError] the object does not respond to `method` method
+      # @raise [ArgumentError] the given `args` do not match the arity of `method`
       def method_missing(method, *args, &block)
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
@@ -214,20 +214,20 @@ module Concurrent
 
     # Causes the chained method call to be performed asynchronously on the
     # global thread pool. The method called by this method will return a
-    # +Future+ object in the +:pending+ state and the method call will have
+    # `Future` object in the `:pending` state and the method call will have
     # been scheduled on the global thread pool. The final disposition of the
-    # method call can be obtained by inspecting the returned +Future+.
+    # method call can be obtained by inspecting the returned `Future`.
     #
     # Before scheduling the method on the global thread pool a best-effort
     # attempt will be made to validate that the method exists on the object
     # and that the given arguments match the arity of the requested function.
     # Due to the dynamic nature of Ruby and limitations of its reflection
     # library, some edge cases will be missed. For more information see
-    # the documentation for the +validate_argc+ method.
+    # the documentation for the `validate_argc` method.
     #
     # @note The method call is guaranteed to be thread safe  with respect to
     #   all other method calls against the same object that are called with
-    #   either +async+ or +await+. The mutable nature of Ruby references
+    #   either `async` or `await`. The mutable nature of Ruby references
     #   (and object orientation in general) prevent any other thread safety
     #   guarantees. Do NOT mix non-protected method calls with protected
     #   method call. Use ONLY protected method calls when sharing the object
@@ -235,8 +235,8 @@ module Concurrent
     #
     # @return [Concurrent::Future] the pending result of the asynchronous operation
     #
-    # @raise [NameError] the object does not respond to +method+ method
-    # @raise [ArgumentError] the given +args+ do not match the arity of +method+
+    # @raise [NameError] the object does not respond to `method` method
+    # @raise [ArgumentError] the given `args` do not match the arity of `method`
     #
     # @see Concurrent::Future
     def async
@@ -246,20 +246,20 @@ module Concurrent
 
     # Causes the chained method call to be performed synchronously on the
     # current thread. The method called by this method will return an
-    # +IVar+ object in either the +:fulfilled+ or +rejected+ state and the
+    # `IVar` object in either the `:fulfilled` or `rejected` state and the
     # method call will have completed. The final disposition of the
-    # method call can be obtained by inspecting the returned +IVar+.
+    # method call can be obtained by inspecting the returned `IVar`.
     #
     # Before scheduling the method on the global thread pool a best-effort
     # attempt will be made to validate that the method exists on the object
     # and that the given arguments match the arity of the requested function.
     # Due to the dynamic nature of Ruby and limitations of its reflection
     # library, some edge cases will be missed. For more information see
-    # the documentation for the +validate_argc+ method.
+    # the documentation for the `validate_argc` method.
     #
     # @note The method call is guaranteed to be thread safe  with respect to
     #   all other method calls against the same object that are called with
-    #   either +async+ or +await+. The mutable nature of Ruby references
+    #   either `async` or `await`. The mutable nature of Ruby references
     #   (and object orientation in general) prevent any other thread safety
     #   guarantees. Do NOT mix non-protected method calls with protected
     #   method call. Use ONLY protected method calls when sharing the object
@@ -267,8 +267,8 @@ module Concurrent
     #
     # @return [Concurrent::IVar] the completed result of the synchronous operation
     #
-    # @raise [NameError] the object does not respond to +method+ method
-    # @raise [ArgumentError] the given +args+ do not match the arity of +method+
+    # @raise [NameError] the object does not respond to `method` method
+    # @raise [ArgumentError] the given `args` do not match the arity of `method`
     #
     # @see Concurrent::IVar
     def await

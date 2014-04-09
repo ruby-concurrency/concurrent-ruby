@@ -13,19 +13,19 @@ module Concurrent
     #
     # @param [Hash] opts the options used to define the behavior at update and deref
     #
-    # @option opts [Promise] :parent the parent +Promise+ when building a chain/tree
+    # @option opts [Promise] :parent the parent `Promise` when building a chain/tree
     # @option opts [Proc] :on_fulfill fulfillment handler
     # @option opts [Proc] :on_reject rejection handler
     #
-    # @option opts [Boolean] :operation (false) when +true+ will execute the future on the global
-    #   operation pool (for long-running operations), when +false+ will execute the future on the
+    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
+    #   operation pool (for long-running operations), when `false` will execute the future on the
     #   global task pool (for short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
     #
-    # @option opts [String] :dup_on_deref (false) call +#dup+ before returning the data
-    # @option opts [String] :freeze_on_deref (false) call +#freeze+ before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given +Proc+ passing the internal value and
+    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     #
     # @see http://wiki.commonjs.org/wiki/Promises/A
