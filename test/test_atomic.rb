@@ -13,7 +13,7 @@
 require 'minitest/autorun'
 require 'atomic'
 
-class TestAtomic < MiniTest::Test
+class TestAtomic < Minitest::Test
   def test_construct
     atomic = Atomic.new
     assert_equal nil, atomic.value
