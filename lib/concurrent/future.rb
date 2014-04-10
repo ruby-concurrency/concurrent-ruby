@@ -47,7 +47,7 @@ module Concurrent
     #
     # @yield the asynchronous operation to perform
     #
-    # @param [Hash] opts the options to create a message with
+    # @param [Hash] opts the options controlling how the future will be processed
     # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
     #   operation pool (for long-running operations), when `false` will execute the future on the
     #   global task pool (for short-running tasks)

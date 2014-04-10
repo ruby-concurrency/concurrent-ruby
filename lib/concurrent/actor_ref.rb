@@ -56,6 +56,12 @@ module Concurrent
     #   @return [Boolean] `true` if the actor shutdown before the limit expired else `false`
     #   @see http://www.ruby-doc.org/core-2.1.1/Thread.html#method-i-join
 
+    # Send a message and return. It's a fire-and-forget interaction.
+    #
+    # @param [Object] message a single value representing the message to be sent
+    #   to the actor or an array of multiple message components
+    #
+    # @return [ActorRef] self
     def <<(message)
       post(*message)
       self

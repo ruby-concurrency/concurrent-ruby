@@ -5,43 +5,77 @@ require 'concurrent/ruby_thread_pool_worker'
 
 module Concurrent
 
+  # An exception class raised when the maximum queue size is reached and the
+  # `overflow_policy` is set to `:abort`.
   RejectedExecutionError = Class.new(StandardError) unless defined? RejectedExecutionError
 
   # @!macro thread_pool_executor
   class RubyThreadPoolExecutor
 
-    # The maximum number of threads that will be created in the pool
-    # (unless overridden during construction).
+    # Default maximum number of threads that will be created in the pool.
     DEFAULT_MAX_POOL_SIZE = 2**15 # 32768
 
-    # The minimum number of threads that will be created in the pool
-    # (unless overridden during construction).
+    # Default minimum number of threads that will be retained in the pool.
     DEFAULT_MIN_POOL_SIZE = 0
 
+    # Default maximum number of tasks that may be added to the task queue.
     DEFAULT_MAX_QUEUE_SIZE = 0
 
-    # The maximum number of seconds a thread in the pool may remain idle before
-    # being reclaimed (unless overridden during construction).
+    # Default maximum number of seconds a thread in the pool may remain idle
+    # before being reclaimed.
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
+    # The set of possible overflow policies that may be set at thread pool creation.
     OVERFLOW_POLICIES = [:abort, :discard, :caller_runs]
 
     # The maximum number of threads that may be created in the pool.
     attr_reader :max_length
+
+    # The minimum number of threads that may be retained in the pool.
     attr_reader :min_length
 
+    # The largest number of threads that have been created in the pool since construction.
     attr_reader :largest_length
 
+    # The number of tasks that have been scheduled for execution on the pool since construction.
     attr_reader :scheduled_task_count
+
+    # The number of tasks that have been completed by the pool since construction.
     attr_reader :completed_task_count
 
+    # The number of seconds that a thread may be idle before being reclaimed.
     attr_reader :idletime
 
+    # The maximum number of tasks that may be waiting in the work queue at any one time.
+    # When the queue size reaches `max_queue` subsequent tasks will be rejected in
+    # accordance with the configured `overflow_policy`.
     attr_reader :max_queue
 
+    # The policy defining how rejected tasks (tasks received once the queue size reaches
+    # the configured `max_queue`) are handled. Must be one of the values specified in
+    # `OVERFLOW_POLICIES`.
     attr_reader :overflow_policy
 
     # Create a new thread pool.
+    #
+    # @param [Hash] opts the options which configure the thread pool
+    #
+    # @option opts [Integer] :max_threads (DEFAULT_MAX_POOL_SIZE) the maximum
+    #   number of threads to be created
+    # @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) the minimum
+    #   number of threads to be retained
+    # @option opts [Integer] :idletime (DEFAULT_THREAD_IDLETIMEOUT) the maximum
+    #   number of seconds a thread may be idle before being reclaimed
+    # @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
+    #   number of tasks allowed in the work queue at any one time; a value of
+    #   zero means the queue may grow without bounnd
+    # @option opts [Symbol] :overflow_policy (:abort) the policy for handling new
+    #   tasks that are received when the queue size has reached `max_queue`
+    #
+    # @raise [ArgumentError] if `:max_threads` is less than one
+    # @raise [ArgumentError] if `:min_threads` is less than zero
+    # @raise [ArgumentError] if `:overflow_policy` is not one of the values specified
+    #   in `OVERFLOW_POLICIES`
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
     def initialize(opts = {})
@@ -68,6 +102,9 @@ module Concurrent
       @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
     end
 
+    # The number of threads currently in the pool.
+    #
+    # @return [Integer] the length
     def length
       @mutex.synchronize do
         @state != :shutdown ? @pool.length : 0
@@ -75,10 +112,17 @@ module Concurrent
     end
     alias_method :current_length, :length
 
+    # The number of tasks in the queue awaiting execution.
+    #
+    # @return [Integer] the queue_length
     def queue_length
       @queue.length
     end
 
+    # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
+    # new tasks. A value of -1 indicates that the queue may grow without bound.
+    #
+    # @return [Integer] the remaining_capacity
     def remaining_capacity
       @mutex.synchronize { @max_queue == 0 ? -1 : @max_queue - @queue.length }
     end
@@ -97,7 +141,7 @@ module Concurrent
       warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
       @mutex.synchronize { @pool.collect { |worker| worker.status } }
     end
-    
+
     # Is the thread pool shutdown?
     #
     # @return [Boolean] `true` when shutdown, `false` when shutting down or running
@@ -185,6 +229,8 @@ module Concurrent
       end
     end
 
+    # Run on task completion.
+    #
     # @!visibility private
     def on_end_task # :nodoc:
       @mutex.synchronize do
@@ -193,6 +239,8 @@ module Concurrent
       end
     end
 
+    # Run when a thread worker exits.
+    #
     # @!visibility private
     def on_worker_exit(worker) # :nodoc:
       @mutex.synchronize do
@@ -206,6 +254,11 @@ module Concurrent
 
     protected
 
+    # Handler which executes the `overflow_policy` once the queue size
+    # reaches `max_queue`.
+    #
+    # @param [Array] args the arguments to the task which is being handled.
+    #
     # @!visibility private
     def handle_overflow(*args) # :nodoc:
       case @overflow_policy
@@ -223,6 +276,9 @@ module Concurrent
       end
     end
 
+    # Scan all threads in the pool and reclaim any that are dead or have been idle
+    # too long.
+    #
     # @!visibility private
     def prune_pool # :nodoc:
       @pool.delete_if do |worker|
@@ -231,6 +287,8 @@ module Concurrent
       end
     end
 
+    # Increase the size of the pool when necessary.
+    #
     # @!visibility private
     def grow_pool # :nodoc:
       if @min_length > @pool.length
@@ -248,12 +306,18 @@ module Concurrent
       @largest_length = [@largest_length, @pool.length].max
     end
 
+    # Reclaim all threads in the pool.
+    #
     # @!visibility private
     def drain_pool # :nodoc:
       @pool.each {|worker| worker.kill }
       @pool.clear
     end
 
+    # Create a single worker thread to be added to the pool.
+    #
+    # @return [Thread] the new thread.
+    #
     # @!visibility private
     def create_worker_thread # :nodoc:
       wrkr = RubyThreadPoolWorker.new(@queue, self)
