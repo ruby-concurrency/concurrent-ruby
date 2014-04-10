@@ -18,6 +18,11 @@ module Concurrent
   def self.configure
     (@mutex ||= Mutex.new).synchronize do
       yield(configuration)
+
+      # initialize the global thread pools if necessary
+      configuration.global_task_pool
+      configuration.global_operation_pool
+      configuration.global_timer_pool
     end
   end
 
@@ -53,6 +58,15 @@ module Concurrent
         max_queue: [20, @cores * 15].max,
         overflow_policy: :abort             # raise an exception
       )
+    end
+
+    # Global thread pool optimized for *timers*
+    #
+    # @return [ThreadPoolExecutor] the thread pool
+    #
+    # @see Concurrent::timer
+    def global_timer_pool
+      @global_timer_pool ||= Concurrent::CachedThreadPool.new
     end
 
     # Global thread pool optimized for short *tasks*.

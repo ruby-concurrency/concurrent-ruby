@@ -75,6 +75,11 @@ module Concurrent
 
   describe Configuration do
 
+    it 'creates a global timer pool' do
+      Concurrent.configuration.global_timer_pool.should_not be_nil
+      Concurrent.configuration.global_timer_pool.should respond_to(:post)
+    end
+
     context 'global task pool' do
 
       specify 'reader creates a default pool when first called if none exists' do
