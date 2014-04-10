@@ -23,11 +23,8 @@ if RUBY_PLATFORM == 'java'
         raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
         raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
 
-        @executor = java.util.concurrent.ThreadPoolExecutor.new(
-          num_threads, num_threads,
-          @max_queue, java.util.concurrent.TimeUnit::SECONDS,
-          java.util.concurrent.LinkedBlockingQueue.new,
-          OVERFLOW_POLICIES[@overflow_policy].new)
+        @executor = java.util.concurrent.Executors.newFixedThreadPool(num_threads)
+        @executor.setRejectedExecutionHandler(OVERFLOW_POLICIES[@overflow_policy].new)
 
         # without this the process may fail to exit
         at_exit { self.kill }

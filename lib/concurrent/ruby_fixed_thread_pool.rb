@@ -23,6 +23,7 @@ module Concurrent
         min_threads: num_threads,
         max_threads: num_threads,
         num_threads: overflow_policy,
+        max_queue: DEFAULT_MAX_QUEUE_SIZE,
         idletime: 0
       )
       super(opts)

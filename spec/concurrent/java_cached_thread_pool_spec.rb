@@ -8,7 +8,7 @@ if jruby?
 
     describe JavaCachedThreadPool do
 
-      subject { described_class.new(max_threads: 5, overflow_policy: :discard) }
+      subject { described_class.new(overflow_policy: :discard) }
 
       after(:each) do
         subject.kill
@@ -18,26 +18,6 @@ if jruby?
       it_should_behave_like :cached_thread_pool
 
       context '#initialize' do
-
-        it 'sets :min_length correctly' do
-          subject = JavaCachedThreadPool.new
-          subject.min_length.should eq 0
-        end
-
-        it 'sets :max_length correctly' do
-          subject = JavaCachedThreadPool.new(max_threads: 5)
-          subject.max_length.should eq 5
-        end
-
-        it 'sets :idletime correctly' do
-          subject = JavaCachedThreadPool.new(idletime: 10)
-          subject.idletime.should eq 10
-        end
-
-        it 'sets :max_queue correctly' do
-          subject = JavaCachedThreadPool.new
-          subject.max_queue.should eq 0
-        end
 
         it 'sets :overflow_policy correctly' do
           clazz = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy

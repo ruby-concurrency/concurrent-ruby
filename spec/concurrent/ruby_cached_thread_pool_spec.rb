@@ -7,7 +7,6 @@ module Concurrent
 
     subject do
       described_class.new(
-        max_threads: 5,
         overflow_policy: :discard,
         gc_interval: 0
       )
@@ -25,6 +24,7 @@ module Concurrent
       subject{ described_class.new(idletime: 1, max_threads: 5, gc_interval: 0) }
 
       it 'removes from pool any thread that has been idle too long' do
+        subject.instance_variable_set(:@idletime, 1)
         3.times { subject << proc{ sleep(0.1) } }
         sleep(0.1)
         subject.length.should eq 3

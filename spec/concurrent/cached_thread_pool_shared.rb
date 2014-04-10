@@ -3,12 +3,8 @@ require_relative 'thread_pool_shared'
 
 share_examples_for :cached_thread_pool do
 
-  let!(:max_threads){ 5 }
   subject do
-    described_class.new(
-      max_threads: max_threads,
-      overflow_policy: :discard
-    )
+    described_class.new(overflow_policy: :discard)
   end
 
   after(:each) do
@@ -20,20 +16,20 @@ share_examples_for :cached_thread_pool do
 
   context '#initialize' do
 
-    it 'raises an exception when the pool idletime is less than one' do
-      lambda {
-        described_class.new(idletime: 0)
-      }.should raise_error(ArgumentError)
-    end
-
-    it 'raises an exception when the pool size is less than one' do
-      lambda {
-        described_class.new(max_threads: 0)
-      }.should raise_error(ArgumentError)
-    end
-
-    it 'sets :max_length to DEFAULT_MAX_POOL_SIZE when not given' do
+    it 'sets :max_length to DEFAULT_MAX_POOL_SIZE' do
       described_class.new.max_length.should eq described_class::DEFAULT_MAX_POOL_SIZE
+    end
+
+    it 'sets :min_length to DEFAULT_MIN_POOL_SIZE' do
+      subject = described_class.new.min_length.should eq described_class::DEFAULT_MIN_POOL_SIZE
+    end
+
+    it 'sets :idletime to DEFAULT_THREAD_IDLETIMEOUT' do
+      subject = described_class.new.idletime.should eq described_class::DEFAULT_THREAD_IDLETIMEOUT
+    end
+
+    it 'sets :max_queue to DEFAULT_MAX_QUEUE_SIZE' do
+      subject = described_class.new.max_queue.should eq described_class::DEFAULT_MAX_QUEUE_SIZE
     end
   end
 
@@ -61,13 +57,13 @@ share_examples_for :cached_thread_pool do
   context '#max_length' do
 
     it 'returns :max_length on creation' do
-      subject.max_length.should eq max_threads
+      subject.max_length.should eq described_class::DEFAULT_MAX_POOL_SIZE
     end
 
     it 'returns :max_length while running' do
       10.times{ subject.post{ nil } }
       sleep(0.1)
-      subject.max_length.should eq max_threads
+      subject.max_length.should eq described_class::DEFAULT_MAX_POOL_SIZE
     end
 
     it 'returns :max_length once shutdown' do
@@ -75,7 +71,7 @@ share_examples_for :cached_thread_pool do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.max_length.should eq max_threads
+      subject.max_length.should eq described_class::DEFAULT_MAX_POOL_SIZE
     end
   end
 
@@ -113,25 +109,7 @@ share_examples_for :cached_thread_pool do
     subject{ described_class.new(idletime: 42) }
 
     it 'returns the thread idletime' do
-      subject.idletime.should eq 42
-    end
-  end
-
-  context 'worker creation and caching' do
-
-    subject do
-      described_class.new(
-        idletime: 1,
-        max_threads: 5,
-        overflow_policy: :discard
-      )
-    end
-
-    it 'never creates more than :max_threads threads' do
-      100.times{ subject << proc{ sleep(1) } }
-      sleep(0.1)
-      subject.length.should eq 5
-      subject.kill
+      subject.idletime.should eq described_class::DEFAULT_THREAD_IDLETIMEOUT
     end
   end
 end
