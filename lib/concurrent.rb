@@ -46,6 +46,7 @@ require 'concurrent/cached_thread_pool'
 require 'concurrent/fixed_thread_pool'
 require 'concurrent/immediate_executor'
 require 'concurrent/per_thread_executor'
+require 'concurrent/single_thread_executor'
 require 'concurrent/thread_pool_executor'
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,

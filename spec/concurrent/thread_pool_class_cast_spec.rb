@@ -2,6 +2,18 @@ require 'spec_helper'
 
 module Concurrent
 
+  describe SingleThreadExecutor do
+    if jruby?
+      it 'inherits from JavaSingleThreadExecutor' do
+        SingleThreadExecutor.ancestors.should include(JavaSingleThreadExecutor)
+      end
+    else
+      it 'inherits from RubySingleThreadExecutor' do
+        SingleThreadExecutor.ancestors.should include(RubySingleThreadExecutor)
+      end
+    end
+  end
+
   describe ThreadPoolExecutor do
     if jruby?
       it 'inherits from JavaThreadPoolExecutor' do
