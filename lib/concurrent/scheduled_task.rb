@@ -1,12 +1,10 @@
-require 'concurrent/obligation'
-require 'concurrent/observable'
+require 'concurrent/ivar'
 require 'concurrent/safe_task_executor'
+require 'concurrent/utilities'
 
 module Concurrent
 
-  class ScheduledTask
-    include Obligation
-    include Concurrent::Observable
+  class ScheduledTask < IVar
 
     SchedulingError = Class.new(ArgumentError)
 
@@ -16,20 +14,19 @@ module Concurrent
       raise SchedulingError.new('no block given') unless block_given?
       calculate_schedule_time!(schedule_time) # raise exception if in past
 
-      init_obligation
-      self.observers = CopyOnWriteObserverSet.new
+      super(NO_VALUE, opts)
+
       @state = :unscheduled
       @intended_schedule_time = schedule_time
       @schedule_time = nil
       @task = block
-      set_deref_options(opts)
     end
 
     # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
         @schedule_time = calculate_schedule_time!(@intended_schedule_time).freeze
-        Thread.new { work }
+        do_next_interval
         self
       end
     end
@@ -54,20 +51,19 @@ module Concurrent
         true
       end
     end
-
     alias_method :stop, :cancel
 
-    def add_observer(observer, func = :update)
+    def add_observer(*args)
       if_state(:unscheduled, :pending, :in_progress) do
-        observers.add_observer(observer, func)
+        observers.add_observer(*args)
       end
     end
 
-    protected
+    protected :set, :fail, :complete
 
-    def work
-      sleep_until_scheduled_time
+    private
 
+    def do_work
       if compare_and_set_state(:in_progress, :pending)
         success, val, reason = SafeTaskExecutor.new(@task).execute
 
@@ -79,14 +75,19 @@ module Concurrent
         time = Time.now
         observers.notify_and_delete_observers{ [time, self.value, reason] }
       end
-
     end
 
-    private
+    def do_next_interval
+      return if cancelled?
 
-    def sleep_until_scheduled_time
-      while (diff = @schedule_time.to_f - Time.now.to_f) > 0
-        sleep(diff > 60 ? 60 : diff)
+      interval = mutex.synchronize do
+        [60, [(@schedule_time.to_f - Time.now.to_f), 0].max].min
+      end
+
+      if interval > 0
+        Concurrent::timer(interval, &method(:do_next_interval))
+      else
+        do_work
       end
     end
 

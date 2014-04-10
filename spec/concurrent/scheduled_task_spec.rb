@@ -125,12 +125,6 @@ module Concurrent
         end
       end
 
-      it 'spawns a new thread when a block was given on construction' do
-        Thread.should_receive(:new).with(any_args)
-        task = ScheduledTask.new(1){ nil }
-        task.execute
-      end
-
       it 'sets the sate to :pending' do
         task = ScheduledTask.new(1){ nil }
         task.execute
