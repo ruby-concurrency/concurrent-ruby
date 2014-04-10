@@ -23,7 +23,6 @@ module Concurrent
     #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
     #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
     #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
-    #   @see http://stackoverflow.com/questions/17957382/fixedthreadpool-vs-fixedthreadpool-the-lesser-of-two-evils
     class FixedThreadPool < JavaFixedThreadPool
     end
   else
