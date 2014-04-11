@@ -2,7 +2,7 @@ require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/ivar'
 require 'concurrent/future'
-require 'concurrent/thread_pool_executor'
+require 'concurrent/executor/thread_pool_executor'
 
 module Concurrent
 

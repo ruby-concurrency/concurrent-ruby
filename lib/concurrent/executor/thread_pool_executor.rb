@@ -1,9 +1,9 @@
-require 'concurrent/ruby_thread_pool_executor'
+require 'concurrent/executor/ruby_thread_pool_executor'
 
 module Concurrent
 
   if RUBY_PLATFORM == 'java'
-    require 'concurrent/java_thread_pool_executor'
+    require 'concurrent/executor/java_thread_pool_executor'
     # @!macro [attach] thread_pool_executor
     #
     #   An abstraction composed of one or more threads and a task queue. Tasks

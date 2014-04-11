@@ -1,6 +1,6 @@
 require 'spec_helper'
 require_relative 'postable_shared'
-require_relative 'runnable_shared'
+require_relative '../runnable_shared'
 
 module Concurrent
 

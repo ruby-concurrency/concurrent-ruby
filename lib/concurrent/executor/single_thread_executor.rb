@@ -1,10 +1,10 @@
-require 'concurrent/ruby_single_thread_executor'
+require 'concurrent/executor/ruby_single_thread_executor'
 
 module Concurrent
 
   if RUBY_PLATFORM == 'java'
 
-    require 'concurrent/java_single_thread_executor'
+    require 'concurrent/executor/java_single_thread_executor'
 
     # @!macro [attach] single_thread_executor
     #

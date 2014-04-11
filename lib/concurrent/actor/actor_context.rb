@@ -1,4 +1,4 @@
-require 'concurrent/simple_actor_ref'
+require 'concurrent/actor/simple_actor_ref'
 
 module Concurrent
 

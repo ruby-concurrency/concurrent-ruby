@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'concurrent/safe_task_executor'
 
 module Concurrent
 

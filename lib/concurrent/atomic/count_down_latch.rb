@@ -1,3 +1,5 @@
+require 'concurrent/atomic/condition'
+
 module Concurrent
 
   # A synchronization object that allows one thread to wait on multiple other threads.

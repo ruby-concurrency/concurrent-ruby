@@ -1,6 +1,6 @@
 require 'concurrent/atomic'
 require 'concurrent/future'
-require 'concurrent/per_thread_executor'
+require 'concurrent/executor/per_thread_executor'
 
 module Concurrent
 

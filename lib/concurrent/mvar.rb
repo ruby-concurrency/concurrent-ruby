@@ -1,5 +1,6 @@
 require 'concurrent/dereferenceable'
-require 'concurrent/event'
+require 'concurrent/atomic/condition'
+require 'concurrent/atomic/event'
 
 module Concurrent
 

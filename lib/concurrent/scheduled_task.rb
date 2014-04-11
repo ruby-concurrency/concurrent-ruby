@@ -1,6 +1,6 @@
 require 'concurrent/ivar'
-require 'concurrent/safe_task_executor'
-require 'concurrent/utilities'
+require 'concurrent/utilities/timer'
+require 'concurrent/executor/safe_task_executor'
 
 module Concurrent
 

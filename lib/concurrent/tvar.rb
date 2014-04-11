@@ -1,6 +1,6 @@
 require 'set'
 
-require 'concurrent/thread_local_var'
+require 'concurrent/atomic/thread_local_var'
 
 module Concurrent
 

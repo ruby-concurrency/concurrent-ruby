@@ -1,6 +1,6 @@
 require 'thread'
 require 'concurrent/utilities'
-require 'concurrent/condition'
+require 'concurrent/atomic/condition'
 
 module Concurrent
 

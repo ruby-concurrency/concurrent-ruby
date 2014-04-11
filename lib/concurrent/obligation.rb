@@ -2,7 +2,7 @@ require 'thread'
 require 'timeout'
 
 require 'concurrent/dereferenceable'
-require 'concurrent/event'
+require 'concurrent/atomic/event'
 
 module Concurrent
 

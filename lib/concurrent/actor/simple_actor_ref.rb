@@ -1,7 +1,7 @@
 require 'thread'
 
-require 'concurrent/actor_ref'
-require 'concurrent/event'
+require 'concurrent/actor/actor_ref'
+require 'concurrent/atomic/event'
 require 'concurrent/ivar'
 
 module Concurrent

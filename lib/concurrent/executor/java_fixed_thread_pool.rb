@@ -1,6 +1,6 @@
 if RUBY_PLATFORM == 'java'
 
-  require 'concurrent/java_thread_pool_executor'
+  require 'concurrent/executor/java_thread_pool_executor'
 
   module Concurrent
 

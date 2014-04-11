@@ -1,9 +1,9 @@
-require 'concurrent/ruby_fixed_thread_pool'
+require 'concurrent/executor/ruby_fixed_thread_pool'
 
 module Concurrent
 
   if RUBY_PLATFORM == 'java'
-    require 'concurrent/java_fixed_thread_pool'
+    require 'concurrent/executor/java_fixed_thread_pool'
     # @!macro [attach] fixed_thread_pool
     #
     #   A thread pool with a set number of threads. The number of threads in the pool

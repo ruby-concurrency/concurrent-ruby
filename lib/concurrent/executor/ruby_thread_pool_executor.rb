@@ -1,7 +1,7 @@
 require 'thread'
 
-require 'concurrent/event'
-require 'concurrent/ruby_thread_pool_worker'
+require 'concurrent/atomic/event'
+require 'concurrent/executor/ruby_thread_pool_worker'
 
 module Concurrent
 

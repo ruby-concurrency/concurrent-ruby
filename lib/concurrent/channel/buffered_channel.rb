@@ -1,3 +1,5 @@
+require 'concurrent/atomic/condition'
+
 require_relative 'waitable_list'
 
 module Concurrent

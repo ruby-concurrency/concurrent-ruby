@@ -1,6 +1,6 @@
 require 'thread'
 
-require 'concurrent/event'
+require 'concurrent/atomic/event'
 
 module Concurrent
 

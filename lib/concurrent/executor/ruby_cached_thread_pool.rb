@@ -1,4 +1,4 @@
-require 'concurrent/ruby_thread_pool_executor'
+require 'concurrent/executor/ruby_thread_pool_executor'
 
 module Concurrent
 

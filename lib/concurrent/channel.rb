@@ -1,0 +1,5 @@
+require 'concurrent/channel/channel'
+require 'concurrent/channel/unbuffered_channel'
+require 'concurrent/channel/buffered_channel'
+require 'concurrent/channel/ring_buffer'
+require 'concurrent/channel/blocking_ring_buffer'

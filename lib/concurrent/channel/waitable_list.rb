@@ -1,3 +1,5 @@
+require 'concurrent/atomic/condition'
+
 module Concurrent
   class WaitableList
 
