@@ -64,9 +64,54 @@ share_examples_for :priority_queue do
   context '#delete' do
 
     it 'deletes the requested item when found' do
-      10.times{|i| subject << i}
+      10.times{|item| subject << item }
+      subject.delete(5)
+      subject.pop.should eq 9
+      subject.pop.should eq 8
+      subject.pop.should eq 7
+      subject.pop.should eq 6
+      subject.pop.should eq 4
+      subject.pop.should eq 3
+      subject.pop.should eq 2
+      subject.pop.should eq 1
+      subject.pop.should eq 0
+    end
+
+    it 'deletes the requested item when it is the first element' do
+      10.times{|item| subject << item }
+      subject.delete(9)
+      subject.length.should eq 9
+      subject.pop.should eq 8
+      subject.pop.should eq 7
+      subject.pop.should eq 6
+      subject.pop.should eq 5
+      subject.pop.should eq 4
+      subject.pop.should eq 3
+      subject.pop.should eq 2
+      subject.pop.should eq 1
+      subject.pop.should eq 0
+    end
+
+    it 'deletes the requested item when it is the last element' do
+      10.times{|item| subject << item }
       subject.delete(2)
-      subject.should_not include(2)
+      subject.length.should eq 9
+      subject.pop.should eq 9
+      subject.pop.should eq 8
+      subject.pop.should eq 7
+      subject.pop.should eq 6
+      subject.pop.should eq 5
+      subject.pop.should eq 4
+      subject.pop.should eq 3
+      subject.pop.should eq 1
+      subject.pop.should eq 0
+    end
+
+    it 'deletes multiple matching items when present' do
+      [2, 1, 2, 2, 2, 3, 2].each{|item| subject << item }
+      subject.delete(2)
+      subject.pop.should eq 3
+      subject.pop.should eq 1
     end
 
     it 'returns true when found' do
