@@ -4,6 +4,7 @@ require 'concurrent/configuration'
 require 'concurrent/atomic'
 require 'concurrent/actor'
 require 'concurrent/channel'
+require 'concurrent/collection'
 require 'concurrent/executor'
 require 'concurrent/utilities'
 
