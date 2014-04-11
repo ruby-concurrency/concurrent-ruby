@@ -20,5 +20,6 @@ module Concurrent
         Concurrent.configuration.global_task_pool
       end
     end
+    module_function :get_executor_from
   end
 end

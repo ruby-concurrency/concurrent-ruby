@@ -66,7 +66,7 @@ module Concurrent
     #
     # @see Concurrent::timer
     def global_timer_pool
-      @global_timer_pool ||= Concurrent::CachedThreadPool.new
+      @global_timer_pool ||= Concurrent::TimerSet.new
     end
 
     # Global thread pool optimized for short *tasks*.
