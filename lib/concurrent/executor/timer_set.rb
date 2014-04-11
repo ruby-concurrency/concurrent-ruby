@@ -9,6 +9,7 @@ module Concurrent
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
   class TimerSet
+    include OptionsParser
 
     # Create a new set of timed tasks.
     #
@@ -22,7 +23,7 @@ module Concurrent
       @mutex = Mutex.new
       @shutdown = Event.new
       @queue = PriorityQueue.new(order: :min)
-      @executor = OptionsParser::get_executor_from(opts)
+      @executor = get_executor_from(opts)
       @thread = nil
     end
 
@@ -142,7 +143,7 @@ module Concurrent
           @thread.wakeup
         elsif @thread.nil? || ! @thread.alive?
           @thread = Thread.new do
-            Thread.current.abort_on_exception = false
+            Thread.current.abort_on_exception = true
             process_tasks
           end
         end
