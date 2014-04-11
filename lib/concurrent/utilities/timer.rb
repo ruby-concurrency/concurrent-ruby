@@ -1,4 +1,4 @@
-require 'rbconfig'
+require 'concurrent/configuration'
 require 'thread'
 
 module Concurrent
@@ -8,18 +8,11 @@ module Concurrent
   # @param [Fixnum] seconds the interval in seconds to wait before executing the task
   # @yield the task to execute
   # @return [Boolean] true
-  def timer(seconds)
+  def timer(seconds, &block)
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('interval must be greater than or equal to zero') if seconds < 0
 
-    Concurrent.configuration.global_timer_pool.post do
-      begin
-        sleep(seconds)
-        yield
-      rescue Exception
-        # suppress
-      end
-    end
+    Concurrent.configuration.global_timer_pool.post(seconds, &block)
     true
   end
   module_function :timer

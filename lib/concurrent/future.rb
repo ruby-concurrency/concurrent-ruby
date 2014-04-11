@@ -1,7 +1,7 @@
 require 'thread'
 
-require 'concurrent/configuration'
 require 'concurrent/obligation'
+require 'concurrent/options_parser'
 require 'concurrent/executor/safe_task_executor'
 
 module Concurrent

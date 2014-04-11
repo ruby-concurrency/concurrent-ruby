@@ -34,7 +34,7 @@ module Concurrent
     end
 
     it 'runs the task on the global timer pool' do
-      Concurrent.configuration.global_timer_pool.should_receive(:post).with(no_args)
+      Concurrent.configuration.global_timer_pool.should_receive(:post).with(0.1)
       Concurrent::timer(0.1){ :foo }
     end
   end

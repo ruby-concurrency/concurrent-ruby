@@ -1,8 +1,8 @@
 require 'thread'
 
-require 'concurrent/configuration'
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
+require 'concurrent/options_parser'
 require 'concurrent/utilities'
 
 module Concurrent

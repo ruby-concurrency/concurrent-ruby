@@ -1,7 +1,7 @@
 require 'thread'
 
-require 'concurrent/configuration'
 require 'concurrent/obligation'
+require 'concurrent/options_parser'
 
 module Concurrent
 
