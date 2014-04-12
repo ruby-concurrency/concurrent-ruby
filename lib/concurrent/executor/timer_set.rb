@@ -1,4 +1,5 @@
 require 'thread'
+require_relative 'executor'
 require 'concurrent/options_parser'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
@@ -9,6 +10,7 @@ module Concurrent
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
   class TimerSet
+    include Executor
     include OptionsParser
 
     # Create a new set of timed tasks.
@@ -20,37 +22,10 @@ module Concurrent
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
     def initialize(opts = {})
-      @mutex = Mutex.new
-      @shutdown = Event.new
       @queue = PriorityQueue.new(order: :min)
       @executor = get_executor_from(opts)
       @thread = nil
-    end
-
-    # Am I running?
-    #
-    # @return [Boolean] `true` when running, `false` when shutting down or shutdown
-    def running?
-      ! @shutdown.set?
-    end
-
-    # Am I shutdown?
-    #
-    # @return [Boolean] `true` when shutdown, `false` when shutting down or running
-    def shutdown?
-      @shutdown.set?
-    end
-
-    # Block until shutdown is complete or until `timeout` seconds have passed.
-    #
-    # @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
-    #   must be called before this method (or on another thread).
-    #
-    # @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
-    #
-    # @return [Boolean] `true` if shutdown complete or false on `timeout`
-    def wait_for_termination(timeout)
-      @shutdown.wait(timeout.to_f)
+      init_executor
     end
 
     # Post a task to be execute at the specified time. The given time may be either
@@ -66,35 +41,14 @@ module Concurrent
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
-    def post(intended_time, &block)
-      @mutex.synchronize do
-        return false if shutdown?
-        raise ArgumentError.new('no block given') unless block_given?
-        time = TimerSet.calculate_schedule_time(intended_time).to_f
-
-        if (time - Time.now.to_f) <= 0.01
-          @executor.post(&block)
-        else
-          @queue.push(Task.new(time, block))
-        end
+    def post(intended_time, &task)
+      time = TimerSet.calculate_schedule_time(intended_time).to_f
+      if super(time, &task)
+        check_processing_thread!
+        true
       end
-      check_processing_thread!
-      true
     end
 
-    # Begin an orderly shutdown. Tasks already in the queue will be executed,
-    # but no new tasks will be accepted. Has no additional effect if the
-    # thread pool is not running.
-    def shutdown
-      @mutex.synchronize do
-        unless @shutdown.set?
-          @queue.clear
-          @thread.kill if @thread
-          @shutdown.set
-        end
-      end
-      true
-    end
     alias_method :kill, :shutdown
 
     # Calculate an Epoch time with milliseconds at which to execute a
@@ -135,6 +89,22 @@ module Concurrent
       end
     end
 
+    # @!visibility private
+    def execute(time, &task)
+      if (time - Time.now.to_f) <= 0.01
+        @executor.post(&task)
+      else
+        @queue.push(Task.new(time, task))
+      end
+    end
+
+    # @!visibility private
+    def shutdown_execution
+      @queue.clear
+      @thread.kill if @thread
+      stopped_event.set
+    end
+
     # Check the status of the processing thread. This thread is responsible
     # for monitoring the internal task queue and sending tasks to the
     # executor when it is time for them to be processed. If there is no
@@ -144,7 +114,7 @@ module Concurrent
     #
     # @!visibility private
     def check_processing_thread!
-      @mutex.synchronize do
+      mutex.synchronize do
         return if shutdown? || @queue.empty?
         if @thread && @thread.status == 'sleep'
           @thread.wakeup
@@ -163,7 +133,7 @@ module Concurrent
     #
     # @!visibility private
     def next_task
-      @mutex.synchronize do
+      mutex.synchronize do
         unless @queue.empty? || @queue.peek.time > Time.now.to_f
           @queue.pop
         else
@@ -180,7 +150,7 @@ module Concurrent
     #
     # @!visibility private
     def next_sleep_interval
-      @mutex.synchronize do
+      mutex.synchronize do
         if @queue.empty?
           nil
         else

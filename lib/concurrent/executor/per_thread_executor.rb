@@ -11,12 +11,12 @@ module Concurrent
       return true
     end
 
-    def post(*args, &block)
-      return PerThreadExecutor.post(*args, &block)
+    def post(*args, &task)
+      return PerThreadExecutor.post(*args, &task)
     end
 
-    def <<(block)
-      PerThreadExecutor.post(&block)
+    def <<(task)
+      PerThreadExecutor.post(&task)
       return self
     end
   end

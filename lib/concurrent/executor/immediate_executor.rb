@@ -1,14 +1,14 @@
 module Concurrent
   class ImmediateExecutor
 
-    def post(*args, &block)
+    def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      block.call(*args)
+      task.call(*args)
       return true
     end
 
-    def <<(block)
-      post(&block)
+    def <<(task)
+      post(&task)
       self
     end
   end

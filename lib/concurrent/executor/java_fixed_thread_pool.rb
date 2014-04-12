@@ -26,8 +26,7 @@ if RUBY_PLATFORM == 'java'
         @executor = java.util.concurrent.Executors.newFixedThreadPool(num_threads)
         @executor.setRejectedExecutionHandler(OVERFLOW_POLICIES[@overflow_policy].new)
 
-        # without this the process may fail to exit
-        at_exit { self.kill }
+        set_shutdown_hook
       end
     end
   end
