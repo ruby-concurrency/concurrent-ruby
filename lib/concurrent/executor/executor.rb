@@ -8,13 +8,13 @@ module Concurrent
 
   module Executor
 
-    # Submit a task to the thread pool for asynchronous processing.
+    # Submit a task to the executor for asynchronous processing.
     #
     # @param [Array] args zero or more arguments to be passed to the task
     #
     # @yield the asynchronous task to perform
     #
-    # @return [Boolean] `true` if the task is queued, `false` if the thread pool
+    # @return [Boolean] `true` if the task is queued, `false` if the executor
     #   is not running
     #
     # @raise [ArgumentError] if no task is given
@@ -27,7 +27,7 @@ module Concurrent
       end
     end
 
-    # Submit a task to the thread pool for asynchronous processing.
+    # Submit a task to the executor for asynchronous processing.
     #
     # @param [Proc] task the asynchronous task to perform
     #
@@ -37,14 +37,14 @@ module Concurrent
       self
     end
 
-    # Is the thread pool running?
+    # Is the executor running?
     #
     # @return [Boolean] `true` when running, `false` when shutting down or shutdown
     def running?
       ! @stop_event.set?
     end
 
-    # Is the thread pool shutdown?
+    # Is the executor shutdown?
     #
     # @return [Boolean] `true` when shutdown, `false` when shutting down or running
     def shutdown?
@@ -57,7 +57,7 @@ module Concurrent
     def kill
     end
 
-    # Block until thread pool shutdown is complete or until `timeout` seconds have
+    # Block until executor shutdown is complete or until `timeout` seconds have
     # passed.
     #
     # @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
@@ -89,13 +89,13 @@ module Concurrent
 
     module JavaExecutor
 
-      # Submit a task to the thread pool for asynchronous processing.
+      # Submit a task to the executor for asynchronous processing.
       #
       # @param [Array] args zero or more arguments to be passed to the task
       #
       # @yield the asynchronous task to perform
       #
-      # @return [Boolean] `true` if the task is queued, `false` if the thread pool
+      # @return [Boolean] `true` if the task is queued, `false` if the executor
       #   is not running
       #
       # @raise [ArgumentError] if no task is given
@@ -111,7 +111,7 @@ module Concurrent
         raise RejectedExecutionError
       end
 
-      # Submit a task to the thread pool for asynchronous processing.
+      # Submit a task to the executor for asynchronous processing.
       #
       # @param [Proc] task the asynchronous task to perform
       #
@@ -121,21 +121,21 @@ module Concurrent
         self
       end
 
-      # Is the thread pool running?
+      # Is the executor running?
       #
       # @return [Boolean] `true` when running, `false` when shutting down or shutdown
       def running?
         ! (@executor.isShutdown || @executor.isTerminated)
       end
 
-      # Is the thread pool shutdown?
+      # Is the executor shutdown?
       #
       # @return [Boolean] `true` when shutdown, `false` when shutting down or running
       def shutdown?
         @executor.isShutdown
       end
 
-      # Block until thread pool shutdown is complete or until `timeout` seconds have
+      # Block until executor shutdown is complete or until `timeout` seconds have
       # passed.
       #
       # @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
@@ -150,7 +150,7 @@ module Concurrent
 
       # Begin an orderly shutdown. Tasks already in the queue will be executed,
       # but no new tasks will be accepted. Has no additional effect if the
-      # thread pool is not running.
+      # executor is not running.
       def shutdown
         @executor.shutdown
         return nil
@@ -158,7 +158,7 @@ module Concurrent
 
       # Begin an immediate shutdown. In-progress tasks will be allowed to
       # complete but enqueued tasks will be dismissed and no new tasks
-      # will be accepted. Has no additional effect if the thread pool is
+      # will be accepted. Has no additional effect if the executor is
       # not running.
       def kill
         @executor.shutdownNow
