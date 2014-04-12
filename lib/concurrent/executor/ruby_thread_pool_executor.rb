@@ -103,9 +103,7 @@ module Concurrent
     #
     # @return [Integer] the length
     def length
-      mutex.synchronize do
-        running? ? @pool.length : 0
-      end
+      mutex.synchronize{ running? ? @pool.length : 0 }
     end
     alias_method :current_length, :length
 
@@ -113,7 +111,7 @@ module Concurrent
     #
     # @return [Integer] the queue_length
     def queue_length
-      @queue.length
+      mutex.synchronize{ running? ? @queue.length : 0 }
     end
 
     # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
@@ -130,20 +128,6 @@ module Concurrent
     def status
       warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
       mutex.synchronize { @pool.collect { |worker| worker.status } }
-    end
-
-    # Begin an immediate shutdown. In-progress tasks will be allowed to
-    # complete but enqueued tasks will be dismissed and no new tasks
-    # will be accepted. Has no additional effect if the thread pool is
-    # not running.
-    def kill
-      mutex.synchronize do
-        return if shutdown?
-        stop_event.set
-        @queue.clear
-        drain_pool
-        stopped_event.set
-      end
     end
 
     # Run on task completion.
@@ -184,13 +168,19 @@ module Concurrent
     end
 
     # @!visibility private
-    def stop_execution
+    def shutdown_execution
       @queue.clear
       if @pool.empty?
         stopped_event.set
       else
         @pool.length.times{ @queue << :stop }
       end
+    end
+
+    # @!visibility private
+    def kill_execution
+      @queue.clear
+      drain_pool
     end
 
     # Handler which executes the `overflow_policy` once the queue size

@@ -3,10 +3,10 @@ require 'thread'
 module Concurrent
 
   # @!visibility private
-  class RubyThreadPoolWorker # :nodoc:
+  class RubyThreadPoolWorker
 
     # @!visibility private
-    def initialize(queue, parent) # :nodoc:
+    def initialize(queue, parent)
       @queue = queue
       @parent = parent
       @mutex = Mutex.new
@@ -14,14 +14,14 @@ module Concurrent
     end
 
     # @!visibility private
-    def dead? # :nodoc:
+    def dead?
       return @mutex.synchronize do
         @thread.nil? ? false : ! @thread.alive?
       end
     end
 
     # @!visibility private
-    def last_activity # :nodoc:
+    def last_activity
       @mutex.synchronize { @last_activity }
     end
 
@@ -33,7 +33,7 @@ module Concurrent
     end
 
     # @!visibility private
-    def kill # :nodoc:
+    def kill
       @mutex.synchronize do
         Thread.kill(@thread) unless @thread.nil?
         @thread = nil
@@ -41,7 +41,7 @@ module Concurrent
     end
 
     # @!visibility private
-    def run(thread = Thread.current) # :nodoc:
+    def run(thread = Thread.current)
       @mutex.synchronize do
         raise StandardError.new('already running') unless @thread.nil?
         @thread = thread

@@ -99,7 +99,7 @@ module Concurrent
     end
 
     # @!visibility private
-    def stop_execution
+    def shutdown_execution
       @queue.clear
       @thread.kill if @thread
       stopped_event.set

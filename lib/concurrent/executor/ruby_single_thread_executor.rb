@@ -17,21 +17,6 @@ module Concurrent
       init_executor
     end
 
-    # Begin an immediate shutdown. In-progress tasks will be allowed to
-    # complete but enqueued tasks will be dismissed and no new tasks
-    # will be accepted. Has no additional effect if the thread pool is
-    # not running.
-    def kill
-      mutex.synchronize do
-        return if shutdown?
-        stop_event.set
-        @queue.clear
-        @thread.kill if alive?
-        stopped_event.set unless alive?
-      end
-      true
-    end
-
     protected
 
     # @!visibility private
@@ -41,9 +26,15 @@ module Concurrent
     end
 
     # @!visibility private
-    def stop_execution
+    def shutdown_execution
       @queue << :stop
       stopped_event.set unless alive?
+    end
+
+    # @!visibility private
+    def kill_execution
+      @queue.clear
+      @thread.kill if alive?
     end
 
     # @!visibility private

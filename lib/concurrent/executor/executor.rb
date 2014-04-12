@@ -44,11 +44,18 @@ module Concurrent
       ! stop_event.set?
     end
 
+    # Is the executor shuttingdown?
+    #
+    # @return [Boolean] `true` when not running and not shutdown, else `false`
+    def shuttingdown?
+      ! (running? || shutdown?)
+    end
+
     # Is the executor shutdown?
     #
     # @return [Boolean] `true` when shutdown, `false` when shutting down or running
     def shutdown?
-      stop_event.set?
+      stopped_event.set?
     end
 
     # Begin an orderly shutdown. Tasks already in the queue will be executed,
@@ -58,12 +65,23 @@ module Concurrent
       mutex.synchronize do
         return unless running?
         stop_event.set
-        stop_execution
+        shutdown_execution
       end
       true
     end
 
+    # Begin an immediate shutdown. In-progress tasks will be allowed to
+    # complete but enqueued tasks will be dismissed and no new tasks
+    # will be accepted. Has no additional effect if the thread pool is
+    # not running.
     def kill
+      mutex.synchronize do
+        return if shutdown?
+        stop_event.set
+        kill_execution
+        stopped_event.set
+      end
+      true
     end
 
     # Block until executor shutdown is complete or until `timeout` seconds have
@@ -76,7 +94,7 @@ module Concurrent
     #
     # @return [Boolean] `true` if shutdown complete or false on `timeout`
     def wait_for_termination(timeout)
-      stopped_event.wait(timeout.to_i)
+      stopped_event.wait(timeout.to_f)
     end
 
     protected
@@ -93,8 +111,12 @@ module Concurrent
       raise NotImplementedError
     end
 
-    def stop_execution
+    def shutdown_execution
       stopped_event.set
+    end
+
+    def kill_execution
+      # do nothing
     end
   end
 
@@ -138,14 +160,25 @@ module Concurrent
       #
       # @return [Boolean] `true` when running, `false` when shutting down or shutdown
       def running?
-        ! (@executor.isShutdown || @executor.isTerminated)
+        ! (shuttingdown? || shutdown?)
+      end
+
+      # Is the executor shuttingdown?
+      #
+      # @return [Boolean] `true` when not running and not shutdown, else `false`
+      def shuttingdown?
+        if @executor.respond_to? :isTerminating
+          @executor.isTerminating
+        else
+          false
+        end
       end
 
       # Is the executor shutdown?
       #
       # @return [Boolean] `true` when shutdown, `false` when shutting down or running
       def shutdown?
-        @executor.isShutdown
+        @executor.isShutdown || @executor.isTerminated
       end
 
       # Block until executor shutdown is complete or until `timeout` seconds have
@@ -166,7 +199,7 @@ module Concurrent
       # executor is not running.
       def shutdown
         @executor.shutdown
-        return nil
+        nil
       end
 
       # Begin an immediate shutdown. In-progress tasks will be allowed to
