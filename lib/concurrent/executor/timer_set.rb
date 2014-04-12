@@ -41,20 +41,12 @@ module Concurrent
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
-    def post(intended_time, &block)
-      mutex.synchronize do
-        return false unless running?
-        raise ArgumentError.new('no block given') unless block_given?
-        time = TimerSet.calculate_schedule_time(intended_time).to_f
-
-        if (time - Time.now.to_f) <= 0.01
-          @executor.post(&block)
-        else
-          @queue.push(Task.new(time, block))
-        end
+    def post(intended_time, &task)
+      time = TimerSet.calculate_schedule_time(intended_time).to_f
+      if super(time, &task)
+        check_processing_thread!
+        true
       end
-      check_processing_thread!
-      true
     end
 
     # Begin an orderly shutdown. Tasks already in the queue will be executed,
@@ -107,6 +99,14 @@ module Concurrent
       include Comparable
       def <=>(other)
         self.time <=> other.time
+      end
+    end
+
+    def execute(time, &task)
+      if (time - Time.now.to_f) <= 0.01
+        @executor.post(&task)
+      else
+        @queue.push(Task.new(time, task))
       end
     end
 
