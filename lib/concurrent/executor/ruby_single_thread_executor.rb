@@ -41,6 +41,7 @@ module Concurrent
         @thread.kill if alive?
         stopped_event.set unless alive?
       end
+      true
     end
 
     protected

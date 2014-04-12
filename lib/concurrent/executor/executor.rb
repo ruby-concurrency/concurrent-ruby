@@ -21,7 +21,7 @@ module Concurrent
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       mutex.synchronize do
-        break false unless running?
+        return false unless running?
         execute(*args, &task)
         true
       end
@@ -41,14 +41,14 @@ module Concurrent
     #
     # @return [Boolean] `true` when running, `false` when shutting down or shutdown
     def running?
-      ! @stop_event.set?
+      ! stop_event.set?
     end
 
     # Is the executor shutdown?
     #
     # @return [Boolean] `true` when shutdown, `false` when shutting down or running
     def shutdown?
-      @stop_event.set?
+      stop_event.set?
     end
 
     def shutdown
@@ -67,7 +67,7 @@ module Concurrent
     #
     # @return [Boolean] `true` if shutdown complete or false on `timeout`
     def wait_for_termination(timeout)
-      @stopped_event.wait(timeout.to_i)
+      stopped_event.wait(timeout.to_i)
     end
 
     protected

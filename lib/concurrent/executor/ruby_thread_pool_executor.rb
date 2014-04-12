@@ -90,7 +90,6 @@ module Concurrent
       init_executor
 
       @pool = []
-      @stopped_event = Event.new
       @queue = Queue.new
       @scheduled_task_count = 0
       @completed_task_count = 0
@@ -133,19 +132,6 @@ module Concurrent
       mutex.synchronize { @pool.collect { |worker| worker.status } }
     end
 
-    # Block until thread pool shutdown is complete or until `timeout` seconds have
-    # passed.
-    #
-    # @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
-    #   must be called before this method (or on another thread).
-    #
-    # @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
-    #
-    # @return [Boolean] `true` if shutdown complete or false on `timeout`
-    def wait_for_termination(timeout)
-      return @stopped_event.wait(timeout.to_i)
-    end
-
     # Begin an orderly shutdown. Tasks already in the queue will be executed,
     # but no new tasks will be accepted. Has no additional effect if the
     # thread pool is not running.
@@ -155,11 +141,12 @@ module Concurrent
         @queue.clear
         stop_event.set
         if @pool.empty?
-          @stopped_event.set
+          stopped_event.set
         else
           @pool.length.times{ @queue << :stop }
         end
       end
+      true
     end
 
     # Begin an immediate shutdown. In-progress tasks will be allowed to
