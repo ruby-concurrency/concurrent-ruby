@@ -14,7 +14,7 @@ module Concurrent
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('interval must be greater than or equal to zero') if seconds < 0
 
-    Concurrent.configuration.global_timer_pool.post(seconds, &block)
+    Concurrent.configuration.global_timer_set.post(seconds, &block)
     true
   end
   module_function :timer

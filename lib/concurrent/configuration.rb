@@ -23,7 +23,7 @@ module Concurrent
       # initialize the global thread pools if necessary
       configuration.global_task_pool
       configuration.global_operation_pool
-      configuration.global_timer_pool
+      configuration.global_timer_set
     end
   end
 
@@ -66,8 +66,8 @@ module Concurrent
     # @return [ThreadPoolExecutor] the thread pool
     #
     # @see Concurrent::timer
-    def global_timer_pool
-      @global_timer_pool ||= Concurrent::TimerSet.new
+    def global_timer_set
+      @global_timer_set ||= Concurrent::TimerSet.new
     end
 
     # Global thread pool optimized for short *tasks*.
@@ -134,6 +134,7 @@ module Concurrent
 
   # set exit hook to shutdown global thread pools
   at_exit do
+    self.finalize_executor(self.configuration.global_timer_set)
     self.finalize_executor(self.configuration.global_task_pool)
     self.finalize_executor(self.configuration.global_operation_pool)
   end
