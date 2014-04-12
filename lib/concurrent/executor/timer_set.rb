@@ -101,6 +101,8 @@ module Concurrent
       end
     end
 
+    private_constant :Task
+
     # @!visibility private
     def shutdown_execution
       @queue.clear

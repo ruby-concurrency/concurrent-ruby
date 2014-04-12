@@ -24,22 +24,20 @@ module Concurrent
     end
 
     it 'executes a given task when given a Time' do
-      expected = false
-      subject.post(Time.now + 0.1){ expected = true }
-      sleep(0.2)
-      expected.should be_true
+      latch = CountDownLatch.new(1)
+      subject.post(Time.now + 0.1){ latch.count_down }
+      latch.wait(0.2).should be_true
     end
 
     it 'executes a given task when given an interval in seconds' do
-      expected = false
-      subject.post(0.1){ expected = true }
-      sleep(0.2)
+      latch = CountDownLatch.new(1)
+      subject.post(0.1){ latch.count_down }
+      latch.wait(0.2).should be_true
     end
 
     it 'immediately posts a task when the delay is zero' do
       Thread.should_not_receive(:new).with(any_args)
-      expected = false
-      subject.post(0){ expected = true }
+      subject.post(0){ true }
     end
 
     it 'does not execute tasks early' do
@@ -72,10 +70,9 @@ module Concurrent
 
     it 'executes all tasks scheduled for the same time' do
       pending('intermittently failing on Travis CI')
-      expected = AtomicFixnum.new(0)
-      5.times{ subject.post(0.1){ expected.increment } }
-      sleep(0.2)
-      expected.value.should eq 5
+      latch = CountDownLatch.new(5)
+      5.times{ subject.post(0.1){ latch.count_down } }
+      latch.wait(0.2).should eq 5
     end
 
     it 'executes tasks with different times in schedule order' do
