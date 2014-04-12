@@ -17,18 +17,6 @@ module Concurrent
       init_executor
     end
 
-    # Begin an orderly shutdown. Tasks already in the queue will be executed,
-    # but no new tasks will be accepted. Has no additional effect if the
-    # thread pool is not running.
-    def shutdown
-      mutex.synchronize do
-        return unless running?
-        stop_event.set
-        @queue << :stop
-        stopped_event.set unless alive?
-      end
-    end
-
     # Begin an immediate shutdown. In-progress tasks will be allowed to
     # complete but enqueued tasks will be dismissed and no new tasks
     # will be accepted. Has no additional effect if the thread pool is
@@ -46,19 +34,29 @@ module Concurrent
 
     protected
 
+    # @!visibility private
     def execute(*args, &task)
       supervise
       @queue << [args, task]
     end
 
+    # @!visibility private
+    def stop_execution
+      @queue << :stop
+      stopped_event.set unless alive?
+    end
+
+    # @!visibility private
     def alive?
       @thread && @thread.alive?
     end
 
+    # @!visibility private
     def supervise
       @thread = new_worker_thread unless alive?
     end
 
+    # @!visibility private
     def new_worker_thread
       Thread.new do
         Thread.current.abort_on_exception = false
@@ -66,6 +64,7 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     def work
       loop do
         task = @queue.pop

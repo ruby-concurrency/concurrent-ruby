@@ -51,7 +51,16 @@ module Concurrent
       stop_event.set?
     end
 
+    # Begin an orderly shutdown. Tasks already in the queue will be executed,
+    # but no new tasks will be accepted. Has no additional effect if the
+    # thread pool is not running.
     def shutdown
+      mutex.synchronize do
+        return unless running?
+        stop_event.set
+        stop_execution
+      end
+      true
     end
 
     def kill
@@ -82,6 +91,10 @@ module Concurrent
 
     def execute(*args, &task)
       raise NotImplementedError
+    end
+
+    def stop_execution
+      stopped_event.set
     end
   end
 

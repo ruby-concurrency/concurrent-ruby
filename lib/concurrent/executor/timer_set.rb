@@ -49,19 +49,6 @@ module Concurrent
       end
     end
 
-    # Begin an orderly shutdown. Tasks already in the queue will be executed,
-    # but no new tasks will be accepted. Has no additional effect if the
-    # thread pool is not running.
-    def shutdown
-      mutex.synchronize do
-        break unless running?
-        stop_event.set
-        @queue.clear
-        @thread.kill if @thread
-        stopped_event.set
-      end
-      true
-    end
     alias_method :kill, :shutdown
 
     # Calculate an Epoch time with milliseconds at which to execute a
@@ -102,12 +89,20 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     def execute(time, &task)
       if (time - Time.now.to_f) <= 0.01
         @executor.post(&task)
       else
         @queue.push(Task.new(time, task))
       end
+    end
+
+    # @!visibility private
+    def stop_execution
+      @queue.clear
+      @thread.kill if @thread
+      stopped_event.set
     end
 
     # Check the status of the processing thread. This thread is responsible

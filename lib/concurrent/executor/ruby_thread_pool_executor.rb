@@ -132,23 +132,6 @@ module Concurrent
       mutex.synchronize { @pool.collect { |worker| worker.status } }
     end
 
-    # Begin an orderly shutdown. Tasks already in the queue will be executed,
-    # but no new tasks will be accepted. Has no additional effect if the
-    # thread pool is not running.
-    def shutdown
-      mutex.synchronize do
-        break unless running?
-        @queue.clear
-        stop_event.set
-        if @pool.empty?
-          stopped_event.set
-        else
-          @pool.length.times{ @queue << :stop }
-        end
-      end
-      true
-    end
-
     # Begin an immediate shutdown. In-progress tasks will be allowed to
     # complete but enqueued tasks will be dismissed and no new tasks
     # will be accepted. Has no additional effect if the thread pool is
@@ -198,6 +181,16 @@ module Concurrent
         @last_gc_time = Time.now.to_f
       end
       grow_pool
+    end
+
+    # @!visibility private
+    def stop_execution
+      @queue.clear
+      if @pool.empty?
+        stopped_event.set
+      else
+        @pool.length.times{ @queue << :stop }
+      end
     end
 
     # Handler which executes the `overflow_policy` once the queue size
