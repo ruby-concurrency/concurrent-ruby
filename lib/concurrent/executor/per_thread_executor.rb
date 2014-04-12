@@ -1,9 +1,6 @@
-require_relative 'executor'
-
 module Concurrent
 
   class PerThreadExecutor
-    include Executor
 
     def self.post(*args)
       raise ArgumentError.new('no block given') unless block_given?
@@ -16,6 +13,11 @@ module Concurrent
 
     def post(*args, &task)
       return PerThreadExecutor.post(*args, &task)
+    end
+
+    def <<(task)
+      PerThreadExecutor.post(&task)
+      return self
     end
   end
 end
