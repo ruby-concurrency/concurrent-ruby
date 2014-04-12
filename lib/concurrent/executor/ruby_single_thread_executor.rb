@@ -1,7 +1,4 @@
-require 'thread'
-
 require_relative 'executor'
-require 'concurrent/atomic/event'
 
 module Concurrent
 
@@ -15,38 +12,9 @@ module Concurrent
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
     # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
     def initialize(opts = {})
-      @mutex = Mutex.new
       @queue = Queue.new
       @thread = nil
-      @stop = Event.new
-      @stopped = Event.new
-    end
-
-    # Is the thread pool running?
-    #
-    # @return [Boolean] `true` when running, `false` when shutting down or shutdown
-    def running?
-      ! @stop.set?
-    end
-
-    # Is the thread pool shutdown?
-    #
-    # @return [Boolean] `true` when shutdown, `false` when shutting down or running
-    def shutdown?
-      @stopped.set?
-    end
-
-    # Block until thread pool shutdown is complete or until `timeout` seconds have
-    # passed.
-    #
-    # @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
-    #   must be called before this method (or on another thread).
-    #
-    # @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
-    #
-    # @return [Boolean] `true` if shutdown complete or false on `timeout`
-    def wait_for_termination(timeout)
-      @stopped.wait(timeout.to_i)
+      init_executor
     end
 
     # Submit a task to the thread pool for asynchronous processing.
@@ -61,7 +29,7 @@ module Concurrent
     # @raise [ArgumentError] if no task is given
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      @mutex.synchronize do
+      mutex.synchronize do
         break false unless running?
         supervise
         @queue << [args, task]
@@ -73,11 +41,11 @@ module Concurrent
     # but no new tasks will be accepted. Has no additional effect if the
     # thread pool is not running.
     def shutdown
-      @mutex.synchronize do
+      mutex.synchronize do
         return unless running?
-        @stop.set
+        stop_event.set
         @queue << :stop
-        @stopped.set unless alive?
+        stopped_event.set unless alive?
       end
     end
 
@@ -86,12 +54,12 @@ module Concurrent
     # will be accepted. Has no additional effect if the thread pool is
     # not running.
     def kill
-      @mutex.synchronize do
+      mutex.synchronize do
         return if shutdown?
-        @stop.set
+        stop_event.set
         @queue.clear
         @thread.kill if alive?
-        @stopped.set
+        stopped_event.set unless alive?
       end
     end
 
@@ -122,7 +90,7 @@ module Concurrent
           # let it fail
         end
       end
-      @stopped.set
+      stopped_event.set
     end
   end
 end
