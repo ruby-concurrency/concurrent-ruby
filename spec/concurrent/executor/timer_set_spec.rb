@@ -41,12 +41,11 @@ module Concurrent
     end
 
     it 'does not execute tasks early' do
-      pending('intermittently failing on Travis CI')
       expected = AtomicFixnum.new(0)
       subject.post(0.2){ expected.increment }
-      sleep(0.1)
+      sleep(0.15)
       expected.value.should eq 0
-      sleep(0.1)
+      sleep(0.10)
       expected.value.should eq 1
     end
 
@@ -69,10 +68,9 @@ module Concurrent
     end
 
     it 'executes all tasks scheduled for the same time' do
-      pending('intermittently failing on Travis CI')
       latch = CountDownLatch.new(5)
       5.times{ subject.post(0.1){ latch.count_down } }
-      latch.wait(0.2).should eq 5
+      latch.wait(0.2).should be_true
     end
 
     it 'executes tasks with different times in schedule order' do
@@ -101,21 +99,23 @@ module Concurrent
     end
 
     it 'stops the monitor thread on #shutdown' do
-      subject.post(0.1){ nil } # start the monitor thread
-      sleep(0.2)
-      subject.instance_variable_get(:@thread).should_not be_nil
+      subject.post(0.2){ nil } # start the monitor thread
+      sleep(0.1)
+      thread = subject.instance_variable_get(:@thread)
+      thread.should_not be_nil
       subject.shutdown
       sleep(0.1)
-      subject.instance_variable_get(:@thread).should_not be_alive
+      thread.should_not be_alive
     end
 
     it 'kills the monitor thread on #kill' do
-      subject.post(0.1){ nil } # start the monitor thread
-      sleep(0.2)
-      subject.instance_variable_get(:@thread).should_not be_nil
+      subject.post(0.2){ nil } # start the monitor thread
+      sleep(0.1)
+      thread = subject.instance_variable_get(:@thread)
+      thread.should_not be_nil
       subject.kill
       sleep(0.1)
-      subject.instance_variable_get(:@thread).should_not be_alive
+      thread.should_not be_alive
     end
 
     it 'rejects tasks once shutdown' do

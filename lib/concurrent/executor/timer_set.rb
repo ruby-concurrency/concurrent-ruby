@@ -25,6 +25,7 @@ module Concurrent
       @queue = PriorityQueue.new(order: :min)
       @executor = get_executor_from(opts)
       @thread = nil
+      @condition = Condition.new
       init_executor
     end
 
@@ -120,47 +121,13 @@ module Concurrent
     # @!visibility private
     def check_processing_thread!
       return if shutdown? || @queue.empty?
-      if @thread && @thread.status == 'sleep'
-        @thread.wakeup
-      elsif @thread.nil? || !@thread.alive?
-        @thread = Thread.new do
-          Thread.current.abort_on_exception = true
-          process_tasks
-        end
+
+      @thread ||= Thread.new do
+        Thread.current.abort_on_exception = true
+        process_tasks
       end
     end
 
-    # Check the head of the internal task queue for a ready task.
-    #
-    # @return [Task] the next task to be executed or nil if none are ready
-    #
-    # @!visibility private
-    def next_task
-      mutex.synchronize do
-        unless @queue.empty? || @queue.peek.time > Time.now.to_f
-          @queue.pop
-        else
-          nil
-        end
-      end
-    end
-
-    # Calculate the time difference, in seconds and milliseconds, between
-    # now and the intended execution time of the next task to be ececuted.
-    #
-    # @return [Integer] the number of seconds and milliseconds to sleep
-    #   or nil if the task queue is empty
-    #
-    # @!visibility private
-    def next_sleep_interval
-      mutex.synchronize do
-        if @queue.empty?
-          nil
-        else
-          @queue.peek.time - Time.now.to_f
-        end
-      end
-    end
 
     # Run a loop and execute tasks in the scheduled order and at the approximate
     # scheduled time. If no tasks remain the thread will exit gracefully so that
@@ -170,13 +137,22 @@ module Concurrent
     # @!visibility private
     def process_tasks
       loop do
-        while task = next_task do
-          @executor.post(&task.op)
-        end
-        if (interval = next_sleep_interval).nil?
-          break
-        else
-          sleep([interval, 60].min)
+
+        mutex.synchronize do
+          if @queue.empty?
+            @thread = nil
+            break
+          end
+
+          task = @queue.peek
+          interval = task.time - Time.now.to_f
+
+          if interval <= 0
+            @executor.post(&task.op)
+            @queue.pop
+          else
+            @condition.wait(mutex, [interval, 60].min)
+          end
         end
       end
     end
