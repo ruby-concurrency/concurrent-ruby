@@ -70,7 +70,7 @@ module Concurrent
       @mutex.synchronize do
         return false if shutdown?
         raise ArgumentError.new('no block given') unless block_given?
-        time = calculate_schedule_time(intended_time)
+        time = TimerSet.calculate_schedule_time(intended_time).to_f
 
         if (time - Time.now.to_f) <= 0.01
           @executor.post(&block)
@@ -82,6 +82,9 @@ module Concurrent
       true
     end
 
+    # Begin an orderly shutdown. Tasks already in the queue will be executed,
+    # but no new tasks will be accepted. Has no additional effect if the
+    # thread pool is not running.
     def shutdown
       @mutex.synchronize do
         unless @shutdown.set?
@@ -93,6 +96,29 @@ module Concurrent
       true
     end
     alias_method :kill, :shutdown
+
+    # Calculate an Epoch time with milliseconds at which to execute a
+    # task. If the given time is a `Time` object it will be converted
+    # accordingly. If the time is an integer value greate than zero
+    # it will be understood as a number of seconds in the future and
+    # will be added to the current time to calculate Epoch.
+    #
+    # @param [Object] intended_time the time (as a `Time` object or an integer)
+    #   to schedule the task for execution
+    # @param [Time] now (Time.now) the time from which to calculate an interval
+    #
+    # @return [Fixnum] the intended time as seconds/millis from Epoch
+    #
+    # @raise [ArgumentError] if the intended execution time is not in the future
+    def self.calculate_schedule_time(intended_time, now = Time.now)
+      if intended_time.is_a?(Time)
+        raise ArgumentError.new('schedule time must be in the future') if intended_time <= now
+        intended_time
+      else
+        raise ArgumentError.new('seconds must be greater than zero') if intended_time.to_f < 0.0
+        now + intended_time
+      end
+    end
 
     private
 
@@ -106,25 +132,6 @@ module Concurrent
       include Comparable
       def <=>(other)
         self.time <=> other.time
-      end
-    end
-
-    # Calculate an Epoch time with milliseconds at which to execute a
-    # task. If the given time is a `Time` object it will be converted
-    # accordingly. If the time is an integer value greate than zero
-    # it will be understood as a number of seconds in the future and
-    # will be added to the current time to calculate Epoch.
-    #
-    # @raise [ArgumentError] if the intended execution time is not in the future
-    #
-    # @!visibility private
-    def calculate_schedule_time(intended_time, now = Time.now)
-      if intended_time.is_a?(Time)
-        raise ArgumentError.new('schedule time must be in the future') if intended_time <= now
-        intended_time.to_f
-      else
-        raise ArgumentError.new('seconds must be greater than zero') if intended_time.to_f < 0.0
-        now.to_f + intended_time.to_f
       end
     end
 

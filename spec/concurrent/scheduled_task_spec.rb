@@ -65,19 +65,19 @@ module Concurrent
       it 'raises an exception when seconds is less than zero' do
         expect {
           ScheduledTask.new(-1){ nil }
-        }.to raise_error(ScheduledTask::SchedulingError)
+        }.to raise_error(ArgumentError)
       end
 
       it 'raises an exception when schedule time is in the past' do
         expect {
           ScheduledTask.new(Time.now - 60){ nil }
-        }.to raise_error(ScheduledTask::SchedulingError)
+        }.to raise_error(ArgumentError)
       end
 
       it 'raises an exception when no block given' do
         expect {
           ScheduledTask.new(1)
-        }.to raise_error(ScheduledTask::SchedulingError)
+        }.to raise_error(ArgumentError)
       end
 
       it 'sets the initial state to :unscheduled' do
@@ -121,7 +121,7 @@ module Concurrent
           Timecop.travel(60)
           expect {
             task.execute
-          }.to raise_error(ScheduledTask::SchedulingError)
+          }.to raise_error(ArgumentError)
         end
       end
 

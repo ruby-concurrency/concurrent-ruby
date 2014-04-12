@@ -6,34 +6,31 @@ module Concurrent
 
   class ScheduledTask < IVar
 
-    SchedulingError = Class.new(ArgumentError)
-
     attr_reader :schedule_time
 
-    def initialize(schedule_time, opts = {}, &block)
-      raise SchedulingError.new('no block given') unless block_given?
-      calculate_schedule_time!(schedule_time) # raise exception if in past
+    def initialize(intended_time, opts = {}, &block)
+      raise ArgumentError.new('no block given') unless block_given?
+      TimerSet.calculate_schedule_time(intended_time) # raises exceptons
 
       super(NO_VALUE, opts)
 
+      @intended_time =  intended_time
       @state = :unscheduled
-      @intended_schedule_time = schedule_time
-      @schedule_time = nil
       @task = block
     end
 
     # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        @schedule_time = calculate_schedule_time!(@intended_schedule_time).freeze
-        do_next_interval
+        @schedule_time = TimerSet.calculate_schedule_time(@intended_time)
+        Concurrent::timer(@schedule_time.to_f - Time.now.to_f, &method(:process_task))
         self
       end
     end
 
     # @since 0.5.0
-    def self.execute(schedule_time, opts = {}, &block)
-      return ScheduledTask.new(schedule_time, opts, &block).execute
+    def self.execute(intended_time, opts = {}, &block)
+      return ScheduledTask.new(intended_time, opts, &block).execute
     end
 
     def cancelled?
@@ -63,7 +60,7 @@ module Concurrent
 
     private
 
-    def do_work
+    def process_task
       if compare_and_set_state(:in_progress, :pending)
         success, val, reason = SafeTaskExecutor.new(@task).execute
 
@@ -74,30 +71,6 @@ module Concurrent
 
         time = Time.now
         observers.notify_and_delete_observers{ [time, self.value, reason] }
-      end
-    end
-
-    def do_next_interval
-      return if cancelled?
-
-      interval = mutex.synchronize do
-        [60, [(@schedule_time.to_f - Time.now.to_f), 0].max].min
-      end
-
-      if interval > 0
-        Concurrent::timer(interval, &method(:do_next_interval))
-      else
-        do_work
-      end
-    end
-
-    def calculate_schedule_time!(schedule_time, now = Time.now)
-      if schedule_time.is_a?(Time)
-        raise SchedulingError.new('schedule time must be in the future') if schedule_time <= now
-        schedule_time.dup
-      else
-        raise SchedulingError.new('seconds must be greater than zero') if schedule_time.to_f <= 0.0
-        now + schedule_time.to_f
       end
     end
   end

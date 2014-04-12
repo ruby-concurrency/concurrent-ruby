@@ -6,7 +6,9 @@ module Concurrent
   # Perform the given operation asynchronously after the given number of seconds.
   #
   # @param [Fixnum] seconds the interval in seconds to wait before executing the task
+  #
   # @yield the task to execute
+  #
   # @return [Boolean] true
   def timer(seconds, &block)
     raise ArgumentError.new('no block given') unless block_given?
