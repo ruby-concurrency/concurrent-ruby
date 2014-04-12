@@ -53,7 +53,7 @@ module Concurrent
 
     # Calculate an Epoch time with milliseconds at which to execute a
     # task. If the given time is a `Time` object it will be converted
-    # accordingly. If the time is an integer value greate than zero
+    # accordingly. If the time is an integer value greater than zero
     # it will be understood as a number of seconds in the future and
     # will be added to the current time to calculate Epoch.
     #
@@ -109,7 +109,7 @@ module Concurrent
     # for monitoring the internal task queue and sending tasks to the
     # executor when it is time for them to be processed. If there is no
     # processing thread one will be created. If the processing thread is
-    # sleeping it will be worken up. If the processing thread has died it
+    # sleeping it will be woken up. If the processing thread has died it
     # will be garbage collected and a new one will be created.
     #
     # @!visibility private
@@ -160,7 +160,7 @@ module Concurrent
     end
 
     # Run a loop and execute tasks in the scheduled order and at the approximate
-    # shceduled time. If no tasks remain the thread will exit gracefully so that
+    # scheduled time. If no tasks remain the thread will exit gracefully so that
     # garbage collection can occur. If there are no ready tasks it will sleep
     # for up to 60 seconds waiting for the next scheduled task.
     #
