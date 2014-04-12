@@ -4,7 +4,7 @@ module Concurrent
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       task.call(*args)
-      return true
+      true
     end
 
     def <<(task)
