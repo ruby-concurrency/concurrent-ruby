@@ -4,7 +4,6 @@ require 'concurrent/dereferenceable'
 require 'concurrent/observable'
 require 'concurrent/runnable'
 require 'concurrent/stoppable'
-require 'concurrent/utilities'
 
 module Concurrent
 

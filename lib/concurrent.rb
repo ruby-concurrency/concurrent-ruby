@@ -1,11 +1,11 @@
 require 'concurrent/version'
 require 'concurrent/configuration'
 
-require 'concurrent/atomic'
-require 'concurrent/actor'
-require 'concurrent/channel'
-require 'concurrent/collection'
-require 'concurrent/executor'
+require 'concurrent/atomics'
+require 'concurrent/actors'
+require 'concurrent/channels'
+require 'concurrent/collections'
+require 'concurrent/executors'
 require 'concurrent/utilities'
 
 require 'concurrent/agent'

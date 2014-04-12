@@ -1,3 +1,3 @@
-require 'concurrent/utilities/processor_count'
-require 'concurrent/utilities/timeout'
-require 'concurrent/utilities/timer'
+require 'concurrent/utility/processor_count'
+require 'concurrent/utility/timeout'
+require 'concurrent/utility/timer'

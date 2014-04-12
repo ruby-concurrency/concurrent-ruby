@@ -1,6 +1,7 @@
 require 'thread'
-require 'concurrent/executor'
-require 'concurrent/utilities/processor_count'
+require 'concurrent/executor/thread_pool_executor'
+require 'concurrent/executor/timer_set'
+require 'concurrent/utility/processor_count'
 
 module Concurrent
 
