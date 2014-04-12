@@ -1,16 +1,14 @@
 require 'thread'
 
+require_relative 'executor'
 require 'concurrent/atomic/event'
 require 'concurrent/executor/ruby_thread_pool_worker'
 
 module Concurrent
 
-  # An exception class raised when the maximum queue size is reached and the
-  # `overflow_policy` is set to `:abort`.
-  RejectedExecutionError = Class.new(StandardError) unless defined? RejectedExecutionError
-
   # @!macro thread_pool_executor
   class RubyThreadPoolExecutor
+    include Executor
 
     # Default maximum number of threads that will be created in the pool.
     DEFAULT_MAX_POOL_SIZE = 2**15 # 32768
@@ -186,16 +184,6 @@ module Concurrent
         grow_pool
         true
       end
-    end
-
-    # Submit a task to the thread pool for asynchronous processing.
-    #
-    # @param [Proc] task the asynchronous task to perform
-    #
-    # @return [self] returns itself
-    def <<(task)
-      self.post(&task)
-      return self
     end
 
     # Begin an orderly shutdown. Tasks already in the queue will be executed,

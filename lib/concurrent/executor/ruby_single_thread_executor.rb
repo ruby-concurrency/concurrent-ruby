@@ -1,11 +1,13 @@
 require 'thread'
 
+require_relative 'executor'
 require 'concurrent/atomic/event'
 
 module Concurrent
 
   # @!macro single_thread_executor
   class RubySingleThreadExecutor
+    include Executor
 
     # Create a new thread pool.
     #
@@ -65,16 +67,6 @@ module Concurrent
         @queue << [args, task]
         true
       end
-    end
-
-    # Submit a task to the thread pool for asynchronous processing.
-    #
-    # @param [Proc] task the asynchronous task to perform
-    #
-    # @return [self] returns itself
-    def <<(task)
-      self.post(&task)
-      return self
     end
 
     # Begin an orderly shutdown. Tasks already in the queue will be executed,

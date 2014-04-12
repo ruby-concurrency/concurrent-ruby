@@ -1,9 +1,11 @@
 if RUBY_PLATFORM == 'java'
+  require_relative 'executor'
 
   module Concurrent
 
     # @!macro single_thread_executor
     class JavaSingleThreadExecutor
+      include Executor
 
       # Create a new thread pool.
       #
@@ -63,17 +65,6 @@ if RUBY_PLATFORM == 'java'
         else
           false
         end
-      rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
-        raise RejectedExecutionError
-      end
-
-      # Submit a task to the thread pool for asynchronous processing.
-      #
-      # @param [Proc] task the asynchronous task to perform
-      #
-      # @return [self] returns itself
-      def <<(task)
-        @executor.submit(&task)
       rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
         raise RejectedExecutionError
       end

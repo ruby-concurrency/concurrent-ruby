@@ -1,13 +1,11 @@
 if RUBY_PLATFORM == 'java'
+  require_relative 'executor'
 
   module Concurrent
 
-    # An exception class raised when the maximum queue size is reached and the
-    # `overflow_policy` is set to `:abort`.
-    RejectedExecutionError = Class.new(StandardError) unless defined? RejectedExecutionError
-
     # @!macro thread_pool_executor
     class JavaThreadPoolExecutor
+      include Executor
 
       # Default maximum number of threads that will be created in the pool.
       DEFAULT_MAX_POOL_SIZE = java.lang.Integer::MAX_VALUE # 2147483647
@@ -211,17 +209,6 @@ if RUBY_PLATFORM == 'java'
         else
           false
         end
-      rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
-        raise RejectedExecutionError
-      end
-
-      # Submit a task to the thread pool for asynchronous processing.
-      #
-      # @param [Proc] task the asynchronous task to perform
-      #
-      # @return [self] returns itself
-      def <<(task)
-        @executor.submit(&task)
       rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
         raise RejectedExecutionError
       end

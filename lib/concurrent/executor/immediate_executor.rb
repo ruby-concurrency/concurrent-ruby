@@ -1,15 +1,13 @@
+require_relative 'executor'
+
 module Concurrent
   class ImmediateExecutor
+    include Executor
 
-    def post(*args, &block)
+    def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      block.call(*args)
+      task.call(*args)
       return true
-    end
-
-    def <<(block)
-      post(&block)
-      self
     end
   end
 end
