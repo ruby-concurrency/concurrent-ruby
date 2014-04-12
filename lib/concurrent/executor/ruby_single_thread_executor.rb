@@ -17,26 +17,6 @@ module Concurrent
       init_executor
     end
 
-    # Submit a task to the thread pool for asynchronous processing.
-    #
-    # @param [Array] args zero or more arguments to be passed to the task
-    #
-    # @yield the asynchronous task to perform
-    #
-    # @return [Boolean] `true` if the task is queued, `false` if the thread pool
-    #   is not running
-    #
-    # @raise [ArgumentError] if no task is given
-    def post(*args, &task)
-      raise ArgumentError.new('no block given') unless block_given?
-      mutex.synchronize do
-        break false unless running?
-        supervise
-        @queue << [args, task]
-        true
-      end
-    end
-
     # Begin an orderly shutdown. Tasks already in the queue will be executed,
     # but no new tasks will be accepted. Has no additional effect if the
     # thread pool is not running.
@@ -64,6 +44,11 @@ module Concurrent
     end
 
     protected
+
+    def execute(*args, &task)
+      supervise
+      @queue << [args, task]
+    end
 
     def alive?
       @thread && @thread.alive?

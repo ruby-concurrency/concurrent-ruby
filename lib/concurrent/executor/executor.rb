@@ -8,6 +8,35 @@ module Concurrent
 
   module Executor
 
+    # Submit a task to the thread pool for asynchronous processing.
+    #
+    # @param [Array] args zero or more arguments to be passed to the task
+    #
+    # @yield the asynchronous task to perform
+    #
+    # @return [Boolean] `true` if the task is queued, `false` if the thread pool
+    #   is not running
+    #
+    # @raise [ArgumentError] if no task is given
+    def post(*args, &task)
+      raise ArgumentError.new('no block given') unless block_given?
+      mutex.synchronize do
+        break false unless running?
+        execute(*args, &task)
+        true
+      end
+    end
+
+    # Submit a task to the thread pool for asynchronous processing.
+    #
+    # @param [Proc] task the asynchronous task to perform
+    #
+    # @return [self] returns itself
+    def <<(task)
+      post(&task)
+      self
+    end
+
     # Is the thread pool running?
     #
     # @return [Boolean] `true` when running, `false` when shutting down or shutdown
@@ -41,9 +70,6 @@ module Concurrent
       @stopped_event.wait(timeout.to_i)
     end
 
-    def post(*args, &task)
-    end
-
     protected
 
     attr_reader :mutex, :stop_event, :stopped_event
@@ -55,6 +81,7 @@ module Concurrent
     end
 
     def execute(*args, &task)
+      raise NotImplementedError
     end
   end
 

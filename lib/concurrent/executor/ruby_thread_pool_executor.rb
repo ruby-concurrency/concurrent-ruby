@@ -87,11 +87,11 @@ module Concurrent
       raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
       raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(@overflow_policy)
 
-      @state = :running
+      init_executor
+
       @pool = []
-      @terminator = Event.new
+      @stopped_event = Event.new
       @queue = Queue.new
-      @mutex = Mutex.new
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length = 0
@@ -104,8 +104,8 @@ module Concurrent
     #
     # @return [Integer] the length
     def length
-      @mutex.synchronize do
-        @state != :shutdown ? @pool.length : 0
+      mutex.synchronize do
+        running? ? @pool.length : 0
       end
     end
     alias_method :current_length, :length
@@ -122,14 +122,7 @@ module Concurrent
     #
     # @return [Integer] the remaining_capacity
     def remaining_capacity
-      @mutex.synchronize { @max_queue == 0 ? -1 : @max_queue - @queue.length }
-    end
-
-    # Is the thread pool running?
-    #
-    # @return [Boolean] `true` when running, `false` when shutting down or shutdown
-    def running?
-      @mutex.synchronize { @state == :running }
+      mutex.synchronize { @max_queue == 0 ? -1 : @max_queue - @queue.length }
     end
 
     # Returns an array with the status of each thread in the pool
@@ -137,14 +130,7 @@ module Concurrent
     # This method is deprecated and will be removed soon.
     def status
       warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
-      @mutex.synchronize { @pool.collect { |worker| worker.status } }
-    end
-
-    # Is the thread pool shutdown?
-    #
-    # @return [Boolean] `true` when shutdown, `false` when shutting down or running
-    def shutdown?
-      @mutex.synchronize { @state != :running }
+      mutex.synchronize { @pool.collect { |worker| worker.status } }
     end
 
     # Block until thread pool shutdown is complete or until `timeout` seconds have
@@ -157,7 +143,7 @@ module Concurrent
     #
     # @return [Boolean] `true` if shutdown complete or false on `timeout`
     def wait_for_termination(timeout)
-      return @terminator.wait(timeout.to_i)
+      return @stopped_event.wait(timeout.to_i)
     end
 
     # Submit a task to the thread pool for asynchronous processing.
@@ -172,8 +158,8 @@ module Concurrent
     # @raise [ArgumentError] if no task is given
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      @mutex.synchronize do
-        break false unless @state == :running
+      mutex.synchronize do
+        break false unless running?
         return handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
         @scheduled_task_count += 1
         @queue << [args, task]
@@ -190,14 +176,13 @@ module Concurrent
     # but no new tasks will be accepted. Has no additional effect if the
     # thread pool is not running.
     def shutdown
-      @mutex.synchronize do
-        break unless @state == :running
+      mutex.synchronize do
+        break unless running?
         @queue.clear
+        stop_event.set
         if @pool.empty?
-          @state = :shutdown
-          @terminator.set
+          @stopped_event.set
         else
-          @state = :shuttingdown
           @pool.length.times{ @queue << :stop }
         end
       end
@@ -208,12 +193,12 @@ module Concurrent
     # will be accepted. Has no additional effect if the thread pool is
     # not running.
     def kill
-      @mutex.synchronize do
-        break if @state == :shutdown
+      mutex.synchronize do
+        return if shutdown?
+        stop_event.set
         @queue.clear
-        @state = :shutdown
         drain_pool
-        @terminator.set
+        stopped_event.set
       end
     end
 
@@ -221,9 +206,9 @@ module Concurrent
     #
     # @!visibility private
     def on_end_task # :nodoc:
-      @mutex.synchronize do
+      mutex.synchronize do
         @completed_task_count += 1 #if success
-        break unless @state == :running
+        break unless running?
       end
     end
 
@@ -231,11 +216,11 @@ module Concurrent
     #
     # @!visibility private
     def on_worker_exit(worker) # :nodoc:
-      @mutex.synchronize do
+      mutex.synchronize do
         @pool.delete(worker)
-        if @pool.empty? && @state != :running
-          @state = :shutdown
-          @terminator.set
+        if @pool.empty? && ! running?
+          stop_event.set
+          stopped_event.set
         end
       end
     end
