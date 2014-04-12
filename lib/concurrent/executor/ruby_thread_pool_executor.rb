@@ -146,32 +146,6 @@ module Concurrent
       return @stopped_event.wait(timeout.to_i)
     end
 
-    # Submit a task to the thread pool for asynchronous processing.
-    #
-    # @param [Array] args zero or more arguments to be passed to the task
-    #
-    # @yield the asynchronous task to perform
-    #
-    # @return [Boolean] `true` if the task is queued, `false` if the thread pool
-    #   is not running
-    #
-    # @raise [ArgumentError] if no task is given
-    def post(*args, &task)
-      raise ArgumentError.new('no block given') unless block_given?
-      mutex.synchronize do
-        break false unless running?
-        return handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
-        @scheduled_task_count += 1
-        @queue << [args, task]
-        if Time.now.to_f - @gc_interval >= @last_gc_time
-          prune_pool
-          @last_gc_time = Time.now.to_f
-        end
-        grow_pool
-        true
-      end
-    end
-
     # Begin an orderly shutdown. Tasks already in the queue will be executed,
     # but no new tasks will be accepted. Has no additional effect if the
     # thread pool is not running.
@@ -205,7 +179,7 @@ module Concurrent
     # Run on task completion.
     #
     # @!visibility private
-    def on_end_task # :nodoc:
+    def on_end_task
       mutex.synchronize do
         @completed_task_count += 1 #if success
         break unless running?
@@ -215,7 +189,7 @@ module Concurrent
     # Run when a thread worker exits.
     #
     # @!visibility private
-    def on_worker_exit(worker) # :nodoc:
+    def on_worker_exit(worker)
       mutex.synchronize do
         @pool.delete(worker)
         if @pool.empty? && ! running?
@@ -227,13 +201,25 @@ module Concurrent
 
     protected
 
+    # @!visibility private
+    def execute(*args, &task)
+      return handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
+      @scheduled_task_count += 1
+      @queue << [args, task]
+      if Time.now.to_f - @gc_interval >= @last_gc_time
+        prune_pool
+        @last_gc_time = Time.now.to_f
+      end
+      grow_pool
+    end
+
     # Handler which executes the `overflow_policy` once the queue size
     # reaches `max_queue`.
     #
     # @param [Array] args the arguments to the task which is being handled.
     #
     # @!visibility private
-    def handle_overflow(*args) # :nodoc:
+    def handle_overflow(*args)
       case @overflow_policy
       when :abort
         raise RejectedExecutionError
@@ -253,7 +239,7 @@ module Concurrent
     # too long.
     #
     # @!visibility private
-    def prune_pool # :nodoc:
+    def prune_pool
       @pool.delete_if do |worker|
         worker.dead? ||
           (@idletime == 0 ? false : Time.now.to_f - @idletime > worker.last_activity)
@@ -263,7 +249,7 @@ module Concurrent
     # Increase the size of the pool when necessary.
     #
     # @!visibility private
-    def grow_pool # :nodoc:
+    def grow_pool
       if @min_length > @pool.length
         additional = @min_length - @pool.length
       elsif @pool.length < @max_length && ! @queue.empty?
@@ -282,7 +268,7 @@ module Concurrent
     # Reclaim all threads in the pool.
     #
     # @!visibility private
-    def drain_pool # :nodoc:
+    def drain_pool
       @pool.each {|worker| worker.kill }
       @pool.clear
     end
@@ -292,7 +278,7 @@ module Concurrent
     # @return [Thread] the new thread.
     #
     # @!visibility private
-    def create_worker_thread # :nodoc:
+    def create_worker_thread
       wrkr = RubyThreadPoolWorker.new(@queue, self)
       Thread.new(wrkr, self) do |worker, parent|
         Thread.current.abort_on_exception = false
