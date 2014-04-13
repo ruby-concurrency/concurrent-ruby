@@ -9,7 +9,7 @@ require 'rake/clean'
 host_os = RbConfig::CONFIG['host_os']
 ruby_name = RbConfig::CONFIG['ruby_install_name']
 
-EXTENSION_NAME = 'concurrent-ruby'
+EXTENSION_NAME = 'concurrent_ruby'
 
 if ruby_name =~ /^ruby$/i && RUBY_VERSION >= '2.0'
   require 'rake/extensiontask'
