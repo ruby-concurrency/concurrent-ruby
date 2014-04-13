@@ -63,7 +63,7 @@ module Concurrent
     # thread pool is not running.
     def shutdown
       mutex.synchronize do
-        return unless running?
+        break unless running?
         stop_event.set
         shutdown_execution
       end
@@ -76,7 +76,7 @@ module Concurrent
     # not running.
     def kill
       mutex.synchronize do
-        return if shutdown?
+        break if shutdown?
         stop_event.set
         kill_execution
         stopped_event.set
@@ -93,8 +93,8 @@ module Concurrent
     # @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
     #
     # @return [Boolean] `true` if shutdown complete or false on `timeout`
-    def wait_for_termination(timeout)
-      stopped_event.wait(timeout.to_f)
+    def wait_for_termination(timeout = nil)
+      stopped_event.wait(timeout)
     end
 
     protected
