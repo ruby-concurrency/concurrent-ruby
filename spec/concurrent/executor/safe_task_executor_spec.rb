@@ -26,6 +26,9 @@ module Concurrent
           reason.should be_nil
         end
 
+        it 'passes all arguments to #execute to the task'
+
+        it 'protectes #execute with a mutex'
       end
 
       context 'failing execution' do
@@ -49,9 +52,12 @@ module Concurrent
           reason.message.should eq 'an error'
         end
 
+        it 'rescues Exception when :rescue_exception is true'
+
+        it 'rescues StandardError when :rescue_exception is false'
+
+        it 'rescues StandardError by default'
       end
-
     end
-
   end
 end
