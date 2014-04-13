@@ -6,12 +6,13 @@ require 'rspec'
 require 'rspec/core/rake_task'
 require 'rake/clean'
 
-host_os = RbConfig::CONFIG['host_os']
-ruby_name = RbConfig::CONFIG['ruby_install_name']
+def use_extensions?
+  RbConfig::CONFIG['ruby_install_name'] =~ /^ruby$/i && RUBY_VERSION >= '2.0'
+end
 
 EXTENSION_NAME = 'concurrent_ruby_ext'
 
-if ruby_name =~ /^ruby$/i && RUBY_VERSION >= '2.0'
+if use_extensions?
   require 'rake/extensiontask'
 
   CLEAN.include Rake::FileList['**/*.so', '**/*.bundle', '**/*.o', '**/mkmf.log', '**/Makefile']
@@ -45,4 +46,8 @@ RSpec::Core::RakeTask.new(:travis_spec) do |t|
   t.rspec_opts = '--tag ~@not_on_travis'
 end
 
-task :default => [:travis_spec]
+if use_extensions?
+  task :default => [:compile, :travis_spec]
+else
+  task :default => [:travis_spec]
+end

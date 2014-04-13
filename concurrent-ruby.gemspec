@@ -28,6 +28,4 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.3'
 
   s.extensions << 'ext/concurrent_ruby_ext/extconf.rb'
-
-  s.add_development_dependency 'rake-compiler'
 end
