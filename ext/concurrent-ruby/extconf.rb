@@ -1,6 +1,6 @@
 require 'rbconfig'
 
-EXTENSION_NAME = 'concurrent'
+EXTENSION_NAME = 'concurrent-ruby'
 
 def real_build
   dir_config(EXTENSION_NAME)
@@ -9,7 +9,7 @@ end
 
 def fake_build
   # http://yorickpeterse.com/articles/hacking-extconf-rb/
-  File.touch(File.join(Dir.pwd, 'concurrent-ruby.' + RbConfig::CONFIG['DLEXT']))
+  File.touch(File.join(Dir.pwd, EXTENSION_NAME + '.' + RbConfig::CONFIG['DLEXT']))
   $makefile_created = true
 end
 
@@ -24,7 +24,7 @@ elsif ruby_name =~ /^rbx$/i
   puts 'C extensions for this gem not supported on Rubinius. 100% pure Ruby classes will be installed.'
 elsif ruby_name =~ /^ruby$/i
   if RUBY_VERSION < '2.0'
-    puts 'C extensions for this gem are only supported on MTI/CRuby 2.0 and above. 100% pure Ruby classes will be installed.'
+    puts 'C extensions for this gem are only supported on MRI/CRuby 2.0 and above. 100% pure Ruby classes will be installed.'
   else
     require 'mkmf'
     if ! have_library('pthread')

@@ -9,13 +9,15 @@ require 'rake/clean'
 host_os = RbConfig::CONFIG['host_os']
 ruby_name = RbConfig::CONFIG['ruby_install_name']
 
+EXTENSION_NAME = 'concurrent-ruby'
+
 if ruby_name =~ /^ruby$/i && RUBY_VERSION >= '2.0'
   require 'rake/extensiontask'
 
   CLEAN.include Rake::FileList['**/*.so', '**/*.bundle', '**/*.o', '**/mkmf.log', '**/Makefile']
 
   spec = Gem::Specification.load('concurrent-ruby.gemspec')
-  Rake::ExtensionTask.new('concurrent', spec) do |ext|
+  Rake::ExtensionTask.new(EXTENSION_NAME, spec) do |ext|
     ext.source_pattern = "**/*.{h,c,cpp}"
   end
 
@@ -23,7 +25,7 @@ if ruby_name =~ /^ruby$/i && RUBY_VERSION >= '2.0'
   task :rebuild => [ :clean, :compile ]
 
   task :irb => [:compile] do
-    sh 'irb -r ./lib/rubyconcurrent.bundle'
+    sh "irb -r ./lib/#{EXTENSION_NAME}.bundle"
   end
 end
 
