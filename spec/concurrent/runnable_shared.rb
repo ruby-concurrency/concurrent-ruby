@@ -55,7 +55,13 @@ share_examples_for :runnable do
       subject.should be_running
     end
 
+    it 'returns false when first created' do
+      subject.should_not be_running
+    end
+
     it 'returns false when not running' do
+      subject.stop
+      sleep(0.1)
       subject.should_not be_running
     end
   end
