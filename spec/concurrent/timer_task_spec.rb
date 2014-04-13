@@ -1,10 +1,17 @@
 require 'spec_helper'
+require_relative 'dereferenceable_shared'
 require_relative 'runnable_shared'
-require_relative 'stoppable_shared'
+#require_relative 'stoppable_shared'
 
 module Concurrent
 
   describe TimerTask do
+
+    before(:each) do
+      # suppress deprecation warnings.
+      Concurrent::TimerTask.any_instance.stub(:warn)
+      Concurrent::TimerTask.stub(:warn)
+    end
 
     after(:each) do
       @subject = @subject.runner if @subject.respond_to?(:runner)
@@ -13,22 +20,43 @@ module Concurrent
       sleep(0.1)
     end
 
-    context ':runnable' do
+    context :runnable do
 
       subject { TimerTask.new{ nil } }
 
       it_should_behave_like :runnable
     end
 
-    context ':stoppable' do
+    # @deprecated Updated to use `Executor` instead of `Runnable`
+    #context :stoppable do
 
-      subject do
-        task = TimerTask.new{ nil }
-        task.run!
-        task
+      #subject do
+        #task = TimerTask.new{ nil }
+        #task.run!
+        #task
+      #end
+
+      #it_should_behave_like :stoppable
+    #end
+
+    context :dereferenceable do
+
+      def dereferenceable_subject(value, opts = {})
+        opts = opts.merge(execution_interval: 0.1, run_now: true)
+        TimerTask.new(opts){ value }.execute.tap{ sleep(0.1) }
       end
 
-      it_should_behave_like :stoppable
+      def dereferenceable_observable(opts = {})
+        opts = opts.merge(execution_interval: 0.1, run_now: true)
+        TimerTask.new(opts){ 'value' }
+      end
+
+      def execute_dereferenceable(subject)
+        subject.execute
+        sleep(0.1)
+      end
+
+      it_should_behave_like :dereferenceable
     end
 
     context 'created with #new' do
@@ -89,6 +117,7 @@ module Concurrent
       context '#kill' do
 
         it 'kills its threads while sleeping' do
+          pending('deprecated')
           Thread.should_receive(:kill).at_least(:once).times.with(any_args)
           task = TimerTask.new(run_now: false){ nil }
           task.run!
@@ -97,6 +126,7 @@ module Concurrent
         end
 
         it 'kills its threads once executing' do
+          pending('deprecated')
           Thread.should_receive(:kill).at_least(2).times.with(any_args)
           task = TimerTask.new(run_now: true){ nil }
           task.run!
@@ -112,6 +142,7 @@ module Concurrent
         end
 
         it 'returns false on exception' do
+          pending('deprecated')
           Thread.stub(:kill).with(any_args).and_raise(StandardError)
           task = TimerTask.new(run_now: false){ nil }
           task.run!
@@ -214,6 +245,7 @@ module Concurrent
       end
 
       it 'kills the worker thread if the timeout is reached' do
+        pending('deprecated')
         # the after(:each) block will trigger this expectation
         Thread.should_receive(:kill).at_least(1).with(any_args())
         @subject = TimerTask.new(execution_interval: 0.5, timeout_interval: 0.5){ Thread.stop }
