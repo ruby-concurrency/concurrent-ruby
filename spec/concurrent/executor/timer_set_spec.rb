@@ -35,6 +35,8 @@ module Concurrent
       latch.wait(0.2).should be_true
     end
 
+    it 'passes all areguments to the task on execution'
+
     it 'immediately posts a task when the delay is zero' do
       Thread.should_not_receive(:new).with(any_args)
       subject.post(0){ true }

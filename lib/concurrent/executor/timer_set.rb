@@ -42,7 +42,7 @@ module Concurrent
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
-    def post(intended_time, &task)
+    def post(intended_time, *args, &task)
       time = TimerSet.calculate_schedule_time(intended_time).to_f
       raise ArgumentError.new('no block given') unless block_given?
 
@@ -50,9 +50,9 @@ module Concurrent
         return false unless running?
 
         if (time - Time.now.to_f) <= 0.01
-          @executor.post(&task)
+          @executor.post(*args, &task)
         else
-          @queue.push(Task.new(time, task))
+          @queue.push(Task.new(time, args, task))
           check_processing_thread!
         end
 
@@ -94,7 +94,7 @@ module Concurrent
     # times.
     #
     # @!visibility private
-    Task = Struct.new(:time, :op) do
+    Task = Struct.new(:time, :args, :op) do
       include Comparable
 
       def <=>(other)
@@ -137,7 +137,6 @@ module Concurrent
     # @!visibility private
     def process_tasks
       loop do
-
         mutex.synchronize do
           if @queue.empty?
             @thread = nil
@@ -148,7 +147,7 @@ module Concurrent
           interval = task.time - Time.now.to_f
 
           if interval <= 0
-            @executor.post(&task.op)
+            @executor.post(*task.args, &task.op)
             @queue.pop
           else
             @condition.wait(mutex, [interval, 60].min)

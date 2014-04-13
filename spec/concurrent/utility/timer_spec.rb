@@ -33,6 +33,8 @@ module Concurrent
       }.to_not raise_error
     end
 
+    it 'passes all arguments to the block'
+
     it 'runs the task on the global timer pool' do
       Concurrent.configuration.global_timer_set.should_receive(:post).with(0.1)
       Concurrent::timer(0.1){ :foo }

@@ -10,11 +10,11 @@ module Concurrent
   # @yield the task to execute
   #
   # @return [Boolean] true
-  def timer(seconds, &block)
+  def timer(seconds, *args, &block)
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('interval must be greater than or equal to zero') if seconds < 0
 
-    Concurrent.configuration.global_timer_set.post(seconds, &block)
+    Concurrent.configuration.global_timer_set.post(seconds, *args, &block)
     true
   end
   module_function :timer
