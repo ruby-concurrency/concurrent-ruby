@@ -21,7 +21,6 @@ module Concurrent
       end
 
       it 'returns false if the event is unset' do
-        #subject.reset
         subject.should_not be_set
       end
     end
@@ -29,7 +28,6 @@ module Concurrent
     context '#set' do
 
       it 'triggers the event' do
-        #subject.reset
         @expected = false
         Thread.new{ subject.wait; @expected = true }
         sleep(0.1)
@@ -44,13 +42,22 @@ module Concurrent
       end
     end
 
+    context '#try?' do
+
+      it 'triggers the event if not already set'
+
+      it 'returns true if not previously set'
+
+      it 'returns false if previously set'
+    end
+
     context '#reset' do
 
       it 'does not change the state of an unset event' do
         subject.reset
         subject.should_not be_set
       end
- 
+
       it 'does not trigger an unset event' do
         @expected = false
         Thread.new{ subject.wait; @expected = true }

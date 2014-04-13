@@ -47,6 +47,14 @@ module Concurrent
       true
     end
 
+    def try?
+      @mutex.synchronize do
+        return false if @set
+        @set = true
+        @condition.broadcast
+      end
+    end
+
     # Reset a previously set event back to the `unset` state.
     # Has no effect if the `Event` has not yet been set.
     #
