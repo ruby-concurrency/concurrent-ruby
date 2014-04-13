@@ -13,7 +13,7 @@ VALUE method_atomic_fixnum_increment(VALUE);
 VALUE method_atomic_fixnum_decrement(VALUE);
 VALUE method_atomic_fixnum_compare_and_set(VALUE, VALUE, VALUE);
 
-void Init_concurrent_ruby() {
+void Init_concurrent_ruby_ext() {
 
   // define modules and classes
   rb_mConcurrent = rb_define_module("Concurrent");

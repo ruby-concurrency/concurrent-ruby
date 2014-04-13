@@ -9,7 +9,7 @@ require 'rake/clean'
 host_os = RbConfig::CONFIG['host_os']
 ruby_name = RbConfig::CONFIG['ruby_install_name']
 
-EXTENSION_NAME = 'concurrent_ruby'
+EXTENSION_NAME = 'concurrent_ruby_ext'
 
 if ruby_name =~ /^ruby$/i && RUBY_VERSION >= '2.0'
   require 'rake/extensiontask'
@@ -21,8 +21,12 @@ if ruby_name =~ /^ruby$/i && RUBY_VERSION >= '2.0'
     ext.source_pattern = "**/*.{h,c,cpp}"
   end
 
+  task :return_dummy_makefile do
+    sh "git co ext/#{EXTENSION_NAME}/Makefile"
+  end
+
   desc 'Clean, compile, and build the extension from scratch'
-  task :rebuild => [ :clean, :compile ]
+  task :rebuild => [ :clean, :compile, :return_dummy_makefile ]
 
   task :irb => [:compile] do
     sh "irb -r ./lib/#{EXTENSION_NAME}.bundle"

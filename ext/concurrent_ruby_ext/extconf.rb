@@ -1,6 +1,6 @@
 require 'rbconfig'
 
-EXTENSION_NAME = 'concurrent_ruby'
+EXTENSION_NAME = 'concurrent_ruby_ext'
 
 def real_build
   dir_config(EXTENSION_NAME)
