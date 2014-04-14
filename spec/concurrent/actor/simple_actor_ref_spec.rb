@@ -36,91 +36,11 @@ module Concurrent
         described_class.should_receive(:new).once.with(anything, opts)
         shared_actor_test_class.spawn(opts)
       end
-    end
 
-    context 'supervision' do
-
-      it 'does not start a new thread on construction' do
-        Thread.should_not_receive(:new).with(any_args)
-        subject = shared_actor_test_class.spawn
-      end
-
-      it 'starts a new thread on the first post' do
-        thread = Thread.new{ nil }
-        Thread.should_receive(:new).once.with(no_args).and_return(thread)
-        subject << :foo
-      end
-
-      it 'does not start a new thread after the first post' do
-        subject << :foo
-        sleep(0.1)
-        expected = Thread.list.length
-        5.times{ subject << :foo }
-        Thread.list.length.should eq expected
-      end
-
-      it 'starts a new thread when the prior thread has died' do
-        subject << :foo
-        sleep(0.1)
-
-        subject << :terminate
-        sleep(0.1)
-
-        thread = Thread.new{ nil }
-        Thread.should_receive(:new).once.with(no_args).and_return(thread)
-        subject << :foo
-      end
-
-      it 'does not reset the thread after shutdown' do
-        thread = Thread.new{ nil }
-        Thread.should_receive(:new).once.with(no_args).and_return(thread)
-        subject << :foo
-        sleep(0.1)
-
-        subject.shutdown
-        sleep(0.1)
-
-        subject << :foo
-      end
-
-      it 'calls #on_start when the thread is first started' do
-        actor = subject.instance_variable_get(:@actor)
+      it 'calls #on_start on the actor' do
+        actor = double(:shared_actor_test_class)
         actor.should_receive(:on_start).once.with(no_args)
-        subject << :foo
-      end
-
-      it 'calls #on_reset when the thread is started after the first time' do
-        actor = subject.instance_variable_get(:@actor)
-        actor.should_receive(:on_reset).once.with(no_args)
-        subject << :terminate
-        sleep(0.1)
-        subject << :foo
-      end
-    end
-
-    context 'abort_on_exception' do
-
-      after(:each) do
-        @ref.shutdown if @ref
-      end
-
-      it 'gets set on the actor thread' do
-        @ref = shared_actor_test_class.spawn(abort_on_exception: true)
-        @ref << :foo
-        sleep(0.1)
-        @ref.instance_variable_get(:@thread).abort_on_exception.should be_true
-
-        @ref = shared_actor_test_class.spawn(abort_on_exception: false)
-        @ref << :foo
-        sleep(0.1)
-        @ref.instance_variable_get(:@thread).abort_on_exception.should be_false
-      end
-
-      it 'defaults to true' do
-        @ref = shared_actor_test_class.spawn
-        @ref << :foo
-        sleep(0.1)
-        @ref.instance_variable_get(:@thread).abort_on_exception.should be_true
+        SimpleActorRef.new(actor)
       end
     end
 

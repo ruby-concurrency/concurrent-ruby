@@ -99,8 +99,9 @@ share_examples_for :actor_ref do
     end
 
     it 'returns self' do
-      pending('intermittently failing on Travis CI -- SimpleActorRef')
-      (subject << [1,2,3,4]).should eq subject
+      expected = subject
+      result = subject << [1,2,3,4]
+      result.should eq expected
     end
   end
 
