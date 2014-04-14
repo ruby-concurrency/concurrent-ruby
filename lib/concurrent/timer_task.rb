@@ -1,6 +1,6 @@
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
-require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/safe_task_executor'
 
@@ -193,7 +193,7 @@ module Concurrent
       self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
       @run_now = opts[:now] || opts[:run_now]
       @executor = Concurrent::SafeTaskExecutor.new(task)
-      @running = Concurrent::AtomicFixnum.new(0)
+      @running = Concurrent::AtomicBoolean.new(false)
 
       self.observers = CopyOnWriteObserverSet.new
     end
@@ -202,7 +202,7 @@ module Concurrent
     #
     # @return [Boolean] `true` when running, `false` when shutting down or shutdown
     def running?
-      @running.value == 1
+      @running.true?
     end
 
     # Execute a previously created `TimerTask`.
@@ -222,8 +222,8 @@ module Concurrent
     # @since 0.6.0
     def execute
       mutex.synchronize do
-        if @running.value == 0
-          @running.value = 1
+        if @running.false?
+          @running.make_true
           schedule_next_task(@run_now ? 0 : @execution_interval)
         end
       end
@@ -299,7 +299,7 @@ module Concurrent
 
     # @deprecated Updated to use `Executor` instead of `Runnable`
     def run
-      raise Concurrent::Runnable::LifecycleError.new('already running') if @running.value == 1
+      raise Concurrent::Runnable::LifecycleError.new('already running') if @running.true?
       self.execute
       self.wait_for_termination
       true
@@ -311,13 +311,13 @@ module Concurrent
 
     # @!visibility private
     def shutdown_execution
-      @running.value = 0
+      @running.make_false
       super
     end
 
     # @!visibility private
     def kill_execution
-      @running.value = 0
+      @running.make_false
       super
     end
 
@@ -328,7 +328,7 @@ module Concurrent
 
     # @!visibility private
     def execute_task(completion)
-      return unless @running.value == 1
+      return unless @running.true?
       Concurrent::timer(timeout_interval, completion, &method(:timeout_task))
       success, value, reason = @executor.execute(self)
       if completion.try?
@@ -343,7 +343,7 @@ module Concurrent
 
     # @!visibility private
     def timeout_task(completion)
-      return unless @running.value == 1
+      return unless @running.true?
       if completion.try?
         self.value = value
         schedule_next_task
