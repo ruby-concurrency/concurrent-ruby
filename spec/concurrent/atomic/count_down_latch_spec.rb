@@ -85,7 +85,7 @@ end
 
 module Concurrent
 
-  describe CountDownLatch do
+  describe MutexCountDownLatch do
 
     it_should_behave_like :count_down_latch
 
@@ -134,6 +134,18 @@ module Concurrent
     describe JavaCountDownLatch do
 
       it_should_behave_like :count_down_latch
+    end
+  end
+
+  describe CountDownLatch do
+    if jruby?
+      it 'inherits from JavaCountDownLatch' do
+        CountDownLatch.ancestors.should include(JavaCountDownLatch)
+      end
+    else
+      it 'inherits from MutexCountDownLatch' do
+        CountDownLatch.ancestors.should include(MutexCountDownLatch)
+      end
     end
   end
 end
