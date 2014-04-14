@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-def shared_actor_test_class
+def create_actor_test_class
   Class.new do
     include Concurrent::ActorContext
 
