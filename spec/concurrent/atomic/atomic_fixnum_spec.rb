@@ -15,7 +15,7 @@ share_examples_for :atomic_fixnum do
     it 'raises en exception if the initial value is not a Fixnum' do
       lambda {
         described_class.new(10.01)
-      }.should raise_error(ArgumentError)
+      }.should raise_error
     end
   end
 
@@ -48,7 +48,7 @@ share_examples_for :atomic_fixnum do
       atomic = described_class.new(0)
       expect {
         atomic.value = 'foo'
-      }.to raise_error(ArgumentError)
+      }.to raise_error
     end
   end
 
@@ -160,16 +160,25 @@ module Concurrent
     end
   end
 
-  if jruby?
+  if use_extensions?
+
+    describe CAtomicFixnum do
+      it_should_behave_like :atomic_fixnum
+    end
+
+  elsif jruby?
 
     describe JavaAtomicFixnum do
-
       it_should_behave_like :atomic_fixnum
     end
   end
 
   describe AtomicFixnum do
-    if jruby?
+    if use_extensions?
+      it 'inherits from CAtomicFixnum' do
+        AtomicFixnum.ancestors.should include(CAtomicFixnum)
+      end
+    elsif jruby?
       it 'inherits from JavaAtomicFixnum' do
         AtomicFixnum.ancestors.should include(JavaAtomicFixnum)
       end
