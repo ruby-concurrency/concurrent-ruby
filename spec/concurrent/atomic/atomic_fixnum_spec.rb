@@ -114,17 +114,7 @@ end
 
 module Concurrent
 
-  MutexAtomicFixnumTester = Class.new do
-    include MutexAtomicFixnum
-    def initialize(init = 0)
-      raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
-      allocate_storage(init)
-    end
-    alias_method :up, :increment
-    alias_method :down, :decrement
-  end
-
-  describe MutexAtomicFixnumTester do
+  describe MutexAtomicFixnum do
 
     it_should_behave_like :atomic_fixnum
 
@@ -172,17 +162,7 @@ module Concurrent
 
   if jruby?
 
-    JavaAtomicFixnumTester = Class.new do
-      include JavaAtomicFixnum
-      def initialize(init = 0)
-        raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
-        allocate_storage(init)
-      end
-      alias_method :up, :increment
-      alias_method :down, :decrement
-    end
-
-    describe JavaAtomicFixnumTester do
+    describe JavaAtomicFixnum do
 
       it_should_behave_like :atomic_fixnum
     end
