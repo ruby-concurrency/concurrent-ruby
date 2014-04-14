@@ -57,6 +57,35 @@ module Concurrent
     def count
       @mutex.synchronize { @count }
     end
+  end
 
+  if RUBY_PLATFORM == 'java'
+
+    class JavaCountDownLatch
+
+      def initialize(count)
+        unless count.is_a?(Fixnum) && count >= 0
+          raise ArgumentError.new('count must be in integer greater than or equal zero')
+        end
+        @latch = java.util.concurrent.CountDownLatch.new(count)
+      end
+
+      def wait(timeout = nil)
+        if timeout.nil?
+          @latch.await
+          true
+        else
+          @latch.await(timeout, java.util.concurrent.TimeUnit::SECONDS)
+        end
+      end
+
+      def count_down
+        @latch.countDown
+      end
+
+      def count
+        @latch.getCount
+      end
+    end
   end
 end
