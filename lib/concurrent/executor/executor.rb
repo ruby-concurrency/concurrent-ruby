@@ -191,7 +191,7 @@ module Concurrent
       #
       # @return [Boolean] `true` if shutdown complete or false on `timeout`
       def wait_for_termination(timeout)
-        @executor.awaitTermination(timeout.to_i, java.util.concurrent.TimeUnit::SECONDS)
+        @executor.awaitTermination(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
       end
 
       # Begin an orderly shutdown. Tasks already in the queue will be executed,

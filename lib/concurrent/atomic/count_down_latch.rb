@@ -88,7 +88,7 @@ module Concurrent
           @latch.await
           true
         else
-          @latch.await(timeout, java.util.concurrent.TimeUnit::SECONDS)
+          @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
         end
       end
 
