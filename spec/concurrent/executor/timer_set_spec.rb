@@ -35,7 +35,7 @@ module Concurrent
       latch.wait(0.2).should be_true
     end
 
-    it 'passes all areguments to the task on execution'
+    it 'passes all arguments to the task on execution'
 
     it 'immediately posts a task when the delay is zero' do
       Thread.should_not_receive(:new).with(any_args)
@@ -101,23 +101,17 @@ module Concurrent
     end
 
     it 'stops the monitor thread on #shutdown' do
-      subject.post(0.2){ nil } # start the monitor thread
-      sleep(0.1)
-      thread = subject.instance_variable_get(:@thread)
-      thread.should_not be_nil
+      timer_executor = subject.instance_variable_get(:@timer_executor)
       subject.shutdown
       sleep(0.1)
-      thread.should_not be_alive
+      timer_executor.should_not be_running
     end
 
     it 'kills the monitor thread on #kill' do
-      subject.post(0.2){ nil } # start the monitor thread
-      sleep(0.1)
-      thread = subject.instance_variable_get(:@thread)
-      thread.should_not be_nil
+      timer_executor = subject.instance_variable_get(:@timer_executor)
       subject.kill
       sleep(0.1)
-      thread.should_not be_alive
+      timer_executor.should_not be_running
     end
 
     it 'rejects tasks once shutdown' do

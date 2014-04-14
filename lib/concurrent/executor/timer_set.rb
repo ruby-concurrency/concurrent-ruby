@@ -3,6 +3,7 @@ require_relative 'executor'
 require 'concurrent/options_parser'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
+require 'concurrent/executor/single_thread_executor'
 
 module Concurrent
 
@@ -23,8 +24,8 @@ module Concurrent
     #   this executor rather than the global thread pool (overrides :operation)
     def initialize(opts = {})
       @queue = PriorityQueue.new(order: :min)
-      @executor = get_executor_from(opts)
-      @thread = nil
+      @task_executor = get_executor_from(opts)
+      @timer_executor = SingleThreadExecutor.new
       @condition = Condition.new
       init_executor
     end
@@ -50,10 +51,10 @@ module Concurrent
         return false unless running?
 
         if (time - Time.now.to_f) <= 0.01
-          @executor.post(*args, &task)
+          @task_executor.post(*args, &task)
         else
           @queue.push(Task.new(time, args, task))
-          check_processing_thread!
+          @timer_executor.post(&method(:process_tasks))
         end
 
         true
@@ -107,27 +108,9 @@ module Concurrent
     # @!visibility private
     def shutdown_execution
       @queue.clear
-      @thread.kill if @thread
+      @timer_executor.kill
       stopped_event.set
     end
-
-    # Check the status of the processing thread. This thread is responsible
-    # for monitoring the internal task queue and sending tasks to the
-    # executor when it is time for them to be processed. If there is no
-    # processing thread one will be created. If the processing thread is
-    # sleeping it will be woken up. If the processing thread has died it
-    # will be garbage collected and a new one will be created.
-    #
-    # @!visibility private
-    def check_processing_thread!
-      return if shutdown? || @queue.empty?
-
-      @thread ||= Thread.new do
-        Thread.current.abort_on_exception = true
-        process_tasks
-      end
-    end
-
 
     # Run a loop and execute tasks in the scheduled order and at the approximate
     # scheduled time. If no tasks remain the thread will exit gracefully so that
@@ -137,19 +120,16 @@ module Concurrent
     # @!visibility private
     def process_tasks
       loop do
-        mutex.synchronize do
-          if @queue.empty?
-            @thread = nil
-            break
-          end
+        break if @queue.empty?
 
-          task = @queue.peek
-          interval = task.time - Time.now.to_f
+        task = @queue.peek
+        interval = task.time - Time.now.to_f
 
-          if interval <= 0
-            @executor.post(*task.args, &task.op)
-            @queue.pop
-          else
+        if interval <= 0
+          @task_executor.post(*task.args, &task.op)
+          @queue.pop
+        else
+          mutex.synchronize do
             @condition.wait(mutex, [interval, 60].min)
           end
         end
