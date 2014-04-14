@@ -41,7 +41,6 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
   class Future < IVar
     include Obligation
-    include OptionsParser
 
     # Create a new `Future` in the `:unscheduled` state.
     #
@@ -64,7 +63,7 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      @executor = get_executor_from(opts)
+      @executor = OptionsParser::get_executor_from(opts)
     end
 
     # Execute an `:unscheduled` `Future`. Immediately sets the state to `:pending` and

@@ -12,7 +12,6 @@ module Concurrent
   # time. Tasks are run on the global task pool or on the supplied executor.
   class TimerSet
     include Executor
-    include OptionsParser
 
     # Create a new set of timed tasks.
     #
@@ -24,7 +23,7 @@ module Concurrent
     #   this executor rather than the global thread pool (overrides :operation)
     def initialize(opts = {})
       @queue = PriorityQueue.new(order: :min)
-      @task_executor = get_executor_from(opts)
+      @task_executor = OptionsParser::get_executor_from(opts)
       @timer_executor = SingleThreadExecutor.new
       @condition = Condition.new
       init_executor

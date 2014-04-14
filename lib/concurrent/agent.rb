@@ -35,7 +35,6 @@ module Concurrent
   class Agent
     include Dereferenceable
     include Concurrent::Observable
-    include OptionsParser
 
     # The default timeout value (in seconds); used when no timeout option
     # is given at initialization
@@ -66,7 +65,7 @@ module Concurrent
       @validator = Proc.new { |result| true }
       @timeout = opts.fetch(:timeout, TIMEOUT).freeze
       self.observers = CopyOnWriteObserverSet.new
-      @executor = get_executor_from(opts)
+      @executor = OptionsParser::get_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end
