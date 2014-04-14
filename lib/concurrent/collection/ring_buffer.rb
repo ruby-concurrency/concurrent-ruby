@@ -1,6 +1,6 @@
 module Concurrent
 
-  # not thread safe buffer
+  # non-thread safe buffer
   class RingBuffer
 
     def initialize(capacity)
@@ -9,18 +9,23 @@ module Concurrent
       @count = 0
     end
 
+
+    # @return [Integer] the capacity of the buffer
     def capacity
       @buffer.size
     end
 
+    # @return [Integer] the number of elements currently in the buffer
     def count
       @count
     end
 
+    # @return [Boolean] true if buffer is empty, false otherwise
     def empty?
       @count == 0
     end
 
+    # @return [Boolean] true if buffer is full, false otherwise
     def full?
       @count == capacity
     end
