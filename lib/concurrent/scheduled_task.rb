@@ -14,6 +14,7 @@ module Concurrent
 
       super(NO_VALUE, opts)
 
+      self.observers = CopyOnNotifyObserverSet.new
       @intended_time =  intended_time
       @state = :unscheduled
       @task = block
