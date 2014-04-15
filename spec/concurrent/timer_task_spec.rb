@@ -1,7 +1,6 @@
 require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'runnable_shared'
-#require_relative 'stoppable_shared'
 
 module Concurrent
 

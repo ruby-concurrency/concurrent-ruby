@@ -195,7 +195,7 @@ module Concurrent
       @executor = Concurrent::SafeTaskExecutor.new(task)
       @running = Concurrent::AtomicBoolean.new(false)
 
-      self.observers = CopyOnWriteObserverSet.new
+      self.observers = CopyOnNotifyObserverSet.new
     end
 
     # Is the executor running?
