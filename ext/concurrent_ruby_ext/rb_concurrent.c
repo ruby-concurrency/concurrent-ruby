@@ -1,17 +1,10 @@
 #include <ruby.h>
 
+#include "atomic_fixnum.h"
+
 // module and class definitions
 static VALUE rb_mConcurrent;
 static VALUE rb_cAtomicFixnum;
-
-// CAtomicFixnum
-VALUE atomic_fixnum_allocate(VALUE);
-VALUE method_atomic_fixnum_initialize(int, VALUE*, VALUE);
-VALUE method_atomic_fixnum_value(VALUE);
-VALUE method_atomic_fixnum_value_eq(VALUE, VALUE);
-VALUE method_atomic_fixnum_increment(VALUE);
-VALUE method_atomic_fixnum_decrement(VALUE);
-VALUE method_atomic_fixnum_compare_and_set(VALUE, VALUE, VALUE);
 
 void Init_concurrent_ruby_ext() {
 

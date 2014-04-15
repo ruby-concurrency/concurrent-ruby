@@ -1,16 +1,7 @@
 #include <ruby.h>
 #include <pthread.h>
 
-typedef struct atomic_fixnum {
-  long value;
-  pthread_mutex_t mutex;
-} CAtomicFixnum;
-
-// forward declarations
-void atomic_fixnum_deallocate(void*);
-
-/////////////////////////////////////////////////////////////////////
-// definitions
+#include "atomic_fixnum.h"
 
 VALUE atomic_fixnum_allocate(VALUE klass)
 {
