@@ -1,10 +1,16 @@
 require 'spec_helper'
+require_relative 'dereferenceable_shared'
 require_relative 'runnable_shared'
-require_relative 'stoppable_shared'
 
 module Concurrent
 
   describe TimerTask do
+
+    before(:each) do
+      # suppress deprecation warnings.
+      Concurrent::TimerTask.any_instance.stub(:warn)
+      Concurrent::TimerTask.stub(:warn)
+    end
 
     after(:each) do
       @subject = @subject.runner if @subject.respond_to?(:runner)
@@ -13,22 +19,31 @@ module Concurrent
       sleep(0.1)
     end
 
-    context ':runnable' do
+    context :runnable do
 
       subject { TimerTask.new{ nil } }
 
       it_should_behave_like :runnable
     end
 
-    context ':stoppable' do
+    context :dereferenceable do
 
-      subject do
-        task = TimerTask.new{ nil }
-        task.run!
-        task
+      def dereferenceable_subject(value, opts = {})
+        opts = opts.merge(execution_interval: 0.1, run_now: true)
+        TimerTask.new(opts){ value }.execute.tap{ sleep(0.1) }
       end
 
-      it_should_behave_like :stoppable
+      def dereferenceable_observable(opts = {})
+        opts = opts.merge(execution_interval: 0.1, run_now: true)
+        TimerTask.new(opts){ 'value' }
+      end
+
+      def execute_dereferenceable(subject)
+        subject.execute
+        sleep(0.1)
+      end
+
+      it_should_behave_like :dereferenceable
     end
 
     context 'created with #new' do
@@ -88,35 +103,11 @@ module Concurrent
 
       context '#kill' do
 
-        it 'kills its threads while sleeping' do
-          Thread.should_receive(:kill).at_least(:once).times.with(any_args)
-          task = TimerTask.new(run_now: false){ nil }
-          task.run!
-          sleep(0.1)
-          task.kill
-        end
-
-        it 'kills its threads once executing' do
-          Thread.should_receive(:kill).at_least(2).times.with(any_args)
-          task = TimerTask.new(run_now: true){ nil }
-          task.run!
-          sleep(0.1)
-          task.kill
-        end
-
         it 'returns true on success' do
           task = TimerTask.new(run_now: false){ nil }
           task.run!
           sleep(0.1)
           task.kill.should be_true
-        end
-
-        it 'returns false on exception' do
-          Thread.stub(:kill).with(any_args).and_raise(StandardError)
-          task = TimerTask.new(run_now: false){ nil }
-          task.run!
-          sleep(0.1)
-          task.kill.should be_false
         end
       end
     end
@@ -211,14 +202,6 @@ module Concurrent
         @thread = Thread.new { @subject.run }
         sleep(0.2)
         @expected.should eq @subject
-      end
-
-      it 'kills the worker thread if the timeout is reached' do
-        # the after(:each) block will trigger this expectation
-        Thread.should_receive(:kill).at_least(1).with(any_args())
-        @subject = TimerTask.new(execution_interval: 0.5, timeout_interval: 0.5){ Thread.stop }
-        @thread = Thread.new { @subject.run }
-        sleep(1.5)
       end
     end
 

@@ -11,7 +11,7 @@ module Concurrent
     end
 
     subject do
-      shared_actor_test_class.spawn
+      create_actor_test_class.spawn
     end
 
     it_should_behave_like :actor_ref
@@ -19,13 +19,13 @@ module Concurrent
     context 'construction' do
 
       it 'supports :args being nil' do
-        subject = shared_actor_test_class.spawn
+        subject = create_actor_test_class.spawn
         actor = subject.instance_variable_get(:@actor)
         actor.argv.should be_empty
       end
 
       it 'passes all :args option to the actor constructor' do
-        subject = shared_actor_test_class.spawn(args: [1, 2, 3, 4])
+        subject = create_actor_test_class.spawn(args: [1, 2, 3, 4])
         actor = subject.instance_variable_get(:@actor)
         actor.argv.should eq [1, 2, 3, 4]
       end
@@ -34,124 +34,40 @@ module Concurrent
         subject # prevent the after(:all) block from breaking this test
         opts = {foo: :bar, hello: :world}
         described_class.should_receive(:new).once.with(anything, opts)
-        shared_actor_test_class.spawn(opts)
-      end
-    end
-
-    context 'supervision' do
-
-      it 'does not start a new thread on construction' do
-        Thread.should_not_receive(:new).with(any_args)
-        subject = shared_actor_test_class.spawn
+        create_actor_test_class.spawn(opts)
       end
 
-      it 'starts a new thread on the first post' do
-        thread = Thread.new{ nil }
-        Thread.should_receive(:new).once.with(no_args).and_return(thread)
-        subject << :foo
-      end
-
-      it 'does not start a new thread after the first post' do
-        subject << :foo
-        sleep(0.1)
-        expected = Thread.list.length
-        5.times{ subject << :foo }
-        Thread.list.length.should eq expected
-      end
-
-      it 'starts a new thread when the prior thread has died' do
-        subject << :foo
-        sleep(0.1)
-
-        subject << :terminate
-        sleep(0.1)
-
-        thread = Thread.new{ nil }
-        Thread.should_receive(:new).once.with(no_args).and_return(thread)
-        subject << :foo
-      end
-
-      it 'does not reset the thread after shutdown' do
-        thread = Thread.new{ nil }
-        Thread.should_receive(:new).once.with(no_args).and_return(thread)
-        subject << :foo
-        sleep(0.1)
-
-        subject.shutdown
-        sleep(0.1)
-
-        subject << :foo
-      end
-
-      it 'calls #on_start when the thread is first started' do
-        actor = subject.instance_variable_get(:@actor)
+      it 'calls #on_start on the actor' do
+        actor = double(:create_actor_test_class)
         actor.should_receive(:on_start).once.with(no_args)
-        subject << :foo
-      end
-
-      it 'calls #on_reset when the thread is started after the first time' do
-        actor = subject.instance_variable_get(:@actor)
-        actor.should_receive(:on_reset).once.with(no_args)
-        subject << :terminate
-        sleep(0.1)
-        subject << :foo
-      end
-    end
-
-    context 'abort_on_exception' do
-
-      after(:each) do
-        @ref.shutdown if @ref
-      end
-
-      it 'gets set on the actor thread' do
-        @ref = shared_actor_test_class.spawn(abort_on_exception: true)
-        @ref << :foo
-        sleep(0.1)
-        @ref.instance_variable_get(:@thread).abort_on_exception.should be_true
-
-        @ref = shared_actor_test_class.spawn(abort_on_exception: false)
-        @ref << :foo
-        sleep(0.1)
-        @ref.instance_variable_get(:@thread).abort_on_exception.should be_false
-      end
-
-      it 'defaults to true' do
-        @ref = shared_actor_test_class.spawn
-        @ref << :foo
-        sleep(0.1)
-        @ref.instance_variable_get(:@thread).abort_on_exception.should be_true
+        SimpleActorRef.new(actor)
       end
     end
 
     context 'reset_on_error' do
 
-      after(:each) do
-        @ref.shutdown if @ref
+      it 'creates a new actor on exception when true' do
+        clazz = create_actor_test_class
+        args = [:foo, :bar, :hello, :world]
+        ref = clazz.spawn(reset_on_error: true, args: args)
+        clazz.should_receive(:new).once.with(*args)
+        ref.post(:poison)
       end
 
-      it 'causes #on_reset to be called on exception when true' do
-        @ref = shared_actor_test_class.spawn(reset_on_error: true)
-        actor = @ref.instance_variable_get(:@actor)
-        actor.should_receive(:on_reset).once.with(no_args)
-        @ref << :poison
-        sleep(0.1)
-      end
-
-      it 'prevents #on_reset form being called on exception when false' do
-        @ref = shared_actor_test_class.spawn(reset_on_error: false)
-        actor = @ref.instance_variable_get(:@actor)
-        actor.should_not_receive(:on_reset).with(any_args)
-        @ref << :poison
-        sleep(0.1)
+      it 'does not create a new actor on exception when false' do
+        clazz = create_actor_test_class
+        args = [:foo, :bar, :hello, :world]
+        ref = clazz.spawn(reset_on_error: true, args: args)
+        clazz.should_not_receive(:new).with(any_args)
+        ref.post(:poison)
       end
 
       it 'defaults to true' do
-        @ref = shared_actor_test_class.spawn
-        actor = @ref.instance_variable_get(:@actor)
-        actor.should_receive(:on_reset).once.with(no_args)
-        @ref << :poison
-        sleep(0.1)
+        clazz = create_actor_test_class
+        args = [:foo, :bar, :hello, :world]
+        ref = clazz.spawn(args: args)
+        clazz.should_receive(:new).once.with(*args)
+        ref.post(:poison)
       end
     end
 
@@ -162,7 +78,7 @@ module Concurrent
       end
 
       it 'rescues Exception in the actor thread when true' do
-        @ref = shared_actor_test_class.spawn(
+        @ref = create_actor_test_class.spawn(
           abort_on_exception: false,
           rescue_exception: true
         )
@@ -177,7 +93,7 @@ module Concurrent
       end
 
       it 'rescues StandardError in the actor thread when false' do
-        @ref = shared_actor_test_class.spawn(
+        @ref = create_actor_test_class.spawn(
           abort_on_exception: false,
           rescue_exception: false
         )
@@ -192,7 +108,7 @@ module Concurrent
       end
 
       it 'defaults to false' do
-        @ref = shared_actor_test_class.spawn(abort_on_exception: false)
+        @ref = create_actor_test_class.spawn(abort_on_exception: false)
 
         ivar = @ref.post(:poison)
         sleep(0.1)

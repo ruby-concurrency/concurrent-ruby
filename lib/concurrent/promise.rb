@@ -7,7 +7,6 @@ module Concurrent
 
   class Promise
     include Obligation
-    include OptionsParser
 
     # Initialize a new Promise with the provided options.
     #
@@ -33,7 +32,7 @@ module Concurrent
     def initialize(opts = {}, &block)
       opts.delete_if {|k, v| v.nil?}
 
-      @executor = get_executor_from(opts)
+      @executor = OptionsParser::get_executor_from(opts)
       @parent = opts.fetch(:parent) { nil }
       @on_fulfill = opts.fetch(:on_fulfill) { Proc.new{ |result| result } }
       @on_reject = opts.fetch(:on_reject) { Proc.new{ |reason| raise reason } }

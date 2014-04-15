@@ -34,6 +34,9 @@ module Concurrent
   # @see http://akka.io/
   # @see http://www.erlang.org/doc/getting_started/conc_prog.html
   # @see http://www.scala-lang.org/api/current/index.html#scala.actors.Actor
+  #
+  # @see http://doc.akka.io/docs/akka/snapshot/general/supervision.html#What_Restarting_Means What Restarting Means
+  # @see http://doc.akka.io/docs/akka/snapshot/general/supervision.html#What_Lifecycle_Monitoring_Means What Lifecycle Monitoring Means
   module ActorContext
 
     # Callback method called by the `ActorRef` which encapsulates the actor instance.

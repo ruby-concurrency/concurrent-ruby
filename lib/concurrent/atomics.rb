@@ -1,3 +1,4 @@
+require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/atomic/condition'
 require 'concurrent/atomic/copy_on_notify_observer_set'

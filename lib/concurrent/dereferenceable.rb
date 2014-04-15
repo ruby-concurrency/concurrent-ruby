@@ -26,13 +26,18 @@ module Concurrent
     #
     # @return [Object] the current value of the object
     def value
-      mutex.synchronize do
-        apply_deref_options(@value)
-      end
+      mutex.synchronize{ apply_deref_options(@value) }
     end
     alias_method :deref, :value
 
     protected
+
+    # Set the internal value of this object
+    #
+    # @param [Object] val the new value
+    def value=(val)
+      mutex.synchronize{ @value = val }
+    end
 
     # A mutex lock used for synchronizing thread-safe operations. Methods defined
     # by `Dereferenceable` are synchronized using the `Mutex` returned from this
@@ -40,8 +45,6 @@ module Concurrent
     # `@value` instance variable should be locked with this `Mutex`.
     #
     # @return [Mutex] the synchronization object
-    #
-    # @!visibility public
     def mutex
       @mutex
     end
@@ -51,8 +54,6 @@ module Concurrent
     # @note This method *must* be called from within the constructor of the including class.
     #
     # @see #mutex
-    #
-    # @!visibility public
     def init_mutex
       @mutex = Mutex.new
     end
@@ -69,8 +70,6 @@ module Concurrent
     # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
-    #
-    # @!visibility public
     def set_deref_options(opts = {})
       mutex.synchronize do
         @dup_on_deref = opts[:dup_on_deref] || opts[:dup]

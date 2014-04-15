@@ -147,7 +147,7 @@ module Concurrent
       it 'passes the block to the new ScheduledTask' do
         @expected = false
         task = ScheduledTask.execute(0.1){ @expected = true }
-        sleep(0.2)
+        task.value(1)
         @expected.should be_true
       end
 
@@ -163,7 +163,7 @@ module Concurrent
 
       it 'returns false if the task has already been performed' do
         task = ScheduledTask.new(0.1){ 42 }.execute
-        sleep(0.2)
+        task.value(1)
         task.cancel.should be_false
       end
 
@@ -256,21 +256,20 @@ module Concurrent
 
       it 'returns false for an observer added once :fulfilled' do
         task = ScheduledTask.new(0.1){ 42 }.execute
-        sleep(0.2)
+        task.value(1)
         task.add_observer(observer).should be_false
       end
 
       it 'returns false for an observer added once :rejected' do
         task = ScheduledTask.new(0.1){ raise StandardError }.execute
-        sleep(0.2)
+        task.value(0.2)
         task.add_observer(observer).should be_false
       end
 
       it 'notifies all observers on fulfillment' do
         task = ScheduledTask.new(0.1){ 42 }.execute
         task.add_observer(observer)
-        sleep(0.2)
-        task.value.should == 42
+        task.value(1).should == 42
         task.reason.should be_nil
         observer.value.should == 42
         observer.reason.should be_nil
@@ -279,8 +278,7 @@ module Concurrent
       it 'notifies all observers on rejection' do
         task = ScheduledTask.new(0.1){ raise StandardError }.execute
         task.add_observer(observer)
-        sleep(0.2)
-        task.value.should be_nil
+        task.value(1).should be_nil
         task.reason.should be_a(StandardError)
         observer.value.should be_nil
         observer.reason.should be_a(StandardError)
@@ -289,7 +287,7 @@ module Concurrent
       it 'does not notify an observer added after fulfillment' do
         observer.should_not_receive(:update).with(any_args)
         task = ScheduledTask.new(0.1){ 42 }.execute
-        sleep(0.2)
+        task.value(1)
         task.add_observer(observer)
         sleep(0.1)
       end
@@ -297,7 +295,7 @@ module Concurrent
       it 'does not notify an observer added after rejection' do
         observer.should_not_receive(:update).with(any_args)
         task = ScheduledTask.new(0.1){ raise StandardError }.execute
-        sleep(0.2)
+        task.value(1)
         task.add_observer(observer)
         sleep(0.1)
       end
@@ -307,9 +305,8 @@ module Concurrent
         task = ScheduledTask.new(0.1){ 42 }.execute
         task.cancel
         task.add_observer(observer)
-        sleep(0.2)
+        task.value(1)
       end
-
     end
   end
 end

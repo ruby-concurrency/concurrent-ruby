@@ -157,14 +157,13 @@ module Concurrent
 
     # @!visibility private
     def execute(*args, &task)
-      return handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
-      @scheduled_task_count += 1
-      @queue << [args, task]
-      if Time.now.to_f - @gc_interval >= @last_gc_time
-        prune_pool
-        @last_gc_time = Time.now.to_f
+      prune_pool
+      if ensure_capacity?
+        @scheduled_task_count += 1
+        @queue << [args, task]
+      else
+        handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
       end
-      grow_pool
     end
 
     # @!visibility private
@@ -181,6 +180,42 @@ module Concurrent
     def kill_execution
       @queue.clear
       drain_pool
+    end
+
+    # Check the thread pool configuration and determine if the pool
+    # has enought capacity to handle the request. Will grow the size
+    # of the pool if necessary.
+    #
+    # @return [Boolean] true if the pool has enough capacity else false
+    #
+    # @!visibility private
+    def ensure_capacity?
+      additional = 0
+      capacity = true
+
+      if @pool.size < @min_length
+        additional = @min_length - @pool.size
+      elsif @queue.empty? && @queue.num_waiting >= 1
+        additional = 0
+      elsif @pool.size == 0 && @min_length == 0
+        additional = 1
+      elsif @pool.size < @max_length || @max_length == 0
+        additional = 1
+      elsif @max_queue == 0 || @queue.size < @max_queue
+        additional = 0
+      else
+        capacity = false
+      end
+
+      additional.times do
+        @pool << create_worker_thread
+      end
+
+      if additional > 0
+        @largest_length = [@largest_length, @pool.length].max
+      end
+
+      capacity
     end
 
     # Handler which executes the `overflow_policy` once the queue size
@@ -205,34 +240,20 @@ module Concurrent
       end
     end
 
-    # Scan all threads in the pool and reclaim any that are dead or have been idle
-    # too long.
+    # Scan all threads in the pool and reclaim any that are dead or
+    # have been idle too long. Will check the last time the pool was
+    # pruned and only run if the configured garbage collection
+    # interval has passed.
     #
     # @!visibility private
     def prune_pool
-      @pool.delete_if do |worker|
-        worker.dead? ||
-          (@idletime == 0 ? false : Time.now.to_f - @idletime > worker.last_activity)
+      if Time.now.to_f - @gc_interval >= @last_gc_time
+        @pool.delete_if do |worker|
+          worker.dead? ||
+            (@idletime == 0 ? false : Time.now.to_f - @idletime > worker.last_activity)
+        end
+        @last_gc_time = Time.now.to_f
       end
-    end
-
-    # Increase the size of the pool when necessary.
-    #
-    # @!visibility private
-    def grow_pool
-      if @min_length > @pool.length
-        additional = @min_length - @pool.length
-      elsif @pool.length < @max_length && ! @queue.empty?
-        # NOTE: does not take into account idle threads
-        additional = 1
-      else
-        additional = 0
-      end
-      additional.times do
-        break if @pool.length >= @max_length
-        @pool << create_worker_thread
-      end
-      @largest_length = [@largest_length, @pool.length].max
     end
 
     # Reclaim all threads in the pool.

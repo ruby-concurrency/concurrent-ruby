@@ -7,10 +7,6 @@ module Concurrent
 
     subject { PerThreadExecutor.new }
 
-    after(:all) do
-      Concurrent.configuration.global_task_pool = PerThreadExecutor.new
-    end
-
     it_should_behave_like :global_thread_pool
 
     context '#post' do

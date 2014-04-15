@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-def shared_actor_test_class
+def create_actor_test_class
   Class.new do
     include Concurrent::ActorContext
 
@@ -99,8 +99,9 @@ share_examples_for :actor_ref do
     end
 
     it 'returns self' do
-      pending('intermittently failing on Travis CI -- SimpleActorRef')
-      (subject << [1,2,3,4]).should eq subject
+      expected = subject
+      result = subject << [1,2,3,4]
+      result.should eq expected
     end
   end
 
@@ -260,59 +261,6 @@ share_examples_for :actor_ref do
         with(anything, [:poison], an_instance_of(StandardError))
       subject.post(:poison)
       sleep(0.1)
-    end
-  end
-
-  context 'observation' do
-
-    let(:observer_class) do
-      Class.new do
-        attr_reader :time, :msg, :value, :reason
-        def update(time, msg, value, reason)
-          @msg = msg
-          @time = time
-          @value = value
-          @reason = reason
-        end
-      end
-    end
-
-    it 'notifies observers' do
-      o1 = observer_class.new
-      o2 = observer_class.new
-
-      subject.add_observer(o1)
-      subject.add_observer(o2)
-
-      subject << :foo
-      sleep(0.1)
-
-      o1.value.should eq :foo
-      o1.reason.should be_nil
-
-      o2.value.should eq :foo
-      o2.reason.should be_nil
-    end
-
-    it 'does not notify removed observers' do
-      o1 = observer_class.new
-      o2 = observer_class.new
-
-      subject.add_observer(o1)
-      subject.add_observer(o2)
-
-      subject << :foo
-      sleep(0.1)
-
-      subject.delete_observer(o1)
-      subject << :bar
-      sleep(0.1)
-      o1.value.should_not eq :bar
-
-      subject.delete_observers
-      subject << :baz
-      sleep(0.1)
-      o1.value.should_not eq :baz
     end
   end
 end

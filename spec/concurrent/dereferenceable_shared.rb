@@ -129,12 +129,12 @@ share_examples_for :dereferenceable do
     if dereferenceable_subject(0).respond_to?(:add_observer)
 
       result = 'result'
-      result.should_receive(:dup).and_return(result)
-      result.should_receive(:freeze).and_return(result)
+      result.should_receive(:dup).at_least(:once).and_return(result)
+      result.should_receive(:freeze).at_least(:once).and_return(result)
       copier = proc { result }
 
       observer = double('observer')
-      observer.should_receive(:update).with(any_args)
+      observer.should_receive(:update).at_least(:once).with(any_args)
 
       subject = dereferenceable_observable(dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
 

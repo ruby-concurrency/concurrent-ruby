@@ -1,3 +1,5 @@
+require 'thread'
+
 module Concurrent
 
   # A simple utility class that executes a callable and returns and array of three elements:
@@ -5,24 +7,29 @@ module Concurrent
   # value - filled by the callable result if it has been executed without errors, nil otherwise
   # reason - the error risen by the callable if it has been executed with errors, nil otherwise
   class SafeTaskExecutor
-    def initialize(task)
+
+    def initialize(task, opts = {})
       @task = task
+      @mutex = Mutex.new
+      @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
     end
 
     # @return [Array]
-    def execute
-      success = false
-      value = reason = nil
-
-      begin
-        value = @task.call
-        success = true
-      rescue => ex
-        reason = ex
+    def execute(*args)
+      @mutex.synchronize do
         success = false
-      end
+        value = reason = nil
 
-      [success, value, reason]
+        begin
+          value = @task.call(*args)
+          success = true
+        rescue @exception_class => ex
+          reason = ex
+          success = false
+        end
+
+        [success, value, reason]
+      end
     end
   end
 end
