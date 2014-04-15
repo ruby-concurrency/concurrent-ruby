@@ -3,7 +3,7 @@
 
 typedef struct atomic_fixnum {
   long value;
-  pthread_mutex_t mutex;
+  //pthread_mutex_t mutex;
 } CAtomicFixnum;
 
 VALUE atomic_fixnum_allocate(VALUE);
