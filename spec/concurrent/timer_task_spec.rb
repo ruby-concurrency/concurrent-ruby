@@ -27,18 +27,6 @@ module Concurrent
       it_should_behave_like :runnable
     end
 
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    #context :stoppable do
-
-      #subject do
-        #task = TimerTask.new{ nil }
-        #task.run!
-        #task
-      #end
-
-      #it_should_behave_like :stoppable
-    #end
-
     context :dereferenceable do
 
       def dereferenceable_subject(value, opts = {})
@@ -116,38 +104,11 @@ module Concurrent
 
       context '#kill' do
 
-        it 'kills its threads while sleeping' do
-          pending('deprecated')
-          Thread.should_receive(:kill).at_least(:once).times.with(any_args)
-          task = TimerTask.new(run_now: false){ nil }
-          task.run!
-          sleep(0.1)
-          task.kill
-        end
-
-        it 'kills its threads once executing' do
-          pending('deprecated')
-          Thread.should_receive(:kill).at_least(2).times.with(any_args)
-          task = TimerTask.new(run_now: true){ nil }
-          task.run!
-          sleep(0.1)
-          task.kill
-        end
-
         it 'returns true on success' do
           task = TimerTask.new(run_now: false){ nil }
           task.run!
           sleep(0.1)
           task.kill.should be_true
-        end
-
-        it 'returns false on exception' do
-          pending('deprecated')
-          Thread.stub(:kill).with(any_args).and_raise(StandardError)
-          task = TimerTask.new(run_now: false){ nil }
-          task.run!
-          sleep(0.1)
-          task.kill.should be_false
         end
       end
     end
@@ -242,15 +203,6 @@ module Concurrent
         @thread = Thread.new { @subject.run }
         sleep(0.2)
         @expected.should eq @subject
-      end
-
-      it 'kills the worker thread if the timeout is reached' do
-        pending('deprecated')
-        # the after(:each) block will trigger this expectation
-        Thread.should_receive(:kill).at_least(1).with(any_args())
-        @subject = TimerTask.new(execution_interval: 0.5, timeout_interval: 0.5){ Thread.stop }
-        @thread = Thread.new { @subject.run }
-        sleep(1.5)
       end
     end
 

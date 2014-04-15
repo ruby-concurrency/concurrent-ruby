@@ -35,7 +35,16 @@ module Concurrent
       latch.wait(0.2).should be_true
     end
 
-    it 'passes all arguments to the task on execution'
+    it 'passes all arguments to the task on execution' do
+      expected = nil
+      latch = CountDownLatch.new(1)
+      subject.post(0.1, 1, 2, 3) do |*args|
+        expected = args
+        latch.count_down
+      end
+      latch.wait(0.2).should be_true
+      expected.should eq [1, 2, 3]
+    end
 
     it 'immediately posts a task when the delay is zero' do
       Thread.should_not_receive(:new).with(any_args)

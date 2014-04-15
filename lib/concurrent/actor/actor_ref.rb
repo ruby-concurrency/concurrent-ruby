@@ -1,12 +1,9 @@
-require 'concurrent/observable'
-
 module Concurrent
 
   # Base class for classes that encapsulate `ActorContext` objects.
   #
   # @see Concurrent::ActorContext
   module ActorRef
-    include Concurrent::Observable
 
     # @!method post(*msg, &block)
     #

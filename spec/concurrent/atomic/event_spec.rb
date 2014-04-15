@@ -44,11 +44,19 @@ module Concurrent
 
     context '#try?' do
 
-      it 'triggers the event if not already set'
+      it 'triggers the event if not already set' do
+        subject.try?
+        subject.should be_set
+      end
 
-      it 'returns true if not previously set'
+      it 'returns true if not previously set' do
+        subject.try?.should be_true
+      end
 
-      it 'returns false if previously set'
+      it 'returns false if previously set' do
+        subject.set
+        subject.try?.should be_false
+      end
     end
 
     context '#reset' do

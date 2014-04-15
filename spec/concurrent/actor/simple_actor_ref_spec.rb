@@ -62,11 +62,11 @@ module Concurrent
         ref.post(:poison)
       end
 
-      it 'defaults to false' do
+      it 'defaults to true' do
         clazz = create_actor_test_class
         args = [:foo, :bar, :hello, :world]
         ref = clazz.spawn(args: args)
-        clazz.should_not_receive(:new).with(any_args)
+        clazz.should_receive(:new).once.with(*args)
         ref.post(:poison)
       end
     end

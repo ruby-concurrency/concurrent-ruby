@@ -13,10 +13,9 @@ module Concurrent
       @mutex = Mutex.new
       @executor = SingleThreadExecutor.new
       @stop_event = Event.new
-      @reset_on_error = opts.fetch(:reset_on_error, false)
+      @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
       @args = opts.fetch(:args, {})
-      self.observers = CopyOnNotifyObserverSet.new
 
       @actor.define_singleton_method(:shutdown, &method(:set_stop_event))
       @actor.on_start
@@ -89,8 +88,6 @@ module Concurrent
         rescue @exception_class => ex
           # suppress
         end
-
-        observers.notify_observers(now, message.payload, result, ex)
       end
     end
   end

@@ -195,13 +195,6 @@ share_examples_for :thread_pool do
       subject.length.should eq 0
     end
 
-    it 'returns a non-zero while shutting down' do
-      pending('intermittently failing on Travis CI')
-      5.times{ subject.post{ sleep(0.1) } }
-      subject.shutdown
-      subject.length.should > 0
-    end
-
     it 'returns zero once shut down' do
       5.times{ subject.post{ sleep(0.1) } }
       sleep(0.1)
