@@ -44,25 +44,29 @@ VALUE method_atomic_fixnum_initialize(int argc, VALUE* argv, VALUE self) {
 
 VALUE method_atomic_fixnum_value(VALUE self) {
   CAtomicFixnum* atomic;
-  VALUE value;
+  long value;
+  VALUE retval;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
   pthread_mutex_lock(&atomic->mutex);
-  value = INT2FIX(atomic->value);
+  retval = atomic->value;
   pthread_mutex_unlock(&atomic->mutex);
 
-  return(value);
+  return INT2FIX(retval);
 }
 
 VALUE method_atomic_fixnum_value_eq(VALUE self, VALUE value) {
+  CAtomicFixnum* atomic;
+  long new_value;
+
   Check_Type(value, T_FIXNUM);
 
-  CAtomicFixnum* atomic;
+  new_value = FIX2INT(value);
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
   pthread_mutex_lock(&atomic->mutex);
-  atomic->value = FIX2INT(value);
+  atomic->value = new_value;
   pthread_mutex_unlock(&atomic->mutex);
 
   return(value);
@@ -70,36 +74,42 @@ VALUE method_atomic_fixnum_value_eq(VALUE self, VALUE value) {
 
 VALUE method_atomic_fixnum_increment(VALUE self) {
   CAtomicFixnum* atomic;
+  long retval;
+
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
   pthread_mutex_lock(&atomic->mutex);
-  atomic->value++;
+  retval = ++atomic->value;
   pthread_mutex_unlock(&atomic->mutex);
 
-  return(INT2FIX(atomic->value));
+  return(INT2FIX(retval));
 }
 
 VALUE method_atomic_fixnum_decrement(VALUE self) {
   CAtomicFixnum* atomic;
+  long retval;
+
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
   pthread_mutex_lock(&atomic->mutex);
-  atomic->value--;
+  retval = --atomic->value;
   pthread_mutex_unlock(&atomic->mutex);
 
-  return(INT2FIX(atomic->value));
+  return(INT2FIX(retval));
 }
 
 VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb_update) {
+  CAtomicFixnum* atomic;
+  long expect, update;
+  VALUE retval = Qfalse;
+
   Check_Type(rb_expect, T_FIXNUM);
   Check_Type(rb_update, T_FIXNUM);
 
-  CAtomicFixnum* atomic;
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
-  long expect = FIX2INT(rb_expect);
-  long update = FIX2INT(rb_update);
-  VALUE retval = Qfalse;
+  expect = FIX2INT(rb_expect);
+  update = FIX2INT(rb_update);
 
   pthread_mutex_lock(&atomic->mutex);
   if (atomic->value == expect) {
