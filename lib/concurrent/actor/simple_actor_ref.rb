@@ -15,7 +15,7 @@ module Concurrent
       @stop_event = Event.new
       @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
-      @args = opts.fetch(:args, {})
+      @args = opts.fetch(:args, []) if @reset_on_error
 
       @actor.define_singleton_method(:shutdown, &method(:set_stop_event))
       @actor.on_start
@@ -37,7 +37,7 @@ module Concurrent
     end
 
     def post!(timeout, *msg)
-      raise Concurrent::TimeoutError if timeout == 0
+      raise Concurrent::TimeoutError if timeout <= 0
       ivar = self.post(*msg)
       ivar.value(timeout)
       if ivar.incomplete?
