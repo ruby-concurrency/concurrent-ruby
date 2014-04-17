@@ -50,8 +50,15 @@ module Concurrent
     end
 
     describe '#broken?' do
-      it 'should not be broken when created'
-      it 'should not be broken when reset is called without waiting thread'
+      it 'should not be broken when created' do
+        barrier.broken?.should eq false
+      end
+
+      it 'should not be broken when reset is called without waiting thread' do
+        barrier.reset
+        barrier.broken?.should eq false
+      end
+
       it 'should be broken when at least one thread timed out'
       it 'should be restored when reset is called'
     end
@@ -74,18 +81,61 @@ module Concurrent
           latch = CountDownLatch.new(parties)
 
           parties.times { Thread.new { barrier.wait; latch.count_down } }
-          latch.wait(0.2).should be_true
+          latch.wait(0.1).should be_true
           barrier.number_waiting.should eq 0
         end
 
-        it 'executes the block'
+        it 'returns true when released' do
+          latch = CountDownLatch.new(parties)
+
+          parties.times { Thread.new { latch.count_down if barrier.wait == true } }
+          latch.wait(0.1).should be_true
+        end
+
+        it 'executes the block once' do
+          counter = AtomicFixnum.new
+          barrier = described_class.new(parties) { counter.increment }
+
+          latch = CountDownLatch.new(parties)
+
+          parties.times { Thread.new { latch.count_down if barrier.wait == true } }
+          latch.wait(0.1).should be_true
+
+          counter.value.should eq 1
+        end
       end
 
       context 'with timeout' do
-        it 'should block the thread'
-        it 'should release all threads when their number matches the desired one'
-        it 'can return early and break the barrier'
-        it 'does not execute the block on timeout'
+        context 'timeout not expiring' do
+          it 'should block the thread' do
+            t = Thread.new { barrier.wait(1) }
+            sleep(0.1)
+
+            t.status.should eq 'sleep'
+          end
+
+          it 'should release all threads when their number matches the desired one' do
+            latch = CountDownLatch.new(parties)
+
+            parties.times { Thread.new { barrier.wait(1); latch.count_down } }
+            latch.wait(0.2).should be_true
+            barrier.number_waiting.should eq 0
+          end
+
+          it 'returns true when released' do
+            latch = CountDownLatch.new(parties)
+
+            parties.times { Thread.new { latch.count_down if barrier.wait(1) == true } }
+            latch.wait(0.1).should be_true
+          end
+        end
+
+        context 'timeout expiring' do
+
+          it 'returns false'
+          it 'can return early and break the barrier'
+          it 'does not execute the block on timeout'
+        end
       end
     end
 
