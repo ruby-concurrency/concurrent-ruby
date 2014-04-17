@@ -12,33 +12,12 @@ share_examples_for :executor_service do
 
   context '#post' do
 
-    it 'raises an exception if no block is given' do
-      lambda {
-        subject.post
-      }.should raise_error(ArgumentError)
-    end
-
-    it 'returns true when the block is added to the queue' do
-      subject.post{ nil }.should be_true
-    end
-
-    it 'calls the block with the given arguments' do
-      @expected = nil
-      subject.post(1, 2, 3) do |a, b, c|
-        @expected = a + b + c
-      end
-      sleep(0.1)
-      @expected.should eq 6
-    end
-
     it 'rejects the block while shutting down' do
+      latch = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(1) }
       subject.shutdown
-      @expected = nil
-      subject.post(1, 2, 3) do |a, b, c|
-        @expected = a + b + c
-      end
-      @expected.should be_nil
+      subject.post{ latch.count_down }
+      latch.wait(0.1).should be_false
     end
 
     it 'returns false while shutting down' do
@@ -49,11 +28,10 @@ share_examples_for :executor_service do
 
     it 'rejects the block once shutdown' do
       subject.shutdown
-      @expected = nil
-      subject.post(1, 2, 3) do |a, b, c|
-        @expected = a + b + c
-      end
-      @expected.should be_nil
+      latch = Concurrent::CountDownLatch.new(1)
+      subject.post{ sleep(1) }
+      subject.post{ latch.count_down }
+      latch.wait(0.1).should be_false
     end
 
     it 'returns false once shutdown' do
@@ -61,13 +39,6 @@ share_examples_for :executor_service do
       subject.shutdown
       sleep(0.1)
       subject.post{ nil }.should be_false
-    end
-
-    it 'aliases #<<' do
-      @expected = false
-      subject << proc { @expected = true }
-      sleep(0.1)
-      @expected.should be_true
     end
   end
 

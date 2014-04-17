@@ -18,7 +18,7 @@ share_examples_for :global_thread_pool do
       latch = Concurrent::CountDownLatch.new(1)
       expected = nil
       subject.post(1, 2, 3) do |a, b, c|
-        expected = [a, b, a]
+        expected = [a, b, c]
         latch.count_down
       end
       latch.wait(0.2)
