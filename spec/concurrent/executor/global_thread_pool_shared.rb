@@ -15,19 +15,21 @@ share_examples_for :global_thread_pool do
     end
 
     it 'calls the block with the given arguments' do
-      @expected = nil
+      latch = Concurrent::CountDownLatch.new(1)
+      expected = nil
       subject.post(1, 2, 3) do |a, b, c|
-        @expected = a + b + c
+        expected = [a, b, a]
+        latch.count_down
       end
-      sleep(0.1)
-      @expected.should eq 6
+      latch.wait(0.2)
+      expected.should eq [1, 2, 3]
     end
 
     it 'aliases #<<' do
-      @expected = false
-      subject << proc { @expected = true }
-      sleep(0.1)
-      @expected.should be_true
+      latch = Concurrent::CountDownLatch.new(1)
+      subject << proc { latch.count_down }
+      latch.wait(0.2)
+      latch.count.should eq 0
     end
   end
 end
