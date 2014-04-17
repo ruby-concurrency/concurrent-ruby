@@ -100,7 +100,7 @@ module Concurrent
         #}.not_to raise_error
         #actor.stop
       #end
-    #end
+    end
 
     context 'observation' do
 
