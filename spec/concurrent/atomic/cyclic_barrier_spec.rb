@@ -120,6 +120,15 @@ module Concurrent
           parties.times { Thread.new { barrier.wait; latch.count_down } }
           latch.wait(0.1).should be_true
         end
+
+        it 'return false if barrier has been reset' do
+          latch = CountDownLatch.new(1)
+
+          Thread.new { latch.count_down if barrier.wait == false }
+          sleep(0.1)
+          barrier.reset
+          latch.wait(0.1).should be_true
+        end
       end
 
       context 'with timeout' do

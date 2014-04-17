@@ -36,7 +36,7 @@ module Concurrent
     # Blocks on the barrier until the number of waiting threads is equal to `parties` or until `timeout` is reached or `reset` is called
     # If a block has been passed to the constructor, it will be executed once by the last arrived thread before releasing the others
     # @param [Fixnum] timeout the number of seconds to wait for the counter or `nil` to block indefinitely
-    # @return [Boolean] `true` if the `count` reaches zero else false on `timeout` or on `reset` or on broken event
+    # @return [Boolean] `true` if the `count` reaches zero else false on `timeout` or on `reset` or if the barrier is broken
     def wait(timeout = nil)
       @mutex.synchronize do
 
@@ -60,7 +60,7 @@ module Concurrent
           end
 
           if remaining.woken_up?
-            return true
+            return generation.status == :fulfilled
           else
             generation.status = :broken
             @condition.broadcast
