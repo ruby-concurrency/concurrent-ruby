@@ -37,7 +37,7 @@ module Concurrent
     end
 
     def post!(timeout, *msg)
-      raise Concurrent::TimeoutError if timeout <= 0
+      raise Concurrent::TimeoutError unless timeout.nil? || timeout >= 0
       ivar = self.post(*msg)
       ivar.value(timeout)
       if ivar.incomplete?
