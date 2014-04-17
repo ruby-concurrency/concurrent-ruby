@@ -1,5 +1,4 @@
 #include <ruby.h>
-/*#include <pthread.h>*/
 #include <stdbool.h>
 
 #include "atomic_fixnum.h"
@@ -11,7 +10,9 @@ VALUE atomic_fixnum_allocate(VALUE klass)
   CAtomicFixnum* atomic;
   VALUE sval = Data_Make_Struct(klass, CAtomicFixnum, NULL, atomic_fixnum_deallocate, atomic);
 
-  /*pthread_mutex_init(&atomic->mutex, NULL);*/
+#ifndef __ATOMIC_SEQ_CST
+  pthread_mutex_init(&atomic->mutex, NULL);
+#endif
 
   return(sval);
 }
@@ -20,7 +21,9 @@ void atomic_fixnum_deallocate(void* sval)
 {
   CAtomicFixnum* atomic = (CAtomicFixnum*) sval;
 
-  /*pthread_mutex_destroy(&atomic->mutex);*/
+#ifndef __ATOMIC_SEQ_CST
+  pthread_mutex_destroy(&atomic->mutex);
+#endif
 
   free(atomic);
 }
@@ -42,10 +45,13 @@ VALUE method_atomic_fixnum_value(VALUE self) {
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
+#ifdef __ATOMIC_SEQ_CST
   value = __atomic_load_n(&atomic->value, __ATOMIC_SEQ_CST);
-  //pthread_mutex_lock(&atomic->mutex);
-  //retval = atomic->value;
-  //pthread_mutex_unlock(&atomic->mutex);
+#else
+  pthread_mutex_lock(&atomic->mutex);
+  retval = atomic->value;
+  pthread_mutex_unlock(&atomic->mutex);
+#endif
 
   return INT2FIX(value);
 }
@@ -59,10 +65,13 @@ VALUE method_atomic_fixnum_value_eq(VALUE self, VALUE value) {
   new_value = FIX2INT(value);
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
+#ifdef __ATOMIC_SEQ_CST
   __atomic_store_n(&atomic->value, new_value, __ATOMIC_SEQ_CST);
-  //pthread_mutex_lock(&atomic->mutex);
-  //atomic->value = new_value;
-  //pthread_mutex_unlock(&atomic->mutex);
+#else
+  pthread_mutex_lock(&atomic->mutex);
+  atomic->value = new_value;
+  pthread_mutex_unlock(&atomic->mutex);
+#endif
 
   return(value);
 }
@@ -73,11 +82,14 @@ VALUE method_atomic_fixnum_increment(VALUE self) {
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
+#ifdef __ATOMIC_SEQ_CST
   retval = __atomic_add_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
-  //pthread_mutex_lock(&atomic->mutex);
-  //retval = ++atomic->value;
-  //pthread_mutex_unlock(&atomic->mutex);
+#else
+  pthread_mutex_lock(&atomic->mutex);
+  retval = ++atomic->value;
+  pthread_mutex_unlock(&atomic->mutex);
 
+#endif
   return(INT2FIX(retval));
 }
 
@@ -87,10 +99,13 @@ VALUE method_atomic_fixnum_decrement(VALUE self) {
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
+#ifdef __ATOMIC_SEQ_CST
   retval = __atomic_sub_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
-  //pthread_mutex_lock(&atomic->mutex);
-  //retval = --atomic->value;
-  //pthread_mutex_unlock(&atomic->mutex);
+#else
+  pthread_mutex_lock(&atomic->mutex);
+  retval = --atomic->value;
+  pthread_mutex_unlock(&atomic->mutex);
+#endif
 
   return(INT2FIX(retval));
 }
@@ -98,8 +113,12 @@ VALUE method_atomic_fixnum_decrement(VALUE self) {
 VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb_update) {
   CAtomicFixnum* atomic;
   long expect, update;
+
+#ifdef __ATOMIC_SEQ_CST
   VALUE retval;
-  //VALUE retval = Qfalse;
+#else
+  VALUE retval = Qfalse;
+#endif
 
   Check_Type(rb_expect, T_FIXNUM);
   Check_Type(rb_update, T_FIXNUM);
@@ -109,14 +128,17 @@ VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb
   expect = FIX2INT(rb_expect);
   update = FIX2INT(rb_update);
 
+#ifdef __ATOMIC_SEQ_CST
   retval = __atomic_compare_exchange_n(&atomic->value, &expect, update, false,
       __ATOMIC_RELEASE, __ATOMIC_SEQ_CST) ? Qtrue : Qfalse;
-  //pthread_mutex_lock(&atomic->mutex);
-  //if (atomic->value == expect) {
-  //  atomic->value = update;
-  //  retval = Qtrue;
-  //}
-  //pthread_mutex_unlock(&atomic->mutex);
+#else
+  pthread_mutex_lock(&atomic->mutex);
+  if (atomic->value == expect) {
+    atomic->value = update;
+    retval = Qtrue;
+  }
+  pthread_mutex_unlock(&atomic->mutex);
+#endif
 
   return(retval);
 }
