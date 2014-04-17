@@ -2,8 +2,6 @@ module Concurrent
 
   class CyclicBarrier
 
-    BrokenError = Class.new(StandardError)
-
     Generation = Struct.new(:status)
     private_constant :Generation
 
@@ -42,33 +40,19 @@ module Concurrent
 
         return false unless @generation.status == :waiting
 
-        generation = @generation
-
         @number_waiting += 1
 
         if @number_waiting == @parties
           @action.call if @action
-          generation.status = :fulfilled
-          @generation = Generation.new(:waiting)
-          @condition.broadcast
-          @number_waiting = 0
+          set_status_and_restore(:fulfilled)
           true
         else
-          remaining = Condition::Result.new(timeout)
-          while generation.status == :waiting && remaining.can_wait?
-            remaining = @condition.wait(@mutex, remaining.remaining_time)
-          end
-
-          if remaining.woken_up?
-            return generation.status == :fulfilled
-          else
-            generation.status = :broken
-            @condition.broadcast
-            return false
-          end
+          wait_for_wake_up(@generation, timeout)
         end
       end
     end
+
+
 
     # resets the barrier to its initial state
     # If there is at least one waiting thread, it will be woken up, the `wait` method will return false and the barrier will be broken
@@ -77,10 +61,7 @@ module Concurrent
     # @return [nil]
     def reset
       @mutex.synchronize do
-        @generation.status = :reset
-        @condition.broadcast
-        @generation = Generation.new(:waiting)
-        @number_waiting = 0
+        set_status_and_restore(:reset)
       end
     end
 
@@ -92,6 +73,33 @@ module Concurrent
     # @return [Boolean] true if the barrier is broken otherwise false
     def broken?
       @mutex.synchronize { @generation.status != :waiting }
+    end
+
+    private
+
+    def set_status_and_restore(new_status)
+      @generation.status = new_status
+      @condition.broadcast
+      @generation = Generation.new(:waiting)
+      @number_waiting = 0
+    end
+
+    def wait_for_wake_up(generation, timeout)
+      if wait_while_waiting(generation, timeout)
+        generation.status == :fulfilled
+      else
+        generation.status = :broken
+        @condition.broadcast
+        false
+      end
+    end
+
+    def wait_while_waiting(generation, timeout)
+      remaining = Condition::Result.new(timeout)
+      while generation.status == :waiting && remaining.can_wait?
+        remaining = @condition.wait(@mutex, remaining.remaining_time)
+      end
+      remaining.woken_up?
     end
 
   end
