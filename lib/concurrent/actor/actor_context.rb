@@ -44,10 +44,6 @@ module Concurrent
     end
 
     # Callback method called by the `ActorRef` which encapsulates the actor instance.
-    def on_reset
-    end
-
-    # Callback method called by the `ActorRef` which encapsulates the actor instance.
     def on_shutdown
     end
 

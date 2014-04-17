@@ -36,11 +36,11 @@ module Concurrent
     it 'passes all arguments to the block' do
       expected = nil
       latch = CountDownLatch.new(1)
-      Concurrent::timer(0.1, 1, 2, 3) do |*args|
+      Concurrent::timer(0, 1, 2, 3) do |*args|
         expected = args
         latch.count_down
       end
-      latch.wait(0.2).should be_true
+      latch.wait(0.2)
       expected.should eq [1, 2, 3]
     end
 

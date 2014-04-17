@@ -164,10 +164,7 @@ share_examples_for :actor_ref do
 
     it 'blocks forever when the timeout is nil' do
       start = Time.now.to_f
-      begin
-        subject.post!(nil, :sleep, 1)
-      rescue
-      end
+      subject.post!(nil, :sleep, 1)
       delta = Time.now.to_f - start
       delta.should > 1
     end
