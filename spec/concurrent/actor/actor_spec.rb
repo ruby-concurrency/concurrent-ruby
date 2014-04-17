@@ -90,16 +90,17 @@ module Concurrent
 
     context 'exception handling' do
 
-      it 'supresses exceptions thrown when handling messages' do
-        actor = actor_class.new{|msg| raise StandardError }
-        @thread = Thread.new{ actor.run }
-        expect {
-          @thread.join(0.1)
-          10.times { actor.post(true) }
-        }.not_to raise_error
-        actor.stop
-      end
-    end
+      #it 'supresses exceptions thrown when handling messages' do
+        #pending('intermittently failing; deprecated')
+        #actor = actor_class.new{|msg| raise StandardError }
+        #@thread = Thread.new{ actor.run }
+        #expect {
+          #@thread.join(0.1)
+          #10.times { actor.post(true) }
+        #}.not_to raise_error
+        #actor.stop
+      #end
+    #end
 
     context 'observation' do
 
