@@ -222,10 +222,15 @@ module Concurrent
           attr_reader :value
           attr_reader :reason
           attr_reader :count
-          define_method(:update) do |time, value, reason|
+          attr_reader :latch
+          def initialize
+            @latch = Concurrent::CountDownLatch.new(1)
+          end
+          def update(time, value, reason)
             @count = @count.to_i + 1
             @value = value
             @reason = reason
+            @latch.count_down
           end
         end
       end
@@ -269,8 +274,7 @@ module Concurrent
       it 'notifies all observers on fulfillment' do
         task = ScheduledTask.new(0.1){ 42 }.execute
         task.add_observer(observer)
-        task.value(1).should == 42
-        task.reason.should be_nil
+        observer.latch.wait(1)
         observer.value.should == 42
         observer.reason.should be_nil
       end
@@ -278,8 +282,7 @@ module Concurrent
       it 'notifies all observers on rejection' do
         task = ScheduledTask.new(0.1){ raise StandardError }.execute
         task.add_observer(observer)
-        task.value(1).should be_nil
-        task.reason.should be_a(StandardError)
+        observer.latch.wait(1)
         observer.value.should be_nil
         observer.reason.should be_a(StandardError)
       end
