@@ -86,7 +86,7 @@ module Concurrent
             sleep(0.1)
             result.should be_woken_up
             result.should_not be_timed_out
-            result.remaining_time.should be_within(0.05).of(0.87)
+            result.remaining_time.should be_within(0.1).of(0.85)
             t.status.should be_false
           end
 
@@ -98,7 +98,7 @@ module Concurrent
             sleep(0.1)
             result.should be_woken_up
             result.should_not be_timed_out
-            result.remaining_time.should be_within(0.05).of(0.87)
+            result.remaining_time.should be_within(0.1).of(0.85)
             t.status.should be_false
           end
 
