@@ -58,14 +58,20 @@ module Concurrent
         barrier.reset
         barrier.broken?.should eq false
       end
-
-      it 'should be broken when at least one thread timed out'
-      it 'should be restored when reset is called'
     end
 
     describe 'reset' do
-      it 'should release all waiting threads'
-      it 'should not execute the block'
+      it 'should release all waiting threads' do
+        latch = CountDownLatch.new(1)
+
+        Thread.new { barrier.wait; latch.count_down }
+        sleep(0.1)
+        barrier.reset
+        latch.wait(0.1).should be_true
+
+        barrier.should_not be_broken
+        barrier.number_waiting.should eq 0
+      end
     end
 
     describe '#wait' do
@@ -83,6 +89,7 @@ module Concurrent
           parties.times { Thread.new { barrier.wait; latch.count_down } }
           latch.wait(0.1).should be_true
           barrier.number_waiting.should eq 0
+          barrier.should_not be_broken
         end
 
         it 'returns true when released' do
@@ -102,6 +109,16 @@ module Concurrent
           latch.wait(0.1).should be_true
 
           counter.value.should eq 1
+        end
+
+        it 'can be reused' do
+          first_latch = CountDownLatch.new(parties)
+          parties.times { Thread.new { barrier.wait; first_latch.count_down } }
+          first_latch.wait(0.1).should be_true
+
+          latch = CountDownLatch.new(parties)
+          parties.times { Thread.new { barrier.wait; latch.count_down } }
+          latch.wait(0.1).should be_true
         end
       end
 
@@ -132,18 +149,91 @@ module Concurrent
 
         context 'timeout expiring' do
 
-          it 'returns false'
-          it 'can return early and break the barrier'
-          it 'does not execute the block on timeout'
+          it 'returns false' do
+            latch = CountDownLatch.new(1)
+
+            Thread.new { latch.count_down if barrier.wait(0.1) == false }
+            latch.wait(0.2).should be_true
+          end
+
+          it 'breaks the barrier and release all other threads' do
+            latch = CountDownLatch.new(2)
+
+            Thread.new { barrier.wait(0.1); latch.count_down }
+            Thread.new { barrier.wait; latch.count_down }
+
+            latch.wait(0.2).should be_true
+            barrier.should be_broken
+          end
+
+          it 'does not execute the block on timeout' do
+            counter = AtomicFixnum.new
+            barrier = described_class.new(parties) { counter.increment }
+
+            barrier.wait(0.1)
+
+            counter.value.should eq 0
+          end
+        end
+      end
+
+      context '#broken barrier' do
+        it 'should not accept new threads' do
+          Thread.new { barrier.wait(0.1) }
+          sleep(0.2)
+
+          barrier.should be_broken
+
+          barrier.wait.should be_false
+        end
+
+        it 'can be reset' do
+          Thread.new { barrier.wait(0.1) }
+          sleep(0.2)
+
+          barrier.should be_broken
+
+          barrier.reset
+
+          barrier.should_not be_broken
         end
       end
     end
 
-    context 'spurious wakeups' do
-      it 'should resist'
+    context 'spurious wake ups' do
+
+      before(:each) do
+        def barrier.simulate_spurious_wake_up
+          @mutex.synchronize do
+            @condition.signal
+            @condition.broadcast
+          end
+        end
+      end
+
+      it 'should resist to spurious wake ups without timeout' do
+        @expected = false
+        Thread.new { barrier.wait; @expected = true }
+
+        sleep(0.1)
+        barrier.simulate_spurious_wake_up
+
+        sleep(0.1)
+        @expected.should be_false
+      end
+
+      it 'should resist to spurious wake ups with timeout' do
+        @expected = false
+        Thread.new { barrier.wait(0.5); @expected = true }
+
+        sleep(0.1)
+        barrier.simulate_spurious_wake_up
+
+        sleep(0.1)
+        @expected.should be_false
+
+      end
     end
-
   end
-
 
 end
