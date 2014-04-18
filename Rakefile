@@ -30,7 +30,7 @@ if use_extensions?
   task :rebuild => [ :clean, :compile, :return_dummy_makefile ]
 
   task :irb => [:compile] do
-    sh "irb -r ./lib/#{EXTENSION_NAME}.bundle"
+    sh "irb -r ./lib/#{EXTENSION_NAME}.bundle -I #{File.join(File.dirname(__FILE__), 'lib')}"
   end
 end
 
