@@ -9,7 +9,7 @@ VALUE atomic_fixnum_allocate(VALUE klass) {
   CAtomicFixnum* atomic;
   VALUE sval = Data_Make_Struct(klass, CAtomicFixnum, NULL, atomic_fixnum_deallocate, atomic);
 
-#ifndef __ATOMIC_SEQ_CST
+#ifndef __USE_GCC_ATOMIC
   pthread_mutex_init(&atomic->mutex, NULL);
 #endif
 
@@ -19,7 +19,7 @@ VALUE atomic_fixnum_allocate(VALUE klass) {
 void atomic_fixnum_deallocate(void* sval) {
   CAtomicFixnum* atomic = (CAtomicFixnum*) sval;
 
-#ifndef __ATOMIC_SEQ_CST
+#ifndef __USE_GCC_ATOMIC
   pthread_mutex_destroy(&atomic->mutex);
 #endif
 
@@ -44,7 +44,7 @@ VALUE method_atomic_fixnum_value(VALUE self) {
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
-#ifdef __ATOMIC_SEQ_CST
+#ifdef __USE_GCC_ATOMIC
   value = __atomic_load_n(&atomic->value, __ATOMIC_SEQ_CST);
 #else
   pthread_mutex_lock(&atomic->mutex);
@@ -64,7 +64,7 @@ VALUE method_atomic_fixnum_value_eq(VALUE self, VALUE value) {
   new_value = FIX2INT(value);
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
-#ifdef __ATOMIC_SEQ_CST
+#ifdef __USE_GCC_ATOMIC
   __atomic_store_n(&atomic->value, new_value, __ATOMIC_SEQ_CST);
 #else
   pthread_mutex_lock(&atomic->mutex);
@@ -81,7 +81,7 @@ VALUE method_atomic_fixnum_increment(VALUE self) {
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
-#ifdef __ATOMIC_SEQ_CST
+#ifdef __USE_GCC_ATOMIC
   value = __atomic_add_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
 #else
   pthread_mutex_lock(&atomic->mutex);
@@ -98,7 +98,7 @@ VALUE method_atomic_fixnum_decrement(VALUE self) {
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
-#ifdef __ATOMIC_SEQ_CST
+#ifdef __USE_GCC_ATOMIC
   value = __atomic_sub_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
 #else
   pthread_mutex_lock(&atomic->mutex);
@@ -113,7 +113,7 @@ VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb
   CAtomicFixnum* atomic;
   long expect, update;
 
-#ifdef __ATOMIC_SEQ_CST
+#ifdef __USE_GCC_ATOMIC
   VALUE value;
 #else
   VALUE value = Qfalse;
@@ -127,7 +127,7 @@ VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb
   expect = FIX2INT(rb_expect);
   update = FIX2INT(rb_update);
 
-#ifdef __ATOMIC_SEQ_CST
+#ifdef __USE_GCC_ATOMIC
   value = __atomic_compare_exchange_n(&atomic->value, &expect, update, false,
       __ATOMIC_RELEASE, __ATOMIC_SEQ_CST) ? Qtrue : Qfalse;
 #else

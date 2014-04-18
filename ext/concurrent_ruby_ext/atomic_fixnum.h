@@ -1,13 +1,17 @@
 #ifndef __ATOMIC_FIXNUM_H__
 #define __ATOMIC_FIXNUM_H__
 
-#ifndef __ATOMIC_SEQ_CST
+#ifdef __ATOMIC_SEQ_CST
+#define __USE_GCC_ATOMIC
+#endif
+
+#ifndef __USE_GCC_ATOMIC
 #include <pthread.h>
 #endif
 
 typedef struct atomic_fixnum {
   long value;
-#ifndef __ATOMIC_SEQ_CST
+#ifndef __USE_GCC_ATOMIC
   pthread_mutex_t mutex;
 #endif
 } CAtomicFixnum;
