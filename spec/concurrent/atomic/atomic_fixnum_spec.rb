@@ -174,7 +174,7 @@ module Concurrent
   end
 
   describe AtomicFixnum do
-    if use_extensions?
+    if defined? Concurrent::CAtomicFixnum
       it 'inherits from CAtomicFixnum' do
         AtomicFixnum.ancestors.should include(CAtomicFixnum)
       end
