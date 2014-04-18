@@ -6,7 +6,7 @@
 #endif
 
 typedef struct atomic_fixnum {
-  long value;
+  long long value;
 #ifndef __ATOMIC_SEQ_CST
   pthread_mutex_t mutex;
 #endif

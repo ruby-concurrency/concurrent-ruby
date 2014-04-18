@@ -40,7 +40,7 @@ VALUE method_atomic_fixnum_initialize(int argc, VALUE* argv, VALUE self) {
 
 VALUE method_atomic_fixnum_value(VALUE self) {
   CAtomicFixnum* atomic;
-  long value;
+  long long value;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
@@ -57,7 +57,7 @@ VALUE method_atomic_fixnum_value(VALUE self) {
 
 VALUE method_atomic_fixnum_value_eq(VALUE self, VALUE value) {
   CAtomicFixnum* atomic;
-  long new_value;
+  long long new_value;
 
   Check_Type(value, T_FIXNUM);
 
@@ -77,7 +77,7 @@ VALUE method_atomic_fixnum_value_eq(VALUE self, VALUE value) {
 
 VALUE method_atomic_fixnum_increment(VALUE self) {
   CAtomicFixnum* atomic;
-  long value;
+  long long value;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
@@ -94,7 +94,7 @@ VALUE method_atomic_fixnum_increment(VALUE self) {
 
 VALUE method_atomic_fixnum_decrement(VALUE self) {
   CAtomicFixnum* atomic;
-  long value;
+  long long value;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
 
@@ -111,7 +111,7 @@ VALUE method_atomic_fixnum_decrement(VALUE self) {
 
 VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb_update) {
   CAtomicFixnum* atomic;
-  long expect, update;
+  long long expect, update;
 
 #ifdef __ATOMIC_SEQ_CST
   VALUE value;
