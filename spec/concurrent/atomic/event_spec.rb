@@ -203,6 +203,16 @@ module Concurrent
     it_should_behave_like :event
   end
 
+  if defined? Concurrent::CEvent
+
+    describe CEvent do
+
+      subject{ CEvent.new }
+
+      it_should_behave_like :event
+    end
+  end
+
   describe Event do
     if defined? Concurrent::CEvent
       it 'inherits from CEvent' do

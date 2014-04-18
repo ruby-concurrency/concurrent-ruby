@@ -63,6 +63,8 @@ module Concurrent
         @set = true
         @condition.broadcast
       end
+
+      true
     end
 
     # @!macro [attach] event_method_reset
