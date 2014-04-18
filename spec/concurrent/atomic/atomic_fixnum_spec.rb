@@ -160,7 +160,13 @@ module Concurrent
     end
   end
 
-  if jruby?
+  if use_extensions?
+
+    describe CAtomicFixnum do
+      it_should_behave_like :atomic_fixnum
+    end
+
+  elsif jruby?
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
@@ -168,7 +174,11 @@ module Concurrent
   end
 
   describe AtomicFixnum do
-    if jruby?
+    if use_extensions?
+      it 'inherits from CAtomicFixnum' do
+        AtomicFixnum.ancestors.should include(CAtomicFixnum)
+      end
+    elsif jruby?
       it 'inherits from JavaAtomicFixnum' do
         AtomicFixnum.ancestors.should include(JavaAtomicFixnum)
       end

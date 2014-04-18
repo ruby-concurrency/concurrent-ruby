@@ -20,6 +20,10 @@ def rbx?
   RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i 
 end
 
+def use_extensions?
+  RbConfig::CONFIG['ruby_install_name'] =~ /^ruby$/i && RUBY_VERSION >= '2.0'
+end
+
 def reset_gem_configuration
   Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
 end
