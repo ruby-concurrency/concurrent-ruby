@@ -1,0 +1,5 @@
+all:
+	true
+
+install:
+	true

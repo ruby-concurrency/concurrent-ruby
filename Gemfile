@@ -7,6 +7,7 @@ group :development do
   gem 'countloc', '~> 0.4.0', platforms: :mri
   gem 'yard', '~> 0.8.7.4'
   gem 'inch', '~> 0.4.1', platforms: :mri
+  gem 'rake-compiler', '~> 0.9.2', platforms: :mri
 end
 
 group :testing do
