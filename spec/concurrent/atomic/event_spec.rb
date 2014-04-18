@@ -196,10 +196,22 @@ end
 
 module Concurrent
 
-  describe Event do
+  describe MutexEvent do
 
-    subject{ Event.new }
+    subject{ MutexEvent.new }
 
     it_should_behave_like :event
+  end
+
+  describe Event do
+    if defined? Concurrent::CEvent
+      it 'inherits from CEvent' do
+        Event.ancestors.should include(CEvent)
+      end
+    else
+      it 'inherits from MutexEvent' do
+        Event.ancestors.should include(MutexEvent)
+      end
+    end
   end
 end
