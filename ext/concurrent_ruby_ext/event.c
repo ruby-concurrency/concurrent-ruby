@@ -2,13 +2,15 @@
 #include <ruby/thread.h>
 #include <pthread.h>
 #include <stdbool.h>
-#include <sys/time.h>
 
 #include "event.h"
+#include "helpers.h"
 
-// for converting timeout (float seconds) to absolute system time
-#define NANO 1000000000
-#define MICRO 1000000
+typedef struct event_wait_data {
+  CEvent* event;
+  VALUE timeout;
+  VALUE result;
+} EventWaitData;
 
 VALUE event_allocate(VALUE klass) {
   CEvent* event;
@@ -121,14 +123,7 @@ VALUE method_event_reset(VALUE self) {
 
 void* event_wait_without_gvl(void *data) {
   EventWaitData* ewd = (EventWaitData*) data;
-
-  int rc;
   struct timespec ts;
-  struct timeval tp;
-
-  double timeout;
-  int seconds;
-  long nanos;
 
   pthread_mutex_lock(&ewd->event->mutex);
 
@@ -140,18 +135,7 @@ void* event_wait_without_gvl(void *data) {
 
     } else {
 
-      timeout = NUM2DBL(ewd->timeout);
-      seconds = (int) timeout;
-      nanos = (timeout - seconds) * MICRO * 1000;
-
-      rc = gettimeofday(&tp, NULL);
-      ts.tv_sec = tp.tv_sec + seconds;
-      ts.tv_nsec = (tp.tv_usec * 1000) + nanos;
-      if (ts.tv_nsec >= NANO) {
-        ts.tv_nsec -= NANO;
-        ts.tv_sec += 1;
-      }
-
+      abs_time_from_timeout(NUM2DBL(ewd->timeout), &ts);
       pthread_cond_timedwait(&ewd->event->condition, &ewd->event->mutex, &ts);
     }
   }

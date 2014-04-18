@@ -10,12 +10,6 @@ typedef struct event {
   pthread_cond_t condition;
 } CEvent;
 
-typedef struct event_wait_data {
-  CEvent* event;
-  VALUE timeout;
-  VALUE result;
-} EventWaitData;
-
 VALUE event_allocate(VALUE);
 void event_deallocate(void*);
 VALUE method_event_initialize(VALUE);
