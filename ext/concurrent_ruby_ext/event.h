@@ -1,8 +1,8 @@
 #ifndef __EVENT_H__
 #define __EVENT_H__
 
-#include <stdbool.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 typedef struct event {
   bool set;

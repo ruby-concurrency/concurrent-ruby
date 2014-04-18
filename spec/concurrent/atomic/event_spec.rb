@@ -24,12 +24,12 @@ share_examples_for :event do
   context '#set' do
 
     it 'triggers the event' do
-      expected = false
-      Thread.new{ subject.wait; expected = true }
+      expected = Concurrent::AtomicBoolean.new(false)
+      Thread.new{ subject.wait; expected.make_true }
       sleep(0.1)
       subject.set
       sleep(0.1)
-      expected.should be_true
+      expected.value.should be_true
     end
 
     it 'sets the state to set' do
@@ -126,11 +126,14 @@ share_examples_for :event do
     end
 
     it 'stops waiting when the timer expires' do
+      latch = Concurrent::CountDownLatch.new(1)
       subject.reset
-      expected = false
-      Thread.new{ subject.wait(0.5); expected = true}
-      sleep(1)
-      expected.should be_true
+      start = Time.now.to_f
+      Thread.new{ subject.wait(0.5); latch.count_down }
+      latch.wait(1)
+      delta = Time.now.to_f - start
+      delta.should >= 0.5
+      delta.should <= 0.6
     end
 
     it 'returns false when the timer expires' do
@@ -155,43 +158,6 @@ share_examples_for :event do
       latch.wait(0.2).should be_true
     end
   end
-
-  context 'spurious wake ups' do
-
-    before(:each) do
-      def subject.simulate_spurious_wake_up
-        @mutex.synchronize do
-          @condition.signal
-          @condition.broadcast
-        end
-      end
-    end
-
-    it 'should resist to spurious wake ups without timeout' do
-      expected = false
-      Thread.new { subject.wait; expected = true }
-
-      sleep(0.1)
-      subject.simulate_spurious_wake_up
-
-      sleep(0.1)
-      expected.should be_false
-    end
-
-    it 'should resist to spurious wake ups with timeout' do
-      expected = false
-      Thread.new { subject.wait(0.5); expected = true }
-
-      sleep(0.1)
-      subject.simulate_spurious_wake_up
-
-      sleep(0.1)
-      expected.should be_false
-
-      sleep(0.4)
-      expected.should be_true
-    end
-  end
 end
 
 module Concurrent
@@ -201,6 +167,43 @@ module Concurrent
     subject{ MutexEvent.new }
 
     it_should_behave_like :event
+
+    context 'spurious wake ups' do
+
+      before(:each) do
+        def subject.simulate_spurious_wake_up
+          @mutex.synchronize do
+            @condition.signal
+            @condition.broadcast
+          end
+        end
+      end
+
+      it 'should resist to spurious wake ups without timeout' do
+        expected = false
+        Thread.new { subject.wait; expected = true }
+
+        sleep(0.1)
+        subject.simulate_spurious_wake_up
+
+        sleep(0.1)
+        expected.should be_false
+      end
+
+      it 'should resist to spurious wake ups with timeout' do
+        expected = false
+        Thread.new { subject.wait(0.5); expected = true }
+
+        sleep(0.1)
+        subject.simulate_spurious_wake_up
+
+        sleep(0.1)
+        expected.should be_false
+
+        sleep(0.4)
+        expected.should be_true
+      end
+    end
   end
 
   if defined? Concurrent::CEvent

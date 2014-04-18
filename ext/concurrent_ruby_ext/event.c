@@ -1,8 +1,8 @@
 #include <ruby.h>
 #include <ruby/thread.h>
+#include <pthread.h>
+#include <stdbool.h>
 #include <sys/time.h>
-
-#include <stdio.h>
 
 #include "event.h"
 
@@ -16,6 +16,7 @@ VALUE event_allocate(VALUE klass) {
 
   pthread_mutex_init(&event->mutex, NULL);
   pthread_cond_init(&event->condition, NULL);
+  event->set = false;
 
   return(sval);
 }
@@ -33,7 +34,7 @@ VALUE method_event_initialize(VALUE self) {
   CEvent* event;
 
   Data_Get_Struct(self, CEvent, event);
-  event->set = false;
+  event->set = 0;
 
   return self;
 }
@@ -63,7 +64,7 @@ void* event_set_without_gvl(void *data) {
 
   pthread_mutex_unlock(&event->mutex);
 
-  return(data);
+  return(NULL);
 }
 
 VALUE method_event_set(VALUE self) {
@@ -71,28 +72,39 @@ VALUE method_event_set(VALUE self) {
 
   Data_Get_Struct(self, CEvent, event);
 
-  rb_thread_call_without_gvl(event_set_without_gvl, (void*)&event, NULL, NULL);
+  rb_thread_call_without_gvl2(event_set_without_gvl, (void*)event, RUBY_UBF_PROCESS, NULL);
 
   return(Qtrue);
 }
 
-VALUE method_event_try_question(VALUE self) {
-  CEvent* event;
-  VALUE value = Qfalse;
+void* event_try_question_without_gvl(void *data) {
+  EventWaitData* ewd = (EventWaitData*) data;
 
-  Data_Get_Struct(self, CEvent, event);
+  pthread_mutex_lock(&ewd->event->mutex);
 
-  pthread_mutex_lock(&event->mutex);
-
-  if (! event->set) {
-    event->set = true;
-    pthread_cond_broadcast(&event->condition);
-    value = Qtrue;
+  if (ewd->event->set) {
+    ewd->result = Qfalse;
+  } else {
+    ewd->event->set = true;
+    pthread_cond_broadcast(&ewd->event->condition);
+    ewd->result = Qtrue;
   }
 
-  pthread_mutex_unlock(&event->mutex);
+  pthread_mutex_unlock(&ewd->event->mutex);
 
-  return(value);
+  return(NULL);
+}
+
+VALUE method_event_try_question(VALUE self) {
+  CEvent* event;
+  EventWaitData ewd;
+
+  Data_Get_Struct(self, CEvent, event);
+  ewd.event = event;
+
+  rb_thread_call_without_gvl2(event_try_question_without_gvl, (void*)&ewd, RUBY_UBF_PROCESS, NULL);
+
+  return(ewd.result);
 }
 
 VALUE method_event_reset(VALUE self) {
@@ -133,9 +145,8 @@ void* event_wait_without_gvl(void *data) {
       nanos = (timeout - seconds) * MICRO * 1000;
 
       rc = gettimeofday(&tp, NULL);
-      ts.tv_sec  = tp.tv_sec;
-      ts.tv_nsec = tp.tv_usec * 1000;
-      ts.tv_sec += seconds;
+      ts.tv_sec = tp.tv_sec + seconds;
+      ts.tv_nsec = (tp.tv_usec * 1000) + nanos;
       if (ts.tv_nsec >= NANO) {
         ts.tv_nsec -= NANO;
         ts.tv_sec += 1;
@@ -143,13 +154,12 @@ void* event_wait_without_gvl(void *data) {
 
       pthread_cond_timedwait(&ewd->event->condition, &ewd->event->mutex, &ts);
     }
-
-    ewd->result = ewd->event->set ? Qtrue : Qfalse;
   }
 
+  ewd->result = ewd->event->set ? Qtrue : Qfalse;
   pthread_mutex_unlock(&ewd->event->mutex);
 
-  return(data);
+  return(NULL);
 }
 
 VALUE method_event_wait(int argc, VALUE* argv, VALUE self) {
@@ -157,14 +167,13 @@ VALUE method_event_wait(int argc, VALUE* argv, VALUE self) {
   EventWaitData ewd;
 
   rb_check_arity(argc, 0, 1);
-  if (argc == 1) Check_Type(argv[0], T_FIXNUM);
 
   Data_Get_Struct(self, CEvent, event);
   ewd.event = event;
   ewd.timeout = (argc == 0 ? Qnil : argv[0]);
   ewd.result = Qtrue;
 
-  rb_thread_call_without_gvl(event_wait_without_gvl, (void*)&ewd, NULL, NULL);
+  rb_thread_call_without_gvl2(event_wait_without_gvl, (void*)&ewd, RUBY_UBF_PROCESS, NULL);
 
   return(ewd.result);
 }
