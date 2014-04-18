@@ -144,6 +144,12 @@ module Concurrent
     class AtomicFixnum < JavaAtomicFixnum
     end
 
+  elsif defined? Concurrent::CAtomicFixnum
+
+    # @!macro atomic_fixnum
+    class AtomicFixnum < CAtomicFixnum
+    end
+
   else
 
     # @!macro atomic_fixnum
