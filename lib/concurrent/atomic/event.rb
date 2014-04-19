@@ -28,9 +28,11 @@ module Concurrent
     #
     # @return [Boolean] indicating whether or not the `Event` has been set
     def set?
-      @mutex.synchronize do
-        @set
-      end
+      @mutex.lock
+      result = @set
+      @mutex.unlock
+
+      result
     end
 
     # Trigger the event, setting the state to `set` and releasing all threads
@@ -38,21 +40,30 @@ module Concurrent
     #
     # @return [Boolean] should always return `true`
     def set
-      @mutex.synchronize do
-        return true if @set
+      @mutex.lock
+      unless @set
         @set = true
         @condition.broadcast
       end
+      @mutex.unlock
 
       true
     end
 
     def try?
-      @mutex.synchronize do
-        return false if @set
+      @mutex.lock
+
+      if @set
+        result = false
+      else
         @set = true
         @condition.broadcast
+        result = true
       end
+
+      @mutex.unlock
+
+      result
     end
 
     # Reset a previously set event back to the `unset` state.
@@ -60,9 +71,9 @@ module Concurrent
     #
     # @return [Boolean] should always return `true`
     def reset
-      @mutex.synchronize do
-        @set = false
-      end
+      @mutex.lock
+      @set = false
+      @mutex.unlock
 
       true
     end
@@ -73,16 +84,20 @@ module Concurrent
     #
     # @return [Boolean] true if the `Event` was set before timeout else false
     def wait(timeout = nil)
-      @mutex.synchronize do
-        return true if @set
+      @mutex.lock
 
+      unless @set
         remaining = Condition::Result.new(timeout)
         while !@set && remaining.can_wait?
           remaining = @condition.wait(@mutex, remaining.remaining_time)
         end
-
-        @set
       end
+
+      result = @set
+
+      @mutex.unlock
+
+      result
     end
   end
 end
