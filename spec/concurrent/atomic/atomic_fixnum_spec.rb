@@ -127,35 +127,40 @@ module Concurrent
     specify 'value is synchronized' do
       mutex = double('mutex')
       Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
+      mutex.should_receive(:lock)
+      mutex.should_receive(:unlock)
       described_class.new.value
     end
 
     specify 'value= is synchronized' do
       mutex = double('mutex')
       Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
+      mutex.should_receive(:lock)
+      mutex.should_receive(:unlock)
       described_class.new.value = 10
     end
 
     specify 'increment is synchronized' do
       mutex = double('mutex')
       Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
+      mutex.should_receive(:lock)
+      mutex.should_receive(:unlock)
       described_class.new.increment
     end
 
     specify 'decrement is synchronized' do
       mutex = double('mutex')
       Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
+      mutex.should_receive(:lock)
+      mutex.should_receive(:unlock)
       described_class.new.decrement
     end
 
     specify 'compare_and_set is synchronized' do
       mutex = double('mutex')
       Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
+      mutex.should_receive(:lock)
+      mutex.should_receive(:unlock)
       described_class.new(14).compare_and_set(14, 2)
     end
   end
