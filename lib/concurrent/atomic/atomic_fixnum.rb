@@ -28,9 +28,11 @@ module Concurrent
     #
     #   @return [Fixnum] the current value
     def value
-      @mutex.synchronize do
-        @value
-      end
+      @mutex.lock
+      result = @value
+      @mutex.unlock
+
+      result
     end
 
     # @!macro [attach] atomic_fixnum_method_value_eq
@@ -44,9 +46,11 @@ module Concurrent
     #   @raise [ArgumentError] if the new value is not a `Fixnum`
     def value=(value)
       raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
-      @mutex.synchronize do
-        @value = value
-      end
+      @mutex.lock
+      result = @value = value
+      @mutex.unlock
+
+      result
     end
 
     # @!macro [attach] atomic_fixnum_method_increment
@@ -55,10 +59,14 @@ module Concurrent
     #
     #   @return [Fixnum] the current value after incrementation
     def increment
-      @mutex.synchronize do
-        @value += 1
-      end
+      @mutex.lock
+      @value += 1
+      result = @value
+      @mutex.unlock
+
+      result
     end
+
     alias_method :up, :increment
 
     # @!macro [attach] atomic_fixnum_method_decrement
@@ -67,10 +75,14 @@ module Concurrent
     #
     #   @return [Fixnum] the current value after decrementation
     def decrement
-      @mutex.synchronize do
-        @value -= 1
-      end
+      @mutex.lock
+      @value -= 1
+      result = @value
+      @mutex.unlock
+
+      result
     end
+
     alias_method :down, :decrement
 
     # @!macro [attach] atomic_fixnum_method_compare_and_set
@@ -83,14 +95,17 @@ module Concurrent
     #
     #   @return [Boolean] true if the value was updated else false 
     def compare_and_set(expect, update)
-      @mutex.synchronize do
-        if @value == expect
-          @value = update
-          true
-        else
-          false
-        end
+
+      @mutex.lock
+      if @value == expect
+        @value = update
+        result = true
+      else
+        result = false
       end
+      @mutex.unlock
+
+      result
     end
   end
 
@@ -124,6 +139,7 @@ module Concurrent
       def increment
         @atomic.increment_and_get
       end
+
       alias_method :up, :increment
 
       # @!macro atomic_fixnum_method_decrement
@@ -131,6 +147,7 @@ module Concurrent
       def decrement
         @atomic.decrement_and_get
       end
+
       alias_method :down, :decrement
 
       # @!macro atomic_fixnum_method_compare_and_set
