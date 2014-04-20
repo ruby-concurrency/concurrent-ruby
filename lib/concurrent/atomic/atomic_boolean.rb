@@ -16,7 +16,7 @@ module Concurrent
     #
     # @param [Boolean] init the initial value
     def initialize(initial = false)
-      @value = !! initial
+      @value = !!initial
       @mutex = Mutex.new
     end
 
@@ -26,7 +26,10 @@ module Concurrent
     #
     #   @return [Boolean] the current value
     def value
-      @mutex.synchronize{ @value }
+      @mutex.lock
+      result = @value
+      @mutex.unlock
+      result
     end
 
     # @!macro [attach] atomic_boolean_method_value_eq
@@ -37,7 +40,11 @@ module Concurrent
     #
     #   @return [Boolean] the current value
     def value=(value)
-      @mutex.synchronize{ @value = !! value }
+      @mutex.lock
+      @value = !!value
+      result = @value
+      @mutex.unlock
+      result
     end
 
     # @!macro [attach] atomic_boolean_method_is_true
@@ -46,7 +53,10 @@ module Concurrent
     #
     #   @return [Boolean] true if the current value is `true`, else false
     def true?
-      @mutex.synchronize{ @value == true }
+      @mutex.lock
+      result = @value
+      @mutex.unlock
+      result
     end
 
     # @!macro [attach] atomic_boolean_method_is_false
@@ -55,27 +65,36 @@ module Concurrent
     #
     #   @return [Boolean] true if the current value is `false`, else false
     def false?
-      @mutex.synchronize{ @value != true }
+      @mutex.lock
+      result = !@value
+      @mutex.unlock
+      result
     end
 
     # @!macro [attach] atomic_boolean_method_make_true
     #
     #   Explicitly sets the value to true.
     #
-    #   @return [Boolean] the current value
+    #   @return [Boolean] true if the value changed
     def make_true
-      @mutex.synchronize{ @value = true }
-      nil
+      @mutex.lock
+      old = @value
+      @value = true
+      @mutex.unlock
+      !old
     end
 
     # @!macro [attach] atomic_boolean_method_make_false
     #
     #   Explicitly sets the value to false.
     #
-    #   @return [Boolean] the current value
+    #   @return [Boolean] true if the value changed
     def make_false
-      @mutex.synchronize{ @value = false }
-      nil
+      @mutex.lock
+      old = @value
+      @value = false
+      @mutex.unlock
+      old
     end
   end
 
@@ -87,7 +106,7 @@ module Concurrent
       # @!macro atomic_boolean_method_initialize
       #
       def initialize(initial = false)
-        @atomic = java.util.concurrent.atomic.AtomicBoolean.new(!! initial)
+        @atomic = java.util.concurrent.atomic.AtomicBoolean.new(!!initial)
       end
 
       # @!macro atomic_boolean_method_value
@@ -99,7 +118,7 @@ module Concurrent
       # @!macro atomic_boolean_method_value_eq
       #
       def value=(value)
-        @atomic.set(!! value)
+        @atomic.set(!!value)
       end
 
       # @!macro [attach] atomic_boolean_method_is_true

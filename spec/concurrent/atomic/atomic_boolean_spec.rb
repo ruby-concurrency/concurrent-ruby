@@ -2,7 +2,7 @@ require 'spec_helper'
 
 share_examples_for :atomic_boolean do
 
-  context 'construction' do
+  describe 'construction' do
 
     it 'sets the initial value' do
       described_class.new(true).value.should be_true
@@ -21,7 +21,7 @@ share_examples_for :atomic_boolean do
     end
   end
 
-  context '#value' do
+  describe '#value' do
 
     it 'returns the current value' do
       counter = described_class.new(true)
@@ -33,7 +33,7 @@ share_examples_for :atomic_boolean do
     end
   end
 
-  context '#value=' do
+  describe '#value=' do
 
     it 'sets the #value to the given `Boolean`' do
       atomic = described_class.new(true)
@@ -59,46 +59,46 @@ share_examples_for :atomic_boolean do
     end
   end
 
-  context 'true?' do
+  describe '#true?' do
 
     specify { described_class.new(true).true?.should be_true }
 
     specify { described_class.new(false).true?.should be_false }
   end
 
-  context 'false?' do
+  describe '#false?' do
 
     specify { described_class.new(true).false?.should be_false }
 
     specify { described_class.new(false).false?.should be_true }
   end
 
-  context 'make_true' do
+  describe '#make_true' do
 
-    it 'makes a false value true and returns nil' do
+    it 'makes a false value true and returns true' do
       subject = described_class.new(false)
-      subject.make_true.should be_nil
+      subject.make_true.should be_true
       subject.value.should be_true
     end
 
-    it 'keeps a true value true and returns nil' do
+    it 'keeps a true value true and returns false' do
       subject = described_class.new(true)
-      subject.make_true.should be_nil
+      subject.make_true.should be_false
       subject.value.should be_true
     end
   end
 
-  context 'make_false' do
+  describe '#make_false' do
 
-    it 'makes a true value false and returns nil' do
+    it 'makes a true value false and returns true' do
       subject = described_class.new(true)
-      subject.make_false.should be_nil
+      subject.make_false.should be_true
       subject.value.should be_false
     end
 
-    it 'keeps a false value false and returns nil' do
+    it 'keeps a false value false and returns false' do
       subject = described_class.new(false)
-      subject.make_false.should be_nil
+      subject.make_false.should be_false
       subject.value.should be_false
     end
   end
@@ -116,46 +116,38 @@ module Concurrent
       described_class.new
     end
 
-    specify 'value is synchronized' do
-      mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
-      described_class.new.value
-    end
+    context 'instance methods' do
 
-    specify 'value= is synchronized' do
-      mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
-      described_class.new.value = 10
-    end
+      before(:each) do
+        mutex = double('mutex')
+        Mutex.stub(:new).with(no_args).and_return(mutex)
+        mutex.should_receive(:lock)
+        mutex.should_receive(:unlock)
+      end
 
-    specify 'true? is synchronized' do
-      mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
-      described_class.new.true?
-    end
+      specify 'value is synchronized' do
+        described_class.new.value
+      end
 
-    specify 'false? is synchronized' do
-      mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
-      described_class.new.false?
-    end
+      specify 'value= is synchronized' do
+        described_class.new.value = 10
+      end
 
-    specify 'make_true is synchronized' do
-      mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
-      described_class.new.make_true
-    end
+      specify 'true? is synchronized' do
+        described_class.new.true?
+      end
 
-    specify 'make_false is synchronized' do
-      mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:synchronize)
-      described_class.new.make_false
+      specify 'false? is synchronized' do
+        described_class.new.false?
+      end
+
+      specify 'make_true is synchronized' do
+        described_class.new.make_true
+      end
+
+      specify 'make_false is synchronized' do
+        described_class.new.make_false
+      end
     end
   end
 
