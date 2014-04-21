@@ -15,22 +15,24 @@ module Concurrent
     # @param [Symbol] func the function to call on the observer during notification. Default is :update
     # @return [Symbol] the added function
     def add_observer(observer, func=:update)
-      @mutex.synchronize do
-        new_observers = @observers.dup
-        new_observers[observer] = func
-        @observers = new_observers
-      end
+      @mutex.lock
+      new_observers = @observers.dup
+      new_observers[observer] = func
+      @observers = new_observers
+      @mutex.unlock
+
       func
     end
 
     # @param [Object] observer the observer to remove
     # @return [Object] the deleted observer
     def delete_observer(observer)
-      @mutex.synchronize do
-        new_observers = @observers.dup
-        new_observers.delete(observer)
-        @observers = new_observers
-      end
+      @mutex.lock
+      new_observers = @observers.dup
+      new_observers.delete(observer)
+      @observers = new_observers
+      @mutex.unlock
+
       observer
     end
 
@@ -68,7 +70,7 @@ module Concurrent
     private
 
     def notify_to(observers, *args)
-      raise ArgumentError.new('cannot give arguments and a block') if block_given? && ! args.empty?
+      raise ArgumentError.new('cannot give arguments and a block') if block_given? && !args.empty?
       observers.each do |observer, function|
         args = yield if block_given?
         observer.send(function, *args)
@@ -76,19 +78,26 @@ module Concurrent
     end
 
     def observers
-      @mutex.synchronize { @observers }
+      @mutex.lock
+      o = @observers
+      @mutex.unlock
+
+      o
     end
 
     def observers=(new_set)
-      @mutex.synchronize { @observers = new_set}
+      @mutex.lock
+      @observers = new_set
+      @mutex.unlock
     end
 
     def clear_observers_and_return_old
-      @mutex.synchronize do
-        old_observers = @observers
-        @observers = {}
-        old_observers
-      end
+      @mutex.lock
+      old_observers = @observers
+      @observers = {}
+      @mutex.unlock
+
+      old_observers
     end
   end
 end

@@ -16,34 +16,49 @@ module Concurrent
     # @param [Symbol] func the function to call on the observer during notification. Default is :update
     # @return [Symbol] the added function
     def add_observer(observer, func=:update)
-      @mutex.synchronize { @observers[observer] = func }
+      @mutex.lock
+      @observers[observer] = func
+      @mutex.unlock
+
+      func
     end
+
     alias_method :add_watch, :add_observer
 
     # @param [Object] observer the observer to remove
     # @return [Object] the deleted observer
     def delete_observer(observer)
-      @mutex.synchronize { @observers.delete(observer) }
+      @mutex.lock
+      @observers.delete(observer)
+      @mutex.unlock
+
       observer
     end
 
     # Deletes all observers
     # @return [CopyOnWriteObserverSet] self
     def delete_observers
-      @mutex.synchronize { @observers.clear }
+      @mutex.lock
+      @observers.clear
+      @mutex.unlock
+
       self
     end
 
     # @return [Integer] the observers count
     def count_observers
-      @mutex.synchronize { @observers.count }
+      @mutex.lock
+      result = @observers.count
+      @mutex.unlock
+
+      result
     end
 
     # Notifies all registered observers with optional args
     # @param [Object] args arguments to be passed to each observer
     # @return [CopyOnWriteObserverSet] self
     def notify_observers(*args, &block)
-      observers = @mutex.synchronize { @observers.dup }
+      observers = duplicate_observers
       notify_to(observers, *args, &block)
 
       self
@@ -63,15 +78,24 @@ module Concurrent
     private
 
     def duplicate_and_clear_observers
-      @mutex.synchronize do
-        observers = @observers.dup
-        @observers.clear
-        observers
-      end
+      @mutex.lock
+      observers = @observers.dup
+      @observers.clear
+      @mutex.unlock
+
+      observers
+    end
+
+    def duplicate_observers
+      @mutex.lock
+      observers = @observers.dup
+      @mutex.unlock
+
+      observers
     end
 
     def notify_to(observers, *args)
-      raise ArgumentError.new('cannot give arguments and a block') if block_given? && ! args.empty?
+      raise ArgumentError.new('cannot give arguments and a block') if block_given? && !args.empty?
       observers.each do |observer, function|
         args = yield if block_given?
         observer.send(function, *args)
