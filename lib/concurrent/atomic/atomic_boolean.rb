@@ -75,26 +75,24 @@ module Concurrent
     #
     #   Explicitly sets the value to true.
     #
-    #   @return [Boolean] true if the value changed
+    #   @return [nil]
     def make_true
       @mutex.lock
-      old = @value
       @value = true
       @mutex.unlock
-      !old
+      nil
     end
 
     # @!macro [attach] atomic_boolean_method_make_false
     #
     #   Explicitly sets the value to false.
     #
-    #   @return [Boolean] true if the value changed
+    #   @return [nil]
     def make_false
       @mutex.lock
-      old = @value
       @value = false
       @mutex.unlock
-      old
+      nil
     end
   end
 
@@ -123,12 +121,12 @@ module Concurrent
 
       # @!macro [attach] atomic_boolean_method_is_true
       def true?
-        @atomic.get == true
+        @atomic.get
       end
 
       # @!macro [attach] atomic_boolean_method_is_false
       def false?
-        @atomic.get != true
+        !@atomic.get
       end
 
       # @!macro atomic_boolean_method_make_true
