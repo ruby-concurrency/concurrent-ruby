@@ -75,30 +75,30 @@ share_examples_for :atomic_boolean do
 
   describe '#make_true' do
 
-    it 'makes a false value true and returns nil' do
+    it 'makes a false value true and returns true' do
       subject = described_class.new(false)
-      subject.make_true.should be_nil
+      subject.make_true.should be_true
       subject.value.should be_true
     end
 
-    it 'keeps a true value true and returns nil' do
+    it 'keeps a true value true and returns false' do
       subject = described_class.new(true)
-      subject.make_true.should be_nil
+      subject.make_true.should be_false
       subject.value.should be_true
     end
   end
 
   describe '#make_false' do
 
-    it 'makes a true value false and returns nil' do
+    it 'makes a true value false and returns true' do
       subject = described_class.new(true)
-      subject.make_false.should be_nil
+      subject.make_false.should be_true
       subject.value.should be_false
     end
 
-    it 'keeps a false value false and returns nil' do
+    it 'keeps a false value false and returns false' do
       subject = described_class.new(false)
-      subject.make_false.should be_nil
+      subject.make_false.should be_false
       subject.value.should be_false
     end
   end
