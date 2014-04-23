@@ -23,8 +23,6 @@ module Concurrent
       func
     end
 
-    alias_method :add_watch, :add_observer
-
     # @param [Object] observer the observer to remove
     # @return [Object] the deleted observer
     def delete_observer(observer)
