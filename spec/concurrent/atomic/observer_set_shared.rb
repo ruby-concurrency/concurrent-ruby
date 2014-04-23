@@ -8,15 +8,16 @@ shared_examples "an observer set" do
 
   describe '#add_observer' do
 
-    context 'with argument' do
-      it 'should return the passed function' do
-        observer_set.add_observer(observer, :a_method).should eq(:a_method)
+    context 'with arguments' do
+      it 'should return the observer' do
+        observer_set.add_observer(observer, :a_method).should == observer
       end
     end
 
-    context 'without arguments' do
-      it 'should return the default function' do
-        observer_set.add_observer(observer).should eq(:update)
+    context 'with a block' do
+      it 'should return the observer based on a block' do
+        observer = observer_set.add_observer { :block }
+        observer.call.should == :block
       end
     end
   end
@@ -59,6 +60,14 @@ shared_examples "an observer set" do
         observer_set.add_observer(observer, :yet_another_method)
 
         observer_set.notify_observers('a string arg')
+      end
+
+      it 'should notify an observer from a block' do
+        notification = double
+        expect(notification).to receive(:catch)
+
+        observer_set.add_observer {|arg| arg.catch }
+        observer_set.notify_observers notification
       end
 
       it 'can be called many times' do
