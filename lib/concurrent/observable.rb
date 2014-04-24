@@ -5,8 +5,8 @@ module Concurrent
 
   module Observable
 
-    def add_observer(*args)
-      observers.add_observer(*args)
+    def add_observer(*args, &block)
+      observers.add_observer(*args, &block)
     end
 
     def delete_observer(*args)
