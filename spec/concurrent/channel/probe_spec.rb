@@ -1,4 +1,5 @@
 require 'spec_helper'
+require_relative '../observable_shared'
 
 module Concurrent
 
@@ -6,6 +7,19 @@ module Concurrent
 
     let(:channel) { Object.new }
     let(:probe) { Channel::Probe.new }
+
+    describe 'behavior' do
+
+      # observable
+      
+      subject{ Channel::Probe.new }
+      
+      def trigger_observable(observable)
+        observable.set('value')
+      end
+
+      it_should_behave_like :observable
+    end
 
     describe '#set_unless_assigned' do
       context 'empty probe' do

@@ -14,14 +14,25 @@ module Concurrent
     # @param [Object] observer the observer to add
     # @param [Symbol] func the function to call on the observer during notification. Default is :update
     # @return [Symbol] the added function
-    def add_observer(observer, func=:update)
+    def add_observer(observer=nil, func=:update, &block)
+      if observer.nil? && block.nil?
+        raise ArgumentError, 'should pass observer as a first argument or block'
+      elsif observer && block
+        raise ArgumentError.new('cannot provide both an observer and a block')
+      end
+
+      if block
+        observer = block
+        func = :call
+      end
+
       @mutex.lock
       new_observers = @observers.dup
       new_observers[observer] = func
       @observers = new_observers
       @mutex.unlock
 
-      func
+      observer
     end
 
     # @param [Object] observer the observer to remove

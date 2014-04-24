@@ -142,6 +142,7 @@ ibm.value #=> 187.57
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Lucas Allan](https://github.com/lucasallan)
+* [Ravil Bayramgalin](https://github.com/brainopia)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)

@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative 'dereferenceable_shared'
+require_relative 'observable_shared'
 require_relative 'runnable_shared'
 
 module Concurrent
@@ -44,6 +45,18 @@ module Concurrent
       end
 
       it_should_behave_like :dereferenceable
+    end
+
+    context :observable do
+      
+      subject{ TimerTask.new(execution_interval: 0.1){ nil } }
+      
+      def trigger_observable(observable)
+        observable.execute
+        sleep(0.2)
+      end
+
+      it_should_behave_like :observable
     end
 
     context 'created with #new' do

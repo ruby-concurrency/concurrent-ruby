@@ -51,9 +51,9 @@ module Concurrent
     end
     alias_method :stop, :cancel
 
-    def add_observer(*args)
+    def add_observer(*args, &block)
       if_state(:unscheduled, :pending, :in_progress) do
-        observers.add_observer(*args)
+        observers.add_observer(*args, &block)
       end
     end
 
