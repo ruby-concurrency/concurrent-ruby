@@ -21,9 +21,9 @@ module Concurrent
       expected = Concurrent::AtomicFixnum.new(0)
       Concurrent::timer(0.5){ expected.increment }
       expected.value.should eq 0
-      sleep(0.2)
+      sleep(0.1)
       expected.value.should eq 0
-      sleep(0.5)
+      sleep(0.8)
       expected.value.should eq 1
     end
 
