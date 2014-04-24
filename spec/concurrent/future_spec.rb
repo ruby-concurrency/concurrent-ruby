@@ -1,6 +1,7 @@
 require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
+require_relative 'observable_shared'
 
 module Concurrent
 
@@ -54,6 +55,17 @@ module Concurrent
       end
 
       it_should_behave_like :dereferenceable
+
+      # observable
+      
+      subject{ Future.new{ nil } }
+      
+      def trigger_observable(observable)
+        observable.execute
+        sleep(0.1)
+      end
+
+      it_should_behave_like :observable
     end
 
     context 'subclassing' do

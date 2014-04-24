@@ -15,6 +15,7 @@ module Concurrent
 
     def delete_observers
       observers.delete_observers
+      self
     end
 
     def count_observers

@@ -1,6 +1,7 @@
 require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
+require_relative 'observable_shared'
 
 module Concurrent
 
@@ -56,10 +57,19 @@ module Concurrent
 
       def execute_dereferenceable(subject)
         subject.set('value')
-        sleep(0.1)
       end
 
       it_should_behave_like :dereferenceable
+
+      # observable
+      
+      subject{ IVar.new }
+      
+      def trigger_observable(observable)
+        observable.set('value')
+      end
+
+      it_should_behave_like :observable
     end
 
     context '#initialize' do

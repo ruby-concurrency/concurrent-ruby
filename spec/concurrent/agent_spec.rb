@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative 'dereferenceable_shared'
+require_relative 'observable_shared'
 
 module Concurrent
 
@@ -38,6 +39,17 @@ module Concurrent
       end
 
       it_should_behave_like :dereferenceable
+
+      # observable
+      
+      subject{ Agent.new(0) }
+      
+      def trigger_observable(observable)
+        observable.post{ nil }
+        sleep(0.1)
+      end
+
+      it_should_behave_like :observable
     end
 
     context '#initialize' do

@@ -16,8 +16,10 @@ module Concurrent
     # @param [Symbol] func the function to call on the observer during notification. Default is :update
     # @return [Symbol] the added function
     def add_observer(observer=nil, func=:update, &block)
-      unless !!observer ^ block # xor
+      if observer.nil? && block.nil?
         raise ArgumentError, 'should pass observer as a first argument or block'
+      elsif observer && block
+        raise ArgumentError.new('cannot provide both an observer and a block')
       end
 
       if block

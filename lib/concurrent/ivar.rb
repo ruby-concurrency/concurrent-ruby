@@ -42,7 +42,8 @@ module Concurrent
     #
     # @param [Object] observer the object that will be notified of changes
     # @param [Symbol] func symbol naming the method to call when this `Observable` has changes`
-    def add_observer(observer, func = :update, &block)
+    def add_observer(observer = nil, func = :update, &block)
+      raise ArgumentError.new('cannot provide both an observer and a block') if observer && block
       direct_notification = false
 
       if block
