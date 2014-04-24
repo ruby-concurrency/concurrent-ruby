@@ -33,6 +33,20 @@ The design goals of this gem are:
 </tr>
 </table>
 
+### Install
+
+```shell
+gem install concurrent-ruby
+```
+or add the following line to Gemfile:
+
+```ruby
+gem 'concurrent-ruby'
+```
+and run `bundle install` from your shell.
+
+*NOTE: There is an old gem from 2007 called "concurrent" that does not appear to be under active development. That isn't us. Please do not run* `gem install concurrent`*. It is not the droid you are looking for.*
+
 ## Features & Documentation
 
 Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki)
