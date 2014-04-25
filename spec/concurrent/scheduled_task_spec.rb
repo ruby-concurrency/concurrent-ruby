@@ -20,11 +20,19 @@ module Concurrent
       end
 
       let(:fulfilled_subject) do
-        ScheduledTask.new(0.1){ fulfilled_value }.execute.tap{ sleep(0.2) }
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.1){ latch.count_down; fulfilled_value }.execute
+        latch.wait(1)
+        sleep(0.1)
+        task
       end
 
       let(:rejected_subject) do
-        ScheduledTask.new(0.1){ raise rejected_reason }.execute.tap{ sleep(0.2) }
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.1){ latch.count_down; raise rejected_reason }.execute
+        latch.wait(1)
+        sleep(0.1)
+        task
       end
 
       it_should_behave_like :obligation
@@ -180,32 +188,34 @@ module Concurrent
       end
 
       it 'returns false if the task is already in progress' do
-        task = ScheduledTask.new(0.1){ sleep(1); 42 }.execute
-        sleep(0.2)
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.1) {
+          latch.count_down
+          sleep(1)
+        }.execute
+        latch.wait(1)
         task.cancel.should be_false
       end
 
       it 'cancels the task if it has not yet scheduled' do
-        @expected = true
-        task = ScheduledTask.new(0.1){ @expected = false }
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.1){ latch.count_down }
         task.cancel
         task.execute
-        sleep(0.5)
-        @expected.should be_true
+        latch.wait(0.3).should be_false
       end
 
 
       it 'cancels the task if it has not yet started' do
-        @expected = true
-        task = ScheduledTask.new(0.3){ @expected = false }.execute
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.3){ latch.count_down }.execute
         sleep(0.1)
         task.cancel
-        sleep(0.5)
-        @expected.should be_true
+        latch.wait(0.5).should be_false
       end
 
       it 'returns true on success' do
-        task = ScheduledTask.new(0.3){ @expected = false }.execute
+        task = ScheduledTask.new(10){ nil }.execute
         sleep(0.1)
         task.cancel.should be_true
       end
@@ -221,8 +231,12 @@ module Concurrent
     context 'execution' do
 
       it 'sets the state to :in_progress when the task is running' do
-        task = ScheduledTask.new(0.1){ sleep(1); 42 }.execute
-        sleep(0.2)
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.1) {
+          latch.count_down
+          sleep(1)
+        }.execute
+        latch.wait(1)
         task.should be_in_progress
       end
     end
