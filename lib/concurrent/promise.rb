@@ -30,14 +30,14 @@ module Concurrent
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(opts = {}, &block)
-      opts.delete_if {|k, v| v.nil?}
+      opts.delete_if { |k, v| v.nil? }
 
       @executor = OptionsParser::get_executor_from(opts)
       @parent = opts.fetch(:parent) { nil }
-      @on_fulfill = opts.fetch(:on_fulfill) { Proc.new{ |result| result } }
-      @on_reject = opts.fetch(:on_reject) { Proc.new{ |reason| raise reason } }
+      @on_fulfill = opts.fetch(:on_fulfill) { Proc.new { |result| result } }
+      @on_reject = opts.fetch(:on_reject) { Proc.new { |reason| raise reason } }
 
-      @promise_body = block || Proc.new{|result| result }
+      @promise_body = block || Proc.new { |result| result }
       @state = :unscheduled
       @children = []
 
@@ -46,13 +46,13 @@ module Concurrent
 
     # @return [Promise]
     def self.fulfill(value, opts = {})
-      Promise.new(opts).tap{ |p| p.send(:synchronized_set_state!, true, value, nil) }
+      Promise.new(opts).tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
 
 
     # @return [Promise]
     def self.reject(reason, opts = {})
-      Promise.new(opts).tap{ |p| p.send(:synchronized_set_state!, false, nil, reason) }
+      Promise.new(opts).tap { |p| p.send(:synchronized_set_state!, false, nil, reason) }
     end
 
     # @return [Promise]
@@ -77,7 +77,7 @@ module Concurrent
     # @return [Promise] the new promise
     def then(rescuer = nil, &block)
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
-      block = Proc.new{ |result| result } if block.nil?
+      block = Proc.new { |result| result } if block.nil?
       child = Promise.new(
         parent: self,
         executor: @executor,
@@ -105,6 +105,7 @@ module Concurrent
     def rescue(&block)
       self.then(block)
     end
+
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
@@ -124,13 +125,13 @@ module Concurrent
 
     # @!visibility private
     def on_fulfill(result)
-      realize Proc.new{ @on_fulfill.call(result) }
+      realize Proc.new { @on_fulfill.call(result) }
       nil
     end
 
     # @!visibility private
     def on_reject(reason)
-      realize Proc.new{ @on_reject.call(reason) }
+      realize Proc.new { @on_reject.call(reason) }
       nil
     end
 
@@ -142,14 +143,14 @@ module Concurrent
     # @!visibility private
     def realize(task)
       @executor.post do
-        success, value, reason = SafeTaskExecutor.new( task ).execute
+        success, value, reason = SafeTaskExecutor.new(task).execute
 
         children_to_notify = mutex.synchronize do
           set_state!(success, value, reason)
           @children.dup
         end
 
-        children_to_notify.each{ |child| notify_child(child) }
+        children_to_notify.each { |child| notify_child(child) }
       end
     end
 
@@ -159,9 +160,9 @@ module Concurrent
     end
 
     def synchronized_set_state!(success, value, reason)
-      mutex.synchronize do
-        set_state!(success, value, reason)
-      end
+      mutex.lock
+      set_state!(success, value, reason)
+      mutex.unlock
     end
   end
 end

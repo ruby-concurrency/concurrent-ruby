@@ -247,7 +247,10 @@ module Concurrent
     # @return [Fixnum] Number of seconds after the task completes before the
     #   task is performed again.
     def execution_interval
-      mutex.synchronize{ @execution_interval }
+      mutex.lock
+      result = @execution_interval
+      mutex.unlock
+      result
     end
 
     # @!attribute [rw] execution_interval
@@ -257,7 +260,10 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        mutex.synchronize{ @execution_interval = value }
+        mutex.lock
+        result = @execution_interval = value
+        mutex.unlock
+        result
       end
     end
 
@@ -265,7 +271,10 @@ module Concurrent
     # @return [Fixnum] Number of seconds the task can run before it is
     #   considered to have failed.
     def timeout_interval
-      mutex.synchronize{ @timeout_interval }
+      mutex.lock
+      result = @timeout_interval
+      mutex.unlock
+      result
     end
 
     # @!attribute [rw] timeout_interval
@@ -275,7 +284,10 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        mutex.synchronize{ @timeout_interval = value }
+        mutex.lock
+        result = @timeout_interval = value
+        mutex.unlock
+        result
       end
     end
 

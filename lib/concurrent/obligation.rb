@@ -48,11 +48,17 @@ module Concurrent
     end
 
     def state
-      mutex.synchronize { @state }
+      mutex.lock
+      result = @state
+      mutex.unlock
+      result
     end
 
     def reason
-      mutex.synchronize { @reason }
+      mutex.lock
+      result = @reason
+      mutex.unlock
+      result
     end
 
     protected

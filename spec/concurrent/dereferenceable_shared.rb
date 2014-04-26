@@ -121,7 +121,8 @@ share_examples_for :dereferenceable do
     subject = dereferenceable_subject(0)
     mutex = double('mutex')
     subject.stub(:mutex).and_return(mutex)
-    mutex.should_receive(:synchronize).at_least(:once)
+    mutex.should_receive(:lock).at_least(:once)
+    mutex.should_receive(:unlock).at_least(:once)
     subject.value
   end
 

@@ -71,7 +71,17 @@ module Concurrent
     #
     # @see Concurrent::Dereferenceable
     def value
-      mutex.synchronize do
+      mutex.lock
+      execute_task_once
+      result = apply_deref_options(@value)
+      mutex.unlock
+
+      result
+    end
+
+    private
+
+      def execute_task_once
         if @state == :pending
           begin
             @value = @task.call
@@ -81,8 +91,6 @@ module Concurrent
             @state = :rejected
           end
         end
-        return apply_deref_options(@value)
       end
-    end
   end
 end
