@@ -147,18 +147,17 @@ module Concurrent
     context '#post' do
 
       it 'adds the given block to the queue' do
-        executor.should_receive(:post).with(no_args).exactly(3).times
-        subject.post { sleep(100) }
+        executor.should_receive(:post).with(no_args).exactly(1).times
+        subject.post { sleep(1) }
         subject.post { nil }
         subject.post { nil }
         sleep(0.1)
+        subject.instance_variable_get(:@stash).size.should eq 2
       end
 
       it 'does not add to the queue when no block is given' do
-        executor.should_receive(:post).with(no_args).exactly(2).times
-        subject.post { sleep(100) }
+        executor.should_receive(:post).with(no_args).exactly(0).times
         subject.post
-        subject.post { nil }
         sleep(0.1)
       end
     end
@@ -363,6 +362,46 @@ module Concurrent
         sleep(0.1)
         observer.value.should be_nil
       end
+    end
+
+    context 'clojure-like behaviour' do
+      it 'does not block dereferencing when updating the value' do
+        continue = IVar.new
+        agent    = Agent.new(0, executor: executor)
+        agent.post { |old| old + continue.value }
+        sleep 0.1
+        Concurrent.timeout(0.2) { agent.value.should eq 0 }
+        continue.set 1
+        sleep 0.1
+      end
+
+      it 'does not allow to execute two updates at the same time' do
+        agent     = Agent.new(0, executor: executor)
+        continue1 = IVar.new
+        continue2 = IVar.new
+        f1        = f2 = false
+        agent.post { |old| f1 = true; old + continue1.value }
+        agent.post { |old| f2 = true; old + continue2.value }
+
+        sleep 0.1
+        f1.should eq true
+        f2.should eq false
+        agent.value.should eq 0
+
+        continue1.set 1
+        sleep 0.1
+        f1.should eq true
+        f2.should eq true
+        agent.value.should eq 1
+
+        continue2.set 1
+        sleep 0.1
+        f1.should eq true
+        f2.should eq true
+        agent.value.should eq 2
+      end
+
+      it 'waits with sending functions to other agents until update is done'
     end
 
     context 'aliases' do

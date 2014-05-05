@@ -60,12 +60,14 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
-      @value = initial
-      @rescuers = []
-      @validator = Proc.new { |result| true }
-      @timeout = opts.fetch(:timeout, TIMEOUT).freeze
-      self.observers = CopyOnWriteObserverSet.new
-      @executor = OptionsParser::get_executor_from(opts)
+      @value          = initial
+      @rescuers       = []
+      @validator      = Proc.new { |result| true }
+      @timeout        = opts.fetch(:timeout, TIMEOUT).freeze
+      self.observers  = CopyOnWriteObserverSet.new
+      @executor       = OptionsParser::get_executor_from(opts)
+      @being_executed = false
+      @stash          = []
       init_mutex
       set_deref_options(opts)
     end
@@ -111,7 +113,11 @@ module Concurrent
     # @yieldparam [Object] value the result of the last update operation
     # @yieldreturn [Boolean] true if the value is valid else false
     def validate(&block)
-      @validator = block unless block.nil?
+      unless block.nil?
+        mutex.lock
+        @validator = block
+        mutex.unlock
+      end
       self
     end
     alias_method :validates, :validate
@@ -124,8 +130,19 @@ module Concurrent
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
+    # @return [true, nil] nil when no block is given
     def post(&block)
-      @executor.post{ work(&block) } unless block.nil?
+      return nil if block.nil?
+      mutex.lock
+      post = if @being_executed
+               @stash << block
+               false
+             else
+               @being_executed = true
+             end
+      mutex.unlock
+      @executor.post { work(&block) } if post
+      true
     end
 
     # Update the current value with the result of the given block operation
@@ -157,22 +174,38 @@ module Concurrent
     # @!visibility private
     def work(&handler) # :nodoc:
       begin
+        should_notify    = false
+        validator, value = mutex.synchronize { [@validator, @value] }
 
-        should_notify = false
+        begin
+          # FIXME creates second thread
+          result, valid = Concurrent::timeout(@timeout) do
+            [result = handler.call(value),
+             validator.call(result)]
+          end
+        rescue Exception => ex
+          exception = ex
+        end
 
         mutex.synchronize do
-          result = Concurrent::timeout(@timeout) do
-            handler.call(@value)
-          end
-          if @validator.call(result)
-            @value = result
+          if !exception && valid
+            @value        = result
             should_notify = true
           end
+
+          if (stashed = @stash.shift)
+            @executor.post { work(&stashed) }
+          else
+            @being_executed = false
+          end
         end
-        time = Time.now
-        observers.notify_observers{ [time, self.value] } if should_notify
-      rescue Exception => ex
-        try_rescue(ex)
+
+        if should_notify
+          time = Time.now
+          observers.notify_observers { [time, self.value] }
+        end
+
+        try_rescue(exception)
       end
     end
   end
