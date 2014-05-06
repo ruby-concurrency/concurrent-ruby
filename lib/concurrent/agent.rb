@@ -164,7 +164,7 @@ module Concurrent
     # @!visibility private
     def try_rescue(ex) # :nodoc:
       rescuer = mutex.synchronize do
-        @rescuers.find{|r| ex.is_a?(r.clazz) }
+        @rescuers.find { |r| ex.is_a?(r.clazz) }
       end
       rescuer.block.call(ex) if rescuer
     rescue Exception => ex
