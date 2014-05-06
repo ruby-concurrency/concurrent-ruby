@@ -167,6 +167,25 @@ module Concurrent
         agent.post { |old| old + 1 }
         agent.value.should eq 2
       end
+
+    end
+
+    context '#await' do
+
+      it 'waits until already sent updates are done' do
+        fn = false
+        subject.post { fn = true; sleep 0.1 }
+        subject.await
+        fn.should be_true
+      end
+
+      it 'does not waits until updates sent after are done' do
+        fn = false
+        subject.await
+        subject.post { fn = true; sleep 0.1 }
+        fn.should be_false
+      end
+
     end
 
     context 'fulfillment' do

@@ -156,6 +156,16 @@ module Concurrent
       self
     end
 
+    # Waits/blocks until all the updates sent before this call are done.
+    #
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @return [Boolean] false on timeout, true otherwise
+    def await(timeout = nil)
+      done = Event.new
+      post { done.set }
+      done.wait timeout
+    end
+
     private
 
     # @!visibility private
@@ -168,6 +178,7 @@ module Concurrent
       end
       rescuer.block.call(ex) if rescuer
     rescue Exception => ex
+      # puts "#{ex} (#{ex.class})\n#{ex.backtrace.join("\n")}"
       # supress
     end
 
