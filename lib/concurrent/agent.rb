@@ -174,7 +174,6 @@ module Concurrent
     # @!visibility private
     def work(&handler) # :nodoc:
       begin
-        should_notify    = false
         validator, value = mutex.synchronize { [@validator, @value] }
 
         begin
@@ -187,18 +186,15 @@ module Concurrent
           exception = ex
         end
 
-        mutex.synchronize do
-          if !exception && valid
-            @value        = result
-            should_notify = true
-          end
+        mutex.lock
+        should_notify = if !exception && valid
+                          @value = result
+                          true
+                        end
+        stashed = @stash.shift || (@being_executed = false)
+        mutex.unlock
 
-          if (stashed = @stash.shift)
-            @executor.post { work(&stashed) }
-          else
-            @being_executed = false
-          end
-        end
+        @executor.post { work(&stashed) } if stashed
 
         if should_notify
           time = Time.now

@@ -160,6 +160,13 @@ module Concurrent
         subject.post
         sleep(0.1)
       end
+
+      it 'works with ImmediateExecutor' do
+        agent = Agent.new(0, executor: ImmediateExecutor.new)
+        agent.post { |old| old + 1 }
+        agent.post { |old| old + 1 }
+        agent.value.should eq 2
+      end
     end
 
     context 'fulfillment' do
