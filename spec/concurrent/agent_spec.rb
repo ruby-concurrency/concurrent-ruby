@@ -152,7 +152,10 @@ module Concurrent
         subject.post { nil }
         subject.post { nil }
         sleep(0.1)
-        subject.instance_variable_get(:@stash).size.should eq 2
+        subject.
+            executor.
+            instance_variable_get(:@stash).
+            size.should eq 2
       end
 
       it 'does not add to the queue when no block is given' do

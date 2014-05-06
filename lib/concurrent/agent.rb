@@ -40,7 +40,7 @@ module Concurrent
     # is given at initialization
     TIMEOUT = 5
 
-    attr_reader :timeout
+    attr_reader :timeout, :executor
 
     # Initialize a new Agent with the given initial value and provided options.
     #
@@ -60,14 +60,12 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
-      @value          = initial
-      @rescuers       = []
-      @validator      = Proc.new { |result| true }
-      @timeout        = opts.fetch(:timeout, TIMEOUT).freeze
-      self.observers  = CopyOnWriteObserverSet.new
-      @executor       = OptionsParser::get_executor_from(opts)
-      @being_executed = false
-      @stash          = []
+      @value         = initial
+      @rescuers      = []
+      @validator     = Proc.new { |result| true }
+      @timeout       = opts.fetch(:timeout, TIMEOUT).freeze
+      self.observers = CopyOnWriteObserverSet.new
+      @executor      = OneByOne.new OptionsParser::get_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end
@@ -133,15 +131,7 @@ module Concurrent
     # @return [true, nil] nil when no block is given
     def post(&block)
       return nil if block.nil?
-      mutex.lock
-      post = if @being_executed
-               @stash << block
-               false
-             else
-               @being_executed = true
-             end
-      mutex.unlock
-      @executor.post { work(&block) } if post
+      @executor.post { work(&block) }
       true
     end
 
@@ -184,36 +174,31 @@ module Concurrent
 
     # @!visibility private
     def work(&handler) # :nodoc:
+      validator, value = mutex.synchronize { [@validator, @value] }
+
       begin
-        validator, value = mutex.synchronize { [@validator, @value] }
-
-        begin
-          # FIXME creates second thread
-          result, valid = Concurrent::timeout(@timeout) do
-            [result = handler.call(value),
-             validator.call(result)]
-          end
-        rescue Exception => ex
-          exception = ex
+        # FIXME creates second thread
+        result, valid = Concurrent::timeout(@timeout) do
+          [result = handler.call(value),
+           validator.call(result)]
         end
-
-        mutex.lock
-        should_notify = if !exception && valid
-                          @value = result
-                          true
-                        end
-        stashed = @stash.shift || (@being_executed = false)
-        mutex.unlock
-
-        @executor.post { work(&stashed) } if stashed
-
-        if should_notify
-          time = Time.now
-          observers.notify_observers { [time, self.value] }
-        end
-
-        try_rescue(exception)
+      rescue Exception => ex
+        exception = ex
       end
+
+      mutex.lock
+      should_notify = if !exception && valid
+                        @value = result
+                        true
+                      end
+      mutex.unlock
+
+      if should_notify
+        time = Time.now
+        observers.notify_observers { [time, self.value] }
+      end
+
+      try_rescue(exception)
     end
   end
 end
