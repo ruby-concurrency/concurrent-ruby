@@ -40,7 +40,7 @@ module Concurrent
     # is given at initialization
     TIMEOUT = 5
 
-    attr_reader :timeout
+    attr_reader :timeout, :executor
 
     # Initialize a new Agent with the given initial value and provided options.
     #
@@ -60,12 +60,12 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
-      @value = initial
-      @rescuers = []
-      @validator = Proc.new { |result| true }
-      @timeout = opts.fetch(:timeout, TIMEOUT).freeze
+      @value         = initial
+      @rescuers      = []
+      @validator     = Proc.new { |result| true }
+      @timeout       = opts.fetch(:timeout, TIMEOUT).freeze
       self.observers = CopyOnWriteObserverSet.new
-      @executor = OptionsParser::get_executor_from(opts)
+      @executor      = OneByOne.new OptionsParser::get_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end
@@ -111,7 +111,11 @@ module Concurrent
     # @yieldparam [Object] value the result of the last update operation
     # @yieldreturn [Boolean] true if the value is valid else false
     def validate(&block)
-      @validator = block unless block.nil?
+      unless block.nil?
+        mutex.lock
+        @validator = block
+        mutex.unlock
+      end
       self
     end
     alias_method :validates, :validate
@@ -124,8 +128,11 @@ module Concurrent
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
+    # @return [true, nil] nil when no block is given
     def post(&block)
-      @executor.post{ work(&block) } unless block.nil?
+      return nil if block.nil?
+      @executor.post { work(&block) }
+      true
     end
 
     # Update the current value with the result of the given block operation
@@ -139,6 +146,16 @@ module Concurrent
       self
     end
 
+    # Waits/blocks until all the updates sent before this call are done.
+    #
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @return [Boolean] false on timeout, true otherwise
+    def await(timeout = nil)
+      done = Event.new
+      post { done.set }
+      done.wait timeout
+    end
+
     private
 
     # @!visibility private
@@ -147,33 +164,41 @@ module Concurrent
     # @!visibility private
     def try_rescue(ex) # :nodoc:
       rescuer = mutex.synchronize do
-        @rescuers.find{|r| ex.is_a?(r.clazz) }
+        @rescuers.find { |r| ex.is_a?(r.clazz) }
       end
       rescuer.block.call(ex) if rescuer
     rescue Exception => ex
+      # puts "#{ex} (#{ex.class})\n#{ex.backtrace.join("\n")}"
       # supress
     end
 
     # @!visibility private
     def work(&handler) # :nodoc:
+      validator, value = mutex.synchronize { [@validator, @value] }
+
       begin
-
-        should_notify = false
-
-        mutex.synchronize do
-          result = Concurrent::timeout(@timeout) do
-            handler.call(@value)
-          end
-          if @validator.call(result)
-            @value = result
-            should_notify = true
-          end
+        # FIXME creates second thread
+        result, valid = Concurrent::timeout(@timeout) do
+          [result = handler.call(value),
+           validator.call(result)]
         end
-        time = Time.now
-        observers.notify_observers{ [time, self.value] } if should_notify
       rescue Exception => ex
-        try_rescue(ex)
+        exception = ex
       end
+
+      mutex.lock
+      should_notify = if !exception && valid
+                        @value = result
+                        true
+                      end
+      mutex.unlock
+
+      if should_notify
+        time = Time.now
+        observers.notify_observers { [time, self.value] }
+      end
+
+      try_rescue(exception)
     end
   end
 end

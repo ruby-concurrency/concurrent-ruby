@@ -34,18 +34,18 @@ module Concurrent
       end
 
       def execute_dereferenceable(subject)
-        subject.post{|value| 10 }
+        subject.post { |value| 10 }
         sleep(0.1)
       end
 
       it_should_behave_like :dereferenceable
 
       # observable
-      
-      subject{ Agent.new(0) }
-      
+
+      subject { Agent.new(0) }
+
       def trigger_observable(observable)
-        observable.post{ nil }
+        observable.post { nil }
         sleep(0.1)
       end
 
@@ -71,25 +71,25 @@ module Concurrent
       it 'uses the executor given with the :executor option' do
         executor.should_receive(:post).with(any_args).and_return(0)
         agent = Agent.new(0, executor: executor)
-        agent.post{|value| 0 }
+        agent.post { |value| 0 }
       end
 
       it 'uses the global operation pool when :operation is true' do
         Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
         agent = Agent.new(0, operation: true)
-        agent.post{|value| 0 }
+        agent.post { |value| 0 }
       end
 
       it 'uses the global task pool when :task is true' do
         Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
         agent = Agent.new(0, task: true)
-        agent.post{|value| 0 }
+        agent.post { |value| 0 }
       end
 
       it 'uses the global task pool by default' do
         Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
         agent = Agent.new(0)
-        agent.post{|value| 0 }
+        agent.post { |value| 0 }
       end
     end
 
@@ -147,20 +147,48 @@ module Concurrent
     context '#post' do
 
       it 'adds the given block to the queue' do
-        executor.should_receive(:post).with(no_args).exactly(3).times
-        subject.post { sleep(100) }
+        executor.should_receive(:post).with(no_args).exactly(1).times
+        subject.post { sleep(1) }
         subject.post { nil }
         subject.post { nil }
         sleep(0.1)
+        subject.
+            executor.
+            instance_variable_get(:@stash).
+            size.should eq 2
       end
 
       it 'does not add to the queue when no block is given' do
-        executor.should_receive(:post).with(no_args).exactly(2).times
-        subject.post { sleep(100) }
+        executor.should_receive(:post).with(no_args).exactly(0).times
         subject.post
-        subject.post { nil }
         sleep(0.1)
       end
+
+      it 'works with ImmediateExecutor' do
+        agent = Agent.new(0, executor: ImmediateExecutor.new)
+        agent.post { |old| old + 1 }
+        agent.post { |old| old + 1 }
+        agent.value.should eq 2
+      end
+
+    end
+
+    context '#await' do
+
+      it 'waits until already sent updates are done' do
+        fn = false
+        subject.post { fn = true; sleep 0.1 }
+        subject.await
+        fn.should be_true
+      end
+
+      it 'does not waits until updates sent after are done' do
+        fn = false
+        subject.await
+        subject.post { fn = true; sleep 0.1 }
+        fn.should be_false
+      end
+
     end
 
     context 'fulfillment' do
@@ -239,85 +267,85 @@ module Concurrent
       it 'calls the first exception block with a matching class' do
         @expected = nil
         subject.
-      rescue(StandardError) { |ex| @expected = 1 }.
-        rescue(StandardError) { |ex| @expected = 2 }.
-        rescue(StandardError) { |ex| @expected = 3 }
-          subject.post { raise StandardError }
-          sleep(0.1)
-          @expected.should eq 1
-        end
+            rescue(StandardError) { |ex| @expected = 1 }.
+            rescue(StandardError) { |ex| @expected = 2 }.
+            rescue(StandardError) { |ex| @expected = 3 }
+        subject.post { raise StandardError }
+        sleep(0.1)
+        @expected.should eq 1
+      end
 
       it 'matches all with a rescue with no class given' do
         @expected = nil
         subject.
-      rescue(LoadError) { |ex| @expected = 1 }.
-        rescue { |ex| @expected = 2 }.
-        rescue(StandardError) { |ex| @expected = 3 }
-          subject.post { raise NoMethodError }
-          sleep(0.1)
-          @expected.should eq 2
-        end
+            rescue(LoadError) { |ex| @expected = 1 }.
+            rescue { |ex| @expected = 2 }.
+            rescue(StandardError) { |ex| @expected = 3 }
+        subject.post { raise NoMethodError }
+        sleep(0.1)
+        @expected.should eq 2
+      end
 
       it 'searches associated rescue handlers in order' do
         @expected = nil
         subject.
-      rescue(ArgumentError) { |ex| @expected = 1 }.
-        rescue(LoadError) { |ex| @expected = 2 }.
-        rescue(StandardError) { |ex| @expected = 3 }
-          subject.post { raise ArgumentError }
-          sleep(0.1)
-          @expected.should eq 1
-
-          @expected = nil
-          subject.
-        rescue(ArgumentError) { |ex| @expected = 1 }.
-          rescue(LoadError) { |ex| @expected = 2 }.
-          rescue(StandardError) { |ex| @expected = 3 }
-            subject.post { raise LoadError }
-            sleep(0.1)
-            @expected.should eq 2
-
-            @expected = nil
-            subject.
-          rescue(ArgumentError) { |ex| @expected = 1 }.
+            rescue(ArgumentError) { |ex| @expected = 1 }.
             rescue(LoadError) { |ex| @expected = 2 }.
             rescue(StandardError) { |ex| @expected = 3 }
-              subject.post { raise StandardError }
-              sleep(0.1)
-              @expected.should eq 3
-            end
+        subject.post { raise ArgumentError }
+        sleep(0.1)
+        @expected.should eq 1
+
+        @expected = nil
+        subject.
+            rescue(ArgumentError) { |ex| @expected = 1 }.
+            rescue(LoadError) { |ex| @expected = 2 }.
+            rescue(StandardError) { |ex| @expected = 3 }
+        subject.post { raise LoadError }
+        sleep(0.1)
+        @expected.should eq 2
+
+        @expected = nil
+        subject.
+            rescue(ArgumentError) { |ex| @expected = 1 }.
+            rescue(LoadError) { |ex| @expected = 2 }.
+            rescue(StandardError) { |ex| @expected = 3 }
+        subject.post { raise StandardError }
+        sleep(0.1)
+        @expected.should eq 3
+      end
 
       it 'passes the exception object to the matched block' do
         @expected = nil
         subject.
-      rescue(ArgumentError) { |ex| @expected = ex }.
-        rescue(LoadError) { |ex| @expected = ex }.
-        rescue(StandardError) { |ex| @expected = ex }
-          subject.post { raise StandardError }
-          sleep(0.1)
-          @expected.should be_a(StandardError)
-        end
+            rescue(ArgumentError) { |ex| @expected = ex }.
+            rescue(LoadError) { |ex| @expected = ex }.
+            rescue(StandardError) { |ex| @expected = ex }
+        subject.post { raise StandardError }
+        sleep(0.1)
+        @expected.should be_a(StandardError)
+      end
 
       it 'ignores rescuers without a block' do
         @expected = nil
         subject.
-      rescue(StandardError).
-        rescue(StandardError) { |ex| @expected = ex }
-          subject.post { raise StandardError }
-          sleep(0.1)
-          @expected.should be_a(StandardError)
-        end
+            rescue(StandardError).
+            rescue(StandardError) { |ex| @expected = ex }
+        subject.post { raise StandardError }
+        sleep(0.1)
+        @expected.should be_a(StandardError)
+      end
 
       it 'supresses the exception if no rescue matches' do
         lambda {
           subject.
-      rescue(ArgumentError) { |ex| @expected = ex }.
-        rescue(NotImplementedError) { |ex| @expected = ex }.
-        rescue(NoMethodError) { |ex| @expected = ex }
+              rescue(ArgumentError) { |ex| @expected = ex }.
+              rescue(NotImplementedError) { |ex| @expected = ex }.
+              rescue(NoMethodError) { |ex| @expected = ex }
           subject.post { raise StandardError }
           sleep(0.1)
         }.should_not raise_error
-        end
+      end
 
       it 'suppresses exceptions thrown from rescue handlers' do
         lambda {
@@ -363,6 +391,46 @@ module Concurrent
         sleep(0.1)
         observer.value.should be_nil
       end
+    end
+
+    context 'clojure-like behaviour' do
+      it 'does not block dereferencing when updating the value' do
+        continue = IVar.new
+        agent    = Agent.new(0, executor: executor)
+        agent.post { |old| old + continue.value }
+        sleep 0.1
+        Concurrent.timeout(0.2) { agent.value.should eq 0 }
+        continue.set 1
+        sleep 0.1
+      end
+
+      it 'does not allow to execute two updates at the same time' do
+        agent     = Agent.new(0, executor: executor)
+        continue1 = IVar.new
+        continue2 = IVar.new
+        f1        = f2 = false
+        agent.post { |old| f1 = true; old + continue1.value }
+        agent.post { |old| f2 = true; old + continue2.value }
+
+        sleep 0.1
+        f1.should eq true
+        f2.should eq false
+        agent.value.should eq 0
+
+        continue1.set 1
+        sleep 0.1
+        f1.should eq true
+        f2.should eq true
+        agent.value.should eq 1
+
+        continue2.set 1
+        sleep 0.1
+        f1.should eq true
+        f2.should eq true
+        agent.value.should eq 2
+      end
+
+      it 'waits with sending functions to other agents until update is done'
     end
 
     context 'aliases' do
