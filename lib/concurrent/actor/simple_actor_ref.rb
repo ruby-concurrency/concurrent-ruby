@@ -11,7 +11,7 @@ module Concurrent
     def initialize(actor, opts = {})
       @actor = actor
       @mutex = Mutex.new
-      @executor = SingleThreadExecutor.new
+      @executor = OneByOne.new OptionsParser::get_executor_from(opts)
       @stop_event = Event.new
       @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
@@ -51,7 +51,6 @@ module Concurrent
     def shutdown
       @mutex.synchronize do
         return if shutdown?
-        @executor.shutdown 
         @actor.on_shutdown
         @stop_event.set
       end
