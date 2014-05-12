@@ -40,7 +40,7 @@ module Concurrent
     # is given at initialization
     TIMEOUT = 5
 
-    attr_reader :timeout, :executor
+    attr_reader :timeout, :task_executor, :operation_executor
 
     # Initialize a new Agent with the given initial value and provided options.
     #
@@ -60,12 +60,14 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
-      @value         = initial
-      @rescuers      = []
-      @validator     = Proc.new { |result| true }
-      @timeout       = opts.fetch(:timeout, TIMEOUT).freeze
-      self.observers = CopyOnWriteObserverSet.new
-      @executor      = OneByOne.new OptionsParser::get_executor_from(opts)
+      @value              = initial
+      @rescuers           = []
+      @validator          = Proc.new { |result| true }
+      @timeout            = opts.fetch(:timeout, TIMEOUT).freeze
+      self.observers      = CopyOnWriteObserverSet.new
+      @one_by_one         = OneByOne.new
+      @task_executor      = OptionsParser.get_task_executor_from(opts)
+      @operation_executor = OptionsParser.get_operation_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end
@@ -122,7 +124,8 @@ module Concurrent
     alias_method :validate_with, :validate
     alias_method :validates_with, :validate
 
-    # Update the current value with the result of the given block operation
+    # Update the current value with the result of the given block operation,
+    # block should not do blocking calls, use #post_off for blocking calls
     #
     # @yield the operation to be performed with the current value in order to calculate
     #   the new value
@@ -130,19 +133,30 @@ module Concurrent
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
     def post(&block)
-      return nil if block.nil?
-      @executor.post { work(&block) }
-      true
+      post_on(@task_executor, &block)
     end
 
-    # Update the current value with the result of the given block operation
+    # Update the current value with the result of the given block operation,
+    # block can do blocking calls
+    #
+    # @yield the operation to be performed with the current value in order to calculate
+    #   the new value
+    # @yieldparam [Object] value the current value
+    # @yieldreturn [Object] the new value
+    # @return [true, nil] nil when no block is given
+    def post_off(&block)
+      post_on(@operation_executor, &block)
+    end
+
+    # Update the current value with the result of the given block operation,
+    # block should not do blocking calls, use #post_off for blocking calls
     #
     # @yield the operation to be performed with the current value in order to calculate
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
     def <<(block)
-      self.post(&block)
+      post(&block)
       self
     end
 
@@ -152,11 +166,17 @@ module Concurrent
     # @return [Boolean] false on timeout, true otherwise
     def await(timeout = nil)
       done = Event.new
-      post { done.set }
+      post { |val| done.set; val }
       done.wait timeout
     end
 
     private
+
+    def post_on(executor, &block)
+      return nil if block.nil?
+      @one_by_one.post(executor) { work(&block) }
+      true
+    end
 
     # @!visibility private
     Rescuer = Struct.new(:clazz, :block) # :nodoc:
@@ -168,7 +188,6 @@ module Concurrent
       end
       rescuer.block.call(ex) if rescuer
     rescue Exception => ex
-      # puts "#{ex} (#{ex.class})\n#{ex.backtrace.join("\n")}"
       # supress
     end
 
@@ -179,8 +198,8 @@ module Concurrent
       begin
         # FIXME creates second thread
         result, valid = Concurrent::timeout(@timeout) do
-          [result = handler.call(value),
-           validator.call(result)]
+          result = handler.call(value)
+          [result, validator.call(result)]
         end
       rescue Exception => ex
         exception = ex

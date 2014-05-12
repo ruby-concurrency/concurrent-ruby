@@ -19,6 +19,17 @@ module Concurrent
       end.new
     end
 
+    context '#send_off' do
+      subject { Agent.new 2 }
+
+      it 'executes post and post-off in order' do
+        subject.post { |v| v + 2 }
+        subject.post_off { |v| v * 3 }
+        subject.await
+        subject.value.should eq 12
+      end
+    end
+
     context 'behavior' do
 
       # dereferenceable
@@ -153,7 +164,7 @@ module Concurrent
         subject.post { nil }
         sleep(0.1)
         subject.
-            executor.
+            instance_variable_get(:@one_by_one).
             instance_variable_get(:@stash).
             size.should eq 2
       end
@@ -187,6 +198,12 @@ module Concurrent
         subject.await
         subject.post { fn = true; sleep 0.1 }
         fn.should be_false
+      end
+
+      it 'does not alter the value' do
+        subject.post { |v| v + 1 }
+        subject.await
+        subject.value.should eq 1
       end
 
     end

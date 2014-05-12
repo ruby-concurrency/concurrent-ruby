@@ -4,23 +4,21 @@ module Concurrent
   # never running at the same time.
   class OneByOne
 
-    attr_reader :executor
-
-    Job = Struct.new(:args, :block) do
+    Job = Struct.new(:executor, :args, :block) do
       def call
         block.call *args
       end
     end
 
-    # @param [Executor] executor
-    def initialize(executor)
-      @executor       = executor
+    def initialize
       @being_executed = false
       @stash          = []
       @mutex          = Mutex.new
     end
 
     # Submit a task to the executor for asynchronous processing.
+    #
+    # @param [Executor] executor to be used for this job
     #
     # @param [Array] args zero or more arguments to be passed to the task
     #
@@ -30,9 +28,10 @@ module Concurrent
     #   is not running
     #
     # @raise [ArgumentError] if no task is given
-    def post(*args, &task)
+    def post(executor, *args, &task)
       return nil if task.nil?
-      job = Job.new args, task
+      job = Job.new executor, args, task
+
       @mutex.lock
       post = if @being_executed
                @stash << job
@@ -41,21 +40,16 @@ module Concurrent
                @being_executed = true
              end
       @mutex.unlock
-      @executor.post { work(job) } if post
+
+      call_job job if post
       true
     end
 
-    # Submit a task to the executor for asynchronous processing.
-    #
-    # @param [Proc] task the asynchronous task to perform
-    #
-    # @return [self] returns itself
-    def <<(task)
-      post(&task)
-      self
-    end
-
     private
+
+    def call_job(job)
+      job.executor.post { work(job) }
+    end
 
     # ensures next job is executed if any is stashed
     def work(job)
@@ -64,7 +58,7 @@ module Concurrent
       @mutex.lock
       job = @stash.shift || (@being_executed = false)
       @mutex.unlock
-      @executor.post { work(job) } if job
+      call_job job if job
     end
 
   end

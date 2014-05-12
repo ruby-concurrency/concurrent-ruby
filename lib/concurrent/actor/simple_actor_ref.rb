@@ -9,20 +9,21 @@ module Concurrent
     include ActorRef
 
     def initialize(actor, opts = {})
-      @actor = actor
-      @mutex = Mutex.new
-      @executor = OneByOne.new OptionsParser::get_executor_from(opts)
-      @stop_event = Event.new
-      @reset_on_error = opts.fetch(:reset_on_error, true)
+      @actor           = actor
+      @mutex           = Mutex.new
+      @one_by_one      = OneByOne.new
+      @executor        = OptionsParser::get_executor_from(opts)
+      @stop_event      = Event.new
+      @reset_on_error  = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
-      @args = opts.fetch(:args, []) if @reset_on_error
+      @args            = opts.fetch(:args, []) if @reset_on_error
 
       @actor.define_singleton_method(:shutdown, &method(:set_stop_event))
       @actor.on_start
     end
 
     def running?
-      ! @stop_event.set?
+      not @stop_event.set?
     end
 
     def shutdown?
@@ -32,7 +33,7 @@ module Concurrent
     def post(*msg, &block)
       raise ArgumentError.new('message cannot be empty') if msg.empty?
       ivar = IVar.new
-      @executor.post(Message.new(msg, ivar, block), &method(:process_message))
+      @one_by_one.post(@executor, Message.new(msg, ivar, block), &method(:process_message))
       ivar
     end
 
