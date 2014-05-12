@@ -119,10 +119,16 @@ module Concurrent
         @terminated      = Event.new
         @mutex           = Mutex.new
 
-        @actress_class = Child! actress_class, Abstract
+        @actress_class = Child! actress_class, ActorContext
         schedule_execution do
           parent_core.add_child reference if parent_core
-          @actress = actress_class.new self, *args, &block # FIXME it may fail
+          begin
+            @actress = actress_class.new *args, &block
+            @actress.send :initialize_core, self
+          rescue => ex
+            puts "#{ex} (#{ex.class})\n#{ex.backtrace.join("\n")}"
+            terminate! # TODO test that this is ok
+          end
         end
       end
 
@@ -156,6 +162,7 @@ module Concurrent
         guard!
         @terminated.set
         parent_core.remove_child reference if parent_core
+        # TODO terminate all children
       end
 
       def guard!
@@ -227,20 +234,13 @@ module Concurrent
       end
     end
 
-    class Abstract
+    module ActorContext
       include Algebrick::TypeCheck
       extend Algebrick::TypeCheck
       include Algebrick::Matching
       include CoreDelegations
 
       attr_reader :core
-
-      def self.new(core, *args, &block)
-        allocate.tap do |actress|
-          actress.__send__ :pre_initialize, core
-          actress.__send__ :initialize, *args, &block
-        end
-      end
 
       def on_message(message)
         raise NotImplementedError
@@ -271,7 +271,7 @@ module Concurrent
 
       private
 
-      def pre_initialize(core)
+      def initialize_core(core)
         @core = Type! core, Core
       end
 
@@ -280,7 +280,8 @@ module Concurrent
       end
     end
 
-    class Root < Abstract
+    class Root
+      include ActorContext
       def on_message(message)
         # ignore
       end

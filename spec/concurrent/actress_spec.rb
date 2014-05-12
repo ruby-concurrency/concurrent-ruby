@@ -8,7 +8,8 @@ module Concurrent
     Child     = Algebrick.atom
     Terminate = Algebrick.atom
 
-    class Ping < Actress::Abstract
+    class Ping
+      include Actress::ActorContext
 
       def initialize(queue)
         @queue = queue
