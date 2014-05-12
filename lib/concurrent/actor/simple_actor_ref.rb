@@ -11,7 +11,8 @@ module Concurrent
     def initialize(actor, opts = {})
       @actor = actor
       @mutex = Mutex.new
-      @executor = OneByOne.new OptionsParser::get_executor_from(opts)
+      @one_by_one = OneByOne.new
+      @executor = OptionsParser::get_executor_from(opts)
       @stop_event = Event.new
       @reset_on_error = opts.fetch(:reset_on_error, true)
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
@@ -32,7 +33,7 @@ module Concurrent
     def post(*msg, &block)
       raise ArgumentError.new('message cannot be empty') if msg.empty?
       ivar = IVar.new
-      @executor.post(Message.new(msg, ivar, block), &method(:process_message))
+      @one_by_one.post(@executor, Message.new(msg, ivar, block), &method(:process_message))
       ivar
     end
 

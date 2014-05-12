@@ -20,6 +20,27 @@ module Concurrent
         Concurrent.configuration.global_task_pool
       end
     end
-    module_function :get_executor_from
+
+    # Get the requested `Executor` based on the values set in the options hash.
+    #
+    # @param [Hash] opts the options defining the requested executor
+    # @option opts [Executor] :task_executor (`nil`) when set use the given `Executor` instance
+    #
+    # @return [Executor] the requested thread pool (default: global task pool)
+    def get_task_executor_from(opts = {})
+      opts[:task_executor] || opts[:executor] || Concurrent.configuration.global_task_pool
+    end
+
+    # Get the requested `Executor` based on the values set in the options hash.
+    #
+    # @param [Hash] opts the options defining the requested executor
+    # @option opts [Executor] :task_executor (`nil`) when set use the given `Executor` instance
+    #
+    # @return [Executor] the requested thread pool (default: global operation pool)
+    def get_operation_executor_from(opts = {})
+      opts[:operation_executor] || opts[:executor] || Concurrent.configuration.global_operation_pool
+    end
+
+    extend self
   end
 end
