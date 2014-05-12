@@ -27,6 +27,7 @@ require 'concurrent/stoppable'
 require 'concurrent/supervisor'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
+require 'concurrent/actress'
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.
