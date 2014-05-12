@@ -43,8 +43,13 @@ module Concurrent
     end
 
     def value(timeout = nil)
-      event.wait(timeout) if timeout != 0 && incomplete?
+      wait timeout
       super()
+    end
+
+    def wait(timeout = nil)
+      event.wait(timeout) if timeout != 0 && incomplete?
+      self
     end
 
     def state
