@@ -152,7 +152,7 @@ module Concurrent
     # @return [Boolean] false on timeout, true otherwise
     def await(timeout = nil)
       done = Event.new
-      post { done.set }
+      post { |val| done.set; val }
       done.wait timeout
     end
 

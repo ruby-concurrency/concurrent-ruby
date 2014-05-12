@@ -189,6 +189,12 @@ module Concurrent
         fn.should be_false
       end
 
+      it 'does not alter the value' do
+        subject.post { |v| v + 1 }
+        subject.await
+        subject.value.should eq 1
+      end
+
     end
 
     context 'fulfillment' do
