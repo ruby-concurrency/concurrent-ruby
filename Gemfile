@@ -2,9 +2,6 @@ source 'https://rubygems.org'
 
 gemspec
 
-group :actress do
-  gem 'atomic'
-end
 
 group :development do
   gem 'rake', '~> 10.2.2'

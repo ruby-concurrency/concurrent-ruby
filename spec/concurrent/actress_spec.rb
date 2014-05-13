@@ -30,7 +30,7 @@ module Concurrent
       actor = Actress.spawn Ping, :ping, queue
 
       # when spawn returns children are set
-      Actress::ROOT.send(:core).children.should include(actor)
+      Actress::ROOT.send(:core).instance_variable_get(:@children).should include(actor)
 
       actor << 'a' << 1
       queue.pop.should eq 'a'

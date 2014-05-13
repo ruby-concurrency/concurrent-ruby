@@ -1,4 +1,3 @@
-require 'atomic'
 require 'logger'
 
 module Concurrent
@@ -152,7 +151,7 @@ module Concurrent
         @executor        = Concurrent.configuration.global_task_pool # TODO configurable
         @parent_core     = (Type! parent, Reference, NilClass) && parent.send(:core)
         @name            = (Type! name, String, Symbol).to_s
-        @children        = Atomic.new []
+        @children        = []
         @path            = @parent_core ? File.join(@parent_core.path, @name) : @name
         @logger          = Logger.new($stderr) # TODO add proper logging
         @logger.progname = @path
@@ -180,17 +179,22 @@ module Concurrent
       end
 
       def children
-        @children.get
+        guard!
+        @children
       end
 
       def add_child(child)
-        Type! child, Reference
-        @children.update { |o| [*o, child] }
+        guard!
+        @children << (Type! child, Reference)
+        self
       end
 
       def remove_child(child)
-        Type! child, Reference
-        @children.update { |o| o - [child] }
+        schedule_execution do
+          Type! child, Reference
+          @children.delete child
+        end
+        self
       end
 
       def on_envelope(envelope)
@@ -319,14 +323,23 @@ module Concurrent
     class Root
       include ActorContext
       def on_message(message)
-        # ignore
+        case message.first
+        when :spawn
+          spawn *message[1..2], *message[3], &message[4]
+        else
+          #ignore
+        end
       end
     end
 
     ROOT = Core.new(nil, '/', Root).reference
 
     def self.spawn(actress_class, name, *args, &block)
-      Core.new(Actress.current || ROOT, name, actress_class, *args, &block).reference
+      if Actress.current
+        Core.new(Actress.current, name, actress_class, *args, &block).reference
+      else
+        ROOT.ask([:spawn, actress_class, name, args, block]).value
+      end
     end
   end
 end
