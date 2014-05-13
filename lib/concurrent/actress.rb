@@ -158,7 +158,6 @@ module Concurrent
         @reference       = Reference.new self
         # noinspection RubyArgCount
         @terminated      = Event.new
-        @mutex           = Mutex.new
 
         parent_core.add_child reference if parent_core
 
@@ -248,15 +247,12 @@ module Concurrent
       def schedule_execution
         @one_by_one.post(@executor) do
           begin
-            # TODO enable this mutex only on JRuby
-            @mutex.lock # only for JRuby
             Thread.current[:__current_actress__] = reference
             yield
           rescue => e
             puts e
           ensure
             Thread.current[:__current_actress__] = nil
-            @mutex.unlock # only for JRuby
           end
         end
       end
