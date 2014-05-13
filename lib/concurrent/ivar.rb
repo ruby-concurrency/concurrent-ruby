@@ -16,10 +16,10 @@ module Concurrent
   # a low-level primitive.
   #
   # @example Create, set and get an `IVar`
-  # ivar = Concurrent::IVar.new
-  # ivar.set 14
-  # ivar.get #=> 14
-  # ivar.set 2 # would now be an error
+  #   ivar = Concurrent::IVar.new
+  #   ivar.set 14
+  #   ivar.get #=> 14
+  #   ivar.set 2 # would now be an error
   class IVar
 
     # Error that indicates that an `IVar` was set twice. Each `IVar` can only
