@@ -5,15 +5,34 @@ require 'concurrent/observable'
 
 module Concurrent
 
+  # An `IVar` is a single-element container that is normally created empty, and
+  # can only be set once. The I in `IVar` stands for immutable. Reading an `IVar`
+  # normally blocks until it is set. It is safe to set and read an `IVar` from
+  # different threads.
+  #
+  # If you want to have some parallel task set the value in an `IVar`, you want
+  # a `Future`. If you want to create a graph of parallel tasks all executed when
+  # the values they depend on are ready you want `dataflow`. `IVar` is generally
+  # a low-level primitive.
+  #
+  # @example Create, set and get an `IVar`
+  # ivar = Concurrent::IVar.new
+  # ivar.set 14
+  # ivar.get #=> 14
+  # ivar.set 2 # would now be an error
   class IVar
+
+    # Error that indicates that an `IVar` was set twice. Each `IVar` can only
+    # be set once - they are immutable.
     MultipleAssignmentError = Class.new(StandardError)
 
     include Obligation
-    include Concurrent::Observable
+    include Observable
 
-    NO_VALUE = Object.new
+    # @!visibility private
+    NO_VALUE = Object.new # :nodoc:
 
-    # Create a new `Ivar` in the `:pending` state with the (optional) initial value.
+    # Create a new `IVar` in the `:pending` state with the (optional) initial value.
     #
     # @param [Object] value the initial value
     # @param [Hash] opts the options to create a message with
@@ -63,15 +82,22 @@ module Concurrent
       observer
     end
 
+    # Set the `IVar` to a value and wake or notify all threads waiting on it.
+    # @param [Object] the value to store in the `IVar`
+    # @raise [MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
     def set(value)
       complete(true, value, nil)
     end
 
+    # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
+    # @option [Object] reason for the failure
+    # @raise [MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
     def fail(reason = StandardError.new)
       complete(false, nil, reason)
     end
 
-    def complete(success, value, reason)
+    # @!visibility private
+    def complete(success, value, reason) # :nodoc:
       mutex.synchronize do
         raise MultipleAssignmentError.new('multiple assignment') if [:fulfilled, :rejected].include? @state
         set_state(success, value, reason)
