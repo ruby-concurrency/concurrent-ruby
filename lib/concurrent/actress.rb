@@ -161,9 +161,10 @@ module Concurrent
         @terminated      = Event.new
         @mutex           = Mutex.new
 
+        parent_core.add_child reference if parent_core
+
         @actress_class = Child! actress_class, ActorContext
         schedule_execution do
-          parent_core.add_child reference if parent_core
           begin
             @actress = actress_class.new *args, &block
             @actress.send :initialize_core, self

@@ -29,6 +29,9 @@ module Concurrent
       queue = Queue.new
       actor = Actress.spawn Ping, :ping, queue
 
+      # when spawn returns children are set
+      Actress::ROOT.send(:core).children.should include(actor)
+
       actor << 'a' << 1
       queue.pop.should eq 'a'
       actor.ask(2).value.should eq 2
