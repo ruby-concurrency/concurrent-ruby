@@ -129,7 +129,7 @@ module Concurrent
   describe '#abort_transaction' do
 
     it 'raises an exception outside an #atomically block' do
-      expect { Concurrent::abort_transaction }.to raise_error(Concurrent::AbortError)
+      expect { Concurrent::abort_transaction }.to raise_error(Concurrent::Transaction::AbortError)
     end
 
   end
