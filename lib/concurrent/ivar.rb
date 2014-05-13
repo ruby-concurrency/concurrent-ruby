@@ -5,9 +5,9 @@ require 'concurrent/observable'
 
 module Concurrent
 
-  MultipleAssignmentError = Class.new(StandardError)
-
   class IVar
+    MultipleAssignmentError = Class.new(StandardError)
+
     include Obligation
     include Concurrent::Observable
 
