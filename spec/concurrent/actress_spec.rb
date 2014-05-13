@@ -5,9 +5,6 @@ require_relative 'observable_shared'
 module Concurrent
 
   describe Actress do
-    Child     = Algebrick.atom
-    Terminate = Algebrick.atom
-
     class Ping
       include Actress::ActorContext
 
@@ -16,14 +13,15 @@ module Concurrent
       end
 
       def on_message(message)
-        match message,
-              on(Terminate) { terminate! },
-              on(Child) { spawn Ping, :pong, @queue },
-              (on(any) do
-                @queue << message
-                message
-              end)
-
+        case message
+        when :terminate
+          terminate!
+        when :child
+          spawn Ping, :pong, @queue
+        else
+          @queue << message
+          message
+        end
       end
     end
 
@@ -38,13 +36,13 @@ module Concurrent
       actor.parent.should eq Actress::ROOT
       Actress::ROOT.path.should eq '/'
       actor.path.should eq '/ping'
-      child = actor.ask(Child).value
+      child = actor.ask(:child).value
       child.path.should eq '/ping/pong'
       queue.clear
       child.ask(3)
       queue.pop.should eq 3
 
-      actor << Terminate
+      actor << :terminate
       actor.ask(:blow_up).wait.rejected?.should be_true
     end
   end

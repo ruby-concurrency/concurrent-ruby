@@ -1,4 +1,3 @@
-require 'algebrick'
 require 'atomic'
 require 'logger'
 
@@ -6,8 +5,50 @@ module Concurrent
   module Actress
     Error = Class.new(StandardError)
 
+    module TypeCheck
+      # taken from Algebrick
+
+      def Type?(value, *types)
+        types.any? { |t| value.is_a? t }
+      end
+
+      def Type!(value, *types)
+        Type?(value, *types) or
+            TypeCheck.error(value, 'is not', types)
+        value
+      end
+
+      def Match?(value, *types)
+        types.any? { |t| t === value }
+      end
+
+      def Match!(value, *types)
+        Match?(value, *types) or
+            TypeCheck.error(value, 'is not matching', types)
+        value
+      end
+
+      def Child?(value, *types)
+        Type?(value, Class) &&
+            types.any? { |t| value <= t }
+      end
+
+      def Child!(value, *types)
+        Child?(value, *types) or
+            TypeCheck.error(value, 'is not child', types)
+        value
+      end
+
+      private
+
+      def self.error(value, message, types)
+        raise TypeError,
+              "Value (#{value.class}) '#{value}' #{message} any of: #{types.join('; ')}."
+      end
+    end
+
     class ActressTerminated < Error
-      include Algebrick::TypeCheck
+      include TypeCheck
 
       def initialize(reference)
         Type! reference, Reference
@@ -40,8 +81,7 @@ module Concurrent
     end
 
     class Reference
-      include Algebrick::TypeCheck
-      include Algebrick::Types
+      include TypeCheck
       include CoreDelegations
 
       attr_reader :core
@@ -63,9 +103,7 @@ module Concurrent
       end
 
       def message(message, ivar = nil)
-        core.on_envelope Envelope[message,
-                                  ivar ? Some[IVar][ivar] : None,
-                                  Actress.current ? Some[Reference][Actress.current] : None]
+        core.on_envelope Envelope.new(message, ivar, Actress.current)
         return ivar || self
       end
 
@@ -80,26 +118,30 @@ module Concurrent
       end
     end
 
-    include Algebrick::Types
+    Envelope = Struct.new :message, :ivar, :sender do
+      include TypeCheck
 
-    Envelope = Algebrick.type do
-      fields! message: Object,
-              ivar:    Maybe[IVar],
-              sender:  Maybe[Reference]
-    end
+      def initialize(message, ivar, sender)
+        super message,
+              (Type! ivar, IVar, NilClass),
+              (Type! sender, Reference, NilClass)
+      end
 
-    module Envelope
       def sender_path
-        sender.maybe { |reference| reference.path } || 'outside-actress'
+        if sender
+          sender.path
+        else
+          'outside-actress'
+        end
       end
 
       def reject!(error)
-        ivar.maybe { |v| v.fail error }
+        ivar.fail error unless ivar.nil?
       end
     end
 
     class Core
-      include Algebrick::TypeCheck
+      include TypeCheck
 
       attr_reader :reference, :name, :path, :logger, :parent_core
       private :parent_core
@@ -190,10 +232,10 @@ module Concurrent
         logger.debug "received #{envelope.message} from #{envelope.sender_path}"
 
         result = @actress.on_envelope envelope
-        envelope.ivar.maybe { |iv| iv.set result }
+        envelope.ivar.set result unless envelope.ivar.nil?
       rescue => error
         logger.error error
-        envelope.ivar.maybe { |iv| iv.fail error }
+        envelope.ivar.fail error unless envelope.ivar.nil?
       ensure
         @receive_envelope_scheduled = false
         process?
@@ -235,9 +277,8 @@ module Concurrent
     end
 
     module ActorContext
-      include Algebrick::TypeCheck
-      extend Algebrick::TypeCheck
-      include Algebrick::Matching
+      include TypeCheck
+      extend TypeCheck
       include CoreDelegations
 
       attr_reader :core

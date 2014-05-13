@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 gemspec
 
 group :actress do
-  gem 'algebrick'
   gem 'atomic'
 end
 
