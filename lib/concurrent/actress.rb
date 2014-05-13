@@ -266,11 +266,6 @@ module Concurrent
         process?
       end
 
-      def create_and_set_actor(actress_class, block, *args)
-        parent_core.add_child reference if parent_core
-        @actress = actress_class.new self, *args, &block # FIXME may fail
-      end
-
       def reject_envelope(envelope)
         envelope.reject! ActressTerminated.new(reference)
       end
