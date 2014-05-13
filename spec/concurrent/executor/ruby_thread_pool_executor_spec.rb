@@ -119,20 +119,20 @@ module Concurrent
 
         specify 'a #post task is never executed when the queue is at capacity' do
           executed = Concurrent::AtomicFixnum.new(0)
-          100.times do
+          1000.times do
             subject.post{ executed.increment }
           end
           sleep(0.1)
-          executed.value.should < 100
+          executed.value.should < 1000
         end
 
         specify 'a #<< task is never executed when the queue is at capacity' do
           executed = Concurrent::AtomicFixnum.new(0)
-          100.times do
+          1000.times do
             subject << proc { executed.increment }
           end
           sleep(0.1)
-          executed.value.should < 100
+          executed.value.should < 1000
         end
       end
 
