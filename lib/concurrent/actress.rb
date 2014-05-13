@@ -205,6 +205,11 @@ module Concurrent
         guard!
         @terminated.set
         parent_core.remove_child reference if parent_core
+        @mailbox.each do |envelope|
+          reject_envelope envelope
+          logger.debug "rejected #{envelope.message} from #{envelope.sender_path}"
+        end
+        @mailbox.clear
         # TODO terminate all children
       end
 
@@ -224,12 +229,6 @@ module Concurrent
       def receive_envelope
         envelope = @mailbox.shift
 
-        if terminated?
-          # FIXME make sure that it cannot be GCed before all messages are rejected after termination
-          reject_envelope envelope
-          logger.debug "rejected #{envelope.message} from #{envelope.sender_path}"
-          return
-        end
         logger.debug "received #{envelope.message} from #{envelope.sender_path}"
 
         result = @actress.on_envelope envelope
