@@ -95,7 +95,6 @@ module Concurrent
     #
     #   @return [Boolean] true if the value was updated else false 
     def compare_and_set(expect, update)
-
       @mutex.lock
       if @value == expect
         @value = update
