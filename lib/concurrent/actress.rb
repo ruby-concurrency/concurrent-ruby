@@ -101,6 +101,11 @@ module Concurrent
         message message, ivar
       end
 
+      # **warning** - can lead to deadlocks
+      def ask!(message, ivar = IVar.new)
+        ask(message, ivar).value!
+      end
+
       def message(message, ivar = nil)
         core.on_envelope Envelope.new(message, ivar, Actress.current)
         return ivar || self
