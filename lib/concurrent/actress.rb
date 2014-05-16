@@ -90,7 +90,6 @@ module Concurrent
         @core = Type! core, Core
       end
 
-
       def tell(message)
         message message, nil
       end
@@ -153,7 +152,7 @@ module Concurrent
       def initialize(parent, name, actress_class, *args, &block)
         @mailbox         = Array.new
         @one_by_one      = OneByOne.new
-        @executor        = Concurrent.configuration.global_task_pool # TODO configurable
+        @executor        = Concurrent.configuration.global_task_pool # TODO make configurable
         @parent_core     = (Type! parent, Reference, NilClass) && parent.send(:core)
         @name            = (Type! name, String, Symbol).to_s
         @children        = []
@@ -222,7 +221,9 @@ module Concurrent
       end
 
       def guard!
-        raise 'can be called only inside this actor' unless Actress.current == reference
+        unless Actress.current == reference
+          raise "can be called only inside actor #{reference} but was #{Actress.current}"
+        end
       end
 
       private
@@ -298,6 +299,7 @@ module Concurrent
         @envelope = nil
       end
 
+      # TODO add basic supervision
       def spawn(actress_class, name, *args, &block)
         Actress.spawn(actress_class, name, *args, &block)
       end
@@ -328,7 +330,7 @@ module Concurrent
         when :spawn
           spawn *message[1..2], *message[3], &message[4]
         else
-          #ignore
+          # ignore
         end
       end
     end
