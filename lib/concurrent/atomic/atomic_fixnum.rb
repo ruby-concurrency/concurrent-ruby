@@ -29,10 +29,9 @@ module Concurrent
     #   @return [Fixnum] the current value
     def value
       @mutex.lock
-      result = @value
+      @value
+    ensure
       @mutex.unlock
-
-      result
     end
 
     # @!macro [attach] atomic_fixnum_method_value_eq
@@ -47,10 +46,9 @@ module Concurrent
     def value=(value)
       raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
       @mutex.lock
-      result = @value = value
+      @value = value
+    ensure
       @mutex.unlock
-
-      result
     end
 
     # @!macro [attach] atomic_fixnum_method_increment
@@ -61,10 +59,8 @@ module Concurrent
     def increment
       @mutex.lock
       @value += 1
-      result = @value
+    ensure
       @mutex.unlock
-
-      result
     end
 
     alias_method :up, :increment
@@ -77,10 +73,8 @@ module Concurrent
     def decrement
       @mutex.lock
       @value -= 1
-      result = @value
+    ensure
       @mutex.unlock
-
-      result
     end
 
     alias_method :down, :decrement
@@ -98,13 +92,12 @@ module Concurrent
       @mutex.lock
       if @value == expect
         @value = update
-        result = true
+        true
       else
-        result = false
+        false
       end
+    ensure
       @mutex.unlock
-
-      result
     end
   end
 

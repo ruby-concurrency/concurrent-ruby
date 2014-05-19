@@ -49,16 +49,16 @@ module Concurrent
 
     def state
       mutex.lock
-      result = @state
+      @state
+    ensure
       mutex.unlock
-      result
     end
 
     def reason
       mutex.lock
-      result = @reason
+      @reason
+    ensure
       mutex.unlock
-      result
     end
 
     protected

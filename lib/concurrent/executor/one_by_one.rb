@@ -32,14 +32,17 @@ module Concurrent
       return nil if task.nil?
       job = Job.new executor, args, task
 
-      @mutex.lock
-      post = if @being_executed
-               @stash << job
-               false
-             else
-               @being_executed = true
-             end
-      @mutex.unlock
+      begin
+        @mutex.lock
+        post = if @being_executed
+                 @stash << job
+                 false
+               else
+                 @being_executed = true
+               end
+      ensure
+        @mutex.unlock
+      end
 
       call_job job if post
       true
@@ -55,9 +58,13 @@ module Concurrent
     def work(job)
       job.call
     ensure
-      @mutex.lock
-      job = @stash.shift || (@being_executed = false)
-      @mutex.unlock
+      begin
+        @mutex.lock
+        job = @stash.shift || (@being_executed = false)
+      ensure
+        @mutex.unlock
+      end
+
       call_job job if job
     end
 

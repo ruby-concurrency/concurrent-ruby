@@ -28,11 +28,14 @@ module Concurrent
         func = :call
       end
 
-      @mutex.lock
-      @observers[observer] = func
-      @mutex.unlock
+      begin
+        @mutex.lock
+        @observers[observer] = func
+      ensure
+        @mutex.unlock
+      end
 
-      observer
+        observer
     end
 
     # @param [Object] observer the observer to remove

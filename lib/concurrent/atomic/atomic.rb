@@ -9,40 +9,36 @@ module Concurrent
 
     def value
       @mutex.lock
-      result = @value
+      @value
+    ensure
       @mutex.unlock
-
-      result
     end
 
     def value=(value)
       @mutex.lock
-      result = @value = value
+      @value = value
+    ensure
       @mutex.unlock
-
-      result
     end
 
     def modify
       @mutex.lock
       result = yield @value
       @value = result
+    ensure
       @mutex.unlock
-
-      result
     end
 
     def compare_and_set(expect, update)
       @mutex.lock
       if @value == expect
         @value = update
-        result = true
+        true
       else
-        result = false
+        false
       end
+    ensure
       @mutex.unlock
-
-      result
     end
   end
 

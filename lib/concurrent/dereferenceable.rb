@@ -27,9 +27,9 @@ module Concurrent
     # @return [Object] the current value of the object
     def value
       mutex.lock
-      result = apply_deref_options(@value)
+      apply_deref_options(@value)
+    ensure
       mutex.unlock
-      result
     end
 
     alias_method :deref, :value
@@ -41,9 +41,9 @@ module Concurrent
     # @param [Object] val the new value
     def value=(val)
       mutex.lock
-      result = @value = val
+      @value = val
+    ensure
       mutex.unlock
-      result
     end
 
     # A mutex lock used for synchronizing thread-safe operations. Methods defined
@@ -83,8 +83,9 @@ module Concurrent
       @freeze_on_deref = opts[:freeze_on_deref] || opts[:freeze]
       @copy_on_deref = opts[:copy_on_deref] || opts[:copy]
       @do_nothing_on_deref = !(@dup_on_deref || @freeze_on_deref || @copy_on_deref)
-      mutex.unlock
       nil
+    ensure
+      mutex.unlock
     end
 
     # @!visibility private

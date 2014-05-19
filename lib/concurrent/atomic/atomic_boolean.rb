@@ -27,9 +27,9 @@ module Concurrent
     #   @return [Boolean] the current value
     def value
       @mutex.lock
-      result = @value
+      @value
+    ensure
       @mutex.unlock
-      result
     end
 
     # @!macro [attach] atomic_boolean_method_value_eq
@@ -42,9 +42,9 @@ module Concurrent
     def value=(value)
       @mutex.lock
       @value = !!value
-      result = @value
+      @value
+    ensure
       @mutex.unlock
-      result
     end
 
     # @!macro [attach] atomic_boolean_method_is_true
@@ -54,9 +54,9 @@ module Concurrent
     #   @return [Boolean] true if the current value is `true`, else false
     def true?
       @mutex.lock
-      result = @value
+      @value
+    ensure
       @mutex.unlock
-      result
     end
 
     # @!macro [attach] atomic_boolean_method_is_false
@@ -66,9 +66,9 @@ module Concurrent
     #   @return [Boolean] true if the current value is `false`, else false
     def false?
       @mutex.lock
-      result = !@value
+      !@value
+    ensure
       @mutex.unlock
-      result
     end
 
     # @!macro [attach] atomic_boolean_method_make_true
@@ -80,9 +80,9 @@ module Concurrent
       @mutex.lock
       old = @value
       @value = true
-      @mutex.unlock
-
       !old
+    ensure
+      @mutex.unlock
     end
 
     # @!macro [attach] atomic_boolean_method_make_false
@@ -94,9 +94,9 @@ module Concurrent
       @mutex.lock
       old = @value
       @value = false
-      @mutex.unlock
-
       old
+    ensure
+      @mutex.unlock
     end
   end
 

@@ -27,13 +27,15 @@ module Concurrent
         func = :call
       end
 
-      @mutex.lock
-      new_observers = @observers.dup
-      new_observers[observer] = func
-      @observers = new_observers
-      @mutex.unlock
-
-      observer
+      begin
+        @mutex.lock
+        new_observers = @observers.dup
+        new_observers[observer] = func
+        @observers = new_observers
+        observer
+      ensure
+        @mutex.unlock
+      end
     end
 
     # @param [Object] observer the observer to remove
@@ -43,9 +45,9 @@ module Concurrent
       new_observers = @observers.dup
       new_observers.delete(observer)
       @observers = new_observers
-      @mutex.unlock
-
       observer
+    ensure
+      @mutex.unlock
     end
 
     # Deletes all observers
@@ -91,15 +93,15 @@ module Concurrent
 
     def observers
       @mutex.lock
-      o = @observers
+      @observers
+    ensure
       @mutex.unlock
-
-      o
     end
 
     def observers=(new_set)
       @mutex.lock
       @observers = new_set
+    ensure
       @mutex.unlock
     end
 
@@ -107,9 +109,9 @@ module Concurrent
       @mutex.lock
       old_observers = @observers
       @observers = {}
-      @mutex.unlock
-
       old_observers
+    ensure
+      @mutex.unlock
     end
   end
 end

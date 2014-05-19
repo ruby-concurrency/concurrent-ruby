@@ -162,6 +162,7 @@ module Concurrent
     def synchronized_set_state!(success, value, reason)
       mutex.lock
       set_state!(success, value, reason)
+    ensure
       mutex.unlock
     end
   end

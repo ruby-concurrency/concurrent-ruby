@@ -113,10 +113,14 @@ module Concurrent
     # @yieldparam [Object] value the result of the last update operation
     # @yieldreturn [Boolean] true if the value is valid else false
     def validate(&block)
+
       unless block.nil?
-        mutex.lock
-        @validator = block
-        mutex.unlock
+        begin
+          mutex.lock
+          @validator = block
+        ensure
+          mutex.unlock
+        end
       end
       self
     end
@@ -205,12 +209,15 @@ module Concurrent
         exception = ex
       end
 
-      mutex.lock
-      should_notify = if !exception && valid
-                        @value = result
-                        true
-                      end
-      mutex.unlock
+      begin
+        mutex.lock
+        should_notify = if !exception && valid
+                          @value = result
+                          true
+                        end
+      ensure
+        mutex.unlock
+      end
 
       if should_notify
         time = Time.now

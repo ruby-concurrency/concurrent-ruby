@@ -73,10 +73,9 @@ module Concurrent
     def value
       mutex.lock
       execute_task_once
-      result = apply_deref_options(@value)
+      apply_deref_options(@value)
+    ensure
       mutex.unlock
-
-      result
     end
 
     private

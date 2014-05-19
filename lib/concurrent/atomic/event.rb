@@ -29,10 +29,9 @@ module Concurrent
     # @return [Boolean] indicating whether or not the `Event` has been set
     def set?
       @mutex.lock
-      result = @set
+      @set
+    ensure
       @mutex.unlock
-
-      result
     end
 
     # Trigger the event, setting the state to `set` and releasing all threads
@@ -45,25 +44,24 @@ module Concurrent
         @set = true
         @condition.broadcast
       end
-      @mutex.unlock
-
       true
+    ensure
+      @mutex.unlock
     end
 
     def try?
       @mutex.lock
 
       if @set
-        result = false
+        false
       else
         @set = true
         @condition.broadcast
-        result = true
+        true
       end
 
+    ensure
       @mutex.unlock
-
-      result
     end
 
     # Reset a previously set event back to the `unset` state.
@@ -73,9 +71,9 @@ module Concurrent
     def reset
       @mutex.lock
       @set = false
-      @mutex.unlock
-
       true
+    ensure
+      @mutex.unlock
     end
 
     # Wait a given number of seconds for the `Event` to be set by another
@@ -93,11 +91,9 @@ module Concurrent
         end
       end
 
-      result = @set
-
+      @set
+    ensure
       @mutex.unlock
-
-      result
     end
   end
 end

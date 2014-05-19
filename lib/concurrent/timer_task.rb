@@ -248,9 +248,9 @@ module Concurrent
     #   task is performed again.
     def execution_interval
       mutex.lock
-      result = @execution_interval
+      @execution_interval
+    ensure
       mutex.unlock
-      result
     end
 
     # @!attribute [rw] execution_interval
@@ -260,10 +260,12 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        mutex.lock
-        result = @execution_interval = value
-        mutex.unlock
-        result
+        begin
+          mutex.lock
+          @execution_interval = value
+        ensure
+          mutex.unlock
+        end
       end
     end
 
@@ -272,9 +274,9 @@ module Concurrent
     #   considered to have failed.
     def timeout_interval
       mutex.lock
-      result = @timeout_interval
+      @timeout_interval
+    ensure
       mutex.unlock
-      result
     end
 
     # @!attribute [rw] timeout_interval
@@ -284,10 +286,12 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        mutex.lock
-        result = @timeout_interval = value
-        mutex.unlock
-        result
+        begin
+          mutex.lock
+          @timeout_interval = value
+        ensure
+          mutex.unlock
+        end
       end
     end
 
