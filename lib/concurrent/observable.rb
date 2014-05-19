@@ -10,6 +10,12 @@ module Concurrent
       observers.add_observer(*args, &block)
     end
 
+    # @return [Observable] self
+    def with_observer(*args, &block)
+      add_observer *args, &block
+      self
+    end
+
     # @return [Object] the deleted observer
     def delete_observer(*args)
       observers.delete_observer(*args)

@@ -23,14 +23,19 @@ module Concurrent
     end
 
     it 'uses the given observer set' do
-      expected = CopyOnWriteObserverSet.new
+      expected          = CopyOnWriteObserverSet.new
       subject.observers = expected
       subject.observers.should eql expected
     end
 
     it 'delegates #add_observer' do
-      observer_set.should_receive(:add_observer).with(:observer)
-      subject.add_observer(:observer)
+      observer_set.should_receive(:add_observer).with(:observer).and_return { |v| v }
+      subject.add_observer(:observer).should eq :observer
+    end
+
+    it 'delegates #with_observer' do
+      observer_set.should_receive(:add_observer).with(:observer).and_return { |v| v }
+      subject.with_observer(:observer).should eq subject
     end
 
     it 'delegates #delete_observer' do
