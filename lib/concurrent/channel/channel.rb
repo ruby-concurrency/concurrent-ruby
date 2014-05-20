@@ -1,9 +1,9 @@
-require 'concurrent/channel'
+require 'concurrent/ivar'
 
 module Concurrent
   module Channel
 
-    class Probe < IVar
+    class Probe < Concurrent::IVar
 
       def initialize(value = NO_VALUE, opts = {})
         super(value, opts)
