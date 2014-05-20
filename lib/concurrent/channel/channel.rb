@@ -1,3 +1,5 @@
+require 'concurrent/channel'
+
 module Concurrent
   module Channel
 
