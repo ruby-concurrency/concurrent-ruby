@@ -42,20 +42,30 @@ module Concurrent
       [:unscheduled, :pending].include? state
     end
 
+    # @returns [Object] see Dereferenceable#deref
     def value(timeout = nil)
       wait timeout
       deref
     end
 
+    # wait until Obligation is #complete?
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @return [Obligation] self
     def wait(timeout = nil)
       event.wait(timeout) if timeout != 0 && incomplete?
       self
     end
 
+    # wait until Obligation is #complete?
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @return [Obligation] self
+    # @raise [Exception] when #rejected? it raises #reason
     def no_error!(timeout = nil)
       wait(timeout).tap { raise self if rejected? }
     end
 
+    # @raise [Exception] when #rejected? it raises #reason
+    # @returns [Object] see Dereferenceable#deref
     def value!(timeout = nil)
       wait(timeout)
       if rejected?

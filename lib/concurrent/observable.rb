@@ -10,6 +10,7 @@ module Concurrent
       observers.add_observer(*args, &block)
     end
 
+    # as #add_observer but it can be used for chaning
     # @return [Observable] self
     def with_observer(*args, &block)
       add_observer *args, &block
