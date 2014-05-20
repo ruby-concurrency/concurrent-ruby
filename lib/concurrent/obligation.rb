@@ -42,9 +42,37 @@ module Concurrent
       [:unscheduled, :pending].include? state
     end
 
+    # @returns [Object] see Dereferenceable#deref
     def value(timeout = nil)
+      wait timeout
+      deref
+    end
+
+    # wait until Obligation is #complete?
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @return [Obligation] self
+    def wait(timeout = nil)
       event.wait(timeout) if timeout != 0 && incomplete?
-      super()
+      self
+    end
+
+    # wait until Obligation is #complete?
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @return [Obligation] self
+    # @raise [Exception] when #rejected? it raises #reason
+    def no_error!(timeout = nil)
+      wait(timeout).tap { raise self if rejected? }
+    end
+
+    # @raise [Exception] when #rejected? it raises #reason
+    # @returns [Object] see Dereferenceable#deref
+    def value!(timeout = nil)
+      wait(timeout)
+      if rejected?
+        raise self
+      else
+        deref
+      end
     end
 
     def state
@@ -59,6 +87,14 @@ module Concurrent
       @reason
     ensure
       mutex.unlock
+    end
+
+    # @example allows Obligation to be risen
+    #   rejected_ivar = Ivar.new.fail
+    #   raise rejected_ivar
+    def exception(*args)
+      raise 'obligation is not rejected' unless rejected?
+      reason.exception(*args)
     end
 
     protected
@@ -81,13 +117,16 @@ module Concurrent
         @state = :fulfilled
       else
         @reason = reason
-        @state = :rejected
+        @state  = :rejected
       end
     end
 
     # @!visibility private
     def state=(value) # :nodoc:
-      mutex.synchronize { @state = value }
+      mutex.lock
+      @state = value
+    ensure
+      mutex.unlock
     end
 
     # atomic compare and set operation
@@ -100,14 +139,15 @@ module Concurrent
     #
     # @!visibility private
     def compare_and_set_state(next_state, expected_current) # :nodoc:
-      mutex.synchronize do
-        if @state == expected_current
-          @state = next_state
-          true
-        else
-          false
-        end
+      mutex.lock
+      if @state == expected_current
+        @state = next_state
+        true
+      else
+        false
       end
+    ensure
+      mutex.unlock
     end
 
     # executes the block within mutex if current state is included in expected_states
@@ -116,15 +156,16 @@ module Concurrent
     #
     # @!visibility private
     def if_state(*expected_states) # :nodoc:
+      mutex.lock
       raise ArgumentError.new('no block given') unless block_given?
 
-      mutex.synchronize do
-        if expected_states.include? @state
-          yield
-        else
-          false
-        end
+      if expected_states.include? @state
+        yield
+      else
+        false
       end
+    ensure
+      mutex.unlock
     end
   end
 end

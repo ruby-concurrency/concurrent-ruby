@@ -30,24 +30,28 @@ module Concurrent
         obligation.should be_incomplete
       end
 
-      describe '#value' do
+      methods = [:value, :value!, :no_error!]
+      methods.each do |method|
+        describe "##{method}" do
 
-        it 'should return immediately if timeout is zero' do
-          obligation.value(0).should be_nil
-        end
+          it 'should return immediately if timeout is zero' do
+            obligation.send(method, 0).should(method == :no_error! ? eq(obligation) : be_nil)
+          end
 
-        it 'should block on the event if timeout is not set' do
-          obligation.stub(:event).and_return(event)
-          event.should_receive(:wait).with(nil)
+          it 'should block on the event if timeout is not set' do
+            obligation.stub(:event).and_return(event)
+            event.should_receive(:wait).with(nil)
 
-          obligation.value
-        end
+            obligation.send method
+          end
 
-        it 'should block on the event if timeout is not zero' do
-          obligation.stub(:event).and_return(event)
-          event.should_receive(:wait).with(5)
+          it 'should block on the event if timeout is not zero' do
+            obligation.stub(:event).and_return(event)
+            event.should_receive(:wait).with(5)
 
-          obligation.value(5)
+            obligation.send(method, 5)
+          end
+
         end
       end
     end
@@ -98,6 +102,45 @@ module Concurrent
 
       end
 
+      describe '#value!' do
+
+        it 'should return immediately if timeout is zero' do
+          obligation.value!(0).should eq 42
+        end
+
+        it 'should return immediately if timeout is not set' do
+          event.should_not_receive(:wait)
+
+          obligation.value!.should eq 42
+        end
+
+        it 'should return immediately if timeout is not zero' do
+          event.should_not_receive(:wait)
+
+          obligation.value!(5).should eq 42
+        end
+
+      end
+
+      describe '#no_error!' do
+
+        it 'should return immediately if timeout is zero' do
+          obligation.no_error!(0).should eq obligation
+        end
+
+        it 'should return immediately if timeout is not set' do
+          event.should_not_receive(:wait)
+
+          obligation.no_error!.should eq obligation
+        end
+
+        it 'should return immediately if timeout is not zero' do
+          event.should_not_receive(:wait)
+
+          obligation.no_error!(5).should eq obligation
+        end
+
+      end
 
     end
 
@@ -115,26 +158,72 @@ module Concurrent
       it 'should be not incomplete' do
         obligation.should_not be_incomplete
       end
-    end
 
-    describe '#value' do
 
-      it 'should return immediately if timeout is zero' do
-        event.should_not_receive(:wait)
+      describe '#value' do
 
-        obligation.value(0).should be_nil
+        it 'should return immediately if timeout is zero' do
+          event.should_not_receive(:wait)
+
+          obligation.value(0).should be_nil
+        end
+
+        it 'should return immediately if timeout is not set' do
+          event.should_not_receive(:wait)
+
+          obligation.value.should be_nil
+        end
+
+        it 'should return immediately if timeout is not zero' do
+          event.should_not_receive(:wait)
+
+          obligation.value(5).should be_nil
+        end
+
       end
 
-      it 'should return immediately if timeout is not set' do
-        event.should_not_receive(:wait)
+      describe '#value!' do
 
-        obligation.value.should be_nil
+        it 'should return immediately if timeout is zero' do
+          event.should_not_receive(:wait)
+
+          -> { obligation.value!(0) }.should raise_error
+        end
+
+        it 'should return immediately if timeout is not set' do
+          event.should_not_receive(:wait)
+
+          -> { obligation.value! }.should raise_error
+        end
+
+        it 'should return immediately if timeout is not zero' do
+          event.should_not_receive(:wait)
+
+          -> { obligation.value!(5) }.should raise_error
+        end
+
       end
 
-      it 'should return immediately if timeout is not zero' do
-        event.should_not_receive(:wait)
+      describe '#no_error!' do
 
-        obligation.value(5).should be_nil
+        it 'should return immediately if timeout is zero' do
+          event.should_not_receive(:wait)
+
+          -> { obligation.no_error!(0) }.should raise_error
+        end
+
+        it 'should return immediately if timeout is not set' do
+          event.should_not_receive(:wait)
+
+          -> { obligation.no_error! }.should raise_error
+        end
+
+        it 'should return immediately if timeout is not zero' do
+          event.should_not_receive(:wait)
+
+          -> { obligation.no_error!(5) }.should raise_error
+        end
+
       end
 
     end
