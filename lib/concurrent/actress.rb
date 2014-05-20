@@ -26,6 +26,8 @@ module Concurrent
     require 'concurrent/actress/core'
     require 'concurrent/actress/context'
 
+    require 'concurrent/actress/ad_hoc'
+
     # @return [Reference, nil] current executing actor if any
     def self.current
       Thread.current[:__current_actress__]

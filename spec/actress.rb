@@ -16,7 +16,7 @@ class Ping
     when :terminate
       terminate!
     when :child
-      Ping.spawn :pong, @queue
+      Concurrent::Actress::AdHoc.spawn(:pong) { -> m { @queue << m } }
     else
       @queue << message
       message
@@ -41,7 +41,6 @@ def assert condition
     raise
   end
 end
-
 
 
 Array.new(100).map do
