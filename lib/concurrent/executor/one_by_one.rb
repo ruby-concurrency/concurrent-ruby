@@ -1,6 +1,6 @@
 module Concurrent
 
-  # Ensures that jobs are passed to the underlying executor one by one,
+  # Ensures that jobs are passed to the given executors one by one,
   # never running at the same time.
   class OneByOne
 
