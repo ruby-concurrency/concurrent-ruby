@@ -832,8 +832,8 @@ module Concurrent
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
           supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
-          supervisor.run!
-          sleep(0.2)
+          future = Concurrent::Future.execute{ supervisor.run }
+          future.value(1)
           supervisor.should_not be_running
         end
 
@@ -842,8 +842,8 @@ module Concurrent
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
           supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
-          supervisor.run!
-          sleep(0.2)
+          future = Concurrent::Future.execute{ supervisor.run }
+          future.value(1)
           supervisor.should_not be_running
         end
 
@@ -852,8 +852,8 @@ module Concurrent
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
           supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
-          supervisor.run!
-          sleep(0.2)
+          future = Concurrent::Future.execute{ supervisor.run }
+          future.value(1)
           supervisor.should_not be_running
         end
       end
