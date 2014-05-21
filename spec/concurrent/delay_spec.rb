@@ -53,6 +53,20 @@ module Concurrent
       end
     end
 
+
+    context '#reconfigure' do
+      it 'returns value of block used in reconfiguration' do
+        Delay.new { nil }.tap { |d| d.reconfigure { true } }.value.should be_true
+      end
+
+      it 'returns false when process completed?' do
+        d = Delay.new { 1 }
+        d.reconfigure { 2 }.should be_true
+        d.value.should be 2
+        d.reconfigure { 3 }.should be_false
+      end
+    end
+
     context '#value' do
 
       let(:task){ proc{ nil } }
