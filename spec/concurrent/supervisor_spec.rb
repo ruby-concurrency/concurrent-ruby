@@ -447,7 +447,8 @@ module Concurrent
       it 'returns the count of all workers terminated by exception as #abend' do
         busy_supervisor.count.abend.should eq 0
         busy_supervisor.run!
-        sleep(0.5)
+        stoppers.each{|stopper| stopper.latch.wait(1) }
+        sleep(0.1)
 
         busy_supervisor.count.abend.should eq abend_count
       end
