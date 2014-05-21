@@ -9,25 +9,6 @@ module Concurrent
   # An error class to be raised when errors occur during configuration.
   ConfigurationError = Class.new(StandardError)
 
-  class << self
-    attr_accessor :configuration
-  end
-
-  # Perform gem-level configuration.
-  #
-  # @yield the configuration commands
-  # @yieldparam [Configuration] the current configuration object
-  def self.configure
-    (@mutex ||= Mutex.new).synchronize do
-      yield(configuration)
-
-      # initialize the global thread pools if necessary
-      configuration.global_task_pool
-      configuration.global_operation_pool
-      configuration.global_timer_set
-    end
-  end
-
   # A gem-level configuration object.
   class Configuration
 
@@ -120,6 +101,23 @@ module Concurrent
     end
   end
 
+  # create the default configuration on load
+  @configuration = Configuration.new
+  singleton_class.send :attr_reader, :configuration
+
+  # Perform gem-level configuration.
+  #
+  # @yield the configuration commands
+  # @yieldparam [Configuration] the current configuration object
+  def self.configure
+    yield(configuration)
+
+    # initialize the global thread pools if necessary
+    configuration.global_task_pool
+    configuration.global_operation_pool
+    configuration.global_timer_set
+  end
+
   private
 
   # Attempt to properly shutdown the given executor using the `shutdown` or
@@ -140,8 +138,6 @@ module Concurrent
     false
   end
 
-  # create the default configuration on load
-  self.configuration = Configuration.new
 
   # set exit hook to shutdown global thread pools
   at_exit do
