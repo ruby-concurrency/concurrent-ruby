@@ -171,7 +171,7 @@ module Concurrent
       it 'runs the block immediately when the :run_now option is true' do
         latch = CountDownLatch.new(1)
         subject = TimerTask.execute(execution: 500, now: true){ latch.count_down }
-        latch.wait(0.1).should be_true
+        latch.wait(1).should be_true
         subject.kill
       end
 
@@ -179,7 +179,7 @@ module Concurrent
         latch = CountDownLatch.new(1)
         subject = TimerTask.execute(execution: 0.1, now: false){ latch.count_down }
         latch.count.should eq 1
-        latch.wait(0.2).should be_true
+        latch.wait(1).should be_true
         subject.kill
       end
 
@@ -187,7 +187,7 @@ module Concurrent
         latch = CountDownLatch.new(1)
         subject = TimerTask.execute(execution: 0.1, now: false){ latch.count_down }
         latch.count.should eq 1
-        latch.wait(0.2).should be_true
+        latch.wait(1).should be_true
         subject.kill
       end
 
@@ -199,7 +199,7 @@ module Concurrent
           latch.sount_down
         end
         subject.execute
-        latch.wait(0.2)
+        latch.wait(1)
         expected.should eq subject
         subject.kill
       end

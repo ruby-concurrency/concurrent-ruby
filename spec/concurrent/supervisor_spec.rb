@@ -23,8 +23,16 @@ module Concurrent
 
     let(:stopper_class) do
       Class.new(worker_class) {
-        def initialize(sleep_time = 0.2) @sleep_time = sleep_time; end;
-        def run() super(); sleep(@sleep_time); end
+        attr_reader :latch
+        def initialize(sleep_time = 0.2)
+          @sleep_time = sleep_time
+          @latch = Concurrent::CountDownLatch.new(1)
+        end
+        def run
+          super
+          sleep(@sleep_time)
+          @latch.count_down
+        end
       }
     end
 
@@ -326,13 +334,18 @@ module Concurrent
 
     context '#count' do
 
+      let(:stoppers){ Array.new }
+
       let(:busy_supervisor) do
         supervisor = Supervisor.new(monitor_interval: 60)
         3.times do
           supervisor.add_worker(sleeper_class.new)
-          supervisor.add_worker(stopper_class.new)
           supervisor.add_worker(error_class.new)
           supervisor.add_worker(runner_class.new)
+
+          stopper = stopper_class.new
+          stoppers << stopper
+          supervisor.add_worker(stopper)
         end
         supervisor
       end
@@ -426,7 +439,7 @@ module Concurrent
       it 'returns the count of all stopped workers as #stopped' do
         busy_supervisor.count.stopped.should eq total_count
         busy_supervisor.run!
-        sleep(0.5)
+        stoppers.each{|stopper| stopper.latch.wait(1) }
 
         busy_supervisor.count.stopped.should eq stopped_count
       end
@@ -434,7 +447,8 @@ module Concurrent
       it 'returns the count of all workers terminated by exception as #abend' do
         busy_supervisor.count.abend.should eq 0
         busy_supervisor.run!
-        sleep(0.5)
+        stoppers.each{|stopper| stopper.latch.wait(1) }
+        sleep(0.1)
 
         busy_supervisor.count.abend.should eq abend_count
       end
@@ -832,8 +846,8 @@ module Concurrent
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
           supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
-          supervisor.run!
-          sleep(0.2)
+          future = Concurrent::Future.execute{ supervisor.run }
+          future.value(1)
           supervisor.should_not be_running
         end
 
@@ -842,8 +856,8 @@ module Concurrent
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
           supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
-          supervisor.run!
-          sleep(0.2)
+          future = Concurrent::Future.execute{ supervisor.run }
+          future.value(1)
           supervisor.should_not be_running
         end
 
@@ -852,8 +866,8 @@ module Concurrent
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
           supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
-          supervisor.run!
-          sleep(0.2)
+          future = Concurrent::Future.execute{ supervisor.run }
+          future.value(1)
           supervisor.should_not be_running
         end
       end
