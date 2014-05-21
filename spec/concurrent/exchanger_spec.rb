@@ -50,20 +50,15 @@ module Concurrent
       context 'with timeout' do
         it 'should block until timeout' do
 
-          latch = Concurrent::CountDownLatch.new(1)
           value = 0
           start = Time.now.to_f
 
-          t = Thread.new do
-            value = exchanger.exchange(2, 0.2)
-            latch.count_down
+          future = Concurrent::Future.execute do
+            exchanger.exchange(2, 0.2)
           end
-
-          latch.wait(1)
-
+          
+          future.value.should be_nil
           (Time.now.to_f - start).should >= 0.2
-          t.status.should be_false
-          value.should be_nil
         end
       end
     end
