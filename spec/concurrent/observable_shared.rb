@@ -135,6 +135,7 @@ share_examples_for :observable do
         subject.add_observer(obs, observer_func)
       end
       trigger_observable(subject)
+      latch.wait(1)
       latch.count.should eq 0
     end
 
@@ -144,6 +145,7 @@ share_examples_for :observable do
         subject.add_observer{ latch.count_down }
       end
       trigger_observable(subject)
+      latch.wait(1)
       latch.count.should eq 0
     end
 
@@ -155,6 +157,7 @@ share_examples_for :observable do
       subject.delete_observer(obs)
 
       trigger_observable(subject)
+      latch.wait(1)
       latch.count.should eq 5
     end
 
@@ -167,6 +170,7 @@ share_examples_for :observable do
       subject.delete_observers
 
       trigger_observable(subject)
+      latch.wait(1)
       latch.count.should eq 5
     end
   end
