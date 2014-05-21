@@ -40,7 +40,7 @@ module Concurrent
       def on_message(message)
         case message.first
         when :spawn
-          spawn *message[1..2], *message[3], &message[4]
+          spawn message[1], &message[2]
         else
           # ignore
         end
@@ -48,17 +48,30 @@ module Concurrent
     end
 
     # A root actor, a default parent of all actors spawned outside an actor
-    ROOT = Core.new(nil, '/', Root).reference
+    ROOT = Core.new(parent: nil, name: '/', class: Root).reference
 
-    # @param [Context] actress_class to be spawned
-    # @param [String, Symbol] name of the instance, it's used to generate the path of the actor
-    # @param args for actress_class instantiation
     # @param block for actress_class instantiation
-    def self.spawn(actress_class, name, *args, &block)
+    def self.spawn(*args, &block)
       if Actress.current
-        Core.new(Actress.current, name, actress_class, *args, &block).reference
+        Core.new(spawn_optionify(*args).merge(parent: Actress.current), &block).reference
       else
-        ROOT.ask([:spawn, actress_class, name, args, block]).value
+        ROOT.ask([:spawn, spawn_optionify(*args), block]).value
+      end
+    end
+
+    # @overload spawn_optionify(actress_class, name, *args)
+    #   @param [Context] actress_class to be spawned
+    #   @param [String, Symbol] name of the instance, it's used to generate the path of the actor
+    #   @param args for actress_class instantiation
+    # @overload spawn_optionify(opts)
+    #   see {Core.new} opts
+    def self.spawn_optionify(*args)
+      if args.size == 1 && args.first.is_a?(Hash)
+        args.first
+      else
+        { class: args[0],
+          name:  args[1],
+          args:  args[2..-1] }
       end
     end
   end

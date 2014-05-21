@@ -37,8 +37,8 @@ module Concurrent
       end
 
       # @see Actress.spawn
-      def spawn(actress_class, name, *args, &block)
-        Actress.spawn(actress_class, name, *args, &block)
+      def spawn(*args, &block)
+        Actress.spawn(*args, &block)
       end
 
       # @see Core#children
@@ -70,8 +70,13 @@ module Concurrent
 
       module ClassMethods
         # behaves as {Actress.spawn} but class_name is omitted
-        def spawn(name, *args, &block)
-          Actress.spawn self, name, *args, &block
+        def spawn(name_or_opts, *args, &block)
+          opts = if name_or_opts.is_a? Hash
+                   name_or_opts.merge class: self
+                 else
+                   { class: self, name: name_or_opts, args: args }
+                 end
+          Actress.spawn opts, &block
         end
       end
     end

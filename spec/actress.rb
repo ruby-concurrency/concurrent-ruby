@@ -36,18 +36,19 @@ end
 
 def assert condition
   unless condition
-    require 'pry'
-    binding.pry
+    # require 'pry'
+    # binding.pry
     raise
+    puts "--- \n#{caller.join("\n")}"
   end
 end
 
 
-Array.new(100).map do
-  Thread.new do
-    20.times do |i|
-      # it format('--- %3d ---', i) do
-      puts format('--- %3d ---', i)
+# it format('--- %3d ---', i) do
+10.times do |i|
+  puts format('--- %3d ---', i)
+  Array.new(10).map do
+    Thread.new do
       # trace! do
       queue = Queue.new
       actor = Ping.spawn :ping, queue
@@ -71,8 +72,7 @@ Array.new(100).map do
       actor << :terminate
       assert actor.ask(:blow_up).wait.rejected?
     end
-  end
-end.each(&:join)
-
-# end
+  end.each(&:join)
+end
+#   end
 # end

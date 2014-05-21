@@ -9,28 +9,37 @@ module Concurrent
       attr_reader :reference, :name, :path, :logger, :parent_core
       private :parent_core
 
-      # @param [Reference, nil] parent of an actor spawning this one
-      # @param [String] name
-      # @param [Context] actress_class a class to be instantiated defining Actor's behaviour
-      # @param args arguments for actress_class instantiation
-      # @param block for actress_class instantiation
-      def initialize(parent, name, actress_class, *args, &block)
-        @mailbox         = Array.new
-        @one_by_one      = OneByOne.new
-        @executor        = Concurrent.configuration.global_task_pool # TODO make configurable
-        @parent_core     = (Type! parent, Reference, NilClass) && parent.send(:core)
-        @name            = (Type! name, String, Symbol).to_s
-        @children        = []
+      # @option opts [String] name
+      # @option opts [Reference, nil] parent of an actor spawning this one
+      # @option opts [Context] actress_class a class to be instantiated defining Actor's behaviour
+      # @option opts [Array<Object>] args arguments for actress_class instantiation
+      # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
+      # @param [Proc] block for class instantiation
+      def initialize(opts = {}, &block)
+        @mailbox    = Array.new
+        @one_by_one = OneByOne.new
+        # noinspection RubyArgCount
+        @terminated = Event.new
+        @executor   = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
+        @children   = []
+        @reference  = Reference.new self
+        @name       = (Type! opts.fetch(:name), String, Symbol).to_s
+
+        parent       = opts[:parent]
+        @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
+        if @parent_core.nil? && @name != '/'
+          raise 'only root has no parent'
+        end
+
         @path            = @parent_core ? File.join(@parent_core.path, @name) : @name
         @logger          = Logger.new($stderr) # TODO add proper logging
         @logger.progname = @path
-        @reference       = Reference.new self
-        # noinspection RubyArgCount
-        @terminated      = Event.new
 
-        parent_core.add_child reference if parent_core
+        @parent_core.add_child reference if @parent_core
 
-        @actress_class = Child! actress_class, Context
+        @actress_class = actress_class = Child! opts.fetch(:class), Context
+        args           = opts.fetch(:args, [])
+
         schedule_execution do
           begin
             @actress = actress_class.new *args, &block
@@ -42,9 +51,9 @@ module Concurrent
         end
       end
 
-      # @return [Reference] of parent actor
+      # @return [Reference, nil] of parent actor
       def parent
-        @parent_core.reference
+        @parent_core && @parent_core.reference
       end
 
       # @return [Array<Reference>] of children actors
@@ -155,7 +164,7 @@ module Concurrent
             Thread.current[:__current_actress__] = reference
             yield
           rescue => e
-            logger.error e
+            logger.fatal e
           ensure
             Thread.current[:__current_actress__] = nil
           end
