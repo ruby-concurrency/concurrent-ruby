@@ -32,7 +32,9 @@ module Concurrent
         end
 
         @path            = @parent_core ? File.join(@parent_core.path, @name) : @name
-        @logger          = Logger.new($stderr) # TODO add proper logging
+        # TODO add proper logging
+        @logger          = Logger.new($stderr)
+        @logger.level    = opts.fetch(:logger_level, 1)
         @logger.progname = @path
 
         @parent_core.add_child reference if @parent_core
