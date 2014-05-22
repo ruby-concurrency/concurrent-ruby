@@ -92,7 +92,6 @@ module Concurrent
     def apply_deref_options(value) # :nodoc:
       return nil if value.nil?
       return value if @do_nothing_on_deref
-      value = value
       value = @copy_on_deref.call(value) if @copy_on_deref
       value = value.dup if @dup_on_deref
       value = value.freeze if @freeze_on_deref
