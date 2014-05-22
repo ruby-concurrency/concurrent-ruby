@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/configuration'
+require 'concurrent/delay'
 require 'concurrent/ivar'
 require 'concurrent/future'
 require 'concurrent/executor/thread_pool_executor'
@@ -36,6 +37,10 @@ module Concurrent
   #   class Echo
   #     include Concurrent::Async
   #
+  #     def initialize
+  #       init_mutex # initialize the internal synchronization objects
+  #     end
+  #
   #     def echo(msg)
   #       sleep(rand)
   #       print "#{msg}\n"
@@ -52,6 +57,7 @@ module Concurrent
   # @example Monkey-patching an existing object
   #   numbers = 1_000_000.times.collect{ rand }
   #   numbers.extend(Concurrent::Async)
+  #   numbers.init_mutex # initialize the internal synchronization objects
   #   
   #   future = numbers.async.max
   #   future.state #=> :pending
@@ -60,6 +66,16 @@ module Concurrent
   #   
   #   future.state #=> :fulfilled
   #   future.value #=> 0.999999138918843
+  #
+  # @note This module depends on several internal synchronization objects that
+  #       must be initialized prior to calling any of the async/await/executor methods.
+  #       The best practice is to call `init_mutex` from within the constructor
+  #       of the including class. A less ideal but acceptable practice is for the
+  #       thread creating the asynchronous object to explicitly call the `init_mutex`
+  #       method prior to calling any of the async/await/executor methods. If
+  #       `init_mutex` is *not* called explicitly the async/await/executor methods
+  #       will attempt to lazily initialize the internal synchronization objects, but
+  #       thread-safe initialization cannot be guaranteed.
   #
   # @note Thread safe guarantees can only be made when asynchronous method calls
   #       are not mixed with synchronous method calls. Use only synchronous calls
@@ -142,7 +158,7 @@ module Concurrent
           ivar = Concurrent::IVar.new
           value, reason = nil, nil
           begin
-            mutex.synchronize do
+            @mutex.synchronize do
               value = @delegate.send(method, *args, &block)
             end
           rescue => reason
@@ -154,11 +170,6 @@ module Concurrent
 
         self.send(method, *args)
       end
-
-      # The lock used when delegating methods to the wrapped object.
-      #
-      # @!visibility private
-      attr_reader :mutex # :nodoc:
     end
 
     # Delegates asynchronous, thread-safe method calls to the wrapped object.
@@ -194,8 +205,8 @@ module Concurrent
 
         self.define_singleton_method(method) do |*args|
           Async::validate_argc(@delegate, method, *args)
-          Concurrent::Future.execute(executor: @executor) do
-            mutex.synchronize do
+          Concurrent::Future.execute(executor: @executor.value) do
+            @mutex.synchronize do
               @delegate.send(method, *args, &block)
             end
           end
@@ -203,13 +214,6 @@ module Concurrent
 
         self.send(method, *args)
       end
-
-      private
-
-      # The lock used when delegating methods to the wrapped object.
-      #
-      # @!visibility private
-      attr_reader :mutex # :nodoc:
     end
 
     # Causes the chained method call to be performed asynchronously on the
@@ -240,7 +244,8 @@ module Concurrent
     #
     # @see Concurrent::Future
     def async
-      @__async_delegator__ ||= AsyncDelegator.new(self, executor, await.mutex)
+      init_mutex
+      @__async_delegator__.value
     end
     alias_method :future, :async
 
@@ -272,19 +277,35 @@ module Concurrent
     #
     # @see Concurrent::IVar
     def await
-      @__await_delegator__ ||= AwaitDelegator.new(self, Mutex.new)
+      init_mutex
+      @__await_delegator__.value
     end
     alias_method :delay, :await
 
     def executor=(executor)
-      raise ArgumentError.new('executor has already been set') unless @__async__executor__.nil?
-      @__async__executor__ = executor
+      init_mutex
+      @__async__executor__.reconfigure { executor } or
+        raise ArgumentError.new('executor has already been set')
     end
 
-    private
-
-    def executor
-      @__async__executor__ ||= Concurrent.configuration.global_task_pool
+    # Initialize the internal mutex and other synchronization objects. This method
+    # *should* be called from the constructor of the including class or explicitly
+    # by the caller prior to calling any other methods. This is the only way
+    # thread-safe initialization can be guaranteed. If this method is *not* called
+    # before any calls to the async/await/executor methods, a best-effort attempt
+    # will be made to safely initialize the internal synchronization objects. In
+    # rare cases this may cause a race condition.
+    #
+    # @note This method *should* be called from the constructor of the including
+    #       class or explicitly by the caller prior to calling any other methods.
+    #       This is the only way thread-safe initialization can be guaranteed.
+    def init_mutex
+      return if @mutex
+      (@mutex = Mutex.new).lock
+      @__async__executor__ = Delay.new{ Concurrent.configuration.global_task_pool }
+      @__await_delegator__ = Delay.new{ AwaitDelegator.new(self, @mutex) }
+      @__async_delegator__ = Delay.new{ AsyncDelegator.new(self, @__async__executor__, @mutex) }
+      @mutex.unlock
     end
   end
 end
