@@ -126,14 +126,6 @@ task = Concurrent::ScheduledTask.execute(2){ Ticker.new.get_year_end_closing('IN
 task.state #=> :pending
 sleep(3)   # do other stuff
 task.value #=> 25.96
-
-# Async
-ticker = Ticker.new
-ticker.extend(Concurrent::Async)
-hpq = ticker.async.get_year_end_closing('HPQ', 2013)
-ibm = ticker.await.get_year_end_closing('IBM', 2013)
-hpq.value #=> 27.98
-ibm.value #=> 187.57
 ```
 
 ## Contributors
