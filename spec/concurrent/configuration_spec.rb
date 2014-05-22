@@ -24,11 +24,12 @@ module Concurrent
         Concurrent.configuration.global_task_pool.should eq executor
       end
 
-      specify 'writer raises an exception if called twice' do
+      specify 'writer raises an exception if called after initialization' do
         executor = ImmediateExecutor.new
         Concurrent.configure do |config|
           config.global_task_pool = executor
         end
+        Concurrent.configuration.global_task_pool
         expect {
           Concurrent.configure do |config|
             config.global_task_pool = executor
@@ -52,11 +53,12 @@ module Concurrent
         Concurrent.configuration.global_operation_pool.should eq executor
       end
 
-      specify 'writer raises an exception if called twice' do
+      specify 'writer raises an exception if called after initialization' do
         executor = ImmediateExecutor.new
         Concurrent.configure do |config|
           config.global_operation_pool = executor
         end
+        Concurrent.configuration.global_operation_pool
         expect {
           Concurrent.configure do |config|
             config.global_operation_pool = executor

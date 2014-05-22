@@ -1,5 +1,4 @@
 require 'thread'
-require 'concurrent/utilities'
 require 'concurrent/atomic/condition'
 
 module Concurrent

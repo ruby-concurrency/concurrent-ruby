@@ -1,4 +1,5 @@
 require 'thread'
+require 'concurrent/obligation'
 
 module Concurrent
 
@@ -48,7 +49,7 @@ module Concurrent
 
       init_obligation
       @state = :pending
-      @task = block
+      @task  = block
       set_deref_options(opts)
     end
 
@@ -78,18 +79,34 @@ module Concurrent
       mutex.unlock
     end
 
+    # reconfigures the block returning the value if still #incomplete?
+    # @yield the delayed operation to perform
+    # @returns [true, false] if success
+    def reconfigure(&block)
+      mutex.lock
+      raise ArgumentError.new('no block given') unless block_given?
+      if @state == :pending
+        @task = block
+        true
+      else
+        false
+      end
+    ensure
+      mutex.unlock
+    end
+
     private
 
-      def execute_task_once
-        if @state == :pending
-          begin
-            @value = @task.call
-            @state = :fulfilled
-          rescue => ex
-            @reason = ex
-            @state = :rejected
-          end
+    def execute_task_once
+      if @state == :pending
+        begin
+          @value = @task.call
+          @state = :fulfilled
+        rescue => ex
+          @reason = ex
+          @state  = :rejected
         end
       end
+    end
   end
 end
