@@ -48,7 +48,7 @@ module Concurrent
             @actress.send :initialize_core, self
           rescue => ex
             puts "#{ex} (#{ex.class})\n#{ex.backtrace.join("\n")}"
-            terminate! # TODO test that this is ok
+            terminate! # TODO test this
           end
         end
       end
@@ -105,6 +105,7 @@ module Concurrent
       def terminate!
         guard!
         @terminated.set
+
         parent_core.remove_child reference if parent_core
         @mailbox.each do |envelope|
           reject_envelope envelope
@@ -143,7 +144,7 @@ module Concurrent
 
         if terminated?
           reject_envelope envelope
-          puts "this should not happen"
+          logger.fatal "this should not be happening #{caller[0]}"
         end
 
         logger.debug "received #{envelope.message} from #{envelope.sender_path}"
@@ -153,6 +154,7 @@ module Concurrent
       rescue => error
         logger.error error
         envelope.ivar.fail error unless envelope.ivar.nil?
+        terminate!
       ensure
         @receive_envelope_scheduled = false
         process_envelopes?
