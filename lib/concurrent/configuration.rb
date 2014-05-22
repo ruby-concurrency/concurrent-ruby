@@ -14,9 +14,9 @@ module Concurrent
 
     # Create a new configuration object.
     def initialize
-      @global_task_pool = Delay.new { new_task_pool }
+      @global_task_pool      = Delay.new { new_task_pool }
       @global_operation_pool = Delay.new { new_operation_pool }
-      @global_timer_set = Delay.new { Concurrent::TimerSet.new }
+      @global_timer_set      = Delay.new { Concurrent::TimerSet.new }
     end
 
     # Global thread pool optimized for short *tasks*.
@@ -111,11 +111,6 @@ module Concurrent
   # @yieldparam [Configuration] the current configuration object
   def self.configure
     yield(configuration)
-
-    # initialize the global thread pools if necessary
-    configuration.global_task_pool
-    configuration.global_operation_pool
-    configuration.global_timer_set
   end
 
   private
