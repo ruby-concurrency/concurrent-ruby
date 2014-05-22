@@ -14,28 +14,8 @@ module Concurrent
 
     # Create a new configuration object.
     def initialize
-      @cores = Concurrent::processor_count
-
-      @global_task_pool = Delay.new do
-        Concurrent::ThreadPoolExecutor.new(
-            min_threads:     [2, @cores].max,
-            max_threads:     [20, @cores * 15].max,
-            idletime:        2 * 60, # 2 minutes
-            max_queue:       0, # unlimited
-            overflow_policy: :abort # raise an exception
-        )
-      end
-
-      @global_operation_pool = Delay.new do
-        Concurrent::ThreadPoolExecutor.new(
-            min_threads:     [2, @cores].max,
-            max_threads:     [2, @cores].max,
-            idletime:        10 * 60, # 10 minutes
-            max_queue:       [20, @cores * 15].max,
-            overflow_policy: :abort # raise an exception
-        )
-      end
-
+      @global_task_pool = Delay.new { new_task_pool }
+      @global_operation_pool = Delay.new { new_operation_pool }
       @global_timer_set = Delay.new { Concurrent::TimerSet.new }
     end
 
@@ -98,6 +78,26 @@ module Concurrent
     def global_operation_pool=(executor)
       @global_operation_pool.reconfigure { executor } or
           raise ConfigurationError.new('global operation pool was already set')
+    end
+
+    def new_task_pool
+      Concurrent::ThreadPoolExecutor.new(
+          min_threads:     [2, Concurrent.processor_count].max,
+          max_threads:     [20, Concurrent.processor_count * 15].max,
+          idletime:        2 * 60, # 2 minutes
+          max_queue:       0, # unlimited
+          overflow_policy: :abort # raise an exception
+      )
+    end
+
+    def new_operation_pool
+      Concurrent::ThreadPoolExecutor.new(
+          min_threads:     [2, Concurrent.processor_count].max,
+          max_threads:     [2, Concurrent.processor_count].max,
+          idletime:        10 * 60, # 10 minutes
+          max_queue:       [20, Concurrent.processor_count * 15].max,
+          overflow_policy: :abort # raise an exception
+      )
     end
   end
 
