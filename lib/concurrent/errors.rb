@@ -1,9 +1,5 @@
 module Concurrent
 
-  # Raised when a complex and atomic operation, such as a transaction,
-  # is aborted prior to completion.
-  AbortError = Class.new(StandardError)
-
   # Raised when errors occur during configuration.
   ConfigurationError = Class.new(StandardError)
 
