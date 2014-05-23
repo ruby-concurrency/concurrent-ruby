@@ -440,6 +440,7 @@ module Concurrent
         busy_supervisor.count.stopped.should eq total_count
         busy_supervisor.run!
         stoppers.each{|stopper| stopper.latch.wait(1) }
+        sleep(0.1)
 
         busy_supervisor.count.stopped.should eq stopped_count
       end
