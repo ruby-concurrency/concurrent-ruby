@@ -136,6 +136,7 @@ task.value #=> 25.96
 * [Lucas Allan](https://github.com/lucasallan)
 * [Petr Chalupa](https://github.com/pitr-ch)
 * [Ravil Bayramgalin](https://github.com/brainopia)
+* [Larry Lv](https://github.com/larrylv)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)
