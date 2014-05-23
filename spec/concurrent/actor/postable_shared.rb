@@ -94,7 +94,7 @@ share_examples_for :postable do
     it 'raises Concurrent::Runnable::LifecycleError when not running' do
       expect {
         subject.post!(1, 'Hello World!')
-      }.to raise_error(Concurrent::Runnable::LifecycleError)
+      }.to raise_error(Concurrent::LifecycleError)
     end
 
     it 'blocks for up to the given number of seconds' do

@@ -1,10 +1,7 @@
+require 'concurrent/errors'
 require 'concurrent/atomic/event'
 
 module Concurrent
-
-  # An exception class raised when the maximum queue size is reached and the
-  # `overflow_policy` is set to `:abort`.
-  RejectedExecutionError = Class.new(StandardError)
 
   module Executor
 

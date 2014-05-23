@@ -1,5 +1,6 @@
 require 'thread'
 
+require 'concurrent/errors'
 require 'concurrent/runnable'
 
 module Concurrent
@@ -14,8 +15,6 @@ module Concurrent
 
     CHILD_TYPES = [:worker, :supervisor]
     CHILD_RESTART_OPTIONS = [:permanent, :transient, :temporary]
-
-    MaxRestartFrequencyError = Class.new(StandardError)
 
     WorkerContext = Struct.new(:worker, :type, :restart) do
       attr_accessor :thread

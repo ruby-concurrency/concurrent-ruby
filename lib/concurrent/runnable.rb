@@ -1,10 +1,10 @@
 require 'thread'
 
+require 'concurrent/errors'
+
 module Concurrent
 
   module Runnable
-
-    LifecycleError = Class.new(StandardError)
 
     class Context
       attr_reader :runner, :thread

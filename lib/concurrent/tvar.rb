@@ -1,5 +1,6 @@
 require 'set'
 
+require 'concurrent/errors'
 require 'concurrent/atomic/thread_local_var'
 
 module Concurrent
@@ -109,7 +110,7 @@ module Concurrent
 
           begin
             result = yield
-          rescue Transaction::AbortError => e
+          rescue Concurrent::AbortError => e
             transaction.abort
             result = Transaction::ABORTED
           rescue => e
@@ -138,7 +139,7 @@ module Concurrent
 
   # Abort a currently running transaction - see `Concurrent::atomically`.
   def abort_transaction
-    raise Transaction::AbortError.new
+    raise Concurrent::AbortError.new
   end
 
   module_function :atomically, :abort_transaction
@@ -153,8 +154,6 @@ module Concurrent
 
     ReadLogEntry = Struct.new(:tvar, :version)
     UndoLogEntry = Struct.new(:tvar, :value)
-
-    AbortError = Class.new(StandardError)
 
     def initialize
       @write_set = Set.new
