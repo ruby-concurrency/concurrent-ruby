@@ -1,8 +1,12 @@
 module Concurrent
   module Actress
 
-    # delegates publicly expose-able methods calls to Core
+    # Provides publicly expose-able methods from {Core}.
     module CoreDelegations
+      def name
+        core.name
+      end
+
       def path
         core.path
       end
@@ -17,6 +21,10 @@ module Concurrent
 
       def reference
         core.reference
+      end
+
+      def executor
+        core.executor
       end
 
       alias_method :ref, :reference
