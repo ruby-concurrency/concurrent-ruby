@@ -14,7 +14,7 @@ module Concurrent
     #
     # Creates a new `AtomicBoolean` with the given initial value.
     #
-    # @param [Boolean] init the initial value
+    # @param [Boolean] initial the initial value
     def initialize(initial = false)
       @value = !!initial
       @mutex = Mutex.new

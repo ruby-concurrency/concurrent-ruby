@@ -42,7 +42,7 @@ module Concurrent
       [:unscheduled, :pending].include? state
     end
 
-    # @returns [Object] see Dereferenceable#deref
+    # @return [Object] see Dereferenceable#deref
     def value(timeout = nil)
       wait timeout
       deref
@@ -65,7 +65,7 @@ module Concurrent
     end
 
     # @raise [Exception] when #rejected? it raises #reason
-    # @returns [Object] see Dereferenceable#deref
+    # @return [Object] see Dereferenceable#deref
     def value!(timeout = nil)
       wait(timeout)
       if rejected?

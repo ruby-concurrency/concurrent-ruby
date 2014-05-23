@@ -31,7 +31,7 @@ module Concurrent
       @mutex.synchronize { @buffer.full? }
     end
 
-    # @param [Object] value. This methods blocks until an empty slot is available
+    # @param [Object] value the value to be inserted
     # @return [Boolean] true if value has been inserted, false otherwise
     def put(value)
       @mutex.synchronize do

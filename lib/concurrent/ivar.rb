@@ -83,14 +83,16 @@ module Concurrent
     end
 
     # Set the `IVar` to a value and wake or notify all threads waiting on it.
-    # @param [Object] the value to store in the `IVar`
+    #
+    # @param [Object] value the value to store in the `IVar`
     # @raise [MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
     def set(value)
       complete(true, value, nil)
     end
 
     # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
-    # @option [Object] reason for the failure
+    #
+    # @param [Object] reason for the failure
     # @raise [MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
     def fail(reason = StandardError.new)
       complete(false, nil, reason)

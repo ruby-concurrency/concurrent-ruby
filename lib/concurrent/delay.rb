@@ -81,7 +81,7 @@ module Concurrent
 
     # reconfigures the block returning the value if still #incomplete?
     # @yield the delayed operation to perform
-    # @returns [true, false] if success
+    # @return [true, false] if success
     def reconfigure(&block)
       mutex.lock
       raise ArgumentError.new('no block given') unless block_given?
