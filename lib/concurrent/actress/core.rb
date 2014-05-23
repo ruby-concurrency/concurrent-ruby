@@ -8,8 +8,7 @@ module Concurrent
     class Core
       include TypeCheck
 
-      attr_reader :reference, :name, :path, :logger, :parent_core
-      private :parent_core
+      attr_reader :reference, :name, :path, :executor
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
@@ -49,8 +48,8 @@ module Concurrent
             @actress = actress_class.new *args, &block
             @actress.send :initialize_core, self
           rescue => ex
-            puts "#{ex} (#{ex.class})\n#{ex.backtrace.join("\n")}"
-            terminate! # TODO test this
+            @logger.error ex
+            terminate!
           end
         end
       end
@@ -109,10 +108,10 @@ module Concurrent
         guard!
         @terminated.set
 
-        parent_core.remove_child reference if parent_core
+        @parent_core.remove_child reference if @parent_core
         @mailbox.each do |envelope|
           reject_envelope envelope
-          logger.debug "rejected #{envelope.message} from #{envelope.sender_path}"
+          @logger.debug "rejected #{envelope.message} from #{envelope.sender_path}"
         end
         @mailbox.clear
         # TODO terminate all children
@@ -147,15 +146,15 @@ module Concurrent
 
         if terminated?
           reject_envelope envelope
-          logger.fatal "this should not be happening #{caller[0]}"
+          @logger.fatal "this should not be happening #{caller[0]}"
         end
 
-        logger.debug "received #{envelope.message} from #{envelope.sender_path}"
+        @logger.debug "received #{envelope.message} from #{envelope.sender_path}"
 
         result = @actress.on_envelope envelope
         envelope.ivar.set result unless envelope.ivar.nil?
       rescue => error
-        logger.error error
+        @logger.error error
         envelope.ivar.fail error unless envelope.ivar.nil?
         terminate!
       ensure
@@ -171,7 +170,7 @@ module Concurrent
             Thread.current[:__current_actress__] = reference
             yield
           rescue => e
-            logger.fatal e
+            @logger.fatal e
           ensure
             Thread.current[:__current_actress__] = nil
           end
