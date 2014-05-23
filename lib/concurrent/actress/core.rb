@@ -1,6 +1,8 @@
 module Concurrent
   module Actress
 
+    require 'set'
+
     # Core of the actor
     # @api private
     class Core
@@ -21,7 +23,7 @@ module Concurrent
         # noinspection RubyArgCount
         @terminated = Event.new
         @executor   = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
-        @children   = []
+        @children   = Set.new
         @reference  = Reference.new self
         @name       = (Type! opts.fetch(:name), String, Symbol).to_s
 
@@ -61,13 +63,14 @@ module Concurrent
       # @return [Array<Reference>] of children actors
       def children
         guard!
-        @children.dup
+        @children.to_a
       end
 
       # @api private
       def add_child(child)
         guard!
-        @children << (Type! child, Reference)
+        Type! child, Reference
+        @children.add child
         self
       end
 
