@@ -247,7 +247,7 @@ module Concurrent
     #
     # @see Concurrent::Future
     def async
-      raise InitializationError.new('#init_mutex was never called') unless @mutex
+      raise InitializationError.new('#init_mutex was never called') unless @__async__mutex__
       @__async_delegator__.value
     end
     alias_method :future, :async
@@ -281,7 +281,7 @@ module Concurrent
     #
     # @see Concurrent::IVar
     def await
-      raise InitializationError.new('#init_mutex was never called') unless @mutex
+      raise InitializationError.new('#init_mutex was never called') unless @__async__mutex__
       @__await_delegator__.value
     end
     alias_method :delay, :await
@@ -291,7 +291,7 @@ module Concurrent
     # @raise [Concurrent::InitializationError] `#init_mutex` has not been called
     # @raise [ArgumentError] executor has already been set
     def executor=(executor)
-      raise InitializationError.new('#init_mutex was never called') unless @mutex
+      raise InitializationError.new('#init_mutex was never called') unless @__async__mutex__
       @__async__executor__.reconfigure { executor } or
         raise ArgumentError.new('executor has already been set')
     end
@@ -309,12 +309,12 @@ module Concurrent
     #
     # @raise [Concurrent::InitializationError] when called more than once
     def init_mutex
-      raise InitializationError.new('#init_mutex was already called') if @mutex
-      (@mutex = Mutex.new).lock
+      raise InitializationError.new('#init_mutex was already called') if @__async__mutex__
+      (@__async__mutex__ = Mutex.new).lock
       @__async__executor__ = Delay.new{ Concurrent.configuration.global_operation_pool }
-      @__await_delegator__ = Delay.new{ AwaitDelegator.new(self, @mutex) }
-      @__async_delegator__ = Delay.new{ AsyncDelegator.new(self, @__async__executor__, @mutex) }
-      @mutex.unlock
+      @__await_delegator__ = Delay.new{ AwaitDelegator.new(self, @__async__mutex__) }
+      @__async_delegator__ = Delay.new{ AsyncDelegator.new(self, @__async__executor__, @__async__mutex__) }
+      @__async__mutex__.unlock
     end
   end
 end
