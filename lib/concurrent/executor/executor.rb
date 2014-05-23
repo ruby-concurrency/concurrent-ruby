@@ -4,6 +4,10 @@ require 'concurrent/atomic/event'
 module Concurrent
 
   module Executor
+  end
+
+  module RubyExecutor
+    include Executor
 
     # Submit a task to the executor for asynchronous processing.
     #
@@ -120,6 +124,7 @@ module Concurrent
   if RUBY_PLATFORM == 'java'
 
     module JavaExecutor
+      include Executor
 
       # Submit a task to the executor for asynchronous processing.
       #

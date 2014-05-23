@@ -146,7 +146,7 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html
   class TimerTask
     include Dereferenceable
-    include Executor
+    include RubyExecutor
     include Concurrent::Observable
 
     # Default `:execution_interval` in seconds.

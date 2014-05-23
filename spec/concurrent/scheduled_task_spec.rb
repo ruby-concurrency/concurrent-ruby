@@ -7,6 +7,7 @@ require_relative 'observable_shared'
 module Concurrent
 
   describe ScheduledTask do
+    with_full_reset
 
     context 'behavior' do
 

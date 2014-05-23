@@ -295,7 +295,7 @@ module Concurrent
     it_should_behave_like :priority_queue
   end
 
-  if jruby?
+  if TestHelpers.jruby?
 
     describe JavaPriorityQueue do
 

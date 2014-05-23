@@ -4,7 +4,7 @@ module Concurrent
 
   # @!macro single_thread_executor
   class RubySingleThreadExecutor
-    include Executor
+    include RubyExecutor
 
     # Create a new thread pool.
     #

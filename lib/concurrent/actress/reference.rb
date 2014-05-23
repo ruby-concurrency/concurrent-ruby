@@ -1,7 +1,9 @@
 module Concurrent
   module Actress
 
-    # Reference serves as public interface to send messages to Actors and can freely passed around
+    # Reference is public interface of Actor instances. It is used for sending messages and can
+    # be freely passed around the program. It also provides some basic information about the actor
+    # see {CoreDelegations}
     class Reference
       include TypeCheck
       include CoreDelegations

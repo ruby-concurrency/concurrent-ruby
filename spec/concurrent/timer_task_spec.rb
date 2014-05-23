@@ -5,6 +5,7 @@ require_relative 'observable_shared'
 module Concurrent
 
   describe TimerTask do
+    with_full_reset
 
     before(:each) do
       # suppress deprecation warnings.
@@ -23,13 +24,13 @@ module Concurrent
       end
 
       def dereferenceable_subject(value, opts = {})
-        opts = opts.merge(execution_interval: 0.1, run_now: true)
-        @subject = TimerTask.new(opts){ value }.execute.tap{ sleep(0.1) }
+        opts     = opts.merge(execution_interval: 0.1, run_now: true)
+        @subject = TimerTask.new(opts) { value }.execute.tap { sleep(0.1) }
       end
 
       def dereferenceable_observable(opts = {})
-        opts = opts.merge(execution_interval: 0.1, run_now: true)
-        @subject = TimerTask.new(opts){ 'value' }
+        opts     = opts.merge(execution_interval: 0.1, run_now: true)
+        @subject = TimerTask.new(opts) { 'value' }
       end
 
       def execute_dereferenceable(subject)
@@ -42,9 +43,9 @@ module Concurrent
 
     context :observable do
 
-      subject{ TimerTask.new(execution_interval: 0.1){ nil } }
+      subject { TimerTask.new(execution_interval: 0.1) { nil } }
 
-      after(:each){ subject.kill }
+      after(:each) { subject.kill }
 
       def trigger_observable(observable)
         observable.execute
@@ -66,45 +67,45 @@ module Concurrent
 
         it 'raises an exception if :execution_interval is not greater than zero' do
           lambda {
-            Concurrent::TimerTask.new(execution_interval: 0){ nil }
+            Concurrent::TimerTask.new(execution_interval: 0) { nil }
           }.should raise_error(ArgumentError)
         end
 
         it 'raises an exception if :execution_interval is not an integer' do
           lambda {
-            Concurrent::TimerTask.new(execution_interval: 'one'){ nil }
+            Concurrent::TimerTask.new(execution_interval: 'one') { nil }
           }.should raise_error(ArgumentError)
         end
 
         it 'raises an exception if :timeout_interval is not greater than zero' do
           lambda {
-            Concurrent::TimerTask.new(timeout_interval: 0){ nil }
+            Concurrent::TimerTask.new(timeout_interval: 0) { nil }
           }.should raise_error(ArgumentError)
         end
 
         it 'raises an exception if :timeout_interval is not an integer' do
           lambda {
-            Concurrent::TimerTask.new(timeout_interval: 'one'){ nil }
+            Concurrent::TimerTask.new(timeout_interval: 'one') { nil }
           }.should raise_error(ArgumentError)
         end
 
         it 'uses the default execution interval when no interval is given' do
-          subject = TimerTask.new{ nil }
+          subject = TimerTask.new { nil }
           subject.execution_interval.should eq TimerTask::EXECUTION_INTERVAL
         end
 
         it 'uses the default timeout interval when no interval is given' do
-          subject = TimerTask.new{ nil }
+          subject = TimerTask.new { nil }
           subject.timeout_interval.should eq TimerTask::TIMEOUT_INTERVAL
         end
 
         it 'uses the given execution interval' do
-          subject = TimerTask.new(execution_interval: 5){ nil }
+          subject = TimerTask.new(execution_interval: 5) { nil }
           subject.execution_interval.should eq 5
         end
 
         it 'uses the given timeout interval' do
-          subject = TimerTask.new(timeout_interval: 5){ nil }
+          subject = TimerTask.new(timeout_interval: 5) { nil }
           subject.timeout_interval.should eq 5
         end
       end
@@ -112,7 +113,7 @@ module Concurrent
       context '#kill' do
 
         it 'returns true on success' do
-          task = TimerTask.execute(run_now: false){ nil }
+          task = TimerTask.execute(run_now: false) { nil }
           sleep(0.1)
           task.kill.should be_true
         end
@@ -129,7 +130,7 @@ module Concurrent
 
       specify '#execution_interval is writeable' do
 
-        latch = CountDownLatch.new(1)
+        latch   = CountDownLatch.new(1)
         subject = TimerTask.new(execution_interval: 1) do |task|
           task.execution_interval = 3
           latch.count_down
@@ -148,7 +149,7 @@ module Concurrent
 
       specify '#execution_interval is writeable' do
 
-        latch = CountDownLatch.new(1)
+        latch   = CountDownLatch.new(1)
         subject = TimerTask.new(timeout_interval: 1, execution_interval: 0.1) do |task|
           task.timeout_interval = 3
           latch.count_down
@@ -169,23 +170,23 @@ module Concurrent
     context 'execution' do
 
       it 'runs the block immediately when the :run_now option is true' do
-        latch = CountDownLatch.new(1)
-        subject = TimerTask.execute(execution: 500, now: true){ latch.count_down }
+        latch   = CountDownLatch.new(1)
+        subject = TimerTask.execute(execution: 500, now: true) { latch.count_down }
         latch.wait(1).should be_true
         subject.kill
       end
 
       it 'waits for :execution_interval seconds when the :run_now option is false' do
-        latch = CountDownLatch.new(1)
-        subject = TimerTask.execute(execution: 0.1, now: false){ latch.count_down }
+        latch   = CountDownLatch.new(1)
+        subject = TimerTask.execute(execution: 0.1, now: false) { latch.count_down }
         latch.count.should eq 1
         latch.wait(1).should be_true
         subject.kill
       end
 
       it 'waits for :execution_interval seconds when the :run_now option is not given' do
-        latch = CountDownLatch.new(1)
-        subject = TimerTask.execute(execution: 0.1, now: false){ latch.count_down }
+        latch   = CountDownLatch.new(1)
+        subject = TimerTask.execute(execution: 0.1, now: false) { latch.count_down }
         latch.count.should eq 1
         latch.wait(1).should be_true
         subject.kill
@@ -193,8 +194,8 @@ module Concurrent
 
       it 'passes a "self" reference to the block as the sole argument' do
         expected = nil
-        latch = CountDownLatch.new(1)
-        subject = TimerTask.new(execution_interval: 1, run_now: true) do |task|
+        latch    = CountDownLatch.new(1)
+        subject  = TimerTask.new(execution_interval: 1, run_now: true) do |task|
           expected = task
           latch.sount_down
         end
@@ -213,18 +214,18 @@ module Concurrent
           attr_reader :value
           attr_reader :ex
           attr_reader :latch
-          define_method(:initialize){ @latch = CountDownLatch.new(1) }
+          define_method(:initialize) { @latch = CountDownLatch.new(1) }
           define_method(:update) do |time, value, ex|
-            @time = time
+            @time  = time
             @value = value
-            @ex = ex
+            @ex    = ex
             @latch.count_down
           end
         end.new
       end
 
       it 'notifies all observers on success' do
-        subject = TimerTask.new(execution: 0.1){ 42 }
+        subject = TimerTask.new(execution: 0.1) { 42 }
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
@@ -234,7 +235,7 @@ module Concurrent
       end
 
       it 'notifies all observers on timeout' do
-        subject = TimerTask.new(execution: 0.1, timeout: 0.1){ sleep }
+        subject = TimerTask.new(execution: 0.1, timeout: 0.1) { sleep }
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
@@ -244,7 +245,7 @@ module Concurrent
       end
 
       it 'notifies all observers on error' do
-        subject = TimerTask.new(execution: 0.1){ raise ArgumentError }
+        subject = TimerTask.new(execution: 0.1) { raise ArgumentError }
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
