@@ -10,6 +10,9 @@ module Concurrent
       Class.new do
         include Concurrent::Async
         attr_accessor :accessor
+        def initialize
+          init_mutex
+        end
         def echo(msg)
           msg
         end
@@ -103,7 +106,7 @@ module Concurrent
     context 'executor' do
 
       it 'returns the default executor when #executor= has never been called' do
-        Concurrent.configuration.should_receive(:global_task_pool).
+        Concurrent.configuration.should_receive(:global_operation_pool).
           and_return(ImmediateExecutor.new)
         subject = async_class.new
         subject.async.echo(:foo)
@@ -117,10 +120,10 @@ module Concurrent
         subject.async.echo(:foo)
       end
 
-      it 'raises an exception if #executor= is called multiple times' do
+      it 'raises an exception if #executor= is called after initialization complete' do
         executor = ImmediateExecutor.new
         subject = async_class.new
-        subject.executor = executor
+        subject.async.echo(:foo)
         expect {
           subject.executor = executor
         }.to raise_error(ArgumentError)
@@ -303,6 +306,7 @@ module Concurrent
         object = Class.new {
           include Concurrent::Async
           attr_reader :bucket
+          def initialize() init_mutex; end
           def gather(seconds, first, *rest)
             sleep(seconds)
             (@bucket ||= []).concat([first])
@@ -314,6 +318,34 @@ module Concurrent
         sleep(0.1)
         object.await.gather(0, :c, :d)
         object.bucket.should eq [:a, :b, :c, :d]
+      end
+
+      context 'raises an InitializationError' do
+
+        let(:async_class) do
+          Class.new do
+            include Concurrent::Async
+            def echo(msg) msg; end
+          end
+        end
+
+        it 'when #async is called before #init_mutex' do
+          expect {
+            async_class.new.async.echo(:foo)
+          }.to raise_error(Concurrent::InitializationError)
+        end
+
+        it 'when #await is called before #init_mutex' do
+          expect {
+            async_class.new.async.echo(:foo)
+          }.to raise_error(Concurrent::InitializationError)
+        end
+
+        it 'when #executor= is called before #init_mutex' do
+          expect {
+            async_class.new.executor = Concurrent::ImmediateExecutor.new
+          }.to raise_error(Concurrent::InitializationError)
+        end
       end
     end
   end
