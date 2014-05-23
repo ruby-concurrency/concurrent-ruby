@@ -2,12 +2,12 @@ module Concurrent
   module Actress
     class AdHoc
       include Context
-      def initialize(&initializer)
-        @on_message = Type! initializer.call, Proc
+      def initialize(*args, &initializer)
+        @on_message = Type! initializer.call(*args), Proc
       end
 
       def on_message(message)
-        @on_message.call message
+        instance_exec message, &@on_message
       end
     end
   end
