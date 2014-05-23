@@ -108,7 +108,7 @@ module Concurrent
       it 'raises an exception if set more than once' do
         i = IVar.new
         i.set(14)
-        expect {i.set(2)}.to raise_error(IVar::MultipleAssignmentError)
+        expect {i.set(2)}.to raise_error(Concurrent::MultipleAssignmentError)
         i.value.should eq 14
       end
 
@@ -135,7 +135,7 @@ module Concurrent
       it 'raises an exception if set more than once' do
         i = IVar.new
         i.fail
-        expect {i.fail}.to raise_error(IVar::MultipleAssignmentError)
+        expect {i.fail}.to raise_error(Concurrent::MultipleAssignmentError)
         i.value.should be_nil
       end
 

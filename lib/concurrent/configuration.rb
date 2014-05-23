@@ -1,13 +1,11 @@
 require 'thread'
 require 'concurrent/delay'
+require 'concurrent/errors'
 require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'
 
 module Concurrent
-
-  # An error class to be raised when errors occur during configuration.
-  ConfigurationError = Class.new(StandardError)
 
   # A gem-level configuration object.
   class Configuration
@@ -55,7 +53,7 @@ module Concurrent
     #
     # @return [ThreadPoolExecutor] the new thread pool
     #
-    # @raise [ConfigurationError] if this thread pool has already been set
+    # @raise [Concurrent::ConfigurationError] if this thread pool has already been set
     def global_task_pool=(executor)
       @global_task_pool.reconfigure { executor } or
           raise ConfigurationError.new('global task pool was already set')
@@ -74,7 +72,7 @@ module Concurrent
     #
     # @return [ThreadPoolExecutor] the new thread pool
     #
-    # @raise [ConfigurationError] if this thread pool has already been set
+    # @raise [Concurrent::ConfigurationError] if this thread pool has already been set
     def global_operation_pool=(executor)
       @global_operation_pool.reconfigure { executor } or
           raise ConfigurationError.new('global operation pool was already set')

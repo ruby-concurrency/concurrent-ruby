@@ -70,7 +70,7 @@ module Concurrent
         runner = Class.new { include Runnable }.new
         expect {
           runner.run
-        }.to raise_error(Runnable::LifecycleError)
+        }.to raise_error(Concurrent::LifecycleError)
       end
 
       it 'returns false when the task loop raises an exception' do
@@ -150,7 +150,7 @@ module Concurrent
         @thread.join(0.1)
         expect {
           @thread = subject.run!
-        }.to raise_exception(Concurrent::Runnable::LifecycleError)
+        }.to raise_exception(Concurrent::LifecycleError)
         sleep(0.1)
       end
 

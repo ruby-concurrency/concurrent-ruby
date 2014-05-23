@@ -1,13 +1,12 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/delay'
+require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/future'
 require 'concurrent/executor/thread_pool_executor'
 
 module Concurrent
-
-  InitializationError = Class.new(StandardError)
 
   # A mixin module that provides simple asynchronous behavior to any standard
   # class/object or object. 

@@ -57,7 +57,7 @@ module Concurrent
 
     def post!(seconds, *message)
       raise ArgumentError.new('empty message') if message.empty?
-      raise Concurrent::Runnable::LifecycleError unless ready?
+      raise Concurrent::LifecycleError unless ready?
       raise Concurrent::TimeoutError if seconds.to_f <= 0.0
       event = Event.new
       cback = Queue.new

@@ -1,5 +1,6 @@
 require 'thread'
 
+require 'concurrent/errors'
 require 'concurrent/obligation'
 require 'concurrent/observable'
 
@@ -21,10 +22,6 @@ module Concurrent
   #   ivar.get #=> 14
   #   ivar.set 2 # would now be an error
   class IVar
-
-    # Error that indicates that an `IVar` was set twice. Each `IVar` can only
-    # be set once - they are immutable.
-    MultipleAssignmentError = Class.new(StandardError)
 
     include Obligation
     include Observable
@@ -85,7 +82,7 @@ module Concurrent
     # Set the `IVar` to a value and wake or notify all threads waiting on it.
     #
     # @param [Object] value the value to store in the `IVar`
-    # @raise [MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
+    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
     def set(value)
       complete(true, value, nil)
     end
@@ -93,7 +90,7 @@ module Concurrent
     # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
     #
     # @param [Object] reason for the failure
-    # @raise [MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
+    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
     def fail(reason = StandardError.new)
       complete(false, nil, reason)
     end

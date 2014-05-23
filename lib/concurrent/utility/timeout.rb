@@ -1,18 +1,17 @@
 require 'rbconfig'
 require 'thread'
 
-module Concurrent
+require 'concurrent/errors'
 
-  # Error raised when an operations times out.
-  TimeoutError = Class.new(StandardError)
+module Concurrent
 
   # Wait the given number of seconds for the block operation to complete.
   #
   # @param [Integer] seconds The number of seconds to wait
   #
-  # @return The result of the block operation
+  # @return [Object] The result of the block operation
   #
-  # @raise Concurrent::TimeoutError when the block operation does not complete
+  # @raise [Concurrent::TimeoutError] when the block operation does not complete
   #   in the allotted number of seconds.
   #
   # @note This method is intended to be a simpler and more reliable replacement
