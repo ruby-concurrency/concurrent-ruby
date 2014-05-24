@@ -33,7 +33,7 @@ module Concurrent
         message message, ivar
       end
 
-      # @note can lead to deadlocks
+      # @note can lead to deadlocks, use only in tests or when you are sure it won't deadlock
       # tells message to the actor
       # @param [Object] message
       # @param [Ivar] ivar to be fulfilled be message's processing result

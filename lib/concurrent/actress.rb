@@ -5,14 +5,7 @@ require 'concurrent/logging'
 
 module Concurrent
 
-  # @example ping
-  #   class Ping
-  #     include Context
-  #     def on_message(message)
-  #       message
-  #     end
-  #   end
-  #   Ping.spawn(:ping1).ask(:m).value #=> :m
+  # {include:file:lib/concurrent/actress/doc.md}
   module Actress
 
     require 'concurrent/actress/type_check'
@@ -47,7 +40,7 @@ module Concurrent
     ROOT = Core.new(parent: nil, name: '/', class: Root).reference
 
     # @param block for actress_class instantiation
-    # @param args see {#spawn_optionify}
+    # @param args see {.spawn_optionify}
     def self.spawn(*args, &block)
       if Actress.current
         Core.new(spawn_optionify(*args).merge(parent: Actress.current), &block).reference
@@ -56,7 +49,7 @@ module Concurrent
       end
     end
 
-    # as {#spawn} but it'll raise when Actor not initialized properly
+    # as {.spawn} but it'll raise when Actor not initialized properly
     def self.spawn!(*args, &block)
       spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
     end
@@ -66,7 +59,7 @@ module Concurrent
     #   @param [String, Symbol] name of the instance, it's used to generate the path of the actor
     #   @param args for actress_class instantiation
     # @overload spawn_optionify(opts)
-    #   see {Core.new} opts
+    #   see {Core#initialize} opts
     def self.spawn_optionify(*args)
       if args.size == 1 && args.first.is_a?(Hash)
         args.first

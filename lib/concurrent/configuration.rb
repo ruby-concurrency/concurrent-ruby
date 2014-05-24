@@ -11,6 +11,8 @@ module Concurrent
   # A gem-level configuration object.
   class Configuration
 
+    # a proc defining how to log messages, its interface has to be:
+    #   lambda { |level, progname, message = nil, &block| _ }
     attr_accessor :logger
 
     # Create a new configuration object.
@@ -21,6 +23,7 @@ module Concurrent
       @logger                = no_logger
     end
 
+    # if assigned to {#logger}, it will log nothing.
     def no_logger
       -> (level, progname, message = nil, &block) {}
     end
