@@ -35,15 +35,6 @@ module Concurrent
       #   set_trace_func nil
       # end
 
-      def assert condition
-        unless condition
-          # require 'pry'
-          # binding.pry
-          raise
-          puts "--- \n#{caller.join("\n")}"
-        end
-      end
-
       describe 'stress test' do
         1.times do |i|
           it format('run %3d', i) do
@@ -56,23 +47,23 @@ module Concurrent
                   actor = Ping.spawn :ping, queue
 
                   # when spawn returns children are set
-                  assert Concurrent::Actress::ROOT.send(:core).instance_variable_get(:@children).include?(actor)
+                  Concurrent::Actress::ROOT.send(:core).instance_variable_get(:@children).should include(actor)
 
                   actor << 'a' << 1
-                  assert queue.pop == 'a'
-                  assert actor.ask(2).value == 2
+                  queue.pop.should eq 'a'
+                  actor.ask(2).value.should eq 2
 
-                  assert actor.parent == Concurrent::Actress::ROOT
-                  assert Concurrent::Actress::ROOT.path == '/'
-                  assert actor.path == '/ping'
+                  actor.parent.should eq Concurrent::Actress::ROOT
+                  Concurrent::Actress::ROOT.path.should eq '/'
+                  actor.path.should eq '/ping'
                   child = actor.ask(:child).value
-                  assert child.path == '/ping/pong'
+                  child.path.should eq '/ping/pong'
                   queue.clear
                   child.ask(3)
-                  assert queue.pop == 3
+                  queue.pop.should eq 3
 
                   actor << :terminate
-                  assert actor.ask(:blow_up).wait.rejected?
+                  actor.ask(:blow_up).wait.should be_rejected
                 end
               end
             end.each(&:join)

@@ -25,7 +25,7 @@ module Concurrent
 
     # if assigned to {#logger}, it will log nothing.
     def no_logger
-      -> (level, progname, message = nil, &block) {}
+      lambda { |level, progname, message = nil, &block| }
     end
 
     # Global thread pool optimized for short *tasks*.

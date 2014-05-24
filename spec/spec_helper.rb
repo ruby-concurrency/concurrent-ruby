@@ -19,7 +19,9 @@ require 'concurrent'
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::INFO
-Concurrent.configuration.logger = -> (level, progname, message = nil, &block) { logger.add level, message, progname, &block }
+Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
+  logger.add level, message, progname, &block
+end
 
 # import all the support files
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }

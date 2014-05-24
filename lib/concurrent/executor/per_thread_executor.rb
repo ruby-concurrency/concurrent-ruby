@@ -1,6 +1,7 @@
 module Concurrent
 
   class PerThreadExecutor
+    include Executor
 
     def self.post(*args)
       raise ArgumentError.new('no block given') unless block_given?

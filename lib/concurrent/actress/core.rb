@@ -168,8 +168,8 @@ module Concurrent
         nil
       rescue => error
         log ERROR, error
-        envelope.ivar.fail error unless envelope.ivar.nil?
         terminate!
+        envelope.ivar.fail error unless envelope.ivar.nil?
       ensure
         @receive_envelope_scheduled = false
         process_envelopes?

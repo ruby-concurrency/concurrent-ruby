@@ -30,9 +30,10 @@ module Concurrent
     # @raise [ArgumentError] if no task is given
     def post(executor, *args, &task)
       return nil if task.nil?
-      if executor.can_overflow?
-        raise ArgumentError, 'OneByOne cannot be used in conjunction with executor which may overflow'
-      end
+      # FIXME Agent#send-off will blow up here
+      # if executor.can_overflow?
+      #   raise ArgumentError, 'OneByOne cannot be used in conjunction with executor which may overflow'
+      # end
 
       job = Job.new executor, args, task
 
