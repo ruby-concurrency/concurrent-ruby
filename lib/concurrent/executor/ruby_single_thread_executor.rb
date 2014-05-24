@@ -64,6 +64,7 @@ module Concurrent
           task.last.call(*task.first)
         rescue => ex
           # let it fail
+          log DEBUG, ex
         end
       end
       stopped_event.set

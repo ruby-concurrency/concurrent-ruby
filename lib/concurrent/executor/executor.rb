@@ -1,4 +1,5 @@
 require 'concurrent/errors'
+require 'concurrent/logging'
 require 'concurrent/atomic/event'
 
 module Concurrent
@@ -11,6 +12,7 @@ module Concurrent
 
   module RubyExecutor
     include Executor
+    include Logging
 
     # Submit a task to the executor for asynchronous processing.
     #

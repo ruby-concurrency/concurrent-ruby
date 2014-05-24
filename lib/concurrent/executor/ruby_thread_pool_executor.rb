@@ -237,8 +237,9 @@ module Concurrent
       when :caller_runs
         begin
           yield(*args)
-        rescue
+        rescue => ex
           # let it fail
+          log DEBUG, ex
         end
         true
       end

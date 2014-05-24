@@ -6,6 +6,7 @@ require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'
 
 module Concurrent
+  extend Logging
 
   # A gem-level configuration object.
   class Configuration
@@ -134,7 +135,8 @@ module Concurrent
       executor.kill
     end
     true
-  rescue
+  rescue => ex
+    log DEBUG, ex
     false
   end
 
