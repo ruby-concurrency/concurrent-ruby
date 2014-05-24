@@ -3,6 +3,7 @@ require 'logger'
 require 'concurrent/configuration'
 require 'concurrent/executor/one_by_one'
 require 'concurrent/ivar'
+require 'concurrent/logging'
 
 module Concurrent
 

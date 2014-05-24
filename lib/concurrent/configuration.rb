@@ -10,11 +10,18 @@ module Concurrent
   # A gem-level configuration object.
   class Configuration
 
+    attr_accessor :logger
+
     # Create a new configuration object.
     def initialize
       @global_task_pool      = Delay.new { new_task_pool }
       @global_operation_pool = Delay.new { new_operation_pool }
       @global_timer_set      = Delay.new { Concurrent::TimerSet.new }
+      @logger                = no_logger
+    end
+
+    def no_logger
+      -> (level, progname, message = nil, &block) {}
     end
 
     # Global thread pool optimized for short *tasks*.

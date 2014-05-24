@@ -7,6 +7,7 @@ module Concurrent
     # @api private
     class Core
       include TypeCheck
+      include Concurrent::Logging
 
       attr_reader :reference, :name, :path, :executor
 
@@ -15,6 +16,8 @@ module Concurrent
       # @option opts [Context] actress_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actress_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
+      # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
+      #   can be used to hook actor instance to any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
         @mailbox    = Array.new
@@ -32,11 +35,8 @@ module Concurrent
           raise 'only root has no parent'
         end
 
-        @path            = @parent_core ? File.join(@parent_core.path, @name) : @name
-        # TODO add proper logging
-        @logger          = Logger.new($stderr)
-        @logger.level    = opts.fetch(:logger_level, 1)
-        @logger.progname = @path
+        @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
+        @logger = opts[:logger]
 
         @parent_core.add_child reference if @parent_core
 
@@ -48,7 +48,7 @@ module Concurrent
             @actress = actress_class.new *args, &block
             @actress.send :initialize_core, self
           rescue => ex
-            @logger.error ex
+            log ERROR, ex
             terminate!
           end
         end
@@ -111,7 +111,7 @@ module Concurrent
         @parent_core.remove_child reference if @parent_core
         @mailbox.each do |envelope|
           reject_envelope envelope
-          @logger.debug "rejected #{envelope.message} from #{envelope.sender_path}"
+          log DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
         end
         @mailbox.clear
         # TODO terminate all children
@@ -146,15 +146,15 @@ module Concurrent
 
         if terminated?
           reject_envelope envelope
-          @logger.fatal "this should not be happening #{caller[0]}"
+          log FATAL, "this should not be happening #{caller[0]}"
         end
 
-        @logger.debug "received #{envelope.message} from #{envelope.sender_path}"
+        log DEBUG, "received #{envelope.message} from #{envelope.sender_path}"
 
         result = @actress.on_envelope envelope
         envelope.ivar.set result unless envelope.ivar.nil?
       rescue => error
-        @logger.error error
+        log ERROR, error
         envelope.ivar.fail error unless envelope.ivar.nil?
         terminate!
       ensure
@@ -170,7 +170,7 @@ module Concurrent
             Thread.current[:__current_actress__] = reference
             yield
           rescue => e
-            @logger.fatal e
+            log FATAL, e
           ensure
             Thread.current[:__current_actress__] = nil
           end
@@ -180,6 +180,10 @@ module Concurrent
 
       def reject_envelope(envelope)
         envelope.reject! ActressTerminated.new(reference)
+      end
+
+      def log(level, message = nil, &block)
+        super level, @path, message, &block
       end
     end
   end

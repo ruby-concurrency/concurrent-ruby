@@ -200,7 +200,6 @@ module Concurrent
       validator, value = mutex.synchronize { [@validator, @value] }
 
       begin
-        # FIXME creates second thread
         result, valid = Concurrent::timeout(@timeout) do
           result = handler.call(value)
           [result, validator.call(result)]
