@@ -70,7 +70,7 @@ module Concurrent
         guard!
         Type! child, Reference
         @children.add child
-        self
+        nil
       end
 
       # @api private
@@ -79,7 +79,7 @@ module Concurrent
           Type! child, Reference
           @children.delete child
         end
-        self
+        nil
       end
 
       # is executed by Reference scheduling processing of new messages
@@ -94,7 +94,7 @@ module Concurrent
           end
           process_envelopes?
         end
-        self
+        nil
       end
 
       # @note Actor rejects envelopes when terminated.
@@ -115,7 +115,8 @@ module Concurrent
         end
         @mailbox.clear
         # TODO terminate all children
-        self
+
+        nil
       end
 
       # @api private
@@ -153,6 +154,8 @@ module Concurrent
 
         result = @actress.on_envelope envelope
         envelope.ivar.set result unless envelope.ivar.nil?
+
+        nil
       rescue => error
         log ERROR, error
         envelope.ivar.fail error unless envelope.ivar.nil?
@@ -175,7 +178,8 @@ module Concurrent
             Thread.current[:__current_actress__] = nil
           end
         end
-        self
+
+        nil
       end
 
       def reject_envelope(envelope)
