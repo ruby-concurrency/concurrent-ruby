@@ -99,6 +99,10 @@ module Concurrent
       @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
     end
 
+    def can_overflow?
+      @max_queue != 0
+    end
+
     # The number of threads currently in the pool.
     #
     # @return [Integer] the length

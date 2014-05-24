@@ -4,6 +4,9 @@ require 'concurrent/atomic/event'
 module Concurrent
 
   module Executor
+    def can_overflow?
+      false
+    end
   end
 
   module RubyExecutor
