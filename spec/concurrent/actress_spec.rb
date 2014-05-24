@@ -163,6 +163,30 @@ module Concurrent
         end
       end
 
+      describe 'termination' do
+        subject do
+          AdHoc.spawn(:parent) do
+            child = AdHoc.spawn(:child) { -> v { v } }
+            -> v do
+              if v == :terminate
+                terminate!
+              else
+                child
+              end
+            end
+          end
+        end
+
+        it 'terminates with all its children' do
+          child = subject.ask! :child
+          subject.terminated?.should be_false
+          subject.ask(:terminate).wait
+          subject.terminated?.should be_true
+          child.terminated.wait
+          child.terminated?.should be_true
+        end
+      end
+
     end
   end
 end

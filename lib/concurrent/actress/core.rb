@@ -109,9 +109,14 @@ module Concurrent
         @terminated.set?
       end
 
-      # Terminates the actor, any Envelope received after termination is rejected
+      # Terminates the actor. Any Envelope received after termination is rejected.
+      # Terminates all its children, does not wait until they are terminated.
       def terminate!
         guard!
+        @children.each do |ch|
+          ch.send(:core).tap { |core| core.send(:schedule_execution) { core.terminate! } }
+        end
+
         @terminated.set
 
         @parent_core.remove_child reference if @parent_core
@@ -120,7 +125,6 @@ module Concurrent
           log DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
         end
         @mailbox.clear
-        # TODO terminate all children
 
         nil
       end
