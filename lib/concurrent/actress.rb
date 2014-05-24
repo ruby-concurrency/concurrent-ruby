@@ -7,8 +7,6 @@ require 'concurrent/logging'
 
 module Concurrent
 
-  # TODO broader description with examples
-  #
   # @example ping
   #   class Ping
   #     include Context
@@ -39,8 +37,7 @@ module Concurrent
       include Context
       # to allow spawning of new actors, spawn needs to be called inside the parent Actor
       def on_message(message)
-        case message.first
-        when :spawn
+        if message.is_a?(Array) && message.first == :spawn
           spawn message[1], &message[2]
         else
           # ignore
@@ -52,12 +49,18 @@ module Concurrent
     ROOT = Core.new(parent: nil, name: '/', class: Root).reference
 
     # @param block for actress_class instantiation
+    # @param args see {#spawn_optionify}
     def self.spawn(*args, &block)
       if Actress.current
         Core.new(spawn_optionify(*args).merge(parent: Actress.current), &block).reference
       else
         ROOT.ask([:spawn, spawn_optionify(*args), block]).value
       end
+    end
+
+    # as {#spawn} but it'll raise when Actor not initialized properly
+    def self.spawn!(*args, &block)
+      spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
     end
 
     # @overload spawn_optionify(actress_class, name, *args)

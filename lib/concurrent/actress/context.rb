@@ -20,6 +20,8 @@ module Concurrent
       # @abstract override to define Actor's behaviour
       # @param [Object] message
       # @return [Object] a result which will be used to set the IVar supplied to Reference#ask
+      # @note self should not be returned (or sent to other actors), {#reference} should be used
+      #   instead
       def on_message(message)
         raise NotImplementedError
       end
@@ -71,12 +73,22 @@ module Concurrent
       module ClassMethods
         # behaves as {Actress.spawn} but class_name is omitted
         def spawn(name_or_opts, *args, &block)
-          opts = if name_or_opts.is_a? Hash
-                   name_or_opts.merge class: self
-                 else
-                   { class: self, name: name_or_opts, args: args }
-                 end
-          Actress.spawn opts, &block
+          Actress.spawn spawn_optionify(name_or_opts, *args), &block
+        end
+
+        # behaves as {Actress.spawn!} but class_name is omitted
+        def spawn!(name_or_opts, *args, &block)
+          Actress.spawn! spawn_optionify(name_or_opts, *args), &block
+        end
+
+        private
+
+        def spawn_optionify(name_or_opts, *args)
+          if name_or_opts.is_a? Hash
+            name_or_opts.merge class: self
+          else
+            { class: self, name: name_or_opts, args: args }
+          end
         end
       end
     end

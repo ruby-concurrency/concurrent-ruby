@@ -109,6 +109,12 @@ module Concurrent
           a.terminated?.should be_true
         end
 
+        it 'terminates on failed initialization and raises with spawn!' do
+          expect do
+            AdHoc.spawn!(name: :fail, logger: Concurrent.configuration.no_logger) { raise 'm' }
+          end.to raise_error(StandardError, 'm')
+        end
+
         it 'terminates on failed message processing' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { -> _ { raise } }
           a.ask(nil).wait.rejected?.should be_true

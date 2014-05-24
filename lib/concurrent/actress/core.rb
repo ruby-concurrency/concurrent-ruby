@@ -5,6 +5,8 @@ module Concurrent
 
     # Core of the actor
     # @api private
+    # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
+    #   that would eat up all threads in task pool and deadlock
     class Core
       include TypeCheck
       include Concurrent::Logging
@@ -16,6 +18,7 @@ module Concurrent
       # @option opts [Context] actress_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actress_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
+      # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
       #   can be used to hook actor instance to any logging system
       # @param [Proc] block for class instantiation
@@ -42,14 +45,17 @@ module Concurrent
 
         @actress_class = actress_class = Child! opts.fetch(:class), Context
         args           = opts.fetch(:args, [])
+        initialized    = Type! opts[:initialized], IVar, NilClass
 
         schedule_execution do
           begin
             @actress = actress_class.new *args, &block
             @actress.send :initialize_core, self
+            initialized.set true if initialized
           rescue => ex
             log ERROR, ex
             terminate!
+            initialized.fail ex if initialized
           end
         end
       end
