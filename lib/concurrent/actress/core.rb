@@ -9,7 +9,7 @@ module Concurrent
       include TypeCheck
       include Concurrent::Logging
 
-      attr_reader :reference, :name, :path, :executor
+      attr_reader :reference, :name, :path, :executor, :terminated
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one

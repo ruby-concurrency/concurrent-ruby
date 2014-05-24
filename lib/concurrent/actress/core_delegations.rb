@@ -19,6 +19,10 @@ module Concurrent
         core.terminated?
       end
 
+      def terminated
+        core.terminated
+      end
+
       def reference
         core.reference
       end

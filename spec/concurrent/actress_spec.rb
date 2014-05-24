@@ -147,7 +147,7 @@ module Concurrent
 
       describe 'envelope' do
         subject { AdHoc.spawn(:subject) { -> _ { envelope } } }
-        specify  do
+        specify do
           envelope = subject.ask!('a')
           envelope.should be_a_kind_of Envelope
           envelope.message.should eq 'a'
@@ -156,8 +156,8 @@ module Concurrent
           envelope.sender.should eq Thread.current
         end
       end
-    end
 
+    end
   end
 end
 
