@@ -1,6 +1,6 @@
 module Concurrent
 
-  # Ensures that jobs are passed to the underlying executor one by one,
+  # Ensures that jobs are passed to the given executors one by one,
   # never running at the same time.
   class OneByOne
 
@@ -30,6 +30,11 @@ module Concurrent
     # @raise [ArgumentError] if no task is given
     def post(executor, *args, &task)
       return nil if task.nil?
+      # FIXME Agent#send-off will blow up here
+      # if executor.can_overflow?
+      #   raise ArgumentError, 'OneByOne cannot be used in conjunction with executor which may overflow'
+      # end
+
       job = Job.new executor, args, task
 
       begin

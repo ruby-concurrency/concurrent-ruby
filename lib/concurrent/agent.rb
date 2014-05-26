@@ -4,6 +4,7 @@ require 'concurrent/dereferenceable'
 require 'concurrent/observable'
 require 'concurrent/options_parser'
 require 'concurrent/utility/timeout'
+require 'concurrent/logging'
 
 module Concurrent
 
@@ -35,6 +36,7 @@ module Concurrent
   class Agent
     include Dereferenceable
     include Concurrent::Observable
+    include Logging
 
     # The default timeout value (in seconds); used when no timeout option
     # is given at initialization
@@ -192,7 +194,8 @@ module Concurrent
       end
       rescuer.block.call(ex) if rescuer
     rescue Exception => ex
-      # supress
+      # suppress
+      log DEBUG, ex
     end
 
     # @!visibility private
@@ -200,7 +203,6 @@ module Concurrent
       validator, value = mutex.synchronize { [@validator, @value] }
 
       begin
-        # FIXME creates second thread
         result, valid = Concurrent::timeout(@timeout) do
           result = handler.call(value)
           [result, validator.call(result)]

@@ -4,7 +4,7 @@ module Concurrent
 
   # @!macro single_thread_executor
   class RubySingleThreadExecutor
-    include Executor
+    include RubyExecutor
 
     # Create a new thread pool.
     #
@@ -64,6 +64,7 @@ module Concurrent
           task.last.call(*task.first)
         rescue => ex
           # let it fail
+          log DEBUG, ex
         end
       end
       stopped_event.set

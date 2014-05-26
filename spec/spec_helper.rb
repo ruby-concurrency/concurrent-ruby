@@ -2,8 +2,8 @@ require 'simplecov'
 require 'coveralls'
 
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-  SimpleCov::Formatter::HTMLFormatter,
-  Coveralls::SimpleCov::Formatter
+    SimpleCov::Formatter::HTMLFormatter,
+    Coveralls::SimpleCov::Formatter
 ]
 
 SimpleCov.start do
@@ -17,25 +17,15 @@ end
 
 require 'concurrent'
 
+logger                          = Logger.new($stderr)
+logger.level                    = Logger::INFO
+Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
+  logger.add level, message, progname, &block
+end
+
 # import all the support files
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }
 
 RSpec.configure do |config|
   config.order = 'random'
-
-  config.before(:suite) do
-  end
-
-  config.before(:each) do
-    reset_gem_configuration
-  end
-
-  config.after(:each) do
-    Thread.list.each do |thread|
-      thread.kill unless thread == Thread.current
-    end
-  end
-
-  config.after(:suite) do
-  end
 end

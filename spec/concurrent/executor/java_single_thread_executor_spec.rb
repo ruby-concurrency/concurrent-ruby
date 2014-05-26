@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-if jruby?
+if Concurrent::TestHelpers.jruby?
 
   require_relative 'thread_pool_shared'
 

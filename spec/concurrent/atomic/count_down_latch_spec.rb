@@ -129,7 +129,7 @@ module Concurrent
     end
   end
 
-  if jruby?
+  if TestHelpers.jruby?
 
     describe JavaCountDownLatch do
 

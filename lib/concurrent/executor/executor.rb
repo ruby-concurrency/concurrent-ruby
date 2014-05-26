@@ -1,9 +1,18 @@
 require 'concurrent/errors'
+require 'concurrent/logging'
 require 'concurrent/atomic/event'
 
 module Concurrent
 
   module Executor
+    def can_overflow?
+      false
+    end
+  end
+
+  module RubyExecutor
+    include Executor
+    include Logging
 
     # Submit a task to the executor for asynchronous processing.
     #
@@ -120,6 +129,7 @@ module Concurrent
   if RUBY_PLATFORM == 'java'
 
     module JavaExecutor
+      include Executor
 
       # Submit a task to the executor for asynchronous processing.
       #

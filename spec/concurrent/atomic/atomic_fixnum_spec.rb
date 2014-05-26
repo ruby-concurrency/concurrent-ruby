@@ -165,7 +165,7 @@ module Concurrent
     end
   end
 
-  if jruby?
+  if TestHelpers.jruby?
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum

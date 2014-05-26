@@ -1,9 +1,11 @@
 require 'thread'
+require 'concurrent/logging'
 
 module Concurrent
 
   # @!visibility private
   class RubyThreadPoolWorker
+    include Logging
 
     # @!visibility private
     def initialize(queue, parent)
@@ -59,6 +61,7 @@ module Concurrent
           task.last.call(*task.first)
         rescue => ex
           # let it fail
+          log DEBUG, ex
         ensure
           @last_activity = Time.now.to_f
           @parent.on_end_task

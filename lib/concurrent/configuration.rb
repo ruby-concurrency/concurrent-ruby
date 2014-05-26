@@ -6,15 +6,26 @@ require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'
 
 module Concurrent
+  extend Logging
 
   # A gem-level configuration object.
   class Configuration
+
+    # a proc defining how to log messages, its interface has to be:
+    #   lambda { |level, progname, message = nil, &block| _ }
+    attr_accessor :logger
 
     # Create a new configuration object.
     def initialize
       @global_task_pool      = Delay.new { new_task_pool }
       @global_operation_pool = Delay.new { new_operation_pool }
       @global_timer_set      = Delay.new { Concurrent::TimerSet.new }
+      @logger                = no_logger
+    end
+
+    # if assigned to {#logger}, it will log nothing.
+    def no_logger
+      lambda { |level, progname, message = nil, &block| }
     end
 
     # Global thread pool optimized for short *tasks*.
@@ -127,7 +138,8 @@ module Concurrent
       executor.kill
     end
     true
-  rescue
+  rescue => ex
+    log DEBUG, ex
     false
   end
 

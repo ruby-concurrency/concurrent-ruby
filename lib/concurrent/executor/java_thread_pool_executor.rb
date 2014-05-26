@@ -89,6 +89,10 @@ if RUBY_PLATFORM == 'java'
         set_shutdown_hook
       end
 
+      def can_overflow?
+        @max_queue != 0
+      end
+
       # The minimum number of threads that may be retained in the pool.
       #
       # @return [Integer] the min_length

@@ -8,7 +8,7 @@ module Concurrent
 
   # @!macro thread_pool_executor
   class RubyThreadPoolExecutor
-    include Executor
+    include RubyExecutor
 
     # Default maximum number of threads that will be created in the pool.
     DEFAULT_MAX_POOL_SIZE = 2**15 # 32768
@@ -97,6 +97,10 @@ module Concurrent
 
       @gc_interval = opts.fetch(:gc_interval, 1).to_i # undocumented
       @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
+    end
+
+    def can_overflow?
+      @max_queue != 0
     end
 
     # The number of threads currently in the pool.
@@ -233,8 +237,9 @@ module Concurrent
       when :caller_runs
         begin
           yield(*args)
-        rescue
+        rescue => ex
           # let it fail
+          log DEBUG, ex
         end
         true
       end

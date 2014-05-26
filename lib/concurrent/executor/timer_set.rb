@@ -11,7 +11,7 @@ module Concurrent
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
   class TimerSet
-    include Executor
+    include RubyExecutor
 
     # Create a new set of timed tasks.
     #
