@@ -17,14 +17,14 @@ module Concurrent
     end
 
     it 'executes the block after the given number of seconds' do
-      start = Time.now
-      expected = Concurrent::AtomicFixnum.new(0)
-      Concurrent::timer(0.5){ expected.increment }
-      expected.value.should eq 0
-      sleep(0.1)
-      expected.value.should eq 0
-      sleep(0.8)
-      expected.value.should eq 1
+      start = Time.now.to_f
+      latch = CountDownLatch.new(1)
+      Concurrent::timer(0.5){ latch.count_down }
+      latch.count.should eq 1
+      latch.wait(0.1)
+      latch.count.should eq 1
+      latch.wait(1)
+      latch.count.should eq 0
     end
 
     it 'suppresses exceptions thrown by the block' do
