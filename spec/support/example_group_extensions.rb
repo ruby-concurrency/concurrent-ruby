@@ -26,8 +26,8 @@ module Concurrent
       Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
     end
 
-    def kill_rogue_threads
-      warn '[DEPRECATED] brute force thread control being used -- tests need updated'
+    def kill_rogue_threads(warning = true)
+      warn('[DEPRECATED] brute force thread control being used -- tests need updated') if warning
       Thread.list.each do |thread|
         thread.kill unless thread == Thread.current
       end
