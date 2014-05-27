@@ -26,10 +26,6 @@ module Concurrent
         raise NotImplementedError
       end
 
-      def logger
-        core.logger
-      end
-
       # @api private
       def on_envelope(envelope)
         @envelope = envelope
@@ -53,9 +49,14 @@ module Concurrent
         core.terminate!
       end
 
+      # delegates to core.log
+      # @see Logging#log
+      def log(level, progname, message = nil, &block)
+        core.log(level, progname, message, &block)
+      end
+
       private
 
-      # @api private
       def initialize_core(core)
         @core = Type! core, Core
       end
