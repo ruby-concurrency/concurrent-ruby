@@ -28,4 +28,14 @@ Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require Fil
 
 RSpec.configure do |config|
   config.order = 'random'
+
+  config.before(:each) do
+    #TODO: Better configuration management in individual test suites
+    reset_gem_configuration
+  end
+
+  config.after(:each) do
+    #TODO: Better thread management in individual test suites
+    kill_rogue_threads(false)
+  end
 end
