@@ -23,6 +23,7 @@ module Concurrent
       subject { Agent.new 2 }
 
       it 'executes post and post-off in order' do
+        pending 'may cause deadlock'
         subject.post { |v| v + 2 }
         subject.post_off { |v| v * 3 }
         subject.await
