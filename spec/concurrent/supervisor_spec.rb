@@ -65,6 +65,7 @@ module Concurrent
 
     after(:each) do
       subject.stop
+      kill_rogue_threads
       sleep(0.1)
     end
 
@@ -846,7 +847,7 @@ module Concurrent
           supervisor = Supervisor.new(restart_strategy: :one_for_one,
                                       monitor_interval: 0.1)
           supervisor.add_worker(error_class.new)
-          supervisor.should_receive(:exceeded_max_restart_frequency?).once.and_return(true)
+          supervisor.stub(:exceeded_max_restart_frequency?).once.and_return(true)
           future = Concurrent::Future.execute{ supervisor.run }
           future.value(1)
           supervisor.should_not be_running
