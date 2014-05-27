@@ -38,18 +38,6 @@ module Concurrent
 end
 
 class RSpec::Core::ExampleGroup
-  def self.with_full_reset
-    before(:each) do
-      reset_gem_configuration
-    end
-
-    after(:each) do
-      Thread.list.each do |thread|
-        thread.kill unless thread == Thread.current
-      end
-    end
-  end
-
   include Concurrent::TestHelpers
   extend Concurrent::TestHelpers
 end

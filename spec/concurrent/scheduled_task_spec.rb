@@ -7,8 +7,6 @@ require_relative 'observable_shared'
 module Concurrent
 
   describe ScheduledTask do
-    with_full_reset
-
     context 'behavior' do
 
       # obligation
@@ -56,9 +54,9 @@ module Concurrent
       it_should_behave_like :dereferenceable
 
       # observable
-      
+
       subject{ ScheduledTask.new(0.1){ nil } }
-      
+
       def trigger_observable(observable)
         observable.execute
         sleep(0.2)

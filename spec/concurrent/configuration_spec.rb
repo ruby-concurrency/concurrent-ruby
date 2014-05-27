@@ -3,8 +3,6 @@ require 'spec_helper'
 module Concurrent
 
   describe Configuration do
-    with_full_reset
-
     it 'creates a global timer pool' do
       Concurrent.configuration.global_timer_set.should_not be_nil
       Concurrent.configuration.global_timer_set.should respond_to(:post)
