@@ -113,6 +113,8 @@ module Concurrent
       # Terminates all its children, does not wait until they are terminated.
       def terminate!
         guard!
+        return nil if terminated?
+
         @children.each do |ch|
           ch.send(:core).tap { |core| core.send(:schedule_execution) { core.terminate! } }
         end

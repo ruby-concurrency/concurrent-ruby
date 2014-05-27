@@ -23,10 +23,12 @@ module Concurrent
     end
 
     def reset_gem_configuration
+      return if @do_not_reset
       Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
     end
 
     def kill_rogue_threads(warning = true)
+      return if @do_not_reset
       warn('[DEPRECATED] brute force thread control being used -- tests need updated') if warning
       Thread.list.each do |thread|
         thread.kill unless thread == Thread.current
