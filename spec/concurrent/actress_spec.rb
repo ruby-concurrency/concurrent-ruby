@@ -3,6 +3,7 @@ require 'concurrent/actress'
 
 module Concurrent
   module Actress
+    i_know_it_is_experimental!
     describe 'Concurrent::Actress' do
 
       class Ping

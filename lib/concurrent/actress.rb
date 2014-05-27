@@ -42,7 +42,9 @@ module Concurrent
     # @param block for actress_class instantiation
     # @param args see {.spawn_optionify}
     def self.spawn(*args, &block)
-      warn '[EXPERIMENTAL] A full release of `Actress`, renamed `Actor`, is expected in the 0.7.0 release.'
+      experimental_acknowledged? or
+          warn '[EXPERIMENTAL] A full release of `Actress`, renamed `Actor`, is expected in the 0.7.0 release.'
+
       if Actress.current
         Core.new(spawn_optionify(*args).merge(parent: Actress.current), &block).reference
       else
@@ -52,7 +54,6 @@ module Concurrent
 
     # as {.spawn} but it'll raise when Actor not initialized properly
     def self.spawn!(*args, &block)
-      warn '[EXPERIMENTAL] A full release of `Actress`, renamed `Actor`, is expected in the 0.7.0 release.'
       spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
     end
 
@@ -70,6 +71,14 @@ module Concurrent
           name:  args[1],
           args:  args[2..-1] }
       end
+    end
+
+    def self.i_know_it_is_experimental!
+      @experimental_acknowledged = true
+    end
+
+    def self.experimental_acknowledged?
+      !!@experimental_acknowledged
     end
   end
 end
