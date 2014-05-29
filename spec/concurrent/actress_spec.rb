@@ -15,7 +15,11 @@ module Concurrent
 
     describe 'Concurrent::Actress' do
       prepend_before do
-        @do_not_reset = true
+        @do_not_reset               = true
+        @@isolated_from_other_tests ||= begin
+          sleep 0.1
+          true
+        end
       end
 
       def terminate_actors(*actors)
@@ -159,7 +163,7 @@ module Concurrent
         end
 
         it 'has children set after a child is created' do
-          child = parent.ask!(:child) # FIXME may get stuck!!
+          child = parent.ask!(:child)
           parent.ask!(nil).should include(child)
           child.ask!(nil).should eq parent
 
