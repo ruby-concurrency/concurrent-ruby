@@ -1,5 +1,5 @@
 require 'concurrent/configuration'
-require 'concurrent/executor/one_by_one'
+require 'concurrent/executor/serialized_execution'
 require 'concurrent/ivar'
 require 'concurrent/logging'
 

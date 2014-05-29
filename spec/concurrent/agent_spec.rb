@@ -164,7 +164,7 @@ module Concurrent
         subject.post { nil }
         sleep(0.1)
         subject.
-            instance_variable_get(:@one_by_one).
+            instance_variable_get(:@serialized_execution).
             instance_variable_get(:@stash).
             size.should eq 2
       end

@@ -23,14 +23,14 @@ module Concurrent
       #   can be used to hook actor instance to any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
-        @mailbox    = Array.new
-        @one_by_one = OneByOne.new
+        @mailbox              = Array.new
+        @serialized_execution = SerializedExecution.new
         # noinspection RubyArgCount
-        @terminated = Event.new
-        @executor   = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
-        @children   = Set.new
-        @reference  = Reference.new self
-        @name       = (Type! opts.fetch(:name), String, Symbol).to_s
+        @terminated           = Event.new
+        @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
+        @children             = Set.new
+        @reference            = Reference.new self
+        @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
 
         parent       = opts[:parent]
         @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
@@ -180,7 +180,7 @@ module Concurrent
       # Schedules blocks to be executed on executor sequentially,
       # sets Actress.current
       def schedule_execution
-        @one_by_one.post(@executor) do
+        @serialized_execution.post(@executor) do
           begin
             Thread.current[:__current_actress__] = reference
             yield

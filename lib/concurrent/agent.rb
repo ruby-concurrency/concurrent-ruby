@@ -62,14 +62,14 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
     #   returning the value returned from the proc
     def initialize(initial, opts = {})
-      @value              = initial
-      @rescuers           = []
-      @validator          = Proc.new { |result| true }
-      @timeout            = opts.fetch(:timeout, TIMEOUT).freeze
-      self.observers      = CopyOnWriteObserverSet.new
-      @one_by_one         = OneByOne.new
-      @task_executor      = OptionsParser.get_task_executor_from(opts)
-      @operation_executor = OptionsParser.get_operation_executor_from(opts)
+      @value                = initial
+      @rescuers             = []
+      @validator            = Proc.new { |result| true }
+      @timeout              = opts.fetch(:timeout, TIMEOUT).freeze
+      self.observers        = CopyOnWriteObserverSet.new
+      @serialized_execution = SerializedExecution.new
+      @task_executor        = OptionsParser.get_task_executor_from(opts)
+      @operation_executor   = OptionsParser.get_operation_executor_from(opts)
       init_mutex
       set_deref_options(opts)
     end
@@ -180,7 +180,7 @@ module Concurrent
 
     def post_on(executor, &block)
       return nil if block.nil?
-      @one_by_one.post(executor) { work(&block) }
+      @serialized_execution.post(executor) { work(&block) }
       true
     end
 

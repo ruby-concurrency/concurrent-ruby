@@ -1,8 +1,10 @@
+require 'concurrent/logging'
+
 module Concurrent
 
-  # Ensures that jobs are passed to the given executors one by one,
-  # never running at the same time.
-  class OneByOne
+  # Ensures passed jobs in a serialized order never running at the same time.
+  class SerializedExecution
+    include Logging
 
     Job = Struct.new(:executor, :args, :block) do
       def call
@@ -30,10 +32,6 @@ module Concurrent
     # @raise [ArgumentError] if no task is given
     def post(executor, *args, &task)
       return nil if task.nil?
-      # FIXME Agent#send-off will blow up here
-      # if executor.can_overflow?
-      #   raise ArgumentError, 'OneByOne cannot be used in conjunction with executor which may overflow'
-      # end
 
       job = Job.new executor, args, task
 
@@ -56,7 +54,22 @@ module Concurrent
     private
 
     def call_job(job)
-      job.executor.post { work(job) }
+      did_it_run = begin
+        job.executor.post { work(job) }
+        true
+      rescue RejectedExecutionError => ex
+        false
+      end
+
+      # TODO not the best idea to run it myself
+      unless did_it_run
+        begin
+          work job
+        rescue => ex
+          # let it fail
+          log DEBUG, ex
+        end
+      end
     end
 
     # ensures next job is executed if any is stashed
