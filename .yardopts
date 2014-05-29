@@ -1,1 +1,7 @@
---protected --no-private --embed-mixins --output-dir ./doc --markup markdown
+--protected
+--no-private
+--embed-mixins
+--output-dir ./doc
+--markup markdown
+-
+lib/concurrent/actress/doc.md

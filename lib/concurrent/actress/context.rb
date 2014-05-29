@@ -72,12 +72,12 @@ module Concurrent
       end
 
       module ClassMethods
-        # behaves as {Actress.spawn} but class_name is omitted
+        # behaves as {Concurrent::Actress.spawn} but class_name is omitted
         def spawn(name_or_opts, *args, &block)
           Actress.spawn spawn_optionify(name_or_opts, *args), &block
         end
 
-        # behaves as {Actress.spawn!} but class_name is omitted
+        # behaves as {Concurrent::Actress.spawn!} but class_name is omitted
         def spawn!(name_or_opts, *args, &block)
           Actress.spawn! spawn_optionify(name_or_opts, *args), &block
         end

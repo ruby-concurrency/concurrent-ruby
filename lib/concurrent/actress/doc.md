@@ -1,6 +1,6 @@
-# Light-weighted implement of Actors. Inspired by Akka and Erlang.
+# Light-weighted implementation of Actors. Inspired by Akka and Erlang.
 
-Actors are using a thread-pool by default which makes them very cheap to create and discard.
+Actors are sharing a thread-pool by default which makes them very cheap to create and discard.
 Thousands of actors can be created allowing to brake the program to small maintainable pieces
 without breaking single responsibility principles.
 

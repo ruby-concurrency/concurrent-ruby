@@ -5,7 +5,7 @@ require 'concurrent/logging'
 
 module Concurrent
 
-  # {include:file:lib/concurrent/actress/doc.md}
+  # Fore more information please see {file:lib/concurrent/actress/doc.md Actress quide}.
   module Actress
 
     require 'concurrent/actress/type_check'
