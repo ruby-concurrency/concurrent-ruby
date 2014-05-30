@@ -18,10 +18,6 @@ void Init_concurrent_ruby_ext() {
   rb_cAtomicFixnum = rb_define_class_under(rb_mConcurrent, "CAtomicFixnum", rb_cObject);
   rb_cEvent = rb_define_class_under(rb_mConcurrent, "CEvent", rb_cObject);
 
-  // constants
-  rb_define_const(rb_mConcurrent, "MAX_INT", INT_MAX);
-  rb_define_const(rb_mConcurrent, "MAX_INT", LONG_MAX);
-
   // CAtomicBoolean
   rb_define_alloc_func(rb_cAtomicBoolean, atomic_boolean_allocate);
   rb_define_method(rb_cAtomicBoolean, "initialize", method_atomic_boolean_initialize, -1);
