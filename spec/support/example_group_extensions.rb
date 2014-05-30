@@ -2,6 +2,8 @@ require 'rbconfig'
 
 module Concurrent
   module TestHelpers
+    extend self
+
     def delta(v1, v2)
       if block_given?
         v1 = yield(v1)
@@ -22,6 +24,10 @@ module Concurrent
       RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i
     end
 
+    def use_extensions?
+      RbConfig::CONFIG['ruby_install_name'] =~ /^ruby$/i && RUBY_VERSION >= '2.0'
+    end
+
     def reset_gem_configuration
       Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
     end
@@ -32,8 +38,6 @@ module Concurrent
         thread.kill unless thread == Thread.current
       end
     end
-
-    extend self
   end
 end
 

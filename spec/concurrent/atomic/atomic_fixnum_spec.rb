@@ -165,7 +165,13 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if TestHelpers.use_extensions?
+
+    describe CAtomicFixnum do
+      it_should_behave_like :atomic_fixnum
+    end
+
+  elsif TestHelpers.jruby?
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
@@ -173,7 +179,11 @@ module Concurrent
   end
 
   describe AtomicFixnum do
-    if jruby?
+    if defined? Concurrent::CAtomicFixnum
+      it 'inherits from CAtomicFixnum' do
+        AtomicFixnum.ancestors.should include(CAtomicFixnum)
+      end
+    elsif TestHelpers.jruby?
       it 'inherits from JavaAtomicFixnum' do
         AtomicFixnum.ancestors.should include(JavaAtomicFixnum)
       end

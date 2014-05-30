@@ -151,7 +151,13 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if TestHelpers.use_extensions?
+
+    describe CAtomicBoolean do
+      it_should_behave_like :atomic_boolean
+    end
+
+  elsif TestHelpers.jruby?
 
     describe JavaAtomicBoolean do
       it_should_behave_like :atomic_boolean
@@ -159,7 +165,11 @@ module Concurrent
   end
 
   describe AtomicBoolean do
-    if jruby?
+    if defined? Concurrent::CAtomicBoolean
+      it 'inherits from CAtomicBoolean' do
+        AtomicBoolean.ancestors.should include(CAtomicBoolean)
+      end
+    elsif TestHelpers.jruby?
       it 'inherits from JavaAtomicBoolean' do
         AtomicBoolean.ancestors.should include(JavaAtomicBoolean)
       end

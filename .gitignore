@@ -27,3 +27,6 @@ tmtags
 .rbx/*
 *.py
 *.pyc
+*.so
+*.o
+*.bundle

@@ -1,4 +1,11 @@
+require 'rbconfig'
+
 require 'concurrent/version'
+
+if RbConfig::CONFIG['ruby_install_name'] =~ /^ruby$/i && RUBY_VERSION >= '2.0'
+  require 'concurrent_ruby_ext'
+end
+
 require 'concurrent/configuration'
 
 require 'concurrent/atomics'

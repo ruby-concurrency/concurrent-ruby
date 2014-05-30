@@ -3,29 +3,35 @@ require 'concurrent/atomic/condition'
 
 module Concurrent
 
-  # Old school kernel-style event reminiscent of Win32 programming in C++.
+  # @!macro [attach] event
   #
-  # When an `Event` is created it is in the `unset` state. Threads can choose to
-  # `#wait` on the event, blocking until released by another thread. When one
-  # thread wants to alert all blocking threads it calls the `#set` method which
-  # will then wake up all listeners. Once an `Event` has been set it remains set.
-  # New threads calling `#wait` will return immediately. An `Event` may be
-  # `#reset` at any time once it has been set.
+  #   Old school kernel-style event reminiscent of Win32 programming in C++.
   #
-  # @see http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx
-  class Event
+  #   When an `Event` is created it is in the `unset` state. Threads can choose to
+  #   `#wait` on the event, blocking until released by another thread. When one
+  #   thread wants to alert all blocking threads it calls the `#set` method which
+  #   will then wake up all listeners. Once an `Event` has been set it remains set.
+  #   New threads calling `#wait` will return immediately. An `Event` may be
+  #   `#reset` at any time once it has been set.
+  #
+  #   @see http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx
+  class MutexEvent
 
-    # Creates a new `Event` in the unset state. Threads calling `#wait` on the
-    # `Event` will block.
+    # @!macro [attach] event_method_initialize
+    #
+    #   Creates a new `Event` in the unset state. Threads calling `#wait` on the
+    #   `Event` will block.
     def initialize
       @set = false
       @mutex = Mutex.new
       @condition = Condition.new
     end
 
-    # Is the object in the set state?
+    # @!macro [attach] event_method_is_set
     #
-    # @return [Boolean] indicating whether or not the `Event` has been set
+    #   Is the object in the set state?
+    #
+    #   @return [Boolean] indicating whether or not the `Event` has been set
     def set?
       @mutex.lock
       @set
@@ -33,10 +39,12 @@ module Concurrent
       @mutex.unlock
     end
 
-    # Trigger the event, setting the state to `set` and releasing all threads
-    # waiting on the event. Has no effect if the `Event` has already been set.
+    # @!macro [attach] event_method_set
     #
-    # @return [Boolean] should always return `true`
+    #   Trigger the event, setting the state to `set` and releasing all threads
+    #   waiting on the event. Has no effect if the `Event` has already been set.
+    #
+    #   @return [Boolean] should always return `true`
     def set
       @mutex.lock
       unless @set
@@ -48,6 +56,8 @@ module Concurrent
       @mutex.unlock
     end
 
+    # @!macro [attach] event_method_try
+    #
     def try?
       @mutex.lock
 
@@ -63,10 +73,12 @@ module Concurrent
       @mutex.unlock
     end
 
-    # Reset a previously set event back to the `unset` state.
-    # Has no effect if the `Event` has not yet been set.
+    # @!macro [attach] event_method_reset
     #
-    # @return [Boolean] should always return `true`
+    #   Reset a previously set event back to the `unset` state.
+    #   Has no effect if the `Event` has not yet been set.
+    #
+    #   @return [Boolean] should always return `true`
     def reset
       @mutex.lock
       @set = false
@@ -75,11 +87,13 @@ module Concurrent
       @mutex.unlock
     end
 
-    # Wait a given number of seconds for the `Event` to be set by another
-    # thread. Will wait forever when no `timeout` value is given. Returns
-    # immediately if the `Event` has already been set.
+    # @!macro [attach] event_method_wait
     #
-    # @return [Boolean] true if the `Event` was set before timeout else false
+    #   Wait a given number of seconds for the `Event` to be set by another
+    #   thread. Will wait forever when no `timeout` value is given. Returns
+    #   immediately if the `Event` has already been set.
+    #
+    #   @return [Boolean] true if the `Event` was set before timeout else false
     def wait(timeout = nil)
       @mutex.lock
 
@@ -93,6 +107,19 @@ module Concurrent
       @set
     ensure
       @mutex.unlock
+    end
+  end
+
+  if defined? Concurrent::CEvent
+
+    # @!macro event
+    class Event < CEvent
+    end
+
+  else
+
+    # @!macro event
+    class Event < MutexEvent
     end
   end
 end
