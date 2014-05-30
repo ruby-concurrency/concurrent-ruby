@@ -90,7 +90,7 @@ VALUE method_atomic_fixnum_decrement(VALUE self) {
   long value;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
-  value = __atomic_sub_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
+  value = --atomic->value;
 
   return(INT2FIX(value));
 }
