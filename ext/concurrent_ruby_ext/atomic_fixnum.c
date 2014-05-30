@@ -80,15 +80,8 @@ VALUE method_atomic_fixnum_increment(VALUE self) {
   long value;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
-
-#ifdef __USE_GCC_ATOMIC
-  value = __atomic_add_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
-#else
-  pthread_mutex_lock(&atomic->mutex);
   value = ++atomic->value;
-  pthread_mutex_unlock(&atomic->mutex);
 
-#endif
   return(INT2FIX(value));
 }
 
@@ -97,14 +90,7 @@ VALUE method_atomic_fixnum_decrement(VALUE self) {
   long value;
 
   Data_Get_Struct(self, CAtomicFixnum, atomic);
-
-#ifdef __USE_GCC_ATOMIC
   value = __atomic_sub_fetch(&atomic->value, 1, __ATOMIC_SEQ_CST);
-#else
-  pthread_mutex_lock(&atomic->mutex);
-  value = --atomic->value;
-  pthread_mutex_unlock(&atomic->mutex);
-#endif
 
   return(INT2FIX(value));
 }
