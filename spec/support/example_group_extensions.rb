@@ -24,7 +24,7 @@ module Concurrent
 
     def reset_gem_configuration
       return if @do_not_reset
-      Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
+      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new
     end
 
     def kill_rogue_threads(warning = true)

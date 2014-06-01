@@ -1,6 +1,7 @@
 require 'thread'
 require 'concurrent/delay'
 require 'concurrent/errors'
+require 'concurrent/atomic/atomic'
 require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'
@@ -111,8 +112,12 @@ module Concurrent
   end
 
   # create the default configuration on load
-  @configuration = Configuration.new
-  singleton_class.send :attr_reader, :configuration
+  @configuration = Atomic.new Configuration.new
+
+  # @return [Configuration]
+  def self.configuration
+    @configuration.value
+  end
 
   # Perform gem-level configuration.
   #
