@@ -15,11 +15,7 @@ module Concurrent
 
     describe 'Concurrent::Actress' do
       prepend_before do
-        @do_not_reset               = true
-        @@isolated_from_other_tests ||= begin
-          sleep 0.1
-          true
-        end
+        do_no_reset!
       end
 
       def terminate_actors(*actors)

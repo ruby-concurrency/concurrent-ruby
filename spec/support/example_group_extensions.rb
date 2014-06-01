@@ -22,9 +22,15 @@ module Concurrent
       RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i
     end
 
+    def do_no_reset!
+      @do_not_reset = true
+    end
+
+    @@killed = false
+
     def reset_gem_configuration
-      return if @do_not_reset
-      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new
+      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new if @@killed
+      @@killed = false
     end
 
     def kill_rogue_threads(warning = true)
@@ -33,6 +39,7 @@ module Concurrent
       Thread.list.each do |thread|
         thread.kill unless thread == Thread.current
       end
+      @@killed = true
     end
 
     extend self
