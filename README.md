@@ -18,7 +18,7 @@ and classic concurrency patterns.
 <p>
 The design goals of this gem are:
 <ul>
-<li>Be an 'unopinionted' toolbox that provides useful utilities without debating which is better or why</li>
+<li>Be an 'unopinionated' toolbox that provides useful utilities without debating which is better or why</li>
 <li>Remain free of external gem dependencies</li>
 <li>Stay true to the spirit of the languages providing inspiration</li>
 <li>But implement in a way that makes sense for Ruby</li>
