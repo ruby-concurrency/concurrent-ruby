@@ -31,7 +31,12 @@ module Concurrent
         core.executor
       end
 
+      def actor_class
+        core.actor_class
+      end
+
       alias_method :ref, :reference
+      alias_method :actress_class, :actor_class
     end
   end
 end

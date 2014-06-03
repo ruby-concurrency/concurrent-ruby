@@ -50,7 +50,7 @@ module Concurrent
       end
 
       def to_s
-        "#<#{self.class} #{path}>"
+        "#<#{self.class} #{path} (#{actor_class})>"
       end
 
       alias_method :inspect, :to_s

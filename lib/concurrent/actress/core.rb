@@ -11,7 +11,7 @@ module Concurrent
       include TypeCheck
       include Concurrent::Logging
 
-      attr_reader :reference, :name, :path, :executor, :terminated
+      attr_reader :reference, :name, :path, :executor, :terminated, :actor_class
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
@@ -43,9 +43,9 @@ module Concurrent
 
         @parent_core.add_child reference if @parent_core
 
-        @actress_class = actress_class = Child! opts.fetch(:class), Context
-        args           = opts.fetch(:args, [])
-        initialized    = Type! opts[:initialized], IVar, NilClass
+        @actor_class = actress_class = Child! opts.fetch(:class), Context
+        args         = opts.fetch(:args, [])
+        initialized  = Type! opts[:initialized], IVar, NilClass
 
         schedule_execution do
           begin
