@@ -1,5 +1,5 @@
 # Concurrent Ruby
-[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.png)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/jdantonio/concurrent-ruby.png)](https://codeclimate.com/github/jdantonio/concurrent-ruby) [![Inline docs](http://inch-pages.github.io/github/jdantonio/concurrent-ruby.png)](http://inch-pages.github.io/github/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
+[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.png)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://secure.travis-ci.org/jdantonio/concurrent-ruby.png)](https://travis-ci.org/jdantonio/concurrent-ruby?branch=master) [![Coverage Status](https://coveralls.io/repos/jdantonio/concurrent-ruby/badge.png)](https://coveralls.io/r/jdantonio/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/jdantonio/concurrent-ruby.png)](https://codeclimate.com/github/jdantonio/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/jdantonio/concurrent-ruby.png)](http://inch-ci.org/github/jdantonio/concurrent-ruby) [![Dependency Status](https://gemnasium.com/jdantonio/concurrent-ruby.png)](https://gemnasium.com/jdantonio/concurrent-ruby)
 
 <table>
 <tr>
@@ -18,7 +18,7 @@ and classic concurrency patterns.
 <p>
 The design goals of this gem are:
 <ul>
-<li>Be an 'unopinionted' toolbox that provides useful utilities without debating which is better or why</li>
+<li>Be an 'unopinionated' toolbox that provides useful utilities without debating which is better or why</li>
 <li>Remain free of external gem dependencies</li>
 <li>Stay true to the spirit of the languages providing inspiration</li>
 <li>But implement in a way that makes sense for Ruby</li>
