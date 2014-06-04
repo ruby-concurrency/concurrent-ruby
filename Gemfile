@@ -8,6 +8,7 @@ group :development do
   gem 'countloc', '~> 0.4.0', platforms: :mri
   gem 'yard', '~> 0.8.7.4'
   gem 'inch', '~> 0.4.1', platforms: :mri
+  gem 'redcarpet', platforms: :mri # understands github markdown
 end
 
 group :testing do

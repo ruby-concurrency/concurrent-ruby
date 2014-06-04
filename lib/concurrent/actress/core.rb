@@ -4,19 +4,35 @@ module Concurrent
     require 'set'
 
     # Core of the actor
-    # @api private
+    # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
     # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
     #   that would eat up all threads in task pool and deadlock
     class Core
       include TypeCheck
       include Concurrent::Logging
 
+      # @!attribute [r] reference
+      #   @return [Reference] reference to this actor which can be safely passed around
+      # @!attribute [r] name
+      #   @return [String] the name of this instance, it should be uniq (not enforced right now)
+      # @!attribute [r] path
+      #   @return [String] a path of this actor. It is used for easier orientation and logging.
+      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actress::ROOT},
+      #     e.g. `/an_actor/its_child`.
+      #     (It will also probably form a supervision path (failures will be reported up to parents)
+      #     in future versions.)
+      # @!attribute [r] executor
+      #   @return [Executor] which is used to process messages
+      # @!attribute [r] terminated
+      #   @return [Event] event which will become set when actor is terminated.
+      # @!attribute [r] actor_class
+      #   @return [Context] a class including {Context} representing Actor's behaviour
       attr_reader :reference, :name, :path, :executor, :terminated, :actor_class
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
-      # @option opts [Context] actress_class a class to be instantiated defining Actor's behaviour
-      # @option opts [Array<Object>] args arguments for actress_class instantiation
+      # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
+      # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
       # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
@@ -31,6 +47,7 @@ module Concurrent
         @children             = Set.new
         @reference            = Reference.new self
         @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
+        @actor                = Concurrent::Atomic.new
 
         parent       = opts[:parent]
         @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
@@ -43,14 +60,14 @@ module Concurrent
 
         @parent_core.add_child reference if @parent_core
 
-        @actor_class = actress_class = Child! opts.fetch(:class), Context
+        @actor_class = actor_class = Child! opts.fetch(:class), Context
         args         = opts.fetch(:args, [])
         initialized  = Type! opts[:initialized], IVar, NilClass
 
         schedule_execution do
           begin
-            @actress = actress_class.new *args, &block
-            @actress.send :initialize_core, self
+            @actor.value = actor_class.new(*args, &block).
+                tap { |a| a.send :initialize_core, self }
             initialized.set true if initialized
           rescue => ex
             log ERROR, ex
@@ -152,6 +169,11 @@ module Concurrent
         end
       end
 
+      # @return [Context]
+      def actor
+        @actor.value
+      end
+
       # Processes single envelope, calls #process_envelopes? at the end to ensure next envelope
       # scheduling.
       def receive_envelope
@@ -164,7 +186,7 @@ module Concurrent
 
         log DEBUG, "received #{envelope.message} from #{envelope.sender_path}"
 
-        result = @actress.on_envelope envelope
+        result = actor.on_envelope envelope
         envelope.ivar.set result unless envelope.ivar.nil?
 
         nil
@@ -182,12 +204,12 @@ module Concurrent
       def schedule_execution
         @serialized_execution.post(@executor) do
           begin
-            Thread.current[:__current_actress__] = reference
+            Thread.current[:__current_actor__] = reference
             yield
           rescue => e
             log FATAL, e
           ensure
-            Thread.current[:__current_actress__] = nil
+            Thread.current[:__current_actor__] = nil
           end
         end
 

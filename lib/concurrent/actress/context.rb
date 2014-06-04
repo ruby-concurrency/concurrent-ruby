@@ -1,7 +1,8 @@
 module Concurrent
   module Actress
 
-    # module used to define actor behaviours
+    # This module is used to define actors. It can be included in any class,
+    # only requirement is to override {Context#on_message} method.
     # @example ping
     #  class Ping
     #    include Context
@@ -72,12 +73,12 @@ module Concurrent
       end
 
       module ClassMethods
-        # behaves as {Concurrent::Actress.spawn} but class_name is omitted
+        # behaves as {Concurrent::Actress.spawn} but class_name is auto-inserted based on receiver
         def spawn(name_or_opts, *args, &block)
           Actress.spawn spawn_optionify(name_or_opts, *args), &block
         end
 
-        # behaves as {Concurrent::Actress.spawn!} but class_name is omitted
+        # behaves as {Concurrent::Actress.spawn!} but class_name is auto-inserted based on receiver
         def spawn!(name_or_opts, *args, &block)
           Actress.spawn! spawn_optionify(name_or_opts, *args), &block
         end

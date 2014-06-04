@@ -2,8 +2,8 @@ module Concurrent
   module Actress
 
     # Reference is public interface of Actor instances. It is used for sending messages and can
-    # be freely passed around the program. It also provides some basic information about the actor
-    # see {CoreDelegations}
+    # be freely passed around the program. It also provides some basic information about the actor,
+    # see {CoreDelegations}.
     class Reference
       include TypeCheck
       include CoreDelegations
@@ -43,9 +43,9 @@ module Concurrent
         ask(message, ivar).value!
       end
 
-      # behaves as #tell when no ivar and as #ask when ivar
+      # behaves as {#tell} when no ivar and as {#ask} when ivar
       def message(message, ivar = nil)
-        core.on_envelope Envelope.new(message, ivar, Actress.current || Thread.current)
+        core.on_envelope Envelope.new(message, ivar, Actress.current || Thread.current, self)
         return ivar || self
       end
 
