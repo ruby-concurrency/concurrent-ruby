@@ -2,13 +2,13 @@ source 'https://rubygems.org'
 
 gemspec
 
-
 group :development do
   gem 'rake', '~> 10.2.2'
   gem 'countloc', '~> 0.4.0', platforms: :mri
   gem 'yard', '~> 0.8.7.4'
   gem 'inch', '~> 0.4.1', platforms: :mri
   gem 'redcarpet', platforms: :mri # understands github markdown
+  gem 'rake-compiler', '~> 0.9.2', platforms: [:mri, :mswin, :mingw]
 end
 
 group :testing do
