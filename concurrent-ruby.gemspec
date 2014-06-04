@@ -25,5 +25,12 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
 
+  if defined?(JRUBY_VERSION)
+    s.files = Dir['lib/concurrent_jruby.jar']
+    s.platform = 'java'
+  else
+    s.extensions = 'ext/extconf.rb'
+  end
+
   s.required_ruby_version = '>= 1.9.3'
 end

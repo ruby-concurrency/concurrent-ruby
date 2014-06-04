@@ -1,5 +1,4 @@
 Gemfile.lock
-tests.txt
 *.gem
 .rvmrc
 .ruby-version
@@ -21,9 +20,13 @@ coverage
 .DS_Store
 TAGS
 tmtags
-*.swo
-*.swp
+*.sw?
 .idea
 .rbx/*
-*.py
-*.pyc
+lib/*.jar
+lib/*.bundle
+ext/*.bundle
+ext/*.so
+ext/*.jar
+pkg
+*.gem
