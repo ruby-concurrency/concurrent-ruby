@@ -7,6 +7,11 @@ rvm:
   - jruby-19mode
   - jruby-head
   - rbx-2
+jdk:
+  - openjdk7
+  - openjdk8
+  - oraclejdk7
+  - oraclejdk8
 branches:
   only:
     - master

@@ -23,27 +23,27 @@ if defined?(JRUBY_VERSION)
 
   EXTENSION_NAME = 'concurrent_jruby'
 
-  directory "pkg/classes"
+  directory 'pkg/classes'
 
-  desc "Clean up build artifacts"
+  desc 'Clean up build artifacts'
   task :clean do
-    rm_rf "pkg/classes"
+    rm_rf 'pkg/classes'
     rm_rf "lib/#{EXTENSION_NAME}.jar"
   end
 
-  desc "Compile the extension"
-  task :compile_java => "pkg/classes" do |t|
-    ant.javac :srcdir => "ext", :destdir => t.prerequisites.first,
-      :source => "1.5", :target => "1.5", :debug => true,
-      :classpath => "${java.class.path}:${sun.boot.class.path}"
+  desc 'Compile the extension'
+  task :compile => 'pkg/classes' do |t|
+    ant.javac :srcdir => 'ext', :destdir => t.prerequisites.first,
+      :source => '1.5', :target => '1.5', :debug => true,
+      :classpath => '${java.class.path}:${sun.boot.class.path}'
   end
 
-  desc "Build the jar"
-  task :jar => :compile_java do
-    ant.jar :basedir => "pkg/classes", :destfile => "lib/#{EXTENSION_NAME}.jar", :includes => "**/*.class"
+  desc 'Build the jar'
+  task :jar => :compile do
+    ant.jar :basedir => 'pkg/classes', :destfile => "lib/#{EXTENSION_NAME}.jar", :includes => '**/*.class'
   end
 
-  task :compile => :jar
+  task :compile_java => :jar
 
 elsif use_c_extensions?
 
@@ -72,7 +72,9 @@ RSpec::Core::RakeTask.new(:travis_spec) do |t|
   t.rspec_opts = '--tag ~@not_on_travis'
 end
 
-if use_c_extensions?
+if defined?(JRUBY_VERSION)
+  task :default => [:compile_java, :travis_spec]
+elsif use_c_extensions?
   task :default => [:compile_c, :travis_spec]
 else
   task :default => [:travis_spec]
