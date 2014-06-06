@@ -11,3 +11,10 @@ rescue LoadError
   warn "#{__FILE__}:#{__LINE__}: unsupported Ruby engine `#{RUBY_ENGINE}', using less-efficient Atomic impl"
   require 'concurrent/atomic_reference/fallback'
 end
+
+class Atomic < Concurrent::Atomic
+  def initialize(*args)
+    warn "[DEPRECATED] Please use Concurrent::Atomic instead."
+    super
+  end
+end
