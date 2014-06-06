@@ -23,8 +23,9 @@ tmtags
 *.sw?
 .idea
 .rbx/*
-lib/*.jar
 lib/*.bundle
+lib/*.so
+lib/*.jar
 ext/*.bundle
 ext/*.so
 ext/*.jar

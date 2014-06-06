@@ -1,6 +1,6 @@
 language: ruby
 rvm:
-  - 2.1.0
+  - 2.1.2
   - 2.0.0
   - 1.9.3
   - ruby-head
@@ -8,14 +8,10 @@ rvm:
   - jruby-head
   - rbx-2
 jdk:
-  - openjdk7
-  - openjdk8
-  - oraclejdk7
   - oraclejdk8
 branches:
   only:
     - master
-    - atomic-reference
 matrix:
   allow_failures:
     - rvm: ruby-head
