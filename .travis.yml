@@ -15,6 +15,7 @@ jdk:
 branches:
   only:
     - master
+    - atomic-reference
 matrix:
   allow_failures:
     - rvm: ruby-head
