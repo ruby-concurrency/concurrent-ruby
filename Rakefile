@@ -18,18 +18,19 @@ task :bench do
   exec "ruby -Ilib -Iext examples/bench_atomic.rb"
 end
 
+desc 'Clean up build artifacts'
+task :clean do
+  rm_rf 'pkg/classes'
+  rm_f  'lib/*.jar'
+  rm_rf '**/*.{o,so,bundle}'
+end
+
 if defined?(JRUBY_VERSION)
   require 'ant'
 
   EXTENSION_NAME = 'concurrent_jruby'
 
   directory 'pkg/classes'
-
-  desc 'Clean up build artifacts'
-  task :clean do
-    rm_rf 'pkg/classes'
-    rm_rf "lib/#{EXTENSION_NAME}.jar"
-  end
 
   desc 'Compile the extension'
   task :compile => 'pkg/classes' do |t|
@@ -51,8 +52,6 @@ elsif use_c_extensions?
 
   require 'rake/extensiontask'
 
-  CLEAN.include Rake::FileList['**/*.so', '**/*.bundle', '**/*.o', '**/mkmf.log', '**/Makefile']
-
   spec = Gem::Specification.load('concurrent-ruby.gemspec')
   Rake::ExtensionTask.new(EXTENSION_NAME, spec) do |ext|
     ext.ext_dir = 'ext'
@@ -60,8 +59,12 @@ elsif use_c_extensions?
     ext.source_pattern = "**/*.{h,c,cpp}"
   end
 
+  task :return_dummy_makefile do
+    sh "git co ext/Makefile"
+  end
+
   desc 'Clean, compile, and build the extension from scratch'
-  task :compile_c => [ :clean, :compile ]
+  task :compile_c => [ :clean, :compile, :return_dummy_makefile ]
 
   task :irb => [:compile] do
     sh "irb -r ./lib/#{EXTENSION_NAME}.bundle -I #{File.join(File.dirname(__FILE__), 'lib')}"
@@ -77,5 +80,5 @@ if defined?(JRUBY_VERSION)
 elsif use_c_extensions?
   task :default => [:compile_c, :travis_spec]
 else
-  task :default => [:travis_spec]
+  task :default => [:clean, :travis_spec]
 end
