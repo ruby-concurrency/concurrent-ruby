@@ -5,7 +5,7 @@ EXTENSION_NAME = 'concurrent_cruby'
 
 if defined?(JRUBY_VERSION)
   puts 'JRuby detected. Pure Java optimizations will be used.'
-elsif ! use_c_extensions?
+elsif ! Concurrent.use_c_extensions?
   puts 'C optimizations are only supported on MRI 2.0 and above.'
 else
 

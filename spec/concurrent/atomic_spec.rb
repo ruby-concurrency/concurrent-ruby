@@ -132,4 +132,38 @@ module Concurrent
   describe Atomic do
     it_should_behave_like :atomic
   end
+
+  if defined? Concurrent::CAtomic
+    describe CAtomic do
+      it_should_behave_like :atomic
+    end
+  elsif defined? Concurrent::JavaAtomic
+    describe JavaAtomic do
+      it_should_behave_like :atomic
+    end
+  elsif defined? Concurrent::RbxAtomic
+    describe RbxAtomic do
+      it_should_behave_like :atomic
+    end
+  end
+
+  describe Atomic do
+    if TestHelpers.use_c_extensions?
+      it 'inherits from CAtomic' do
+        Atomic.ancestors.should include(CAtomic)
+      end
+    elsif TestHelpers.jruby?
+      it 'inherits from JavaAtomic' do
+        Atomic.ancestors.should include(JavaAtomic)
+      end
+    elsif TestHelpers.rbx?
+      it 'inherits from RbxAtomic' do
+        Atomic.ancestors.should include(RbxAtomic)
+      end
+    else
+      it 'inherits from MutexAtomic' do
+        Atomic.ancestors.should include(MutexAtomic)
+      end
+    end
+  end
 end

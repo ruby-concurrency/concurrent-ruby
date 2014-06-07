@@ -2,6 +2,7 @@ require 'rake'
 require 'bundler/gem_tasks'
 require 'rspec'
 require 'rspec/core/rake_task'
+require 'fileutils'
 
 require_relative 'lib/extension_helper'
 
@@ -20,9 +21,10 @@ end
 
 desc 'Clean up build artifacts'
 task :clean do
-  rm_rf 'pkg/classes'
-  rm_f  'lib/*.jar'
-  rm_rf '**/*.{o,so,bundle}'
+  rm_rf './pkg/classes'
+  rm_f  Dir.glob('./lib/*.jar')
+  rm_f  Dir.glob('./lib/*.{o,so,bundle}')
+  rm_rf './tmp'
 end
 
 if defined?(JRUBY_VERSION)
@@ -46,7 +48,7 @@ if defined?(JRUBY_VERSION)
 
   task :compile_java => :jar
 
-elsif use_c_extensions?
+elsif Concurrent.use_c_extensions?
 
   EXTENSION_NAME = 'concurrent_cruby'
 
@@ -76,9 +78,9 @@ RSpec::Core::RakeTask.new(:travis_spec) do |t|
 end
 
 if defined?(JRUBY_VERSION)
-  task :default => [:compile_java, :travis_spec]
-elsif use_c_extensions?
-  task :default => [:compile_c, :travis_spec]
+  task :default => [:clean, :compile_java, :travis_spec]
+elsif Concurrent.use_c_extensions?
+  task :default => [:clean, :compile_c, :travis_spec]
 else
   task :default => [:clean, :travis_spec]
 end
