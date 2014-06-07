@@ -49,7 +49,7 @@ share_examples_for :atomic do
     expect {
       # assigning within block exploits implementation detail for test
       atomic.try_update{|v| atomic.value = 1001 ; v + 1}
-    }.to raise_error(Concurrent::Atomic::ConcurrentUpdateError)
+    }.to raise_error(Concurrent::ConcurrentUpdateError)
   end
 
   specify :test_update_retries do
@@ -130,6 +130,10 @@ end
 module Concurrent
 
   describe Atomic do
+    it_should_behave_like :atomic
+  end
+
+  describe MutexAtomic do
     it_should_behave_like :atomic
   end
 

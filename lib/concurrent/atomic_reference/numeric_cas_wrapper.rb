@@ -1,7 +1,8 @@
 module Concurrent
 
-  class Atomic
-    alias _compare_and_set compare_and_set
+  module AtomicNumericCompareAndSetWrapper
+    #alias _compare_and_set compare_and_set
+
     def compare_and_set(expected, new)
       if expected.kind_of? Numeric
         while true
