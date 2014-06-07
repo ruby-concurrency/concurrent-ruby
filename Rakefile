@@ -59,8 +59,12 @@ elsif use_c_extensions?
     ext.source_pattern = "**/*.{h,c,cpp}"
   end
 
+  task :return_dummy_makefile do
+    sh "git co ext/Makefile"
+  end
+
   desc 'Clean, compile, and build the extension from scratch'
-  task :compile_c => [ :clean, :compile ]
+  task :compile_c => [ :clean, :compile, :return_dummy_makefile ]
 
   task :irb => [:compile] do
     sh "irb -r ./lib/#{EXTENSION_NAME}.bundle -I #{File.join(File.dirname(__FILE__), 'lib')}"
