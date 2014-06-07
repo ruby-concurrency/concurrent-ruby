@@ -3,7 +3,7 @@ require 'concurrent/atomic_reference/concurrent_update_error'
 module Concurrent
 
   # Define update methods that use direct paths
-  class Atomic
+  module AtomicDirectUpdate
     # Pass the current value to the given block, replacing it
     # with the block's result. May retry if the value changes
     # during the block's execution.

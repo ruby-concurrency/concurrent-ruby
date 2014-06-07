@@ -1,10 +1,14 @@
 require 'thread'
 require 'concurrent/atomic_reference/direct_update'
+require 'concurrent/atomic_reference/numeric_cas_wrapper'
 
 module Concurrent
 
   # Portable/generic (but not very memory or scheduling-efficient) fallback
-  class Atomic #:nodoc: all
+  class MutexAtomic #:nodoc: all
+    include Concurrent::AtomicDirectUpdate
+    include Concurrent::AtomicNumericCompareAndSetWrapper
+
     def initialize(value = nil)
       @mutex = Mutex.new
       @value = value
@@ -29,7 +33,7 @@ module Concurrent
     end
     alias swap get_and_set
 
-    def compare_and_set(old_value, new_value)
+    def _compare_and_set(old_value, new_value)
       return false unless @mutex.try_lock
       begin
         return false unless @value.equal? old_value
@@ -39,7 +43,5 @@ module Concurrent
       end
       true
     end
-
-    require 'concurrent/atomic_reference/numeric_cas_wrapper'
   end
 end
