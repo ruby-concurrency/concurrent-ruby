@@ -172,7 +172,6 @@ module Concurrent
 
     # @!visibility private
     def shutdown_execution
-      @queue.clear
       if @pool.empty?
         stopped_event.set
       else
