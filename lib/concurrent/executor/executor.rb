@@ -100,6 +100,7 @@ module Concurrent
     #
     # @return [Boolean] `true` if shutdown complete or false on `timeout`
     def wait_for_termination(timeout = nil)
+      return nil if timeout == 0
       timeout = 60 * 60 * 24 if timeout.nil?
       stopped_event.wait(timeout)
     end
@@ -199,8 +200,9 @@ module Concurrent
       #
       # @return [Boolean] `true` if shutdown complete or false on `timeout`
       def wait_for_termination(timeout=nil)
+        return nil if timeout == 0
         timeout = 60 * 60 * 24 if timeout.nil? # A day
-        @executor.awaitTermination(timeout, java.util.concurrent.TimeUnit::Seconds)
+        @executor.awaitTermination(timeout, java.util.concurrent.TimeUnit::SECONDS)
       end
 
       # Begin an orderly shutdown. Tasks already in the queue will be executed,
