@@ -1,86 +1,76 @@
 require 'rake'
 require 'bundler/gem_tasks'
-require 'rspec'
-require 'rspec/core/rake_task'
-require 'fileutils'
+require 'rake/extensiontask'
+require 'rake/javaextensiontask'
+#require 'rspec'
+#require 'rspec/core/rake_task'
 
-require_relative 'lib/extension_helper'
+GEMSPEC = Gem::Specification.load(File.expand_path('../concurrent-ruby.gemspec', __FILE__))
+
+$:.push File.join(File.dirname(__FILE__), 'lib')
+require 'extension_helper'
 
 Bundler::GemHelper.install_tasks
 
-RSpec::Core::RakeTask.new(:spec)
-$:.unshift 'tasks'
-Dir.glob('tasks/**/*.rake').each do|rakefile|
-  load rakefile
-end
+#RSpec::Core::RakeTask.new(:spec)
+#$:.unshift 'tasks'
+#Dir.glob('tasks/**/*.rake').each do|rakefile|
+  #load rakefile
+#end
 
-desc "Run benchmarks"
+desc 'Run benchmarks'
 task :bench do
-  exec "ruby -Ilib -Iext examples/bench_atomic.rb"
-end
-
-desc 'Clean up build artifacts'
-task :clean do
-  rm_rf './pkg/classes'
-  rm_f  Dir.glob('./lib/*.jar')
-  rm_f  Dir.glob('./lib/*.{o,so,bundle}')
-  rm_rf './tmp'
+  exec 'ruby -Ilib -Iext examples/bench_atomic.rb'
 end
 
 if defined?(JRUBY_VERSION)
-  require 'ant'
 
   EXTENSION_NAME = 'concurrent_jruby'
 
-  directory 'pkg/classes'
-
-  desc 'Compile the extension'
-  task :compile => 'pkg/classes' do |t|
-    ant.javac :srcdir => 'ext', :destdir => t.prerequisites.first,
-      :source => '1.5', :target => '1.5', :debug => true,
-      :classpath => '${java.class.path}:${sun.boot.class.path}'
+  Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
+    ext.ext_dir = 'ext'
   end
-
-  desc 'Build the jar'
-  task :jar => :compile do
-    ant.jar :basedir => 'pkg/classes', :destfile => "lib/#{EXTENSION_NAME}.jar", :includes => '**/*.class'
-  end
-
-  task :compile_java => :jar
 
 elsif Concurrent.use_c_extensions?
 
   EXTENSION_NAME = 'concurrent_cruby'
 
-  require 'rake/extensiontask'
-
-  spec = Gem::Specification.load('concurrent-ruby.gemspec')
-  Rake::ExtensionTask.new(EXTENSION_NAME, spec) do |ext|
+  Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
-    ext.name = EXTENSION_NAME
-    ext.source_pattern = "**/*.{h,c,cpp}"
+    ext.cross_compile = true
+    ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
   end
 
-  task :return_dummy_makefile do
-    sh "git co ext/Makefile"
-  end
-
-  desc 'Clean, compile, and build the extension from scratch'
-  task :compile_c => [ :clean, :compile, :return_dummy_makefile ]
-
-  task :irb => [:compile] do
-    sh "irb -r ./lib/#{EXTENSION_NAME}.bundle -I #{File.join(File.dirname(__FILE__), 'lib')}"
+  ENV['RUBY_CC_VERSION'].to_s.split(':').each do |ruby_version|
+    platforms = {
+      'x86-mingw32' => 'i686-w64-mingw32',
+      'x64-mingw32' => 'x86_64-w64-mingw32'
+    }
+    platforms.each do |platform, prefix|
+      task "copy:#{EXTENSION_NAME}:#{platform}:#{ruby_version}" do |t|
+        %w[lib tmp/#{platform}/stage/lib].each do |dir|
+          so_file = "#{dir}/#{ruby_version[/^\d+\.\d+/]}/#{EXTENSION_NAME}.so"
+          if File.exists?(so_file)
+            sh "#{prefix}-strip -S #{so_file}"
+          end
+        end
+      end
+    end
   end
 end
 
-RSpec::Core::RakeTask.new(:travis_spec) do |t|
-  t.rspec_opts = '--tag ~@not_on_travis'
+Rake::Task[:clean].enhance do
+  rm_rf 'pkg'
+  rm_f Dir.glob('./lib/*.jar')
+  rm_f Dir.glob('./lib/*.bundle')
 end
 
-if defined?(JRUBY_VERSION)
-  task :default => [:clean, :compile_java, :travis_spec]
-elsif Concurrent.use_c_extensions?
-  task :default => [:clean, :compile_c, :travis_spec]
-else
-  task :default => [:clean, :travis_spec]
-end
+#RSpec::Core::RakeTask.new(:travis_spec) do |t|
+  #t.rspec_opts = '--tag ~@not_on_travis'
+#end
+
+#if defined?(EXTENSION_NAME)
+  #task :default => [:clean, "compile:#{EXTENSION_NAME}", :travis_spec]
+#else
+  #task :default => [:clean, :travis_spec]
+#end

@@ -33,4 +33,8 @@ Gem::Specification.new do |s|
   end
 
   s.required_ruby_version = '>= 1.9.3'
+
+  s.add_development_dependency 'bundler', '~> 1.6.2'
+  s.add_development_dependency 'rake', '~> 10.3.2'
+  s.add_development_dependency 'rake-compiler', '~> 0.9.2'
 end
