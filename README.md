@@ -30,7 +30,7 @@ The design goals of this gem are:
 </p>
 </td>
 <td align="right" valign="top">
-<img src="https://raw.githubusercontent.com/wiki/jdantonio/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
+<img src="https://raw.githubusercontent.com/wiki/ruby-concurrency/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
 </td>
 </tr>
 </table>
@@ -51,29 +51,29 @@ and run `bundle install` from your shell.
 
 ## Features & Documentation
 
-Please see the [Concurrent Ruby Wiki](https://github.com/jdantonio/concurrent-ruby/wiki)
-or the [API documentation](http://rubydoc.info/github/jdantonio/concurrent-ruby/master/frames)
+Please see the [Concurrent Ruby Wiki](https://github.com/ruby-concurrency/concurrent-ruby/wiki)
+or the [API documentation](http://rubydoc.info/github/ruby-concurrency/concurrent-ruby/master/frames)
 for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
 
 There are many concurrency abstractions in this library. These abstractions can be broadly categorized
 into several general groups:
 
 * Asynchronous concurrency abstractions including
-  [Async](https://github.com/jdantonio/concurrent-ruby/wiki/Async),
-  [Agent](https://github.com/jdantonio/concurrent-ruby/wiki/Agent),
-  [Future](https://github.com/jdantonio/concurrent-ruby/wiki/Future),
-  [Promise](https://github.com/jdantonio/concurrent-ruby/wiki/Promise),
-  [ScheduledTask](https://github.com/jdantonio/concurrent-ruby/wiki/ScheduledTask),
-  and [TimerTask](https://github.com/jdantonio/concurrent-ruby/wiki/TimerTask) 
-* Erlang-inspired [Supervisor](https://github.com/jdantonio/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
+  [Async](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Async),
+  [Agent](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Agent),
+  [Future](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Future),
+  [Promise](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Promise),
+  [ScheduledTask](https://github.com/ruby-concurrency/concurrent-ruby/wiki/ScheduledTask),
+  and [TimerTask](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TimerTask) 
+* Erlang-inspired [Supervisor](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
   for managing long-running threads
-* Thread-safe variables including [M-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/MVar-(M-Structure)),
-  [I-Structures](https://github.com/jdantonio/concurrent-ruby/wiki/IVar-(I-Structure)),
-  [thread-local variables](https://github.com/jdantonio/concurrent-ruby/wiki/ThreadLocalVar),
-  atomic counters, and [software transactional memory](https://github.com/jdantonio/concurrent-ruby/wiki/TVar-(STM))
-* Thread synchronization classes and algorithms including [dataflow](https://github.com/jdantonio/concurrent-ruby/wiki/Dataflow), 
+* Thread-safe variables including [M-Structures](https://github.com/ruby-concurrency/concurrent-ruby/wiki/MVar-(M-Structure)),
+  [I-Structures](https://github.com/ruby-concurrency/concurrent-ruby/wiki/IVar-(I-Structure)),
+  [thread-local variables](https://github.com/ruby-concurrency/concurrent-ruby/wiki/ThreadLocalVar),
+  atomic counters, and [software transactional memory](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TVar-(STM))
+* Thread synchronization classes and algorithms including [dataflow](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Dataflow), 
   timeout, condition, countdown latch, dependency counter, and event
-* Java-inspired [thread pools](https://github.com/jdantonio/concurrent-ruby/wiki/Thread%20Pools)
+* Java-inspired [thread pools](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Thread%20Pools)
 * And many more...
 
 ### Semantic Versioning
@@ -157,6 +157,6 @@ task.value #=> 25.96
 
 *Concurrent Ruby* is free software released under the [MIT License](http://www.opensource.org/licenses/MIT).
 
-The *Concurrent Ruby* [logo](https://github.com/jdantonio/concurrent-ruby/wiki/Logo)
+The *Concurrent Ruby* [logo](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Logo)
 was designed by [David Jones](https://twitter.com/zombyboy).
 It is Copyright &copy; 2014 [Jerry D'Antonio](https://twitter.com/jerrydantonio). All Rights Reserved.
