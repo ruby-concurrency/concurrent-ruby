@@ -61,7 +61,12 @@ module Concurrent
 
     end
 
-    alias_method :kill, :shutdown
+    # For a timer, #kill is like an orderly shutdown, except we need to manually
+    # (and destructively) clear the queue first
+    def kill
+      @queue.clear
+      shutdown
+    end
 
     # Calculate an Epoch time with milliseconds at which to execute a
     # task. If the given time is a `Time` object it will be converted

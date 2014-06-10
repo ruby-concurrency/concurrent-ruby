@@ -140,6 +140,7 @@ task.value #=> 25.96
 * [Ravil Bayramgalin](https://github.com/brainopia)
 * [Larry Lv](https://github.com/larrylv)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
+* [Bill Dueber](https://github.com/billdueber)
 * [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)
 * [Jamie Hodge](https://github.com/jamiehodge)
