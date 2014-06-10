@@ -100,6 +100,36 @@ share_examples_for :executor_service do
     end
   end
 
+  context '#shutdown followed by #wait_for_termination' do
+    it "allows in-progress tasks to complete" do
+      @expected = false
+      subject.post{ sleep 0.1; @expected = true }
+      subject.shutdown
+      subject.wait_for_termination(1)
+      @expected.should be_true
+    end
+
+    it 'allows pending tasks to complete' do
+      @expected = false
+      subject.post{ sleep(0.1) }
+      subject.post{ sleep(0.1); @expected = true }
+      subject.shutdown
+      subject.wait_for_termination(1)
+      @expected.should be_true
+    end
+
+    it "stops accepting/running new tasks" do
+      @expected = :start
+      subject.post{ sleep(0.1) }
+      subject.post{ sleep(0.1); @expected = :should_be_run }
+      subject.shutdown
+      subject.post{ @expected = :should_not_be_run }
+      subject.wait_for_termination(1)
+      @expected.should == :should_be_run
+    end
+  end
+
+
   context '#kill' do
 
     it 'stops accepting new tasks' do
