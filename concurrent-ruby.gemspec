@@ -18,10 +18,7 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   EOF
 
-  s.files            = Dir['README*', 'LICENSE*', 'CHANGELOG*']
-  s.files           += Dir['{lib,md,spec}/**/*']
-  s.test_files       = Dir['{spec}/**/*']
-  s.extra_rdoc_files = ['README.md']
+  s.files            = Dir['lib/**/*']
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
 

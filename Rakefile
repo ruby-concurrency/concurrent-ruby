@@ -59,7 +59,6 @@ end
 Rake::Task[:clean].enhance do
   rm_rf 'pkg/classes'
   rm_rf 'tmp'
-  rm_rf 'lib/1.8'
   rm_rf 'lib/1.9'
   rm_rf 'lib/2.0'
   rm_f Dir.glob('./lib/*.jar')
