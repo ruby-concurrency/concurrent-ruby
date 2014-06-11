@@ -18,10 +18,7 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   EOF
 
-  s.files            = Dir['README*', 'LICENSE*', 'CHANGELOG*']
-  s.files           += Dir['{lib,md,spec}/**/*']
-  s.test_files       = Dir['{spec}/**/*']
-  s.extra_rdoc_files = ['README.md']
+  s.files            = Dir['lib/**/*']
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
 
@@ -33,8 +30,4 @@ Gem::Specification.new do |s|
   end
 
   s.required_ruby_version = '>= 1.9.3'
-
-  s.add_development_dependency 'bundler', '~> 1.6.2'
-  s.add_development_dependency 'rake', '~> 10.3.2'
-  s.add_development_dependency 'rake-compiler', '~> 0.9.2'
 end

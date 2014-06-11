@@ -2,21 +2,18 @@ require 'rake'
 require 'bundler/gem_tasks'
 require 'rake/extensiontask'
 require 'rake/javaextensiontask'
-#require 'rspec'
-#require 'rspec/core/rake_task'
 
 GEMSPEC = Gem::Specification.load(File.expand_path('../concurrent-ruby.gemspec', __FILE__))
 
 $:.push File.join(File.dirname(__FILE__), 'lib')
 require 'extension_helper'
 
-Bundler::GemHelper.install_tasks
+$:.unshift 'tasks'
+Dir.glob('tasks/**/*.rake').each do|rakefile|
+  load rakefile
+end
 
-#RSpec::Core::RakeTask.new(:spec)
-#$:.unshift 'tasks'
-#Dir.glob('tasks/**/*.rake').each do|rakefile|
-  #load rakefile
-#end
+Bundler::GemHelper.install_tasks
 
 desc 'Run benchmarks'
 task :bench do
@@ -60,17 +57,29 @@ elsif Concurrent.use_c_extensions?
 end
 
 Rake::Task[:clean].enhance do
-  rm_rf 'pkg'
+  rm_rf 'pkg/classes'
+  rm_rf 'tmp'
+  rm_rf 'lib/1.9'
+  rm_rf 'lib/2.0'
   rm_f Dir.glob('./lib/*.jar')
-  rm_f Dir.glob('./lib/*.bundle')
+  rm_f Dir.glob('./**/*.bundle')
 end
 
-#RSpec::Core::RakeTask.new(:travis_spec) do |t|
-  #t.rspec_opts = '--tag ~@not_on_travis'
-#end
+begin
+  require 'rspec'
+  require 'rspec/core/rake_task'
 
-#if defined?(EXTENSION_NAME)
-  #task :default => [:clean, "compile:#{EXTENSION_NAME}", :travis_spec]
-#else
-  #task :default => [:clean, :travis_spec]
-#end
+  RSpec::Core::RakeTask.new(:spec)
+
+  RSpec::Core::RakeTask.new(:travis_spec) do |t|
+    t.rspec_opts = '--tag ~@not_on_travis'
+  end
+
+  if defined?(EXTENSION_NAME)
+    task :default => [:clean, "compile:#{EXTENSION_NAME}", :travis_spec]
+  else
+    task :default => [:clean, :travis_spec]
+  end
+rescue LoadError
+  puts 'Error loading Rspec rake tasks, probably building the gem...'
+end

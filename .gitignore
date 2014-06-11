@@ -1,5 +1,8 @@
 Gemfile.lock
 *.gem
+lib/1.8
+lib/1.9
+lib/2.0
 .rvmrc
 .ruby-version
 .ruby-gemset

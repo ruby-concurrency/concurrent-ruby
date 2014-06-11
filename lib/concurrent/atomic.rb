@@ -14,7 +14,7 @@ rescue LoadError
   warn "#{__FILE__}:#{__LINE__}: unsupported Ruby engine `#{RUBY_ENGINE}', using less-efficient Atomic impl"
 end
 
-if RUBY_PLATFORM == 'java'
+if defined? Concurrent::JavaAtomic
 
   class Concurrent::Atomic < Concurrent::JavaAtomic
   end
