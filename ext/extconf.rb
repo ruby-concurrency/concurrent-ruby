@@ -1,5 +1,7 @@
 require 'fileutils'
-require_relative '../lib/extension_helper'
+
+$:.push File.join(File.dirname(__FILE__), '../lib')
+require 'extension_helper'
 
 EXTENSION_NAME = 'concurrent_cruby'
 
