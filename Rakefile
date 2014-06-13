@@ -5,9 +5,6 @@ require 'rake/javaextensiontask'
 GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXTENSION_NAME = 'concurrent_ruby_ext'
 
-$:.push File.join(File.dirname(__FILE__), 'lib')
-require 'extension_helper'
-
 $:.unshift 'tasks'
 Dir.glob('tasks/**/*.rake').each do|rakefile|
   load rakefile
@@ -20,16 +17,12 @@ task :bench do
   exec 'ruby -Ilib -Iext examples/bench_atomic.rb'
 end
 
-Gem::PackageTask.new(GEMSPEC) do |pkg|
-end
-
 if defined?(JRUBY_VERSION)
 
   Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
-
-elsif Concurrent.use_c_extensions?
+else
 
   Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
@@ -54,11 +47,6 @@ elsif Concurrent.use_c_extensions?
       end
     end
   end
-
-else
-
-  task :compile
-  task "compile:#{EXTENSION_NAME}"
 end
 
 Rake::Task[:clean].enhance do
