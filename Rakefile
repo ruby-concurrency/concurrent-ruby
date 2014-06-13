@@ -1,5 +1,6 @@
-require 'rake'
 require 'bundler/gem_tasks'
+require 'rake/extensiontask'
+require 'rake/javaextensiontask'
 
 GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXTENSION_NAME = 'concurrent_ruby_ext'
@@ -21,14 +22,12 @@ end
 
 if defined?(JRUBY_VERSION)
 
-  require 'rake/javaextensiontask'
   Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 
 elsif Concurrent.use_c_extensions?
 
-  require 'rake/extensiontask'
   Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = "ext/#{EXTENSION_NAME}"
     ext.cross_compile = true
@@ -52,6 +51,7 @@ elsif Concurrent.use_c_extensions?
     end
   end
 else
+  task :clean
   task :compile
   task "compile:#{EXTENSION_NAME}"
 end
