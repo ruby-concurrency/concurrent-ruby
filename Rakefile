@@ -1,6 +1,4 @@
 require 'rake'
-require 'rake/extensiontask'
-require 'rake/javaextensiontask'
 
 GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXTENSION_NAME = 'concurrent_ruby_ext'
@@ -10,8 +8,6 @@ Dir.glob('tasks/**/*.rake').each do|rakefile|
   load rakefile
 end
 
-Bundler::GemHelper.install_tasks
-
 desc 'Run benchmarks'
 task :bench do
   exec 'ruby -Ilib -Iext examples/bench_atomic.rb'
@@ -19,14 +15,15 @@ end
 
 if defined?(JRUBY_VERSION)
 
+  require 'rake/javaextensiontask'
   Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 else
 
+  require 'rake/extensiontask'
   Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
-    ext.name = EXTENSION_NAME
     ext.cross_compile = true
     ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
   end
