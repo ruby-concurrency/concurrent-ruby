@@ -1,7 +1,13 @@
 require 'rake'
+require 'bundler/gem_tasks'
 
 GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXTENSION_NAME = 'concurrent_ruby_ext'
+
+Bundler::GemHelper.install_tasks
+
+$:.push File.join(File.dirname(__FILE__), 'lib')
+require 'extension_helper'
 
 $:.unshift 'tasks'
 Dir.glob('tasks/**/*.rake').each do|rakefile|
@@ -19,11 +25,12 @@ if defined?(JRUBY_VERSION)
   Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
-else
+
+elsif Concurrent.use_c_extensions?
 
   require 'rake/extensiontask'
   Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
-    ext.ext_dir = 'ext'
+    ext.ext_dir = "ext/#{EXTENSION_NAME}"
     ext.cross_compile = true
     ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
   end
@@ -44,6 +51,9 @@ else
       end
     end
   end
+else
+  task :compile
+  task "compile:#{EXTENSION_NAME}"
 end
 
 Rake::Task[:clean].enhance do
