@@ -3,7 +3,7 @@ require 'fileutils'
 $:.push File.join(File.dirname(__FILE__), '../lib')
 require 'extension_helper'
 
-EXTENSION_NAME = 'concurrent_cruby'
+EXTENSION_NAME = 'concurrent_ruby_ext'
 
 if defined?(JRUBY_VERSION)
   puts 'JRuby detected. Pure Java optimizations will be used.'

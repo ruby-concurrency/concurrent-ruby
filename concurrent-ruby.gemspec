@@ -23,10 +23,11 @@ Gem::Specification.new do |s|
   s.require_paths    = ['lib']
 
   if defined?(JRUBY_VERSION)
-    s.files = Dir['lib/concurrent_jruby.jar']
+    s.files += Dir['lib/concurrent_ruby_ext.jar']
     s.platform = 'java'
   else
     s.extensions = 'ext/extconf.rb'
+    s.files << 'ext/Makefile'
   end
 
   s.required_ruby_version = '>= 1.9.3'
