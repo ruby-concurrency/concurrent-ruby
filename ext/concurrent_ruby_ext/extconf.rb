@@ -1,22 +1,21 @@
 require 'fileutils'
 
-$:.push File.join(File.dirname(__FILE__), '../lib')
+$:.push File.join(File.dirname(__FILE__), '../../lib')
 require 'extension_helper'
 
-EXTENSION_NAME = 'concurrent_cruby'
+EXTENSION_NAME = 'concurrent_ruby_ext'
 
-if defined?(JRUBY_VERSION)
-  puts 'JRuby detected. Pure Java optimizations will be used.'
-elsif ! Concurrent.use_c_extensions?
-  puts 'C optimizations are only supported on MRI 2.0 and above.'
-else
-
-  def fake_build
-    # http://yorickpeterse.com/articles/hacking-extconf-rb/
-    FileUtils.touch(File.join(Dir.pwd, EXTENSION_NAME + '.' + RbConfig::CONFIG['DLEXT']))
-    $makefile_created = true
+def create_dummy_makefile
+  File.open('Makefile', 'w') do |f|
+    f.puts 'all:'
+    f.puts 'install:'
   end
+end
 
+if defined?(JRUBY_VERSION) || ! Concurrent.use_c_extensions? 
+  create_dummy_makefile
+  warn 'C optimizations are not supported on this version of Ruby.'
+else
   begin
 
     require 'mkmf'
@@ -54,7 +53,7 @@ CODE
 
     create_makefile(EXTENSION_NAME)
   rescue
-    puts 'C optimizations are not supported on this version of Ruby.'
-    fake_build
+    create_dummy_makefile
+    warn 'C optimizations cannot be compiled on this version of Ruby.'
   end
 end

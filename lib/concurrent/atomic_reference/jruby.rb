@@ -1,4 +1,4 @@
-require 'concurrent_jruby'
+require 'concurrent_ruby_ext'
 require 'concurrent/atomic_reference/direct_update'
 
 module Concurrent

@@ -11,7 +11,7 @@ begin
 
   require "concurrent/atomic_reference/#{ruby_engine}"
 rescue LoadError
-  warn "#{__FILE__}:#{__LINE__}: unsupported Ruby engine `#{RUBY_ENGINE}', using less-efficient Atomic impl"
+  warn "Unsupported Ruby engine `#{RUBY_ENGINE}', using less-efficient Atomic impl"
 end
 
 if defined? Concurrent::JavaAtomic

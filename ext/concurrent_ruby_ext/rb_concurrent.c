@@ -7,9 +7,9 @@
 static VALUE rb_mConcurrent;
 static VALUE rb_cAtomic;
 
-// Init_concurrent_cruby
+// Init_concurrent_ruby_ext
 
-void Init_concurrent_cruby() {
+void Init_concurrent_ruby_ext() {
 
   // define modules and classes
   rb_mConcurrent = rb_define_module("Concurrent");

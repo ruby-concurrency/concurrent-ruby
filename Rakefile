@@ -1,9 +1,11 @@
-require 'rake'
 require 'bundler/gem_tasks'
 require 'rake/extensiontask'
 require 'rake/javaextensiontask'
 
-GEMSPEC = Gem::Specification.load(File.expand_path('../concurrent-ruby.gemspec', __FILE__))
+GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
+EXTENSION_NAME = 'concurrent_ruby_ext'
+
+Bundler::GemHelper.install_tasks
 
 $:.push File.join(File.dirname(__FILE__), 'lib')
 require 'extension_helper'
@@ -13,8 +15,6 @@ Dir.glob('tasks/**/*.rake').each do|rakefile|
   load rakefile
 end
 
-Bundler::GemHelper.install_tasks
-
 desc 'Run benchmarks'
 task :bench do
   exec 'ruby -Ilib -Iext examples/bench_atomic.rb'
@@ -22,18 +22,14 @@ end
 
 if defined?(JRUBY_VERSION)
 
-  EXTENSION_NAME = 'concurrent_jruby'
-
   Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 
 elsif Concurrent.use_c_extensions?
 
-  EXTENSION_NAME = 'concurrent_cruby'
-
   Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
-    ext.ext_dir = 'ext'
+    ext.ext_dir = "ext/#{EXTENSION_NAME}"
     ext.cross_compile = true
     ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
   end
@@ -54,6 +50,10 @@ elsif Concurrent.use_c_extensions?
       end
     end
   end
+else
+  task :clean
+  task :compile
+  task "compile:#{EXTENSION_NAME}"
 end
 
 Rake::Task[:clean].enhance do
@@ -75,11 +75,7 @@ begin
     t.rspec_opts = '--tag ~@not_on_travis'
   end
 
-  if defined?(EXTENSION_NAME)
-    task :default => [:clean, "compile:#{EXTENSION_NAME}", :travis_spec]
-  else
-    task :default => [:clean, :travis_spec]
-  end
+  task :default => [:clean, :compile, :travis_spec]
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
 end
