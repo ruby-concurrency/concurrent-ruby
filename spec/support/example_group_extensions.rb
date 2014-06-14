@@ -22,15 +22,24 @@ module Concurrent
       RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i
     end
 
+    def do_no_reset!
+      @do_not_reset = true
+    end
+
+    @@killed = false
+
     def reset_gem_configuration
-      Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
+      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new if @@killed
+      @@killed = false
     end
 
     def kill_rogue_threads(warning = true)
+      return if @do_not_reset
       warn('[DEPRECATED] brute force thread control being used -- tests need updated') if warning
       Thread.list.each do |thread|
         thread.kill unless thread == Thread.current
       end
+      @@killed = true
     end
 
     extend self
@@ -38,18 +47,6 @@ module Concurrent
 end
 
 class RSpec::Core::ExampleGroup
-  def self.with_full_reset
-    before(:each) do
-      reset_gem_configuration
-    end
-
-    after(:each) do
-      Thread.list.each do |thread|
-        thread.kill unless thread == Thread.current
-      end
-    end
-  end
-
   include Concurrent::TestHelpers
   extend Concurrent::TestHelpers
 end

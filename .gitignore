@@ -6,7 +6,7 @@ tests.txt
 .ruby-gemset
 .bundle/*
 .yardoc/*
-doc/*
+yardoc/*
 tmp/*
 man/*
 *.tmproj

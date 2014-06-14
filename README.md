@@ -2,57 +2,59 @@
 [![Gem Version](https://badge.fury.io/rb/concurrent-ruby.png)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby) [![Coverage Status](https://coveralls.io/repos/ruby-concurrency/concurrent-ruby/badge.png)](https://coveralls.io/r/ruby-concurrency/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.png)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.png)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby) [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.png)](https://gemnasium.com/ruby-concurrency/concurrent-ruby)
 
 <table>
-<tr>
-<td align="left" valign="top">
-<p>
-Modern concurrency tools for Ruby. Inspired by
-<a href="http://www.erlang.org/doc/reference_manual/processes.html">Erlang</a>,
-<a href="http://clojure.org/concurrent_programming">Clojure</a>,
-<a href="http://www.scala-lang.org/api/current/index.html#scala.actors.Actor">Scala</a>,
-<a href="http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell">Haskell</a>,
-<a href="http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx">F#</a>,
-<a href="http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx">C#</a>,
-<a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html">Java</a>,
-and classic concurrency patterns.
-</p>
-<p>
-The design goals of this gem are:
-<ul>
-<li>Be an 'unopinionated' toolbox that provides useful utilities without debating which is better or why</li>
-<li>Remain free of external gem dependencies</li>
-<li>Stay true to the spirit of the languages providing inspiration</li>
-<li>But implement in a way that makes sense for Ruby</li>
-<li>Keep the semantics as idiomatic Ruby as possible</li>
-<li>Support features that make sense in Ruby</li>
-<li>Exclude features that don't make sense in Ruby</li>
-<li>Be small, lean, and loosely coupled</li>
-</ul>
-</p>
-</td>
-<td align="right" valign="top">
-<img src="https://raw.githubusercontent.com/wiki/ruby-concurrency/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
-</td>
-</tr>
+  <tr>
+    <td align="left" valign="top">
+      <p>
+        Modern concurrency tools for Ruby. Inspired by
+        <a href="http://www.erlang.org/doc/reference_manual/processes.html">Erlang</a>,
+        <a href="http://clojure.org/concurrent_programming">Clojure</a>,
+        <a href="http://www.scala-lang.org/api/current/index.html#scala.actors.Actor">Scala</a>,
+        <a href="http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell">Haskell</a>,
+        <a href="http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx">F#</a>,
+        <a href="http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx">C#</a>,
+        <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html">Java</a>,
+        and classic concurrency patterns.
+      </p>
+      <p>
+        The design goals of this gem are:
+        <ul>
+          <li>Be an 'unopinionated' toolbox that provides useful utilities without debating which is better or why</li>
+          <li>Remain free of external gem dependencies</li>
+          <li>Stay true to the spirit of the languages providing inspiration</li>
+          <li>But implement in a way that makes sense for Ruby</li>
+          <li>Keep the semantics as idiomatic Ruby as possible</li>
+          <li>Support features that make sense in Ruby</li>
+          <li>Exclude features that don't make sense in Ruby</li>
+          <li>Be small, lean, and loosely coupled</li>
+        </ul>
+      </p>
+    </td>
+    <td align="right" valign="top">
+      <img src="https://raw.githubusercontent.com/wiki/ruby-concurrency/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
+    </td>
+  </tr>
 </table>
 
-### Install
+## Install
 
 ```shell
 gem install concurrent-ruby
 ```
+
 or add the following line to Gemfile:
 
 ```ruby
 gem 'concurrent-ruby'
 ```
+
 and run `bundle install` from your shell.
 
-*NOTE: There is an old gem from 2007 called "concurrent" that does not appear to be under active development. That isn't us. Please do not run* `gem install concurrent`*. It is not the droid you are looking for.*
+_NOTE: There is an old gem from 2007 called "concurrent" that does not appear to be under active development. That isn't us. Please do not run* `gem install concurrent`*. It is not the droid you are looking for._
 
 ## Features & Documentation
 
 Please see the [Concurrent Ruby Wiki](https://github.com/ruby-concurrency/concurrent-ruby/wiki)
-or the [API documentation](http://rubydoc.info/github/ruby-concurrency/concurrent-ruby/master/frames)
+or the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html))
 for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
 
 There are many concurrency abstractions in this library. These abstractions can be broadly categorized
@@ -74,6 +76,7 @@ into several general groups:
 * Thread synchronization classes and algorithms including [dataflow](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Dataflow), 
   timeout, condition, countdown latch, dependency counter, and event
 * Java-inspired [thread pools](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Thread%20Pools)
+* New fast light-weighted [Actor model](http://ruby-concurrency.github.io/concurrent-ruby/frames.html#!Concurrent/Actress.html) implementation. 
 * And many more...
 
 ### Semantic Versioning
@@ -91,7 +94,7 @@ It should be fully compatible with any interpreter that is compliant with Ruby 1
 Many more code examples can be found in the documentation for each class (linked above).
 This one simple example shows some of the power of this gem.
 
-```ruby
+```ruby    
 require 'concurrent'
 require 'thread'   # for Queue
 require 'open-uri' # for open(uri)

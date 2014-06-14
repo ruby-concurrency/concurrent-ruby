@@ -5,8 +5,6 @@ require_relative 'observable_shared'
 module Concurrent
 
   describe TimerTask do
-    with_full_reset
-
     before(:each) do
       # suppress deprecation warnings.
       Concurrent::TimerTask.any_instance.stub(:warn)

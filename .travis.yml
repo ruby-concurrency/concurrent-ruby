@@ -15,3 +15,4 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
+script: "bundle exec rspec --color --backtrace --seed 1 --format documentation ./spec"
