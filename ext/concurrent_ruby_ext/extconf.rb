@@ -14,7 +14,7 @@ end
 
 if defined?(JRUBY_VERSION) || ! Concurrent.use_c_extensions? 
   create_dummy_makefile
-  puts 'C optimizations are not supported on this version of Ruby.'
+  warn 'C optimizations are not supported on this version of Ruby.'
 else
   begin
 
@@ -54,6 +54,6 @@ CODE
     create_makefile(EXTENSION_NAME)
   rescue
     create_dummy_makefile
-    puts 'C optimizations are not supported on this version of Ruby.'
+    warn 'C optimizations cannot be compiled on this version of Ruby.'
   end
 end
