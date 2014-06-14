@@ -1,4 +1,5 @@
 require 'rbconfig'
+require_relative '../../lib/extension_helper.rb'
 
 module Concurrent
   module TestHelpers
@@ -22,11 +23,15 @@ module Concurrent
       RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i
     end
 
+    def use_c_extensions?
+      Concurrent.use_c_extensions? # from extension_helper.rb
+    end
+
     def reset_gem_configuration
       Concurrent.instance_variable_set(:@configuration, Concurrent::Configuration.new)
     end
 
-    def kill_rogue_threads(warning = true)
+    def kill_rogue_threads(warning = false)
       warn('[DEPRECATED] brute force thread control being used -- tests need updated') if warning
       Thread.list.each do |thread|
         thread.kill unless thread == Thread.current
