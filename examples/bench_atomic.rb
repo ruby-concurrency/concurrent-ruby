@@ -10,7 +10,7 @@ $go = false # for synchronizing parallel threads
 N = ARGV[1] ? ARGV[1].to_i : 100_000
 
 # number of threads for parallel test
-M = ARGV[0] ? ARGV[0].to_i : 100
+M = ARGV[0] ? ARGV[0].to_i : 10
 
 # list of platform-specific implementations
 ATOMICS = [
