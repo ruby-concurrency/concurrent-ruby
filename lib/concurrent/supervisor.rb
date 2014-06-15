@@ -60,6 +60,7 @@ module Concurrent
     alias_method :max_t, :max_time
 
     def initialize(opts = {})
+      warn '[EXPERIMENTAL] Supervisor is being completely rewritten and will change soon.'
       @restart_strategy = opts[:restart_strategy] || opts[:strategy] || :one_for_one
       @monitor_interval = (opts[:monitor_interval] || DEFAULT_MONITOR_INTERVAL).to_f
       @max_restart = (opts[:max_restart] || opts[:max_r] || DEFAULT_MAX_RESTART).to_i

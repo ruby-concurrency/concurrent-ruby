@@ -5,6 +5,12 @@ module Concurrent
 
   describe Supervisor do
 
+    before do
+      # suppress deprecation warnings.
+      Concurrent::Supervisor.any_instance.stub(:warn)
+      Concurrent::Supervisor.stub(:warn)
+    end
+
     let(:worker_class) do
       Class.new {
         attr_reader :start_count, :stop_count
@@ -62,7 +68,7 @@ module Concurrent
 
     after(:each) do
       subject.stop
-      kill_rogue_threads
+      kill_rogue_threads(false)
       @thread.kill unless @thread.nil?
       sleep(0.1)
     end
