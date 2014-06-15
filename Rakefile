@@ -10,9 +10,17 @@ Bundler::GemHelper.install_tasks
 $:.push File.join(File.dirname(__FILE__), 'lib')
 require 'extension_helper'
 
-$:.unshift 'tasks'
-Dir.glob('tasks/**/*.rake').each do|rakefile|
-  load rakefile
+def safe_load(file)
+  begin
+    load file
+  rescue LoadError => ex
+    puts 'Error loading rake tasks, but will continue...'
+    puts ex.message
+  end
+end
+
+Dir.glob('tasks/**/*.rake').each do |rakefile|
+  safe_load rakefile
 end
 
 desc 'Run benchmarks'
@@ -69,13 +77,11 @@ begin
   require 'rspec'
   require 'rspec/core/rake_task'
 
-  RSpec::Core::RakeTask.new(:spec)
-
-  RSpec::Core::RakeTask.new(:travis_spec) do |t|
-    t.rspec_opts = '--tag ~@not_on_travis'
+  RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = '--color --backtrace --format documentation'
   end
 
-  task :default => [:clean, :compile, :travis_spec]
+  task :default => [:clean, :compile, :spec]
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
 end
