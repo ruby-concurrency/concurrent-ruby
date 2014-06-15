@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   if defined?(JRUBY_VERSION)
     s.files += Dir['lib/concurrent_ruby_ext.jar']
     s.platform = 'java'
-  else
+  elsif ! ENV['BUILD_PURE_RUBY']
     s.extensions = 'ext/concurrent_ruby_ext/extconf.rb'
     s.files += Dir['ext/**/*.{h,c,cpp}']
   end
