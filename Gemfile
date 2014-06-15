@@ -14,7 +14,7 @@ end
 
 group :documentation do
   gem 'countloc', '~> 0.4.0', :platforms => :mri, :require => false
-  gem 'yard', '~> 0.8.7.4', :platforms => :mri, :require => false
+  gem 'yard', '~> 0.8.7.4', :require => false
   gem 'inch', '~> 0.4.1', :platforms => :mri, :require => false
-  gem 'redcarpet', platforms: :mri # understands github markdown
+  gem 'redcarpet', '~> 3.1.2', platforms: :mri # understands github markdown
 end
