@@ -1,7 +1,6 @@
 require 'thread'
 
 require 'concurrent/errors'
-require 'concurrent/runnable'
 
 module Concurrent
 
