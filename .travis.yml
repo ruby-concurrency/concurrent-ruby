@@ -17,4 +17,4 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
-script: "bundle exec compile && bundle exec rspec --color --backtrace --seed 1 --format documentation ./spec"
+script: "bundle exec rake compile && bundle exec rspec --color --backtrace --seed 1 --format documentation ./spec"
