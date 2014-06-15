@@ -7,7 +7,6 @@ tests.txt
 .bundle/*
 .yardoc/*
 yardoc/*
-doc/*
 tmp/*
 man/*
 *.tmproj
