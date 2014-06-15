@@ -4,9 +4,6 @@ require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/safe_task_executor'
 
-# deprecated Updated to use `Executor` instead of `Runnable`
-require 'concurrent/runnable'
-
 module Concurrent
 
   # A very common currency pattern is to run a thread that performs a task at regular
@@ -295,32 +292,6 @@ module Concurrent
       end
     end
 
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    def terminate(*args) deprecated(:terminate, :kill, *args); end
-
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    def stop(*args) deprecated(:stop, :shutdown, *args); end
-
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    def cancel(*args) deprecated(:cancel, :shutdown, *args); end
-
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    def run!(*args) deprecated(:run!, :execute); end
-
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    def self.run!(*args, &block)
-      warn "[DEPRECATED] `run!` is deprecated, please use `execute` instead."
-      Concurrent::Runnable::Context.new(TimerTask.new(*args, &block))
-    end
-
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    def run
-      raise Concurrent::Runnable::LifecycleError.new('already running') if @running.true?
-      self.execute
-      self.wait_for_termination
-      true
-    end
-
     private :post, :<<
 
     protected
@@ -365,13 +336,6 @@ module Concurrent
         schedule_next_task
         observers.notify_observers(Time.now, nil, Concurrent::TimeoutError.new)
       end
-    end
-
-    # @deprecated Updated to use `Executor` instead of `Runnable`
-    # @!visibility private
-    def deprecated(old, new, *args)
-      warn "[DEPRECATED] `#{old}` is deprecated, please use `#{new}` instead."
-      self.send(new, *args)
     end
   end
 end
