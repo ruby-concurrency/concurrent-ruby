@@ -1,10 +1,15 @@
 require 'spec_helper'
 require 'timecop'
-require_relative 'runnable_shared'
 
 module Concurrent
 
   describe Supervisor do
+
+    before do
+      # suppress deprecation warnings.
+      Concurrent::Supervisor.any_instance.stub(:warn)
+      Concurrent::Supervisor.stub(:warn)
+    end
 
     let(:worker_class) do
       Class.new {
@@ -61,12 +66,69 @@ module Concurrent
 
     subject{ Supervisor.new(strategy: :one_for_one, monitor_interval: 0.1) }
 
-    it_should_behave_like :runnable
-
     after(:each) do
       subject.stop
-      kill_rogue_threads
+      kill_rogue_threads(false)
+      @thread.kill unless @thread.nil?
       sleep(0.1)
+    end
+
+    context '#run' do
+
+      it 'starts the (blocking) runner on the current thread when stopped' do
+        @thread = Thread.new { subject.run }
+        @thread.join(0.1).should be_nil
+      end
+
+      it 'raises an exception when already running' do
+        @thread = Thread.new { subject.run }
+        @thread.join(0.1)
+        expect {
+          subject.run
+        }.to raise_error
+      end
+
+      it 'returns true when stopped normally' do
+        @expected = false
+        @thread = Thread.new { @expected = subject.run }
+        @thread.join(0.1)
+        subject.stop
+        @thread.join(1)
+        @expected.should be_true
+      end
+    end
+
+    context '#stop' do
+
+      it 'returns true when not running' do
+        subject.stop.should be_true
+      end
+
+      it 'returns true when successfully stopped' do
+        @thread = Thread.new { subject.run }
+        @thread.join(0.1)
+        subject.stop.should be_true
+        subject.should_not be_running
+      end
+    end
+
+    context '#running?' do
+
+      it 'returns true when running' do
+        @thread = Thread.new { subject.run }
+        @thread.join(0.1)
+        subject.should be_running
+      end
+
+      it 'returns false when first created' do
+        subject.should_not be_running
+      end
+
+      it 'returns false when not running' do
+        subject.stop
+        sleep(0.1)
+        subject.should_not be_running
+      end
     end
 
     context '#initialize' do
@@ -606,7 +668,7 @@ module Concurrent
         sleep(0.1)
         subject.remove_worker(1234).should be_nil
       end
-      
+
       it 'returns the worker on success' do
         worker = error_class.new
         supervisor = Supervisor.new(monitor_interval: 60)

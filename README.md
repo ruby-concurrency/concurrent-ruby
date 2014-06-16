@@ -8,7 +8,7 @@
         Modern concurrency tools for Ruby. Inspired by
         <a href="http://www.erlang.org/doc/reference_manual/processes.html">Erlang</a>,
         <a href="http://clojure.org/concurrent_programming">Clojure</a>,
-        <a href="http://www.scala-lang.org/api/current/index.html#scala.actors.Actor">Scala</a>,
+        <a href="http://akka.io/">Scala</a>,
         <a href="http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell">Haskell</a>,
         <a href="http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx">F#</a>,
         <a href="http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx">C#</a>,

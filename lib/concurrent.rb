@@ -2,12 +2,12 @@ require 'concurrent/version'
 require 'concurrent/configuration'
 
 require 'concurrent/atomics'
-require 'concurrent/actors'
 require 'concurrent/channels'
 require 'concurrent/collections'
 require 'concurrent/executors'
 require 'concurrent/utilities'
 
+require 'concurrent/actress'
 require 'concurrent/agent'
 require 'concurrent/async'
 require 'concurrent/dataflow'
@@ -22,13 +22,10 @@ require 'concurrent/obligation'
 require 'concurrent/observable'
 require 'concurrent/options_parser'
 require 'concurrent/promise'
-require 'concurrent/runnable'
 require 'concurrent/scheduled_task'
-require 'concurrent/stoppable'
 require 'concurrent/supervisor'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
-require 'concurrent/actress'
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.
