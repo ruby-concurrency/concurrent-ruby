@@ -71,6 +71,7 @@ if RUBY_PLATFORM == 'java'
 
         raise ArgumentError.new('max_threads must be greater than zero') if max_length <= 0
         raise ArgumentError.new('min_threads cannot be less than zero') if min_length < 0
+        raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
         raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
 
         if min_length == 0 && @max_queue == 0
@@ -173,7 +174,6 @@ if RUBY_PLATFORM == 'java'
       def running?
         super && !@executor.isTerminating
       end
-
     end
   end
 end
