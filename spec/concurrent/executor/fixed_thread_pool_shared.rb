@@ -13,7 +13,34 @@ share_examples_for :fixed_thread_pool do
 
   it_should_behave_like :thread_pool
 
-  context '#initialize' do
+  context '#initialize default values' do
+
+    subject { described_class.new(5) }
+
+    it 'defaults :min_length correctly' do
+      subject.min_length.should eq 5
+    end
+
+    it 'defaults :max_length correctly' do
+      subject.max_length.should eq 5
+    end
+
+    it 'defaults :overflow_policy to :abort' do
+      subject.overflow_policy.should eq :abort
+    end
+
+
+    it 'defaults :idletime correctly' do
+      subject.idletime.should eq 0
+    end
+
+    it 'defaults default :max_queue to zero' do
+      subject.max_queue.should eq 0
+    end
+
+  end
+
+  context '#initialize explicit values' do
 
     it 'raises an exception when the pool length is less than one' do
       lambda {
@@ -21,34 +48,10 @@ share_examples_for :fixed_thread_pool do
       }.should raise_error(ArgumentError)
     end
 
-    it 'sets :min_length correctly' do
-      subject = described_class.new(10)
-      subject.min_length.should eq 10
-    end
-
-    it 'sets :max_length correctly' do
-      subject = described_class.new(5)
-      subject.max_length.should eq 5
-    end
-
-    it 'sets :idletime correctly' do
-      subject = described_class.new(5)
-      subject.idletime.should eq 0
-    end
-
-    it 'sets default :max_queue to zero' do
-      subject = described_class.new(5)
-      subject.max_queue.should eq 0
-    end
 
     it 'sets explicit :max_queue correctly' do
       subject = described_class.new(5, :max_queue => 10)
       subject.max_queue.should eq 10
-    end
-
-    it 'defaults :overflow_policy to :abort' do
-      subject = described_class.new(5)
-      subject.overflow_policy.should eq :abort
     end
 
     it 'correctly sets valid :overflow_policy' do
