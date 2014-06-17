@@ -11,6 +11,7 @@ share_examples_for :executor_service do
 
   it_should_behave_like :global_thread_pool
 
+
   context '#post' do
 
     it 'rejects the block while shutting down' do
