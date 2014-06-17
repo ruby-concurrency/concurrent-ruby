@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative 'global_thread_pool_shared'
+require 'thread'
 
 share_examples_for :executor_service do
 
@@ -109,13 +110,15 @@ share_examples_for :executor_service do
       @expected.should be_true
     end
 
+
     it 'allows pending tasks to complete' do
-      @expected = false
-      subject.post{ sleep(0.1) }
-      subject.post{ sleep(0.1); @expected = true }
+      q = Queue.new
+      5.times do |i|
+        subject.post { sleep 0.1; q << i }
+      end
       subject.shutdown
       subject.wait_for_termination(1)
-      @expected.should be_true
+      q.length.should eq 5
     end
 
     it "stops accepting/running new tasks" do

@@ -6,7 +6,7 @@ if Concurrent::TestHelpers.jruby?
 
   module Concurrent
 
-    describe JavaCachedThreadPool do
+    describe JavaCachedThreadPool, :type=>:jruby do
 
       subject { described_class.new(overflow_policy: :discard) }
 
