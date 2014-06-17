@@ -112,7 +112,6 @@ share_examples_for :executor_service do
 
 
     it 'allows pending tasks to complete' do
-      subject = described_class.new(2)
       q = Queue.new
       5.times do |i|
         subject.post { sleep 0.1; q << i }
