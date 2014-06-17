@@ -32,7 +32,7 @@ share_examples_for :fixed_thread_pool do
 
 
     it 'defaults :idletime correctly' do
-      subject.idletime.should eq 0
+      subject.idletime.should eq subject.class.const_get(:DEFAULT_THREAD_IDLETIMEOUT)
     end
 
     it 'defaults default :max_queue to zero' do
@@ -154,12 +154,6 @@ share_examples_for :fixed_thread_pool do
     end
   end
 
-  context '#idletime' do
-
-    it 'returns zero' do
-      subject.idletime.should eq  subject.class.const_get(:DEFAULT_THREAD_IDLETIMEOUT)
-    end
-  end
 
   context '#kill' do
 
