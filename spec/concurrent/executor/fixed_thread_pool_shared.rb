@@ -157,7 +157,7 @@ share_examples_for :fixed_thread_pool do
   context '#idletime' do
 
     it 'returns zero' do
-      subject.idletime.should eq 0
+      subject.idletime.should eq  subject.class.const_get(:DEFAULT_THREAD_IDLETIMEOUT)
     end
   end
 
