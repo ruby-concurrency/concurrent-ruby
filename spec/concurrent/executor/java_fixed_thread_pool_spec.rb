@@ -6,7 +6,7 @@ if Concurrent::TestHelpers.jruby?
 
   module Concurrent
 
-    describe JavaFixedThreadPool, :type=:jruby do
+    describe JavaFixedThreadPool, :type=>:jruby do
 
       subject { described_class.new(5, overflow_policy: :discard) }
 
