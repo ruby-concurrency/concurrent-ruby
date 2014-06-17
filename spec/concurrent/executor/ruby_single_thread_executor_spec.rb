@@ -4,7 +4,7 @@ require_relative 'thread_pool_shared'
 
 module Concurrent
 
-  describe RubySingleThreadExecutor, :type=>:mri do
+  describe RubySingleThreadExecutor, :type=>:mrirbx do
 
     after(:each) do
       subject.kill

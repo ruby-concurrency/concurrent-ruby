@@ -31,7 +31,7 @@ RSpec.configure do |config|
 
   # Differentiate between jruby and mri
   if defined? JRUBY_VERSION
-    config.filter_run_excluding :type => :mri
+    config.filter_run_excluding :type => :mrirbx
   else
     config.filter_run_excluding :type => :jruby
   end

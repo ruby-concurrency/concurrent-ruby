@@ -3,7 +3,7 @@ require_relative 'cached_thread_pool_shared'
 
 module Concurrent
 
-  describe RubyCachedThreadPool, :type=>:mri do
+  describe RubyCachedThreadPool, :type=>:mrirbx do
 
     subject do
       described_class.new(
