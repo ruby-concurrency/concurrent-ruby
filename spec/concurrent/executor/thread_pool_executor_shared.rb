@@ -9,6 +9,7 @@ share_examples_for :thread_pool_executor do
     sleep(0.1)
   end
 
+
   context '#initialize defaults' do
 
     subject { described_class.new }
