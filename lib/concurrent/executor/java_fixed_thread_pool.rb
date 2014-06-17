@@ -17,14 +17,22 @@ if RUBY_PLATFORM == 'java'
       #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
       def initialize(num_threads, opts = {})
-        @overflow_policy = opts.fetch(:overflow_policy, :abort)
-        @max_queue = 0
 
-        raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
-        raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
+        opts = {
+            min_threads: num_threads,
+            max_threads: num_threads
+        }.merge(opts)
+        super(opts)
 
-        @executor = java.util.concurrent.Executors.newFixedThreadPool(num_threads)
-        @executor.setRejectedExecutionHandler(OVERFLOW_POLICIES[@overflow_policy].new)
+
+        #@overflow_policy = opts.fetch(:overflow_policy, :abort)
+        #@max_queue = 0
+        #
+        #raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
+        #raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
+        #
+        #@executor = java.util.concurrent.Executors.newFixedThreadPool(num_threads)
+        #@executor.setRejectedExecutionHandler(OVERFLOW_POLICIES[@overflow_policy].new)
 
         set_shutdown_hook
       end
