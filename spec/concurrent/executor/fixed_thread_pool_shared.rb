@@ -59,6 +59,11 @@ share_examples_for :fixed_thread_pool do
       subject.overflow_policy.should eq :caller_runs
     end
 
+    it "correctly sets valid :idletime" do
+      subject = described_class.new(5, :idletime => 10)
+      subject.idletime.should eq 10
+    end
+
     it 'raises an exception if given an invalid :overflow_policy' do
       expect {
         described_class.new(5, overflow_policy: :bogus)
