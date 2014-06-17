@@ -20,6 +20,49 @@ share_examples_for :fixed_thread_pool do
         described_class.new(0)
       }.should raise_error(ArgumentError)
     end
+
+    it 'sets :min_length correctly' do
+      subject = described_class.new(10)
+      subject.min_length.should eq 10
+    end
+
+    it 'sets :max_length correctly' do
+      subject = described_class.new(5)
+      subject.max_length.should eq 5
+    end
+
+    it 'sets :idletime correctly' do
+      subject = described_class.new(5)
+      subject.idletime.should eq 0
+    end
+
+    it 'sets default :max_queue to zero' do
+      subject = described_class.new(5)
+      subject.max_queue.should eq 0
+    end
+
+    it 'sets explicit :max_queue correctly' do
+      subject = described_class.new(5, :max_queue => 10)
+      subject.max_queue.should eq 10
+    end
+
+    it 'defaults :overflow_policy to :abort' do
+      subject = described_class.new(5)
+      subject.overflow_policy.should eq :abort
+    end
+
+    it 'correctly sets valid :overflow_policy' do
+      subject = described_class.new(5, :overflow_policy => :caller_runs)
+      subject.overflow_policy.should eq :caller_runs
+    end
+
+    it 'raises an exception if given an invalid :overflow_policy' do
+      expect {
+        described_class.new(5, overflow_policy: :bogus)
+      }.to raise_error(ArgumentError)
+    end
+
+
   end
 
   context '#min_length' do
