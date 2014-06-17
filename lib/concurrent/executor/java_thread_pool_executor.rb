@@ -171,17 +171,9 @@ if RUBY_PLATFORM == 'java'
       #
       # @return [Boolean] `true` when running, `false` when shutting down or shutdown
       def running?
-        super && ! @executor.isTerminating
+        super && !@executor.isTerminating
       end
 
-      # Begin an orderly shutdown. Tasks already in the queue will be executed,
-      # but no new tasks will be accepted. Has no additional effect if the
-      # thread pool is not running.
-      def shutdown
-        super
-        @executor.getQueue.clear
-        nil
-      end
     end
   end
 end
