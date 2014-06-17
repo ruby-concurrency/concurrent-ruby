@@ -24,7 +24,7 @@ module Concurrent
         max_threads: num_threads,
         overflow_policy: overflow_policy,
         max_queue: DEFAULT_MAX_QUEUE_SIZE,
-        idletime: 0
+        idletime: DEFAULT_THREAD_IDLETIMEOUT,
       }.merge(opts)
       super(opts)
     end
