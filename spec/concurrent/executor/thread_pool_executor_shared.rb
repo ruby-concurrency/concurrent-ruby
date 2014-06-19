@@ -3,33 +3,56 @@ require_relative 'thread_pool_shared'
 
 share_examples_for :thread_pool_executor do
 
+
   after(:each) do
     subject.kill
     sleep(0.1)
   end
 
-  it_should_behave_like :thread_pool
+  context '#initialize defaults' do
 
-  context '#initialize' do
+    subject { described_class.new }
 
     it 'defaults :min_length to DEFAULT_MIN_POOL_SIZE' do
-      subject = described_class.new
       subject.min_length.should eq described_class::DEFAULT_MIN_POOL_SIZE
     end
 
+
     it 'defaults :max_length to DEFAULT_MAX_POOL_SIZE' do
-      subject = described_class.new
       subject.max_length.should eq described_class::DEFAULT_MAX_POOL_SIZE
     end
 
     it 'defaults :idletime to DEFAULT_THREAD_IDLETIMEOUT' do
-      subject = described_class.new
       subject.idletime.should eq described_class::DEFAULT_THREAD_IDLETIMEOUT
     end
 
     it 'defaults :max_queue to DEFAULT_MAX_QUEUE_SIZE' do
-      subject = described_class.new
       subject.max_queue.should eq described_class::DEFAULT_MAX_QUEUE_SIZE
+    end
+
+    it 'defaults :overflow_policy to :abort' do
+      subject.overflow_policy.should eq :abort
+    end
+  end
+
+  context "#initialize explicit values" do
+
+    it "sets :min_threads" do
+      described_class.new(min_threads: 2).min_length.should eq 2
+    end
+
+    it "sets :max_threads" do
+      described_class.new(max_threads: 2).max_length.should eq 2
+    end
+
+    it "sets :idletime" do
+      described_class.new(idletime: 2).idletime.should eq 2
+    end
+
+    it "doesn't allow max_threads < min_threads" do
+      expect {
+        described_class.new(min_threads: 2, max_threads: 1)
+      }.to raise_error(ArgumentError)
     end
 
     it 'accepts all valid overflow policies' do
@@ -39,10 +62,6 @@ share_examples_for :thread_pool_executor do
       end
     end
 
-    it 'defaults :overflow_policy to :abort' do
-      subject = described_class.new
-      subject.overflow_policy.should eq :abort
-    end
 
     it 'raises an exception if :min_threads is less than zero' do
       expect {
