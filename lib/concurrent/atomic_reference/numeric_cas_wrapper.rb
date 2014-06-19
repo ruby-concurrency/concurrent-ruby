@@ -1,8 +1,9 @@
 module Concurrent
 
+  # Special "compare and set" handling of numeric values.
   module AtomicNumericCompareAndSetWrapper
-    #alias _compare_and_set compare_and_set
 
+    # @!macro atomic_reference_method_compare_and_set
     def compare_and_set(expected, new)
       if expected.kind_of? Numeric
         while true
@@ -19,6 +20,6 @@ module Concurrent
         _compare_and_set(expected, new)
       end
     end
-    alias compare_and_swap compare_and_set
+    alias_method :compare_and_swap, :compare_and_set
   end
 end
