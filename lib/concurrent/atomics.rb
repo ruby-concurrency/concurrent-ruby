@@ -1,4 +1,4 @@
-require 'concurrent/atomic/atomic'
+require 'concurrent/atomic'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/atomic/condition'

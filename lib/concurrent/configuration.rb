@@ -1,7 +1,7 @@
 require 'thread'
 require 'concurrent/delay'
 require 'concurrent/errors'
-require 'concurrent/atomic/atomic'
+require 'concurrent/atomic'
 require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'

@@ -1,12 +1,14 @@
 language: ruby
 rvm:
-  - 2.1.0
+  - 2.1.2
   - 2.0.0
   - 1.9.3
   - ruby-head
   - jruby-19mode
   - jruby-head
   - rbx-2
+jdk:
+  - oraclejdk8
 branches:
   only:
     - master
@@ -15,4 +17,4 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
-script: "bundle exec rspec --color --backtrace --seed 1 --format documentation ./spec"
+script: "bundle exec rake compile && bundle exec rspec --color --backtrace --seed 1 --format documentation ./spec"
