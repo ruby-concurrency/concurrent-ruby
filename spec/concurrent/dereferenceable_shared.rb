@@ -117,7 +117,8 @@ share_examples_for :dereferenceable do
     subject.value.should be_nil
   end
 
-  it 'supports dereference flags with observers', :brittle, :refactored do
+  it 'supports dereference flags with observers', :brittle do
+    pending('brittle') if described_class == Concurrent::ScheduledTask
 
     if dereferenceable_subject(0).respond_to?(:add_observer)
 

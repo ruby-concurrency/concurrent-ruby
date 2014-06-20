@@ -180,7 +180,7 @@ share_examples_for :fixed_thread_pool do
     end
   end
 
-  context 'overflow policy' do
+  context 'overflow policy', :brittle, :refactored do
 
     before do
       @queue = Queue.new
@@ -188,24 +188,39 @@ share_examples_for :fixed_thread_pool do
 
     # On abort, it should raise an error
     it "raises an error when overflow on abort" do
+      latch = Concurrent::CountDownLatch.new(5)
+      mutex = Mutex.new
+
       subject = described_class.new(2, :max_queue => 2, :overflow_policy => :abort)
       expect {
         5.times do |i|
-          subject.post { sleep 0.1; @queue << i}
+          subject.post do
+            sleep 0.1
+            mutex.synchronize{ @queue << i }
+            latch.count_down
+          end
         end
         subject.shutdown
-        subject.wait_for_termination(1)
+        latch.wait(1)
       }.to raise_error
     end
 
     # On discard, we'd expect no error, but also not all five results
     it 'discards when overflow is :discard' do
+      latch = Concurrent::CountDownLatch.new(5)
+      mutex = Mutex.new
+
       subject = described_class.new(2, :max_queue => 2, :overflow_policy => :discard)
       5.times do |i|
-        subject.post { sleep 0.1; @queue << i}
+        subject.post do
+          sleep 0.1
+          mutex.synchronize{ @queue << i }
+          latch.count_down
+        end
       end
       subject.shutdown
-      subject.wait_for_termination(1)
+      latch.wait(1)
+
       @queue.length.should be < 5
     end
 
@@ -213,12 +228,21 @@ share_examples_for :fixed_thread_pool do
     # actually ran the block
 
     it 'uses the calling thread for overflow under caller_runs' do
+      latch = Concurrent::CountDownLatch.new(5)
+      mutex = Mutex.new
+
       subject = described_class.new(2, :max_queue => 2, :overflow_policy => :caller_runs)
+
       5.times do |i|
-        subject.post { sleep 0.1; @queue << Thread.current}
+        subject.post do
+          sleep 0.1
+          mutex.synchronize{ @queue << Thread.current }
+          latch.count_down
+        end
       end
       subject.shutdown
-      subject.wait_for_termination(1)
+      latch.wait(1)
+
       # Turn the queue into an array
       a = []
       a << @queue.shift until @queue.empty?
@@ -227,6 +251,4 @@ share_examples_for :fixed_thread_pool do
       a.uniq.size.should eq 3 # one for each of teh two threads, plus the caller
     end
   end
-
-
 end
