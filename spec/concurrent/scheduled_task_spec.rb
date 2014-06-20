@@ -39,7 +39,10 @@ module Concurrent
       # dereferenceable
 
       def dereferenceable_subject(value, opts = {})
-        ScheduledTask.execute(0.1, opts){ value }.tap{ sleep(0.2) }
+        latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.execute(0.1, opts){ value }.tap{ latch.count_down }
+        latch.wait(1)
+        task
       end
 
       def dereferenceable_observable(opts = {})

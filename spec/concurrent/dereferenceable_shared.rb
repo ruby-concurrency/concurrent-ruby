@@ -117,15 +117,6 @@ share_examples_for :dereferenceable do
     subject.value.should be_nil
   end
 
-  it 'locks when all options are false' do
-    subject = dereferenceable_subject(0)
-    mutex = double('mutex')
-    subject.stub(:mutex).and_return(mutex)
-    mutex.should_receive(:lock).at_least(:once)
-    mutex.should_receive(:unlock).at_least(:once)
-    subject.value
-  end
-
   it 'supports dereference flags with observers', :brittle, :refactored do
 
     if dereferenceable_subject(0).respond_to?(:add_observer)
