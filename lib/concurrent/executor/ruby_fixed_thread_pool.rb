@@ -19,13 +19,13 @@ module Concurrent
       raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
       raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(overflow_policy)
 
-      opts = opts.merge(
+      opts = {
         min_threads: num_threads,
         max_threads: num_threads,
-        num_threads: overflow_policy,
+        overflow_policy: overflow_policy,
         max_queue: DEFAULT_MAX_QUEUE_SIZE,
-        idletime: 0
-      )
+        idletime: DEFAULT_THREAD_IDLETIMEOUT,
+      }.merge(opts)
       super(opts)
     end
   end
