@@ -3,7 +3,7 @@ require 'timecop'
 
 module Concurrent
 
-  describe Supervisor do
+  describe Supervisor, :unfinished do
 
     before do
       # suppress deprecation warnings.
