@@ -28,6 +28,7 @@ Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require Fil
 
 RSpec.configure do |config|
   config.order = 'random'
+  config.treat_symbols_as_metadata_keys_with_true_values = true
 
   config.before(:each) do
     #TODO: Better configuration management in individual test suites
