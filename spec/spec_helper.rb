@@ -29,6 +29,13 @@ Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require Fil
 RSpec.configure do |config|
   config.order = 'random'
 
+  # Differentiate between jruby and mri
+  if defined? JRUBY_VERSION
+    config.filter_run_excluding :type => :mrirbx
+  else
+    config.filter_run_excluding :type => :jruby
+  end
+
   config.before(:each) do
     #TODO: Better configuration management in individual test suites
     reset_gem_configuration

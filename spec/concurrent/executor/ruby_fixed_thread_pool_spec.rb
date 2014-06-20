@@ -3,7 +3,7 @@ require_relative 'fixed_thread_pool_shared'
 
 module Concurrent
 
-  describe RubyFixedThreadPool do
+  describe RubyFixedThreadPool, :type=> :mrirbx do
 
     subject { described_class.new(5, overflow_policy: :discard) }
 

@@ -86,6 +86,7 @@ module Concurrent
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
       raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
       raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(@overflow_policy)
+      raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
 
       init_executor
 

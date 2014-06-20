@@ -6,7 +6,7 @@ if Concurrent::TestHelpers.jruby?
 
   module Concurrent
 
-    describe JavaThreadPoolExecutor do
+    describe JavaThreadPoolExecutor, :type => :jruby do
 
       after(:each) do
         subject.kill
