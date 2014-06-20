@@ -16,7 +16,7 @@ module Concurrent
       }.to raise_error(ArgumentError)
     end
 
-    it 'executes the block after the given number of seconds' do
+    it 'executes the block after the given number of seconds', :brittle do
       start = Time.now.to_f
       latch = CountDownLatch.new(1)
       Concurrent::timer(0.5){ latch.count_down }

@@ -472,7 +472,7 @@ module Concurrent
         @expected.should eq 10
       end
 
-      it 'aliases #validates_with for :validate' do
+      it 'aliases #validates_with for :validate', :brittle do
         @expected = nil
         subject.validates_with { |v| @expected = v }
         subject.post { 10 }

@@ -126,7 +126,7 @@ module Concurrent
         }.should raise_error
       end
 
-      specify '#execution_interval is writeable' do
+      specify '#execution_interval is writeable', :brittle do
 
         latch   = CountDownLatch.new(1)
         subject = TimerTask.new(execution_interval: 1) do |task|
@@ -145,7 +145,7 @@ module Concurrent
         subject.kill
       end
 
-      specify '#execution_interval is writeable' do
+      specify '#execution_interval is writeable', :brittle do
 
         latch   = CountDownLatch.new(1)
         subject = TimerTask.new(timeout_interval: 1, execution_interval: 0.1) do |task|

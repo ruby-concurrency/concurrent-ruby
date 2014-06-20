@@ -48,7 +48,7 @@ module Concurrent
       end
 
       context 'with timeout' do
-        it 'should block until timeout' do
+        it 'should block until timeout', :brittle do
 
           value = 0
           start = Time.now.to_f

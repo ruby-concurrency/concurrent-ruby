@@ -140,7 +140,7 @@ module Concurrent
         future.execute
       end
 
-      it 'sets the state to :pending' do
+      it 'sets the state to :pending', :brittle do
         future = Future.new(executor: executor){ sleep(0.1) }
         future.execute
         future.should be_pending
