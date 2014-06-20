@@ -13,15 +13,18 @@ module Concurrent
 
     context :dereferenceable do
 
+      def kill_subject
+        @subject.kill if @subject
+      rescue Exception => ex
+        # prevent exceptions with mocks in tests
+      end
+
       after(:each) do
-        begin
-          @subject.kill if @subject
-        rescue Exception => ex
-          # prevent exceptions with mocks in tests
-        end
+        kill_subject
       end
 
       def dereferenceable_subject(value, opts = {})
+        kill_subject
         opts     = opts.merge(execution_interval: 0.1, run_now: true)
         @subject = TimerTask.new(opts) { value }.execute.tap { sleep(0.1) }
       end
