@@ -208,7 +208,7 @@ module Concurrent
 
     end
 
-    context 'fulfillment' do
+    context 'fulfillment', :brittle do
 
       it 'process each block in the queue' do
         @expected = []
@@ -239,7 +239,7 @@ module Concurrent
       end
     end
 
-    context 'validation' do
+    context 'validation', :brittle do
 
       it 'processes the validator when present' do
         @expected = nil
@@ -279,7 +279,7 @@ module Concurrent
       end
     end
 
-    context 'rejection' do
+    context 'rejection', :brittle do
 
       it 'calls the first exception block with a matching class' do
         @expected = nil
@@ -373,7 +373,7 @@ module Concurrent
       end
     end
 
-    context 'observation' do
+    context 'observation', :brittle do
 
       it 'notifies all observers when the value changes' do
         agent = Agent.new(0, executor: executor)
@@ -410,7 +410,7 @@ module Concurrent
       end
     end
 
-    context 'clojure-like behaviour' do
+    context 'clojure-like behaviour', :brittle do
       it 'does not block dereferencing when updating the value' do
         continue = IVar.new
         agent    = Agent.new(0, executor: executor)
@@ -450,7 +450,7 @@ module Concurrent
       it 'waits with sending functions to other agents until update is done'
     end
 
-    context 'aliases' do
+    context 'aliases', :brittle do
 
       it 'aliases #deref for #value' do
         Agent.new(10, executor: executor).deref.should eq 10
@@ -472,7 +472,7 @@ module Concurrent
         @expected.should eq 10
       end
 
-      it 'aliases #validates_with for :validate', :brittle do
+      it 'aliases #validates_with for :validate' do
         @expected = nil
         subject.validates_with { |v| @expected = v }
         subject.post { 10 }

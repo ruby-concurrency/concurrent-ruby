@@ -93,7 +93,7 @@ module Concurrent
       end
 
       describe 'spawning' do
-        describe 'Actress#spawn' do
+        describe 'Actress#spawn', :brittle do
           behaviour = -> v { -> _ { v } }
           subjects  = { spawn:                 -> { Actress.spawn(AdHoc, :ping, 'arg', &behaviour) },
                         context_spawn:         -> { AdHoc.spawn(:ping, 'arg', &behaviour) },
