@@ -35,12 +35,12 @@ module Concurrent
       # dereferenceable
 
       def dereferenceable_subject(value, opts = {})
-        opts = opts.merge(executor: executor)
+        opts = opts.merge(executor: Concurrent::ImmediateExecutor.new)
         Agent.new(value, opts)
       end
 
       def dereferenceable_observable(opts = {})
-        opts = opts.merge(executor: executor)
+        opts = opts.merge(executor: Concurrent::ImmediateExecutor.new)
         Agent.new(0, opts)
       end
 
