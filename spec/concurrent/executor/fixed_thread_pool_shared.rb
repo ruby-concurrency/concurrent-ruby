@@ -227,7 +227,7 @@ share_examples_for :fixed_thread_pool do
     # To check for caller_runs, we'll check how many unique threads
     # actually ran the block
 
-    it 'uses the calling thread for overflow under caller_runs' do
+    it 'uses the calling thread for overflow under caller_runs', :brittle do
       latch = Concurrent::CountDownLatch.new(5)
       mutex = Mutex.new
 
