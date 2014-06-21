@@ -52,7 +52,7 @@ module Concurrent
         it 'should block until timeout' do
           start = Time.now.to_f
           exchanger.exchange(2, 0.1).should be_nil
-          (Time.now.to_f - start).should > 0.1
+          (Time.now.to_f - start).should be_within(0.05).of(0.1)
         end
       end
     end
