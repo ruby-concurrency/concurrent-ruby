@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'timecop'
-require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'
 
@@ -38,23 +37,7 @@ module Concurrent
 
       # dereferenceable
 
-      def dereferenceable_subject(value, opts = {})
-        latch = Concurrent::CountDownLatch.new(1)
-        task = ScheduledTask.execute(0.1, opts){ value }.tap{ latch.count_down }
-        latch.wait(1)
-        task
-      end
-
-      def dereferenceable_observable(opts = {})
-        ScheduledTask.new(0.1, opts){ 'value' }
-      end
-
-      def execute_dereferenceable(subject)
-        subject.execute
-        sleep(0.2)
-      end
-
-      it_should_behave_like :dereferenceable
+      specify{ ScheduledTask.ancestors.should include(Dereferenceable) }
 
       # observable
 
