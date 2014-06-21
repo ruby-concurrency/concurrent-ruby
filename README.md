@@ -67,8 +67,6 @@ into several general groups:
   [Promise](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Promise),
   [ScheduledTask](https://github.com/ruby-concurrency/concurrent-ruby/wiki/ScheduledTask),
   and [TimerTask](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TimerTask) 
-* Erlang-inspired [Supervisor](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Supervisor) and other lifecycle classes/mixins
-  for managing long-running threads
 * Thread-safe variables including [M-Structures](https://github.com/ruby-concurrency/concurrent-ruby/wiki/MVar-(M-Structure)),
   [I-Structures](https://github.com/ruby-concurrency/concurrent-ruby/wiki/IVar-(I-Structure)),
   [thread-local variables](https://github.com/ruby-concurrency/concurrent-ruby/wiki/ThreadLocalVar),

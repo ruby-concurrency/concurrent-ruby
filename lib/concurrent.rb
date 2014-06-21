@@ -25,7 +25,6 @@ require 'concurrent/observable'
 require 'concurrent/options_parser'
 require 'concurrent/promise'
 require 'concurrent/scheduled_task'
-require 'concurrent/supervisor'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
 
