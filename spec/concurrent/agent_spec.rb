@@ -208,7 +208,7 @@ module Concurrent
 
     end
 
-    context 'fulfillment', :brittle, :refactored do
+    context 'fulfillment' do
 
       it 'process each block in the queue' do
         latch = Concurrent::CountDownLatch.new(3)
@@ -241,7 +241,7 @@ module Concurrent
       end
     end
 
-    context 'validation', :brittle, :refactored do
+    context 'validation' do
 
       it 'processes the validator when present' do
         latch = Concurrent::CountDownLatch.new(1)
@@ -278,7 +278,7 @@ module Concurrent
       end
     end
 
-    context 'rejection', :brittle, :refactored do
+    context 'rejection' do
 
       it 'calls the first exception block with a matching class' do
         expected = nil
@@ -363,7 +363,7 @@ module Concurrent
       end
     end
 
-    context 'observation', :brittle, :refactored do
+    context 'observation' do
 
       it 'notifies all observers when the value changes' do
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
@@ -436,7 +436,7 @@ module Concurrent
       it 'waits with sending functions to other agents until update is done'
     end
 
-    context 'aliases', :brittle, :refactored do
+    context 'aliases' do
 
       it 'aliases #deref for #value' do
         Agent.new(10, executor: executor).deref.should eq 10

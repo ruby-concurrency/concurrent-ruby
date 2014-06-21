@@ -140,7 +140,7 @@ module Concurrent
         future.execute
       end
 
-      it 'sets the state to :pending', :brittle, :refactored do
+      it 'sets the state to :pending' do
         latch = Concurrent::CountDownLatch.new(1)
         future = Future.new(executor: executor){ latch.wait(10) }
         future.execute

@@ -180,7 +180,7 @@ share_examples_for :fixed_thread_pool do
     end
   end
 
-  context 'overflow policy', :brittle, :refactored do
+  context 'overflow policy' do
 
     before do
       @queue = Queue.new
