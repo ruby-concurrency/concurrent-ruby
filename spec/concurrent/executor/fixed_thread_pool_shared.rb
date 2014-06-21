@@ -182,8 +182,12 @@ share_examples_for :fixed_thread_pool do
 
   context 'overflow policy' do
 
-    before do
+    before(:each) do
       @queue = Queue.new
+    end
+
+    after(:each) do
+      subject.kill
     end
 
     # On abort, it should raise an error
@@ -200,7 +204,6 @@ share_examples_for :fixed_thread_pool do
             latch.count_down
           end
         end
-        subject.shutdown
         latch.wait(1)
       }.to raise_error
     end
@@ -218,7 +221,6 @@ share_examples_for :fixed_thread_pool do
           latch.count_down
         end
       end
-      subject.shutdown
       latch.wait(1)
 
       @queue.length.should be < 5
@@ -227,7 +229,7 @@ share_examples_for :fixed_thread_pool do
     # To check for caller_runs, we'll check how many unique threads
     # actually ran the block
 
-    it 'uses the calling thread for overflow under caller_runs', :brittle do
+    it 'uses the calling thread for overflow under caller_runs' do
       latch = Concurrent::CountDownLatch.new(5)
       mutex = Mutex.new
 
@@ -240,7 +242,6 @@ share_examples_for :fixed_thread_pool do
           latch.count_down
         end
       end
-      subject.shutdown
       latch.wait(1)
 
       # Turn the queue into an array
