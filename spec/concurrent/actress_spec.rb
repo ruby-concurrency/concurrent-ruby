@@ -93,7 +93,7 @@ module Concurrent
       end
 
       describe 'spawning' do
-        describe 'Actress#spawn', :brittle do
+        describe 'Actress#spawn' do
           behaviour = -> v { -> _ { v } }
           subjects  = { spawn:                 -> { Actress.spawn(AdHoc, :ping, 'arg', &behaviour) },
                         context_spawn:         -> { AdHoc.spawn(:ping, 'arg', &behaviour) },
@@ -102,17 +102,16 @@ module Concurrent
 
           subjects.each do |desc, subject_definition|
             describe desc do
-              pending('intermittent JRuby deadlock'); 
-              #subject &subject_definition
-              #after { terminate_actors subject }
-              #its(:path) { should eq '/ping' }
-              #its(:parent) { should eq ROOT }
-              #its(:name) { should eq 'ping' }
-              #it('executor should be global') { subject.executor.should eq Concurrent.configuration.global_task_pool }
-              #its(:reference) { should eq subject }
-              #it 'returns arg' do
-                #subject.ask!(:anything).should eq 'arg'
-              #end
+              subject &subject_definition
+              after { terminate_actors subject }
+              its(:path) { should eq '/ping' }
+              its(:parent) { pending('intermittent JRuby deadlock'); should eq ROOT }
+              its(:name) { should eq 'ping' }
+              it('executor should be global') { subject.executor.should eq Concurrent.configuration.global_task_pool }
+              its(:reference) { should eq subject }
+              it 'returns arg' do
+                subject.ask!(:anything).should eq 'arg'
+              end
             end
           end
         end
