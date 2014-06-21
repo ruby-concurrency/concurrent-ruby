@@ -19,12 +19,11 @@ module Concurrent
     it 'executes the block after the given number of seconds' do
       start = Time.now.to_f
       latch = CountDownLatch.new(1)
-      Concurrent::timer(0.5){ latch.count_down }
-      latch.count.should eq 1
-      latch.wait(0.1)
-      latch.count.should eq 1
+      Concurrent::timer(0.1){ latch.count_down }
       latch.wait(1)
-      latch.count.should eq 0
+      diff = Time.now.to_f - start
+      diff.should > 0.1
+      diff.should < 0.5
     end
 
     it 'suppresses exceptions thrown by the block' do

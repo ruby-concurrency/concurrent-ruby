@@ -13,15 +13,18 @@ module Concurrent
 
     context :dereferenceable do
 
+      def kill_subject
+        @subject.kill if @subject
+      rescue Exception => ex
+        # prevent exceptions with mocks in tests
+      end
+
       after(:each) do
-        begin
-          @subject.kill if @subject
-        rescue Exception => ex
-          # prevent exceptions with mocks in tests
-        end
+        kill_subject
       end
 
       def dereferenceable_subject(value, opts = {})
+        kill_subject
         opts     = opts.merge(execution_interval: 0.1, run_now: true)
         @subject = TimerTask.new(opts) { value }.execute.tap { sleep(0.1) }
       end
@@ -129,7 +132,9 @@ module Concurrent
       specify '#execution_interval is writeable' do
 
         latch   = CountDownLatch.new(1)
-        subject = TimerTask.new(execution_interval: 1) do |task|
+        subject = TimerTask.new(timeout_interval: 1,
+                                execution_interval: 1,
+                                run_now: true) do |task|
           task.execution_interval = 3
           latch.count_down
         end
@@ -145,10 +150,12 @@ module Concurrent
         subject.kill
       end
 
-      specify '#execution_interval is writeable' do
+      specify '#timeout_interval is writeable' do
 
         latch   = CountDownLatch.new(1)
-        subject = TimerTask.new(timeout_interval: 1, execution_interval: 0.1) do |task|
+        subject = TimerTask.new(timeout_interval: 1,
+                                execution_interval: 0.1,
+                                run_now: true) do |task|
           task.timeout_interval = 3
           latch.count_down
         end

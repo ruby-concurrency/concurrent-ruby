@@ -141,9 +141,11 @@ module Concurrent
       end
 
       it 'sets the state to :pending' do
-        future = Future.new(executor: executor){ sleep(0.1) }
+        latch = Concurrent::CountDownLatch.new(1)
+        future = Future.new(executor: executor){ latch.wait(10) }
         future.execute
         future.should be_pending
+        latch.count_down
       end
 
       it 'returns self' do

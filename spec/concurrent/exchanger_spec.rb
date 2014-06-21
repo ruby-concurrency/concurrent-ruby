@@ -48,17 +48,11 @@ module Concurrent
       end
 
       context 'with timeout' do
+
         it 'should block until timeout' do
-
-          value = 0
           start = Time.now.to_f
-
-          future = Concurrent::Future.execute do
-            exchanger.exchange(2, 0.2)
-          end
-          
-          future.value.should be_nil
-          (Time.now.to_f - start).should >= 0.2
+          exchanger.exchange(2, 0.1).should be_nil
+          (Time.now.to_f - start).should > 0.1
         end
       end
     end
