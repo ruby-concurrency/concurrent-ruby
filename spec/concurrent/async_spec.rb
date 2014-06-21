@@ -150,13 +150,13 @@ module Concurrent
         }.to raise_error(StandardError)
       end
 
-      it 'returns a :pending Future' do
+      it 'returns a :pending IVar' do
         val = subject.async.wait(5)
-        val.should be_a Concurrent::Future
+        val.should be_a Concurrent::IVar
         val.should be_pending
       end
 
-      it 'runs the Future on the memoized executor' do
+      it 'runs the future on the memoized executor' do
         executor = ImmediateExecutor.new
         executor.should_receive(:post).with(any_args)
         subject = async_class.new
@@ -202,7 +202,7 @@ module Concurrent
 
       it 'is aliased as #future' do
         val = subject.future.wait(5)
-        val.should be_a Concurrent::Future
+        val.should be_a Concurrent::IVar
       end
 
       context '#method_missing' do
@@ -315,7 +315,6 @@ module Concurrent
         }.new
 
         object.async.gather(0.5, :a, :b)
-        sleep(0.1)
         object.await.gather(0, :c, :d)
         object.bucket.should eq [:a, :b, :c, :d]
       end

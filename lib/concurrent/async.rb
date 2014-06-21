@@ -3,8 +3,8 @@ require 'concurrent/configuration'
 require 'concurrent/delay'
 require 'concurrent/errors'
 require 'concurrent/ivar'
-require 'concurrent/future'
-require 'concurrent/executor/thread_pool_executor'
+require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/serialized_execution'
 
 module Concurrent
 
@@ -124,19 +124,24 @@ module Concurrent
     end
     module_function :validate_argc
 
-    # Delegates synchronous, thread-safe method calls to the wrapped object.
+    # Delegates asynchronous, thread-safe method calls to the wrapped object.
     #
     # @!visibility private
-    class AwaitDelegator # :nodoc:
+    class AsyncDelegator # :nodoc:
 
-      # Create a new delegator object wrapping the given `delegate` and
-      # protecting it with the given `mutex`.
+      # Create a new delegator object wrapping the given delegate,
+      # protecting it with the given serializer, and executing it on the
+      # given executor. Block if necessary.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
-      # @param [Mutex] mutex the mutex lock to use when delegating method calls
-      def initialize(delegate, mutex)
+      # @param [Concurrent::Delay] executor a `Delay` wrapping the executor on which to execute delegated method calls
+      # @param [Concurrent::SerializedExecution] serializer the serializer to use when delegating method calls
+      # @param [Boolean] blocking will block awaiting result when `true`
+      def initialize(delegate, executor, serializer, blocking = false)
         @delegate = delegate
-        @mutex = mutex
+        @executor = executor
+        @serializer = serializer
+        @blocking = blocking
       end
 
       # Delegates method calls to the wrapped object. For performance,
@@ -158,59 +163,17 @@ module Concurrent
           Async::validate_argc(@delegate, method, *args)
           ivar = Concurrent::IVar.new
           value, reason = nil, nil
-          begin
-            @mutex.synchronize do
+          @serializer.post(@executor.value) do
+            begin
               value = @delegate.send(method, *args, &block)
-            end
-          rescue => reason
-            # caught
-          ensure
-            return ivar.complete(reason.nil?, value, reason)
-          end
-        end
-
-        self.send(method, *args)
-      end
-    end
-
-    # Delegates asynchronous, thread-safe method calls to the wrapped object.
-    #
-    # @!visibility private
-    class AsyncDelegator # :nodoc:
-
-      # Create a new delegator object wrapping the given `delegate` and
-      # protecting it with the given `mutex`.
-      #
-      # @param [Object] delegate the object to wrap and delegate method calls to
-      # @param [Mutex] mutex the mutex lock to use when delegating method calls
-      def initialize(delegate, executor, mutex)
-        @delegate = delegate
-        @executor = executor
-        @mutex = mutex
-      end
-
-      # Delegates method calls to the wrapped object. For performance,
-      # dynamically defines the given method on the delegator so that
-      # all future calls to `method` will not be directed here.
-      #
-      # @param [Symbol] method the method being called
-      # @param [Array] args zero or more arguments to the method
-      #
-      # @return [IVar] the result of the method call
-      #
-      # @raise [NameError] the object does not respond to `method` method
-      # @raise [ArgumentError] the given `args` do not match the arity of `method`
-      def method_missing(method, *args, &block)
-        super unless @delegate.respond_to?(method)
-        Async::validate_argc(@delegate, method, *args)
-
-        self.define_singleton_method(method) do |*args|
-          Async::validate_argc(@delegate, method, *args)
-          Concurrent::Future.execute(executor: @executor.value) do
-            @mutex.synchronize do
-              @delegate.send(method, *args, &block)
+            rescue => reason
+              # caught
+            ensure
+              ivar.complete(reason.nil?, value, reason)
             end
           end
+          ivar.value if @blocking
+          ivar
         end
 
         self.send(method, *args)
@@ -219,9 +182,9 @@ module Concurrent
 
     # Causes the chained method call to be performed asynchronously on the
     # global thread pool. The method called by this method will return a
-    # `Future` object in the `:pending` state and the method call will have
+    # future object in the `:pending` state and the method call will have
     # been scheduled on the global thread pool. The final disposition of the
-    # method call can be obtained by inspecting the returned `Future`.
+    # method call can be obtained by inspecting the returned future.
     #
     # Before scheduling the method on the global thread pool a best-effort
     # attempt will be made to validate that the method exists on the object
@@ -238,15 +201,15 @@ module Concurrent
     #   method call. Use *only* protected method calls when sharing the object
     #   between threads.
     #
-    # @return [Concurrent::Future] the pending result of the asynchronous operation
+    # @return [Concurrent::IVar] the pending result of the asynchronous operation
     #
     # @raise [Concurrent::InitializationError] `#init_mutex` has not been called
     # @raise [NameError] the object does not respond to `method` method
     # @raise [ArgumentError] the given `args` do not match the arity of `method`
     #
-    # @see Concurrent::Future
+    # @see Concurrent::IVar
     def async
-      raise InitializationError.new('#init_mutex was never called') unless @__async__mutex__
+      raise InitializationError.new('#init_mutex was never called') unless @__async_initialized__
       @__async_delegator__.value
     end
     alias_method :future, :async
@@ -280,7 +243,7 @@ module Concurrent
     #
     # @see Concurrent::IVar
     def await
-      raise InitializationError.new('#init_mutex was never called') unless @__async__mutex__
+      raise InitializationError.new('#init_mutex was never called') unless @__async_initialized__
       @__await_delegator__.value
     end
     alias_method :delay, :await
@@ -290,12 +253,12 @@ module Concurrent
     # @raise [Concurrent::InitializationError] `#init_mutex` has not been called
     # @raise [ArgumentError] executor has already been set
     def executor=(executor)
-      raise InitializationError.new('#init_mutex was never called') unless @__async__mutex__
-      @__async__executor__.reconfigure { executor } or
+      raise InitializationError.new('#init_mutex was never called') unless @__async_initialized__
+      @__async_executor__.reconfigure { executor } or
         raise ArgumentError.new('executor has already been set')
     end
 
-    # Initialize the internal mutex and other synchronization objects. This method
+    # Initialize the internal serializer and other synchronization objects. This method
     # *must* be called from the constructor of the including class or explicitly
     # by the caller prior to calling any other methods. If `init_mutex` is *not*
     # called explicitly the async/await/executor methods will raize a
@@ -308,12 +271,14 @@ module Concurrent
     #
     # @raise [Concurrent::InitializationError] when called more than once
     def init_mutex
-      raise InitializationError.new('#init_mutex was already called') if @__async__mutex__
-      (@__async__mutex__ = Mutex.new).lock
-      @__async__executor__ = Delay.new{ Concurrent.configuration.global_operation_pool }
-      @__await_delegator__ = Delay.new{ AwaitDelegator.new(self, @__async__mutex__) }
-      @__async_delegator__ = Delay.new{ AsyncDelegator.new(self, @__async__executor__, @__async__mutex__) }
-      @__async__mutex__.unlock
+      raise InitializationError.new('#init_mutex was already called') if @__async_initialized__
+      @__async_initialized__ = true
+      serializer = Concurrent::SerializedExecution.new
+      @__async_executor__ = Delay.new{ Concurrent.configuration.global_operation_pool }
+      @__await_delegator__ = Delay.new{ AsyncDelegator.new(
+        self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true) }
+      @__async_delegator__ = Delay.new{ AsyncDelegator.new(
+        self, @__async_executor__, serializer, false) }
     end
   end
 end
