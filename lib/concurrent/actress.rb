@@ -11,8 +11,8 @@ module Concurrent
   # -  Inspired by Akka and Erlang.
   #
   # Actors are sharing a thread-pool by default which makes them very cheap to create and discard.
-  # Thousands of actors can be created allowing to brake the program to small maintainable pieces
-  # without breaking single responsibility principles.
+  # Thousands of actors can be created, allowing you to break the program into small maintainable pieces,
+  # without breaking the single responsibility principle.
   #
   # ## What is an actor model?
   #
