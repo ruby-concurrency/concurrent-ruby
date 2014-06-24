@@ -100,6 +100,7 @@ module Concurrent
       @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
     end
 
+    # @!macro executor_module_method_can_overflow_question
     def can_overflow?
       @max_queue != 0
     end

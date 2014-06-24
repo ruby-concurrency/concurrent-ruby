@@ -3,7 +3,7 @@ require 'concurrent/executor/executor'
 
 module Concurrent
   class ImmediateExecutor
-    include Executor
+    include SerialExecutor
 
     def initialize
       @stopped = Concurrent::Event.new
