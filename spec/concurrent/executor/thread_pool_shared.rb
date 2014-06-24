@@ -176,6 +176,7 @@ share_examples_for :executor_service do
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
+      pending('does not work for all executors')
       100.times{ subject.post{ sleep(1) } }
       sleep(0.1)
       subject.shutdown

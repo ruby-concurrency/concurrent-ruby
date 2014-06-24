@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative 'global_thread_pool_shared'
+require_relative 'thread_pool_shared'
 
 module Concurrent
 
@@ -7,6 +7,6 @@ module Concurrent
 
     subject { ImmediateExecutor.new }
 
-    it_should_behave_like :global_thread_pool
+    it_should_behave_like :executor_service
   end
 end
