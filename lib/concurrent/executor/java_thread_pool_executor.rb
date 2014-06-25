@@ -90,6 +90,7 @@ if RUBY_PLATFORM == 'java'
         set_shutdown_hook
       end
 
+    # @!macro executor_module_method_can_overflow_question
       def can_overflow?
         @max_queue != 0
       end

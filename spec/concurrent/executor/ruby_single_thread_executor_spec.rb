@@ -1,6 +1,5 @@
 require 'spec_helper'
-
-require_relative 'thread_pool_shared'
+require_relative 'executor_service_shared'
 
 module Concurrent
 

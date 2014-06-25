@@ -6,6 +6,7 @@ if RUBY_PLATFORM == 'java'
     # @!macro single_thread_executor
     class JavaSingleThreadExecutor
       include JavaExecutor
+      include SerialExecutor
 
       # Create a new thread pool.
       #

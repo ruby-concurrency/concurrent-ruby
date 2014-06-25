@@ -3,9 +3,9 @@ require_relative 'executor_service_shared'
 
 module Concurrent
 
-  describe ImmediateExecutor do
+  describe SerializedExecutionDelegator do
 
-    subject { ImmediateExecutor.new }
+    subject { SerializedExecutionDelegator.new(ImmediateExecutor.new) }
 
     it_should_behave_like :executor_service
   end

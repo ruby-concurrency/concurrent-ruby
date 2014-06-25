@@ -1,3 +1,5 @@
+require 'delegate'
+require 'concurrent/executor/executor'
 require 'concurrent/logging'
 
 module Concurrent
@@ -85,6 +87,27 @@ module Concurrent
 
       call_job job if job
     end
+  end
 
+  # A wrapper/delegator for any `Executor` or `ExecutorService` that
+  # guarantees serialized execution of tasks.
+  #
+  # @see [SimpleDelegator](http://www.ruby-doc.org/stdlib-2.1.2/libdoc/delegate/rdoc/SimpleDelegator.html)
+  # @see Concurrent::SerializedExecution
+  class SerializedExecutionDelegator < SimpleDelegator
+    include SerialExecutor
+
+    def initialize(executor)
+      @executor = executor
+      @serializer = SerializedExecution.new
+      super(executor)
+    end
+
+    # @!macro executor_method_post
+    def post(*args, &task)
+      raise ArgumentError.new('no block given') unless block_given?
+      return false unless running?
+      @serializer.post(@executor, *args, &task)
+    end
   end
 end
