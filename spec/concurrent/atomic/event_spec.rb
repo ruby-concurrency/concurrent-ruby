@@ -30,6 +30,7 @@ module Concurrent
       it 'triggers the event' do
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
+        sleep(0.1)
         subject.set
         latch.wait(1).should be_true
       end
@@ -131,7 +132,7 @@ module Concurrent
         subject.reset
         latch = CountDownLatch.new(1)
         subject.set
-        Thread.new{ subject.wait(1000).tap{ latch.count_down } }
+        Thread.new{ subject.wait(1000); latch.count_down }
         latch.wait(0.1).should be_true
       end
 
@@ -152,7 +153,7 @@ module Concurrent
       it 'stops waiting when the timer expires' do
         subject.reset
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait(0.2).tap{ latch.count_down } }
+        Thread.new{ subject.wait(0.2); latch.count_down }
         latch.wait(0.1).should be_false
         latch.wait.should be_true
       end
@@ -203,7 +204,7 @@ module Concurrent
 
       it 'should resist to spurious wake ups with timeout' do
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait(0.3).tap{ latch.count_down } }
+        Thread.new{ subject.wait(0.3); latch.count_down }
 
         sleep(0.1)
         subject.simulate_spurious_wake_up
