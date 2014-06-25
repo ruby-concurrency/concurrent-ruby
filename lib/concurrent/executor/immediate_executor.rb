@@ -2,9 +2,14 @@ require 'concurrent/atomic/event'
 require 'concurrent/executor/executor'
 
 module Concurrent
+
+  # An executor service which runs all operations on the current thread,
+  # blocking as necessary. Operations are performed in the order they are
+  # received and no two operations can be performed simultaneously.
   class ImmediateExecutor
     include SerialExecutor
 
+    # Creates a new executor
     def initialize
       @stopped = Concurrent::Event.new
     end

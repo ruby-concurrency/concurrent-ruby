@@ -1,17 +1,21 @@
-require 'concurrent/atomic/event'
+require 'concurrent/atomics'
 require 'concurrent/executor/executor'
 
 module Concurrent
 
+  # An executor service in which every operation spawns a new,
+  # independently operating thread.
   class PerThreadExecutor
     include SerialExecutor
 
+    # Creates a new executor
     def initialize
       @running = Concurrent::AtomicBoolean.new(true)
       @stopped = Concurrent::Event.new
       @count = Concurrent::AtomicFixnum.new(0)
     end
 
+    # @!macro executor_method_post
     def self.post(*args)
       raise ArgumentError.new('no block given') unless block_given?
       Thread.new(*args) do
@@ -21,6 +25,13 @@ module Concurrent
       true
     end
 
+    # @!macro executor_method_left_shift
+    def self.<<(task)
+      post(&task)
+      self
+    end
+
+    # @!macro executor_method_post
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       return false unless running?
@@ -36,6 +47,7 @@ module Concurrent
       end
     end
 
+    # @!macro executor_method_left_shift
     def <<(task)
       post(&task)
       self
