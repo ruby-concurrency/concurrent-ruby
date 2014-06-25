@@ -28,12 +28,10 @@ module Concurrent
     context '#set' do
 
       it 'triggers the event' do
-        @expected = false
-        Thread.new{ subject.wait; @expected = true }
-        sleep(0.1)
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.set
-        sleep(0.1)
-        @expected.should be_true
+        latch.wait(1).should be_true
       end
 
       it 'sets the state to set' do
@@ -67,23 +65,19 @@ module Concurrent
       end
 
       it 'does not trigger an unset event' do
-        @expected = false
-        Thread.new{ subject.wait; @expected = true }
-        sleep(0.1)
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.reset
-        sleep(0.1)
-        @expected.should be_false
+        latch.wait(0.1).should be_false
       end
 
       it 'does not interrupt waiting threads when event is unset' do
-        @expected = false
-        Thread.new{ subject.wait; @expected = true }
-        sleep(0.1)
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.reset
-        sleep(0.1)
+        latch.wait(0.1).should be_false
         subject.set
-        sleep(0.1)
-        @expected.should be_true
+        latch.wait(0.1).should be_true
       end
 
       it 'returns true when called on an unset event' do
@@ -104,15 +98,41 @@ module Concurrent
       end
     end
 
+    #context '#pulse' do
+
+      #it 'triggers an unset event' do
+        #subject.reset
+        #latch = CountDownLatch.new(1)
+        #Thread.new{ subject.wait.tap{ puts "Boom!"; latch.count_down } }
+        #subject.pulse
+        #latch.wait(0.1).should be_true
+      #end
+
+      #it 'does nothing with a set event' do
+        #subject.set
+        #latch = CountDownLatch.new(1)
+        #Thread.new{ subject.wait.tap{ latch.count_down } }
+        #subject.pulse
+        #latch.wait(0.1).should be_true
+      #end
+
+      #it 'leaves the event in the unset state' do
+        #latch = CountDownLatch.new(1)
+        #Thread.new{ subject.wait.tap{ latch.count_down } }
+        #subject.pulse
+        #latch.wait(0.1)
+        #subject.should_not be_set
+      #end
+    #end
+
     context '#wait' do
 
       it 'returns immediately when the event has been set' do
         subject.reset
-        @expected = false
+        latch = CountDownLatch.new(1)
         subject.set
-        Thread.new{ subject.wait(1000); @expected = true}
-        sleep(1)
-        @expected.should be_true
+        Thread.new{ subject.wait(1000).tap{ latch.count_down } }
+        latch.wait(0.1).should be_true
       end
 
       it 'returns true once the event is set' do
@@ -122,19 +142,19 @@ module Concurrent
 
       it 'blocks indefinitely when the timer is nil' do
         subject.reset
-        @expected = false
-        Thread.new{ subject.wait; @expected = true}
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait.tap{ latch.count_down } }
+        latch.wait(0.1).should be_false
         subject.set
-        sleep(1)
-        @expected.should be_true
+        latch.wait(0.1).should be_true
       end
 
       it 'stops waiting when the timer expires' do
         subject.reset
-        @expected = false
-        Thread.new{ subject.wait(0.5); @expected = true}
-        sleep(1)
-        @expected.should be_true
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait(0.2).tap{ latch.count_down } }
+        latch.wait(0.1).should be_false
+        latch.wait.should be_true
       end
 
       it 'returns false when the timer expires' do
@@ -172,28 +192,24 @@ module Concurrent
       end
 
       it 'should resist to spurious wake ups without timeout' do
-        @expected = false
-        Thread.new { subject.wait; @expected = true }
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait.tap{ latch.count_down } }
 
         sleep(0.1)
         subject.simulate_spurious_wake_up
 
-        sleep(0.1)
-        @expected.should be_false
+        latch.wait(0.1).should be_false
       end
 
       it 'should resist to spurious wake ups with timeout' do
-        @expected = false
-        Thread.new { subject.wait(0.5); @expected = true }
+        latch = CountDownLatch.new(1)
+        Thread.new{ subject.wait(0.3).tap{ latch.count_down } }
 
         sleep(0.1)
         subject.simulate_spurious_wake_up
 
-        sleep(0.1)
-        @expected.should be_false
-
-        sleep(0.4)
-        @expected.should be_true
+        latch.wait(0.1).should be_false
+        latch.wait(1).should be_true
       end
     end
   end
