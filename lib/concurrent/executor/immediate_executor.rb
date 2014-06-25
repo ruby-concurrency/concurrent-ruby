@@ -6,6 +6,13 @@ module Concurrent
   # An executor service which runs all operations on the current thread,
   # blocking as necessary. Operations are performed in the order they are
   # received and no two operations can be performed simultaneously.
+  #
+  # This executor service exists mainly for testing an debugging. When used
+  # it immediately runs every `#post` operation on the current thread, blocking
+  # that thread until the operation is complete. This can be very beneficial
+  # during testing because it makes all operations deterministic.
+  #
+  # @note Intended for use primarily in testing and debugging.
   class ImmediateExecutor
     include SerialExecutor
 

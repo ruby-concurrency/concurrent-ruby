@@ -5,8 +5,18 @@ module Concurrent
 
   # An executor service in which every operation spawns a new,
   # independently operating thread.
+  #
+  # This is perhaps the most inefficient executor service in this
+  # library. It exists mainly for testing an debugging. Thread creation
+  # and management is expensive in Ruby and this executor performs no
+  # resource pooling. This can be very beneficial during testing and
+  # debugging because it decouples the using code from the underlying
+  # executor implementation. In production this executor will likely
+  # lead to suboptimal performance.
+  #
+  # @note Intended for use primarily in testing and debugging.
   class PerThreadExecutor
-    include SerialExecutor
+    include Executor
 
     # Creates a new executor
     def initialize
