@@ -26,7 +26,7 @@ module Concurrent
   # ## Why?
   #
   # Concurrency is hard this is one of many ways how to simplify the problem.
-  # It is simpler to reason about actors then about locks (and all their possible states).
+  # It is simpler to reason about actors than about locks (and all their possible states).
   #
   # ## How to use it
   #
