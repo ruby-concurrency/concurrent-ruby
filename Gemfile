@@ -8,7 +8,7 @@ group :development do
 end
 
 group :testing do
-  gem 'rspec', '~> 2.99'
+  gem 'rspec', '~> 3.0.0'
   gem 'simplecov', '~> 0.8.2', :require => false
   gem 'coveralls', '~> 0.7.0', :require => false
   gem 'timecop', '~> 0.7.1'
