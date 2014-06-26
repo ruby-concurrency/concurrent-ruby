@@ -213,12 +213,13 @@ module Concurrent
       def post(*args)
         raise ArgumentError.new('no block given') unless block_given?
         if running?
-          @executor.submit{ yield(*args) }
+          executor_submit = @executor.java_method(:submit, [JavaConcurrent::Runnable.java_class])
+          executor_submit.call { yield(*args) }
           true
         else
           false
         end
-      rescue Java::JavaUtilConcurrent::RejectedExecutionException => ex
+      rescue Java::JavaUtilConcurrent::RejectedExecutionException
         raise RejectedExecutionError
       end
 
