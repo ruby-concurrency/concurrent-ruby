@@ -17,7 +17,7 @@ module Concurrent
       #   @return [String] the name of this instance, it should be uniq (not enforced right now)
       # @!attribute [r] path
       #   @return [String] a path of this actor. It is used for easier orientation and logging.
-      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actress::ROOT},
+      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actress.root},
       #     e.g. `/an_actor/its_child`.
       #     (It will also probably form a supervision path (failures will be reported up to parents)
       #     in future versions.)
