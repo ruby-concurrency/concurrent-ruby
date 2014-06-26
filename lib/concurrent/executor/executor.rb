@@ -208,12 +208,13 @@ module Concurrent
 
     module JavaExecutor
       include Executor
+      java_import 'java.lang.Runnable'
 
       # @!macro executor_method_post
       def post(*args)
         raise ArgumentError.new('no block given') unless block_given?
         if running?
-          executor_submit = @executor.java_method(:submit, [JavaConcurrent::Runnable.java_class])
+          executor_submit = @executor.java_method(:submit, [Runnable.java_class])
           executor_submit.call { yield(*args) }
           true
         else
