@@ -67,14 +67,14 @@ module Concurrent
                   actor = Ping.spawn :ping, queue
 
                   # when spawn returns children are set
-                  Concurrent::Actress::ROOT.send(:core).instance_variable_get(:@children).should include(actor)
+                  Concurrent::Actress.root.send(:core).instance_variable_get(:@children).should include(actor)
 
                   actor << 'a' << 1
                   queue.pop.should eq 'a'
                   actor.ask(2).value.should eq 2
 
-                  actor.parent.should eq Concurrent::Actress::ROOT
-                  Concurrent::Actress::ROOT.path.should eq '/'
+                  actor.parent.should eq Concurrent::Actress.root
+                  Concurrent::Actress.root.path.should eq '/'
                   actor.path.should eq '/ping'
                   child = actor.ask(:child).value
                   child.path.should eq '/ping/pong'
@@ -105,7 +105,7 @@ module Concurrent
               subject &subject_definition
               after { terminate_actors subject }
               its(:path) { should eq '/ping' }
-              its(:parent) { pending('intermittent JRuby deadlock'); should eq ROOT }
+              its(:parent) { pending('intermittent JRuby deadlock'); should eq Actress.root }
               its(:name) { should eq 'ping' }
               it('executor should be global') { subject.executor.should eq Concurrent.configuration.global_task_pool }
               its(:reference) { should eq subject }

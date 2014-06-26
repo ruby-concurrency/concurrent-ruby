@@ -145,7 +145,7 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    # implements ROOT
+    # implements the root actor
     class Root
       include Context
       # to allow spawning of new actors, spawn needs to be called inside the parent Actor
@@ -158,8 +158,12 @@ module Concurrent
       end
     end
 
+    @root = Delay.new { Core.new(parent: nil, name: '/', class: Root).reference }
+
     # A root actor, a default parent of all actors spawned outside an actor
-    ROOT = Core.new(parent: nil, name: '/', class: Root).reference
+    def self.root
+      @root.value
+    end
 
     # Spawns a new actor.
     #
@@ -184,7 +188,7 @@ module Concurrent
       if Actress.current
         Core.new(spawn_optionify(*args).merge(parent: Actress.current), &block).reference
       else
-        ROOT.ask([:spawn, spawn_optionify(*args), block]).value
+        root.ask([:spawn, spawn_optionify(*args), block]).value
       end
     end
 
