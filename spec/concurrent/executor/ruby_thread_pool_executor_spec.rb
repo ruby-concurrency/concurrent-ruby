@@ -39,13 +39,13 @@ module Concurrent
       it 'returns :max_length when no tasks are enqueued' do
         5.times{ subject.post{ nil } }
         sleep(0.1)
-        subject.remaining_capacity.should eq expected_max
+        expect(subject.remaining_capacity).to eq expected_max
       end
 
       it 'returns the remaining capacity when tasks are enqueued' do
         100.times{ subject.post{ sleep(0.5) } }
         sleep(0.1)
-        subject.remaining_capacity.should < expected_max
+        expect(subject.remaining_capacity).to be < expected_max
       end
     end
 
@@ -89,7 +89,7 @@ module Concurrent
             end
           end
           sleep(0.2)
-          executed.value.should < 10
+          expect(executed.value).to be < 10
         end
 
         specify 'a #<< task is never executed when the queue is at capacity' do
@@ -101,7 +101,7 @@ module Concurrent
             end
           end
           sleep(0.2)
-          executed.value.should < 10
+          expect(executed.value).to be < 10
         end
       end
 
@@ -123,7 +123,7 @@ module Concurrent
             subject.post{ executed.increment }
           end
           sleep(0.1)
-          executed.value.should < 1000
+          expect(executed.value).to be < 1000
         end
 
         specify 'a #<< task is never executed when the queue is at capacity' do
@@ -132,7 +132,7 @@ module Concurrent
             subject << proc { executed.increment }
           end
           sleep(0.1)
-          executed.value.should < 1000
+          expect(executed.value).to be < 1000
         end
       end
 
@@ -151,11 +151,11 @@ module Concurrent
         specify '#post does not create any new threads when the queue is at capacity' do
           initial = Thread.list.length
           5.times{ subject.post{ sleep(0.1) } }
-          Thread.list.length.should < initial + 5
+          expect(Thread.list.length).to be < initial + 5
         end
 
         specify '#<< executes the task on the current thread when the queue is at capacity' do
-          subject.should_receive(:handle_overflow).with(any_args).at_least(:once)
+          expect(subject).to receive(:handle_overflow).with(any_args).at_least(:once)
           5.times{ subject << proc { sleep(0.1) } }
         end
 

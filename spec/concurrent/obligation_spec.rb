@@ -21,13 +21,14 @@ module Concurrent
     let (:obligation) { obligation_class.new }
     let (:event) { double 'event' }
 
-    share_examples_for :incomplete do
+    shared_examples :incomplete do
+
       it 'should be not completed' do
-        obligation.should_not be_completed
+        expect(obligation).not_to be_completed
       end
 
       it 'should be incomplete' do
-        obligation.should be_incomplete
+        expect(obligation).to be_incomplete
       end
 
       methods = [:value, :value!, :no_error!]
@@ -35,19 +36,19 @@ module Concurrent
         describe "##{method}" do
 
           it 'should return immediately if timeout is zero' do
-            obligation.send(method, 0).should(method == :no_error! ? eq(obligation) : be_nil)
+            expect(obligation.send(method, 0)).to(method eq(:no_error!) ? eq(obligation) : be_nil)
           end
 
           it 'should block on the event if timeout is not set' do
-            obligation.stub(:event).and_return(event)
-            event.should_receive(:wait).with(nil)
+            allow(obligation).to receive(:event).and_return(event)
+            expect(event).to receive(:wait).with(nil)
 
             obligation.send method
           end
 
           it 'should block on the event if timeout is not zero' do
-            obligation.stub(:event).and_return(event)
-            event.should_receive(:wait).with(5)
+            allow(obligation).to receive(:event).and_return(event)
+            expect(event).to receive(:wait).with(5)
 
             obligation.send(method, 5)
           end
@@ -71,33 +72,33 @@ module Concurrent
       before(:each) do
         obligation.state = :fulfilled
         obligation.send(:value=, 42)
-        obligation.stub(:event).and_return(event)
+        allow(obligation).to receive(:event).and_return(event)
       end
 
       it 'should be completed' do
-        obligation.should be_completed
+        expect(obligation).to be_completed
       end
 
       it 'should be not incomplete' do
-        obligation.should_not be_incomplete
+        expect(obligation).not_to be_incomplete
       end
 
       describe '#value' do
 
         it 'should return immediately if timeout is zero' do
-          obligation.value(0).should eq 42
+          expect(obligation.value(0)).to eq 42
         end
 
         it 'should return immediately if timeout is not set' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value.should eq 42
+          expect(obligation.value).to eq 42
         end
 
         it 'should return immediately if timeout is not zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value(5).should eq 42
+          expect(obligation.value(5)).to eq 42
         end
 
       end
@@ -105,19 +106,19 @@ module Concurrent
       describe '#value!' do
 
         it 'should return immediately if timeout is zero' do
-          obligation.value!(0).should eq 42
+          expect(obligation.value!(0)).to eq 42
         end
 
         it 'should return immediately if timeout is not set' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value!.should eq 42
+          expect(obligation.value!).to eq 42
         end
 
         it 'should return immediately if timeout is not zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value!(5).should eq 42
+          expect(obligation.value!(5)).to eq 42
         end
 
       end
@@ -125,19 +126,19 @@ module Concurrent
       describe '#no_error!' do
 
         it 'should return immediately if timeout is zero' do
-          obligation.no_error!(0).should eq obligation
+          expect(obligation.no_error!(0)).to eq obligation
         end
 
         it 'should return immediately if timeout is not set' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.no_error!.should eq obligation
+          expect(obligation.no_error!).to eq obligation
         end
 
         it 'should return immediately if timeout is not zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.no_error!(5).should eq obligation
+          expect(obligation.no_error!(5)).to eq obligation
         end
 
       end
@@ -148,36 +149,36 @@ module Concurrent
 
       before(:each) do
         obligation.state = :rejected
-        obligation.stub(:event).and_return(event)
+        allow(obligation).to receive(:event).and_return(event)
       end
 
       it 'should be completed' do
-        obligation.should be_completed
+        expect(obligation).to be_completed
       end
 
       it 'should be not incomplete' do
-        obligation.should_not be_incomplete
+        expect(obligation).not_to be_incomplete
       end
 
 
       describe '#value' do
 
         it 'should return immediately if timeout is zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value(0).should be_nil
+          expect(obligation.value(0)).to be_nil
         end
 
         it 'should return immediately if timeout is not set' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value.should be_nil
+          expect(obligation.value).to be_nil
         end
 
         it 'should return immediately if timeout is not zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          obligation.value(5).should be_nil
+          expect(obligation.value(5)).to be_nil
         end
 
       end
@@ -185,21 +186,21 @@ module Concurrent
       describe '#value!' do
 
         it 'should return immediately if timeout is zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          -> { obligation.value!(0) }.should raise_error
+          expect { obligation.value!(0) }.to raise_error
         end
 
         it 'should return immediately if timeout is not set' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          -> { obligation.value! }.should raise_error
+          expect { obligation.value! }.to raise_error
         end
 
         it 'should return immediately if timeout is not zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          -> { obligation.value!(5) }.should raise_error
+          expect { obligation.value!(5) }.to raise_error
         end
 
       end
@@ -207,21 +208,21 @@ module Concurrent
       describe '#no_error!' do
 
         it 'should return immediately if timeout is zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          -> { obligation.no_error!(0) }.should raise_error
+          expect { obligation.no_error!(0) }.to raise_error
         end
 
         it 'should return immediately if timeout is not set' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          -> { obligation.no_error! }.should raise_error
+          expect { obligation.no_error! }.to raise_error
         end
 
         it 'should return immediately if timeout is not zero' do
-          event.should_not_receive(:wait)
+          expect(event).not_to receive(:wait)
 
-          -> { obligation.no_error!(5) }.should raise_error
+          expect { obligation.no_error!(5) }.to raise_error
         end
 
       end
@@ -234,23 +235,23 @@ module Concurrent
 
       context 'unexpected state' do
         it 'should return false if state is not the expected one' do
-          obligation.compare_and_set_state(:pending, :rejected).should be_false
+          expect(obligation.compare_and_set_state(:pending, :rejected)).to be_falsey
         end
 
         it 'should not change the state if current is not the expected one' do
           obligation.compare_and_set_state(:pending, :rejected)
-          obligation.state.should eq :unscheduled
+          expect(obligation.state).to eq :unscheduled
         end
       end
 
       context 'expected state' do
         it 'should return true if state is the expected one' do
-          obligation.compare_and_set_state(:pending, :unscheduled).should be_true
+          expect(obligation.compare_and_set_state(:pending, :unscheduled)).to be_truthy
         end
 
         it 'should not change the state if current is not the expected one' do
           obligation.compare_and_set_state(:pending, :unscheduled)
-          obligation.state.should eq :pending
+          expect(obligation.state).to eq :pending
         end
       end
 
@@ -265,15 +266,15 @@ module Concurrent
       end
 
       it 'should return false if state is not expected' do
-        obligation.if_state(:pending, :rejected) { 42 }.should be_false
+        expect(obligation.if_state(:pending, :rejected) { 42 }).to be_falsey
       end
 
       it 'should the block value if state is expected' do
-        obligation.if_state(:rejected, :unscheduled) { 42 }.should eq 42
+        expect(obligation.if_state(:rejected, :unscheduled) { 42 }).to eq 42
       end
 
       it 'should execute the block within the mutex' do
-        obligation.if_state(:unscheduled) { obligation.mutex.should be_locked }
+        obligation.if_state(:unscheduled) { expect(obligation.mutex).to be_locked }
       end
 
     end

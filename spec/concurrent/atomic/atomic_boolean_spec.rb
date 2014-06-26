@@ -1,23 +1,23 @@
 require 'spec_helper'
 
-share_examples_for :atomic_boolean do
+shared_examples :atomic_boolean do
 
   describe 'construction' do
 
     it 'sets the initial value' do
-      described_class.new(true).value.should be_true
+      expect(described_class.new(true).value).to be_truthy
     end
 
     it 'defaults the initial value to false' do
-      described_class.new.value.should be_false
+      expect(described_class.new.value).to be_falsey
     end
 
     it 'evaluates the truthiness of a true value' do
-      described_class.new(10).value.should be_true
+      expect(described_class.new(10).value).to be_truthy
     end
 
     it 'evaluates the truthiness of a false value' do
-      described_class.new(nil).value.should be_false
+      expect(described_class.new(nil).value).to be_falsey
     end
   end
 
@@ -25,11 +25,11 @@ share_examples_for :atomic_boolean do
 
     it 'returns the current value' do
       counter = described_class.new(true)
-      counter.value.should be_true
+      expect(counter.value).to be_truthy
       counter.make_false
-      counter.value.should be_false
+      expect(counter.value).to be_falsey
       counter.make_true
-      counter.value.should be_true
+      expect(counter.value).to be_truthy
     end
   end
 
@@ -38,53 +38,53 @@ share_examples_for :atomic_boolean do
     it 'sets the #value to the given `Boolean`' do
       atomic = described_class.new(true)
       atomic.value = false
-      atomic.value.should be_false
+      expect(atomic.value).to be_falsey
     end
 
     it 'returns the new value' do
       atomic = described_class.new(false)
-      (atomic.value = true).should be_true
+      expect(atomic.value = true).to be_truthy
     end
 
     it 'evaluates the truthiness of a true value' do
       atomic = described_class.new(false)
       atomic.value = 10
-      atomic.value.should be_true
+      expect(atomic.value).to be_truthy
     end
 
     it 'evaluates the truthiness of a false value' do
       atomic = described_class.new(true)
       atomic.value = nil
-      atomic.value.should be_false
+      expect(atomic.value).to be_falsey
     end
   end
 
   describe '#true?' do
 
-    specify { described_class.new(true).true?.should be_true }
+    specify { expect(described_class.new(true).true?).to be_truthy }
 
-    specify { described_class.new(false).true?.should be_false }
+    specify { expect(described_class.new(false).true?).to be_falsey }
   end
 
   describe '#false?' do
 
-    specify { described_class.new(true).false?.should be_false }
+    specify { expect(described_class.new(true).false?).to be_falsey }
 
-    specify { described_class.new(false).false?.should be_true }
+    specify { expect(described_class.new(false).false?).to be_truthy }
   end
 
   describe '#make_true' do
 
     it 'makes a false value true and returns true' do
       subject = described_class.new(false)
-      subject.make_true.should be_true
-      subject.value.should be_true
+      expect(subject.make_true).to be_truthy
+      expect(subject.value).to be_truthy
     end
 
     it 'keeps a true value true and returns false' do
       subject = described_class.new(true)
-      subject.make_true.should be_false
-      subject.value.should be_true
+      expect(subject.make_true).to be_falsey
+      expect(subject.value).to be_truthy
     end
   end
 
@@ -92,14 +92,14 @@ share_examples_for :atomic_boolean do
 
     it 'makes a true value false and returns true' do
       subject = described_class.new(true)
-      subject.make_false.should be_true
-      subject.value.should be_false
+      expect(subject.make_false).to be_truthy
+      expect(subject.value).to be_falsey
     end
 
     it 'keeps a false value false and returns false' do
       subject = described_class.new(false)
-      subject.make_false.should be_false
-      subject.value.should be_false
+      expect(subject.make_false).to be_falsey
+      expect(subject.value).to be_falsey
     end
   end
 end
@@ -112,7 +112,7 @@ module Concurrent
 
     specify 'construction is synchronized' do
       mutex = double('mutex')
-      Mutex.should_receive(:new).once.with(no_args).and_return(mutex)
+      expect(Mutex).to receive(:new).once.with(no_args).and_return(mutex)
       described_class.new
     end
 
@@ -120,9 +120,9 @@ module Concurrent
 
       before(:each) do
         mutex = double('mutex')
-        Mutex.stub(:new).with(no_args).and_return(mutex)
-        mutex.should_receive(:lock)
-        mutex.should_receive(:unlock)
+        allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
+        expect(mutex).to receive(:lock)
+        expect(mutex).to receive(:unlock)
       end
 
       specify 'value is synchronized' do
@@ -161,11 +161,11 @@ module Concurrent
   describe AtomicBoolean do
     if jruby?
       it 'inherits from JavaAtomicBoolean' do
-        AtomicBoolean.ancestors.should include(JavaAtomicBoolean)
+        expect(AtomicBoolean.ancestors).to include(JavaAtomicBoolean)
       end
     else
       it 'inherits from MutexAtomicBoolean' do
-        AtomicBoolean.ancestors.should include(MutexAtomicBoolean)
+        expect(AtomicBoolean.ancestors).to include(MutexAtomicBoolean)
       end
     end
   end

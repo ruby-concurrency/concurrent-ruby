@@ -1,20 +1,20 @@
 require 'spec_helper'
 
-share_examples_for :atomic do
+shared_examples :atomic do
 
   specify :test_construct do
     atomic = described_class.new
-    atomic.value.should be_nil
+    expect(atomic.value).to be_nil
 
     atomic = described_class.new(0)
-    atomic.value.should eq 0
+    expect(atomic.value).to eq 0
   end
 
   specify :test_value do
     atomic = described_class.new(0)
     atomic.value = 1
 
-    atomic.value.should eq 1
+    expect(atomic.value).to eq 1
   end
 
   specify :test_update do
@@ -22,8 +22,8 @@ share_examples_for :atomic do
     atomic = described_class.new(1000)
     res = atomic.update {|v| v + 1}
 
-    atomic.value.should eq 1001
-    res.should eq 1001
+    expect(atomic.value).to eq 1001
+    expect(res).to eq 1001
   end
 
   specify :test_try_update do
@@ -31,16 +31,16 @@ share_examples_for :atomic do
     atomic = described_class.new(1000)
     res = atomic.try_update {|v| v + 1}
 
-    atomic.value.should eq 1001
-    res.should eq 1001
+    expect(atomic.value).to eq 1001
+    expect(res).to eq 1001
   end
 
   specify :test_swap do
     atomic = described_class.new(1000)
     res = atomic.swap(1001)
 
-    atomic.value.should eq 1001
-    res.should eq 1000
+    expect(atomic.value).to eq 1001
+    expect(res).to eq 1000
   end
 
   specify :test_try_update_fails do
@@ -59,7 +59,7 @@ share_examples_for :atomic do
     # assigning within block exploits implementation detail for test
     atomic.update{|v| tries += 1 ; atomic.value = 1001 ; v + 1}
 
-    tries.should eq 2
+    expect(tries).to eq 2
   end
 
   specify :test_numeric_cas do
@@ -71,12 +71,12 @@ share_examples_for :atomic do
 
     atomic.set(max_8)
     max_8.upto(max_8 + 2) do |i|
-      atomic.compare_and_swap(i, i+1).should be_true, "CAS failed for numeric #{i} => #{i + 1}"
+      expect(atomic.compare_and_swap(i, i+1)).to be_truthy, "CAS failed for numeric #{i} => #{i + 1}"
     end
 
     atomic.set(min_8)
     min_8.downto(min_8 - 2) do |i|
-      atomic.compare_and_swap(i, i-1).should be_true, "CAS failed for numeric #{i} => #{i - 1}"
+      expect(atomic.compare_and_swap(i, i-1)).to be_truthy, "CAS failed for numeric #{i} => #{i - 1}"
     end
 
     # 64-bit idempotent Fixnum (MRI, Rubinius)
@@ -85,12 +85,12 @@ share_examples_for :atomic do
 
     atomic.set(max_64)
     max_64.upto(max_64 + 2) do |i|
-      atomic.compare_and_swap(i, i+1).should be_true, "CAS failed for numeric #{i} => #{i + 1}"
+      expect(atomic.compare_and_swap(i, i+1)).to be_truthy, "CAS failed for numeric #{i} => #{i + 1}"
     end
 
     atomic.set(min_64)
     min_64.downto(min_64 - 2) do |i|
-      atomic.compare_and_swap(i, i-1).should be_true, "CAS failed for numeric #{i} => #{i - 1}"
+      expect(atomic.compare_and_swap(i, i-1)).to be_truthy, "CAS failed for numeric #{i} => #{i - 1}"
     end
 
     ## 64-bit overflow into Bignum (JRuby)
@@ -99,31 +99,31 @@ share_examples_for :atomic do
 
     atomic.set(max_64)
     max_64.upto(max_64 + 2) do |i|
-      atomic.compare_and_swap(i, i+1).should be_true, "CAS failed for numeric #{i} => #{i + 1}"
+      expect(atomic.compare_and_swap(i, i+1)).to be_truthy, "CAS failed for numeric #{i} => #{i + 1}"
     end
 
     atomic.set(min_64)
     min_64.downto(min_64 - 2) do |i|
-      atomic.compare_and_swap(i, i-1).should be_true, "CAS failed for numeric #{i} => #{i - 1}"
+      expect(atomic.compare_and_swap(i, i-1)).to be_truthy, "CAS failed for numeric #{i} => #{i - 1}"
     end
 
     # non-idempotent Float (JRuby, Rubinius, MRI < 2.0.0 or 32-bit)
     atomic.set(1.0 + 0.1)
-    atomic.compare_and_set(1.0 + 0.1, 1.2).should be_true, "CAS failed for #{1.0 + 0.1} => 1.2"
+    expect(atomic.compare_and_set(1.0 + 0.1, 1.2)).to be_truthy, "CAS failed for #{1.0 + 0.1} => 1.2"
 
     # Bignum
     atomic.set(2**100)
-    atomic.compare_and_set(2**100, 0).should be_true, "CAS failed for #{2**100} => 0"
+    expect(atomic.compare_and_set(2**100, 0)).to be_truthy, "CAS failed for #{2**100} => 0"
 
     # Rational
     require 'rational' unless ''.respond_to? :to_r
     atomic.set(Rational(1,3))
-    atomic.compare_and_set(Rational(1,3), 0).should be_true, "CAS failed for #{Rational(1,3)} => 0"
+    expect(atomic.compare_and_set(Rational(1,3), 0)).to be_truthy, "CAS failed for #{Rational(1,3)} => 0"
 
     # Complex
     require 'complex' unless ''.respond_to? :to_c
     atomic.set(Complex(1,2))
-    atomic.compare_and_set(Complex(1,2), 0).should be_true, "CAS failed for #{Complex(1,2)} => 0"
+    expect(atomic.compare_and_set(Complex(1,2), 0)).to be_truthy, "CAS failed for #{Complex(1,2)} => 0"
   end
 end
 
@@ -154,19 +154,19 @@ module Concurrent
   describe Atomic do
     if TestHelpers.use_c_extensions?
       it 'inherits from CAtomic' do
-        Atomic.ancestors.should include(CAtomic)
+        expect(Atomic.ancestors).to include(CAtomic)
       end
     elsif TestHelpers.jruby?
       it 'inherits from JavaAtomic' do
-        Atomic.ancestors.should include(JavaAtomic)
+        expect(Atomic.ancestors).to include(JavaAtomic)
       end
     elsif TestHelpers.rbx?
       it 'inherits from RbxAtomic' do
-        Atomic.ancestors.should include(RbxAtomic)
+        expect(Atomic.ancestors).to include(RbxAtomic)
       end
     else
       it 'inherits from MutexAtomic' do
-        Atomic.ancestors.should include(MutexAtomic)
+        expect(Atomic.ancestors).to include(MutexAtomic)
       end
     end
   end

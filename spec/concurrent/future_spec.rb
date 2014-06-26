@@ -90,7 +90,7 @@ module Concurrent
       let(:executor) { ImmediateExecutor.new }
 
       it 'sets the state to :unscheduled' do
-        Future.new(executor: executor){ nil }.should be_unscheduled
+        expect(Future.new(executor: executor){ nil }).to be_unscheduled
       end
 
       it 'raises an exception when no block given' do
@@ -100,22 +100,22 @@ module Concurrent
       end
 
       it 'uses the executor given with the :executor option' do
-        executor.should_receive(:post)
+        expect(executor).to receive(:post)
         Future.execute(executor: executor){ nil }
       end
 
       it 'uses the global operation pool when :operation is true' do
-        Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
+        expect(Concurrent.configuration).to receive(:global_operation_pool).and_return(executor)
         Future.execute(operation: true){ nil }
       end
 
       it 'uses the global task pool when :task is true' do
-        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
         Future.execute(task: true){ nil }
       end
 
       it 'uses the global task pool by default' do
-        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
         Future.execute{ nil }
       end
     end
@@ -124,7 +124,7 @@ module Concurrent
 
       it 'does nothing unless the state is :unscheduled' do
         executor = ImmediateExecutor.new
-        executor.should_not_receive(:post).with(any_args)
+        expect(executor).not_to receive(:post).with(any_args)
         future = Future.new(executor: executor){ nil }
         future.instance_variable_set(:@state, :pending)
         future.execute
@@ -135,7 +135,7 @@ module Concurrent
       end
 
       it 'posts the block given on construction' do
-        executor.should_receive(:post).with(any_args)
+        expect(executor).to receive(:post).with(any_args)
         future = Future.new(executor: executor){ nil }
         future.execute
       end
@@ -144,13 +144,13 @@ module Concurrent
         latch = Concurrent::CountDownLatch.new(1)
         future = Future.new(executor: executor){ latch.wait(10) }
         future.execute
-        future.should be_pending
+        expect(future).to be_pending
         latch.count_down
       end
 
       it 'returns self' do
         future = Future.new(executor: executor){ nil }
-        future.execute.should be future
+        expect(future.execute).to be future
       end
     end
 
@@ -160,19 +160,19 @@ module Concurrent
 
       it 'creates a new Future' do
         future = Future.execute(executor: executor){ nil }
-        future.should be_a(Future)
+        expect(future).to be_a(Future)
       end
 
       it 'passes the block to the new Future' do
         @expected = false
         Future.execute(executor: executor){ @expected = true }
-        @expected.should be_true
+        expect(@expected).to be_truthy
       end
 
       it 'calls #execute on the new Future' do
         future = double('future')
-        Future.stub(:new).with(any_args).and_return(future)
-        future.should_receive(:execute).with(no_args)
+        allow(Future).to receive(:new).with(any_args).and_return(future)
+        expect(future).to receive(:execute).with(no_args)
         Future.execute{ nil }
       end
     end
@@ -184,37 +184,37 @@ module Concurrent
       it 'passes all arguments to handler' do
         @expected = false
         Future.new(executor: executor){ @expected = true }.execute
-        @expected.should be_true
+        expect(@expected).to be_truthy
       end
 
       it 'sets the value to the result of the handler' do
         future = Future.new(executor: executor){ 42 }.execute
-        future.value.should eq 42
+        expect(future.value).to eq 42
       end
 
       it 'sets the state to :fulfilled when the block completes' do
         future = Future.new(executor: executor){ 42 }.execute
-        future.should be_fulfilled
+        expect(future).to be_fulfilled
       end
 
       it 'sets the value to nil when the handler raises an exception' do
         future = Future.new(executor: executor){ raise StandardError }.execute
-        future.value.should be_nil
+        expect(future.value).to be_nil
       end
 
       it 'sets the state to :rejected when the handler raises an exception' do
         future = Future.new(executor: executor){ raise StandardError }.execute
-        future.should be_rejected
+        expect(future).to be_rejected
       end
 
       context 'aliases' do
 
         it 'aliases #realized? for #fulfilled?' do
-          subject.should be_realized
+          expect(subject).to be_realized
         end
 
         it 'aliases #deref for #value' do
-          subject.deref.should eq value
+          expect(subject.deref).to eq value
         end
       end
     end
@@ -244,8 +244,8 @@ module Concurrent
 
         future.execute
 
-        observer.value.should == 42
-        observer.reason.should be_nil
+        expect(observer.value).to eq(42)
+        expect(observer.reason).to be_nil
       end
 
       it 'notifies all observers on rejection' do
@@ -254,46 +254,46 @@ module Concurrent
 
         future.execute
 
-        observer.value.should be_nil
-        observer.reason.should be_a(StandardError)
+        expect(observer.value).to be_nil
+        expect(observer.reason).to be_a(StandardError)
       end
 
       it 'notifies an observer added after fulfillment' do
         future = Future.new(executor: executor){ 42 }.execute
         future.add_observer(observer)
-        observer.value.should == 42
+        expect(observer.value).to eq(42)
       end
 
       it 'notifies an observer added after rejection' do
         future = Future.new(executor: executor){ raise StandardError }.execute
         future.add_observer(observer)
-        observer.reason.should be_a(StandardError)
+        expect(observer.reason).to be_a(StandardError)
       end
 
       it 'does not notify existing observers when a new observer added after fulfillment' do
         future = Future.new(executor: executor){ 42 }.execute
         future.add_observer(observer)
 
-        observer.count.should == 1
+        expect(observer.count).to eq(1)
 
         o2 = clazz.new
         future.add_observer(o2)
 
-        observer.count.should == 1
-        o2.value.should == 42
+        expect(observer.count).to eq(1)
+        expect(o2.value).to eq(42)
       end
 
       it 'does not notify existing observers when a new observer added after rejection' do
         future = Future.new(executor: executor){ raise StandardError }.execute
         future.add_observer(observer)
 
-        observer.count.should == 1
+        expect(observer.count).to eq(1)
 
         o2 = clazz.new
         future.add_observer(o2)
 
-        observer.count.should == 1
-        o2.reason.should be_a(StandardError)
+        expect(observer.count).to eq(1)
+        expect(o2.reason).to be_a(StandardError)
       end
 
       context 'deadlock avoidance' do
@@ -314,7 +314,7 @@ module Concurrent
           future.add_observer(obs)
           future.execute
 
-          obs.value.should eq 42
+          expect(obs.value).to eq 42
         end
 
         it 'should notify a new observer added after fulfillment outside lock' do
@@ -323,7 +323,7 @@ module Concurrent
 
           future.add_observer(obs)
 
-          obs.value.should eq 42
+          expect(obs.value).to eq 42
         end
       end
     end

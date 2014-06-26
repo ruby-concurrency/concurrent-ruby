@@ -5,11 +5,11 @@ module Concurrent
   describe SingleThreadExecutor do
     if jruby?
       it 'inherits from JavaSingleThreadExecutor' do
-        SingleThreadExecutor.ancestors.should include(JavaSingleThreadExecutor)
+        expect(SingleThreadExecutor.ancestors).to include(JavaSingleThreadExecutor)
       end
     else
       it 'inherits from RubySingleThreadExecutor' do
-        SingleThreadExecutor.ancestors.should include(RubySingleThreadExecutor)
+        expect(SingleThreadExecutor.ancestors).to include(RubySingleThreadExecutor)
       end
     end
   end
@@ -17,11 +17,11 @@ module Concurrent
   describe ThreadPoolExecutor do
     if jruby?
       it 'inherits from JavaThreadPoolExecutor' do
-        ThreadPoolExecutor.ancestors.should include(JavaThreadPoolExecutor)
+        expect(ThreadPoolExecutor.ancestors).to include(JavaThreadPoolExecutor)
       end
     else
       it 'inherits from RubyThreadPoolExecutor' do
-        ThreadPoolExecutor.ancestors.should include(RubyThreadPoolExecutor)
+        expect(ThreadPoolExecutor.ancestors).to include(RubyThreadPoolExecutor)
       end
     end
   end
@@ -29,11 +29,11 @@ module Concurrent
   describe CachedThreadPool do
     if jruby?
       it 'inherits from JavaCachedThreadPool' do
-        CachedThreadPool.ancestors.should include(JavaCachedThreadPool)
+        expect(CachedThreadPool.ancestors).to include(JavaCachedThreadPool)
       end
     else
       it 'inherits from RubyCachedThreadPool' do
-        CachedThreadPool.ancestors.should include(RubyCachedThreadPool)
+        expect(CachedThreadPool.ancestors).to include(RubyCachedThreadPool)
       end
     end
   end
@@ -41,11 +41,11 @@ module Concurrent
   describe FixedThreadPool do
     if jruby?
       it 'inherits from JavaFixedThreadPool' do
-        FixedThreadPool.ancestors.should include(JavaFixedThreadPool)
+        expect(FixedThreadPool.ancestors).to include(JavaFixedThreadPool)
       end
     else
       it 'inherits from RubyFixedThreadPool' do
-        FixedThreadPool.ancestors.should include(RubyFixedThreadPool)
+        expect(FixedThreadPool.ancestors).to include(RubyFixedThreadPool)
       end
     end
   end

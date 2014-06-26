@@ -13,21 +13,21 @@ module Concurrent
 
     describe '#capacity' do
       it 'returns the value passed in constructor' do
-        buffer.capacity.should eq capacity
+        expect(buffer.capacity).to eq capacity
       end
     end
 
     describe '#count' do
       it 'is zero when created' do
-        buffer.count.should eq 0
+        expect(buffer.count).to eq 0
       end
 
       it 'increases when an element is added' do
         buffer.put 5
-        buffer.count.should eq 1
+        expect(buffer.count).to eq 1
 
         buffer.put 1
-        buffer.count.should eq 2
+        expect(buffer.count).to eq 2
       end
 
       it 'decreases when an element is removed' do
@@ -35,29 +35,29 @@ module Concurrent
 
         buffer.take
 
-        buffer.count.should eq 0
+        expect(buffer.count).to eq 0
       end
     end
 
     describe '#empty?' do
       it 'is true when count is zero' do
-        buffer.empty?.should be_true
+        expect(buffer.empty?).to be_truthy
       end
 
       it 'is false when count is not zero' do
         buffer.put 82
-        buffer.empty?.should be_false
+        expect(buffer.empty?).to be_falsey
       end
     end
 
     describe '#full?' do
       it 'is true when count is capacity' do
         fill_buffer
-        buffer.full?.should be_true
+        expect(buffer.full?).to be_truthy
       end
 
       it 'is false when count is not capacity' do
-        buffer.full?.should be_false
+        expect(buffer.full?).to be_falsey
       end
     end
 
@@ -69,7 +69,7 @@ module Concurrent
 
         sleep(0.1)
 
-        t.status.should eq 'sleep'
+        expect(t.status).to eq 'sleep'
       end
 
       it 'continues when an element is removed' do
@@ -78,7 +78,7 @@ module Concurrent
         Thread.new { (capacity + 1).times { buffer.put 'hi' }; latch.count_down }
         Thread.new { sleep(0.1); buffer.take }
 
-        latch.wait(0.2).should be_true
+        expect(latch.wait(0.2)).to be_truthy
       end
     end
 
@@ -88,7 +88,7 @@ module Concurrent
 
         sleep(0.1)
 
-        t.status.should eq 'sleep'
+        expect(t.status).to eq 'sleep'
       end
 
       it 'continues when an element is added' do
@@ -97,7 +97,7 @@ module Concurrent
         Thread.new { buffer.take; latch.count_down }
         Thread.new { sleep(0.1); buffer.put 3 }
 
-        latch.wait(0.2).should be_true
+        expect(latch.wait(0.2)).to be_truthy
       end
 
       it 'returns the first added value' do
@@ -105,16 +105,16 @@ module Concurrent
         buffer.put 'foo'
         buffer.put 'bar'
 
-        buffer.take.should eq 'hi'
-        buffer.take.should eq 'foo'
-        buffer.take.should eq 'bar'
+        expect(buffer.take).to eq 'hi'
+        expect(buffer.take).to eq 'foo'
+        expect(buffer.take).to eq 'bar'
       end
     end
 
     describe '#peek' do
       context 'buffer empty' do
         it 'returns nil when buffer is empty' do
-          buffer.peek.should be_nil
+          expect(buffer.peek).to be_nil
         end
       end
 
@@ -123,12 +123,12 @@ module Concurrent
         before(:each) { buffer.put 'element' }
 
         it 'returns the first value' do
-          buffer.peek.should eq 'element'
+          expect(buffer.peek).to eq 'element'
         end
 
         it 'does not change buffer' do
           buffer.peek
-          buffer.count.should eq 1
+          expect(buffer.count).to eq 1
         end
       end
     end
@@ -140,8 +140,8 @@ module Concurrent
 
         buffer.put 'hi'
 
-        buffer.take.should eq 'hi'
-        buffer.capacity.should eq capacity
+        expect(buffer.take).to eq 'hi'
+        expect(buffer.capacity).to eq capacity
       end
     end
 

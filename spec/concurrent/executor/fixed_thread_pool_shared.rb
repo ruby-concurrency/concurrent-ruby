@@ -2,7 +2,7 @@ require 'spec_helper'
 require_relative 'thread_pool_shared'
 require 'thread'
 
-share_examples_for :fixed_thread_pool do
+shared_examples :fixed_thread_pool do
 
   let!(:num_threads){ 5 }
   subject { described_class.new(num_threads) }
@@ -19,24 +19,24 @@ share_examples_for :fixed_thread_pool do
     subject { described_class.new(5) }
 
     it 'defaults :min_length correctly' do
-      subject.min_length.should eq 5
+      expect(subject.min_length).to eq 5
     end
 
     it 'defaults :max_length correctly' do
-      subject.max_length.should eq 5
+      expect(subject.max_length).to eq 5
     end
 
     it 'defaults :overflow_policy to :abort' do
-      subject.overflow_policy.should eq :abort
+      expect(subject.overflow_policy).to eq :abort
     end
 
 
     it 'defaults :idletime correctly' do
-      subject.idletime.should eq subject.class.const_get(:DEFAULT_THREAD_IDLETIMEOUT)
+      expect(subject.idletime).to eq subject.class.const_get(:DEFAULT_THREAD_IDLETIMEOUT)
     end
 
     it 'defaults default :max_queue to zero' do
-      subject.max_queue.should eq 0
+      expect(subject.max_queue).to eq 0
     end
 
   end
@@ -44,25 +44,25 @@ share_examples_for :fixed_thread_pool do
   context '#initialize explicit values' do
 
     it 'raises an exception when the pool length is less than one' do
-      lambda {
+      expect {
         described_class.new(0)
-      }.should raise_error(ArgumentError)
+      }.to raise_error(ArgumentError)
     end
 
 
     it 'sets explicit :max_queue correctly' do
       subject = described_class.new(5, :max_queue => 10)
-      subject.max_queue.should eq 10
+      expect(subject.max_queue).to eq 10
     end
 
     it 'correctly sets valid :overflow_policy' do
       subject = described_class.new(5, :overflow_policy => :caller_runs)
-      subject.overflow_policy.should eq :caller_runs
+      expect(subject.overflow_policy).to eq :caller_runs
     end
 
     it "correctly sets valid :idletime" do
       subject = described_class.new(5, :idletime => 10)
-      subject.idletime.should eq 10
+      expect(subject.idletime).to eq 10
     end
 
     it 'raises an exception if given an invalid :overflow_policy' do
@@ -77,13 +77,13 @@ share_examples_for :fixed_thread_pool do
   context '#min_length' do
 
     it 'returns :num_threads on creation' do
-      subject.min_length.should eq num_threads
+      expect(subject.min_length).to eq num_threads
     end
 
     it 'returns :num_threads while running' do
       10.times{ subject.post{ nil } }
       sleep(0.1)
-      subject.min_length.should eq num_threads
+      expect(subject.min_length).to eq num_threads
     end
 
     it 'returns :num_threads once shutdown' do
@@ -91,20 +91,20 @@ share_examples_for :fixed_thread_pool do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.min_length.should eq num_threads
+      expect(subject.min_length).to eq num_threads
     end
   end
 
   context '#max_length' do
 
     it 'returns :num_threads on creation' do
-      subject.max_length.should eq num_threads
+      expect(subject.max_length).to eq num_threads
     end
 
     it 'returns :num_threads while running' do
       10.times{ subject.post{ nil } }
       sleep(0.1)
-      subject.max_length.should eq num_threads
+      expect(subject.max_length).to eq num_threads
     end
 
     it 'returns :num_threads once shutdown' do
@@ -112,7 +112,7 @@ share_examples_for :fixed_thread_pool do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.max_length.should eq num_threads
+      expect(subject.max_length).to eq num_threads
     end
   end
 
@@ -121,20 +121,20 @@ share_examples_for :fixed_thread_pool do
     it 'returns :num_threads while running' do
       10.times{ subject.post{ nil } }
       sleep(0.1)
-      subject.length.should eq num_threads
+      expect(subject.length).to eq num_threads
     end
   end
 
   context '#largest_length' do
 
     it 'returns zero on creation' do
-      subject.largest_length.should eq 0
+      expect(subject.largest_length).to eq 0
     end
 
     it 'returns :num_threads while running' do
       10.times{ subject.post{ nil } }
       sleep(0.1)
-      subject.largest_length.should eq num_threads
+      expect(subject.largest_length).to eq num_threads
     end
 
     it 'returns :num_threads once shutdown' do
@@ -142,15 +142,15 @@ share_examples_for :fixed_thread_pool do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.largest_length.should eq num_threads
+      expect(subject.largest_length).to eq num_threads
     end
   end
 
   context '#status' do
 
     it 'returns an array' do
-      subject.stub(:warn)
-      subject.status.should be_kind_of(Array)
+      allow(subject).to receive(:warn)
+      expect(subject.status).to be_kind_of(Array)
     end
   end
 
@@ -165,7 +165,7 @@ share_examples_for :fixed_thread_pool do
       sleep(0.1)
       subject.kill
       sleep(0.1)
-      @expected.should be_false
+      expect(@expected).to be_falsey
     end
   end
 
@@ -175,7 +175,7 @@ share_examples_for :fixed_thread_pool do
       pool = described_class.new(5)
       100.times{ pool << proc{ sleep(1) } }
       sleep(0.1)
-      pool.current_length.should eq 5
+      expect(pool.current_length).to eq 5
       pool.kill
     end
   end
@@ -223,7 +223,7 @@ share_examples_for :fixed_thread_pool do
       end
       latch.wait(1)
 
-      @queue.length.should be < 5
+      expect(@queue.length).to be < 5
     end
 
     # To check for caller_runs, we'll check how many unique threads
@@ -248,8 +248,8 @@ share_examples_for :fixed_thread_pool do
       a = []
       a << @queue.shift until @queue.empty?
 
-      a.size.should eq 5 # one for each run of the block
-      a.uniq.size.should eq 3 # one for each of teh two threads, plus the caller
+      expect(a.size).to eq 5 # one for each run of the block
+      expect(a.uniq.size).to eq 3 # one for each of teh two threads, plus the caller
     end
   end
 end

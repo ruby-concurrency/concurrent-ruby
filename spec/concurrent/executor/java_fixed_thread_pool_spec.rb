@@ -23,10 +23,10 @@ if Concurrent::TestHelpers.jruby?
         it 'sets :overflow_policy correctly' do
           clazz  = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
           policy = clazz.new
-          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
 
           subject = JavaFixedThreadPool.new(5, overflow_policy: :discard)
-          subject.overflow_policy.should eq :discard
+          expect(subject.overflow_policy).to eq :discard
         end
 
       end

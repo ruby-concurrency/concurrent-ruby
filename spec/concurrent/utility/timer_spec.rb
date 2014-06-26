@@ -22,8 +22,8 @@ module Concurrent
       Concurrent::timer(0.1){ latch.count_down }
       latch.wait(1)
       diff = Time.now.to_f - start
-      diff.should > 0.1
-      diff.should < 0.5
+      expect(diff).to be > 0.1
+      expect(diff).to be < 0.5
     end
 
     it 'suppresses exceptions thrown by the block' do
@@ -40,11 +40,11 @@ module Concurrent
         latch.count_down
       end
       latch.wait(0.2)
-      expected.should eq [1, 2, 3]
+      expect(expected).to eq [1, 2, 3]
     end
 
     it 'runs the task on the global timer pool' do
-      Concurrent.configuration.global_timer_set.should_receive(:post).with(0.1)
+      expect(Concurrent.configuration.global_timer_set).to receive(:post).with(0.1)
       Concurrent::timer(0.1){ :foo }
     end
   end

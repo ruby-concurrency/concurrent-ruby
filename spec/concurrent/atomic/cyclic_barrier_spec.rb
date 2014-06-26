@@ -25,7 +25,7 @@ module Concurrent
     describe '#parties' do
 
       it 'should be the value passed to the constructor' do
-        barrier.parties.should eq 3
+        expect(barrier.parties).to eq 3
       end
 
     end
@@ -33,7 +33,7 @@ module Concurrent
     describe '#number_waiting' do
       context 'without any waiting thread' do
         it 'should be equal to zero' do
-          barrier.number_waiting.should eq 0
+          expect(barrier.number_waiting).to eq 0
         end
       end
 
@@ -44,19 +44,19 @@ module Concurrent
 
           sleep(0.1)
 
-          barrier.number_waiting.should eq 2
+          expect(barrier.number_waiting).to eq 2
         end
       end
     end
 
     describe '#broken?' do
       it 'should not be broken when created' do
-        barrier.broken?.should eq false
+        expect(barrier.broken?).to eq false
       end
 
       it 'should not be broken when reset is called without waiting thread' do
         barrier.reset
-        barrier.broken?.should eq false
+        expect(barrier.broken?).to eq false
       end
     end
 
@@ -67,10 +67,10 @@ module Concurrent
         Thread.new { barrier.wait; latch.count_down }
         sleep(0.1)
         barrier.reset
-        latch.wait(0.1).should be_true
+        expect(latch.wait(0.1)).to be_truthy
 
-        barrier.should_not be_broken
-        barrier.number_waiting.should eq 0
+        expect(barrier).not_to be_broken
+        expect(barrier.number_waiting).to eq 0
       end
     end
 
@@ -80,23 +80,23 @@ module Concurrent
           t = Thread.new { barrier.wait }
           sleep(0.1)
 
-          t.status.should eq 'sleep'
+          expect(t.status).to eq 'sleep'
         end
 
         it 'should release all threads when their number matches the desired one' do
           latch = CountDownLatch.new(parties)
 
           parties.times { Thread.new { barrier.wait; latch.count_down } }
-          latch.wait(0.1).should be_true
-          barrier.number_waiting.should eq 0
-          barrier.should_not be_broken
+          expect(latch.wait(0.1)).to be_truthy
+          expect(barrier.number_waiting).to eq 0
+          expect(barrier).not_to be_broken
         end
 
         it 'returns true when released' do
           latch = CountDownLatch.new(parties)
 
           parties.times { Thread.new { latch.count_down if barrier.wait == true } }
-          latch.wait(0.1).should be_true
+          expect(latch.wait(0.1)).to be_truthy
         end
 
         it 'executes the block once' do
@@ -106,19 +106,19 @@ module Concurrent
           latch = CountDownLatch.new(parties)
 
           parties.times { Thread.new { latch.count_down if barrier.wait == true } }
-          latch.wait(0.1).should be_true
+          expect(latch.wait(0.1)).to be_truthy
 
-          counter.value.should eq 1
+          expect(counter.value).to eq 1
         end
 
         it 'can be reused' do
           first_latch = CountDownLatch.new(parties)
           parties.times { Thread.new { barrier.wait; first_latch.count_down } }
-          first_latch.wait(0.1).should be_true
+          expect(first_latch.wait(0.1)).to be_truthy
 
           latch = CountDownLatch.new(parties)
           parties.times { Thread.new { barrier.wait; latch.count_down } }
-          latch.wait(0.1).should be_true
+          expect(latch.wait(0.1)).to be_truthy
         end
 
         it 'return false if barrier has been reset' do
@@ -127,7 +127,7 @@ module Concurrent
           Thread.new { latch.count_down if barrier.wait == false }
           sleep(0.1)
           barrier.reset
-          latch.wait(0.1).should be_true
+          expect(latch.wait(0.1)).to be_truthy
         end
       end
 
@@ -137,22 +137,22 @@ module Concurrent
             t = Thread.new { barrier.wait(1) }
             sleep(0.1)
 
-            t.status.should eq 'sleep'
+            expect(t.status).to eq 'sleep'
           end
 
           it 'should release all threads when their number matches the desired one' do
             latch = CountDownLatch.new(parties)
 
             parties.times { Thread.new { barrier.wait(1); latch.count_down } }
-            latch.wait(0.2).should be_true
-            barrier.number_waiting.should eq 0
+            expect(latch.wait(0.2)).to be_truthy
+            expect(barrier.number_waiting).to eq 0
           end
 
           it 'returns true when released' do
             latch = CountDownLatch.new(parties)
 
             parties.times { Thread.new { latch.count_down if barrier.wait(1) == true } }
-            latch.wait(0.1).should be_true
+            expect(latch.wait(0.1)).to be_truthy
           end
         end
 
@@ -162,7 +162,7 @@ module Concurrent
             latch = CountDownLatch.new(1)
 
             Thread.new { latch.count_down if barrier.wait(0.1) == false }
-            latch.wait(0.2).should be_true
+            expect(latch.wait(0.2)).to be_truthy
           end
 
           it 'breaks the barrier and release all other threads' do
@@ -171,8 +171,8 @@ module Concurrent
             Thread.new { barrier.wait(0.1); latch.count_down }
             Thread.new { barrier.wait; latch.count_down }
 
-            latch.wait(0.2).should be_true
-            barrier.should be_broken
+            expect(latch.wait(0.2)).to be_truthy
+            expect(barrier).to be_broken
           end
 
           it 'does not execute the block on timeout' do
@@ -181,7 +181,7 @@ module Concurrent
 
             barrier.wait(0.1)
 
-            counter.value.should eq 0
+            expect(counter.value).to eq 0
           end
         end
       end
@@ -191,20 +191,20 @@ module Concurrent
           Thread.new { barrier.wait(0.1) }
           sleep(0.2)
 
-          barrier.should be_broken
+          expect(barrier).to be_broken
 
-          barrier.wait.should be_false
+          expect(barrier.wait).to be_falsey
         end
 
         it 'can be reset' do
           Thread.new { barrier.wait(0.1) }
           sleep(0.2)
 
-          barrier.should be_broken
+          expect(barrier).to be_broken
 
           barrier.reset
 
-          barrier.should_not be_broken
+          expect(barrier).not_to be_broken
         end
       end
     end
@@ -228,7 +228,7 @@ module Concurrent
         barrier.simulate_spurious_wake_up
 
         sleep(0.1)
-        @expected.should be_false
+        expect(@expected).to be_falsey
       end
 
       it 'should resist to spurious wake ups with timeout' do
@@ -239,7 +239,7 @@ module Concurrent
         barrier.simulate_spurious_wake_up
 
         sleep(0.1)
-        @expected.should be_false
+        expect(@expected).to be_falsey
 
       end
     end

@@ -106,7 +106,7 @@ module Concurrent
     context 'executor' do
 
       it 'returns the default executor when #executor= has never been called' do
-        Concurrent.configuration.should_receive(:global_operation_pool).
+        expect(Concurrent.configuration).to receive(:global_operation_pool).
           and_return(ImmediateExecutor.new)
         subject = async_class.new
         subject.async.echo(:foo)
@@ -114,7 +114,7 @@ module Concurrent
 
       it 'returns the memo after #executor= has been called' do
         executor = ImmediateExecutor.new
-        executor.should_receive(:post)
+        expect(executor).to receive(:post)
         subject = async_class.new
         subject.executor = executor
         subject.async.echo(:foo)
@@ -152,13 +152,13 @@ module Concurrent
 
       it 'returns a :pending IVar' do
         val = subject.async.wait(5)
-        val.should be_a Concurrent::IVar
-        val.should be_pending
+        expect(val).to be_a Concurrent::IVar
+        expect(val).to be_pending
       end
 
       it 'runs the future on the memoized executor' do
         executor = ImmediateExecutor.new
-        executor.should_receive(:post).with(any_args)
+        expect(executor).to receive(:post).with(any_args)
         subject = async_class.new
         subject.executor = executor
         subject.async.echo(:foo)
@@ -166,23 +166,23 @@ module Concurrent
 
       it 'sets the value on success' do
         val = subject.async.echo(:foo)
-        val.value.should eq :foo
-        val.should be_fulfilled
+        expect(val.value).to eq :foo
+        expect(val).to be_fulfilled
       end
 
       it 'sets the reason on failure' do
         ex = ArgumentError.new
         val = subject.async.boom(ex)
         sleep(0.1)
-        val.reason.should eq ex
-        val.should be_rejected
+        expect(val.reason).to eq ex
+        expect(val).to be_rejected
       end
 
       it 'sets the reason when giving too many optional arguments' do
         val = subject.async.gather(1, 2, 3, 4, 5)
         sleep(0.1)
-        val.reason.should be_a StandardError
-        val.should be_rejected
+        expect(val.reason).to be_a StandardError
+        expect(val).to be_rejected
       end
 
       it 'supports attribute accessors' do
@@ -190,19 +190,19 @@ module Concurrent
         sleep(0.1)
         val = subject.async.accessor
         sleep(0.1)
-        val.value.should eq :foo
-        subject.accessor.should eq :foo
+        expect(val.value).to eq :foo
+        expect(subject.accessor).to eq :foo
       end
 
       it 'supports methods with blocks' do
         val = subject.async.with_block{ :foo }
         sleep(0.1)
-        val.value.should eq :foo
+        expect(val.value).to eq :foo
       end
 
       it 'is aliased as #future' do
         val = subject.future.wait(5)
-        val.should be_a Concurrent::IVar
+        expect(val).to be_a Concurrent::IVar
       end
 
       context '#method_missing' do
@@ -244,44 +244,44 @@ module Concurrent
 
       it 'returns a :fulfilled IVar' do
         val = subject.await.echo(5)
-        val.should be_a Concurrent::IVar
-        val.should be_fulfilled
+        expect(val).to be_a Concurrent::IVar
+        expect(val).to be_fulfilled
       end
 
       it 'sets the value on success' do
         val = subject.await.echo(:foo)
-        val.value.should eq :foo
-        val.should be_fulfilled
+        expect(val.value).to eq :foo
+        expect(val).to be_fulfilled
       end
 
       it 'sets the reason on failure' do
         ex = ArgumentError.new
         val = subject.await.boom(ex)
-        val.reason.should eq ex
-        val.should be_rejected
+        expect(val.reason).to eq ex
+        expect(val).to be_rejected
       end
 
       it 'sets the reason when giving too many optional arguments' do
         val = subject.await.gather(1, 2, 3, 4, 5)
-        val.reason.should be_a StandardError
-        val.should be_rejected
+        expect(val.reason).to be_a StandardError
+        expect(val).to be_rejected
       end
 
       it 'supports attribute accessors' do
         subject.await.accessor = :foo
         val = subject.await.accessor
-        val.value.should eq :foo
-        subject.accessor.should eq :foo
+        expect(val.value).to eq :foo
+        expect(subject.accessor).to eq :foo
       end
 
       it 'supports methods with blocks' do
         val = subject.await.with_block{ :foo }
-        val.value.should eq :foo
+        expect(val.value).to eq :foo
       end
 
       it 'is aliased as #delay' do
         val = subject.delay.echo(5)
-        val.should be_a Concurrent::IVar
+        expect(val).to be_a Concurrent::IVar
       end
 
       context '#method_missing' do
@@ -316,7 +316,7 @@ module Concurrent
 
         object.async.gather(0.5, :a, :b)
         object.await.gather(0, :c, :d)
-        object.bucket.should eq [:a, :b, :c, :d]
+        expect(object.bucket).to eq [:a, :b, :c, :d]
       end
 
       context 'raises an InitializationError' do

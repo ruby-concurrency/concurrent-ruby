@@ -8,7 +8,7 @@ module Concurrent
 
       it 'accepts an initial value' do
         t = TVar.new(14)
-        t.value.should eq 14
+        expect(t.value).to eq 14
       end
 
     end
@@ -17,7 +17,7 @@ module Concurrent
 
       it 'gets the value' do
         t = TVar.new(14)
-        t.value.should eq 14
+        expect(t.value).to eq 14
       end
 
     end
@@ -27,7 +27,7 @@ module Concurrent
       it 'sets the value' do
         t = TVar.new(14)
         t.value = 2
-        t.value.should eq 2
+        expect(t.value).to eq 2
       end
 
     end
@@ -52,7 +52,7 @@ module Concurrent
         end
       end
 
-      count.should eq 2
+      expect(count).to eq 2
     end
 
     it 'commits writes if the transaction succeeds' do
@@ -62,7 +62,7 @@ module Concurrent
         t.value = 1
       end
 
-      t.value.should eq 1
+      expect(t.value).to eq 1
     end
 
     it 'undoes writes if the transaction is aborted' do
@@ -78,7 +78,7 @@ module Concurrent
         end
       end
 
-      t.value.should eq 0
+      expect(t.value).to eq 0
     end
 
     it 'provides atomicity' do
@@ -96,8 +96,8 @@ module Concurrent
         end
       end
 
-      t1.value.should eq 0
-      t2.value.should eq 0
+      expect(t1.value).to eq 0
+      expect(t2.value).to eq 0
     end
 
     it 'provides isolation' do
@@ -112,7 +112,7 @@ module Concurrent
 
       sleep(0.5)
 
-      t.value.should eq 0
+      expect(t.value).to eq 0
     end
 
     it 'nests' do

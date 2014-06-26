@@ -13,30 +13,30 @@ module Concurrent
 
         it 'should return success' do
           success, value, reason = subject.execute
-          success.should be_true
+          expect(success).to be_truthy
         end
 
         it 'should return task value' do
           success, value, reason = subject.execute
-          value.should eq 42
+          expect(value).to eq 42
         end
 
         it 'should return a nil reason' do
           success, value, reason = subject.execute
-          reason.should be_nil
+          expect(reason).to be_nil
         end
 
         it 'passes all arguments to #execute to the task' do
           expected = nil
           task = proc {|*args| expected = args }
           SafeTaskExecutor.new(task).execute(1, 2, 3)
-          expected.should eq [1, 2, 3]
+          expect(expected).to eq [1, 2, 3]
         end
 
         it 'protectes #execute with a mutex' do
           mutex = double(:mutex)
-          Mutex.should_receive(:new).with(no_args).and_return(mutex)
-          mutex.should_receive(:synchronize).with(no_args)
+          expect(Mutex).to receive(:new).with(no_args).and_return(mutex)
+          expect(mutex).to receive(:synchronize).with(no_args)
           subject.execute
         end
       end
@@ -48,18 +48,18 @@ module Concurrent
 
         it 'should return false success' do
           success, value, reason = subject.execute
-          success.should be_false
+          expect(success).to be_falsey
         end
 
         it 'should return a nil value' do
           success, value, reason = subject.execute
-          value.should be_nil
+          expect(value).to be_nil
         end
 
         it 'should return the reason' do
           success, value, reason = subject.execute
-          reason.should be_a(StandardError)
-          reason.message.should eq 'an error'
+          expect(reason).to be_a(StandardError)
+          expect(reason.message).to eq 'an error'
         end
 
         it 'rescues Exception when :rescue_exception is true' do

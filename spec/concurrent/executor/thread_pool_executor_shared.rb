@@ -1,7 +1,7 @@
 require 'spec_helper'
 require_relative 'thread_pool_shared'
 
-share_examples_for :thread_pool_executor do
+shared_examples :thread_pool_executor do
 
 
   after(:each) do
@@ -14,39 +14,39 @@ share_examples_for :thread_pool_executor do
     subject { described_class.new }
 
     it 'defaults :min_length to DEFAULT_MIN_POOL_SIZE' do
-      subject.min_length.should eq described_class::DEFAULT_MIN_POOL_SIZE
+      expect(subject.min_length).to eq described_class::DEFAULT_MIN_POOL_SIZE
     end
 
 
     it 'defaults :max_length to DEFAULT_MAX_POOL_SIZE' do
-      subject.max_length.should eq described_class::DEFAULT_MAX_POOL_SIZE
+      expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
     end
 
     it 'defaults :idletime to DEFAULT_THREAD_IDLETIMEOUT' do
-      subject.idletime.should eq described_class::DEFAULT_THREAD_IDLETIMEOUT
+      expect(subject.idletime).to eq described_class::DEFAULT_THREAD_IDLETIMEOUT
     end
 
     it 'defaults :max_queue to DEFAULT_MAX_QUEUE_SIZE' do
-      subject.max_queue.should eq described_class::DEFAULT_MAX_QUEUE_SIZE
+      expect(subject.max_queue).to eq described_class::DEFAULT_MAX_QUEUE_SIZE
     end
 
     it 'defaults :overflow_policy to :abort' do
-      subject.overflow_policy.should eq :abort
+      expect(subject.overflow_policy).to eq :abort
     end
   end
 
   context "#initialize explicit values" do
 
     it "sets :min_threads" do
-      described_class.new(min_threads: 2).min_length.should eq 2
+      expect(described_class.new(min_threads: 2).min_length).to eq 2
     end
 
     it "sets :max_threads" do
-      described_class.new(max_threads: 2).max_length.should eq 2
+      expect(described_class.new(max_threads: 2).max_length).to eq 2
     end
 
     it "sets :idletime" do
-      described_class.new(idletime: 2).idletime.should eq 2
+      expect(described_class.new(idletime: 2).idletime).to eq 2
     end
 
     it "doesn't allow max_threads < min_threads" do
@@ -58,7 +58,7 @@ share_examples_for :thread_pool_executor do
     it 'accepts all valid overflow policies' do
       Concurrent::RubyThreadPoolExecutor::OVERFLOW_POLICIES.each do |policy|
         subject = described_class.new(overflow_policy: policy)
-        subject.overflow_policy.should eq policy
+        expect(subject.overflow_policy).to eq policy
       end
     end
 
@@ -88,13 +88,13 @@ share_examples_for :thread_pool_executor do
     subject{ described_class.new(max_queue: expected_max) }
 
     it 'returns the set value on creation' do
-      subject.max_queue.should eq expected_max
+      expect(subject.max_queue).to eq expected_max
     end
 
     it 'returns the set value when running' do
       5.times{ subject.post{ sleep(0.1) } }
       sleep(0.1)
-      subject.max_queue.should eq expected_max
+      expect(subject.max_queue).to eq expected_max
     end
 
     it 'returns the set value after stopping' do
@@ -102,7 +102,7 @@ share_examples_for :thread_pool_executor do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.max_queue.should eq expected_max
+      expect(subject.max_queue).to eq expected_max
     end
   end
 
@@ -119,19 +119,19 @@ share_examples_for :thread_pool_executor do
     end
 
     it 'returns zero on creation' do
-      subject.queue_length.should eq 0
+      expect(subject.queue_length).to eq 0
     end
 
     it 'returns zero when there are no enqueued tasks' do
       5.times{ subject.post{ nil } }
       sleep(0.1)
-      subject.queue_length.should eq 0
+      expect(subject.queue_length).to eq 0
     end
 
     it 'returns the size of the queue when tasks are enqueued' do
       100.times{ subject.post{ sleep(0.5) } }
       sleep(0.1)
-      subject.queue_length.should > 0
+      expect(subject.queue_length).to be > 0
     end
 
     it 'returns zero when stopped' do
@@ -139,13 +139,13 @@ share_examples_for :thread_pool_executor do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.queue_length.should eq 0
+      expect(subject.queue_length).to eq 0
     end
 
     it 'can never be greater than :max_queue' do
       100.times{ subject.post{ sleep(0.5) } }
       sleep(0.1)
-      subject.queue_length.should <= expected_max
+      expect(subject.queue_length).to be <= expected_max
     end
   end
 
@@ -156,11 +156,11 @@ share_examples_for :thread_pool_executor do
 
     it 'returns -1 when :max_queue is set to zero' do
       executor = described_class.new(max_queue: 0)
-      executor.remaining_capacity.should eq -1
+      expect(executor.remaining_capacity).to eq -1
     end
 
     it 'returns :max_length on creation' do
-      subject.remaining_capacity.should eq expected_max
+      expect(subject.remaining_capacity).to eq expected_max
     end
 
     it 'returns :max_length when stopped' do
@@ -168,7 +168,7 @@ share_examples_for :thread_pool_executor do
       sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.remaining_capacity.should eq expected_max
+      expect(subject.remaining_capacity).to eq expected_max
     end
   end
 end

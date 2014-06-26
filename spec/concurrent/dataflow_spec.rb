@@ -14,7 +14,7 @@ module Concurrent
 
     specify '#dataflow uses the global task pool' do
       input = Future.execute{0}
-      Concurrent.should_receive(:dataflow_with).once.
+      expect(Concurrent).to receive(:dataflow_with).once.
         with(Concurrent.configuration.global_task_pool, input)
       Concurrent::dataflow(input){0}
     end
@@ -23,7 +23,7 @@ module Concurrent
       input = Future.execute{0}
       result = Future.new{0}
 
-      Future.should_receive(:new).with(executor: root_executor).and_return(result)
+      expect(Future).to receive(:new).with(executor: root_executor).and_return(result)
       Concurrent::dataflow_with(root_executor, input){0}
     end
 
@@ -74,8 +74,8 @@ module Concurrent
     end
 
     it 'returns a Future' do
-      Concurrent::dataflow{0}.should be_a(Future)
-      Concurrent::dataflow{0}.should be_a(Future)
+      expect(Concurrent::dataflow{0}).to be_a(Future)
+      expect(Concurrent::dataflow{0}).to be_a(Future)
     end
 
     context 'does not schedule the Future' do
@@ -83,12 +83,12 @@ module Concurrent
       specify 'if no dependencies are completed' do
         d = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d){0}
-        f.should be_unscheduled
+        expect(f).to be_unscheduled
         d.execute
 
         d = Future.new(executor: executor){0}
         f = Concurrent::dataflow_with(root_executor, d){0}
-        f.should be_unscheduled
+        expect(f).to be_unscheduled
         d.execute
       end
 
@@ -97,14 +97,14 @@ module Concurrent
         d2 = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d1, d2){0}
         d1.execute
-        f.should be_unscheduled
+        expect(f).to be_unscheduled
         d2.execute
 
         d1 = Future.new(executor: executor){0}
         d2 = Future.new(executor: executor){0}
         f = Concurrent::dataflow_with(root_executor, d1, d2){0}
         d1.execute
-        f.should be_unscheduled
+        expect(f).to be_unscheduled
         d2.execute
       end
     end
@@ -115,12 +115,12 @@ module Concurrent
         d = Future.new(executor: executor){0}
         f = Concurrent::dataflow(d){0}
         d.execute
-        f.value.should eq 0
+        expect(f.value).to eq 0
 
         d = Future.new(executor: executor){0}
         f = Concurrent::dataflow_with(root_executor, d){0}
         d.execute
-        f.value.should eq 0
+        expect(f.value).to eq 0
       end
 
       specify 'if there is more than one' do
@@ -129,14 +129,14 @@ module Concurrent
         f = Concurrent::dataflow(d1, d2){0}
         d1.execute
         d2.execute
-        f.value.should eq 0
+        expect(f.value).to eq 0
 
         d1 = Future.new(executor: executor){0}
         d2 = Future.new(executor: executor){0}
         f = Concurrent::dataflow_with(root_executor, d1, d2){0}
         d1.execute
         d2.execute
-        f.value.should eq 0
+        expect(f.value).to eq 0
       end
     end
 
@@ -146,12 +146,12 @@ module Concurrent
         d = Future.new(executor: executor){0}
         d.execute
         f = Concurrent::dataflow(d){0}
-        f.value.should eq 0
+        expect(f.value).to eq 0
 
         d = Future.new(executor: executor){0}
         d.execute
         f = Concurrent::dataflow_with(root_executor, d){0}
-        f.value.should eq 0
+        expect(f.value).to eq 0
       end
 
       specify 'if there is more than one' do
@@ -160,14 +160,14 @@ module Concurrent
         d1.execute
         d2.execute
         f = Concurrent::dataflow(d1, d2){0}
-        f.value.should eq 0
+        expect(f.value).to eq 0
 
         d1 = Future.new(executor: executor){0}
         d2 = Future.new(executor: executor){0}
         d1.execute
         d2.execute
         f = Concurrent::dataflow_with(root_executor, d1, d2){0}
-        f.value.should eq 0
+        expect(f.value).to eq 0
       end
     end
 
@@ -177,12 +177,12 @@ module Concurrent
         d = Future.new(executor: executor){14}
         f = Concurrent::dataflow(d){|v| v }
         d.execute
-        f.value.should eq 14
+        expect(f.value).to eq 14
 
         d = Future.new(executor: executor){14}
         f = Concurrent::dataflow_with(root_executor, d){|v| v }
         d.execute
-        f.value.should eq 14
+        expect(f.value).to eq 14
       end
 
       specify 'if there is more than one' do
@@ -191,14 +191,14 @@ module Concurrent
         f = Concurrent::dataflow(d1, d2) {|v1, v2| v1 + v2}
         d1.execute
         d2.execute
-        f.value.should eq 16
+        expect(f.value).to eq 16
 
         d1 = Future.new(executor: executor){14}
         d2 = Future.new(executor: executor){2}
         f = Concurrent::dataflow_with(root_executor, d1, d2) {|v1, v2| v1 + v2}
         d1.execute
         d2.execute
-        f.value.should eq 16
+        expect(f.value).to eq 16
       end
     end
 
@@ -218,7 +218,7 @@ module Concurrent
 
         expected = fib_with_dot(14)
         sleep(0.1)
-        expected.value.should eq 377
+        expect(expected.value).to eq 377
       end
 
       it 'can be called as Concurrent::dataflow and Concurrent::dataflow_with' do
@@ -235,7 +235,7 @@ module Concurrent
 
         expected = fib_with_colons(14)
         sleep(0.1)
-        expected.value.should eq 377
+        expect(expected.value).to eq 377
       end
     end
   end
