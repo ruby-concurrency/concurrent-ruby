@@ -102,8 +102,8 @@ module Concurrent
 
           subjects.each do |desc, subject_definition|
             describe desc do
-              subject &subject_definition
-              after { terminate_actors subject }
+              subject(:actor, &subject_definition)
+              after { terminate_actors actor }
 
               describe '#path' do
                 subject { super().path }
@@ -112,7 +112,7 @@ module Concurrent
 
               describe '#parent' do
                 subject { super().parent }
-                it { skip('intermittent JRuby deadlock'); is_expected.to eq Actress.root }
+                it { is_expected.to eq Actress.root }
               end
 
               describe '#name' do
