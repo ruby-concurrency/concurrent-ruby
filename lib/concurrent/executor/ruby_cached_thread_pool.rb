@@ -19,7 +19,7 @@ module Concurrent
       opts = opts.merge(
         min_threads: 0,
         max_threads: DEFAULT_MAX_POOL_SIZE,
-        num_threads: overflow_policy,
+        overflow_policy: overflow_policy,
         max_queue: DEFAULT_MAX_QUEUE_SIZE,
         idletime: DEFAULT_THREAD_IDLETIMEOUT
       )
