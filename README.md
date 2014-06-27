@@ -131,23 +131,30 @@ sleep(3)   # do other stuff
 task.value #=> 25.96
 ```
 
-## Contributors
+## Maintainers
 
 * [Jerry D'Antonio](https://github.com/jdantonio)
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Lucas Allan](https://github.com/lucasallan)
 * [Petr Chalupa](https://github.com/pitr-ch)
-* [Ravil Bayramgalin](https://github.com/brainopia)
-* [Larry Lv](https://github.com/larrylv)
-* [Giuseppe Capizzi](https://github.com/gcapizzi)
+
+### Contributors
+
 * [Bill Dueber](https://github.com/billdueber)
 * [Brian Shirai](https://github.com/brixen)
 * [Chip Miller](https://github.com/chip-miller)
+* [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Jamie Hodge](https://github.com/jamiehodge)
+* [Larry Lv](https://github.com/larrylv)
+* [Maxim Chechel](https://github.com/maximchick)
+* [Ravil Bayramgalin](https://github.com/brainopia)
+* [René Föhring](https://github.com/rrrene)
+* [Shane Wilton](https://github.com/ShaneWilton)
+* [sheaney](https://github.com/sheaney)
 * [Zander Hill](https://github.com/zph)
 
-## Contributing
+### Contributing
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
