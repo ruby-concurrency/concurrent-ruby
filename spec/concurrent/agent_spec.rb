@@ -26,7 +26,7 @@ module Concurrent
         subject.post { |v| v + 2 }
         subject.post_off { |v| v * 3 }
         subject.await
-        subject.value.should eq 12
+        expect(subject.value).to eq 12
       end
     end
 
@@ -68,37 +68,37 @@ module Concurrent
       let(:executor) { ImmediateExecutor.new }
 
       it 'sets the value to the given initial state' do
-        Agent.new(10).value.should eq 10
+        expect(Agent.new(10).value).to eq 10
       end
 
       it 'sets the timeout to the given value' do
-        Agent.new(0, timeout: 5).timeout.should eq 5
+        expect(Agent.new(0, timeout: 5).timeout).to eq 5
       end
 
       it 'sets the timeout to the default when nil' do
-        Agent.new(0).timeout.should eq Agent::TIMEOUT
+        expect(Agent.new(0).timeout).to eq Agent::TIMEOUT
       end
 
       it 'uses the executor given with the :executor option' do
-        executor.should_receive(:post).with(any_args).and_return(0)
+        expect(executor).to receive(:post).with(any_args).and_return(0)
         agent = Agent.new(0, executor: executor)
         agent.post { |value| 0 }
       end
 
       it 'uses the global operation pool when :operation is true' do
-        Concurrent.configuration.should_receive(:global_operation_pool).and_return(executor)
+        expect(Concurrent.configuration).to receive(:global_operation_pool).and_return(executor)
         agent = Agent.new(0, operation: true)
         agent.post { |value| 0 }
       end
 
       it 'uses the global task pool when :task is true' do
-        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
         agent = Agent.new(0, task: true)
         agent.post { |value| 0 }
       end
 
       it 'uses the global task pool by default' do
-        Concurrent.configuration.should_receive(:global_task_pool).and_return(executor)
+        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
         agent = Agent.new(0)
         agent.post { |value| 0 }
       end
@@ -110,25 +110,25 @@ module Concurrent
         a1 = subject
         a2 = a1.rescue {}
 
-        a2.should be a1
+        expect(a2).to be a1
       end
 
       it 'returns self when no block is given' do
         a1 = subject
         a2 = a1.rescue
 
-        a2.should be a1
+        expect(a2).to be a1
       end
 
       it 'accepts an exception class as the first parameter' do
-        lambda {
+        expect {
           subject.rescue(StandardError) {}
-        }.should_not raise_error
+        }.not_to raise_error
       end
 
       it 'ignores rescuers without a block' do
         subject.rescue
-        subject.instance_variable_get(:@rescuers).should be_empty
+        expect(subject.instance_variable_get(:@rescuers)).to be_empty
       end
     end
 
@@ -138,39 +138,39 @@ module Concurrent
         a1 = subject
         a2 = a1.validate {}
 
-        a2.should be a1
+        expect(a2).to be a1
       end
 
       it 'returns self when no block is given' do
         a1 = subject
         a2 = a1.validate
 
-        a2.should be a1
+        expect(a2).to be a1
       end
 
       it 'ignores validators without a block' do
         default_validator = subject.instance_variable_get(:@validator)
         subject.validate
-        subject.instance_variable_get(:@validator).should be default_validator
+        expect(subject.instance_variable_get(:@validator)).to be default_validator
       end
     end
 
     context '#post' do
 
       it 'adds the given block to the queue' do
-        executor.should_receive(:post).with(no_args).exactly(1).times
+        expect(executor).to receive(:post).with(no_args).exactly(1).times
         subject.post { sleep(1) }
         subject.post { nil }
         subject.post { nil }
         sleep(0.1)
-        subject.
+        expect(subject.
             instance_variable_get(:@serialized_execution).
             instance_variable_get(:@stash).
-            size.should eq 2
+            size).to eq 2
       end
 
       it 'does not add to the queue when no block is given' do
-        executor.should_receive(:post).with(no_args).exactly(0).times
+        expect(executor).to receive(:post).with(no_args).exactly(0).times
         subject.post
         sleep(0.1)
       end
@@ -179,7 +179,7 @@ module Concurrent
         agent = Agent.new(0, executor: ImmediateExecutor.new)
         agent.post { |old| old + 1 }
         agent.post { |old| old + 1 }
-        agent.value.should eq 2
+        expect(agent.value).to eq 2
       end
 
     end
@@ -190,20 +190,20 @@ module Concurrent
         fn = false
         subject.post { fn = true; sleep 0.1 }
         subject.await
-        fn.should be_true
+        expect(fn).to be_truthy
       end
 
       it 'does not waits until updates sent after are done' do
         fn = false
         subject.await
         subject.post { fn = true; sleep 0.1 }
-        fn.should be_false
+        expect(fn).to be_falsey
       end
 
       it 'does not alter the value' do
         subject.post { |v| v + 1 }
         subject.await
-        subject.value.should eq 1
+        expect(subject.value).to eq 1
       end
 
     end
@@ -215,7 +215,7 @@ module Concurrent
         subject.post { latch.count_down }
         subject.post { latch.count_down }
         subject.post { latch.count_down }
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'passes the current value to the handler' do
@@ -223,21 +223,21 @@ module Concurrent
         Agent.new(latch.count, executor: executor).post do |i|
           i.times{ latch.count_down }
         end
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'sets the value to the handler return value on success' do
         agent = Agent.new(10, executor: Concurrent::ImmediateExecutor.new)
-        agent.value.should eq 10
+        expect(agent.value).to eq 10
         agent.post { 100 }
-        agent.value.should eq 100
+        expect(agent.value).to eq 100
       end
 
       it 'rejects the handler after timeout reached' do
         agent = Agent.new(0, timeout: 0.1, executor: executor)
         agent.post { sleep(1); 10 }
         sleep(0.2)
-        agent.value.should eq 0
+        expect(agent.value).to eq 0
       end
     end
 
@@ -247,7 +247,7 @@ module Concurrent
         latch = Concurrent::CountDownLatch.new(1)
         subject.validate { latch.count_down; true }
         subject.post { nil }
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'passes the new value to the validator' do
@@ -256,25 +256,25 @@ module Concurrent
         subject.validate { |v| expected.value = v; latch.count_down; true }
         subject.post { 10 }
         latch.wait(1)
-        expected.value.should eq 10
+        expect(expected.value).to eq 10
       end
 
       it 'sets the new value when the validator returns true' do
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).validate { true }
         agent.post { 10 }
-        agent.value.should eq 10
+        expect(agent.value).to eq 10
       end
 
       it 'does not change the value when the validator returns false' do
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).validate { false }
         agent.post { 10 }
-        agent.value.should eq 0
+        expect(agent.value).to eq 0
       end
 
       it 'does not change the value when the validator raises an exception' do
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).validate { raise StandardError }
         agent.post { 10 }
-        agent.value.should eq 0
+        expect(agent.value).to eq 0
       end
     end
 
@@ -287,7 +287,7 @@ module Concurrent
             rescue(StandardError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
         agent.post { raise StandardError }
-        expected.should eq 1
+        expect(expected).to eq 1
       end
 
       it 'matches all with a rescue with no class given' do
@@ -297,7 +297,7 @@ module Concurrent
             rescue { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
         agent.post { raise NoMethodError }
-        expected.should eq 2
+        expect(expected).to eq 2
       end
 
       it 'searches associated rescue handlers in order' do
@@ -307,7 +307,7 @@ module Concurrent
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
         agent.post { raise ArgumentError }
-        expected.should eq 1
+        expect(expected).to eq 1
 
         expected = nil
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
@@ -315,7 +315,7 @@ module Concurrent
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
         agent.post { raise LoadError }
-        expected.should eq 2
+        expect(expected).to eq 2
 
         expected = nil
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
@@ -323,7 +323,7 @@ module Concurrent
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
         agent.post { raise StandardError }
-        expected.should eq 3
+        expect(expected).to eq 3
       end
 
       it 'passes the exception object to the matched block' do
@@ -333,7 +333,7 @@ module Concurrent
             rescue(LoadError) { |ex| expected = ex }.
             rescue(StandardError) { |ex| expected = ex }
         agent.post { raise StandardError }
-        expected.should be_a(StandardError)
+        expect(expected).to be_a(StandardError)
       end
 
       it 'ignores rescuers without a block' do
@@ -342,24 +342,24 @@ module Concurrent
             rescue(StandardError).
             rescue(StandardError) { |ex| expected = ex }
         agent.post { raise StandardError }
-        expected.should be_a(StandardError)
+        expect(expected).to be_a(StandardError)
       end
 
       it 'supresses the exception if no rescue matches' do
-        lambda {
+        expect {
           agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
               rescue(ArgumentError) { |ex| @expected = ex }.
               rescue(NotImplementedError) { |ex| @expected = ex }.
               rescue(NoMethodError) { |ex| @expected = ex }
           agent.post { raise StandardError }
-        }.should_not raise_error
+        }.not_to raise_error
       end
 
       it 'suppresses exceptions thrown from rescue handlers' do
-        lambda {
+        expect {
           agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).rescue(StandardError) { raise StandardError }
           agent.post { raise ArgumentError }
-        }.should_not raise_error
+        }.not_to raise_error
       end
     end
 
@@ -369,7 +369,7 @@ module Concurrent
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
         agent.add_observer(observer)
         agent.post { 10 }
-        observer.value.should eq 10
+        expect(observer.value).to eq 10
       end
 
       it 'does not notify removed observers when the value changes' do
@@ -377,7 +377,7 @@ module Concurrent
         agent.add_observer(observer)
         agent.delete_observer(observer)
         agent.post { 10 }
-        observer.value.should be_nil
+        expect(observer.value).to be_nil
       end
 
       it 'does not notify observers when validation fails' do
@@ -385,14 +385,14 @@ module Concurrent
         agent.validate { false }
         agent.add_observer(observer)
         agent.post { 10 }
-        observer.value.should be_nil
+        expect(observer.value).to be_nil
       end
 
       it 'does not notify observers when the handler raises an exception' do
         agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
         agent.add_observer(observer)
         agent.post { raise StandardError }
-        observer.value.should be_nil
+        expect(observer.value).to be_nil
       end
     end
 
@@ -402,7 +402,7 @@ module Concurrent
         agent    = Agent.new(0, executor: executor)
         agent.post { |old| old + continue.value }
         sleep 0.1
-        Concurrent.timeout(0.2) { agent.value.should eq 0 }
+        Concurrent.timeout(0.2) { expect(agent.value).to eq 0 }
         continue.set 1
         sleep 0.1
       end
@@ -416,21 +416,21 @@ module Concurrent
         agent.post { |old| f2 = true; old + continue2.value }
 
         sleep 0.1
-        f1.should eq true
-        f2.should eq false
-        agent.value.should eq 0
+        expect(f1).to eq true
+        expect(f2).to eq false
+        expect(agent.value).to eq 0
 
         continue1.set 1
         sleep 0.1
-        f1.should eq true
-        f2.should eq true
-        agent.value.should eq 1
+        expect(f1).to eq true
+        expect(f2).to eq true
+        expect(agent.value).to eq 1
 
         continue2.set 1
         sleep 0.1
-        f1.should eq true
-        f2.should eq true
-        agent.value.should eq 2
+        expect(f1).to eq true
+        expect(f2).to eq true
+        expect(agent.value).to eq 2
       end
 
       it 'waits with sending functions to other agents until update is done'
@@ -439,28 +439,28 @@ module Concurrent
     context 'aliases' do
 
       it 'aliases #deref for #value' do
-        Agent.new(10, executor: executor).deref.should eq 10
+        expect(Agent.new(10, executor: executor).deref).to eq 10
       end
 
       it 'aliases #validates for :validate' do
         latch = Concurrent::CountDownLatch.new(1)
         subject.validates { latch.count_down; true }
         subject.post { nil }
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'aliases #validate_with for :validate' do
         latch = Concurrent::CountDownLatch.new(1)
         subject.validate_with { latch.count_down; true }
         subject.post { nil }
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'aliases #validates_with for :validate' do
         latch = Concurrent::CountDownLatch.new(1)
         subject.validates_with { latch.count_down; true }
         subject.post { nil }
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'aliases #catch for #rescue' do
@@ -468,7 +468,7 @@ module Concurrent
         expected = nil
         agent.catch { expected = true }
         agent.post { raise StandardError }
-        agent.should be_true
+        expect(agent).to be_truthy
       end
 
       it 'aliases #on_error for #rescue' do
@@ -476,7 +476,7 @@ module Concurrent
         expected = nil
         agent.on_error { expected = true }
         agent.post { raise StandardError }
-        agent.should be_true
+        expect(agent).to be_truthy
       end
     end
   end

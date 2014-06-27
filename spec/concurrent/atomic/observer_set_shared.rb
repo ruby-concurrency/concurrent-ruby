@@ -10,21 +10,21 @@ shared_examples "an observer set" do
 
     context 'with arguments' do
       it 'should return the observer' do
-        observer_set.add_observer(observer, :a_method).should == observer
+        expect(observer_set.add_observer(observer, :a_method)).to eq(observer)
       end
     end
 
     context 'with a block' do
       it 'should return the observer based on a block' do
         observer = observer_set.add_observer { :block }
-        observer.call.should == :block
+        expect(observer.call).to eq(:block)
       end
     end
   end
 
   describe '#notify_observers' do
     it 'should return the observer set' do
-      observer_set.notify_observers.should be(observer_set)
+      expect(observer_set.notify_observers).to be(observer_set)
     end
 
     context 'with a single observer' do
@@ -97,8 +97,8 @@ shared_examples "an observer set" do
     context 'with a block' do
 
       before(:each) do
-        observer.stub(:update).with(any_args)
-        another_observer.stub(:update).with(any_args)
+        allow(observer).to receive(:update).with(any_args)
+        allow(another_observer).to receive(:update).with(any_args)
       end
 
       it 'calls the block once for every observer' do
@@ -146,12 +146,12 @@ shared_examples "an observer set" do
 
   context '#count_observers' do
     it 'should be zero after initialization' do
-      observer_set.count_observers.should eq 0
+      expect(observer_set.count_observers).to eq 0
     end
 
     it 'should be 1 after the first observer is added' do
       observer_set.add_observer(observer)
-      observer_set.count_observers.should eq 1
+      expect(observer_set.count_observers).to eq 1
     end
 
     it 'should be 1 if the same observer is added many times' do
@@ -159,7 +159,7 @@ shared_examples "an observer set" do
       observer_set.add_observer(observer, :another_method)
       observer_set.add_observer(observer, :yet_another_method)
 
-      observer_set.count_observers.should eq 1
+      expect(observer_set.count_observers).to eq 1
     end
 
     it 'should be equal to the number of unique observers' do
@@ -168,7 +168,7 @@ shared_examples "an observer set" do
       observer_set.add_observer(double('observer 3'))
       observer_set.add_observer(double('observer 4'))
 
-      observer_set.count_observers.should eq 4
+      expect(observer_set.count_observers).to eq 4
     end
   end
 
@@ -187,7 +187,7 @@ shared_examples "an observer set" do
     end
 
     it 'should return the observer' do
-      observer_set.delete_observer(observer).should be(observer)
+      expect(observer_set.delete_observer(observer)).to be(observer)
     end
   end
 
@@ -205,7 +205,7 @@ shared_examples "an observer set" do
     end
 
     it 'should return the observer set' do
-      observer_set.delete_observers.should be(observer_set)
+      expect(observer_set.delete_observers).to be(observer_set)
     end
   end
 
@@ -225,7 +225,7 @@ shared_examples "an observer set" do
     it 'should clear observers' do
       observer_set.notify_and_delete_observers('args')
 
-      observer_set.count_observers.should eq(0)
+      expect(observer_set.count_observers).to eq(0)
     end
 
     it 'can be called many times without any other notification' do
@@ -235,7 +235,7 @@ shared_examples "an observer set" do
     end
 
     it 'should return the observer set' do
-      observer_set.notify_and_delete_observers('args').should be(observer_set)
+      expect(observer_set.notify_and_delete_observers('args')).to be(observer_set)
     end
   end
 

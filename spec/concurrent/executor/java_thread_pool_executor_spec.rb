@@ -30,7 +30,7 @@ if Concurrent::TestHelpers.jruby?
         specify ':abort maps to AbortPolicy' do
           clazz = java.util.concurrent.ThreadPoolExecutor::AbortPolicy
           policy = clazz.new
-          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
           JavaThreadPoolExecutor.new(
             min_threads: 2,
             max_threads: 5,
@@ -43,7 +43,7 @@ if Concurrent::TestHelpers.jruby?
         specify ':discard maps to DiscardPolicy' do
           clazz = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
           policy = clazz.new
-          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
           JavaThreadPoolExecutor.new(
             min_threads: 2,
             max_threads: 5,
@@ -56,7 +56,7 @@ if Concurrent::TestHelpers.jruby?
         specify ':caller_runs maps to CallerRunsPolicy' do
           clazz = java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
           policy = clazz.new
-          clazz.should_receive(:new).at_least(:once).with(any_args).and_return(policy)
+          expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
           JavaThreadPoolExecutor.new(
             min_threads: 2,
             max_threads: 5,

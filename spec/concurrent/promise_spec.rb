@@ -27,7 +27,7 @@ module Concurrent
 
     it 'includes Dereferenceable' do
       promise = Promise.new{ nil }
-      promise.should be_a(Dereferenceable)
+      expect(promise).to be_a(Dereferenceable)
     end
 
     context 'initializers' do
@@ -36,15 +36,15 @@ module Concurrent
         subject { Promise.fulfill(10) }
 
         it 'should return a Promise' do
-          subject.should be_a Promise
+          expect(subject).to be_a Promise
         end
 
         it 'should return a fulfilled Promise' do
-          subject.should be_fulfilled
+          expect(subject).to be_fulfilled
         end
 
         it 'should return a Promise with set value' do
-          subject.value.should eq 10
+          expect(subject.value).to eq 10
         end
       end
 
@@ -54,41 +54,41 @@ module Concurrent
         subject { Promise.reject(reason) }
 
         it 'should return a Promise' do
-          subject.should be_a Promise
+          expect(subject).to be_a Promise
         end
 
         it 'should return a rejected Promise' do
-          subject.should be_rejected
+          expect(subject).to be_rejected
         end
 
         it 'should return a Promise with set reason' do
-          subject.reason.should be reason
+          expect(subject.reason).to be reason
         end
       end
 
       describe '.new' do
         it 'should return an unscheduled Promise' do
           p = Promise.new(executor: executor){ nil }
-          p.should be_unscheduled
+          expect(p).to be_unscheduled
         end
       end
 
       describe '.execute' do
         it 'creates a new Promise' do
           p = Promise.execute(executor: executor){ nil }
-          p.should be_a(Promise)
+          expect(p).to be_a(Promise)
         end
 
         it 'passes the block to the new Promise' do
           p = Promise.execute(executor: executor){ 20 }
           sleep(0.1)
-          p.value.should eq 20
+          expect(p.value).to eq 20
         end
 
         it 'calls #execute on the new Promise' do
           p = double('promise')
-          Promise.stub(:new).with({executor: executor}).and_return(p)
-          p.should_receive(:execute).with(no_args)
+          allow(Promise).to receive(:new).with({executor: executor}).and_return(p)
+          expect(p).to receive(:execute).with(no_args)
           Promise.execute(executor: executor){ nil }
         end
       end
@@ -100,11 +100,11 @@ module Concurrent
 
         it 'sets the promise to :pending' do
           p = Promise.new(executor: executor){ sleep(0.1) }.execute
-          p.should be_pending
+          expect(p).to be_pending
         end
 
         it 'posts the block given in construction' do
-          executor.should_receive(:post).with(any_args)
+          expect(executor).to receive(:post).with(any_args)
           Promise.new(executor: executor){ nil }.execute
         end
       end
@@ -113,11 +113,11 @@ module Concurrent
 
         it 'sets the promise to :pending' do
           p = pending_subject.execute
-          p.should be_pending
+          expect(p).to be_pending
         end
 
         it 'does not posts again' do
-          executor.should_receive(:post).with(any_args).once
+          expect(executor).to receive(:post).with(any_args).once
           pending_subject.execute
         end
       end
@@ -133,10 +133,10 @@ module Concurrent
           it 'should set all promises to :pending' do
             root.execute
 
-            c1.should be_pending
-            c2.should be_pending
-            c2_1.should be_pending
-            [root, c1, c2, c2_1].each { |p| p.should be_pending }
+            expect(c1).to be_pending
+            expect(c2).to be_pending
+            expect(c2_1).to be_pending
+            [root, c1, c2, c2_1].each { |p| expect(p).to be_pending }
           end
         end
 
@@ -144,7 +144,7 @@ module Concurrent
           it 'should set all promises to :pending' do
             c2_1.execute
 
-            [root, c1, c2, c2_1].each { |p| p.should be_pending }
+            [root, c1, c2, c2_1].each { |p| expect(p).to be_pending }
           end
         end
       end
@@ -154,20 +154,20 @@ module Concurrent
 
       it 'returns a new promise when a block is passed' do
         child = empty_root.then { nil }
-        child.should be_a Promise
-        child.should_not be empty_root
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
       end
 
       it 'returns a new promise when a rescuer is passed' do
         child = empty_root.then(Proc.new{})
-        child.should be_a Promise
-        child.should_not be empty_root
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
       end
 
       it 'returns a new promise when a block and rescuer are passed' do
         child = empty_root.then(Proc.new{}) { nil }
-        child.should be_a Promise
-        child.should_not be empty_root
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
       end
 
       it 'should have block or rescuers' do
@@ -180,12 +180,12 @@ module Concurrent
         let(:child) { p1.then{} }
 
         it 'returns a new promise' do
-          child.should be_a Promise
-          p1.should_not be child
+          expect(child).to be_a Promise
+          expect(p1).not_to be child
         end
 
         it 'returns an unscheduled promise' do
-          child.should be_unscheduled
+          expect(child).to be_unscheduled
         end
       end
 
@@ -194,12 +194,12 @@ module Concurrent
         let(:child) { pending_subject.then{} }
 
         it 'returns a new promise' do
-          child.should be_a Promise
-          pending_subject.should_not be child
+          expect(child).to be_a Promise
+          expect(pending_subject).not_to be child
         end
 
         it 'returns a pending promise' do
-          child.should be_pending
+          expect(child).to be_pending
         end
       end
 
@@ -207,13 +207,13 @@ module Concurrent
         it 'returns a new Promise' do
           p1 = fulfilled_subject
           p2 = p1.then{}
-          p2.should be_a(Promise)
-          p1.should_not eq p2
+          expect(p2).to be_a(Promise)
+          expect(p1).not_to eq p2
         end
 
         it 'notifies fulfillment to new child' do
           child = fulfilled_subject.then(Proc.new{ 7 }) { |v| v + 5 }
-          child.value.should eq fulfilled_value + 5
+          expect(child.value).to eq fulfilled_value + 5
         end
       end
 
@@ -221,13 +221,13 @@ module Concurrent
         it 'returns a new Promise when :rejected' do
           p1 = rejected_subject
           p2 = p1.then{}
-          p2.should be_a(Promise)
-          p1.should_not eq p2
+          expect(p2).to be_a(Promise)
+          expect(p1).not_to eq p2
         end
 
         it 'notifies rejection to new child' do
           child = rejected_subject.then(Proc.new{ 7 }) { |v| v + 5 }
-          child.value.should eq 7
+          expect(child.value).to eq 7
         end
       end
 
@@ -235,7 +235,7 @@ module Concurrent
         p = pending_subject
         p1 = p.then{}
         p2 = p.then{}
-        p1.should_not be p2
+        expect(p1).not_to be p2
       end
     end
 
@@ -246,8 +246,8 @@ module Concurrent
 
       it 'returns a new promise' do
         child = empty_root.on_success { nil }
-        child.should be_a Promise
-        child.should_not be empty_root
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
       end
     end
 
@@ -255,8 +255,8 @@ module Concurrent
 
       it 'returns a new promise' do
         child = empty_root.rescue { nil }
-        child.should be_a Promise
-        child.should_not be empty_root
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
       end
     end
 
@@ -266,34 +266,34 @@ module Concurrent
         expected = nil
         Promise.new(executor: executor){ 20 }.then{ |result| expected = result }.execute
         sleep(0.1)
-        expected.should eq 20
+        expect(expected).to eq 20
       end
 
       it 'sets the promise value to the result if its block' do
         root = Promise.new(executor: executor){ 20 }
         p = root.then{ |result| result * 2}.execute
         sleep(0.1)
-        root.value.should eq 20
-        p.value.should eq 40
+        expect(root.value).to eq 20
+        expect(p.value).to eq 40
       end
 
       it 'sets the promise state to :fulfilled if the block completes' do
         p = Promise.new(executor: executor){ 10 * 2 }.then{|result| result * 2}.execute
         sleep(0.1)
-        p.should be_fulfilled
+        expect(p).to be_fulfilled
       end
 
       it 'passes the last result through when a promise has no block' do
         expected = nil
         Promise.new(executor: executor){ 20 }.then(Proc.new{}).then{|result| expected = result}.execute
         sleep(0.1)
-        expected.should eq 20
+        expect(expected).to eq 20
       end
 
       it 'uses result as fulfillment value when a promise has no block' do
         p = Promise.new(executor: executor){ 20 }.then(Proc.new{}).execute
         sleep(0.1)
-        p.value.should eq 20
+        expect(p.value).to eq 20
       end
 
       it 'can manage long chain' do
@@ -305,10 +305,10 @@ module Concurrent
         root.execute
         sleep(0.1)
 
-        root.value.should eq 20
-        p1.value.should eq 60
-        p2.value.should eq 22
-        p3.value.should eq 67
+        expect(root.value).to eq 20
+        expect(p1.value).to eq 60
+        expect(p2.value).to eq 22
+        expect(p3.value).to eq 67
       end
     end
 
@@ -318,27 +318,27 @@ module Concurrent
         expected = nil
         Promise.new(executor: executor){ raise ArgumentError }.then(Proc.new{ |reason| expected = reason }).execute
         sleep(0.1)
-        expected.should be_a ArgumentError
+        expect(expected).to be_a ArgumentError
       end
 
       it 'sets the promise value to the result if its block' do
         root = Promise.new(executor: executor){ raise ArgumentError }
         p = root.then(Proc.new{ |reason| 42 }).execute
         sleep(0.1)
-        p.value.should eq 42
+        expect(p.value).to eq 42
       end
 
       it 'sets the promise state to :rejected if the block completes' do
         p = Promise.new(executor: executor){ raise ArgumentError }.execute
         sleep(0.1)
-        p.should be_rejected
+        expect(p).to be_rejected
       end
 
       it 'uses reason as rejection reason when a promise has no rescue callable' do
         p = Promise.new(executor: ImmediateExecutor.new){ raise ArgumentError }.then{ |val| val }.execute
         sleep(0.1)
-        p.should be_rejected
-        p.reason.should be_a ArgumentError
+        expect(p).to be_rejected
+        expect(p.reason).to be_a ArgumentError
       end
 
     end
@@ -346,21 +346,21 @@ module Concurrent
     context 'aliases' do
 
       it 'aliases #realized? for #fulfilled?' do
-        fulfilled_subject.should be_realized
+        expect(fulfilled_subject).to be_realized
       end
 
       it 'aliases #deref for #value' do
-        fulfilled_subject.deref.should eq fulfilled_value
+        expect(fulfilled_subject.deref).to eq fulfilled_value
       end
 
       it 'aliases #catch for #rescue' do
         child = rejected_subject.catch { 7 }
-        child.value.should eq 7
+        expect(child.value).to eq 7
       end
 
       it 'aliases #on_error for #rescue' do
         child = rejected_subject.on_error { 7 }
-        child.value.should eq 7
+        expect(child.value).to eq 7
       end
     end
   end

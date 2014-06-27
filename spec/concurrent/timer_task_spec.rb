@@ -7,8 +7,8 @@ module Concurrent
   describe TimerTask do
     before(:each) do
       # suppress deprecation warnings.
-      Concurrent::TimerTask.any_instance.stub(:warn)
-      Concurrent::TimerTask.stub(:warn)
+      allow_any_instance_of(Concurrent::TimerTask).to receive(:warn)
+      allow(Concurrent::TimerTask).to receive(:warn)
     end
 
     context :dereferenceable do
@@ -61,53 +61,53 @@ module Concurrent
       context '#initialize' do
 
         it 'raises an exception if no block given' do
-          lambda {
+          expect {
             Concurrent::TimerTask.new
-          }.should raise_error(ArgumentError)
+          }.to raise_error(ArgumentError)
         end
 
         it 'raises an exception if :execution_interval is not greater than zero' do
-          lambda {
+          expect {
             Concurrent::TimerTask.new(execution_interval: 0) { nil }
-          }.should raise_error(ArgumentError)
+          }.to raise_error(ArgumentError)
         end
 
         it 'raises an exception if :execution_interval is not an integer' do
-          lambda {
+          expect {
             Concurrent::TimerTask.new(execution_interval: 'one') { nil }
-          }.should raise_error(ArgumentError)
+          }.to raise_error(ArgumentError)
         end
 
         it 'raises an exception if :timeout_interval is not greater than zero' do
-          lambda {
+          expect {
             Concurrent::TimerTask.new(timeout_interval: 0) { nil }
-          }.should raise_error(ArgumentError)
+          }.to raise_error(ArgumentError)
         end
 
         it 'raises an exception if :timeout_interval is not an integer' do
-          lambda {
+          expect {
             Concurrent::TimerTask.new(timeout_interval: 'one') { nil }
-          }.should raise_error(ArgumentError)
+          }.to raise_error(ArgumentError)
         end
 
         it 'uses the default execution interval when no interval is given' do
           subject = TimerTask.new { nil }
-          subject.execution_interval.should eq TimerTask::EXECUTION_INTERVAL
+          expect(subject.execution_interval).to eq TimerTask::EXECUTION_INTERVAL
         end
 
         it 'uses the default timeout interval when no interval is given' do
           subject = TimerTask.new { nil }
-          subject.timeout_interval.should eq TimerTask::TIMEOUT_INTERVAL
+          expect(subject.timeout_interval).to eq TimerTask::TIMEOUT_INTERVAL
         end
 
         it 'uses the given execution interval' do
           subject = TimerTask.new(execution_interval: 5) { nil }
-          subject.execution_interval.should eq 5
+          expect(subject.execution_interval).to eq 5
         end
 
         it 'uses the given timeout interval' do
           subject = TimerTask.new(timeout_interval: 5) { nil }
-          subject.timeout_interval.should eq 5
+          expect(subject.timeout_interval).to eq 5
         end
       end
 
@@ -116,7 +116,7 @@ module Concurrent
         it 'returns true on success' do
           task = TimerTask.execute(run_now: false) { nil }
           sleep(0.1)
-          task.kill.should be_true
+          expect(task.kill).to be_truthy
         end
       end
     end
@@ -124,9 +124,9 @@ module Concurrent
     context 'arguments' do
 
       it 'raises an exception if no block given' do
-        lambda {
+        expect {
           Concurrent::TimerTask.execute
-        }.should raise_error
+        }.to raise_error
       end
 
       specify '#execution_interval is writeable' do
@@ -139,14 +139,14 @@ module Concurrent
           latch.count_down
         end
 
-        subject.execution_interval.should == 1
+        expect(subject.execution_interval).to eq(1)
         subject.execution_interval = 0.1
-        subject.execution_interval.should == 0.1
+        expect(subject.execution_interval).to eq(0.1)
 
         subject.execute
         latch.wait(0.2)
 
-        subject.execution_interval.should == 3
+        expect(subject.execution_interval).to eq(3)
         subject.kill
       end
 
@@ -160,14 +160,14 @@ module Concurrent
           latch.count_down
         end
 
-        subject.timeout_interval.should == 1
+        expect(subject.timeout_interval).to eq(1)
         subject.timeout_interval = 2
-        subject.timeout_interval.should == 2
+        expect(subject.timeout_interval).to eq(2)
 
         subject.execute
         latch.wait(0.2)
 
-        subject.timeout_interval.should == 3
+        expect(subject.timeout_interval).to eq(3)
         subject.kill
       end
     end
@@ -177,23 +177,23 @@ module Concurrent
       it 'runs the block immediately when the :run_now option is true' do
         latch   = CountDownLatch.new(1)
         subject = TimerTask.execute(execution: 500, now: true) { latch.count_down }
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
         subject.kill
       end
 
       it 'waits for :execution_interval seconds when the :run_now option is false' do
         latch   = CountDownLatch.new(1)
         subject = TimerTask.execute(execution: 0.1, now: false) { latch.count_down }
-        latch.count.should eq 1
-        latch.wait(1).should be_true
+        expect(latch.count).to eq 1
+        expect(latch.wait(1)).to be_truthy
         subject.kill
       end
 
       it 'waits for :execution_interval seconds when the :run_now option is not given' do
         latch   = CountDownLatch.new(1)
         subject = TimerTask.execute(execution: 0.1, now: false) { latch.count_down }
-        latch.count.should eq 1
-        latch.wait(1).should be_true
+        expect(latch.count).to eq 1
+        expect(latch.wait(1)).to be_truthy
         subject.kill
       end
 
@@ -206,7 +206,7 @@ module Concurrent
         end
         subject.execute
         latch.wait(1)
-        expected.should eq subject
+        expect(expected).to eq subject
         subject.kill
       end
     end
@@ -234,8 +234,8 @@ module Concurrent
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
-        observer.value.should == 42
-        observer.ex.should be_nil
+        expect(observer.value).to eq(42)
+        expect(observer.ex).to be_nil
         subject.kill
       end
 
@@ -244,8 +244,8 @@ module Concurrent
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
-        observer.value.should be_nil
-        observer.ex.should be_a(Concurrent::TimeoutError)
+        expect(observer.value).to be_nil
+        expect(observer.ex).to be_a(Concurrent::TimeoutError)
         subject.kill
       end
 
@@ -254,8 +254,8 @@ module Concurrent
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
-        observer.value.should be_nil
-        observer.ex.should be_a(ArgumentError)
+        expect(observer.value).to be_nil
+        expect(observer.ex).to be_a(ArgumentError)
         subject.kill
       end
     end

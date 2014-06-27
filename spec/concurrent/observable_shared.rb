@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-share_examples_for :observable do
+shared_examples :observable do
 
   let(:observer_set) do
     subject.instance_variable_get(:@observers)
@@ -37,18 +37,18 @@ share_examples_for :observable do
   context '#add_observer' do
 
     it 'adds an observer if called before first notification' do
-      observer_set.should_receive(:add_observer).with(any_args)
+      expect(observer_set).to receive(:add_observer).with(any_args)
       subject.add_observer(observer)
     end
 
     it 'adds an observer with :func if called before first notification' do
-      observer_set.should_receive(:add_observer).with(observer_with_func, :notify)
+      expect(observer_set).to receive(:add_observer).with(observer_with_func, :notify)
       subject.add_observer(observer_with_func, observer_func)
     end
 
     it 'creates an observer from a block if called before first notification' do
       block = proc{ nil }
-      observer_set.should_receive(:add_observer).with(any_args)
+      expect(observer_set).to receive(:add_observer).with(any_args)
       subject.add_observer(&block)
     end
 
@@ -68,20 +68,20 @@ share_examples_for :observable do
   context '#delete_observer' do
   
     it 'deletes the given observer if called before first notification' do
-      subject.count_observers.should eq 0
+      expect(subject.count_observers).to eq 0
       subject.add_observer(observer)
-      subject.count_observers.should eq 1
+      expect(subject.count_observers).to eq 1
       subject.delete_observer(observer)
-      subject.count_observers.should eq 0
+      expect(subject.count_observers).to eq 0
     end
 
     it 'returns the removed observer if found in the observer set' do
       subject.add_observer(observer)
-      subject.delete_observer(observer).should eq observer
+      expect(subject.delete_observer(observer)).to eq observer
     end
 
     it 'returns the given observer even when not found in the observer set' do
-      subject.delete_observer(observer).should eq observer
+      expect(subject.delete_observer(observer)).to eq observer
     end
   end
   
@@ -89,31 +89,31 @@ share_examples_for :observable do
 
     it 'deletes all observers when called before first notification' do
       5.times{ subject.add_observer(observer_class.new) }
-      subject.count_observers.should eq 5
+      expect(subject.count_observers).to eq 5
       subject.delete_observers
-      subject.count_observers.should eq 0
+      expect(subject.count_observers).to eq 0
     end
 
     it 'returns self' do
-      subject.delete_observers.should eq subject
+      expect(subject.delete_observers).to eq subject
     end
   end
   
   context '#count_observers' do
   
     it 'returns zero for a new observable object' do
-      subject.count_observers.should eq 0
+      expect(subject.count_observers).to eq 0
     end
 
     it 'returns a count of registered observers if called before first notification' do
       5.times{ subject.add_observer(observer_class.new) }
-      subject.count_observers.should eq 5
+      expect(subject.count_observers).to eq 5
     end
 
     it 'returns zero after #delete_observers has been called' do
       5.times{ subject.add_observer(observer_class.new) }
       subject.delete_observers
-      subject.count_observers.should eq 0
+      expect(subject.count_observers).to eq 0
     end
   end
 
@@ -125,7 +125,7 @@ share_examples_for :observable do
         subject.add_observer(observer_class.new{ latch.count_down })
       end
       trigger_observable(subject)
-      latch.count.should eq 0
+      expect(latch.count).to eq 0
     end
 
     it 'calls the appropriate function on all observers which specified a :func' do
@@ -136,7 +136,7 @@ share_examples_for :observable do
       end
       trigger_observable(subject)
       latch.wait(1)
-      latch.count.should eq 0
+      expect(latch.count).to eq 0
     end
 
     it 'calls the proc for all observers added as a block' do
@@ -146,7 +146,7 @@ share_examples_for :observable do
       end
       trigger_observable(subject)
       latch.wait(1)
-      latch.count.should eq 0
+      expect(latch.count).to eq 0
     end
 
     it 'does not notify any observers removed with #delete_observer' do
@@ -158,7 +158,7 @@ share_examples_for :observable do
 
       trigger_observable(subject)
       latch.wait(1)
-      latch.count.should eq 5
+      expect(latch.count).to eq 5
     end
 
     it 'does not notify any observers after #delete_observers called' do
@@ -171,7 +171,7 @@ share_examples_for :observable do
 
       trigger_observable(subject)
       latch.wait(1)
-      latch.count.should eq 5
+      expect(latch.count).to eq 5
     end
   end
 end

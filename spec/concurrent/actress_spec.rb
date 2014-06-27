@@ -67,23 +67,23 @@ module Concurrent
                   actor = Ping.spawn :ping, queue
 
                   # when spawn returns children are set
-                  Concurrent::Actress.root.send(:core).instance_variable_get(:@children).should include(actor)
+                  expect(Concurrent::Actress.root.send(:core).instance_variable_get(:@children)).to include(actor)
 
                   actor << 'a' << 1
-                  queue.pop.should eq 'a'
-                  actor.ask(2).value.should eq 2
+                  expect(queue.pop).to eq 'a'
+                  expect(actor.ask(2).value).to eq 2
 
-                  actor.parent.should eq Concurrent::Actress.root
-                  Concurrent::Actress.root.path.should eq '/'
-                  actor.path.should eq '/ping'
+                  expect(actor.parent).to eq Concurrent::Actress.root
+                  expect(Concurrent::Actress.root.path).to eq '/'
+                  expect(actor.path).to eq '/ping'
                   child = actor.ask(:child).value
-                  child.path.should eq '/ping/pong'
+                  expect(child.path).to eq '/ping/pong'
                   queue.clear
                   child.ask(3)
-                  queue.pop.should eq 3
+                  expect(queue.pop).to eq 3
 
                   actor << :terminate
-                  actor.ask(:blow_up).wait.should be_rejected
+                  expect(actor.ask(:blow_up).wait).to be_rejected
                   terminate_actors actor, child
                 end
               end
@@ -102,15 +102,31 @@ module Concurrent
 
           subjects.each do |desc, subject_definition|
             describe desc do
-              subject &subject_definition
-              after { terminate_actors subject }
-              its(:path) { should eq '/ping' }
-              its(:parent) { pending('intermittent JRuby deadlock'); should eq Actress.root }
-              its(:name) { should eq 'ping' }
-              it('executor should be global') { subject.executor.should eq Concurrent.configuration.global_task_pool }
-              its(:reference) { should eq subject }
+              subject(:actor, &subject_definition)
+              after { terminate_actors actor }
+
+              describe '#path' do
+                subject { super().path }
+                it { is_expected.to eq '/ping' }
+              end
+
+              describe '#parent' do
+                subject { super().parent }
+                it { is_expected.to eq Actress.root }
+              end
+
+              describe '#name' do
+                subject { super().name }
+                it { is_expected.to eq 'ping' }
+              end
+              it('executor should be global') { expect(subject.executor).to eq Concurrent.configuration.global_task_pool }
+
+              describe '#reference' do
+                subject { super().reference }
+                it { is_expected.to eq subject }
+              end
               it 'returns arg' do
-                subject.ask!(:anything).should eq 'arg'
+                expect(subject.ask!(:anything)).to eq 'arg'
               end
             end
           end
@@ -118,8 +134,8 @@ module Concurrent
 
         it 'terminates on failed initialization' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { raise }
-          a.ask(nil).wait.rejected?.should be_true
-          a.terminated?.should be_true
+          expect(a.ask(nil).wait.rejected?).to be_truthy
+          expect(a.terminated?).to be_truthy
         end
 
         it 'terminates on failed initialization and raises with spawn!' do
@@ -130,8 +146,8 @@ module Concurrent
 
         it 'terminates on failed message processing' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { -> _ { raise } }
-          a.ask(nil).wait.rejected?.should be_true
-          a.terminated?.should be_true
+          expect(a.ask(nil).wait.rejected?).to be_truthy
+          expect(a.terminated?).to be_truthy
         end
       end
 
@@ -140,7 +156,7 @@ module Concurrent
         specify do
           subject.tell(1).tell(1)
           subject << 1 << 1
-          subject.ask(0).value!.should eq 4
+          expect(subject.ask(0).value!).to eq 4
         end
         after { terminate_actors subject }
       end
@@ -160,8 +176,8 @@ module Concurrent
 
         it 'has children set after a child is created' do
           child = parent.ask!(:child)
-          parent.ask!(nil).should include(child)
-          child.ask!(nil).should eq parent
+          expect(parent.ask!(nil)).to include(child)
+          expect(child.ask!(nil)).to eq parent
 
           terminate_actors parent, child
         end
@@ -171,11 +187,11 @@ module Concurrent
         subject { AdHoc.spawn(:subject) { -> _ { envelope } } }
         specify do
           envelope = subject.ask!('a')
-          envelope.should be_a_kind_of Envelope
-          envelope.message.should eq 'a'
-          envelope.ivar.should be_completed
-          envelope.ivar.value.should eq envelope
-          envelope.sender.should eq Thread.current
+          expect(envelope).to be_a_kind_of Envelope
+          expect(envelope.message).to eq 'a'
+          expect(envelope.ivar).to be_completed
+          expect(envelope.ivar.value).to eq envelope
+          expect(envelope.sender).to eq Thread.current
           terminate_actors subject
         end
       end
@@ -196,11 +212,11 @@ module Concurrent
 
         it 'terminates with all its children' do
           child = subject.ask! :child
-          subject.terminated?.should be_false
+          expect(subject.terminated?).to be_falsey
           subject.ask(:terminate).wait
-          subject.terminated?.should be_true
+          expect(subject.terminated?).to be_truthy
           child.terminated.wait
-          child.terminated?.should be_true
+          expect(child.terminated?).to be_truthy
 
           terminate_actors subject, child
         end

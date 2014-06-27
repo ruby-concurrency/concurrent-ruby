@@ -42,8 +42,8 @@ module Concurrent
     context '#initialize' do
 
       it 'sets the state to :pending' do
-        Delay.new{ nil }.state.should eq :pending
-        Delay.new{ nil }.should be_pending
+        expect(Delay.new{ nil }.state).to eq :pending
+        expect(Delay.new{ nil }).to be_pending
       end
 
       it 'raises an exception when no block given' do
@@ -56,14 +56,14 @@ module Concurrent
 
     context '#reconfigure' do
       it 'returns value of block used in reconfiguration' do
-        Delay.new { nil }.tap { |d| d.reconfigure { true } }.value.should be_true
+        expect(Delay.new { nil }.tap { |d| d.reconfigure { true } }.value).to be_truthy
       end
 
       it 'returns false when process completed?' do
         d = Delay.new { 1 }
-        d.reconfigure { 2 }.should be_true
-        d.value.should be 2
-        d.reconfigure { 3 }.should be_false
+        expect(d.reconfigure { 2 }).to be_truthy
+        expect(d.value).to be 2
+        expect(d.reconfigure { 3 }).to be_falsey
       end
     end
 
@@ -72,17 +72,17 @@ module Concurrent
       let(:task){ proc{ nil } }
 
       it 'does not call the block before #value is called' do
-        task.should_not_receive(:call).with(any_args)
+        expect(task).not_to receive(:call).with(any_args)
         Delay.new(&task)
       end
 
       it 'calls the block when #value is called' do
-        task.should_receive(:call).once.with(any_args).and_return(nil)
+        expect(task).to receive(:call).once.with(any_args).and_return(nil)
         Delay.new(&task).value
       end
 
       it 'only calls the block once no matter how often #value is called' do
-        task.should_receive(:call).once.with(any_args).and_return(nil)
+        expect(task).to receive(:call).once.with(any_args).and_return(nil)
         delay = Delay.new(&task)
         5.times{ delay.value }
       end

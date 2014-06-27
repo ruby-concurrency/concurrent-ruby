@@ -20,7 +20,7 @@ module Concurrent
         count = subject.length
         count.times{ subject << proc{ raise StandardError } }
         sleep(1)
-        subject.length.should eq count
+        expect(subject.length).to eq count
       end
     end
 
@@ -28,10 +28,10 @@ module Concurrent
 
       it 'creates new workers when there are none available' do
         pool = described_class.new(5)
-        pool.current_length.should eq 0
+        expect(pool.current_length).to eq 0
         5.times{ pool << proc{ sleep(1) } }
         sleep(0.1)
-        pool.current_length.should eq 5
+        expect(pool.current_length).to eq 5
         pool.kill
       end
     end

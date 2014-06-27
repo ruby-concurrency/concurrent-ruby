@@ -1,21 +1,21 @@
 require 'spec_helper'
 
-share_examples_for :atomic_fixnum do
+shared_examples :atomic_fixnum do
 
   context 'construction' do
 
     it 'sets the initial value' do
-      described_class.new(10).value.should eq 10
+      expect(described_class.new(10).value).to eq 10
     end
 
     it 'defaults the initial value to zero' do
-      described_class.new.value.should eq 0
+      expect(described_class.new.value).to eq 0
     end
 
     it 'raises en exception if the initial value is not a Fixnum' do
-      lambda {
+      expect {
         described_class.new(10.01)
-      }.should raise_error
+      }.to raise_error
     end
   end
 
@@ -23,11 +23,11 @@ share_examples_for :atomic_fixnum do
 
     it 'returns the current value' do
       counter = described_class.new(10)
-      counter.value.should eq 10
+      expect(counter.value).to eq 10
       counter.increment
-      counter.value.should eq 11
+      expect(counter.value).to eq 11
       counter.decrement
-      counter.value.should eq 10
+      expect(counter.value).to eq 10
     end
   end
 
@@ -36,12 +36,12 @@ share_examples_for :atomic_fixnum do
     it 'sets the #value to the given `Fixnum`' do
       atomic = described_class.new(0)
       atomic.value = 10
-      atomic.value.should eq 10
+      expect(atomic.value).to eq 10
     end
 
     it 'returns the new value' do
       atomic = described_class.new(0)
-      (atomic.value = 10).should eq 10
+      expect(atomic.value = 10).to eq 10
     end
 
     it 'raises and exception if the value is not a `Fixnum`' do
@@ -57,16 +57,16 @@ share_examples_for :atomic_fixnum do
     it 'increases the value by one' do
       counter = described_class.new(10)
       3.times{ counter.increment }
-      counter.value.should eq 13
+      expect(counter.value).to eq 13
     end
 
     it 'returns the new value' do
       counter = described_class.new(10)
-      counter.increment.should eq 11
+      expect(counter.increment).to eq 11
     end
 
     it 'is aliased as #up' do
-      described_class.new(10).up.should eq 11
+      expect(described_class.new(10).up).to eq 11
     end
   end
 
@@ -75,39 +75,39 @@ share_examples_for :atomic_fixnum do
     it 'decreases the value by one' do
       counter = described_class.new(10)
       3.times{ counter.decrement }
-      counter.value.should eq 7
+      expect(counter.value).to eq 7
     end
 
     it 'returns the new value' do
       counter = described_class.new(10)
-      counter.decrement.should eq 9
+      expect(counter.decrement).to eq 9
     end
 
     it 'is aliased as #down' do
-      described_class.new(10).down.should eq 9
+      expect(described_class.new(10).down).to eq 9
     end
   end
 
   context '#compare_and_set' do
 
     it 'returns false if the value is not found' do
-      described_class.new(14).compare_and_set(2, 14).should eq false
+      expect(described_class.new(14).compare_and_set(2, 14)).to eq false
     end
 
     it 'returns true if the value is found' do
-      described_class.new(14).compare_and_set(14, 2).should eq true
+      expect(described_class.new(14).compare_and_set(14, 2)).to eq true
     end
 
     it 'sets if the value is found' do
       f = described_class.new(14)
       f.compare_and_set(14, 2)
-      f.value.should eq 2
+      expect(f.value).to eq 2
     end
 
     it 'does not set if the value is not found' do
       f = described_class.new(14)
       f.compare_and_set(2, 12)
-      f.value.should eq 14
+      expect(f.value).to eq 14
     end
   end
 end
@@ -120,47 +120,47 @@ module Concurrent
 
     specify 'construction is synchronized' do
       mutex = double('mutex')
-      Mutex.should_receive(:new).once.with(no_args).and_return(mutex)
+      expect(Mutex).to receive(:new).once.with(no_args).and_return(mutex)
       described_class.new
     end
 
     specify 'value is synchronized' do
       mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:lock)
-      mutex.should_receive(:unlock)
+      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
+      expect(mutex).to receive(:lock)
+      expect(mutex).to receive(:unlock)
       described_class.new.value
     end
 
     specify 'value= is synchronized' do
       mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:lock)
-      mutex.should_receive(:unlock)
+      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
+      expect(mutex).to receive(:lock)
+      expect(mutex).to receive(:unlock)
       described_class.new.value = 10
     end
 
     specify 'increment is synchronized' do
       mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:lock)
-      mutex.should_receive(:unlock)
+      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
+      expect(mutex).to receive(:lock)
+      expect(mutex).to receive(:unlock)
       described_class.new.increment
     end
 
     specify 'decrement is synchronized' do
       mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:lock)
-      mutex.should_receive(:unlock)
+      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
+      expect(mutex).to receive(:lock)
+      expect(mutex).to receive(:unlock)
       described_class.new.decrement
     end
 
     specify 'compare_and_set is synchronized' do
       mutex = double('mutex')
-      Mutex.stub(:new).with(no_args).and_return(mutex)
-      mutex.should_receive(:lock)
-      mutex.should_receive(:unlock)
+      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
+      expect(mutex).to receive(:lock)
+      expect(mutex).to receive(:unlock)
       described_class.new(14).compare_and_set(14, 2)
     end
   end
@@ -175,11 +175,11 @@ module Concurrent
   describe AtomicFixnum do
     if jruby?
       it 'inherits from JavaAtomicFixnum' do
-        AtomicFixnum.ancestors.should include(JavaAtomicFixnum)
+        expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end
     else
       it 'inherits from MutexAtomicFixnum' do
-        AtomicFixnum.ancestors.should include(MutexAtomicFixnum)
+        expect(AtomicFixnum.ancestors).to include(MutexAtomicFixnum)
       end
     end
   end

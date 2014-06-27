@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-share_examples_for :count_down_latch do
+shared_examples :count_down_latch do
 
   let(:latch) { described_class.new(3) }
   let(:zero_count_latch) { described_class.new(0) }
@@ -23,17 +23,17 @@ share_examples_for :count_down_latch do
   describe '#count' do
 
     it 'should be the value passed to the constructor' do
-      latch.count.should eq 3
+      expect(latch.count).to eq 3
     end
 
     it 'should be decreased after every count down' do
       latch.count_down
-      latch.count.should eq 2
+      expect(latch.count).to eq 2
     end
 
     it 'should not go below zero' do
       5.times { latch.count_down }
-      latch.count.should eq 0
+      expect(latch.count).to eq 0
     end
   end
 
@@ -42,12 +42,12 @@ share_examples_for :count_down_latch do
     context 'count set to zero' do
       it 'should return true immediately' do
         result = zero_count_latch.wait
-        result.should be_true
+        expect(result).to be_truthy
       end
 
       it 'should return true immediately with timeout' do
         result = zero_count_latch.wait(5)
-        result.should be_true
+        expect(result).to be_truthy
       end
     end
 
@@ -59,8 +59,8 @@ share_examples_for :count_down_latch do
         end
 
         result = latch.wait
-        result.should be_true
-        latch.count.should eq 0
+        expect(result).to be_truthy
+        expect(latch.count).to eq 0
       end
 
       it 'should block until counter is set to zero with timeout' do
@@ -69,15 +69,15 @@ share_examples_for :count_down_latch do
         end
 
         result = latch.wait(1)
-        result.should be_true
-        latch.count.should eq 0
+        expect(result).to be_truthy
+        expect(latch.count).to eq 0
 
       end
 
       it 'should block until timeout and return false when counter is not set to zero' do
         result = latch.wait(0.1)
-        result.should be_false
-        latch.count.should eq 3
+        expect(result).to be_falsey
+        expect(latch.count).to eq 3
       end
     end
   end
@@ -110,7 +110,7 @@ module Concurrent
         subject.simulate_spurious_wake_up
 
         sleep(0.1)
-        @expected.should be_false
+        expect(@expected).to be_falsey
       end
 
       it 'should resist to spurious wake ups with timeout' do
@@ -121,10 +121,10 @@ module Concurrent
         subject.simulate_spurious_wake_up
 
         sleep(0.1)
-        @expected.should be_false
+        expect(@expected).to be_falsey
 
         sleep(0.4)
-        @expected.should be_true
+        expect(@expected).to be_truthy
       end
     end
   end
@@ -140,11 +140,11 @@ module Concurrent
   describe CountDownLatch do
     if jruby?
       it 'inherits from JavaCountDownLatch' do
-        CountDownLatch.ancestors.should include(JavaCountDownLatch)
+        expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
       end
     else
       it 'inherits from MutexCountDownLatch' do
-        CountDownLatch.ancestors.should include(MutexCountDownLatch)
+        expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
       end
     end
   end

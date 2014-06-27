@@ -4,15 +4,15 @@ module Concurrent
 
   describe Configuration do
     it 'creates a global timer pool' do
-      Concurrent.configuration.global_timer_set.should_not be_nil
-      Concurrent.configuration.global_timer_set.should respond_to(:post)
+      expect(Concurrent.configuration.global_timer_set).not_to be_nil
+      expect(Concurrent.configuration.global_timer_set).to respond_to(:post)
     end
 
     context 'global task pool' do
 
       specify 'reader creates a default pool when first called if none exists' do
-        Concurrent.configuration.global_task_pool.should_not be_nil
-        Concurrent.configuration.global_task_pool.should respond_to(:post)
+        expect(Concurrent.configuration.global_task_pool).not_to be_nil
+        expect(Concurrent.configuration.global_task_pool).to respond_to(:post)
       end
 
       specify 'writer memoizes the given executor' do
@@ -20,7 +20,7 @@ module Concurrent
         Concurrent.configure do |config|
           config.global_task_pool = executor
         end
-        Concurrent.configuration.global_task_pool.should eq executor
+        expect(Concurrent.configuration.global_task_pool).to eq executor
       end
 
       specify 'writer raises an exception if called after initialization' do
@@ -40,8 +40,8 @@ module Concurrent
     context 'global operation pool' do
 
       specify 'reader creates a default pool when first called if none exists' do
-        Concurrent.configuration.global_operation_pool.should_not be_nil
-        Concurrent.configuration.global_operation_pool.should respond_to(:post)
+        expect(Concurrent.configuration.global_operation_pool).not_to be_nil
+        expect(Concurrent.configuration.global_operation_pool).to respond_to(:post)
       end
 
       specify 'writer memoizes the given executor' do
@@ -49,7 +49,7 @@ module Concurrent
         Concurrent.configure do |config|
           config.global_operation_pool = executor
         end
-        Concurrent.configuration.global_operation_pool.should eq executor
+        expect(Concurrent.configuration.global_operation_pool).to eq executor
       end
 
       specify 'writer raises an exception if called after initialization' do

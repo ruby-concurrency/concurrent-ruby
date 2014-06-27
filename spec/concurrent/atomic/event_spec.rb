@@ -9,7 +9,7 @@ module Concurrent
     context '#initialize' do
 
       it 'sets the state to unset' do
-        subject.should_not be_set
+        expect(subject).not_to be_set
       end
     end
 
@@ -17,11 +17,11 @@ module Concurrent
 
       it 'returns true when the event has been set' do
         subject.set
-        subject.should be_set
+        expect(subject).to be_set
       end
 
       it 'returns false if the event is unset' do
-        subject.should_not be_set
+        expect(subject).not_to be_set
       end
     end
 
@@ -32,12 +32,12 @@ module Concurrent
         Thread.new{ subject.wait.tap{ latch.count_down } }
         sleep(0.1)
         subject.set
-        latch.wait(1).should be_true
+        expect(latch.wait(1)).to be_truthy
       end
 
       it 'sets the state to set' do
         subject.set
-        subject.should be_set
+        expect(subject).to be_set
       end
     end
 
@@ -45,16 +45,16 @@ module Concurrent
 
       it 'triggers the event if not already set' do
         subject.try?
-        subject.should be_set
+        expect(subject).to be_set
       end
 
       it 'returns true if not previously set' do
-        subject.try?.should be_true
+        expect(subject.try?).to be_truthy
       end
 
       it 'returns false if previously set' do
         subject.set
-        subject.try?.should be_false
+        expect(subject.try?).to be_falsey
       end
     end
 
@@ -62,40 +62,40 @@ module Concurrent
 
       it 'does not change the state of an unset event' do
         subject.reset
-        subject.should_not be_set
+        expect(subject).not_to be_set
       end
 
       it 'does not trigger an unset event' do
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.reset
-        latch.wait(0.1).should be_false
+        expect(latch.wait(0.1)).to be_falsey
       end
 
       it 'does not interrupt waiting threads when event is unset' do
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.reset
-        latch.wait(0.1).should be_false
+        expect(latch.wait(0.1)).to be_falsey
         subject.set
-        latch.wait(0.1).should be_true
+        expect(latch.wait(0.1)).to be_truthy
       end
 
       it 'returns true when called on an unset event' do
-        subject.reset.should be_true
+        expect(subject.reset).to be_truthy
       end
 
       it 'sets the state of a set event to unset' do
         subject.set
-        subject.should be_set
+        expect(subject).to be_set
         subject.reset
-        subject.should_not be_set
+        expect(subject).not_to be_set
       end
 
       it 'returns true when called on a set event' do
         subject.set
-        subject.should be_set
-        subject.reset.should be_true
+        expect(subject).to be_set
+        expect(subject.reset).to be_truthy
       end
     end
 
@@ -133,34 +133,34 @@ module Concurrent
         latch = CountDownLatch.new(1)
         subject.set
         Thread.new{ subject.wait(1000); latch.count_down }
-        latch.wait(0.1).should be_true
+        expect(latch.wait(0.1)).to be_truthy
       end
 
       it 'returns true once the event is set' do
         subject.set
-        subject.wait.should be_true
+        expect(subject.wait).to be_truthy
       end
 
       it 'blocks indefinitely when the timer is nil' do
         subject.reset
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
-        latch.wait(0.1).should be_false
+        expect(latch.wait(0.1)).to be_falsey
         subject.set
-        latch.wait(0.1).should be_true
+        expect(latch.wait(0.1)).to be_truthy
       end
 
       it 'stops waiting when the timer expires' do
         subject.reset
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait(0.2); latch.count_down }
-        latch.wait(0.1).should be_false
-        latch.wait.should be_true
+        expect(latch.wait(0.1)).to be_falsey
+        expect(latch.wait).to be_truthy
       end
 
       it 'returns false when the timer expires' do
         subject.reset
-        subject.wait(1).should be_false
+        expect(subject.wait(1)).to be_falsey
       end
 
       it 'triggers multiple waiting threads' do
@@ -168,7 +168,7 @@ module Concurrent
         subject.reset
         5.times{ Thread.new{ subject.wait; latch.count_down } }
         subject.set
-        latch.wait(0.2).should be_true
+        expect(latch.wait(0.2)).to be_truthy
       end
 
       it 'behaves appropriately if wait begins while #set is processing' do
@@ -177,7 +177,7 @@ module Concurrent
         5.times{ Thread.new{ subject.wait(5) } }
         subject.set
         5.times{ Thread.new{ subject.wait; latch.count_down } }
-        latch.wait(0.2).should be_true
+        expect(latch.wait(0.2)).to be_truthy
       end
     end
 
@@ -199,7 +199,7 @@ module Concurrent
         sleep(0.1)
         subject.simulate_spurious_wake_up
 
-        latch.wait(0.1).should be_false
+        expect(latch.wait(0.1)).to be_falsey
       end
 
       it 'should resist to spurious wake ups with timeout' do
@@ -209,8 +209,8 @@ module Concurrent
         sleep(0.1)
         subject.simulate_spurious_wake_up
 
-        latch.wait(0.1).should be_false
-        latch.wait(1).should be_true
+        expect(latch.wait(0.1)).to be_falsey
+        expect(latch.wait(1)).to be_truthy
       end
     end
   end

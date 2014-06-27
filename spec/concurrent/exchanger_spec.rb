@@ -12,7 +12,7 @@ module Concurrent
         it 'should block' do
           t = Thread.new { exchanger.exchange(1) }
           sleep(0.1)
-          t.status.should eq 'sleep'
+          expect(t.status).to eq 'sleep'
         end
 
         it 'should receive the other value' do
@@ -24,8 +24,8 @@ module Concurrent
 
           sleep(0.1)
 
-          first_value.should eq 4
-          second_value.should eq 2
+          expect(first_value).to eq 4
+          expect(second_value).to eq 2
         end
 
         it 'can be reused' do
@@ -42,8 +42,8 @@ module Concurrent
 
           sleep(0.1)
 
-          first_value.should eq 12
-          second_value.should eq 10
+          expect(first_value).to eq 12
+          expect(second_value).to eq 10
         end
       end
 
@@ -51,8 +51,8 @@ module Concurrent
 
         it 'should block until timeout' do
           start = Time.now.to_f
-          exchanger.exchange(2, 0.1).should be_nil
-          (Time.now.to_f - start).should be_within(0.05).of(0.1)
+          expect(exchanger.exchange(2, 0.1)).to be_nil
+          expect(Time.now.to_f - start).to be_within(0.05).of(0.1)
         end
       end
     end

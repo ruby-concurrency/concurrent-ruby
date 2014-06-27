@@ -25,16 +25,16 @@ module Concurrent
       context 'empty probe' do
         it 'assigns the value' do
           probe.set_unless_assigned(32, channel)
-          probe.value.should eq 32
+          expect(probe.value).to eq 32
         end
 
         it 'assign the channel' do
           probe.set_unless_assigned(32, channel)
-          probe.channel.should be channel
+          expect(probe.channel).to be channel
         end
 
         it 'returns true' do
-          probe.set_unless_assigned('hi', channel).should eq true
+          expect(probe.set_unless_assigned('hi', channel)).to eq true
         end
       end
 
@@ -43,11 +43,11 @@ module Concurrent
 
         it 'does not assign the value' do
           probe.set_unless_assigned(88, channel)
-          probe.value.should eq 27
+          expect(probe.value).to eq 27
         end
 
         it 'returns false' do
-          probe.set_unless_assigned('hello', channel).should eq false
+          expect(probe.set_unless_assigned('hello', channel)).to eq false
         end
       end
 
@@ -56,19 +56,19 @@ module Concurrent
 
         it 'does not assign the value' do
           probe.set_unless_assigned(88, channel)
-          probe.should be_rejected
+          expect(probe).to be_rejected
         end
 
         it 'has a nil value' do
-          probe.value.should be_nil
+          expect(probe.value).to be_nil
         end
 
         it 'has a nil channel' do
-          probe.channel.should be_nil
+          expect(probe.channel).to be_nil
         end
 
         it 'returns false' do
-          probe.set_unless_assigned('hello', channel).should eq false
+          expect(probe.set_unless_assigned('hello', channel)).to eq false
         end
       end
     end

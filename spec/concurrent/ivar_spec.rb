@@ -76,17 +76,17 @@ module Concurrent
 
       it 'does not have to set an initial value' do
         i = IVar.new
-        i.should be_incomplete
+        expect(i).to be_incomplete
       end
 
       it 'does not set an initial value if you pass NO_VALUE' do
         i = IVar.new(IVar::NO_VALUE)
-        i.should be_incomplete
+        expect(i).to be_incomplete
       end
 
       it 'can set an initial value' do
         i = IVar.new(14)
-        i.should be_completed
+        expect(i).to be_completed
       end
 
     end
@@ -96,25 +96,25 @@ module Concurrent
       it 'sets the state to be fulfilled' do
         i = IVar.new
         i.set(14)
-        i.should be_fulfilled
+        expect(i).to be_fulfilled
       end
 
       it 'sets the value' do
         i = IVar.new
         i.set(14)
-        i.value.should eq 14
+        expect(i.value).to eq 14
       end
 
       it 'raises an exception if set more than once' do
         i = IVar.new
         i.set(14)
         expect {i.set(2)}.to raise_error(Concurrent::MultipleAssignmentError)
-        i.value.should eq 14
+        expect(i.value).to eq 14
       end
 
       it 'returns self' do
         i = IVar.new
-        i.set(42).should eq i
+        expect(i.set(42)).to eq i
       end
     end
 
@@ -123,31 +123,31 @@ module Concurrent
       it 'sets the state to be rejected' do
         i = IVar.new
         i.fail
-        i.should be_rejected
+        expect(i).to be_rejected
       end
 
       it 'sets the value to be nil' do
         i = IVar.new
         i.fail
-        i.value.should be_nil
+        expect(i.value).to be_nil
       end
 
       it 'raises an exception if set more than once' do
         i = IVar.new
         i.fail
         expect {i.fail}.to raise_error(Concurrent::MultipleAssignmentError)
-        i.value.should be_nil
+        expect(i.value).to be_nil
       end
 
       it 'defaults the reason to a StandardError' do
         i = IVar.new
         i.fail
-        i.reason.should be_a StandardError
+        expect(i.reason).to be_a StandardError
       end
 
       it 'returns self' do
         i = IVar.new
-        i.fail.should eq i
+        expect(i.fail).to eq i
       end
     end
 
@@ -174,8 +174,8 @@ module Concurrent
 
         i.set(42)
 
-        observer.value.should == 42
-        observer.reason.should be_nil
+        expect(observer.value).to eq(42)
+        expect(observer.reason).to be_nil
       end
 
       context 'deadlock avoidance' do
@@ -196,7 +196,7 @@ module Concurrent
           i.add_observer(obs)
           i.set(42)
 
-          obs.value.should eq 42
+          expect(obs.value).to eq 42
         end
 
         it 'should notify a new observer added after fulfillment outside lock' do
@@ -206,7 +206,7 @@ module Concurrent
 
           i.add_observer(obs)
 
-          obs.value.should eq 42
+          expect(obs.value).to eq 42
         end
       end
 

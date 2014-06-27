@@ -1,7 +1,7 @@
 require 'spec_helper'
 require_relative 'global_thread_pool_shared'
 
-share_examples_for :executor_service do
+shared_examples :executor_service do
 
   after(:each) do
     subject.kill
@@ -17,13 +17,13 @@ share_examples_for :executor_service do
       subject.post{ sleep(1) }
       subject.shutdown
       subject.post{ latch.count_down }
-      latch.wait(0.1).should be_false
+      expect(latch.wait(0.1)).to be_falsey
     end
 
     it 'returns false while shutting down' do
       subject.post{ sleep(1) }
       subject.shutdown
-      subject.post{ nil }.should be_false
+      expect(subject.post{ nil }).to be_falsey
     end
 
     it 'rejects the block once shutdown' do
@@ -31,40 +31,40 @@ share_examples_for :executor_service do
       latch = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(1) }
       subject.post{ latch.count_down }
-      latch.wait(0.1).should be_false
+      expect(latch.wait(0.1)).to be_falsey
     end
 
     it 'returns false once shutdown' do
       subject.post{ nil }
       subject.shutdown
       sleep(0.1)
-      subject.post{ nil }.should be_false
+      expect(subject.post{ nil }).to be_falsey
     end
   end
 
   context '#running?' do
 
     it 'returns true when the thread pool is running' do
-      subject.should be_running
+      expect(subject).to be_running
     end
 
     it 'returns false when the thread pool is shutting down' do
       subject.post{ sleep(1) }
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.should_not be_running
+      expect(subject).not_to be_running
     end
 
     it 'returns false when the thread pool is shutdown' do
       subject.shutdown
       subject.wait_for_termination(1)
-      subject.should_not be_running
+      expect(subject).not_to be_running
     end
 
     it 'returns false when the thread pool is killed' do
       subject.kill
       subject.wait_for_termination(1)
-      subject.should_not be_running
+      expect(subject).not_to be_running
     end
   end
 
@@ -75,16 +75,16 @@ share_examples_for :executor_service do
       latch2 = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(0.2); latch1.count_down }
       subject.shutdown
-      subject.post{ latch2.count_down }.should be_false
-      latch1.wait(1).should be_true
-      latch2.wait(0.2).should be_false
+      expect(subject.post{ latch2.count_down }).to be_falsey
+      expect(latch1.wait(1)).to be_truthy
+      expect(latch2.wait(0.2)).to be_falsey
     end
 
     it 'allows in-progress tasks to complete' do
       latch = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(0.1); latch.count_down }
       subject.shutdown
-      latch.wait(1).should be_true
+      expect(latch.wait(1)).to be_truthy
     end
 
     it 'allows pending tasks to complete' do
@@ -92,7 +92,7 @@ share_examples_for :executor_service do
       subject.post{ sleep(0.2); latch.count_down }
       subject.post{ sleep(0.2); latch.count_down }
       subject.shutdown
-      latch.wait(1).should be_true
+      expect(latch.wait(1)).to be_truthy
     end
   end
 
@@ -103,7 +103,7 @@ share_examples_for :executor_service do
       subject.post{ sleep(0.1); latch.count_down }
       subject.shutdown
       subject.wait_for_termination(1)
-      latch.wait(1).should be_true
+      expect(latch.wait(1)).to be_truthy
     end
 
     it 'allows pending tasks to complete' do
@@ -113,7 +113,7 @@ share_examples_for :executor_service do
       end
       subject.shutdown
       subject.wait_for_termination(1)
-      q.length.should eq 5
+      expect(q.length).to eq 5
     end
 
     it 'stops accepting/running new tasks' do
@@ -123,7 +123,7 @@ share_examples_for :executor_service do
       subject.shutdown
       subject.post{ expected.increment }
       subject.wait_for_termination(1)
-      expected.value.should == 2
+      expect(expected.value).to eq(2)
     end
   end
 
@@ -135,9 +135,9 @@ share_examples_for :executor_service do
       subject.post{ sleep(0.1); latch.count_down }
       latch.wait(1)
       subject.kill
-      subject.post{ expected.make_true }.should be_false
+      expect(subject.post{ expected.make_true }).to be_falsey
       sleep(0.1)
-      expected.value.should be_false
+      expect(expected.value).to be_falsey
     end
 
     it 'rejects all pending tasks' do
@@ -145,7 +145,7 @@ share_examples_for :executor_service do
       sleep(0.1)
       subject.kill
       sleep(0.1)
-      subject.post{ nil }.should be_false
+      expect(subject.post{ nil }).to be_falsey
     end
   end
 
@@ -153,21 +153,21 @@ share_examples_for :executor_service do
 
     it 'immediately returns true when no operations are pending' do
       subject.shutdown
-      subject.wait_for_termination(0).should be_true
+      expect(subject.wait_for_termination(0)).to be_truthy
     end
 
     it 'returns true after shutdown has complete' do
       10.times { subject << proc{ nil } }
       sleep(0.1)
       subject.shutdown
-      subject.wait_for_termination(1).should be_true
+      expect(subject.wait_for_termination(1)).to be_truthy
     end
 
     it 'returns true when shutdown sucessfully completes before timeout' do
       subject.post{ sleep(0.5) }
       sleep(0.1)
       subject.shutdown
-      subject.wait_for_termination(1).should be_true
+      expect(subject.wait_for_termination(1)).to be_truthy
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
@@ -175,7 +175,7 @@ share_examples_for :executor_service do
         100.times{ subject.post{ sleep(1) } }
         sleep(0.1)
         subject.shutdown
-        subject.wait_for_termination(0).should be_false
+        expect(subject.wait_for_termination(0)).to be_falsey
       end
     end
   end

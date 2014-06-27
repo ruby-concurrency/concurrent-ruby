@@ -27,21 +27,21 @@ module Concurrent
         subject.instance_variable_set(:@idletime, 1)
         3.times { subject << proc{ sleep(0.1) } }
         sleep(0.1)
-        subject.length.should eq 3
+        expect(subject.length).to eq 3
         sleep(2)
         subject << proc{ nil }
         sleep(0.1)
-        subject.length.should < 3
+        expect(subject.length).to be < 3
       end
 
       it 'removes from pool any dead thread' do
         3.times { subject << proc{ sleep(0.1); raise Exception } }
         sleep(0.1)
-        subject.length.should eq 3
+        expect(subject.length).to eq 3
         sleep(2)
         subject << proc{ nil }
         sleep(0.1)
-        subject.length.should < 3
+        expect(subject.length).to be < 3
       end
     end
 
@@ -50,19 +50,19 @@ module Concurrent
       subject{ described_class.new(idletime: 1, max_threads: 5) }
 
       it 'creates new workers when there are none available' do
-        subject.length.should eq 0
+        expect(subject.length).to eq 0
         5.times{ sleep(0.1); subject << proc{ sleep(1) } }
         sleep(1)
-        subject.length.should eq 5
+        expect(subject.length).to eq 5
       end
 
       it 'uses existing idle threads' do
         5.times{ subject << proc{ sleep(0.1) } }
         sleep(1)
-        subject.length.should >= 5
+        expect(subject.length).to be >= 5
         3.times{ subject << proc{ sleep(1) } }
         sleep(0.1)
-        subject.length.should >= 5
+        expect(subject.length).to be >= 5
       end
     end
   end
