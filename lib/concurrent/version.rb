@@ -1,3 +1,3 @@
 module Concurrent
-  VERSION = '0.7.0.rc0'
+  VERSION = '0.7.0.rc1'
 end
