@@ -36,7 +36,12 @@ module Concurrent
         describe "##{method}" do
 
           it 'should return immediately if timeout is zero' do
-            expect(obligation.send(method, 0)).to(method eq(:no_error!) ? eq(obligation) : be_nil)
+            result = obligation.send(method, 0)
+            if method == :no_error!
+              expect(result).to eq obligation
+            else
+              expect(result).to be_nil
+            end
           end
 
           it 'should block on the event if timeout is not set' do

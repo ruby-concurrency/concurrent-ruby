@@ -27,8 +27,8 @@ end
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }
 
 RSpec.configure do |config|
+  #config.raise_errors_for_deprecations!
   config.order = 'random'
-  config.treat_symbols_as_metadata_keys_with_true_values = true
 
   config.before(:each) do
     #TODO: Better configuration management in individual test suites
