@@ -175,6 +175,10 @@ module Concurrent
       #   @!macro atomic_fixnum_method_compare_and_set
     end
 
+    # @!macro atomic_fixnum
+    class AtomicFixnum < CAtomicFixnum
+    end
+
   else
 
     # @!macro atomic_fixnum

@@ -20,7 +20,6 @@ if defined? Concurrent::JavaAtomic
   #
   #   An object reference that may be updated atomically.
   #
-  #   @since 0.7.0.rc0
   #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/AtomicReference.html
   #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/package-summary.html
   class Concurrent::Atomic < Concurrent::JavaAtomic

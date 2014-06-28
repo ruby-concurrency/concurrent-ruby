@@ -9,7 +9,7 @@ module Concurrent
     include Concurrent::AtomicDirectUpdate
     include Concurrent::AtomicNumericCompareAndSetWrapper
 
-    # @!macro atomic_reference_method_initialize
+    # @!macro [attach] atomic_reference_method_initialize
     def initialize(value = nil)
       @mutex = Mutex.new
       @value = value
