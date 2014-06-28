@@ -1,6 +1,14 @@
 #ifndef __ATOMIC_REFERENCE_H__
 #define __ATOMIC_REFERENCE_H__
 
+#if defined(__sun)
+#include <atomic.h>
+#endif
+
+#ifdef HAVE_LIBKERN_OSATOMIC_H
+#include <libkern/OSAtomic.h>
+#endif
+
 void ir_mark(void*);
 VALUE ir_alloc(VALUE);
 VALUE ir_initialize(int, VALUE*, VALUE);
