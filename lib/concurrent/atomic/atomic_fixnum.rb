@@ -10,6 +10,10 @@ module Concurrent
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
   class MutexAtomicFixnum
 
+    # http://stackoverflow.com/questions/535721/ruby-max-integer
+    MIN_VALUE = -(2**(0.size * 8 -2))
+    MAX_VALUE = (2**(0.size * 8 -2) -1)
+
     # @!macro [attach] atomic_fixnum_method_initialize
     #
     # Creates a new `AtomicFixnum` with the given initial value.
@@ -105,6 +109,9 @@ module Concurrent
 
     # @!macro atomic_fixnum
     class JavaAtomicFixnum
+
+      MIN_VALUE = Java::JavaLang::Long::MIN_VALUE
+      MAX_VALUE = Java::JavaLang::Long::MAX_VALUE
 
       # @!macro atomic_fixnum_method_initialize
       #

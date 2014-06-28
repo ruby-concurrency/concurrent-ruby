@@ -43,6 +43,8 @@ void Init_concurrent_ruby_ext() {
   rb_define_method(rb_cAtomicBoolean, "make_false", method_atomic_boolean_make_false, 0);
 
   // CAtomicFixnum
+  rb_define_const(rb_cAtomicFixnum, "MIN_VALUE", LL2NUM(LLONG_MIN));
+  rb_define_const(rb_cAtomicFixnum, "MAX_VALUE", LL2NUM(LLONG_MAX));
   rb_define_alloc_func(rb_cAtomicFixnum, atomic_fixnum_allocate);
   rb_define_method(rb_cAtomicFixnum, "initialize", method_atomic_fixnum_initialize, -1);
   rb_define_method(rb_cAtomicFixnum, "value", method_atomic_fixnum_value, 0);

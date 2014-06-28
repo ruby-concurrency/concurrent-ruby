@@ -12,7 +12,7 @@ VALUE atomic_fixnum_allocate(VALUE klass) {
 }
 
 VALUE method_atomic_fixnum_initialize(int argc, VALUE* argv, VALUE self) {
-  VALUE value = INT2NUM(0);
+  VALUE value = LL2NUM(0);
   rb_check_arity(argc, 0, 1);
   if (argc == 1) {
     Check_Type(argv[0], T_FIXNUM);
@@ -33,13 +33,13 @@ VALUE method_atomic_fixnum_value_set(VALUE self, VALUE value) {
 }
 
 VALUE method_atomic_fixnum_increment(VALUE self) {
-  long value = NUM2INT((VALUE) DATA_PTR(self));
-  return method_atomic_fixnum_value_set(self, INT2NUM(value + 1));
+  long long value = NUM2LL((VALUE) DATA_PTR(self));
+  return method_atomic_fixnum_value_set(self, LL2NUM(value + 1));
 }
 
 VALUE method_atomic_fixnum_decrement(VALUE self) {
-  long value = NUM2INT((VALUE) DATA_PTR(self));
-  return method_atomic_fixnum_value_set(self, INT2NUM(value - 1));
+  long long value = NUM2LL((VALUE) DATA_PTR(self));
+  return method_atomic_fixnum_value_set(self, LL2NUM(value - 1));
 }
 
 VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb_update) {
