@@ -151,7 +151,13 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if defined? Concurrent::CAtomicBoolean
+
+    describe CAtomicBoolean do
+      it_should_behave_like :atomic_boolean
+    end
+
+  elsif RUBY_PLATFORM == 'java'
 
     describe JavaAtomicBoolean do
       it_should_behave_like :atomic_boolean
@@ -159,7 +165,11 @@ module Concurrent
   end
 
   describe AtomicBoolean do
-    if jruby?
+    if defined? Concurrent::CAtomicBoolean
+      it 'inherits from CAtomicBoolean' do
+        expect(AtomicBoolean.ancestors).to include(CAtomicBoolean)
+      end
+    elsif RUBY_PLATFORM == 'java'
       it 'inherits from JavaAtomicBoolean' do
         expect(AtomicBoolean.ancestors).to include(JavaAtomicBoolean)
       end
