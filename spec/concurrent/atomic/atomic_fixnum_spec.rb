@@ -165,7 +165,14 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if defined? Concurrent::CAtomicFixnum
+
+    describe CAtomicFixnum do
+      it_should_behave_like :atomic_fixnum
+    end
+  end
+
+  if RUBY_PLATFORM == 'java'
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum

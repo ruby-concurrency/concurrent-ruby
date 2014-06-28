@@ -1,5 +1,4 @@
 #include <ruby.h>
-#include <stdbool.h>
 
 #include "atomic_boolean.h"
 #include "atomic_reference.h"
