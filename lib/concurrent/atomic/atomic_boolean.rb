@@ -6,21 +6,20 @@ module Concurrent
   #   boolean and thread-safe and guaranteed to succeed. Reads and writes may block
   #   briefly but no explicit locking is required.
   #
-  #   @since 0.6.0
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html java.util.concurrent.atomic.AtomicBoolean
   class MutexAtomicBoolean
 
     # @!macro [attach] atomic_boolean_method_initialize
     #
-    # Creates a new `AtomicBoolean` with the given initial value.
+    #   Creates a new `AtomicBoolean` with the given initial value.
     #
-    # @param [Boolean] initial the initial value
+    #   @param [Boolean] initial the initial value
     def initialize(initial = false)
       @value = !!initial
       @mutex = Mutex.new
     end
 
-    # @!macro [attach] atomic_boolean_method_value
+    # @!macro [attach] atomic_boolean_method_value_get
     #
     #   Retrieves the current `Boolean` value.
     #
@@ -32,7 +31,7 @@ module Concurrent
       @mutex.unlock
     end
 
-    # @!macro [attach] atomic_boolean_method_value_eq
+    # @!macro [attach] atomic_boolean_method_value_set
     #
     #   Explicitly sets the value.
     #
@@ -47,9 +46,9 @@ module Concurrent
       @mutex.unlock
     end
 
-    # @!macro [attach] atomic_boolean_method_is_true
+    # @!macro [attach] atomic_boolean_method_true_question
     #
-    #   Is the current value `true`?
+    #   Is the current value `true`
     #
     #   @return [Boolean] true if the current value is `true`, else false
     def true?
@@ -59,9 +58,9 @@ module Concurrent
       @mutex.unlock
     end
 
-    # @!macro [attach] atomic_boolean_method_is_false
+    # @!macro atomic_boolean_method_false_question
     #
-    #   Is the current value `true`?false
+    #   Is the current value `false`
     #
     #   @return [Boolean] true if the current value is `false`, else false
     def false?
@@ -111,24 +110,24 @@ module Concurrent
         @atomic = java.util.concurrent.atomic.AtomicBoolean.new(!!initial)
       end
 
-      # @!macro atomic_boolean_method_value
+      # @!macro atomic_boolean_method_value_get
       #
       def value
         @atomic.get
       end
 
-      # @!macro atomic_boolean_method_value_eq
+      # @!macro atomic_boolean_method_value_set
       #
       def value=(value)
         @atomic.set(!!value)
       end
 
-      # @!macro [attach] atomic_boolean_method_is_true
+      # @!macro atomic_boolean_method_true_question
       def true?
         @atomic.get
       end
 
-      # @!macro [attach] atomic_boolean_method_is_false
+      # @!macro atomic_boolean_method_false_question
       def false?
         !@atomic.get
       end
@@ -144,12 +143,36 @@ module Concurrent
       end
     end
 
-
     # @!macro atomic_boolean
     class AtomicBoolean < JavaAtomicBoolean
     end
 
   elsif defined? Concurrent::CAtomicBoolean
+
+    # @!macro atomic_boolean
+    class CAtomicBoolean
+
+      # @!method initialize
+      #   @!macro atomic_boolean_method_initialize
+
+      # @!method value
+      #   @!macro atomic_boolean_method_value_get
+
+      # @!method value=
+      #   @!macro atomic_boolean_method_value_set
+
+      # @!method true?
+      #   @!macro atomic_boolean_method_true_question
+
+      # @!method false?
+      #   @!macro atomic_boolean_method_false_question
+
+      # @!method make_true
+      #   @!macro atomic_boolean_method_make_true
+
+      # @!method make_false
+      #   @!macro atomic_boolean_method_make_false
+    end
 
     # @!macro atomic_boolean
     class AtomicBoolean < CAtomicBoolean

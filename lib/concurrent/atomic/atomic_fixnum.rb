@@ -6,7 +6,6 @@ module Concurrent
   #   fixnum and thread-safe and guaranteed to succeed. Reads and writes may block
   #   briefly but no explicit locking is required.
   #
-  #   @since 0.5.0
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
   class MutexAtomicFixnum
 
@@ -16,17 +15,17 @@ module Concurrent
 
     # @!macro [attach] atomic_fixnum_method_initialize
     #
-    # Creates a new `AtomicFixnum` with the given initial value.
+    #   Creates a new `AtomicFixnum` with the given initial value.
     #
-    # @param [Fixnum] init the initial value
-    # @raise [ArgumentError] if the initial value is not a `Fixnum`
+    #   @param [Fixnum] init the initial value
+    #   @raise [ArgumentError] if the initial value is not a `Fixnum`
     def initialize(init = 0)
       raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
       @value = init
       @mutex = Mutex.new
     end
 
-    # @!macro [attach] atomic_fixnum_method_value
+    # @!macro [attach] atomic_fixnum_method_value_get
     #
     #   Retrieves the current `Fixnum` value.
     #
@@ -38,7 +37,7 @@ module Concurrent
       @mutex.unlock
     end
 
-    # @!macro [attach] atomic_fixnum_method_value_eq
+    # @!macro [attach] atomic_fixnum_method_value_set
     #
     #   Explicitly sets the value.
     #
@@ -114,43 +113,35 @@ module Concurrent
       MAX_VALUE = Java::JavaLang::Long::MAX_VALUE
 
       # @!macro atomic_fixnum_method_initialize
-      #
       def initialize(init = 0)
         raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
         @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
       end
 
-      # @!macro atomic_fixnum_method_value
-      #
+      # @!macro atomic_fixnum_method_value_get
       def value
         @atomic.get
       end
 
-      # @!macro atomic_fixnum_method_value_eq
-      #
+      # @!macro atomic_fixnum_method_value_set
       def value=(value)
         raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
         @atomic.set(value)
       end
 
       # @!macro atomic_fixnum_method_increment
-      #
       def increment
         @atomic.increment_and_get
       end
-
       alias_method :up, :increment
 
       # @!macro atomic_fixnum_method_decrement
-      #
       def decrement
         @atomic.decrement_and_get
       end
-
       alias_method :down, :decrement
 
       # @!macro atomic_fixnum_method_compare_and_set
-      #
       def compare_and_set(expect, update)
         @atomic.compare_and_set(expect, update)
       end
@@ -158,6 +149,30 @@ module Concurrent
 
     # @!macro atomic_fixnum
     class AtomicFixnum < JavaAtomicFixnum
+    end
+
+  elsif defined? Concurrent::CAtomicFixnum
+
+    # @!macro atomic_fixnum
+    class CAtomicFixnum
+
+      # @!method initialize
+      #   @!macro atomic_fixnum_method_initialize
+
+      # @!method value
+      #   @!macro atomic_fixnum_method_value_get
+
+      # @!method value=
+      #   @!macro atomic_fixnum_method_value_set
+
+      # @!method increment
+      #   @!macro atomic_fixnum_method_increment
+
+      # @!method decrement
+      #   @!macro atomic_fixnum_method_decrement
+
+      # @!method compare_and_set
+      #   @!macro atomic_fixnum_method_compare_and_set
     end
 
   else
