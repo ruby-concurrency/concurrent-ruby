@@ -180,7 +180,11 @@ module Concurrent
   end
 
   describe AtomicFixnum do
-    if jruby?
+    if defined? Concurrent::CAtomicFixnum
+      it 'inherits from CAtomicFixnum' do
+        expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
+      end
+    elsif RUBY_PLATFORM == 'java'
       it 'inherits from JavaAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end
