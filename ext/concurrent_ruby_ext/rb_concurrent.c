@@ -25,12 +25,12 @@ void Init_concurrent_ruby_ext() {
   rb_define_alloc_func(rb_cAtomic, ir_alloc);
   rb_define_method(rb_cAtomic, "initialize", ir_initialize, -1);
   rb_define_method(rb_cAtomic, "get", ir_get, 0);
-  rb_define_method(rb_cAtomic, "value", ir_get, 0);
   rb_define_method(rb_cAtomic, "set", ir_set, 1);
-  rb_define_method(rb_cAtomic, "value=", ir_set, 1);
   rb_define_method(rb_cAtomic, "get_and_set", ir_get_and_set, 1);
-  rb_define_method(rb_cAtomic, "swap", ir_get_and_set, 1);
   rb_define_method(rb_cAtomic, "_compare_and_set", ir_compare_and_set, 2);
+  rb_define_alias(rb_cAtomic, "value", "get");
+  rb_define_alias(rb_cAtomic, "value=", "set");
+  rb_define_alias(rb_cAtomic, "swap", "get_and_set");
 
   // CAtomicBoolean
   rb_define_alloc_func(rb_cAtomicBoolean, atomic_boolean_allocate);
