@@ -6,6 +6,18 @@ module Concurrent
   #   boolean and thread-safe and guaranteed to succeed. Reads and writes may block
   #   briefly but no explicit locking is required.
   #
+  #       Testing with ruby 2.1.2
+  #       Testing with Concurrent::MutexAtomicBoolean...
+  #         2.790000   0.000000   2.790000 (  2.791454)
+  #       Testing with Concurrent::CAtomicBoolean...
+  #         0.740000   0.000000   0.740000 (  0.740206)
+  #
+  #       Testing with jruby 1.9.3
+  #       Testing with Concurrent::MutexAtomicBoolean...
+  #         5.240000   2.520000   7.760000 (  3.683000)
+  #       Testing with Concurrent::JavaAtomicBoolean...
+  #         3.340000   0.010000   3.350000 (  0.855000)
+  #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html java.util.concurrent.atomic.AtomicBoolean
   class MutexAtomicBoolean
 

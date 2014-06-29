@@ -6,6 +6,18 @@ module Concurrent
   #   fixnum and thread-safe and guaranteed to succeed. Reads and writes may block
   #   briefly but no explicit locking is required.
   #
+  #       Testing with ruby 2.1.2
+  #       Testing with Concurrent::MutexAtomicFixnum...
+  #         3.130000   0.000000   3.130000 (  3.136505)
+  #       Testing with Concurrent::CAtomicFixnum...
+  #         0.790000   0.000000   0.790000 (  0.785550)
+  #
+  #       Testing with jruby 1.9.3
+  #       Testing with Concurrent::MutexAtomicFixnum...
+  #         5.460000   2.460000   7.920000 (  3.715000)
+  #       Testing with Concurrent::JavaAtomicFixnum...
+  #         4.520000   0.030000   4.550000 (  1.187000)
+  #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
   class MutexAtomicFixnum
 

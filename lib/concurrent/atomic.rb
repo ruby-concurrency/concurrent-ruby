@@ -20,6 +20,38 @@ if defined? Concurrent::JavaAtomic
   #
   #   An object reference that may be updated atomically.
   #
+  #       Testing with ruby 2.1.2
+  #       
+  #       *** Sequential updates ***
+  #                        user     system      total        real
+  #       no lock      0.000000   0.000000   0.000000 (  0.005502)
+  #       mutex        0.030000   0.000000   0.030000 (  0.025158)
+  #       MutexAtomic  0.100000   0.000000   0.100000 (  0.103096)
+  #       CAtomic      0.040000   0.000000   0.040000 (  0.034012)
+  #       
+  #       *** Parallel updates ***
+  #                        user     system      total        real
+  #       no lock      0.010000   0.000000   0.010000 (  0.009387)
+  #       mutex        0.030000   0.010000   0.040000 (  0.032545)
+  #       MutexAtomic  0.830000   2.280000   3.110000 (  2.146622)
+  #       CAtomic      0.040000   0.000000   0.040000 (  0.038332)
+  #
+  #       Testing with jruby 1.9.3
+  #       
+  #       *** Sequential updates ***
+  #                        user     system      total        real
+  #       no lock      0.170000   0.000000   0.170000 (  0.051000)
+  #       mutex        0.370000   0.010000   0.380000 (  0.121000)
+  #       MutexAtomic  1.530000   0.020000   1.550000 (  0.471000)
+  #       JavaAtomic   0.370000   0.010000   0.380000 (  0.112000)
+  #       
+  #       *** Parallel updates ***
+  #                        user     system      total        real
+  #       no lock      0.390000   0.000000   0.390000 (  0.105000)
+  #       mutex        0.480000   0.040000   0.520000 (  0.145000)
+  #       MutexAtomic  1.600000   0.180000   1.780000 (  0.511000)
+  #       JavaAtomic   0.460000   0.010000   0.470000 (  0.131000)
+  #
   #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/AtomicReference.html
   #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/package-summary.html
   class Concurrent::Atomic < Concurrent::JavaAtomic
