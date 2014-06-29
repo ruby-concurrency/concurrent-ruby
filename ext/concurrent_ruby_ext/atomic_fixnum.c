@@ -2,6 +2,7 @@
 
 #include "atomic_fixnum.h"
 #include "atomic_reference.h"
+#include "common.h"
 
 void atomic_fixnum_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);

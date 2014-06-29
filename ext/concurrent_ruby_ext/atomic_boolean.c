@@ -2,6 +2,7 @@
 
 #include "atomic_boolean.h"
 #include "atomic_reference.h"
+#include "common.h"
 
 void atomic_boolean_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);
