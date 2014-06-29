@@ -1,8 +1,10 @@
+require 'concurrent/atomic/atomic_fixnum'
+
 module Concurrent
 
   module ThreadLocalSymbolAllocator
 
-    COUNTER = AtomicFixnum.new
+    COUNTER = Concurrent::AtomicFixnum.new
 
     protected
 
