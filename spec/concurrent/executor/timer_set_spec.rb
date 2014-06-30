@@ -91,6 +91,16 @@ module Concurrent
       expect(expected).to eq [0, 1, 2]
     end
 
+    it 'executes tasks with different times in scheduled time' do
+      expected = []
+      subject.post(0.2){ expected << 2 }
+      subject.post(0.1){ expected << 1 }
+      sleep(0.15)
+      expect(expected).to eq [1]
+      sleep(0.1)
+      expect(expected).to eq [1,2]
+    end
+
     it 'cancels all pending tasks on #shutdown' do
       expected = AtomicFixnum.new(0)
       10.times{ subject.post(0.2){ expected.increment } }
