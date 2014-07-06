@@ -156,6 +156,11 @@ module Concurrent
         end
       end
 
+      # @api private
+      def log(level, message = nil, &block)
+        super level, @path, message, &block
+      end
+
       private
 
       # Ensures that only one envelope processing is scheduled with #schedule_execution,
@@ -218,10 +223,6 @@ module Concurrent
 
       def reject_envelope(envelope)
         envelope.reject! ActressTerminated.new(reference)
-      end
-
-      def log(level, message = nil, &block)
-        super level, @path, message, &block
       end
     end
   end

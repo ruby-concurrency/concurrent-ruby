@@ -52,8 +52,8 @@ module Concurrent
 
       # delegates to core.log
       # @see Logging#log
-      def log(level, progname, message = nil, &block)
-        core.log(level, progname, message, &block)
+      def log(level, message = nil, &block)
+        core.log(level, message, &block)
       end
 
       private
