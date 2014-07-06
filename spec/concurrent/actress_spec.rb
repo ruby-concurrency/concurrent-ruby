@@ -222,6 +222,16 @@ module Concurrent
         end
       end
 
+      describe 'dead letter routing' do
+        it 'logs by deafault' do
+          ping = Ping.spawn! :ping, []
+          ping << :terminate
+          ping << 'asd'
+          sleep 0.1
+          # TODO
+        end
+      end
+
     end
   end
 end

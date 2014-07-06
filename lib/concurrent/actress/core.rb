@@ -82,6 +82,11 @@ module Concurrent
         @parent_core && @parent_core.reference
       end
 
+      # @see Context#dead_letter_routing
+      def dead_letter_routing
+        @actor.value.dead_letter_routing
+      end
+
       # @return [Array<Reference>] of children actors
       def children
         guard!
@@ -223,6 +228,7 @@ module Concurrent
 
       def reject_envelope(envelope)
         envelope.reject! ActressTerminated.new(reference)
+        dead_letter_routing << envelope unless envelope.ivar
       end
     end
   end

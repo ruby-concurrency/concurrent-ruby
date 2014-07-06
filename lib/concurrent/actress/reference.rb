@@ -49,6 +49,11 @@ module Concurrent
         return ivar || self
       end
 
+      # @see Context#dead_letter_routing
+      def dead_letter_routing
+        core.dead_letter_routing
+      end
+
       def to_s
         "#<#{self.class} #{path} (#{actor_class})>"
       end
