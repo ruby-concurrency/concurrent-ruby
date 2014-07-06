@@ -10,6 +10,7 @@ require 'concurrent/utilities'
 
 require 'concurrent/actress'
 require 'concurrent/atomic'
+require 'concurrent/lazy_register'
 require 'concurrent/agent'
 require 'concurrent/async'
 require 'concurrent/dataflow'
