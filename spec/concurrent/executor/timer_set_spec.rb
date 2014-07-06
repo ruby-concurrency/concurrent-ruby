@@ -92,13 +92,16 @@ module Concurrent
     end
 
     it 'executes tasks with different times in scheduled time' do
-      expected = []
-      subject.post(0.2){ expected << 2 }
-      subject.post(0.1){ expected << 1 }
-      sleep(0.15)
-      expect(expected).to eq [1]
-      sleep(0.1)
-      expect(expected).to eq [1,2]
+      expected = Queue.new
+      subject.post(0.2) { expected << [2, Time.now] }
+      subject.post(0.1) { expected << [1, Time.now] }
+
+      number, time1 = expected.pop
+      expect(number).to eq 1
+
+      number, time2 = expected.pop
+      expect(number).to eq 2
+      expect(time2 - time1).to be > 0.01
     end
 
     it 'cancels all pending tasks on #shutdown' do
