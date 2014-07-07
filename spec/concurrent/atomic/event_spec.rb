@@ -72,15 +72,6 @@ module Concurrent
         expect(latch.wait(0.1)).to be false
       end
 
-      it 'does not interrupt waiting threads when event is unset' do
-        latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait.tap{ latch.count_down } }
-        subject.reset
-        expect(latch.wait(0.1)).to be false
-        subject.set
-        expect(latch.wait(0.1)).to be true
-      end
-
       it 'returns true when called on an unset event' do
         expect(subject.reset).to be true
       end
@@ -98,33 +89,6 @@ module Concurrent
         expect(subject.reset).to be true
       end
     end
-
-    #context '#pulse' do
-
-      #it 'triggers an unset event' do
-        #subject.reset
-        #latch = CountDownLatch.new(1)
-        #Thread.new{ subject.wait.tap{ puts "Boom!"; latch.count_down } }
-        #subject.pulse
-        #latch.wait(0.1).should be_true
-      #end
-
-      #it 'does nothing with a set event' do
-        #subject.set
-        #latch = CountDownLatch.new(1)
-        #Thread.new{ subject.wait.tap{ latch.count_down } }
-        #subject.pulse
-        #latch.wait(0.1).should be_true
-      #end
-
-      #it 'leaves the event in the unset state' do
-        #latch = CountDownLatch.new(1)
-        #Thread.new{ subject.wait.tap{ latch.count_down } }
-        #subject.pulse
-        #latch.wait(0.1)
-        #subject.should_not be_set
-      #end
-    #end
 
     context '#wait' do
 
