@@ -73,6 +73,19 @@ module Concurrent
       expect { Concurrent::dataflow_with(root_executor, nil, Future.execute{0}) }.to raise_error(ArgumentError)
     end
 
+    it 'doesn\'t raises exceptions from dependencies, unless called with !' do
+
+      d1 = Concurrent::dataflow(){raise}
+      d2 = Concurrent::dataflow(){raise}
+      f = Concurrent::dataflow!(d1, d2){|d1v, d2v| [d1v,d2v]}
+      expect{f.value!}.to raise_error
+
+      d1 = Concurrent::dataflow(){raise}
+      d2 = Concurrent::dataflow(){raise}
+      f = Concurrent::dataflow(d1, d2){|d1v, d2v| [d1v,d2v]}
+      expect{f.value!}.to_not raise_error
+    end
+
     it 'returns a Future' do
       expect(Concurrent::dataflow{0}).to be_a(Future)
       expect(Concurrent::dataflow{0}).to be_a(Future)
@@ -220,24 +233,7 @@ module Concurrent
         sleep(0.1)
         expect(expected.value).to eq 377
       end
-
-      it 'dataflow! raises exceptions from dependencies, and dataflow doesn\'t' do
-
-        def raiser
-          Concurrent::dataflow(){raise}
-        end
-
-        d1 = raiser
-        d2 = raiser
-        f = Concurrent::dataflow!(d1, d2){|d1v, d2v| [d1v,d2v]}
-        expect{f.value!}.to raise_error
-
-        d1 = raiser
-        d2 = raiser
-        f = Concurrent::dataflow(d1, d2){|d1v, d2v| [d1v,d2v]}
-        expect{f.value!}.to_not raise_error
-      end
-
+      
     end
   end
 end
