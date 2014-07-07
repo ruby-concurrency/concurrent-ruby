@@ -55,7 +55,7 @@ shared_examples :obligation do
     it 'returns nil when timeout reached' do
       if supports_timeout
         f = pending_subject
-        expect(f.value(0.1)).to be_nil
+        expect(f.value(0.001)).to be_nil
         expect(f).to be_pending
       end
     end

@@ -2,6 +2,7 @@ require 'thread'
 require 'concurrent/delay'
 require 'concurrent/errors'
 require 'concurrent/atomic'
+require 'concurrent/executor/immediate_executor'
 require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'
@@ -18,9 +19,10 @@ module Concurrent
 
     # Create a new configuration object.
     def initialize
-      @global_task_pool      = Delay.new { new_task_pool }
-      @global_operation_pool = Delay.new { new_operation_pool }
-      @global_timer_set      = Delay.new { Concurrent::TimerSet.new }
+      immediate_executor     = ImmediateExecutor.new
+      @global_task_pool      = Delay.new(executor: immediate_executor) { new_task_pool }
+      @global_operation_pool = Delay.new(executor: immediate_executor) { new_operation_pool }
+      @global_timer_set      = Delay.new(executor: immediate_executor) { Concurrent::TimerSet.new }
       @logger                = no_logger
     end
 
