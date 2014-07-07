@@ -31,6 +31,7 @@ module Concurrent
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
+      # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
@@ -45,7 +46,7 @@ module Concurrent
         @terminated           = Event.new
         @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
         @children             = Set.new
-        @reference            = Reference.new self
+        @reference            = (Child! opts.fetch(:reference_class, Reference), Reference).new self
         @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
         @actor                = Concurrent::Atomic.new
 
