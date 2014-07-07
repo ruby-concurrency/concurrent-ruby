@@ -90,7 +90,7 @@ module Concurrent
   module_function :dataflow_with
   
   def dataflow!(*inputs, &block)
-    dataflow_with(Concurrent.configuration.global_task_pool, *inputs, &block)
+    dataflow_with!(Concurrent.configuration.global_task_pool, *inputs, &block)
   end
   module_function :dataflow!
 
