@@ -32,7 +32,7 @@ module Concurrent
         Thread.new{ subject.wait.tap{ latch.count_down } }
         sleep(0.1)
         subject.set
-        expect(latch.wait(1)).to be_truthy
+        expect(latch.wait(1)).to be true
       end
 
       it 'sets the state to set' do
@@ -49,12 +49,12 @@ module Concurrent
       end
 
       it 'returns true if not previously set' do
-        expect(subject.try?).to be_truthy
+        expect(subject.try?).to be true
       end
 
       it 'returns false if previously set' do
         subject.set
-        expect(subject.try?).to be_falsey
+        expect(subject.try?).to be false
       end
     end
 
@@ -69,20 +69,20 @@ module Concurrent
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.reset
-        expect(latch.wait(0.1)).to be_falsey
+        expect(latch.wait(0.1)).to be false
       end
 
       it 'does not interrupt waiting threads when event is unset' do
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
         subject.reset
-        expect(latch.wait(0.1)).to be_falsey
+        expect(latch.wait(0.1)).to be false
         subject.set
-        expect(latch.wait(0.1)).to be_truthy
+        expect(latch.wait(0.1)).to be true
       end
 
       it 'returns true when called on an unset event' do
-        expect(subject.reset).to be_truthy
+        expect(subject.reset).to be true
       end
 
       it 'sets the state of a set event to unset' do
@@ -95,7 +95,7 @@ module Concurrent
       it 'returns true when called on a set event' do
         subject.set
         expect(subject).to be_set
-        expect(subject.reset).to be_truthy
+        expect(subject.reset).to be true
       end
     end
 
@@ -133,34 +133,34 @@ module Concurrent
         latch = CountDownLatch.new(1)
         subject.set
         Thread.new{ subject.wait(1000); latch.count_down }
-        expect(latch.wait(0.1)).to be_truthy
+        expect(latch.wait(0.1)).to be true
       end
 
       it 'returns true once the event is set' do
         subject.set
-        expect(subject.wait).to be_truthy
+        expect(subject.wait).to be true
       end
 
       it 'blocks indefinitely when the timer is nil' do
         subject.reset
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait.tap{ latch.count_down } }
-        expect(latch.wait(0.1)).to be_falsey
+        expect(latch.wait(0.1)).to be false
         subject.set
-        expect(latch.wait(0.1)).to be_truthy
+        expect(latch.wait(0.1)).to be true
       end
 
       it 'stops waiting when the timer expires' do
         subject.reset
         latch = CountDownLatch.new(1)
         Thread.new{ subject.wait(0.2); latch.count_down }
-        expect(latch.wait(0.1)).to be_falsey
-        expect(latch.wait).to be_truthy
+        expect(latch.wait(0.1)).to be false
+        expect(latch.wait).to be true
       end
 
       it 'returns false when the timer expires' do
         subject.reset
-        expect(subject.wait(1)).to be_falsey
+        expect(subject.wait(1)).to be false
       end
 
       it 'triggers multiple waiting threads' do
@@ -168,7 +168,7 @@ module Concurrent
         subject.reset
         5.times{ Thread.new{ subject.wait; latch.count_down } }
         subject.set
-        expect(latch.wait(0.2)).to be_truthy
+        expect(latch.wait(0.2)).to be true
       end
 
       it 'behaves appropriately if wait begins while #set is processing' do
@@ -177,7 +177,7 @@ module Concurrent
         5.times{ Thread.new{ subject.wait(5) } }
         subject.set
         5.times{ Thread.new{ subject.wait; latch.count_down } }
-        expect(latch.wait(0.2)).to be_truthy
+        expect(latch.wait(0.2)).to be true
       end
     end
 
@@ -199,7 +199,7 @@ module Concurrent
         sleep(0.1)
         subject.simulate_spurious_wake_up
 
-        expect(latch.wait(0.1)).to be_falsey
+        expect(latch.wait(0.1)).to be false
       end
 
       it 'should resist to spurious wake ups with timeout' do
@@ -209,8 +209,8 @@ module Concurrent
         sleep(0.1)
         subject.simulate_spurious_wake_up
 
-        expect(latch.wait(0.1)).to be_falsey
-        expect(latch.wait(1)).to be_truthy
+        expect(latch.wait(0.1)).to be false
+        expect(latch.wait(1)).to be true
       end
     end
   end
