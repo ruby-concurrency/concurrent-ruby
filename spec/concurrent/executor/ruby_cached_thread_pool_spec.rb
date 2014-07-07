@@ -21,27 +21,38 @@ module Concurrent
 
     context 'garbage collection' do
 
-      subject{ described_class.new(idletime: 1, max_threads: 5, gc_interval: 0) }
+      subject{ described_class.new(idletime: 1, max_threads: 2, gc_interval: 0) }
 
       it 'removes from pool any thread that has been idle too long' do
         subject.instance_variable_set(:@idletime, 1)
-        3.times { subject << proc{ sleep(0.1) } }
-        sleep(0.1)
-        expect(subject.length).to eq 3
+        latch = Concurrent::CountDownLatch.new(3)
+        3.times { subject << proc{ sleep(0.1); latch.count_down } }
+        expect(latch.wait(1)).to be true
+
+        max_threads = subject.length
         sleep(2)
-        subject << proc{ nil }
-        sleep(0.1)
-        expect(subject.length).to be < 3
+
+        latch = Concurrent::CountDownLatch.new(1)
+        subject << proc{ latch.count_down }
+        expect(latch.wait(1)).to be true
+
+        expect(subject.length).to be < max_threads
       end
 
       it 'removes from pool any dead thread' do
-        3.times { subject << proc{ sleep(0.1); raise Exception } }
-        sleep(0.1)
-        expect(subject.length).to eq 3
+        subject.instance_variable_set(:@idletime, 1)
+        latch = Concurrent::CountDownLatch.new(3)
+        3.times { subject << proc{ sleep(0.1); latch.count_down; raise Exception } }
+        expect(latch.wait(1)).to be true
+
+        max_threads = subject.length
         sleep(2)
-        subject << proc{ nil }
-        sleep(0.1)
-        expect(subject.length).to be < 3
+
+        latch = Concurrent::CountDownLatch.new(1)
+        subject << proc{ latch.count_down }
+        expect(latch.wait(1)).to be true
+
+        expect(subject.length).to be < max_threads
       end
     end
 
