@@ -14,6 +14,7 @@ module Concurrent
     require 'concurrent/actress/envelope'
     require 'concurrent/actress/reference'
     require 'concurrent/actress/core'
+    require 'concurrent/actress/behaviour'
     require 'concurrent/actress/context'
 
     require 'concurrent/actress/default_dead_letter_handler'
@@ -25,11 +26,13 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    @root = Delay.new { Core.new(parent: nil, name: '/', class: Root).reference }
+    @root = Delay.new do
+      Core.new(parent: nil, name: '/', class: Root).reference
+    end
 
     # A root actor, a default parent of all actors spawned outside an actor
     def self.root
-      @root.value
+      @root.value!
     end
 
     # Spawns a new actor.

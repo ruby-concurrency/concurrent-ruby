@@ -3,11 +3,14 @@ module Concurrent
     # implements the root actor
     class Root
 
+      include Context
+
       def initialize
-        @dead_letter_router = DefaultDeadLetterHandler.spawn :default_dead_letter_handler
+        @dead_letter_router = Core.new(parent: reference,
+                                       class:  DefaultDeadLetterHandler,
+                                       name:   :default_dead_letter_handler).reference
       end
 
-      include Context
       # to allow spawning of new actors, spawn needs to be called inside the parent Actor
       def on_message(message)
         if message.is_a?(Array) && message.first == :spawn

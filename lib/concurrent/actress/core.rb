@@ -27,7 +27,7 @@ module Concurrent
       #   @return [Event] event which will become set when actor is terminated.
       # @!attribute [r] actor_class
       #   @return [Context] a class including {Context} representing Actor's behaviour
-      attr_reader :reference, :name, :path, :executor, :terminated, :actor_class
+      attr_reader :reference, :name, :path, :executor, :actor_class
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
@@ -40,10 +40,12 @@ module Concurrent
       #   can be used to hook actor instance to any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
+        # @mutex = Mutex.new
+        # @mutex.lock
+        # FIXME make initialization safe!
+
         @mailbox              = Array.new
         @serialized_execution = SerializedExecution.new
-        # noinspection RubyArgCount
-        @terminated           = Event.new
         @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
         @children             = Set.new
         @reference            = (Child! opts.fetch(:reference_class, Reference), Reference).new self
@@ -67,8 +69,12 @@ module Concurrent
 
         schedule_execution do
           begin
-            @actor.value = actor_class.new(*args, &block).
-                tap { |a| a.send :initialize_core, self }
+            @actor.value = actor_class.allocate
+            @actor.value.tap do |a|
+              a.send :initialize_core, self
+              a.send :initialize, *args, &block
+            end
+
             initialized.set true if initialized
           rescue => ex
             log ERROR, ex
@@ -85,7 +91,7 @@ module Concurrent
 
       # @see Context#dead_letter_routing
       def dead_letter_routing
-        @actor.value.dead_letter_routing
+        actor.dead_letter_routing
       end
 
       # @return [Array<Reference>] of children actors
@@ -104,10 +110,9 @@ module Concurrent
 
       # @api private
       def remove_child(child)
-        schedule_execution do
-          Type! child, Reference
-          @children.delete child
-        end
+        guard!
+        Type! child, Reference
+        @children.delete child
         nil
       end
 
@@ -116,12 +121,8 @@ module Concurrent
       # @param [Envelope] envelope
       def on_envelope(envelope)
         schedule_execution do
-          if terminated?
-            reject_envelope envelope
-          else
-            @mailbox.push envelope
-          end
-          process_envelopes?
+          log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
+          actor.behaviour.on_envelope envelope
         end
         nil
       end
@@ -129,29 +130,15 @@ module Concurrent
       # @note Actor rejects envelopes when terminated.
       # @return [true, false] if actor is terminated
       def terminated?
-        @terminated.set?
+        terminate_behaviour.terminated?
       end
 
-      # Terminates the actor. Any Envelope received after termination is rejected.
-      # Terminates all its children, does not wait until they are terminated.
       def terminate!
-        guard!
-        return nil if terminated?
+        terminate_behaviour.terminate!
+      end
 
-        @children.each do |ch|
-          ch.send(:core).tap { |core| core.send(:schedule_execution) { core.terminate! } }
-        end
-
-        @terminated.set
-
-        @parent_core.remove_child reference if @parent_core
-        @mailbox.each do |envelope|
-          reject_envelope envelope
-          log DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
-        end
-        @mailbox.clear
-
-        nil
+      def terminated
+        terminate_behaviour.terminated
       end
 
       # @api private
@@ -165,49 +152,6 @@ module Concurrent
       # @api private
       def log(level, message = nil, &block)
         super level, @path, message, &block
-      end
-
-      private
-
-      # Ensures that only one envelope processing is scheduled with #schedule_execution,
-      # this allows other scheduled blocks to be executed before next envelope processing.
-      # Simply put this ensures that Core is still responsive to internal calls (like add_child)
-      # even though the Actor is flooded with messages.
-      def process_envelopes?
-        unless @mailbox.empty? || @receive_envelope_scheduled
-          @receive_envelope_scheduled = true
-          schedule_execution { receive_envelope }
-        end
-      end
-
-      # @return [Context]
-      def actor
-        @actor.value
-      end
-
-      # Processes single envelope, calls #process_envelopes? at the end to ensure next envelope
-      # scheduling.
-      def receive_envelope
-        envelope = @mailbox.shift
-
-        if terminated?
-          reject_envelope envelope
-          log FATAL, "this should not be happening #{caller[0]}"
-        end
-
-        log DEBUG, "received #{envelope.message} from #{envelope.sender_path}"
-
-        result = actor.on_envelope envelope
-        envelope.ivar.set result unless envelope.ivar.nil?
-
-        nil
-      rescue => error
-        log ERROR, error
-        terminate!
-        envelope.ivar.fail error unless envelope.ivar.nil?
-      ensure
-        @receive_envelope_scheduled = false
-        process_envelopes?
       end
 
       # Schedules blocks to be executed on executor sequentially,
@@ -227,9 +171,19 @@ module Concurrent
         nil
       end
 
-      def reject_envelope(envelope)
-        envelope.reject! ActressTerminated.new(reference)
-        dead_letter_routing << envelope unless envelope.ivar
+      def reject_messages
+        actor.behaviour.reject_messages
+      end
+
+      private
+
+      # @return [Context]
+      def actor
+        @actor.value
+      end
+
+      def terminate_behaviour
+        actor.behaviours.find { |b| b.is_a? Behaviour::Termination }
       end
     end
   end

@@ -2,7 +2,7 @@ module Concurrent
   module Actress
     Error = Class.new(StandardError)
 
-    class ActressTerminated < Error
+    class ActorTerminated < Error
       include TypeCheck
 
       def initialize(reference)

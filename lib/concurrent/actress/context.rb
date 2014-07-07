@@ -12,9 +12,10 @@ module Concurrent
     #  end
     #
     #  Ping.spawn(:ping1).ask(:m).value #=> :m
+
     module Context
       include TypeCheck
-      include CoreDelegations
+      include ContextDelegations
 
       attr_reader :core
 
@@ -35,27 +36,6 @@ module Concurrent
         @envelope = nil
       end
 
-      # @see Actress.spawn
-      def spawn(*args, &block)
-        Actress.spawn(*args, &block)
-      end
-
-      # @see Core#children
-      def children
-        core.children
-      end
-
-      # @see Core#terminate!
-      def terminate!
-        core.terminate!
-      end
-
-      # delegates to core.log
-      # @see Logging#log
-      def log(level, message = nil, &block)
-        core.log(level, message, &block)
-      end
-
       # Defines an actor responsible for dead letters. Any rejected message send with
       # {Reference#tell} is sent there, a message with ivar is considered already monitored for
       # failures. Default behaviour is to use {Context#dead_letter_routing} of the parent,
@@ -66,15 +46,40 @@ module Concurrent
         parent.dead_letter_routing
       end
 
-      private
+      def behaviour_classes
+        [Behaviour::SetResults,
+         Behaviour::RemoveChild,
+         Behaviour::Termination,
+         # TODO paused
+         # TODO restart - rebuilds all following behaviours
+         # TODO linking - (state change notifications)
+         Behaviour::Buffer,
+         Behaviour::DoContext, # TODO should hold context not context all behaviours
+         Behaviour::ErrorOnUnknownMessage]
+      end
 
-      def initialize_core(core)
-        @core = Type! core, Core
+      def behaviours
+        behaviour  = self.behaviour
+        behaviours = [behaviour]
+        while behaviour.subsequent
+          behaviours << (behaviour = behaviour.subsequent)
+        end
+        behaviours
+      end
+
+      def behaviour
+        @behaviour ||= behaviour_classes.reverse.reduce(nil) { |last, behaviour| behaviour.new self, last }
       end
 
       # @return [Envelope] current envelope, accessible inside #on_message processing
       def envelope
         @envelope or raise 'envelope not set'
+      end
+
+      private
+
+      def initialize_core(core)
+        @core = Type! core, Core
       end
 
       def self.included(base)

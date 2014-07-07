@@ -5,13 +5,13 @@ module Concurrent
   module Actress
     i_know_it_is_experimental!
 
-    class Reference
-      def backdoor(&block)
-        core.send :schedule_execution do
-          core.instance_eval &block
-        end
-      end
-    end
+    # class Reference
+    #   def backdoor(&block)
+    #     core.send :schedule_execution do
+    #       core.instance_eval &block
+    #     end
+    #   end
+    # end
 
     describe 'Concurrent::Actress' do
       prepend_before do
@@ -20,8 +20,9 @@ module Concurrent
 
       def terminate_actors(*actors)
         actors.each do |actor|
-          actor.backdoor { terminate! }
-          actor.terminated.wait
+          actor << :terminate!
+          actor.terminated.wait(2) or
+              raise 'timeout'
         end
       end
 
@@ -229,6 +230,25 @@ module Concurrent
           ping << 'asd'
           sleep 0.1
           # TODO
+        end
+      end
+
+      describe 'message redirecting' do
+        let(:parent) do
+          AdHoc.spawn(:parent) do
+            child = AdHoc.spawn(:child) { -> m { m+1 } }
+            -> message do
+              if message == :child
+                child
+              else
+                redirect child
+              end
+            end
+          end
+        end
+
+        it 'is evaluated by child' do
+          parent.ask!(1).should eq 2
         end
       end
 
