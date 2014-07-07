@@ -221,23 +221,6 @@ module Concurrent
         expect(expected.value).to eq 377
       end
 
-      it 'can be called as Concurrent::dataflow! and Concurrent::dataflow_with' do
-
-        def fib_with_colons(n)
-          if n < 2
-            Concurrent::dataflow! { n }
-          else
-            n1 = fib_with_colons(n - 1)
-            n2 = fib_with_colons(n - 2)
-            Concurrent::dataflow_with!(root_executor, n1, n2) { n1.value + n2.value }
-          end
-        end
-
-        expected = fib_with_colons(14)
-        sleep(0.1)
-        expect(expected.value).to eq 377
-      end
-
       it 'dataflow! raises exceptions from dependencies, and dataflow doesn\'t' do
 
         def raiser
