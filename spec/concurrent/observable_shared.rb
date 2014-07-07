@@ -125,6 +125,7 @@ shared_examples :observable do
         subject.add_observer(observer_class.new{ latch.count_down })
       end
       trigger_observable(subject)
+      latch.wait(1)
       expect(latch.count).to eq 0
     end
 
