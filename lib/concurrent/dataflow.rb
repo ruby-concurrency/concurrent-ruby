@@ -66,26 +66,7 @@ module Concurrent
   module_function :dataflow
 
   def dataflow_with(executor, *inputs, &block)
-    raise ArgumentError.new('an executor must be provided') if executor.nil?
-    raise ArgumentError.new('no block given') unless block_given?
-    raise ArgumentError.new('not all dependencies are IVars') unless inputs.all? { |input| input.is_a? IVar }
-
-    result = Future.new(executor: executor) do
-      values = inputs.map { |input| input.value }
-      block.call(*values)
-    end
-
-    if inputs.empty?
-      result.execute
-    else
-      counter = DependencyCounter.new(inputs.size) { result.execute }
-
-      inputs.each do |input|
-        input.add_observer counter
-      end
-    end
-
-    result
+    call_dataflow(:value, executor, *inputs, &block)
   end
   module_function :dataflow_with
   
@@ -95,12 +76,19 @@ module Concurrent
   module_function :dataflow!
 
   def dataflow_with!(executor, *inputs, &block)
+    call_dataflow(:value!, executor, *inputs, &block)
+  end
+  module_function :dataflow_with!
+
+  private 
+
+  def call_dataflow(method, executor, *inputs, &block)
     raise ArgumentError.new('an executor must be provided') if executor.nil?
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('not all dependencies are IVars') unless inputs.all? { |input| input.is_a? IVar }
 
     result = Future.new(executor: executor) do
-      values = inputs.map { |input| input.value! }
+      values = inputs.map { |input| input.send(method) }
       block.call(*values)
     end
 
@@ -116,5 +104,5 @@ module Concurrent
 
     result
   end
-  module_function :dataflow_with!
+  module_function :call_dataflow
 end
