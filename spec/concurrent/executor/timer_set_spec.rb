@@ -52,12 +52,11 @@ module Concurrent
     end
 
     it 'does not execute tasks early' do
-      expected = AtomicFixnum.new(0)
-      subject.post(0.2){ expected.increment }
-      sleep(0.15)
-      expect(expected.value).to eq 0
-      sleep(0.10)
-      expect(expected.value).to eq 1
+      latch = Concurrent::CountDownLatch.new(1)
+      start = Time.now.to_f
+      subject.post(0.2){ latch.count_down }
+      expect(latch.wait(1)).to be true
+      expect(Time.now.to_f - start).to be_within(0.1).of(0.2)
     end
 
     it 'raises an exception when given a task with a past Time value' do
@@ -85,10 +84,30 @@ module Concurrent
     end
 
     it 'executes tasks with different times in schedule order' do
+      latch = CountDownLatch.new(3)
       expected = []
-      3.times{|i| subject.post(i/10){ expected << i } }
-      sleep(0.3)
+      3.times{|i| subject.post(i/10){ expected << i; latch.count_down } }
+      latch.wait(1)
       expect(expected).to eq [0, 1, 2]
+    end
+
+    it 'executes tasks with different times in schedule time' do
+      tests = 3
+      interval = 0.1
+      latch = CountDownLatch.new(tests)
+      expected = Queue.new
+      start = Time.now
+
+      (1..tests).each do |i|
+        subject.post(interval * i) { expected << Time.now - start; latch.count_down }
+      end
+
+      expect(latch.wait((tests * interval) + 1)).to be true 
+
+      (1..tests).each do |i|
+        delta = expected.pop
+        expect(delta).to be_within(0.1).of((i * interval) + 0.05)
+      end
     end
 
     it 'cancels all pending tasks on #shutdown' do
