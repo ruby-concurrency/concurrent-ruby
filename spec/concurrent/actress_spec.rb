@@ -35,8 +35,6 @@ module Concurrent
 
         def on_message(message)
           case message
-          when :terminate
-            terminate!
           when :child
             AdHoc.spawn(:pong, @queue) { |queue| -> m { queue << m } }
           else
@@ -83,7 +81,7 @@ module Concurrent
                   child.ask(3)
                   expect(queue.pop).to eq 3
 
-                  actor << :terminate
+                  actor << :terminate!
                   expect(actor.ask(:blow_up).wait).to be_rejected
                   terminate_actors actor, child
                 end
@@ -201,20 +199,14 @@ module Concurrent
         subject do
           AdHoc.spawn(:parent) do
             child = AdHoc.spawn(:child) { -> v { v } }
-            -> v do
-              if v == :terminate
-                terminate!
-              else
-                child
-              end
-            end
+            -> v { child }
           end
         end
 
         it 'terminates with all its children' do
           child = subject.ask! :child
           expect(subject.terminated?).to be_falsey
-          subject.ask(:terminate).wait
+          subject.ask(:terminate!).wait
           expect(subject.terminated?).to be_truthy
           child.terminated.wait
           expect(child.terminated?).to be_truthy
@@ -226,7 +218,7 @@ module Concurrent
       describe 'dead letter routing' do
         it 'logs by deafault' do
           ping = Ping.spawn! :ping, []
-          ping << :terminate
+          ping << :terminate!
           ping << 'asd'
           sleep 0.1
           # TODO
@@ -250,6 +242,19 @@ module Concurrent
         it 'is evaluated by child' do
           parent.ask!(1).should eq 2
         end
+      end
+
+      it 'links' do
+        queue   = Queue.new
+        failure = AdHoc.spawn(:failure) { -> m { m } }
+        # failure = AdHoc.spawn(:failure) { -> m { terminate! } } # FIXME this leads to weird message processing ordering
+        monitor = AdHoc.spawn(:monitor) do
+          failure << :link
+          -> m { queue << [m, envelope.sender] }
+        end
+        failure << :hehe
+        failure << :terminate!
+        expect(queue.pop).to eq [:terminated, failure]
       end
 
     end

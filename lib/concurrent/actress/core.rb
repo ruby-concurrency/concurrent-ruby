@@ -27,7 +27,7 @@ module Concurrent
       #   @return [Event] event which will become set when actor is terminated.
       # @!attribute [r] actor_class
       #   @return [Context] a class including {Context} representing Actor's behaviour
-      attr_reader :reference, :name, :path, :executor, :actor_class
+      attr_reader :reference, :name, :path, :executor, :context_class, :context
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
@@ -50,7 +50,6 @@ module Concurrent
         @children             = Set.new
         @reference            = (Child! opts.fetch(:reference_class, Reference), Reference).new self
         @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
-        @actor                = Concurrent::Atomic.new
 
         parent       = opts[:parent]
         @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
@@ -63,14 +62,18 @@ module Concurrent
 
         @parent_core.add_child reference if @parent_core
 
-        @actor_class = actor_class = Child! opts.fetch(:class), Context
-        args         = opts.fetch(:args, [])
-        initialized  = Type! opts[:initialized], IVar, NilClass
+        @context_class   = Child! opts.fetch(:class), Context
+        @context         = @context_class.allocate
+        @behaviours      = {}
+        @first_behaviour = @context.behaviour_classes.reverse.
+            reduce(nil) { |last, behaviour| @behaviours[behaviour] = behaviour.new(self, last) }
+
+        args        = opts.fetch(:args, [])
+        initialized = Type! opts[:initialized], IVar, NilClass
 
         schedule_execution do
           begin
-            @actor.value = actor_class.allocate
-            @actor.value.tap do |a|
+            @context.tap do |a|
               a.send :initialize_core, self
               a.send :initialize, *args, &block
             end
@@ -91,7 +94,7 @@ module Concurrent
 
       # @see Context#dead_letter_routing
       def dead_letter_routing
-        actor.dead_letter_routing
+        @context.dead_letter_routing
       end
 
       # @return [Array<Reference>] of children actors
@@ -122,7 +125,7 @@ module Concurrent
       def on_envelope(envelope)
         schedule_execution do
           log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
-          actor.behaviour.on_envelope envelope
+          @first_behaviour.on_envelope envelope
         end
         nil
       end
@@ -130,15 +133,15 @@ module Concurrent
       # @note Actor rejects envelopes when terminated.
       # @return [true, false] if actor is terminated
       def terminated?
-        terminate_behaviour.terminated?
+        behaviour!(Behaviour::Termination).terminated?
       end
 
       def terminate!
-        terminate_behaviour.terminate!
+        behaviour!(Behaviour::Termination).terminate!
       end
 
       def terminated
-        terminate_behaviour.terminated
+        behaviour!(Behaviour::Termination).terminated
       end
 
       # @api private
@@ -172,18 +175,15 @@ module Concurrent
       end
 
       def reject_messages
-        actor.behaviour.reject_messages
+        @first_behaviour.reject_messages
       end
 
-      private
-
-      # @return [Context]
-      def actor
-        @actor.value
+      def behaviour(klass)
+        @behaviours[klass]
       end
 
-      def terminate_behaviour
-        actor.behaviours.find { |b| b.is_a? Behaviour::Termination }
+      def behaviour!(klass)
+        @behaviours.fetch klass
       end
     end
   end

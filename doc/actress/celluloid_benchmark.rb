@@ -42,14 +42,10 @@ Benchmark.bmbm(10) do |b|
       adders = Array.new(adders_size) do |i|
         Concurrent::Actress::AdHoc.spawn("adder#{i}") do
           lambda do |(count, ivar)|
-            if count.nil?
-              terminate!
+            if count < ADD_TO
+              adders[(i+1) % adders_size].tell [count+1, ivar]
             else
-              if count < ADD_TO
-                adders[(i+1) % adders_size].tell [count+1, ivar]
-              else
-                ivar.set count
-              end
+              ivar.set count
             end
           end
         end
@@ -65,7 +61,7 @@ Benchmark.bmbm(10) do |b|
 
       threads << Thread.list.size
 
-      adders.each { |a| a << [nil, nil] }
+      adders.each { |a| a << :terminate! }
     end
 
     b.report(format('%5d %4d %s', ADD_TO*counts_size, adders_size, 'celluloid')) do

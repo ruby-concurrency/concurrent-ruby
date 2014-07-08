@@ -50,25 +50,12 @@ module Concurrent
         [Behaviour::SetResults,
          Behaviour::RemoveChild,
          Behaviour::Termination,
+         Behaviour::Linking,
          # TODO paused
          # TODO restart - rebuilds all following behaviours
-         # TODO linking - (state change notifications)
          Behaviour::Buffer,
          Behaviour::DoContext, # TODO should hold context not context all behaviours
          Behaviour::ErrorOnUnknownMessage]
-      end
-
-      def behaviours
-        behaviour  = self.behaviour
-        behaviours = [behaviour]
-        while behaviour.subsequent
-          behaviours << (behaviour = behaviour.subsequent)
-        end
-        behaviours
-      end
-
-      def behaviour
-        @behaviour ||= behaviour_classes.reverse.reduce(nil) { |last, behaviour| behaviour.new self, last }
       end
 
       # @return [Envelope] current envelope, accessible inside #on_message processing

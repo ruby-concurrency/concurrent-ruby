@@ -30,13 +30,18 @@ module Concurrent
         context.dead_letter_routing
       end
 
-      def core
-        context.core
-      end
-
       def redirect(reference, envelope = self.envelope)
         reference.message(envelope.message, envelope.ivar)
         Behaviour::NOT_PROCESSED
+      end
+
+      def context
+        core.context
+      end
+
+      def broadcast(event)
+        linking = core.behaviour(Behaviour::Linking) and
+            linking.broadcast(event)
       end
     end
 
@@ -47,10 +52,10 @@ module Concurrent
         include TypeCheck
         include ContextDelegations
 
-        attr_reader :context, :subsequent
+        attr_reader :core, :subsequent
 
-        def initialize(context, subsequent)
-          @context    = Type! context, Context
+        def initialize(core, subsequent)
+          @core       = Type! core, Core
           @subsequent = Type! subsequent, Abstract, NilClass
         end
 
@@ -63,11 +68,11 @@ module Concurrent
           raise NotImplementedError
         end
 
-        def pass(envelope = self.envelope)
-          log Logging::DEBUG, "passing #{envelope.message} to #{subsequent.class}"
+        def pass(envelope)
           subsequent.on_envelope envelope
         end
 
+        # TODO rename to on_terminate or something like that
         def reject_messages
           subsequent.reject_messages if subsequent
         end
@@ -81,8 +86,8 @@ module Concurrent
       class Termination < Abstract
         attr_reader :terminated
 
-        def initialize(context, subsequent)
-          super context, subsequent
+        def initialize(core, subsequent)
+          super core, subsequent
           @terminated = Event.new
         end
 
@@ -111,9 +116,39 @@ module Concurrent
           return nil if terminated?
           children.each { |ch| ch << :terminate! }
           @terminated.set
+          broadcast(:terminated)
           parent << :remove_child if parent
           core.reject_messages
           nil
+        end
+      end
+
+      class Linking < Abstract
+        def initialize(core, subsequent)
+          super core, subsequent
+          @linked = Set.new
+        end
+
+        def on_envelope(envelope)
+          case envelope.message
+          when :link
+            @linked.add?(envelope.sender)
+            true
+          when :unlink
+            @linked.delete(envelope.sender)
+            true
+          else
+            pass envelope
+          end
+        end
+
+        def reject_messages
+          @linked.clear
+          super
+        end
+
+        def broadcast(event)
+          @linked.each { |a| a << event }
         end
       end
 
@@ -142,8 +177,8 @@ module Concurrent
       end
 
       class Buffer < Abstract
-        def initialize(context, subsequent)
-          super context, SetResults.new(context, subsequent)
+        def initialize(core, subsequent)
+          super core, SetResults.new(core, subsequent)
           @buffer                     = []
           @receive_envelope_scheduled = false
         end
@@ -190,7 +225,7 @@ module Concurrent
 
       class DoContext < Abstract
         def on_envelope(envelope)
-          context.on_envelope envelope || pass
+          context.on_envelope envelope or pass envelope
         end
       end
 

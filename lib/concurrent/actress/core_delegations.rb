@@ -31,12 +31,12 @@ module Concurrent
         core.executor
       end
 
-      def actor_class
-        core.actor_class
+      def context_class
+        core.context_class
       end
 
       alias_method :ref, :reference
-      alias_method :actress_class, :actor_class
+      alias_method :actor_class, :context_class
     end
   end
 end
