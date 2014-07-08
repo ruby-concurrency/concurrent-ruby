@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
     class Envelope
       include TypeCheck
 

@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
 
     # Reference is public interface of Actor instances. It is used for sending messages and can
     # be freely passed around the program. It also provides some basic information about the actor,
@@ -45,7 +45,7 @@ module Concurrent
 
       # behaves as {#tell} when no ivar and as {#ask} when ivar
       def message(message, ivar = nil)
-        core.on_envelope Envelope.new(message, ivar, Actress.current || Thread.current, self)
+        core.on_envelope Envelope.new(message, ivar, Actor.current || Thread.current, self)
         return ivar || self
       end
 

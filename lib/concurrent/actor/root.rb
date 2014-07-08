@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
     # implements the root actor
     class Root
 

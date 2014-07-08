@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
     Error = Class.new(StandardError)
 
     class ActorTerminated < Error

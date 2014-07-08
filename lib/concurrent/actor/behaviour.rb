@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
     # TODO split this into files
 
     module ContextDelegations
@@ -7,7 +7,7 @@ module Concurrent
 
       # @see Actress.spawn
       def spawn(*args, &block)
-        Actress.spawn(*args, &block)
+        Actor.spawn(*args, &block)
       end
 
       # @see Core#children
@@ -80,6 +80,8 @@ module Concurrent
         def reject_envelope(envelope)
           envelope.reject! ActorTerminated.new(reference)
           dead_letter_routing << envelope unless envelope.ivar
+          log Logging::DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
+
         end
       end
 
@@ -210,10 +212,7 @@ module Concurrent
         end
 
         def reject_messages
-          @buffer.each do |envelope|
-            reject_envelope envelope
-            log Logging::DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
-          end
+          @buffer.each { |envelope| reject_envelope envelope }
           @buffer.clear
           super
         end

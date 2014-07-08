@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
 
     # This module is used to define actors. It can be included in any class,
     # only requirement is to override {Context#on_message} method.
@@ -51,8 +51,8 @@ module Concurrent
          Behaviour::RemoveChild,
          Behaviour::Termination,
          Behaviour::Linking,
-         # TODO paused
          # TODO restart - rebuilds all following behaviours
+         # TODO paused
          Behaviour::Buffer,
          Behaviour::DoContext, # TODO should hold context not context all behaviours
          Behaviour::ErrorOnUnknownMessage]
@@ -77,12 +77,12 @@ module Concurrent
       module ClassMethods
         # behaves as {Concurrent::Actress.spawn} but class_name is auto-inserted based on receiver
         def spawn(name_or_opts, *args, &block)
-          Actress.spawn spawn_optionify(name_or_opts, *args), &block
+          Actor.spawn spawn_optionify(name_or_opts, *args), &block
         end
 
         # behaves as {Concurrent::Actress.spawn!} but class_name is auto-inserted based on receiver
         def spawn!(name_or_opts, *args, &block)
-          Actress.spawn! spawn_optionify(name_or_opts, *args), &block
+          Actor.spawn! spawn_optionify(name_or_opts, *args), &block
         end
 
         private

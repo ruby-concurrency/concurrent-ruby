@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
 
     require 'set'
 
@@ -147,8 +147,8 @@ module Concurrent
       # @api private
       # ensures that we are inside of the executor
       def guard!
-        unless Actress.current == reference
-          raise "can be called only inside actor #{reference} but was #{Actress.current}"
+        unless Actor.current == reference
+          raise "can be called only inside actor #{reference} but was #{Actor.current}"
         end
       end
 

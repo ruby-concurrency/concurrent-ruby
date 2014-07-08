@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'concurrent/actress'
+require 'concurrent/actor'
 
 module Concurrent
-  module Actress
+  module Actor
     i_know_it_is_experimental!
 
     # class Reference
@@ -66,14 +66,14 @@ module Concurrent
                   actor = Ping.spawn :ping, queue
 
                   # when spawn returns children are set
-                  expect(Concurrent::Actress.root.send(:core).instance_variable_get(:@children)).to include(actor)
+                  expect(Concurrent::Actor.root.send(:core).instance_variable_get(:@children)).to include(actor)
 
                   actor << 'a' << 1
                   expect(queue.pop).to eq 'a'
                   expect(actor.ask(2).value).to eq 2
 
-                  expect(actor.parent).to eq Concurrent::Actress.root
-                  expect(Concurrent::Actress.root.path).to eq '/'
+                  expect(actor.parent).to eq Concurrent::Actor.root
+                  expect(Concurrent::Actor.root.path).to eq '/'
                   expect(actor.path).to eq '/ping'
                   child = actor.ask(:child).value
                   expect(child.path).to eq '/ping/pong'
@@ -94,9 +94,9 @@ module Concurrent
       describe 'spawning' do
         describe 'Actress#spawn' do
           behaviour = -> v { -> _ { v } }
-          subjects  = { spawn:                 -> { Actress.spawn(AdHoc, :ping, 'arg', &behaviour) },
+          subjects  = { spawn:                 -> { Actor.spawn(AdHoc, :ping, 'arg', &behaviour) },
                         context_spawn:         -> { AdHoc.spawn(:ping, 'arg', &behaviour) },
-                        spawn_by_hash:         -> { Actress.spawn(class: AdHoc, name: :ping, args: ['arg'], &behaviour) },
+                        spawn_by_hash:         -> { Actor.spawn(class: AdHoc, name: :ping, args: ['arg'], &behaviour) },
                         context_spawn_by_hash: -> { AdHoc.spawn(name: :ping, args: ['arg'], &behaviour) } }
 
           subjects.each do |desc, subject_definition|
@@ -111,7 +111,7 @@ module Concurrent
 
               describe '#parent' do
                 subject { super().parent }
-                it { is_expected.to eq Actress.root }
+                it { is_expected.to eq Actor.root }
               end
 
               describe '#name' do

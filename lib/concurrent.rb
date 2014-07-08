@@ -8,7 +8,7 @@ require 'concurrent/collections'
 require 'concurrent/executors'
 require 'concurrent/utilities'
 
-require 'concurrent/actress'
+require 'concurrent/actor'
 require 'concurrent/atomic'
 require 'concurrent/lazy_register'
 require 'concurrent/agent'

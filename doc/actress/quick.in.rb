@@ -1,7 +1,7 @@
 class Counter
   # Include context of an actor which gives this class access to reference and other information
   # about the actor, see CoreDelegations.
-  include Concurrent::Actress::Context
+  include Concurrent::Actor::Context
 
   # use initialize as you wish
   def initialize(initial_value)
@@ -53,7 +53,7 @@ counter.terminated?
 
 # Lets define an actor creating children actors.
 class Node
-  include Concurrent::Actress::Context
+  include Concurrent::Actor::Context
 
   def on_message(message)
     case message

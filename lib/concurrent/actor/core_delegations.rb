@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
 
     # Provides publicly expose-able methods from {Core}.
     module CoreDelegations

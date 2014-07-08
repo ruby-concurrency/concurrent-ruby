@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
     # Allows quick creation of actors with behaviour defined by blocks.
     # @example ping
     #   AdHoc.spawn :forward, an_actor do |where|
