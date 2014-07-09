@@ -19,7 +19,7 @@ module Concurrent
       end.new
     end
 
-    context '#send_off' do
+    context '#post_off' do
       subject { Agent.new 2, executor: executor }
 
       it 'executes post and post-off in order' do
@@ -27,6 +27,14 @@ module Concurrent
         subject.post_off { |v| v * 3 }
         subject.await
         expect(subject.value).to eq 12
+      end
+
+      it 'times out' do
+        ex = nil
+        subject.post_off(0.1) { |v| sleep(0.2); ex = true }
+        subject.await
+        sleep 0.3
+        expect(ex).to eq nil
       end
     end
 
@@ -69,14 +77,6 @@ module Concurrent
 
       it 'sets the value to the given initial state' do
         expect(Agent.new(10).value).to eq 10
-      end
-
-      it 'sets the timeout to the given value' do
-        expect(Agent.new(0, timeout: 5).timeout).to eq 5
-      end
-
-      it 'sets the timeout to the default when nil' do
-        expect(Agent.new(0).timeout).to eq Agent::TIMEOUT
       end
 
       it 'uses the executor given with the :executor option' do
@@ -164,9 +164,9 @@ module Concurrent
         subject.post { nil }
         sleep(0.1)
         expect(subject.
-            instance_variable_get(:@serialized_execution).
-            instance_variable_get(:@stash).
-            size).to eq 2
+                   instance_variable_get(:@serialized_execution).
+                   instance_variable_get(:@stash).
+                   size).to eq 2
       end
 
       it 'does not add to the queue when no block is given' do
@@ -221,7 +221,7 @@ module Concurrent
       it 'passes the current value to the handler' do
         latch = Concurrent::CountDownLatch.new(5)
         Agent.new(latch.count, executor: executor).post do |i|
-          i.times{ latch.count_down }
+          i.times { latch.count_down }
         end
         expect(latch.wait(1)).to be_truthy
       end
@@ -252,7 +252,7 @@ module Concurrent
 
       it 'passes the new value to the validator' do
         expected = Concurrent::AtomicFixnum.new(0)
-        latch = Concurrent::CountDownLatch.new(1)
+        latch    = Concurrent::CountDownLatch.new(1)
         subject.validate { |v| expected.value = v; latch.count_down; true }
         subject.post { 10 }
         latch.wait(1)
@@ -282,7 +282,7 @@ module Concurrent
 
       it 'calls the first exception block with a matching class' do
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(StandardError) { |ex| expected = 1 }.
             rescue(StandardError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
@@ -292,7 +292,7 @@ module Concurrent
 
       it 'matches all with a rescue with no class given' do
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(LoadError) { |ex| expected = 1 }.
             rescue { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
@@ -302,7 +302,7 @@ module Concurrent
 
       it 'searches associated rescue handlers in order' do
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(ArgumentError) { |ex| expected = 1 }.
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
@@ -310,7 +310,7 @@ module Concurrent
         expect(expected).to eq 1
 
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(ArgumentError) { |ex| expected = 1 }.
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
@@ -318,7 +318,7 @@ module Concurrent
         expect(expected).to eq 2
 
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(ArgumentError) { |ex| expected = 1 }.
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
@@ -328,7 +328,7 @@ module Concurrent
 
       it 'passes the exception object to the matched block' do
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(ArgumentError) { |ex| expected = ex }.
             rescue(LoadError) { |ex| expected = ex }.
             rescue(StandardError) { |ex| expected = ex }
@@ -338,7 +338,7 @@ module Concurrent
 
       it 'ignores rescuers without a block' do
         expected = nil
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
             rescue(StandardError).
             rescue(StandardError) { |ex| expected = ex }
         agent.post { raise StandardError }
@@ -464,7 +464,7 @@ module Concurrent
       end
 
       it 'aliases #catch for #rescue' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
         expected = nil
         agent.catch { expected = true }
         agent.post { raise StandardError }
@@ -472,7 +472,7 @@ module Concurrent
       end
 
       it 'aliases #on_error for #rescue' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
+        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
         expected = nil
         agent.on_error { expected = true }
         agent.post { raise StandardError }
