@@ -31,6 +31,7 @@ module Concurrent
     ensure
       mutex.unlock
     end
+    alias_method :~, :value
 
     alias_method :deref, :value
 

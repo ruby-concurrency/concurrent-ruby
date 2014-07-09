@@ -24,6 +24,7 @@ module Concurrent
       def value
         composite_value.nil? ? nil : composite_value[0]
       end
+      alias_method :~, :value
 
       def channel
         composite_value.nil? ? nil : composite_value[1]

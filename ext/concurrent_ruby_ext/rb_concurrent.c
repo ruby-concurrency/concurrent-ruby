@@ -29,6 +29,7 @@ void Init_concurrent_ruby_ext() {
   rb_define_method(rb_cAtomic, "get_and_set", ir_get_and_set, 1);
   rb_define_method(rb_cAtomic, "_compare_and_set", ir_compare_and_set, 2);
   rb_define_alias(rb_cAtomic, "value", "get");
+  rb_define_alias(rb_cAtomic, "~", "get");
   rb_define_alias(rb_cAtomic, "value=", "set");
   rb_define_alias(rb_cAtomic, "swap", "get_and_set");
 

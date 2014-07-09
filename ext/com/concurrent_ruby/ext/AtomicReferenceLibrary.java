@@ -80,7 +80,7 @@ public class AtomicReferenceLibrary implements Library {
             return context.nil;
         }
 
-        @JRubyMethod(name = {"get", "value"})
+        @JRubyMethod(name = {"get", "value", "~"})
         public IRubyObject get() {
             return reference;
         }
