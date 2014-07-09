@@ -146,6 +146,7 @@ task.value #=> 25.96
 * [Chip Miller](https://github.com/chip-miller)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Jamie Hodge](https://github.com/jamiehodge)
+* [Justin Lambert](https://github.com/mastfish)
 * [Larry Lv](https://github.com/larrylv)
 * [Maxim Chechel](https://github.com/maximchick)
 * [Ravil Bayramgalin](https://github.com/brainopia)
