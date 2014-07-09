@@ -63,6 +63,12 @@ module Concurrent
         @envelope or raise 'envelope not set'
       end
 
+      # override if different class for reference is needed
+      # @return [CLass] descendant of {Reference}
+      def default_reference_class
+        Reference
+      end
+
       private
 
       def initialize_core(core)

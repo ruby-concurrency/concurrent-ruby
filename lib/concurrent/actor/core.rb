@@ -48,8 +48,10 @@ module Concurrent
         @serialized_execution = SerializedExecution.new
         @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
         @children             = Set.new
-        @reference            = (Child! opts.fetch(:reference_class, Reference), Reference).new self
-        @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
+        @context_class        = Child! opts.fetch(:class), Context
+        @context              = @context_class.allocate
+        @reference            = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
+        @name = (Type! opts.fetch(:name), String, Symbol).to_s
 
         parent       = opts[:parent]
         @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
@@ -62,8 +64,6 @@ module Concurrent
 
         @parent_core.add_child reference if @parent_core
 
-        @context_class   = Child! opts.fetch(:class), Context
-        @context         = @context_class.allocate
         @behaviours      = {}
         @first_behaviour = @context.behaviour_classes.reverse.
             reduce(nil) { |last, behaviour| @behaviours[behaviour] = behaviour.new(self, last) }
