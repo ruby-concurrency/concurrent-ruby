@@ -42,6 +42,7 @@ module Concurrent
     ensure
       @mutex.unlock
     end
+    alias_method :~, :value
 
     # @!macro [attach] atomic_boolean_method_value_set
     #
@@ -127,6 +128,7 @@ module Concurrent
       def value
         @atomic.get
       end
+      alias_method :~, :value
 
       # @!macro atomic_boolean_method_value_set
       #
@@ -184,6 +186,8 @@ module Concurrent
 
       # @!method make_false
       #   @!macro atomic_boolean_method_make_false
+
+      alias_method :~, :value
     end
 
     # @!macro atomic_boolean

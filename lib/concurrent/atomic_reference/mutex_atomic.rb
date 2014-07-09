@@ -24,6 +24,7 @@ module Concurrent
       @mutex.synchronize { @value }
     end
     alias_method :value, :get
+    alias_method :~, :get
 
     # @!macro [attach] atomic_reference_method_set
     #

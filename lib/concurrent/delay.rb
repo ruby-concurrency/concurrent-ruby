@@ -78,6 +78,7 @@ module Concurrent
     ensure
       mutex.unlock
     end
+    alias_method :~, :value
 
     # reconfigures the block returning the value if still #incomplete?
     # @yield the delayed operation to perform

@@ -13,6 +13,7 @@ module Concurrent
     include Concurrent::AtomicNumericCompareAndSetWrapper
 
     alias_method :value, :get
+    alias_method :~, :get
     alias_method :value=, :set
     alias_method :swap, :get_and_set
   end

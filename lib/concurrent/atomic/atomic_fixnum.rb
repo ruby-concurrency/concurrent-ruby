@@ -48,6 +48,7 @@ module Concurrent
     ensure
       @mutex.unlock
     end
+    alias_method :~, :value
 
     # @!macro [attach] atomic_fixnum_method_value_set
     #
@@ -134,6 +135,7 @@ module Concurrent
       def value
         @atomic.get
       end
+      alias_method :~, :value
 
       # @!macro atomic_fixnum_method_value_set
       def value=(value)
@@ -185,6 +187,8 @@ module Concurrent
 
       # @!method compare_and_set
       #   @!macro atomic_fixnum_method_compare_and_set
+
+      alias_method :~, :value
     end
 
     # @!macro atomic_fixnum

@@ -48,6 +48,11 @@ module Concurrent
       deref
     end
 
+    # @return [Object] see Dereferenceable#deref
+    def ~
+      value(nil)
+    end
+
     # wait until Obligation is #complete?
     # @param [Numeric] timeout the maximum time in second to wait.
     # @return [Obligation] self

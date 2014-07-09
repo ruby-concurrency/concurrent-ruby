@@ -101,6 +101,7 @@ module Concurrent
         value
       end
     end
+    alias_method :~, :value
 
     def value=(value)
       if value.nil?

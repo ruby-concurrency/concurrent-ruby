@@ -21,6 +21,7 @@ module Concurrent
         Transaction::current.read(self)
       end
     end
+    alias_method :~, :value
 
     # Set the value of a `TVar`.
     def value=(value)
