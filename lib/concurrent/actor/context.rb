@@ -36,6 +36,11 @@ module Concurrent
         @envelope = nil
       end
 
+      # if you want to pass the message to next behaviour, usually {Behaviour::ErrorOnUnknownMessage}
+      def pass
+        core.behaviour[Behaviour::DoContext].pass envelope
+      end
+
       # Defines an actor responsible for dead letters. Any rejected message send with
       # {Reference#tell} is sent there, a message with ivar is considered already monitored for
       # failures. Default behaviour is to use {Context#dead_letter_routing} of the parent,

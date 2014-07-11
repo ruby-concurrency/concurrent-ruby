@@ -226,7 +226,7 @@ module Concurrent
 
       class DoContext < Abstract
         def on_envelope(envelope)
-          context.on_envelope envelope or pass envelope
+          context.on_envelope envelope
         end
       end
 
