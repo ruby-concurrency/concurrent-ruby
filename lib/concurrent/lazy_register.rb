@@ -9,10 +9,10 @@ module Concurrent
   #     #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::Atomic:0x007fd7ecd5e1e0>>
   #     register[:key]
   #     #=> nil
-  #     register.add(:key) { Concurrent::Actress.spawn!(Actress::AdHoc, :ping) { -> message { message } } }
+  #     register.add(:key) { Concurrent::Actor.spawn!(Actor::AdHoc, :ping) { -> message { message } } }
   #     #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::Atomic:0x007fd7ecd5e1e0>>
   #     register[:key]
-  #     #=> #<Concurrent::Actress::Reference /ping (Concurrent::Actress::AdHoc)>
+  #     #=> #<Concurrent::Actor::Reference /ping (Concurrent::Actor::AdHoc)>
   class LazyRegister
     def initialize
       @data = Atomic.new Hash.new

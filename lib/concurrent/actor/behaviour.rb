@@ -63,7 +63,6 @@ module Concurrent
           raise NotImplementedError
         end
 
-        # @api private
         def on_envelope(envelope)
           raise NotImplementedError
         end
@@ -86,6 +85,9 @@ module Concurrent
       end
 
       class Termination < Abstract
+
+        # @!attribute [r] terminated
+        #   @return [Event] event which will become set when actor is terminated.
         attr_reader :terminated
 
         def initialize(core, subsequent)

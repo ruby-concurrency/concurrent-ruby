@@ -5,7 +5,7 @@ require 'concurrent/logging'
 
 module Concurrent
 
-  # {include:file:doc/actress/main.md}
+  # {include:file:doc/actor/main.md}
   module Actor
 
     require 'concurrent/actor/type_check'
@@ -38,22 +38,22 @@ module Concurrent
     # Spawns a new actor.
     #
     # @example simple
-    #   Actress.spawn(AdHoc, :ping1) { -> message { message } }
+    #   Actor.spawn(AdHoc, :ping1) { -> message { message } }
     #
     # @example complex
-    #   Actress.spawn name:     :ping3,
+    #   Actor.spawn name:     :ping3,
     #                 class:    AdHoc,
     #                 args:     [1]
     #                 executor: Concurrent.configuration.global_task_pool do |add|
     #     lambda { |number| number + add }
     #   end
     #
-    # @param block for actress_class instantiation
+    # @param block for context_class instantiation
     # @param args see {.spawn_optionify}
     # @return [Reference] never the actual actor
     def self.spawn(*args, &block)
       experimental_acknowledged? or
-          warn '[EXPERIMENTAL] A full release of `Actress`, renamed `Actor`, is expected in the 0.7.0 release.'
+          warn '[EXPERIMENTAL] A full release of `Actor`, is expected in the 0.7.0 release.'
 
       if Actor.current
         Core.new(spawn_optionify(*args).merge(parent: Actor.current), &block).reference
@@ -67,10 +67,10 @@ module Concurrent
       spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
     end
 
-    # @overload spawn_optionify(actress_class, name, *args)
-    #   @param [Context] actress_class to be spawned
+    # @overload spawn_optionify(context_class, name, *args)
+    #   @param [Context] context_class to be spawned
     #   @param [String, Symbol] name of the instance, it's used to generate the {Core#path} of the actor
-    #   @param args for actress_class instantiation
+    #   @param args for context_class instantiation
     # @overload spawn_optionify(opts)
     #   see {Core#initialize} opts
     def self.spawn_optionify(*args)

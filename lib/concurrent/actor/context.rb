@@ -40,7 +40,7 @@ module Concurrent
       # {Reference#tell} is sent there, a message with ivar is considered already monitored for
       # failures. Default behaviour is to use {Context#dead_letter_routing} of the parent,
       # so if no {Context#dead_letter_routing} method is overridden in parent-chain the message ends up in
-      # `Actress.root.dead_letter_routing` agent which will log warning.
+      # `Actor.root.dead_letter_routing` agent which will log warning.
       # @return [Reference]
       def dead_letter_routing
         parent.dead_letter_routing

@@ -1,9 +1,12 @@
 require 'benchmark'
-require 'concurrent/actress'
+require 'concurrent/actor'
 Concurrent::Actor.i_know_it_is_experimental!
 
 require 'celluloid'
 require 'celluloid/autostart'
+
+# require 'stackprof'
+# require 'profiler'
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::INFO
@@ -35,10 +38,14 @@ end
 
 threads = []
 
+# Profiler__.start_profile
+# StackProf.run(mode:     :cpu,
+#               interval: 10,
+#               out:      File.join(File.dirname(__FILE__), 'stackprof-cpu-myapp.dump')) do
 Benchmark.bmbm(10) do |b|
   [2, adders_size, adders_size*2, adders_size*3].each do |adders_size|
 
-    b.report(format('%5d %4d %s', ADD_TO*counts_size, adders_size, 'actress')) do
+    b.report(format('%5d %4d %s', ADD_TO*counts_size, adders_size, 'concurrent')) do
       counts = Array.new(counts_size) { [0, Concurrent::IVar.new] }
       adders = Array.new(adders_size) do |i|
         Concurrent::Actor::AdHoc.spawn("adder#{i}") do
@@ -88,6 +95,10 @@ Benchmark.bmbm(10) do |b|
     end
   end
 end
+# end
+# Profiler__.stop_profile
 
 p threads
+
+# Profiler__.print_profile $stdout
 

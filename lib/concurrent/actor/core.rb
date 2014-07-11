@@ -17,14 +17,12 @@ module Concurrent
       #   @return [String] the name of this instance, it should be uniq (not enforced right now)
       # @!attribute [r] path
       #   @return [String] a path of this actor. It is used for easier orientation and logging.
-      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actress.root},
+      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actor.root},
       #     e.g. `/an_actor/its_child`.
       #     (It will also probably form a supervision path (failures will be reported up to parents)
       #     in future versions.)
       # @!attribute [r] executor
       #   @return [Executor] which is used to process messages
-      # @!attribute [r] terminated
-      #   @return [Event] event which will become set when actor is terminated.
       # @!attribute [r] actor_class
       #   @return [Context] a class including {Context} representing Actor's behaviour
       attr_reader :reference, :name, :path, :executor, :context_class, :context
@@ -51,7 +49,7 @@ module Concurrent
         @context_class        = Child! opts.fetch(:class), Context
         @context              = @context_class.allocate
         @reference            = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
-        @name = (Type! opts.fetch(:name), String, Symbol).to_s
+        @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
 
         parent       = opts[:parent]
         @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
@@ -73,10 +71,8 @@ module Concurrent
 
         schedule_execution do
           begin
-            @context.tap do |a|
-              a.send :initialize_core, self
-              a.send :initialize, *args, &block
-            end
+            @context.send :initialize_core, self
+            @context.send :initialize, *args, &block
 
             initialized.set true if initialized
           rescue => ex
@@ -103,7 +99,6 @@ module Concurrent
         @children.to_a
       end
 
-      # @api private
       def add_child(child)
         guard!
         Type! child, Reference
@@ -111,7 +106,6 @@ module Concurrent
         nil
       end
 
-      # @api private
       def remove_child(child)
         guard!
         Type! child, Reference
@@ -140,11 +134,11 @@ module Concurrent
         behaviour!(Behaviour::Termination).terminate!
       end
 
+      # @see Behaviour::Termination#terminated
       def terminated
         behaviour!(Behaviour::Termination).terminated
       end
 
-      # @api private
       # ensures that we are inside of the executor
       def guard!
         unless Actor.current == reference
@@ -152,7 +146,6 @@ module Concurrent
         end
       end
 
-      # @api private
       def log(level, message = nil, &block)
         super level, @path, message, &block
       end

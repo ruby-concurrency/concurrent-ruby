@@ -13,7 +13,7 @@ module Concurrent
     #   end
     # end
 
-    describe 'Concurrent::Actress' do
+    describe 'Concurrent::Actor' do
       prepend_before do
         do_no_reset!
       end
@@ -92,7 +92,7 @@ module Concurrent
       end
 
       describe 'spawning' do
-        describe 'Actress#spawn' do
+        describe 'Actor#spawn' do
           behaviour = -> v { -> _ { v } }
           subjects  = { spawn:                 -> { Actor.spawn(AdHoc, :ping, 'arg', &behaviour) },
                         context_spawn:         -> { AdHoc.spawn(:ping, 'arg', &behaviour) },
