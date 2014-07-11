@@ -82,6 +82,9 @@ module Concurrent
 
       def self.included(base)
         base.extend ClassMethods
+        # to avoid confusion with Kernel.spawn
+        base.send :undef_method, :spawn
+
         super base
       end
 

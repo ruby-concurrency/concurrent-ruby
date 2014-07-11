@@ -63,6 +63,9 @@ module Concurrent
       def ==(other)
         Type? other, self.class and other.send(:core) == core
       end
+
+      # to avoid confusion with Kernel.spawn
+      undef_method :spawn
     end
 
   end

@@ -5,11 +5,6 @@ module Concurrent
     module ContextDelegations
       include CoreDelegations
 
-      # @see Actress.spawn
-      def spawn(*args, &block)
-        Actor.spawn(*args, &block)
-      end
-
       # @see Core#children
       def children
         core.children

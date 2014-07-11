@@ -14,7 +14,7 @@ module Concurrent
       # to allow spawning of new actors, spawn needs to be called inside the parent Actor
       def on_message(message)
         if message.is_a?(Array) && message.first == :spawn
-          spawn message[1], &message[2]
+          Actor.spawn message[1], &message[2]
         else
           # ignore
         end
