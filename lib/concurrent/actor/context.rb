@@ -103,6 +103,10 @@ module Concurrent
 
         def spawn_optionify(name_or_opts, *args)
           if name_or_opts.is_a? Hash
+            if name_or_opts.key?(:class) && name_or_opts[:class] != self
+              raise ArgumentError,
+                    ':class option is ignored when calling on context class, use Actor.spawn instead'
+            end
             name_or_opts.merge class: self
           else
             { class: self, name: name_or_opts, args: args }
