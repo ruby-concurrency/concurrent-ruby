@@ -90,12 +90,12 @@ module Concurrent
       end
 
       module ClassMethods
-        # behaves as {Concurrent::Actress.spawn} but class_name is auto-inserted based on receiver
+        # behaves as {Concurrent::Actor.spawn} but :class is auto-inserted based on receiver
         def spawn(name_or_opts, *args, &block)
           Actor.spawn spawn_optionify(name_or_opts, *args), &block
         end
 
-        # behaves as {Concurrent::Actress.spawn!} but class_name is auto-inserted based on receiver
+        # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver
         def spawn!(name_or_opts, *args, &block)
           Actor.spawn! spawn_optionify(name_or_opts, *args), &block
         end

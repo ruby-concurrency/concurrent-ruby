@@ -66,6 +66,10 @@ Each actor is composed from 3 objects:
 ### {Context}
 {include:Actor::Context}
 
+### Behaviours
+
+_TODO_ 
+
 ## Speed
 
 Simple benchmark Actor vs Celluloid, the numbers are looking good
