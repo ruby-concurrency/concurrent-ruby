@@ -195,7 +195,7 @@ module Concurrent
         def process_envelopes?
           unless @buffer.empty? || @receive_envelope_scheduled
             @receive_envelope_scheduled = true
-            schedule_execution { receive_envelope }
+            receive_envelope
           end
         end
 
@@ -205,7 +205,7 @@ module Concurrent
           pass envelope
         ensure
           @receive_envelope_scheduled = false
-          process_envelopes?
+          schedule_execution { process_envelopes? }
         end
 
         def reject_messages
