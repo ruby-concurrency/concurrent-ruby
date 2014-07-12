@@ -219,6 +219,16 @@ module Concurrent
         end
       end
 
+      class Await < Abstract
+        def on_envelope(envelope)
+          if envelope.message == :await
+            true
+          else
+            pass envelope
+          end
+        end
+      end
+
       class DoContext < Abstract
         def on_envelope(envelope)
           context.on_envelope envelope

@@ -59,7 +59,8 @@ module Concurrent
          # TODO restart - rebuilds all following behaviours
          # TODO paused
          Behaviour::Buffer,
-         Behaviour::DoContext, # TODO should hold context not context all behaviours
+         Behaviour::Await,
+         Behaviour::DoContext,
          Behaviour::ErrorOnUnknownMessage]
       end
 
