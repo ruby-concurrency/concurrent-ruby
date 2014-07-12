@@ -33,6 +33,7 @@ module Concurrent
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
+      # @option opts [true, false] link, atomically link the actor to its parent
       # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
       #   can be used to hook actor instance to any logging system
@@ -69,10 +70,17 @@ module Concurrent
         args        = opts.fetch(:args, [])
         initialized = Type! opts[:initialized], IVar, NilClass
 
+        messages = []
+        messages << :link if opts[:link]
+
         schedule_execution do
           begin
             @context.send :initialize_core, self
             @context.send :initialize, *args, &block
+
+            messages.each do |message|
+              handle_envelope Envelope.new(message, nil, parent, reference)
+            end
 
             initialized.set true if initialized
           rescue => ex
@@ -117,10 +125,7 @@ module Concurrent
       # can be called from other alternative Reference implementations
       # @param [Envelope] envelope
       def on_envelope(envelope)
-        schedule_execution do
-          log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
-          @first_behaviour.on_envelope envelope
-        end
+        schedule_execution { handle_envelope envelope }
         nil
       end
 
@@ -177,6 +182,13 @@ module Concurrent
 
       def behaviour!(klass)
         @behaviours.fetch klass
+      end
+
+      private
+
+      def handle_envelope(envelope)
+        log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
+        @first_behaviour.on_envelope envelope
       end
     end
   end

@@ -246,15 +246,33 @@ module Concurrent
 
       it 'links' do
         queue   = Queue.new
-        failure = AdHoc.spawn(:failure) { -> m { m } }
+        failure = nil
         # failure = AdHoc.spawn(:failure) { -> m { terminate! } } # FIXME this leads to weird message processing ordering
         monitor = AdHoc.spawn(:monitor) do
+          failure = AdHoc.spawn(:failure) { -> m { m } }
           failure << :link
           -> m { queue << [m, envelope.sender] }
         end
         failure << :hehe
         failure << :terminate!
         expect(queue.pop).to eq [:terminated, failure]
+
+        terminate_actors monitor
+      end
+
+      it 'links atomically' do
+        queue   = Queue.new
+        failure = nil
+        monitor = AdHoc.spawn(:monitor) do
+          failure = AdHoc.spawn(name: :failure, link: true) { -> m { m } }
+          -> m { queue << [m, envelope.sender] }
+        end
+
+        failure << :hehe
+        failure << :terminate!
+        expect(queue.pop).to eq [:terminated, failure]
+
+        terminate_actors monitor
       end
 
     end
