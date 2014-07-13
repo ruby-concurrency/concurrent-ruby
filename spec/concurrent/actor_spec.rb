@@ -20,9 +20,11 @@ module Concurrent
 
       def terminate_actors(*actors)
         actors.each do |actor|
-          actor << :terminate!
-          actor.terminated.wait(2) or
-              raise 'timeout'
+          unless actor.terminated?
+            actor << :terminate!
+            actor.terminated.wait(2) or
+                raise 'timeout'
+          end
         end
       end
 
@@ -303,7 +305,7 @@ module Concurrent
           expect(queue.pop).to eq :resumed
           terminate_actors test
 
-          test  = AdHoc.spawn :tester do
+          test = AdHoc.spawn :tester do
             actor = AdHoc.spawn name: :pausing, supervise: true, behaviour: Behaviour.restarting_behaviour do
               queue << :init
               -> m { m == :add ? 1 : pass }
