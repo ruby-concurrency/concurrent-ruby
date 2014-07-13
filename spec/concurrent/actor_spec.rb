@@ -246,7 +246,7 @@ module Concurrent
         queue   = Queue.new
         failure = nil
         # failure = AdHoc.spawn(:failure) { -> m { terminate! } } # FIXME this leads to weird message processing ordering
-        monitor = AdHoc.spawn(:monitor) do
+        monitor = AdHoc.spawn!(:monitor) do
           failure = AdHoc.spawn(:failure) { -> m { m } }
           failure << :link
           -> m { queue << [m, envelope.sender] }
@@ -261,7 +261,7 @@ module Concurrent
       it 'links atomically' do
         queue   = Queue.new
         failure = nil
-        monitor = AdHoc.spawn(:monitor) do
+        monitor = AdHoc.spawn!(:monitor) do
           failure = AdHoc.spawn(name: :failure, link: true) { -> m { m } }
           -> m { queue << [m, envelope.sender] }
         end
