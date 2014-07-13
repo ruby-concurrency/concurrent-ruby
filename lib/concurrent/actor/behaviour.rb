@@ -1,51 +1,14 @@
 module Concurrent
   module Actor
+
     # TODO split this into files
-
-    module ContextDelegations
-      include CoreDelegations
-
-      # @see Core#children
-      def children
-        core.children
-      end
-
-      # @see Core#terminate!
-      def terminate!
-        core.terminate!
-      end
-
-      # delegates to core.log
-      # @see Logging#log
-      def log(level, message = nil, &block)
-        core.log(level, message, &block)
-      end
-
-      def dead_letter_routing
-        context.dead_letter_routing
-      end
-
-      def redirect(reference, envelope = self.envelope)
-        reference.message(envelope.message, envelope.ivar)
-        Behaviour::NOT_PROCESSED
-      end
-
-      def context
-        core.context
-      end
-
-      def broadcast(event)
-        linking = core.behaviour(Behaviour::Linking) and
-            linking.broadcast(event)
-      end
-    end
-
+    # TODO document dependencies
     module Behaviour
-      NOT_PROCESSED = Object.new
+      MESSAGE_PROCESSED = Object.new
 
       class Abstract
         include TypeCheck
-        include ContextDelegations
+        include InternalDelegations
 
         attr_reader :core, :subsequent
 
@@ -54,28 +17,26 @@ module Concurrent
           @subsequent = Type! subsequent, Abstract, NilClass
         end
 
-        def on_message(message)
-          raise NotImplementedError
-        end
-
         def on_envelope(envelope)
-          raise NotImplementedError
+          pass envelope
         end
 
         def pass(envelope)
           subsequent.on_envelope envelope
         end
 
-        # TODO rename to on_terminate or something like that
-        def reject_messages
-          subsequent.reject_messages if subsequent
+        def on_event(event)
+          subsequent.on_event event if subsequent
+        end
+
+        def broadcast(event)
+          core.broadcast(event)
         end
 
         def reject_envelope(envelope)
           envelope.reject! ActorTerminated.new(reference)
           dead_letter_routing << envelope unless envelope.ivar
           log Logging::DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
-
         end
       end
 
@@ -99,7 +60,7 @@ module Concurrent
         def on_envelope(envelope)
           if terminated?
             reject_envelope envelope
-            NOT_PROCESSED
+            MESSAGE_PROCESSED
           else
             if envelope.message == :terminate!
               terminate!
@@ -113,12 +74,17 @@ module Concurrent
         # Terminates all its children, does not wait until they are terminated.
         def terminate!
           return nil if terminated?
-          children.each { |ch| ch << :terminate! }
           @terminated.set
           broadcast(:terminated)
           parent << :remove_child if parent
-          core.reject_messages
           nil
+        end
+      end
+
+      class TerminateChildren < Abstract
+        def on_event(event)
+          children.each { |ch| ch << :terminate! } if event == :terminated
+          super event
         end
       end
 
@@ -131,23 +97,144 @@ module Concurrent
         def on_envelope(envelope)
           case envelope.message
           when :link
-            @linked.add?(envelope.sender)
-            true
+            link envelope.sender
           when :unlink
-            @linked.delete(envelope.sender)
-            true
+            unlink envelope.sender
           else
             pass envelope
           end
         end
 
-        def reject_messages
-          @linked.clear
-          super
+        def link(ref)
+          @linked.add(ref)
+          true
         end
 
-        def broadcast(event)
+        def unlink(ref)
+          @linked.delete(ref)
+          true
+        end
+
+        def on_event(event)
           @linked.each { |a| a << event }
+          @linked.clear if event == :terminated
+          super event
+        end
+      end
+
+      class Supervising < Abstract
+        attr_reader :supervisor
+
+        def initialize(core, subsequent)
+          super core, subsequent
+          @supervisor = nil
+        end
+
+        def on_envelope(envelope)
+          case envelope.message
+          when :supervise
+            supervise envelope.sender
+          when :supervisor
+            supervisor
+          when :un_supervise
+            un_supervise envelope.sender
+          else
+            pass envelope
+          end
+        end
+
+        def supervise(ref)
+          @supervisor = ref
+          behaviour!(Linking).link ref
+          true
+        end
+
+        def un_supervise(ref)
+          if @supervisor == ref
+            behaviour!(Linking).unlink ref
+            @supervisor = nil
+            true
+          else
+            false
+          end
+        end
+
+        def on_event(event)
+          @supervisor = nil if event == :terminated
+          super event
+        end
+      end
+
+      # pause on error ask its parent
+      # handling
+      # :continue
+      # :reset will only rebuild context
+      # :restart drops messaged and as :reset
+      # TODO callbacks
+
+      class Pausing < Abstract
+        def initialize(core, subsequent)
+          super core, subsequent
+          @paused = false
+          @buffer = []
+        end
+
+        def on_envelope(envelope)
+          case envelope.message
+          when :pause!
+            from_supervisor?(envelope) { pause! }
+          when :resume!
+            from_supervisor?(envelope) { resume! }
+          when :reset!
+            from_supervisor?(envelope) { reset! }
+            # when :restart! TODO
+            #   from_supervisor?(envelope) { reset! }
+          else
+            if @paused
+              @buffer << envelope
+              MESSAGE_PROCESSED
+            else
+              pass envelope
+            end
+          end
+        end
+
+        def pause!
+          @paused = true
+          broadcast(:paused)
+          true
+        end
+
+        def resume!
+          @buffer.each { |envelope| core.schedule_execution { pass envelope } }
+          @buffer.clear
+          @paused = false
+          broadcast(:resumed)
+          true
+        end
+
+        def from_supervisor?(envelope)
+          if behaviour!(Supervising).supervisor == envelope.sender
+            yield
+          else
+            false
+          end
+        end
+
+        def reset!
+          core.allocate_context
+          core.build_context
+          broadcast(:reset)
+          resume!
+          true
+        end
+
+        def on_event(event)
+          if event == :terminated
+            @buffer.each { |envelope| reject_envelope envelope }
+            @buffer.clear
+          end
+          super event
         end
       end
 
@@ -162,22 +249,36 @@ module Concurrent
       end
 
       class SetResults < Abstract
+        attr_reader :error_strategy
+
+        def initialize(core, subsequent, error_strategy)
+          super core, subsequent
+          @error_strategy = Match! error_strategy, :just_log, :terminate, :pause
+        end
+
         def on_envelope(envelope)
           result = pass envelope
-          if result != NOT_PROCESSED && !envelope.ivar.nil?
+          if result != MESSAGE_PROCESSED && !envelope.ivar.nil?
             envelope.ivar.set result
           end
           nil
         rescue => error
           log Logging::ERROR, error
-          terminate!
+          case error_strategy
+          when :terminate
+            terminate!
+          when :pause
+            behaviour!(Pausing).pause!
+          else
+            raise
+          end
           envelope.ivar.fail error unless envelope.ivar.nil?
         end
       end
 
       class Buffer < Abstract
         def initialize(core, subsequent)
-          super core, SetResults.new(core, subsequent)
+          super core, subsequent
           @buffer                     = []
           @receive_envelope_scheduled = false
         end
@@ -185,7 +286,7 @@ module Concurrent
         def on_envelope(envelope)
           @buffer.push envelope
           process_envelopes?
-          NOT_PROCESSED
+          MESSAGE_PROCESSED
         end
 
         # Ensures that only one envelope processing is scheduled with #schedule_execution,
@@ -205,17 +306,15 @@ module Concurrent
           pass envelope
         ensure
           @receive_envelope_scheduled = false
-          schedule_execution { process_envelopes? }
+          core.schedule_execution { process_envelopes? }
         end
 
-        def reject_messages
-          @buffer.each { |envelope| reject_envelope envelope }
-          @buffer.clear
-          super
-        end
-
-        def schedule_execution(&block)
-          core.schedule_execution &block
+        def on_event(event)
+          if event == :terminated
+            @buffer.each { |envelope| reject_envelope envelope }
+            @buffer.clear
+          end
+          super event
         end
       end
 
@@ -241,6 +340,37 @@ module Concurrent
         end
       end
 
+      def self.basic_behaviour
+        [*base,
+         *user_messages(:terminate)]
+      end
+
+      def self.restarting_behaviour
+        [*base,
+         *supervising,
+         *user_messages(:pause)]
+      end
+
+      def self.base
+        [[SetResults, [:terminate]],
+         [RemoveChild, []],
+         [Termination, []],
+         [TerminateChildren, []],
+         [Linking, []]]
+      end
+
+      def self.supervising
+        [[Supervising, []],
+         [Pausing, []]]
+      end
+
+      def self.user_messages(on_error)
+        [[Buffer, []],
+         [SetResults, [on_error]],
+         [Await, []],
+         [DoContext, []],
+         [ErrorOnUnknownMessage, []]]
+      end
     end
   end
 end

@@ -1,9 +1,7 @@
 module Concurrent
   module Actor
     # implements the root actor
-    class Root
-
-      include Context
+    class Root < Context
 
       def initialize
         @dead_letter_router = Core.new(parent: reference,

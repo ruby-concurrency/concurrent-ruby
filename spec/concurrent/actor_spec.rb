@@ -26,9 +26,7 @@ module Concurrent
         end
       end
 
-      class Ping
-        include Context
-
+      class Ping < Context
         def initialize(queue)
           @queue = queue
         end
@@ -274,6 +272,67 @@ module Concurrent
 
         terminate_actors monitor
       end
+
+      describe 'pausing' do
+        it 'pauses on error' do
+          queue = Queue.new
+          test  = AdHoc.spawn :tester do
+            actor = AdHoc.spawn name: :pausing, behaviour: Behaviour.restarting_behaviour do
+              queue << :init
+              -> m { m == :add ? 1 : pass }
+            end
+
+            actor << :supervise
+            queue << actor.ask!(:supervisor)
+            actor << nil
+
+            -> m do
+              queue << m
+              if m == :paused
+                ivar = envelope.sender.ask(:add)
+                envelope.sender << :resume!
+                queue << ivar.value!
+              end
+            end
+          end
+
+          expect(queue.pop).to eq :init
+          expect(queue.pop).to eq test
+          expect(queue.pop).to eq :paused
+          expect(queue.pop).to eq 1
+          expect(queue.pop).to eq :resumed
+          terminate_actors test
+
+          test  = AdHoc.spawn :tester do
+            actor = AdHoc.spawn name: :pausing, supervise: true, behaviour: Behaviour.restarting_behaviour do
+              queue << :init
+              -> m { m == :add ? 1 : pass }
+            end
+
+            queue << actor.ask!(:supervisor)
+            actor << nil
+
+            -> m do
+              queue << m
+              if m == :paused
+                ivar = envelope.sender.ask(:add)
+                envelope.sender << :reset!
+                queue << ivar.value!
+              end
+            end
+          end
+
+          expect(queue.pop).to eq :init
+          expect(queue.pop).to eq test
+          expect(queue.pop).to eq :paused
+          expect(queue.pop).to eq :init # rebuilds context
+          expect(queue.pop).to eq 1
+          expect(queue.pop).to eq :reset
+          terminate_actors test
+        end
+
+      end
+
 
     end
   end

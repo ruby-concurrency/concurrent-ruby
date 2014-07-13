@@ -25,7 +25,7 @@ module Concurrent
       #   @return [Executor] which is used to process messages
       # @!attribute [r] actor_class
       #   @return [Context] a class including {Context} representing Actor's behaviour
-      attr_reader :reference, :name, :path, :executor, :context_class, :context
+      attr_reader :reference, :name, :path, :executor, :context_class, :context, :behaviour_definition
 
       # @option opts [String] name
       # @option opts [Reference, nil] parent of an actor spawning this one
@@ -34,6 +34,9 @@ module Concurrent
       # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
       # @option opts [true, false] link, atomically link the actor to its parent
+      # @option opts [true, false] supervise, atomically supervise the actor by its parent
+      # @option opts [[Array<Array(Behavior::Abstract, Array<Object>)>]] behaviour, array of pairs
+      #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour}
       # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
       #   can be used to hook actor instance to any logging system
@@ -48,9 +51,9 @@ module Concurrent
         @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
         @children             = Set.new
         @context_class        = Child! opts.fetch(:class), Context
-        @context              = @context_class.allocate
-        @reference            = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
-        @name                 = (Type! opts.fetch(:name), String, Symbol).to_s
+        allocate_context
+        @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
+        @name      = (Type! opts.fetch(:name), String, Symbol).to_s
 
         parent       = opts[:parent]
         @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
@@ -63,20 +66,19 @@ module Concurrent
 
         @parent_core.add_child reference if @parent_core
 
-        @behaviours      = {}
-        @first_behaviour = @context.behaviour_classes.reverse.
-            reduce(nil) { |last, behaviour| @behaviours[behaviour] = behaviour.new(self, last) }
+        initialize_behaviours opts
 
-        args        = opts.fetch(:args, [])
+        @args       = opts.fetch(:args, [])
+        @block      = block
         initialized = Type! opts[:initialized], IVar, NilClass
 
         messages = []
         messages << :link if opts[:link]
+        messages << :supervise if opts[:supervise]
 
         schedule_execution do
           begin
-            @context.send :initialize_core, self
-            @context.send :initialize, *args, &block
+            build_context
 
             messages.each do |message|
               handle_envelope Envelope.new(message, nil, parent, reference)
@@ -89,6 +91,15 @@ module Concurrent
             initialized.fail ex if initialized
           end
         end
+      end
+
+      def allocate_context
+        @context = @context_class.allocate
+      end
+
+      def build_context
+        @context.send :initialize_core, self
+        @context.send :initialize, *@args, &@block
       end
 
       # @return [Reference, nil] of parent actor
@@ -172,16 +183,16 @@ module Concurrent
         nil
       end
 
-      def reject_messages
-        @first_behaviour.reject_messages
+      def broadcast(event)
+        @first_behaviour.on_event(event)
       end
 
-      def behaviour(klass)
-        @behaviours[klass]
+      def behaviour(behaviour_class)
+        @behaviours[behaviour_class]
       end
 
-      def behaviour!(klass)
-        @behaviours.fetch klass
+      def behaviour!(behaviour_class)
+        @behaviours.fetch behaviour_class
       end
 
       private
@@ -189,6 +200,18 @@ module Concurrent
       def handle_envelope(envelope)
         log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
         @first_behaviour.on_envelope envelope
+      end
+
+      def initialize_behaviours(opts)
+        @behaviour_definition = (Type! opts[:behaviour] || @context.behaviour_definition, Array).each do |v|
+          Type! v, Array
+          Match! v.size, 2
+          Child! v[0], Behaviour::Abstract
+          Type! v[1], Array
+        end
+        @behaviours           = {}
+        @first_behaviour      = @behaviour_definition.reverse.
+            reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, *args) }
       end
     end
   end

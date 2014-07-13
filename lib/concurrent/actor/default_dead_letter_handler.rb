@@ -1,8 +1,6 @@
 module Concurrent
   module Actor
-    class DefaultDeadLetterHandler
-      include Context
-
+    class DefaultDeadLetterHandler < Context
       def on_message(dead_letter)
         log Logging::WARN, "got dead letter #{dead_letter.inspect}"
       end

@@ -1,6 +1,6 @@
 class Counter
   # Include context of an actor which gives this class access to reference and other information
-  # about the actor, see CoreDelegations.
+  # about the actor, see PublicDelegations.
   include Concurrent::Actor::Context
 
   # use initialize as you wish

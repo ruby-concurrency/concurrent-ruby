@@ -2,7 +2,7 @@ module Concurrent
   module Actor
 
     # Provides publicly expose-able methods from {Core}.
-    module CoreDelegations
+    module PublicDelegations
       def name
         core.name
       end

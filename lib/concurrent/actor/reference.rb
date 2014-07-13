@@ -3,10 +3,10 @@ module Concurrent
 
     # Reference is public interface of Actor instances. It is used for sending messages and can
     # be freely passed around the program. It also provides some basic information about the actor,
-    # see {CoreDelegations}.
+    # see {PublicDelegations}.
     class Reference
       include TypeCheck
-      include CoreDelegations
+      include PublicDelegations
 
       attr_reader :core
       private :core

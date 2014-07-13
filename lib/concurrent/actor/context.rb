@@ -13,9 +13,9 @@ module Concurrent
     #
     #  Ping.spawn(:ping1).ask(:m).value #=> :m
 
-    module Context
+    module InstanceMethods
       include TypeCheck
-      include ContextDelegations
+      include InternalDelegations
 
       attr_reader :core
 
@@ -38,7 +38,7 @@ module Concurrent
 
       # if you want to pass the message to next behaviour, usually {Behaviour::ErrorOnUnknownMessage}
       def pass
-        core.behaviour[Behaviour::DoContext].pass envelope
+        core.behaviour(Behaviour::DoContext).pass envelope
       end
 
       # Defines an actor responsible for dead letters. Any rejected message send with
@@ -51,17 +51,9 @@ module Concurrent
         parent.dead_letter_routing
       end
 
-      def behaviour_classes
-        [Behaviour::SetResults,
-         Behaviour::RemoveChild,
-         Behaviour::Termination,
-         Behaviour::Linking,
-         # TODO restart - rebuilds all following behaviours
-         # TODO paused
-         Behaviour::Buffer,
-         Behaviour::Await,
-         Behaviour::DoContext,
-         Behaviour::ErrorOnUnknownMessage]
+      # @return [Array<Array(Behavior::Abstract, Array<Object>)>]
+      def behaviour_definition
+        raise NotImplementedError
       end
 
       # @return [Envelope] current envelope, accessible inside #on_message processing
@@ -80,39 +72,49 @@ module Concurrent
       def initialize_core(core)
         @core = Type! core, Core
       end
+    end
 
-      def self.included(base)
-        base.extend ClassMethods
-        # to avoid confusion with Kernel.spawn
-        base.send :undef_method, :spawn
-
-        super base
+    module ClassMethods
+      # behaves as {Concurrent::Actor.spawn} but :class is auto-inserted based on receiver
+      def spawn(name_or_opts, *args, &block)
+        Actor.spawn spawn_optionify(name_or_opts, *args), &block
       end
 
-      module ClassMethods
-        # behaves as {Concurrent::Actor.spawn} but :class is auto-inserted based on receiver
-        def spawn(name_or_opts, *args, &block)
-          Actor.spawn spawn_optionify(name_or_opts, *args), &block
-        end
+      # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver
+      def spawn!(name_or_opts, *args, &block)
+        Actor.spawn! spawn_optionify(name_or_opts, *args), &block
+      end
 
-        # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver
-        def spawn!(name_or_opts, *args, &block)
-          Actor.spawn! spawn_optionify(name_or_opts, *args), &block
-        end
+      private
 
-        private
-
-        def spawn_optionify(name_or_opts, *args)
-          if name_or_opts.is_a? Hash
-            if name_or_opts.key?(:class) && name_or_opts[:class] != self
-              raise ArgumentError,
-                    ':class option is ignored when calling on context class, use Actor.spawn instead'
-            end
-            name_or_opts.merge class: self
-          else
-            { class: self, name: name_or_opts, args: args }
+      def spawn_optionify(name_or_opts, *args)
+        if name_or_opts.is_a? Hash
+          if name_or_opts.key?(:class) && name_or_opts[:class] != self
+            raise ArgumentError,
+                  ':class option is ignored when calling on context class, use Actor.spawn instead'
           end
+          name_or_opts.merge class: self
+        else
+          { class: self, name: name_or_opts, args: args }
         end
+      end
+    end
+
+    class Context
+      include InstanceMethods
+      extend ClassMethods
+
+      # to avoid confusion with Kernel.spawn
+      undef_method :spawn
+
+      def behaviour_definition
+        Behaviour.basic_behaviour
+      end
+    end
+
+    class RestartingContext < Context
+      def behaviour_definition
+        Behaviour.restarting_behaviour
       end
     end
   end

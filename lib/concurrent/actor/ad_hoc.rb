@@ -6,8 +6,7 @@ module Concurrent
     #     # this block has to return proc defining #on_message behaviour
     #     -> message { where.tell message  }
     #   end
-    class AdHoc
-      include Context
+    class AdHoc < Context
       def initialize(*args, &initializer)
         @on_message = Type! initializer.call(*args), Proc
       end

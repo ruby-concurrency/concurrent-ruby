@@ -4,13 +4,15 @@ require 'concurrent/ivar'
 require 'concurrent/logging'
 
 module Concurrent
+  # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups
 
   # {include:file:doc/actor/main.md}
   module Actor
 
     require 'concurrent/actor/type_check'
     require 'concurrent/actor/errors'
-    require 'concurrent/actor/core_delegations'
+    require 'concurrent/actor/public_delegations'
+    require 'concurrent/actor/internal_delegations'
     require 'concurrent/actor/envelope'
     require 'concurrent/actor/reference'
     require 'concurrent/actor/core'
