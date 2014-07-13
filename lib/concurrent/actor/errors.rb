@@ -5,9 +5,22 @@ module Concurrent
     class ActorTerminated < Error
       include TypeCheck
 
+      attr_reader :reference
+
       def initialize(reference)
-        Type! reference, Reference
+        @reference = Type! reference, Reference
         super reference.path
+      end
+    end
+
+    class UnknownMessage < Error
+      include TypeCheck
+
+      attr_reader :envelope
+
+      def initialize(envelope)
+        @envelope = Type! envelope, Envelope
+        super envelope.message.inspect
       end
     end
   end

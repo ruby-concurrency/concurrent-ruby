@@ -288,7 +288,7 @@ module Concurrent
 
             -> m do
               queue << m
-              if m == :paused
+              if UnknownMessage === m
                 ivar = envelope.sender.ask(:add)
                 envelope.sender << :resume!
                 queue << ivar.value!
@@ -298,7 +298,7 @@ module Concurrent
 
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq test
-          expect(queue.pop).to eq :paused
+          expect(queue.pop).to be_kind_of(UnknownMessage)
           expect(queue.pop).to eq 1
           expect(queue.pop).to eq :resumed
           terminate_actors test
@@ -314,7 +314,7 @@ module Concurrent
 
             -> m do
               queue << m
-              if m == :paused
+              if UnknownMessage === m
                 ivar = envelope.sender.ask(:add)
                 envelope.sender << :reset!
                 queue << ivar.value!
@@ -324,7 +324,7 @@ module Concurrent
 
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq test
-          expect(queue.pop).to eq :paused
+          expect(queue.pop).to be_kind_of(UnknownMessage)
           expect(queue.pop).to eq :init # rebuilds context
           expect(queue.pop).to eq 1
           expect(queue.pop).to eq :reset

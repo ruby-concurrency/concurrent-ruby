@@ -199,9 +199,9 @@ module Concurrent
           end
         end
 
-        def pause!
+        def pause!(error = nil)
           @paused = true
-          broadcast(:paused)
+          broadcast(error || :paused)
           true
         end
 
@@ -268,7 +268,7 @@ module Concurrent
           when :terminate
             terminate!
           when :pause
-            behaviour!(Pausing).pause!
+            behaviour!(Pausing).pause!(error)
           else
             raise
           end
@@ -336,7 +336,7 @@ module Concurrent
 
       class ErrorOnUnknownMessage < Abstract
         def on_envelope(envelope)
-          raise "unknown message #{envelope.message.inspect}"
+          raise UnknownMessage, envelope
         end
       end
 
