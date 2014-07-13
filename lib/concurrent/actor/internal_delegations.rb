@@ -19,6 +19,7 @@ module Concurrent
         core.log(level, message, &block)
       end
 
+      # @see AbstractContext#dead_letter_routing
       def dead_letter_routing
         context.dead_letter_routing
       end
@@ -28,14 +29,17 @@ module Concurrent
         Behaviour::MESSAGE_PROCESSED
       end
 
+      # @return [AbstractContext]
       def context
         core.context
       end
 
+      # see Core#behaviour
       def behaviour(behaviour_class)
         core.behaviour(behaviour_class)
       end
 
+      # see Core#behaviour!
       def behaviour!(behaviour_class)
         core.behaviour!(behaviour_class)
       end

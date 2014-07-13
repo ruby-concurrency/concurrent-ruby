@@ -1,6 +1,7 @@
 module Concurrent
   module Actor
     module Behaviour
+      # Delegates messages nad events to {AbstractContext} instance
       class ExecutesContext < Abstract
         def on_envelope(envelope)
           context.on_envelope envelope

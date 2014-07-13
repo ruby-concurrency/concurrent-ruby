@@ -1,6 +1,12 @@
 module Concurrent
   module Actor
     module Behaviour
+
+      # Any message reaching this behaviour is buffered. Only one message is is scheduled
+      # at any given time. Others are kept in buffer until another one can be scheduled.
+      # This effective means that messages handled by behaviours before buffer have higher priority
+      # and they can be processed before messages arriving into buffer. This allows to
+      # process internal actor messages like (`:link`, `:supervise`) processed first.
       class Buffer < Abstract
         def initialize(core, subsequent)
           super core, subsequent

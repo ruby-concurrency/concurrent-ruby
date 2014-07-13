@@ -3,34 +3,42 @@ module Concurrent
 
     # Provides publicly expose-able methods from {Core}.
     module PublicDelegations
+      # @see Core#name
       def name
         core.name
       end
 
+      # @see Core#path
       def path
         core.path
       end
 
+      # @see Core#parent
       def parent
         core.parent
       end
 
+      # @see Behaviour::Termination#terminated?
       def terminated?
         core.terminated?
       end
 
+      # @see Behaviour::Termination#terminated
       def terminated
         core.terminated
       end
 
+      # @see Core#reference
       def reference
         core.reference
       end
 
+      # @see Core#executor
       def executor
         core.executor
       end
 
+      # @see Core#context_class
       def context_class
         core.context_class
       end

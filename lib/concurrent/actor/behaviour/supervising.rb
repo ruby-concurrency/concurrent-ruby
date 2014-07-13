@@ -1,6 +1,9 @@
 module Concurrent
   module Actor
     module Behaviour
+
+      # Sets nad holds the supervisor of the actor if any. There is only one or none supervisor
+      # for each actor. Each supervisor is automatically linked.
       class Supervising < Abstract
         attr_reader :supervisor
 

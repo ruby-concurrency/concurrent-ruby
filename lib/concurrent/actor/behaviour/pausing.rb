@@ -1,6 +1,12 @@
 module Concurrent
   module Actor
     module Behaviour
+
+      # Allows to pause actors on errors.
+      # When paused all arriving messages are collected and processed after the actor
+      # is resumed or reset. Resume will simply continue with next message.
+      # Reset also reinitialized context. `:reset!` and `:resume!` messages are only accepted
+      # form supervisor, see Supervised behaviour.
       class Pausing < Abstract
         def initialize(core, subsequent)
           super core, subsequent

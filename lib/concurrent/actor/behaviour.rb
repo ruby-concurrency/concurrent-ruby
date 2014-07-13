@@ -1,7 +1,20 @@
 module Concurrent
   module Actor
 
-    # TODO document dependencies
+    # Actors have modular architecture, which is achieved by combining a light core with chain of
+    # behaviours. Each message or internal event propagates through the chain allowing the
+    # behaviours react based on their responsibility. listing few as an example:
+    #
+    # -   {Behaviour::Linking}:
+    #
+    #     > {include:Actor::Behaviour::Linking}
+    #
+    # -   {Behaviour::Awaits}:
+    #
+    #     > {include:Actor::Behaviour::Awaits}
+    #
+    # See {Behaviour}'s namespace fo other behaviours.
+    # If needed new behaviours can be added, or old one removed to get required behaviour.
     module Behaviour
       MESSAGE_PROCESSED = Object.new
 

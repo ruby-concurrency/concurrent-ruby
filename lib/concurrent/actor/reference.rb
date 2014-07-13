@@ -49,7 +49,7 @@ module Concurrent
         return ivar || self
       end
 
-      # @see Context#dead_letter_routing
+      # @see AbstractContext#dead_letter_routing
       def dead_letter_routing
         core.dead_letter_routing
       end

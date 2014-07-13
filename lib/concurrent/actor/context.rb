@@ -1,19 +1,18 @@
 module Concurrent
   module Actor
 
-    # This module is used to define actors. It can be included in any class,
-    # only requirement is to override {Context#on_message} method.
-    # @example ping
-    #  class Ping
-    #    include Context
-    #    def on_message(message)
-    #      message
-    #    end
-    #  end
+    # Abstract implementation of Actor context. Children has to implement
+    # {AbstractContext#on_message} and {AbstractContext#behaviour_definition} methods.
+    # There are two implementations:
     #
-    #  Ping.spawn(:ping1).ask(:m).value #=> :m
-
-    module InstanceMethods
+    # -   {Context}
+    #
+    #     > {include:Actor::Context}
+    #
+    # -   {RestartingContext}.
+    #
+    #     > {include:Actor::RestartingContext}
+    class AbstractContext
       include TypeCheck
       include InternalDelegations
 
@@ -40,17 +39,18 @@ module Concurrent
         @envelope = nil
       end
 
-      # if you want to pass the message to next behaviour, usually {Behaviour::ErrorOnUnknownMessage}
+      # if you want to pass the message to next behaviour, usually {Behaviour::ErrorsOnUnknownMessage}
       def pass
         core.behaviour!(Behaviour::ExecutesContext).pass envelope
       end
 
       # Defines an actor responsible for dead letters. Any rejected message send with
       # {Reference#tell} is sent there, a message with ivar is considered already monitored for
-      # failures. Default behaviour is to use {Context#dead_letter_routing} of the parent,
-      # so if no {Context#dead_letter_routing} method is overridden in parent-chain the message ends up in
+      # failures. Default behaviour is to use {AbstractContext#dead_letter_routing} of the parent,
+      # so if no {AbstractContext#dead_letter_routing} method is overridden in parent-chain the message ends up in
       # `Actor.root.dead_letter_routing` agent which will log warning.
       # @return [Reference]
+      # TODO implement as behaviour
       def dead_letter_routing
         parent.dead_letter_routing
       end
@@ -76,22 +76,20 @@ module Concurrent
       def initialize_core(core)
         @core = Type! core, Core
       end
-    end
 
-    module ClassMethods
       # behaves as {Concurrent::Actor.spawn} but :class is auto-inserted based on receiver
-      def spawn(name_or_opts, *args, &block)
+      def self.spawn(name_or_opts, *args, &block)
         Actor.spawn spawn_optionify(name_or_opts, *args), &block
       end
 
       # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver
-      def spawn!(name_or_opts, *args, &block)
+      def self.spawn!(name_or_opts, *args, &block)
         Actor.spawn! spawn_optionify(name_or_opts, *args), &block
       end
 
       private
 
-      def spawn_optionify(name_or_opts, *args)
+      def self.spawn_optionify(name_or_opts, *args)
         if name_or_opts.is_a? Hash
           if name_or_opts.key?(:class) && name_or_opts[:class] != self
             raise ArgumentError,
@@ -102,21 +100,41 @@ module Concurrent
           { class: self, name: name_or_opts, args: args }
         end
       end
-    end
-
-    class Context
-      include InstanceMethods
-      extend ClassMethods
 
       # to avoid confusion with Kernel.spawn
       undef_method :spawn
+    end
 
+    # Basic Context of an Actor.
+    #
+    # -   linking
+    # -   terminates on error
+    #
+    # TODO describe behaviour
+    # TODO usage
+    # @example ping
+    #   class Ping < Context
+    #     def on_message(message)
+    #       message
+    #     end
+    #   end
+    #
+    #   Ping.spawn(:ping1).ask(:m).value #=> :m
+    class Context < AbstractContext
       def behaviour_definition
         Behaviour.basic_behaviour
       end
     end
 
-    class RestartingContext < Context
+    # Context of an Actor for complex robust systems.
+    #
+    # -   linking
+    # -   supervising
+    # -   pauses on error
+    #
+    # TODO describe behaviour
+    # TODO usage
+    class RestartingContext < AbstractContext
       def behaviour_definition
         Behaviour.restarting_behaviour
       end

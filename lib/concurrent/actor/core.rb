@@ -107,7 +107,7 @@ module Concurrent
         @parent_core && @parent_core.reference
       end
 
-      # @see Context#dead_letter_routing
+      # @see AbstractContext#dead_letter_routing
       def dead_letter_routing
         @context.dead_letter_routing
       end
@@ -118,6 +118,7 @@ module Concurrent
         @children.to_a
       end
 
+      # @api private
       def add_child(child)
         guard!
         Type! child, Reference
@@ -125,6 +126,7 @@ module Concurrent
         nil
       end
 
+      # @api private
       def remove_child(child)
         guard!
         Type! child, Reference
@@ -140,12 +142,12 @@ module Concurrent
         nil
       end
 
-      # @note Actor rejects envelopes when terminated.
-      # @return [true, false] if actor is terminated
+      # @see Behaviour::Termination#terminated?
       def terminated?
         behaviour!(Behaviour::Termination).terminated?
       end
 
+      # @see Behaviour::Termination#terminated!
       def terminate!
         behaviour!(Behaviour::Termination).terminate!
       end
@@ -187,10 +189,15 @@ module Concurrent
         @first_behaviour.on_event(event)
       end
 
+      # @param [Class] behaviour_class
+      # @return [Behaviour::Abstract, nil] based on behaviour_class
       def behaviour(behaviour_class)
         @behaviours[behaviour_class]
       end
 
+      # @param [Class] behaviour_class
+      # @return [Behaviour::Abstract] based on behaviour_class
+      # @raise [KeyError] when no behaviour
       def behaviour!(behaviour_class)
         @behaviours.fetch behaviour_class
       end

@@ -1,6 +1,9 @@
 module Concurrent
   module Actor
     module Behaviour
+
+      # Handles actor termination.
+      # @note Actor rejects envelopes when terminated.
       class Termination < Abstract
 
         # @!attribute [r] terminated

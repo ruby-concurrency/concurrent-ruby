@@ -1,6 +1,7 @@
 module Concurrent
   module Actor
     module Behaviour
+      # Collects returning value and sets the IVar in the {Envelope} or error on failure.
       class SetResults < Abstract
         attr_reader :error_strategy
 

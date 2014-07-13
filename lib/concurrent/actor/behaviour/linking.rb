@@ -1,6 +1,9 @@
 module Concurrent
   module Actor
     module Behaviour
+
+      # Links the actor to other actors and sends events to them,
+      # like: `:terminated`, `:paused`, errors, etc
       class Linking < Abstract
         def initialize(core, subsequent)
           super core, subsequent

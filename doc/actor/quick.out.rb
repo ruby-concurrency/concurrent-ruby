@@ -1,7 +1,6 @@
-class Counter
+class Counter < Concurrent::Actor::Context
   # Include context of an actor which gives this class access to reference and other information
   # about the actor, see PublicDelegations.
-  include Concurrent::Actor::Context
 
   # use initialize as you wish
   def initialize(initial_value)
@@ -42,27 +41,23 @@ counter.ask(5).wait.rejected?                      # => true
 
 # Failure on message processing terminates the actor.
 counter = Counter.spawn(:first, 0)                 # => #<Concurrent::Actor::Reference /first (Counter)>
-counter.ask('boom').wait.rejected?                 # => true
-counter.terminated?                                # => true
+counter.ask('boom').wait.rejected?                 # => false
+counter.terminated?                                # => false
 
 
 # Lets define an actor creating children actors.
-class Node
-  include Concurrent::Actor::Context
-
+class Node < Concurrent::Actor::Context
   def on_message(message)
     case message
     when :new_child
-      spawn self.class, :child
+      Node.spawn :child
     when :how_many_children
       children.size
-    when :terminate
-      terminate!
     else
       raise 'unknown'
     end
   end
-end                                                # => :on_message
+end 
 
 # Actors are tracking parent-child relationships
 parent = Node.spawn :parent                        # => #<Concurrent::Actor::Reference /parent (Node)>

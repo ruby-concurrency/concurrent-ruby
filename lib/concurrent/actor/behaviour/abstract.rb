@@ -12,18 +12,26 @@ module Concurrent
           @subsequent = Type! subsequent, Abstract, NilClass
         end
 
+        # override to add extra behaviour
+        # @note super needs to be called not to break the chain
         def on_envelope(envelope)
           pass envelope
         end
 
+        # @param [Envelope] envelope to pass to {#subsequent} behaviour
         def pass(envelope)
           subsequent.on_envelope envelope
         end
 
+        # override to add extra behaviour
+        # @note super needs to be called not to break the chain
         def on_event(event)
           subsequent.on_event event if subsequent
         end
 
+        # broadcasts event to all behaviours and context
+        # @see #on_event
+        # @see AbstractContext#on_event
         def broadcast(event)
           core.broadcast(event)
         end

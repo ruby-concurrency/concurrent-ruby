@@ -2,6 +2,7 @@
 
 -  Light-weighted.
 -  Inspired by Akka and Erlang.
+-  Modular.
 
 Actors are sharing a thread-pool by default which makes them very cheap to create and discard.
 Thousands of actors can be created, allowing you to break the program into small maintainable pieces,
@@ -40,9 +41,9 @@ are very useful.
 
 ### Dead letter routing
 
-see {Context#dead_letter_routing} description:
+see {AbstractContext#dead_letter_routing} description:
 
-> {include:Actor::Context#dead_letter_routing}
+> {include:Actor::AbstractContext#dead_letter_routing}
 
 ## Architecture
 
@@ -55,7 +56,7 @@ Blocking operations could starve the `default_task_pool`. However there are two 
 - Create an actor using `global_operation_pool` instead of `global_task_pool`, e.g.
   `AnIOActor.spawn name: :blocking, executor: Concurrent.configuration.global_operation_pool`.
 
-Each actor is composed from 3 objects:
+Each actor is composed from 4 parts:
 
 ### {Reference}
 {include:Actor::Reference}
@@ -63,12 +64,11 @@ Each actor is composed from 3 objects:
 ### {Core}
 {include:Actor::Core}
 
-### {Context}
-{include:Actor::Context}
+### {AbstractContext}
+{include:Actor::AbstractContext}
 
-### Behaviours
-
-_TODO_ 
+### {Behaviour}
+{include:Actor::Behaviour}
 
 ## Speed
 
