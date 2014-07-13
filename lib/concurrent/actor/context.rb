@@ -28,6 +28,10 @@ module Concurrent
         raise NotImplementedError
       end
 
+      # override to add custom code invocation on events like `:terminated`, `:resumed`, `anError`.
+      def on_event(event)
+      end
+
       # @api private
       def on_envelope(envelope)
         @envelope = envelope

@@ -2,7 +2,6 @@ module Concurrent
   module Actor
 
     # TODO document dependencies
-    # TODO callbacks to context
     module Behaviour
       MESSAGE_PROCESSED = Object.new
 
