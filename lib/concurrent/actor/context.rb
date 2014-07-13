@@ -38,7 +38,7 @@ module Concurrent
 
       # if you want to pass the message to next behaviour, usually {Behaviour::ErrorOnUnknownMessage}
       def pass
-        core.behaviour(Behaviour::DoContext).pass envelope
+        core.behaviour!(Behaviour::ExecutesContext).pass envelope
       end
 
       # Defines an actor responsible for dead letters. Any rejected message send with

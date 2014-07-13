@@ -1,0 +1,48 @@
+module Concurrent
+  module Actor
+    module Behaviour
+      class Supervising < Abstract
+        attr_reader :supervisor
+
+        def initialize(core, subsequent)
+          super core, subsequent
+          @supervisor = nil
+        end
+
+        def on_envelope(envelope)
+          case envelope.message
+          when :supervise
+            supervise envelope.sender
+          when :supervisor
+            supervisor
+          when :un_supervise
+            un_supervise envelope.sender
+          else
+            pass envelope
+          end
+        end
+
+        def supervise(ref)
+          @supervisor = ref
+          behaviour!(Linking).link ref
+          true
+        end
+
+        def un_supervise(ref)
+          if @supervisor == ref
+            behaviour!(Linking).unlink ref
+            @supervisor = nil
+            true
+          else
+            false
+          end
+        end
+
+        def on_event(event)
+          @supervisor = nil if event == :terminated
+          super event
+        end
+      end
+    end
+  end
+end
