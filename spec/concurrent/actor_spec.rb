@@ -336,6 +336,39 @@ module Concurrent
           expect(queue.pop).to eq :init # rebuilds context
           expect(queue.pop).to eq :reset
           terminate_actors test
+
+          queue              = Queue.new
+          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
+            if Behaviour::Supervising == c
+              [c, [:restart!, :one_for_one]]
+            else
+              [c, args]
+            end
+          end
+
+          test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
+            actor = AdHoc.spawn name:                 :pausing,
+                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+              queue << :init
+              -> m { m == :add ? 1 : pass }
+            end
+
+            actor << :supervise
+            queue << actor.ask!(:supervisor)
+            actor << nil
+            queue << actor.ask(:add)
+
+            -> m do
+              queue << m
+            end
+          end
+
+          expect(queue.pop).to eq :init
+          expect(queue.pop).to eq test
+          expect(queue.pop.wait.reason).to be_a_kind_of(ActorTerminated)
+          expect(queue.pop).to eq :init
+          expect(queue.pop).to eq :restarted
+          terminate_actors test
         end
 
       end

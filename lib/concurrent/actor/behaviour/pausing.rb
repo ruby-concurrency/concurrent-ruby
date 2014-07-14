@@ -22,8 +22,8 @@ module Concurrent
             from_supervisor?(envelope) { resume! }
           when :reset!
             from_supervisor?(envelope) { reset! }
-            # when :restart! TODO
-            #   from_supervisor?(envelope) { reset! }
+          when :restart!
+            from_supervisor?(envelope) { restart! }
           else
             if @paused
               @buffer << envelope
@@ -34,20 +34,6 @@ module Concurrent
           end
         end
 
-        def pause!(error = nil)
-          @paused = true
-          broadcast(error || :paused)
-          true
-        end
-
-        def resume!(broadcast = true)
-          @buffer.each { |envelope| core.schedule_execution { pass envelope } }
-          @buffer.clear
-          @paused = false
-          broadcast(:resumed) if broadcast
-          true
-        end
-
         def from_supervisor?(envelope)
           if behaviour!(Supervised).supervisor == envelope.sender
             yield
@@ -56,17 +42,39 @@ module Concurrent
           end
         end
 
-        def reset!
+        def pause!(error = nil)
+          @paused = true
+          broadcast(error || :paused)
+          true
+        end
+
+        def resume!(broadcast = true)
+          @paused = false
+          broadcast(:resumed) if broadcast
+          true
+        end
+
+        def reset!(broadcast = true)
           core.allocate_context
           core.build_context
           resume!(false)
-          broadcast(:reset)
+          broadcast(:reset) if broadcast
+          true
+        end
+
+        def restart!
+          reset! false
+          broadcast(:restarted)
           true
         end
 
         def on_event(event)
-          if event == :terminated
+          case event
+          when :terminated, :restarted
             @buffer.each { |envelope| reject_envelope envelope }
+            @buffer.clear
+          when :resumed, :reset
+            @buffer.each { |envelope| core.schedule_execution { pass envelope } }
             @buffer.clear
           end
           super event

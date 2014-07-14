@@ -41,7 +41,8 @@ module Concurrent
         end
 
         def on_event(event)
-          if event == :terminated
+          case event
+          when :terminated, :restarted
             @buffer.each { |envelope| reject_envelope envelope }
             @buffer.clear
           end
