@@ -40,16 +40,16 @@ module Concurrent
           true
         end
 
-        def resume!
+        def resume!(broadcast = true)
           @buffer.each { |envelope| core.schedule_execution { pass envelope } }
           @buffer.clear
           @paused = false
-          broadcast(:resumed)
+          broadcast(:resumed) if broadcast
           true
         end
 
         def from_supervisor?(envelope)
-          if behaviour!(Supervising).supervisor == envelope.sender
+          if behaviour!(Supervised).supervisor == envelope.sender
             yield
           else
             false
@@ -59,8 +59,8 @@ module Concurrent
         def reset!
           core.allocate_context
           core.build_context
+          resume!(false)
           broadcast(:reset)
-          resume!
           true
         end
 

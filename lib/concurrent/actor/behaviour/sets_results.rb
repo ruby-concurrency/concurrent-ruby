@@ -23,6 +23,8 @@ module Concurrent
             terminate!
           when :pause
             behaviour!(Pausing).pause!(error)
+          when :just_log
+            # nothing
           else
             raise
           end

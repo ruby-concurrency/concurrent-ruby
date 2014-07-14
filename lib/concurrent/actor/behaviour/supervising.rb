@@ -1,49 +1,32 @@
 module Concurrent
   module Actor
     module Behaviour
-
-      # Sets nad holds the supervisor of the actor if any. There is only one or none supervisor
-      # for each actor. Each supervisor is automatically linked.
       class Supervising < Abstract
-        attr_reader :supervisor
-
-        def initialize(core, subsequent)
+        def initialize(core, subsequent, handle, strategy)
           super core, subsequent
-          @supervisor = nil
+          @handle   = Match! handle, :terminate!, :resume!, :reset!, :restart!
+          @strategy = case @handle
+                      when :terminate!
+                        Match! strategy, nil
+                      when :resume!
+                        Match! strategy, :one_for_one
+                      when :reset!, :restart!
+                        Match! strategy, :one_for_one, :one_for_all
+                      end
         end
 
         def on_envelope(envelope)
           case envelope.message
-          when :supervise
-            supervise envelope.sender
-          when :supervisor
-            supervisor
-          when :un_supervise
-            un_supervise envelope.sender
+          when Exception, :paused
+            receivers = if @strategy == :one_for_all
+                          children
+                        else
+                          [envelope.sender]
+                        end
+            receivers.each { |ch| ch << @handle }
           else
             pass envelope
           end
-        end
-
-        def supervise(ref)
-          @supervisor = ref
-          behaviour!(Linking).link ref
-          true
-        end
-
-        def un_supervise(ref)
-          if @supervisor == ref
-            behaviour!(Linking).unlink ref
-            @supervisor = nil
-            true
-          else
-            false
-          end
-        end
-
-        def on_event(event)
-          @supervisor = nil if event == :terminated
-          super event
         end
       end
     end

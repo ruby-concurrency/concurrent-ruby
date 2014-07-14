@@ -50,7 +50,7 @@ module Concurrent
         @serialized_execution = SerializedExecution.new
         @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
         @children             = Set.new
-        @context_class        = Child! opts.fetch(:class), Context
+        @context_class        = Child! opts.fetch(:class), AbstractContext
         allocate_context
         @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
         @name      = (Type! opts.fetch(:name), String, Symbol).to_s

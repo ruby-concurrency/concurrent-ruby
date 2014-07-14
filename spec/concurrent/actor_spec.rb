@@ -277,8 +277,16 @@ module Concurrent
 
       describe 'pausing' do
         it 'pauses on error' do
-          queue = Queue.new
-          test  = AdHoc.spawn :tester do
+          queue              = Queue.new
+          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
+            if Behaviour::Supervising == c
+              [c, [:resume!, :one_for_one]]
+            else
+              [c, args]
+            end
+          end
+
+          test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
             actor = AdHoc.spawn name:                 :pausing,
                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
@@ -288,50 +296,44 @@ module Concurrent
             actor << :supervise
             queue << actor.ask!(:supervisor)
             actor << nil
+            queue << actor.ask(:add)
 
             -> m do
               queue << m
-              if UnknownMessage === m
-                ivar = envelope.sender.ask(:add)
-                envelope.sender << :resume!
-                queue << ivar.value!
-              end
             end
           end
 
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq test
-          expect(queue.pop).to be_kind_of(UnknownMessage)
-          expect(queue.pop).to eq 1
+          expect(queue.pop.value).to eq 1
           expect(queue.pop).to eq :resumed
           terminate_actors test
 
-          test = AdHoc.spawn :tester do
+          test = AdHoc.spawn name:                 :tester,
+                             behaviour_definition: Behaviour.restarting_behaviour_definition do
             actor = AdHoc.spawn name:                 :pausing,
                                 supervise:            true,
                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
-              -> m { m == :add ? 1 : pass }
+              -> m { m == :object_id ? self.object_id : pass }
             end
 
             queue << actor.ask!(:supervisor)
+            queue << actor.ask!(:object_id)
             actor << nil
+            queue << actor.ask(:object_id)
 
             -> m do
               queue << m
-              if UnknownMessage === m
-                ivar = envelope.sender.ask(:add)
-                envelope.sender << :reset!
-                queue << ivar.value!
-              end
             end
           end
 
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq test
-          expect(queue.pop).to be_kind_of(UnknownMessage)
+          first_id  = queue.pop
+          second_id = queue.pop.value
+          expect(first_id).not_to eq second_id # context already reset
           expect(queue.pop).to eq :init # rebuilds context
-          expect(queue.pop).to eq 1
           expect(queue.pop).to eq :reset
           terminate_actors test
         end

@@ -1,12 +1,14 @@
 module Concurrent
   module Actor
     # implements the root actor
-    class Root < Context
+    class Root < AbstractContext
 
       def initialize
-        @dead_letter_router = Core.new(parent: reference,
-                                       class:  DefaultDeadLetterHandler,
-                                       name:   :default_dead_letter_handler).reference
+        # noinspection RubyArgCount
+        @dead_letter_router = Core.new(parent:    reference,
+                                       class:     DefaultDeadLetterHandler,
+                                       supervise: true,
+                                       name:      :default_dead_letter_handler).reference
       end
 
       # to allow spawning of new actors, spawn needs to be called inside the parent Actor
@@ -20,6 +22,12 @@ module Concurrent
 
       def dead_letter_routing
         @dead_letter_router
+      end
+
+      def behaviour_definition
+        [*Behaviour.base,
+         [Behaviour::Supervising, [:reset!, :one_for_one]],
+         *Behaviour.user_messages(:just_log)]
       end
     end
   end

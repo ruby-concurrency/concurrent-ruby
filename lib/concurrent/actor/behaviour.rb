@@ -27,6 +27,7 @@ module Concurrent
       require 'concurrent/actor/behaviour/pausing'
       require 'concurrent/actor/behaviour/removes_child'
       require 'concurrent/actor/behaviour/sets_results'
+      require 'concurrent/actor/behaviour/supervised'
       require 'concurrent/actor/behaviour/supervising'
       require 'concurrent/actor/behaviour/termination'
       require 'concurrent/actor/behaviour/terminates_children'
@@ -38,7 +39,8 @@ module Concurrent
 
       def self.restarting_behaviour_definition
         [*base,
-         *supervising,
+         *supervised,
+         [Behaviour::Supervising, [:reset!, :one_for_one]],
          *user_messages(:pause)]
       end
 
@@ -51,8 +53,8 @@ module Concurrent
          [Linking, []]]
       end
 
-      def self.supervising
-        [[Supervising, []],
+      def self.supervised
+        [[Supervised, []],
          [Pausing, []]]
       end
 
