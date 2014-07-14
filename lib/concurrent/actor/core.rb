@@ -35,7 +35,7 @@ module Concurrent
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
       # @option opts [true, false] link, atomically link the actor to its parent
       # @option opts [true, false] supervise, atomically supervise the actor by its parent
-      # @option opts [[Array<Array(Behavior::Abstract, Array<Object>)>]] behaviour, array of pairs
+      # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
       #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour}
       # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
@@ -210,7 +210,7 @@ module Concurrent
       end
 
       def initialize_behaviours(opts)
-        @behaviour_definition = (Type! opts[:behaviour] || @context.behaviour_definition, Array).each do |v|
+        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |v|
           Type! v, Array
           Match! v.size, 2
           Child! v[0], Behaviour::Abstract

@@ -122,7 +122,7 @@ module Concurrent
     #   Ping.spawn(:ping1).ask(:m).value #=> :m
     class Context < AbstractContext
       def behaviour_definition
-        Behaviour.basic_behaviour
+        Behaviour.basic_behaviour_definition
       end
     end
 
@@ -136,7 +136,7 @@ module Concurrent
     # TODO usage
     class RestartingContext < AbstractContext
       def behaviour_definition
-        Behaviour.restarting_behaviour
+        Behaviour.restarting_behaviour_definition
       end
     end
   end

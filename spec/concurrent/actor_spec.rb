@@ -279,7 +279,8 @@ module Concurrent
         it 'pauses on error' do
           queue = Queue.new
           test  = AdHoc.spawn :tester do
-            actor = AdHoc.spawn name: :pausing, behaviour: Behaviour.restarting_behaviour do
+            actor = AdHoc.spawn name:                 :pausing,
+                                behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
@@ -306,7 +307,9 @@ module Concurrent
           terminate_actors test
 
           test = AdHoc.spawn :tester do
-            actor = AdHoc.spawn name: :pausing, supervise: true, behaviour: Behaviour.restarting_behaviour do
+            actor = AdHoc.spawn name:                 :pausing,
+                                supervise:            true,
+                                behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end

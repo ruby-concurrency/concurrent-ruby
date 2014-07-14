@@ -31,12 +31,12 @@ module Concurrent
       require 'concurrent/actor/behaviour/termination'
       require 'concurrent/actor/behaviour/terminates_children'
 
-      def self.basic_behaviour
+      def self.basic_behaviour_definition
         [*base,
          *user_messages(:terminate)]
       end
 
-      def self.restarting_behaviour
+      def self.restarting_behaviour_definition
         [*base,
          *supervising,
          *user_messages(:pause)]
