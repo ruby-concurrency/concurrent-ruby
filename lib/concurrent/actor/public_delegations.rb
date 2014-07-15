@@ -18,16 +18,6 @@ module Concurrent
         core.parent
       end
 
-      # @see Behaviour::Termination#terminated?
-      def terminated?
-        core.terminated?
-      end
-
-      # @see Behaviour::Termination#terminated
-      def terminated
-        core.terminated
-      end
-
       # @see Core#reference
       def reference
         core.reference

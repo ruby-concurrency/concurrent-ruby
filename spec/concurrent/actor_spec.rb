@@ -20,10 +20,8 @@ module Concurrent
 
       def terminate_actors(*actors)
         actors.each do |actor|
-          unless actor.terminated?
-            actor << :terminate!
-            actor.terminated.wait(2) or
-                raise 'timeout'
+          unless actor.ask!(:terminated?)
+            actor.ask!(:terminate!)
           end
         end
       end
@@ -134,7 +132,7 @@ module Concurrent
         it 'terminates on failed initialization' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { raise }
           expect(a.ask(nil).wait.rejected?).to be_truthy
-          expect(a.terminated?).to be_truthy
+          expect(a.ask!(:terminated?)).to be_truthy
         end
 
         it 'terminates on failed initialization and raises with spawn!' do
@@ -146,7 +144,7 @@ module Concurrent
         it 'terminates on failed message processing' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { -> _ { raise } }
           expect(a.ask(nil).wait.rejected?).to be_truthy
-          expect(a.terminated?).to be_truthy
+          expect(a.ask!(:terminated?)).to be_truthy
         end
       end
 
@@ -205,11 +203,11 @@ module Concurrent
 
         it 'terminates with all its children' do
           child = subject.ask! :child
-          expect(subject.terminated?).to be_falsey
+          expect(subject.ask!(:terminated?)).to be_falsey
           subject.ask(:terminate!).wait
-          expect(subject.terminated?).to be_truthy
-          child.terminated.wait
-          expect(child.terminated?).to be_truthy
+          expect(subject.ask!(:terminated?)).to be_truthy
+          child.ask!(:terminated_event).wait
+          expect(child.ask!(:terminated?)).to be_truthy
 
           terminate_actors subject, child
         end

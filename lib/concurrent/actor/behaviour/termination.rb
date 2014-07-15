@@ -22,12 +22,17 @@ module Concurrent
         end
 
         def on_envelope(envelope)
-          if terminated?
-            reject_envelope envelope
-            MESSAGE_PROCESSED
+          case envelope.message
+          when :terminated?
+            terminated?
+          when :terminate!
+            terminate!
+          when :terminated_event
+            terminated
           else
-            if envelope.message == :terminate!
-              terminate!
+            if terminated?
+              reject_envelope envelope
+              MESSAGE_PROCESSED
             else
               pass envelope
             end
@@ -37,11 +42,11 @@ module Concurrent
         # Terminates the actor. Any Envelope received after termination is rejected.
         # Terminates all its children, does not wait until they are terminated.
         def terminate!
-          return nil if terminated?
-          @terminated.set
+          return true if terminated?
+          terminated.set
           broadcast(:terminated)
           parent << :remove_child if parent
-          nil
+          true
         end
       end
     end

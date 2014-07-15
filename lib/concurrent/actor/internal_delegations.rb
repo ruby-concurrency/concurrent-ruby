@@ -10,7 +10,7 @@ module Concurrent
 
       # @see Core#terminate!
       def terminate!
-        core.terminate!
+        behaviour!(Behaviour::Termination).terminate!
       end
 
       # delegates to core.log

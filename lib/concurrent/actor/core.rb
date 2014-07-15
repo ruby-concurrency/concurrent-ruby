@@ -87,19 +87,10 @@ module Concurrent
             initialized.set true if initialized
           rescue => ex
             log ERROR, ex
-            terminate!
+            @first_behaviour.terminate!
             initialized.fail ex if initialized
           end
         end
-      end
-
-      def allocate_context
-        @context = @context_class.allocate
-      end
-
-      def build_context
-        @context.send :initialize_core, self
-        @context.send :initialize, *@args, &@block
       end
 
       # @return [Reference, nil] of parent actor
@@ -140,21 +131,6 @@ module Concurrent
       def on_envelope(envelope)
         schedule_execution { handle_envelope envelope }
         nil
-      end
-
-      # @see Behaviour::Termination#terminated?
-      def terminated?
-        behaviour!(Behaviour::Termination).terminated?
-      end
-
-      # @see Behaviour::Termination#terminated!
-      def terminate!
-        behaviour!(Behaviour::Termination).terminate!
-      end
-
-      # @see Behaviour::Termination#terminated
-      def terminated
-        behaviour!(Behaviour::Termination).terminated
       end
 
       # ensures that we are inside of the executor
@@ -200,6 +176,17 @@ module Concurrent
       # @raise [KeyError] when no behaviour
       def behaviour!(behaviour_class)
         @behaviours.fetch behaviour_class
+      end
+
+      # @api private
+      def allocate_context
+        @context = @context_class.allocate
+      end
+
+      # @api private
+      def build_context
+        @context.send :initialize_core, self
+        @context.send :initialize, *@args, &@block
       end
 
       private
