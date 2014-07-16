@@ -7,7 +7,7 @@ module Concurrent
 
         def initialize(core, subsequent, error_strategy)
           super core, subsequent
-          @error_strategy = Match! error_strategy, :just_log, :terminate, :pause
+          @error_strategy = Match! error_strategy, :just_log, :terminate!, :pause!
         end
 
         def on_envelope(envelope)
@@ -19,9 +19,9 @@ module Concurrent
         rescue => error
           log Logging::ERROR, error
           case error_strategy
-          when :terminate
+          when :terminate!
             terminate!
-          when :pause
+          when :pause!
             behaviour!(Pausing).pause!(error)
           when :just_log
             # nothing

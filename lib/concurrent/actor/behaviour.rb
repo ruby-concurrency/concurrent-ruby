@@ -34,18 +34,18 @@ module Concurrent
 
       def self.basic_behaviour_definition
         [*base,
-         *user_messages(:terminate)]
+         *user_messages(:terminate!)]
       end
 
       def self.restarting_behaviour_definition
         [*base,
          *supervised,
          [Behaviour::Supervising, [:reset!, :one_for_one]],
-         *user_messages(:pause)]
+         *user_messages(:pause!)]
       end
 
       def self.base
-        [[SetResults, [:terminate]],
+        [[SetResults, [:terminate!]],
          # has to be before Termination to be able to remove children form terminated actor
          [RemovesChild, []],
          [Termination, []],
