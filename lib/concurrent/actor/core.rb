@@ -10,6 +10,7 @@ module Concurrent
     class Core
       include TypeCheck
       include Concurrent::Logging
+      include Synchronization
 
       # @!attribute [r] reference
       #   @return [Reference] reference to this actor which can be safely passed around
@@ -42,53 +43,51 @@ module Concurrent
       #   can be used to hook actor instance to any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
-        # @mutex = Mutex.new
-        # @mutex.lock
-        # FIXME make initialization safe!
+        synchronize do
+          @mailbox              = Array.new
+          @serialized_execution = SerializedExecution.new
+          @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
+          @children             = Set.new
+          @context_class        = Child! opts.fetch(:class), AbstractContext
+          allocate_context
+          @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
+          @name      = (Type! opts.fetch(:name), String, Symbol).to_s
 
-        @mailbox              = Array.new
-        @serialized_execution = SerializedExecution.new
-        @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
-        @children             = Set.new
-        @context_class        = Child! opts.fetch(:class), AbstractContext
-        allocate_context
-        @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
-        @name      = (Type! opts.fetch(:name), String, Symbol).to_s
+          parent       = opts[:parent]
+          @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
+          if @parent_core.nil? && @name != '/'
+            raise 'only root has no parent'
+          end
 
-        parent       = opts[:parent]
-        @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
-        if @parent_core.nil? && @name != '/'
-          raise 'only root has no parent'
-        end
+          @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
+          @logger = opts[:logger]
 
-        @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
-        @logger = opts[:logger]
+          @parent_core.add_child reference if @parent_core
 
-        @parent_core.add_child reference if @parent_core
+          initialize_behaviours opts
 
-        initialize_behaviours opts
+          @args       = opts.fetch(:args, [])
+          @block      = block
+          initialized = Type! opts[:initialized], IVar, NilClass
 
-        @args       = opts.fetch(:args, [])
-        @block      = block
-        initialized = Type! opts[:initialized], IVar, NilClass
+          messages = []
+          messages << :link if opts[:link]
+          messages << :supervise if opts[:supervise]
 
-        messages = []
-        messages << :link if opts[:link]
-        messages << :supervise if opts[:supervise]
+          schedule_execution do
+            begin
+              build_context
 
-        schedule_execution do
-          begin
-            build_context
+              messages.each do |message|
+                handle_envelope Envelope.new(message, nil, parent, reference)
+              end
 
-            messages.each do |message|
-              handle_envelope Envelope.new(message, nil, parent, reference)
+              initialized.set true if initialized
+            rescue => ex
+              log ERROR, ex
+              @first_behaviour.terminate!
+              initialized.fail ex if initialized
             end
-
-            initialized.set true if initialized
-          rescue => ex
-            log ERROR, ex
-            @first_behaviour.terminate!
-            initialized.fail ex if initialized
           end
         end
       end
@@ -148,13 +147,15 @@ module Concurrent
       # sets Actress.current
       def schedule_execution
         @serialized_execution.post(@executor) do
-          begin
-            Thread.current[:__current_actor__] = reference
-            yield
-          rescue => e
-            log FATAL, e
-          ensure
-            Thread.current[:__current_actor__] = nil
+          synchronize do
+            begin
+              Thread.current[:__current_actor__] = reference
+              yield
+            rescue => e
+              log FATAL, e
+            ensure
+              Thread.current[:__current_actor__] = nil
+            end
           end
         end
 
