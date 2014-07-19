@@ -18,12 +18,12 @@ module Concurrent
           when :subscribed?
             @receivers.include? envelope.sender
           else
-            @receivers.each { |r| r << message }
+            filtered_receivers.each { |r| r << message }
           end
         end
 
         # override to define different behaviour, filtering etc
-        def receivers
+        def filtered_receivers
           @receivers
         end
       end
