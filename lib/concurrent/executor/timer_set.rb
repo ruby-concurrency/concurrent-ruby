@@ -23,7 +23,7 @@ module Concurrent
     #   this executor rather than the global thread pool (overrides :operation)
     def initialize(opts = {})
       @queue = PriorityQueue.new(order: :min)
-      @task_executor = OptionsParser::get_executor_from(opts)
+      @task_executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_task_pool
       @timer_executor = SingleThreadExecutor.new
       @condition = Condition.new
       init_executor

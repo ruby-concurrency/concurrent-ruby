@@ -5,6 +5,7 @@ require 'concurrent/options_parser'
 
 module Concurrent
 
+  # TODO unify promise and future to single class, with dataflow
   class Promise
     include Obligation
 
@@ -32,7 +33,7 @@ module Concurrent
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
 
-      @executor = OptionsParser::get_executor_from(opts)
+      @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
       @parent = opts.fetch(:parent) { nil }
       @on_fulfill = opts.fetch(:on_fulfill) { Proc.new { |result| result } }
       @on_reject = opts.fetch(:on_reject) { Proc.new { |reason| raise reason } }
