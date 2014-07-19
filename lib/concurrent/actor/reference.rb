@@ -16,7 +16,7 @@ module Concurrent
         @core = Type! core, Core
       end
 
-      # tells message to the actor
+      # tells message to the actor, returns immediately
       # @param [Object] message
       # @return [Reference] self
       def tell(message)
@@ -25,7 +25,12 @@ module Concurrent
 
       alias_method :<<, :tell
 
-      # tells message to the actor
+      # @note it's a good practice to use tell whenever possible. Ask should be used only for
+      # testing and when it returns very shortly. It can lead to deadlock if all threads in
+      # global_task_pool will block on while asking. It's fine to use it form outside of actors and
+      # global_task_pool.
+      #
+      # sends message to the actor and asks for the result of its processing, returns immediately
       # @param [Object] message
       # @param [Ivar] ivar to be fulfilled be message's processing result
       # @return [IVar] supplied ivar
@@ -33,8 +38,12 @@ module Concurrent
         message message, ivar
       end
 
-      # @note can lead to deadlocks, use only in tests or when you are sure it won't deadlock
-      # tells message to the actor
+      # @note it's a good practice to use tell whenever possible. Ask should be used only for
+      # testing and when it returns very shortly. It can lead to deadlock if all threads in
+      # global_task_pool will block on while asking. It's fine to use it form outside of actors and
+      # global_task_pool.
+      #
+      # sends message to the actor and asks for the result of its processing, blocks
       # @param [Object] message
       # @param [Ivar] ivar to be fulfilled be message's processing result
       # @return [Object] message's processing result
