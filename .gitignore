@@ -20,6 +20,7 @@ rdoc/*
 *.REMOTE.*
 git_pull.txt
 coverage
+critic
 .DS_Store
 TAGS
 tmtags
