@@ -12,10 +12,10 @@ module Concurrent
       expect { Concurrent::dataflow_with(root_executor) }.to raise_error(ArgumentError)
     end
 
-    specify '#dataflow uses the global task pool' do
+    specify '#dataflow uses the global operation pool' do
       input = Future.execute{0}
       expect(Concurrent).to receive(:dataflow_with).once.
-        with(Concurrent.configuration.global_task_pool, input)
+        with(Concurrent.configuration.global_operation_pool, input)
       Concurrent::dataflow(input){0}
     end
 
@@ -229,9 +229,9 @@ module Concurrent
           end
         end
 
-        expected = fib_with_dot(14)
+        expected = fib_with_dot(7)
         sleep(0.1)
-        expect(expected.value).to eq 377
+        expect(expected.value).to eq 13
       end
       
     end

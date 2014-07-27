@@ -10,14 +10,16 @@ module Concurrent
     # @option opts [Boolean] :operation (`false`) when true use the global operation pool
     # @option opts [Boolean] :task (`true`) when true use the global task pool
     #
-    # @return [Executor] the requested thread pool (default: global task pool)
+    # @return [Executor, nil] the requested thread pool, or nil when no option specified
     def get_executor_from(opts = {})
       if opts[:executor]
         opts[:executor]
       elsif opts[:operation] == true || opts[:task] == false
         Concurrent.configuration.global_operation_pool
-      else
+      elsif opts[:operation] == false || opts[:task] == true
         Concurrent.configuration.global_task_pool
+      else
+        nil
       end
     end
 

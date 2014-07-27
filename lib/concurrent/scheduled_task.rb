@@ -15,16 +15,17 @@ module Concurrent
       super(NO_VALUE, opts)
 
       self.observers = CopyOnNotifyObserverSet.new
-      @intended_time =  intended_time
-      @state = :unscheduled
-      @task = block
+      @intended_time = intended_time
+      @state         = :unscheduled
+      @task          = block
+      @executor      = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
     end
 
     # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
         @schedule_time = TimerSet.calculate_schedule_time(@intended_time)
-        Concurrent::timer(@schedule_time.to_f - Time.now.to_f, &method(:process_task))
+        Concurrent::timer(@schedule_time.to_f - Time.now.to_f) { @executor.post &method(:process_task) }
         self
       end
     end
@@ -71,7 +72,7 @@ module Concurrent
         end
 
         time = Time.now
-        observers.notify_and_delete_observers{ [time, self.value, reason] }
+        observers.notify_and_delete_observers { [time, self.value, reason] }
       end
     end
   end
