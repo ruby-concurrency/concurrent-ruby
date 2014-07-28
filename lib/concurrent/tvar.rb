@@ -1,7 +1,5 @@
 require 'set'
 
-require 'concurrent/atomic/thread_local_var'
-
 module Concurrent
 
   # A `TVar` is a transactional variable - a single-element container that
@@ -97,7 +95,7 @@ module Concurrent
 
       begin
         # Retry loop
-        
+
         loop do
 
           # Create a new transaction
@@ -149,8 +147,6 @@ module Concurrent
 
     ABORTED = Object.new
 
-    CURRENT_TRANSACTION = ThreadLocalVar.new(nil)
-
     ReadLogEntry = Struct.new(:tvar, :version)
     UndoLogEntry = Struct.new(:tvar, :value)
 
@@ -158,8 +154,8 @@ module Concurrent
 
     def initialize
       @write_set = Set.new
-      @read_log = []
-      @undo_log = []
+      @read_log  = []
+      @undo_log  = []
     end
 
     def read(tvar)
@@ -217,7 +213,7 @@ module Concurrent
       end
 
       unlock
-      
+
       true
     end
 
@@ -240,11 +236,11 @@ module Concurrent
     end
 
     def self.current
-      CURRENT_TRANSACTION.value
+      Thread.current[:current_tvar_transaction]
     end
 
     def self.current=(transaction)
-      CURRENT_TRANSACTION.value = transaction
+      Thread.current[:current_tvar_transaction] = transaction
     end
 
   end
