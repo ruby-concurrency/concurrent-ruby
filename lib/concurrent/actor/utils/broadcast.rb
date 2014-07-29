@@ -3,6 +3,8 @@ require 'set'
 module Concurrent
   module Actor
     module Utils
+
+      # TODO doc
       class Broadcast < Context
 
         def initialize
@@ -13,8 +15,10 @@ module Concurrent
           case message
           when :subscribe
             @receivers.add envelope.sender
+            true
           when :unsubscribe
             @receivers.delete envelope.sender
+            true
           when :subscribed?
             @receivers.include? envelope.sender
           else
