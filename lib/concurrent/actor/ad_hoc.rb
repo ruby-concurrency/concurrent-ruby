@@ -1,13 +1,12 @@
 module Concurrent
-  module Actress
+  module Actor
     # Allows quick creation of actors with behaviour defined by blocks.
     # @example ping
     #   AdHoc.spawn :forward, an_actor do |where|
     #     # this block has to return proc defining #on_message behaviour
     #     -> message { where.tell message  }
     #   end
-    class AdHoc
-      include Context
+    class AdHoc < Context
       def initialize(*args, &initializer)
         @on_message = Type! initializer.call(*args), Proc
       end

@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/obligation'
+require 'concurrent/options_parser'
 
 module Concurrent
 
@@ -51,32 +52,13 @@ module Concurrent
       @state = :pending
       @task  = block
       set_deref_options(opts)
+      @task_executor = OptionsParser.get_task_executor_from(opts)
+      @computing     = false
     end
 
-    # Return the (possibly memoized) value of the delayed operation.
-    # 
-    # If the state is `:pending` then the calling thread will block while the
-    # operation is performed. All other threads simultaneously calling `#value`
-    # will block as well. Once the operation is complete (either `:fulfilled` or
-    # `:rejected`) all waiting threads will unblock and the new value will be
-    # returned.
-    #
-    # If the state is not `:pending` when `#value` is called the (possibly memoized)
-    # value will be returned without blocking and without performing the operation
-    # again.
-    #
-    # Regardless of the final disposition all `Dereferenceable` options set during
-    # object construction will be honored.
-    #
-    # @return [Object] the (possibly memoized) result of the block operation
-    #
-    # @see Concurrent::Dereferenceable
-    def value
-      mutex.lock
+    def wait(timeout)
       execute_task_once
-      apply_deref_options(@value)
-    ensure
-      mutex.unlock
+      super timeout
     end
 
     # reconfigures the block returning the value if still #incomplete?
@@ -85,7 +67,7 @@ module Concurrent
     def reconfigure(&block)
       mutex.lock
       raise ArgumentError.new('no block given') unless block_given?
-      if @state == :pending
+      unless @computing
         @task = block
         true
       else
@@ -98,13 +80,23 @@ module Concurrent
     private
 
     def execute_task_once
-      if @state == :pending
-        begin
-          @value = @task.call
-          @state = :fulfilled
-        rescue => ex
-          @reason = ex
-          @state  = :rejected
+      mutex.lock
+      execute = @computing = true unless @computing
+      task    = @task
+      mutex.unlock
+
+      if execute
+        @task_executor.post do
+          begin
+            result  = task.call
+            success = true
+          rescue => ex
+            reason = ex
+          end
+          mutex.lock
+          set_state success, result, reason
+          event.set
+          mutex.unlock
         end
       end
     end

@@ -1,5 +1,5 @@
 module Concurrent
-  module Actress
+  module Actor
 
     # taken from Algebrick
     # supplies type-checking helpers whenever included

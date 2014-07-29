@@ -18,7 +18,7 @@ end
 require 'concurrent'
 
 logger                          = Logger.new($stderr)
-logger.level                    = Logger::INFO
+logger.level                    = Logger::WARN
 Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
   logger.add level, message, progname, &block
 end

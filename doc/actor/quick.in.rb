@@ -1,7 +1,6 @@
-class Counter
+class Counter < Concurrent::Actor::Context
   # Include context of an actor which gives this class access to reference and other information
-  # about the actor, see CoreDelegations.
-  include Concurrent::Actress::Context
+  # about the actor, see PublicDelegations.
 
   # use initialize as you wish
   def initialize(initial_value)
@@ -10,16 +9,11 @@ class Counter
 
   # override on_message to define actor's behaviour
   def on_message(message)
-    case message
-    when Integer
+    if Integer === message
       @count += message
-    when :terminate
-      terminate!
-    else
-      raise 'unknown'
     end
   end
-end
+end #
 
 # Create new actor naming the instance 'first'.
 # Return value is a reference to the actor, the actual actor is never returned.
@@ -35,7 +29,7 @@ counter.ask(0).class
 counter.ask(0).value
 
 # Terminate the actor.
-counter.tell(:terminate)
+counter.tell(:terminate!)
 # Not terminated yet, it takes a while until the message is processed.
 counter.terminated?
 # Waiting for the termination.
@@ -52,22 +46,18 @@ counter.terminated?
 
 
 # Lets define an actor creating children actors.
-class Node
-  include Concurrent::Actress::Context
-
+class Node < Concurrent::Actor::Context
   def on_message(message)
     case message
     when :new_child
-      spawn self.class, :child
+      Node.spawn :child
     when :how_many_children
       children.size
-    when :terminate
-      terminate!
     else
       raise 'unknown'
     end
   end
-end
+end #
 
 # Actors are tracking parent-child relationships
 parent = Node.spawn :parent

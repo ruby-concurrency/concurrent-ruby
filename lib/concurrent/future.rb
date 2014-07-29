@@ -1,6 +1,7 @@
 require 'thread'
 
 require 'concurrent/options_parser'
+require 'concurrent/ivar'
 require 'concurrent/executor/safe_task_executor'
 
 module Concurrent

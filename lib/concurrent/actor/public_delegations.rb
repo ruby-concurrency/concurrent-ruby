@@ -1,42 +1,40 @@
 module Concurrent
-  module Actress
+  module Actor
 
     # Provides publicly expose-able methods from {Core}.
-    module CoreDelegations
+    module PublicDelegations
+      # @see Core#name
       def name
         core.name
       end
 
+      # @see Core#path
       def path
         core.path
       end
 
+      # @see Core#parent
       def parent
         core.parent
       end
 
-      def terminated?
-        core.terminated?
-      end
-
-      def terminated
-        core.terminated
-      end
-
+      # @see Core#reference
       def reference
         core.reference
       end
 
+      # @see Core#executor
       def executor
         core.executor
       end
 
-      def actor_class
-        core.actor_class
+      # @see Core#context_class
+      def context_class
+        core.context_class
       end
 
       alias_method :ref, :reference
-      alias_method :actress_class, :actor_class
+      alias_method :actor_class, :context_class
     end
   end
 end
