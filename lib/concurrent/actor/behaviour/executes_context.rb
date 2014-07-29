@@ -9,6 +9,7 @@ module Concurrent
 
         def on_event(event)
           context.on_event(event)
+          core.log Logging::DEBUG, "event: #{event.inspect}"
           super event
         end
       end
