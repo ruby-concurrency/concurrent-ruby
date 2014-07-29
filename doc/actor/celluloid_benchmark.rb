@@ -34,7 +34,7 @@ class Counter
       ivar.set count
     end
   end
-end
+end if defined? Celluloid
 
 threads = []
 
@@ -72,26 +72,28 @@ Benchmark.bmbm(10) do |b|
       adders.each { |a| a << :terminate! }
     end
 
-    b.report(format('%5d %4d %s', ADD_TO*counts_size, adders_size, 'celluloid')) do
-      counts = []
-      counts_size.times { counts << [0, Concurrent::IVar.new] }
+    if defined? Celluloid
+      b.report(format('%5d %4d %s', ADD_TO*counts_size, adders_size, 'celluloid')) do
+        counts = []
+        counts_size.times { counts << [0, Concurrent::IVar.new] }
 
-      adders = []
-      adders_size.times do |i|
-        adders << Counter.new(adders, i)
+        adders = []
+        adders_size.times do |i|
+          adders << Counter.new(adders, i)
+        end
+
+        counts.each_with_index do |count, i|
+          adders[i % adders_size].counting *count
+        end
+
+        counts.each do |count, ivar|
+          raise unless ivar.value >= ADD_TO
+        end
+
+        threads << Thread.list.size
+
+        adders.each(&:terminate)
       end
-
-      counts.each_with_index do |count, i|
-        adders[i % adders_size].counting *count
-      end
-
-      counts.each do |count, ivar|
-        raise unless ivar.value >= ADD_TO
-      end
-
-      threads << Thread.list.size
-
-      adders.each(&:terminate)
     end
   end
 end
