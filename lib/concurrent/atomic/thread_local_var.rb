@@ -73,17 +73,9 @@ module Concurrent
 
   end
 
-  class ThreadLocalVar
+  class AbstractThreadLocalVar
 
     NIL_SENTINEL = Object.new
-
-    if RUBY_PLATFORM == 'java'
-      include ThreadLocalJavaStorage
-    elsif Thread.current.respond_to?(:thread_variable_set)
-      include ThreadLocalNewStorage
-    else
-      include ThreadLocalOldStorage
-    end
 
     def initialize(default = nil)
       @default = default
@@ -114,6 +106,16 @@ module Concurrent
       value
     end
 
+  end
+
+  class ThreadLocalVar < AbstractThreadLocalVar
+    if RUBY_PLATFORM == 'java'
+      include ThreadLocalJavaStorage
+    elsif Thread.current.respond_to?(:thread_variable_set)
+      include ThreadLocalNewStorage
+    else
+      include ThreadLocalOldStorage
+    end
   end
 
 end
