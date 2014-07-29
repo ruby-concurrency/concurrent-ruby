@@ -250,8 +250,13 @@ module Concurrent
       end
 
       # @!macro executor_method_wait_for_termination
-      def wait_for_termination(timeout)
-        @executor.awaitTermination(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+      def wait_for_termination(timeout = nil)
+        if timeout.nil?
+          ok = @executor.awaitTermination(60, java.util.concurrent.TimeUnit::SECONDS) until ok
+          true
+        else
+          @executor.awaitTermination(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+        end
       end
 
       # @!macro executor_method_shutdown

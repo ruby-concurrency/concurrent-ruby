@@ -178,5 +178,12 @@ shared_examples :executor_service do
         expect(subject.wait_for_termination(0)).to be_falsey
       end
     end
+
+    it 'waits forever when no timeout value is given' do
+      subject.post{ sleep(0.5) }
+      sleep(0.1)
+      subject.shutdown
+      expect(subject.wait_for_termination).to be_truthy
+    end
   end
 end
