@@ -54,7 +54,7 @@ _NOTE: There is an old gem from 2007 called "concurrent" that does not appear to
 ## Features & Documentation
 
 Please see the [Concurrent Ruby Wiki](https://github.com/ruby-concurrency/concurrent-ruby/wiki)
-or the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html))
+or the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
 for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
 
 There are many concurrency abstractions in this library. These abstractions can be broadly categorized
@@ -146,6 +146,7 @@ task.value #=> 25.96
 * [Chip Miller](https://github.com/chip-miller)
 * [Giuseppe Capizzi](https://github.com/gcapizzi)
 * [Jamie Hodge](https://github.com/jamiehodge)
+* [Justin Lambert](https://github.com/mastfish)
 * [Larry Lv](https://github.com/larrylv)
 * [Maxim Chechel](https://github.com/maximchick)
 * [Ravil Bayramgalin](https://github.com/brainopia)

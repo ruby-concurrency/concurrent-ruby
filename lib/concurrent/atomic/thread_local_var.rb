@@ -1,56 +1,19 @@
-require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic'
 
 module Concurrent
 
-  module ThreadLocalSymbolAllocator
-
-    COUNTER = Concurrent::AtomicFixnum.new
-
-    protected
-
-    def allocate_symbol
-      # Warning: this symbol may never be deallocated
-      @symbol = :"thread_local_symbol_#{COUNTER.increment}"
-    end
-
-  end
-
-  module ThreadLocalOldStorage
-
-    include ThreadLocalSymbolAllocator
-
-    protected
+  module ThreadLocalRubyStorage
 
     def allocate_storage
-      allocate_symbol
+      @storage = Atomic.new Hash.new
     end
 
     def get
-      Thread.current[@symbol]
+      @storage.get[Thread.current]
     end
 
     def set(value)
-      Thread.current[@symbol] = value
-    end
-
-  end
-
-  module ThreadLocalNewStorage
-
-    include ThreadLocalSymbolAllocator
-
-    protected
-
-    def allocate_storage
-      allocate_symbol
-    end
-
-    def get
-      Thread.current.thread_variable_get(@symbol)
-    end
-
-    def set(value)
-      Thread.current.thread_variable_set(@symbol, value)
+      @storage.update { |s| s.merge Thread.current => value }
     end
 
   end
@@ -111,10 +74,8 @@ module Concurrent
   class ThreadLocalVar < AbstractThreadLocalVar
     if RUBY_PLATFORM == 'java'
       include ThreadLocalJavaStorage
-    elsif Thread.current.respond_to?(:thread_variable_set)
-      include ThreadLocalNewStorage
     else
-      include ThreadLocalOldStorage
+      include ThreadLocalRubyStorage
     end
   end
 

@@ -61,17 +61,34 @@ module Concurrent
   # @raise [ArgumentError] if no block is given
   # @raise [ArgumentError] if any of the inputs are not `IVar`s
   def dataflow(*inputs, &block)
-    dataflow_with(Concurrent.configuration.global_task_pool, *inputs, &block)
+    dataflow_with(Concurrent.configuration.global_operation_pool, *inputs, &block)
   end
   module_function :dataflow
 
   def dataflow_with(executor, *inputs, &block)
+    call_dataflow(:value, executor, *inputs, &block)
+  end
+  module_function :dataflow_with
+  
+  def dataflow!(*inputs, &block)
+    dataflow_with!(Concurrent.configuration.global_task_pool, *inputs, &block)
+  end
+  module_function :dataflow!
+
+  def dataflow_with!(executor, *inputs, &block)
+    call_dataflow(:value!, executor, *inputs, &block)
+  end
+  module_function :dataflow_with!
+
+  private 
+
+  def call_dataflow(method, executor, *inputs, &block)
     raise ArgumentError.new('an executor must be provided') if executor.nil?
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('not all dependencies are IVars') unless inputs.all? { |input| input.is_a? IVar }
 
     result = Future.new(executor: executor) do
-      values = inputs.map { |input| input.value }
+      values = inputs.map { |input| input.send(method) }
       block.call(*values)
     end
 
@@ -87,5 +104,5 @@ module Concurrent
 
     result
   end
-  module_function :dataflow_with
+  module_function :call_dataflow
 end

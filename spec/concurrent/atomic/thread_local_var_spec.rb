@@ -31,13 +31,9 @@ module Concurrent
         it 'uses ThreadLocalJavaStorage' do
           expect(subject.class.ancestors).to include(Concurrent::ThreadLocalJavaStorage)
         end
-      elsif rbx? || RbConfig::CONFIG['ruby_version'] =~ /^1\.9/
-        it 'uses ThreadLocalOldStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::ThreadLocalOldStorage)
-        end
       else
         it 'uses ThreadLocalNewStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::ThreadLocalNewStorage)
+          expect(subject.class.ancestors).to include(Concurrent::ThreadLocalRubyStorage)
         end
       end
     end

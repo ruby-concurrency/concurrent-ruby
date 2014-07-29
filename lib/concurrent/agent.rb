@@ -38,18 +38,12 @@ module Concurrent
     include Concurrent::Observable
     include Logging
 
-    # The default timeout value (in seconds); used when no timeout option
-    # is given at initialization
-    TIMEOUT = 5
-
     attr_reader :timeout, :task_executor, :operation_executor
 
     # Initialize a new Agent with the given initial value and provided options.
     #
     # @param [Object] initial the initial value
     # @param [Hash] opts the options used to define the behavior at update and deref
-    #
-    # @option opts [Fixnum] :timeout (TIMEOUT) maximum number of seconds before an update is cancelled
     #
     # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
     #   operation pool (for long-running operations), when `false` will execute the future on the
@@ -65,7 +59,6 @@ module Concurrent
       @value                = initial
       @rescuers             = []
       @validator            = Proc.new { |result| true }
-      @timeout              = opts.fetch(:timeout, TIMEOUT).freeze
       self.observers        = CopyOnWriteObserverSet.new
       @serialized_execution = SerializedExecution.new
       @task_executor        = OptionsParser.get_task_executor_from(opts)
@@ -145,12 +138,19 @@ module Concurrent
     # Update the current value with the result of the given block operation,
     # block can do blocking calls
     #
+    # @param [Fixnum, nil] timeout maximum number of seconds before an update is cancelled
+    #
     # @yield the operation to be performed with the current value in order to calculate
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
-    def post_off(&block)
+    def post_off(timeout = nil, &block)
+      block = if timeout
+                lambda { |value| Concurrent::timeout(timeout) { block.call(value) } }
+              else
+                block
+              end
       post_on(@operation_executor, &block)
     end
 
@@ -203,10 +203,8 @@ module Concurrent
       validator, value = mutex.synchronize { [@validator, @value] }
 
       begin
-        result, valid = Concurrent::timeout(@timeout) do
-          result = handler.call(value)
-          [result, validator.call(result)]
-        end
+        result = handler.call(value)
+        valid  = validator.call(result)
       rescue Exception => ex
         exception = ex
       end

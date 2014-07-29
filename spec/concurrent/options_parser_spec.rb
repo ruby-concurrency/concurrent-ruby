@@ -39,16 +39,12 @@ module Concurrent
         OptionsParser::get_executor_from(task: true)
       end
 
-      it 'returns the global task pool when :executor is nil' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).
-          and_return(:task_pool)
-        OptionsParser::get_executor_from(executor: nil)
+      it 'returns nil when :executor is nil' do
+        expect(OptionsParser::get_executor_from(executor: nil)).to be_nil
       end
 
-      it 'returns the global task pool when no option is given' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).
-          and_return(:task_pool)
-        OptionsParser::get_executor_from
+      it 'returns nil task pool when no option is given' do
+        expect(OptionsParser::get_executor_from).to be_nil
       end
 
       specify ':executor overrides :operation' do

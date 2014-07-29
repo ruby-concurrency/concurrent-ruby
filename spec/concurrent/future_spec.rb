@@ -114,8 +114,8 @@ module Concurrent
         Future.execute(task: true){ nil }
       end
 
-      it 'uses the global task pool by default' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
+      it 'uses the global operation pool by default' do
+        expect(Concurrent.configuration).to receive(:global_operation_pool).and_return(executor)
         Future.execute{ nil }
       end
     end

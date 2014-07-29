@@ -12,10 +12,10 @@ module Concurrent
       expect { Concurrent::dataflow_with(root_executor) }.to raise_error(ArgumentError)
     end
 
-    specify '#dataflow uses the global task pool' do
+    specify '#dataflow uses the global operation pool' do
       input = Future.execute{0}
       expect(Concurrent).to receive(:dataflow_with).once.
-        with(Concurrent.configuration.global_task_pool, input)
+        with(Concurrent.configuration.global_operation_pool, input)
       Concurrent::dataflow(input){0}
     end
 
@@ -71,6 +71,19 @@ module Concurrent
       expect { Concurrent::dataflow_with(root_executor, nil) }.to raise_error(ArgumentError)
       expect { Concurrent::dataflow_with(root_executor, Future.execute{0}, nil) }.to raise_error(ArgumentError)
       expect { Concurrent::dataflow_with(root_executor, nil, Future.execute{0}) }.to raise_error(ArgumentError)
+    end
+
+    it 'doesn\'t raises exceptions from dependencies, unless called with !' do
+
+      d1 = Concurrent::dataflow(){raise}
+      d2 = Concurrent::dataflow(){raise}
+      f = Concurrent::dataflow!(d1, d2){|d1v, d2v| [d1v,d2v]}
+      expect{f.value!}.to raise_error
+
+      d1 = Concurrent::dataflow(){raise}
+      d2 = Concurrent::dataflow(){raise}
+      f = Concurrent::dataflow(d1, d2){|d1v, d2v| [d1v,d2v]}
+      expect{f.value!}.to_not raise_error
     end
 
     it 'returns a Future' do
@@ -216,27 +229,11 @@ module Concurrent
           end
         end
 
-        expected = fib_with_dot(14)
+        expected = fib_with_dot(7)
         sleep(0.1)
-        expect(expected.value).to eq 377
+        expect(expected.value).to eq 13
       end
-
-      it 'can be called as Concurrent::dataflow and Concurrent::dataflow_with' do
-
-        def fib_with_colons(n)
-          if n < 2
-            Concurrent::dataflow { n }
-          else
-            n1 = fib_with_colons(n - 1)
-            n2 = fib_with_colons(n - 2)
-            Concurrent::dataflow_with(root_executor, n1, n2) { n1.value + n2.value }
-          end
-        end
-
-        expected = fib_with_colons(14)
-        sleep(0.1)
-        expect(expected.value).to eq 377
-      end
+      
     end
   end
 end
