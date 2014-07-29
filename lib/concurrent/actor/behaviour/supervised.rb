@@ -20,6 +20,13 @@ module Concurrent
             supervisor
           when :un_supervise
             un_supervise envelope.sender
+          when :pause!, :resume!, :reset!, :restart!
+            # allow only supervisor to control the actor
+            if @supervisor == envelope.sender
+              pass envelope
+            else
+              false
+            end
           else
             pass envelope
           end

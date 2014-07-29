@@ -17,13 +17,13 @@ module Concurrent
         def on_envelope(envelope)
           case envelope.message
           when :pause!
-            from_supervisor?(envelope) { pause! }
+            pause!
           when :resume!
-            from_supervisor?(envelope) { resume! }
+            resume!
           when :reset!
-            from_supervisor?(envelope) { reset! }
+            reset!
           when :restart!
-            from_supervisor?(envelope) { restart! }
+            restart!
           else
             if @paused
               @buffer << envelope
@@ -31,14 +31,6 @@ module Concurrent
             else
               pass envelope
             end
-          end
-        end
-
-        def from_supervisor?(envelope)
-          if behaviour!(Supervised).supervisor == envelope.sender
-            yield
-          else
-            false
           end
         end
 
