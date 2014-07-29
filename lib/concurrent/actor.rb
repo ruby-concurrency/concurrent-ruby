@@ -30,7 +30,9 @@ module Concurrent
     end
 
     @root = Delay.new do
-      Core.new(parent: nil, name: '/', class: Root).reference
+      Core.new(parent: nil, name: '/', class: Root, initialized: ivar = IVar.new).reference.tap do
+        ivar.no_error!
+      end
     end
 
     # A root actor, a default parent of all actors spawned outside an actor
