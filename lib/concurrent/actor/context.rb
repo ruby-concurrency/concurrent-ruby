@@ -50,7 +50,6 @@ module Concurrent
       # so if no {AbstractContext#dead_letter_routing} method is overridden in parent-chain the message ends up in
       # `Actor.root.dead_letter_routing` agent which will log warning.
       # @return [Reference]
-      # TODO implement as behaviour
       def dead_letter_routing
         parent.dead_letter_routing
       end

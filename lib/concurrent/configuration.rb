@@ -156,5 +156,6 @@ module Concurrent
     self.finalize_executor(self.configuration.global_timer_set)
     self.finalize_executor(self.configuration.global_task_pool)
     self.finalize_executor(self.configuration.global_operation_pool)
+    # TODO may break other test suites using concurrent-ruby, terminates before test is run
   end
 end

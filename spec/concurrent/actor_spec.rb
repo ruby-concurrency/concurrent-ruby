@@ -5,6 +5,8 @@ module Concurrent
   module Actor
     i_know_it_is_experimental!
 
+    # FIXME better tests!
+
     # class Reference
     #   def backdoor(&block)
     #     core.send :schedule_execution do

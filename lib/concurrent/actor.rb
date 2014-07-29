@@ -7,6 +7,10 @@ require 'concurrent/atomic/synchronization'
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups
 
+  # TODO doc
+  # - what happens if I try to supervise using a normal Context?
+
+
   # {include:file:doc/actor/main.md}
   module Actor
 
