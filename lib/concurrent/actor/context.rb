@@ -71,6 +71,17 @@ module Concurrent
         Reference
       end
 
+      def tell(message)
+        reference.tell message
+      end
+
+      def ask(message)
+        raise 'actor cannot ask itself'
+      end
+
+      alias_method :<<, :tell
+      alias_method :ask!, :ask
+
       private
 
       def initialize_core(core)
