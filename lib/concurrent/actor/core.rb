@@ -37,7 +37,7 @@ module Concurrent
       # @option opts [true, false] link, atomically link the actor to its parent
       # @option opts [true, false] supervise, atomically supervise the actor by its parent
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
-      #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour}
+      #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
       # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
       #   can be used to hook actor instance to any logging system
