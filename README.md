@@ -61,21 +61,27 @@ There are many concurrency abstractions in this library. These abstractions can 
 into several general groups:
 
 * Asynchronous concurrency abstractions including
-  [Async](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Async),
-  [Agent](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Agent),
-  [Future](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Future),
-  [Promise](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Promise),
-  [ScheduledTask](https://github.com/ruby-concurrency/concurrent-ruby/wiki/ScheduledTask),
-  and [TimerTask](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TimerTask) 
-* Thread-safe variables including [M-Structures](https://github.com/ruby-concurrency/concurrent-ruby/wiki/MVar-(M-Structure)),
-  [I-Structures](https://github.com/ruby-concurrency/concurrent-ruby/wiki/IVar-(I-Structure)),
-  [thread-local variables](https://github.com/ruby-concurrency/concurrent-ruby/wiki/ThreadLocalVar),
-  atomic counters, and [software transactional memory](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TVar-(STM))
-* Thread synchronization classes and algorithms including [dataflow](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Dataflow), 
-  timeout, condition, countdown latch, dependency counter, and event
-* Java-inspired [thread pools](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Thread%20Pools)
-* New fast light-weighted [Actor model](http://ruby-concurrency.github.io/concurrent-ruby/frames.html#!Concurrent/Actress.html) implementation. 
-* And many more...
+  [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html),
+  [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html),
+  [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html),
+  [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html),
+  [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html),
+  and [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html) 
+* Fast, light-weight [Actor model](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html) implementation. 
+* Thread-safe variables including
+  [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html),
+  [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html),
+  [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html),
+  and [software transactional memory](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TVar-(STM))
+* Thread synchronization classes and algorithms including
+  [condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html),
+  [countdown latch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html),
+  [dataflow](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Dataflow), 
+  [event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html),
+  [exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html),
+  and [timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
+* Java-inspired [executors](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Thread%20Pools) (thread pools and more)
+* [And many more](http://ruby-concurrency.github.io/concurrent-ruby/index.html)...
 
 ### Semantic Versioning
 
@@ -90,7 +96,8 @@ It should be fully compatible with any interpreter that is compliant with Ruby 1
 ### Examples
 
 Many more code examples can be found in the documentation for each class (linked above).
-This one simple example shows some of the power of this gem.
+
+Future and ScheduledTask:
 
 ```ruby    
 require 'concurrent'
@@ -112,23 +119,45 @@ sleep(1)    # do other stuff
 price.value #=> 63.65
 price.state #=> :fulfilled
 
-# Promise
-prices = Concurrent::Promise.new{ puts Ticker.new.get_year_end_closing('AAPL', 2013) }.
-           then{ puts Ticker.new.get_year_end_closing('MSFT', 2013) }.
-           then{ puts Ticker.new.get_year_end_closing('GOOG', 2013) }.
-           then{ puts Ticker.new.get_year_end_closing('AMZN', 2013) }.execute
-prices.state #=> :pending
-sleep(1)     # do other stuff
-#=> 561.02
-#=> 37.41
-#=> 1120.71
-#=> 398.79
-
 # ScheduledTask
 task = Concurrent::ScheduledTask.execute(2){ Ticker.new.get_year_end_closing('INTC', 2013) }
 task.state #=> :pending
 sleep(3)   # do other stuff
 task.value #=> 25.96
+```
+
+Actor:
+
+```ruby
+class Counter < Concurrent::Actor::Context
+  # Include context of an actor which gives this class access to reference
+  # and other information about the actor
+
+  # use initialize as you wish
+  def initialize(initial_value)
+    @count = initial_value
+  end
+
+  # override on_message to define actor's behaviour
+  def on_message(message)
+    if Integer === message
+      @count += message
+    end
+  end
+end #
+
+# Create new actor naming the instance 'first'.
+# Return value is a reference to the actor, the actual actor is never returned.
+counter = Counter.spawn(:first, 5)
+
+# Tell a message and forget returning self.
+counter.tell(1)
+counter << 1
+# (First counter now contains 7.)
+
+# Send a messages asking for a result.
+counter.ask(0).class
+counter.ask(0).value
 ```
 
 ## Maintainers
@@ -138,22 +167,6 @@ task.value #=> 25.96
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Lucas Allan](https://github.com/lucasallan)
 * [Petr Chalupa](https://github.com/pitr-ch)
-
-### Contributors
-
-* [Bill Dueber](https://github.com/billdueber)
-* [Brian Shirai](https://github.com/brixen)
-* [Chip Miller](https://github.com/chip-miller)
-* [Giuseppe Capizzi](https://github.com/gcapizzi)
-* [Jamie Hodge](https://github.com/jamiehodge)
-* [Justin Lambert](https://github.com/mastfish)
-* [Larry Lv](https://github.com/larrylv)
-* [Maxim Chechel](https://github.com/maximchick)
-* [Ravil Bayramgalin](https://github.com/brainopia)
-* [René Föhring](https://github.com/rrrene)
-* [Shane Wilton](https://github.com/ShaneWilton)
-* [sheaney](https://github.com/sheaney)
-* [Zander Hill](https://github.com/zph)
 
 ### Contributing
 
