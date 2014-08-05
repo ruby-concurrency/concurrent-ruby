@@ -33,23 +33,39 @@ module Concurrent
     #
     # @raise [ArgumentError] if no task is given
     def post(executor, *args, &task)
-      return nil if task.nil?
+      posts [[executor, args, task]]
+      true
+    end
 
-      job = Job.new executor, args, task
+    # As {#post} but allows to submit multiple tasks at once, it's guaranteed that they will not
+    # be interleaved by other tasks.
+    #
+    # @param [Array<Array(Executor, Array<Object>, Proc)>] posts array of triplets where
+    #   first is a {Executor}, second is array of args for task, third is a task (Proc)
+    def posts(posts)
+      # if can_overflow?
+      #   raise ArgumentError, 'SerializedExecution does not support thread-pools which can overflow'
+      # end
+
+      return nil if posts.empty?
+
+      jobs = posts.map { |executor, args, task| Job.new executor, args, task }
 
       begin
         @mutex.lock
-        post = if @being_executed
-                 @stash << job
-                 false
-               else
-                 @being_executed = true
-               end
+        job_to_post = if @being_executed
+                        @stash.push(*jobs)
+                        nil
+                      else
+                        @being_executed = true
+                        @stash.push(*jobs[1..-1])
+                        jobs.first
+                      end
       ensure
         @mutex.unlock
       end
 
-      call_job job if post
+      call_job job_to_post if job_to_post
       true
     end
 
@@ -98,7 +114,7 @@ module Concurrent
     include SerialExecutor
 
     def initialize(executor)
-      @executor = executor
+      @executor   = executor
       @serializer = SerializedExecution.new
       super(executor)
     end
