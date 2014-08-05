@@ -1,12 +1,14 @@
 require 'delegate'
 require 'concurrent/executor/executor'
 require 'concurrent/logging'
+require 'concurrent/atomic/synchronization'
 
 module Concurrent
 
   # Ensures passed jobs in a serialized order never running at the same time.
   class SerializedExecution
     include Logging
+    include Synchronization
 
     Job = Struct.new(:executor, :args, :block) do
       def call
@@ -15,9 +17,10 @@ module Concurrent
     end
 
     def initialize
-      @being_executed = false
-      @stash          = []
-      @mutex          = Mutex.new
+      synchronize do
+        @being_executed = false
+        @stash          = []
+      end
     end
 
     # Submit a task to the executor for asynchronous processing.
@@ -51,18 +54,15 @@ module Concurrent
 
       jobs = posts.map { |executor, args, task| Job.new executor, args, task }
 
-      begin
-        @mutex.lock
-        job_to_post = if @being_executed
-                        @stash.push(*jobs)
-                        nil
-                      else
-                        @being_executed = true
-                        @stash.push(*jobs[1..-1])
-                        jobs.first
-                      end
-      ensure
-        @mutex.unlock
+      job_to_post = synchronize do
+        if @being_executed
+          @stash.push(*jobs)
+          nil
+        else
+          @being_executed = true
+          @stash.push(*jobs[1..-1])
+          jobs.first
+        end
       end
 
       call_job job_to_post if job_to_post
@@ -94,11 +94,8 @@ module Concurrent
     def work(job)
       job.call
     ensure
-      begin
-        @mutex.lock
+      synchronize do
         job = @stash.shift || (@being_executed = false)
-      ensure
-        @mutex.unlock
       end
 
       call_job job if job
