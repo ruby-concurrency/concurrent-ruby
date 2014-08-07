@@ -14,11 +14,14 @@ module Concurrent
         def on_message(message)
           case message
           when :subscribe
-            @receivers.add envelope.sender
-            true
+            if envelope.sender.is_a? Reference
+              @receivers.add envelope.sender
+              true
+            else
+              false
+            end
           when :unsubscribe
-            @receivers.delete envelope.sender
-            true
+            !!@receivers.delete(envelope.sender)
           when :subscribed?
             @receivers.include? envelope.sender
           else
