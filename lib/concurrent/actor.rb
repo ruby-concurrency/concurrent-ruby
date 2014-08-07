@@ -26,7 +26,7 @@ module Concurrent
 
     require 'concurrent/actor/default_dead_letter_handler'
     require 'concurrent/actor/root'
-    require 'concurrent/actor/ad_hoc'
+    require 'concurrent/actor/utils'
 
     # @return [Reference, nil] current executing actor if any
     def self.current
