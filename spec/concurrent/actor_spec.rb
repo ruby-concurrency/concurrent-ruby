@@ -4,6 +4,7 @@ require 'concurrent/actor'
 module Concurrent
   module Actor
     i_know_it_is_experimental!
+    AdHoc = Utils::AdHoc
 
     # FIXME better tests!
 
