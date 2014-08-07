@@ -4,7 +4,19 @@ module Concurrent
   module Actor
     module Utils
 
-      # TODO doc
+      # Allows to build pub/sub easily.
+      # @example news
+      #   news_channel = Concurrent::Actor::Utils::Broadcast.spawn :news
+
+      #   2.times do |i|
+      #     Concurrent::Actor::Utils::AdHoc.spawn "listener-#{i}" do
+      #       news_channel << :subscribe
+      #       -> message { puts message }
+      #     end
+      #   end
+      #
+      #   news_channel << 'Ruby rocks!'
+      #   # prints: 'Ruby rocks!' twice
       class Broadcast < Context
 
         def initialize
@@ -34,6 +46,7 @@ module Concurrent
           @receivers
         end
       end
+
     end
   end
 end
