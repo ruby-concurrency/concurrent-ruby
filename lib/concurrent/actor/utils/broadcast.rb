@@ -7,7 +7,7 @@ module Concurrent
       # Allows to build pub/sub easily.
       # @example news
       #   news_channel = Concurrent::Actor::Utils::Broadcast.spawn :news
-
+      #
       #   2.times do |i|
       #     Concurrent::Actor::Utils::AdHoc.spawn "listener-#{i}" do
       #       news_channel << :subscribe
@@ -17,7 +17,7 @@ module Concurrent
       #
       #   news_channel << 'Ruby rocks!'
       #   # prints: 'Ruby rocks!' twice
-      class Broadcast < Context
+      class Broadcast < RestartingContext
 
         def initialize
           @receivers = Set.new
