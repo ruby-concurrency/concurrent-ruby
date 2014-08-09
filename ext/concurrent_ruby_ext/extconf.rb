@@ -43,6 +43,13 @@ else
       end
     end
 
+    try_run(<<CODE,$CFLAGS) && ($defs << '-DHAVE_GCC_SYNC')
+      int main() {
+        __sync_synchronize();
+        return 0;
+      }
+CODE
+
     create_makefile(EXTENSION_NAME)
   rescue
     create_dummy_makefile

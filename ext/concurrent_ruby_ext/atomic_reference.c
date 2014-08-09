@@ -27,18 +27,31 @@ VALUE ir_initialize(int argc, VALUE* argv, VALUE self) {
 }
 
 VALUE ir_get(VALUE self) {
+#if HAVE_GCC_SYNC
+  __sync_synchronize();
+#elif defined _MSC_VER
+  MemoryBarrier();
+#elif __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+  OSMemoryBarrier();
+#endif
   return (VALUE) DATA_PTR(self);
 }
 
 VALUE ir_set(VALUE self, VALUE new_value) {
   DATA_PTR(self) = (void *) new_value;
+#if HAVE_GCC_SYNC
+  __sync_synchronize();
+#elif defined _MSC_VER
+  MemoryBarrier();
+#elif __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+  OSMemoryBarrier();
+#endif
   return new_value;
 }
 
 VALUE ir_get_and_set(VALUE self, VALUE new_value) {
-  VALUE old_value;
-  old_value = (VALUE) DATA_PTR(self);
-  DATA_PTR(self) = (void *) new_value;
+  VALUE old_value = ir_get(self);
+  ir_set(self, new_value);
   return old_value;
 }
 
