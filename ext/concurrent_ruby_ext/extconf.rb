@@ -43,12 +43,11 @@ else
       end
     end
 
-    try_run(<<CODE,$CFLAGS) && ($defs << '-DHAVE_GCC_CAS')
-int main() {
-  int i = 1;
-  __sync_bool_compare_and_swap(&i, 1, 4);
-  return (i != 4);
-}
+    try_run(<<CODE,$CFLAGS) && ($defs << '-DHAVE_GCC_SYNC')
+      int main() {
+        __sync_synchronize();
+        return 0;
+      }
 CODE
 
     create_makefile(EXTENSION_NAME)
