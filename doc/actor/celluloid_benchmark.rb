@@ -48,7 +48,7 @@ Benchmark.bmbm(10) do |b|
     b.report(format('%5d %4d %s', ADD_TO*counts_size, adders_size, 'concurrent')) do
       counts = Array.new(counts_size) { [0, Concurrent::IVar.new] }
       adders = Array.new(adders_size) do |i|
-        Concurrent::Actor::AdHoc.spawn("adder#{i}") do
+        Concurrent::Actor::Utils::AdHoc.spawn("adder#{i}") do
           lambda do |(count, ivar)|
             if count < ADD_TO
               adders[(i+1) % adders_size].tell [count+1, ivar]
