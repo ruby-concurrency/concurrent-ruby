@@ -1,3 +1,6 @@
+require_relative '../../extension_helper'
+Concurrent.safe_require_c_extensions
+
 module Concurrent
 
   # @!macro [attach] atomic_boolean

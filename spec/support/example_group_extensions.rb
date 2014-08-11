@@ -24,7 +24,7 @@ module Concurrent
     end
 
     def use_c_extensions?
-      Concurrent.use_c_extensions? # from extension_helper.rb
+      Concurrent.allow_c_extensions? # from extension_helper.rb
     end
 
     def do_no_reset!
