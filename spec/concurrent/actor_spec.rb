@@ -241,7 +241,7 @@ module Concurrent
         end
 
         it 'is evaluated by child' do
-          parent.ask!(1).should eq 2
+          expect(parent.ask!(1)).to eq 2
         end
       end
 
