@@ -4,8 +4,12 @@ if Concurrent.allow_c_extensions?
   begin
     require 'concurrent_ruby_ext'
   rescue LoadError
-    # may be a Windows cross-compiled native gem
-    require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
+    begin
+      # may be a Windows cross-compiled native gem
+      require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
+    rescue LoadError
+      warn 'Attempted to load C extensions on unsupported platform. Continuing with pure-Ruby.'
+    end
   end
 end
 
