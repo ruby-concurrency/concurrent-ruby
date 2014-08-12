@@ -7,7 +7,7 @@ module Concurrent
 
   # @!visibility private
   def self.allow_c_native_class?(clazz)
-    allow_c_extensions? && defined?(Kernel.const_get("Concurrent::#{clazz}"))
+    allow_c_extensions? && Concurrent.const_defined?(clazz)
   rescue
     false
   end
