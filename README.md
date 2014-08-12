@@ -35,54 +35,6 @@
   </tr>
 </table>
 
-## Installing and Building
-
-This gem includes several platform-specific optimizations. To reduce the possibility of
-compilation errors, we provide pre-compiled gem packages for several platforms as well
-as a pure-Ruby build. Installing the gem should be no different than installing any other
-Rubygems-hosted gem.
-
-### Installing
-
-```shell
-gem install concurrent-ruby
-```
-
-or add the following line to Gemfile:
-
-```ruby
-gem 'concurrent-ruby'
-```
-
-and run `bundle install` from your shell.
-
-### Building
-
-Because we provide pre-compiled gem builds, users should never need to build the gem manually.
-The build process for this gem is completely automated using open source tools. All of
-the automation components are available in the [ruby-concurrency/rake-compiler-dev-box](https://github.com/ruby-concurrency/rake-compiler-dev-box)
-GitHub repository.
-
-This gem will compile native C code under MRI and native Java code under JRuby. It is
-also possible to build a pure-Ruby version. All builds have identical functionality.
-The only difference is performance. Additionally, pure-Ruby classes are always available,
-even when using the native optimizations. Please see the [documentation](http://ruby-concurrency.github.io/concurrent-ruby/)
-for more details.
-
-To build and package the gem using MRI or JRuby, install the necessary build dependencies and run:
-
-```shell
-bundle exec rake compile
-bundle exec rake build
-```
-
-To build and package a pure-Ruby gem, on *any* platform and interpreter
-(including MRI and JRuby), run:
-
-```shell
-BUILD_PURE_RUBY='true' bundle exec rake build
-```
-
 ## Features & Documentation
 
 Please see the [Concurrent Ruby Wiki](https://github.com/ruby-concurrency/concurrent-ruby/wiki)
@@ -190,6 +142,54 @@ counter << 1
 # Send a messages asking for a result.
 counter.ask(0).class
 counter.ask(0).value
+```
+
+## Installing and Building
+
+This gem includes several platform-specific optimizations. To reduce the possibility of
+compilation errors, we provide pre-compiled gem packages for several platforms as well
+as a pure-Ruby build. Installing the gem should be no different than installing any other
+Rubygems-hosted gem.
+
+### Installing
+
+```shell
+gem install concurrent-ruby
+```
+
+or add the following line to Gemfile:
+
+```ruby
+gem 'concurrent-ruby'
+```
+
+and run `bundle install` from your shell.
+
+### Building
+
+Because we provide pre-compiled gem builds, users should never need to build the gem manually.
+The build process for this gem is completely automated using open source tools. All of
+the automation components are available in the [ruby-concurrency/rake-compiler-dev-box](https://github.com/ruby-concurrency/rake-compiler-dev-box)
+GitHub repository.
+
+This gem will compile native C code under MRI and native Java code under JRuby. It is
+also possible to build a pure-Ruby version. All builds have identical functionality.
+The only difference is performance. Additionally, pure-Ruby classes are always available,
+even when using the native optimizations. Please see the [documentation](http://ruby-concurrency.github.io/concurrent-ruby/)
+for more details.
+
+To build and package the gem using MRI or JRuby, install the necessary build dependencies and run:
+
+```shell
+bundle exec rake compile
+bundle exec rake build
+```
+
+To build and package a pure-Ruby gem, on *any* platform and interpreter
+(including MRI and JRuby), run:
+
+```shell
+BUILD_PURE_RUBY='true' bundle exec rake build
 ```
 
 ## Maintainers
