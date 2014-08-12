@@ -40,6 +40,14 @@ module Concurrent
       expect { Concurrent::atomically }.to raise_error(ArgumentError)
     end
 
+    it 'raises the same exception that was raised in Concurrent::atomically' do
+      expect {
+        Concurrent::atomically do
+          raise StandardError, 'This is an error!'
+        end
+      }.to raise_error(StandardError, 'This is an error!')
+    end
+
     it 'retries on abort' do
       count = 0
 
