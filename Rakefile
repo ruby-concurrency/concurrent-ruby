@@ -34,7 +34,7 @@ if defined?(JRUBY_VERSION)
     ext.ext_dir = 'ext'
   end
 
-elsif Concurrent.use_c_extensions?
+elsif Concurrent.allow_c_extensions?
 
   Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
     ext.ext_dir = "ext/#{EXTENSION_NAME}"

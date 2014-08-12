@@ -1,10 +1,14 @@
-require 'concurrent_ruby_ext'
-require 'concurrent/atomic_reference/direct_update'
+require_relative '../../extension_helper'
+Concurrent.safe_require_java_extensions
 
-module Concurrent
+if defined?(Concurrent::JavaAtomic)
+  require 'concurrent/atomic_reference/direct_update'
 
-  # @!macro atomic_reference
-  class JavaAtomic
-    include Concurrent::AtomicDirectUpdate
+  module Concurrent
+
+    # @!macro atomic_reference
+    class JavaAtomic
+      include Concurrent::AtomicDirectUpdate
+    end
   end
 end

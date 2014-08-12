@@ -12,19 +12,19 @@ module Concurrent
     end
 
     def mri?
-      RbConfig::CONFIG['ruby_install_name']=~ /^ruby$/i
+      RUBY_ENGINE == 'ruby'
     end
 
     def jruby?
-      RbConfig::CONFIG['ruby_install_name']=~ /^jruby$/i
+      RUBY_ENGINE == 'jruby'
     end
 
     def rbx?
-      RbConfig::CONFIG['ruby_install_name']=~ /^rbx$/i
+      RUBY_ENGINE == 'rbx'
     end
 
     def use_c_extensions?
-      Concurrent.use_c_extensions? # from extension_helper.rb
+      Concurrent.allow_c_extensions? # from extension_helper.rb
     end
 
     def do_no_reset!

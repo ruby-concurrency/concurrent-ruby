@@ -172,7 +172,7 @@ module Concurrent
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if TestHelpers.jruby?
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
@@ -180,13 +180,19 @@ module Concurrent
   end
 
   describe AtomicFixnum do
-    if defined? Concurrent::CAtomicFixnum
-      it 'inherits from CAtomicFixnum' do
-        expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
+    if RUBY_ENGINE != 'ruby'
+      it 'does not load the C extension' do
+        expect(defined?(Concurrent::CAtomicFixnum)).to be_falsey
       end
-    elsif RUBY_PLATFORM == 'java'
+    end
+
+    if TestHelpers.jruby?
       it 'inherits from JavaAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
+      end
+    elsif defined? Concurrent::CAtomicFixnum
+      it 'inherits from CAtomicFixnum' do
+        expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
       end
     else
       it 'inherits from MutexAtomicFixnum' do

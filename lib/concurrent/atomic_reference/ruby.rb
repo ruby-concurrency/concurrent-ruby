@@ -1,8 +1,12 @@
-begin
-  require 'concurrent_ruby_ext'
-rescue LoadError
-  # may be a Windows cross-compiled native gem
-  require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
+require_relative '../../extension_helper'
+
+if Concurrent.allow_c_extensions?
+  begin
+    require 'concurrent_ruby_ext'
+  rescue LoadError
+    # may be a Windows cross-compiled native gem
+    require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
+  end
 end
 
 require 'concurrent/atomic_reference/direct_update'
@@ -14,19 +18,19 @@ module Concurrent
   class CAtomic
     include Concurrent::AtomicDirectUpdate
     include Concurrent::AtomicNumericCompareAndSetWrapper
-    
+
     # @!method initialize
     #   @!macro atomic_reference_method_initialize
-    
+
     # @!method get
     #   @!macro atomic_reference_method_get
-    
+
     # @!method set
     #   @!macro atomic_reference_method_set
-    
+
     # @!method get_and_set
     #   @!macro atomic_reference_method_get_and_set
-    
+
     # @!method _compare_and_set
     #   @!macro atomic_reference_method_compare_and_set
   end
