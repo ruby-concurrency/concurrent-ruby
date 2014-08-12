@@ -112,7 +112,7 @@ module Concurrent
             result = Transaction::ABORTED
           rescue => e
             transaction.abort
-            throw e
+            raise e
           end
           # If we can commit, break out of the loop
 
