@@ -166,7 +166,7 @@ module Concurrent
     class AtomicFixnum < JavaAtomicFixnum
     end
 
-  elsif defined? Concurrent::CAtomicFixnum
+  elsif Concurrent.allow_c_native_class?('CAtomicFixnum')
 
     # @!macro atomic_fixnum
     class CAtomicFixnum

@@ -162,7 +162,7 @@ module Concurrent
     class AtomicBoolean < JavaAtomicBoolean
     end
 
-  elsif defined? Concurrent::CAtomicBoolean
+  elsif Concurrent.allow_c_native_class?('CAtomicBoolean')
 
     # @!macro atomic_boolean
     class CAtomicBoolean

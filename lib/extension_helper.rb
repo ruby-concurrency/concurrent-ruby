@@ -7,12 +7,14 @@ module Concurrent
 
   # @!visibility private
   def self.allow_c_native_class?(clazz)
-    allow_c_extensions? && defined?(clazz)
+    allow_c_extensions? && defined?(Kernel.const_get("Concurrent::#{clazz}"))
+  rescue
+    false
   end
 
   # @!visibility private
   def self.safe_require_c_extensions
-    require 'concurrent_ruby_ext'
+    require 'concurrent_ruby_ext' if allow_c_extensions?
   rescue LoadError
     warn 'Attempted to load C extensions on unsupported platform. Continuing with pure-Ruby.'
   end

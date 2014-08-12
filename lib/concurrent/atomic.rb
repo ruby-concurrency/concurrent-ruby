@@ -57,19 +57,16 @@ if defined? Concurrent::JavaAtomic
   class Concurrent::Atomic < Concurrent::JavaAtomic
   end
 
-elsif defined? Concurrent::CAtomic
-
-  # @!macro [attach] concurrent_update_error
-  #
-  # This exception may be thrown by methods that have detected concurrent
-  # modification of an object when such modification is not permissible.
-  class Concurrent::Atomic < Concurrent::CAtomic
-  end
-
 elsif defined? Concurrent::RbxAtomic
 
   # @!macro atomic_reference
   class Concurrent::Atomic < Concurrent::RbxAtomic
+  end
+
+elsif Concurrent.allow_c_native_class?('CAtomic')
+
+  # @!macro atomic_reference
+  class Concurrent::Atomic < Concurrent::CAtomic
   end
 
 else
