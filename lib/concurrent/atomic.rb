@@ -1,3 +1,17 @@
+#####################################################################
+# Attempt to check for the deprecated ruby-atomic gem and warn the
+# user that they should use the new implementation instead.
+
+if defined?(Atomic)
+  warn <<-RUBY
+[ATOMIC] Detected an `Atomic` class, which may indicate a dependency
+on the ruby-atomic gem. That gem has been deprecated and merged into
+the concurrent-ruby gem. Please use the Concurrent::Atomic class for
+atomic references and not the Atomic class.
+RUBY
+end
+#####################################################################
+
 require 'concurrent/atomic_reference/concurrent_update_error'
 require 'concurrent/atomic_reference/mutex_atomic'
 
@@ -73,22 +87,5 @@ else
 
   # @!macro atomic_reference
   class Concurrent::Atomic < Concurrent::MutexAtomic
-  end
-end
-
-# @!macro atomic_reference
-class Atomic < Concurrent::Atomic
-
-  # @!macro concurrent_update_error
-  ConcurrentUpdateError = Class.new(Concurrent::ConcurrentUpdateError)
-
-  # @!macro [attach] atomic_reference_method_initialize
-  #
-  # Creates a new Atomic reference with null initial value.
-  #
-  # @param [Object] value the initial value
-  def initialize(value)
-    warn "[DEPRECATED] Please use Concurrent::Atomic instead."
-    super
   end
 end
