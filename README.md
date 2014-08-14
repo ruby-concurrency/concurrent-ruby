@@ -149,7 +149,22 @@ counter.ask(0).value
 This gem includes several platform-specific optimizations. To reduce the possibility of
 compilation errors, we provide pre-compiled gem packages for several platforms as well
 as a pure-Ruby build. Installing the gem should be no different than installing any other
-Rubygems-hosted gem.
+Rubygems-hosted gem. Rubygems will automatically detect your platform and install the
+appropriate pre-compiled build. You should never see Rubygems attempt to compile the gem
+on installation. Additionally, to ensure compatability with the largest possible number
+of Ruby interpreters, the C extensions will *never* load under any Ruby other than MRI,
+even when installed.
+
+The following gem builds will be built at every release:
+
+* concurrent-ruby-x.y.z.gem (pure Ruby)
+* concurrent-ruby-x.y.z-java.gem (JRuby)
+* concurrent-ruby-x.y.z-x86-linux.gem (Linux 32-bit)
+* concurrent-ruby-x.y.z-x86_64-linux.gem (Linux 64-bit)
+* concurrent-ruby-x.y.z-x86-mingw32.gem (Windows 32-bit)
+* concurrent-ruby-x.y.z-x64-mingw32.gem (Windows 64-bit)
+* concurrent-ruby-x.y.z-x86_64-darwin-13.gem (OS X)
+* concurrent-ruby-x.y.z-x86-solaris-2.11.gem (Solaris)
 
 ### Installing
 
