@@ -10,7 +10,7 @@ module Concurrent
   # intervals. The thread that performs the task sleeps for the given interval then
   # wakes up and performs the task. Lather, rinse, repeat... This pattern causes two
   # problems. First, it is difficult to test the business logic of the task because the
-  # task itself is tightly coupled with the concurrency logic. Second, an exception in
+  # task itself is tightly coupled with the concurrency logic. Second, an exception
   # raised while performing the task can cause the entire thread to abend. In a
   # long-running application where the task thread is intended to run for days/weeks/years
   # a crashed task thread can pose a significant problem. `TimerTask` alleviates both problems.
@@ -23,13 +23,13 @@ module Concurrent
   # performing logging or ancillary operations. `TimerTask` can also be configured with a
   # timeout value allowing it to kill a task that runs too long.
   # 
-  # One other advantage of `TimerTask` is it forces the business logic to be completely decoupled
+  # One other advantage of `TimerTask` is that it forces the business logic to be completely decoupled
   # from the concurrency logic. The business logic can be tested separately then passed to the
   # `TimerTask` for scheduling and running.
   # 
   # In some cases it may be necessary for a `TimerTask` to affect its own execution cycle.
-  # To facilitate this a reference to the task object is passed into the block as a block
-  # argument every time the task is executed.
+  # To facilitate this, a reference to the TimerTask instance is passed as an argument
+  # to the provided block every time the task is executed.
   # 
   # The `TimerTask` class includes the `Dereferenceable` mixin module so the result of
   # the last execution is always available via the `#value` method. Derefencing options
@@ -39,7 +39,7 @@ module Concurrent
   # `TimerTask` supports notification through the Ruby standard library
   # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html Observable}
   # module. On execution the `TimerTask` will notify the observers
-  # with threes arguments: time of execution, the result of the block (or nil on failure),
+  # with three arguments: time of execution, the result of the block (or nil on failure),
   # and any raised exceptions (or nil on success). If the timeout interval is exceeded
   # the observer will receive a `Concurrent::TimeoutError` object as the third argument.
   #
