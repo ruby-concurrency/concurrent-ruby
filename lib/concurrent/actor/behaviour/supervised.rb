@@ -3,7 +3,8 @@ module Concurrent
     module Behaviour
 
       # Sets and holds the supervisor of the actor if any. There is at most one supervisor
-      # for each actor. Each supervisor is automatically linked.
+      # for each actor. Each supervisor is automatically linked. Messages:
+      # `:pause!, :resume!, :reset!, :restart!` are accepted only from supervisor.
       class Supervised < Abstract
         attr_reader :supervisor
 

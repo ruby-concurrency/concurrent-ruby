@@ -29,32 +29,38 @@ counter.ask(0).class                               # => Concurrent::IVar
 counter.ask(0).value                               # => 7
 
 # Terminate the actor.
-counter.tell(:terminate!)                          # => #<Concurrent::Actor::Reference /first (Counter)>
+counter.tell :terminate!                           # => #<Concurrent::Actor::Reference /first (Counter)>
 # Not terminated yet, it takes a while until the message is processed.
-counter.terminated?                                # => false
+counter.ask! :terminated?                          # => true
 # Waiting for the termination.
-counter.terminated.class                           # => Concurrent::Event
-counter.terminated.wait                            # => true
-counter.terminated?                                # => true
+event = counter.ask!(:terminated_event)
+    # => #<Concurrent::Event:0x007f6208da3d30 @set=true, @mutex=#<Mutex:0x007f6208da3ce0>, @condition=#<Concurrent::Condition:0x007f6208da3cb8 @condition=#<Thread::ConditionVariable:0x007f6208da3c90>>>
+event.class                                        # => Concurrent::Event
+event.wait                                         # => true
+counter.ask! :terminated?                          # => true
 # Any subsequent messages are rejected.
 counter.ask(5).wait.rejected?                      # => true
 
 # Failure on message processing terminates the actor.
 counter = Counter.spawn(:first, 0)                 # => #<Concurrent::Actor::Reference /first (Counter)>
 counter.ask('boom').wait.rejected?                 # => false
-counter.terminated?                                # => false
+counter.ask! :terminated?                          # => false
 
 
 # Lets define an actor creating children actors.
 class Node < Concurrent::Actor::Context
+  def initialize
+    @last_child_id = 0
+  end
+
   def on_message(message)
     case message
     when :new_child
-      Node.spawn :child
+      Node.spawn "child-#{@last_child_id += 1}"
     when :how_many_children
       children.size
     else
-      raise 'unknown'
+      pass
     end
   end
 end 
@@ -62,7 +68,7 @@ end
 # Actors are tracking parent-child relationships
 parent = Node.spawn :parent                        # => #<Concurrent::Actor::Reference /parent (Node)>
 child  = parent.tell(:new_child).ask!(:new_child)
-    # => #<Concurrent::Actor::Reference /parent/child (Node)>
+    # => #<Concurrent::Actor::Reference /parent/child-2 (Node)>
 child.parent                                       # => #<Concurrent::Actor::Reference /parent (Node)>
 parent.ask!(:how_many_children)                    # => 2
 
@@ -72,5 +78,5 @@ parent.parent
 
 # Termination of an parent will also terminate all children.
 parent.ask('boom').wait 
-parent.terminated?                                 # => true
-child.terminated?                                  # => true
+counter.ask! :terminated?                          # => false
+counter.ask! :terminated?                          # => false

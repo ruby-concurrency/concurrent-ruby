@@ -115,7 +115,8 @@ module Concurrent
       undef_method :spawn
     end
 
-    # Basic Context of an Actor.
+    # Basic Context of an Actor. It does not support supervision and pausing.
+    # It simply terminates on error.
     #
     # -   linking
     # -   terminates on error

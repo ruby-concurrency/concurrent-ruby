@@ -5,11 +5,17 @@ require 'concurrent/logging'
 require 'concurrent/atomic/synchronization'
 
 module Concurrent
-  # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups
+  # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?
+  # TODO Remote actors using DRb
+  # TODO IO interoperation
+  # TODO un/become
 
   # TODO doc
   # - what happens if I try to supervise using a normal Context?
-
+  # - how to change behaviours
+  # - how to implement custom restarting?
+  # - pool for io operations using different executor
+  # - document guaranteed ordering
 
   # {include:file:doc/actor/main.md}
   module Actor
@@ -77,7 +83,7 @@ module Concurrent
     end
 
     # @overload spawn_optionify(context_class, name, *args)
-    #   @param [Context] context_class to be spawned
+    #   @param [AbstractContext] context_class to be spawned
     #   @param [String, Symbol] name of the instance, it's used to generate the {Core#path} of the actor
     #   @param args for context_class instantiation
     # @overload spawn_optionify(opts)

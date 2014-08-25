@@ -2,8 +2,9 @@ module Concurrent
   module Actor
     module Behaviour
 
-      # Links the actor to other actors and sends events to them,
+      # Links the actor to other actors and sends actor's events to them,
       # like: `:terminated`, `:paused`, errors, etc
+      # TODO example
       class Linking < Abstract
         def initialize(core, subsequent)
           super core, subsequent
@@ -16,6 +17,8 @@ module Concurrent
             link envelope.sender
           when :unlink
             unlink envelope.sender
+          when :linked?
+            @linked.include? envelope.sender
           else
             pass envelope
           end
