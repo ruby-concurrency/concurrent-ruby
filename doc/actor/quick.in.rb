@@ -29,32 +29,37 @@ counter.ask(0).class
 counter.ask(0).value
 
 # Terminate the actor.
-counter.tell(:terminate!)
+counter.tell :terminate!
 # Not terminated yet, it takes a while until the message is processed.
-counter.terminated?
+counter.ask! :terminated?
 # Waiting for the termination.
-counter.terminated.class
-counter.terminated.wait
-counter.terminated?
+event = counter.ask!(:terminated_event)
+event.class
+event.wait
+counter.ask! :terminated?
 # Any subsequent messages are rejected.
 counter.ask(5).wait.rejected?
 
 # Failure on message processing terminates the actor.
 counter = Counter.spawn(:first, 0)
 counter.ask('boom').wait.rejected?
-counter.terminated?
+counter.ask! :terminated?
 
 
 # Lets define an actor creating children actors.
 class Node < Concurrent::Actor::Context
+  def initialize
+    @last_child_id = 0
+  end
+
   def on_message(message)
     case message
     when :new_child
-      Node.spawn :child
+      Node.spawn "child-#{@last_child_id += 1}"
     when :how_many_children
       children.size
     else
-      raise 'unknown'
+      pass
     end
   end
 end #
@@ -70,5 +75,5 @@ parent.parent
 
 # Termination of an parent will also terminate all children.
 parent.ask('boom').wait #
-parent.terminated?
-child.terminated?
+counter.ask! :terminated?
+counter.ask! :terminated?

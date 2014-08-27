@@ -44,7 +44,7 @@ module Concurrent
         def terminate!
           return true if terminated?
           terminated.set
-          broadcast(:terminated)
+          broadcast(:terminated) # TODO do not end up in Dead Letter Router
           parent << :remove_child if parent
           true
         end

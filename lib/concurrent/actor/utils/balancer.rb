@@ -4,6 +4,7 @@ module Concurrent
 
       # Distributes messages between subscribed actors. Each actor'll get only one message then
       # it's unsubscribed. The actor needs to resubscribe when it's ready to receive next message.
+      # It will buffer the messages if there is no worker registered.
       # @see Pool
       class Balancer < RestartingContext
 
