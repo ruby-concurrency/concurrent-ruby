@@ -260,6 +260,37 @@ module Concurrent
       end
     end
 
+    describe '#flat_map' do
+
+      it 'returns a promise' do
+        child = empty_root.flat_map { nil }
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
+      end
+
+      it 'succeeds if both promises succeed' do
+        child = Promise.new(executor: executor) { 1 }.
+          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute
+        sleep 0.1
+        expect(child.value!).to eq(11)
+      end
+
+      it 'fails if the left promise fails' do
+        child = Promise.new(executor: executor) { fail }.
+          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute
+        sleep 0.1
+        expect(child).to be_rejected
+      end
+
+      it 'fails if the right promise fails' do
+        child = Promise.new(executor: executor) { 1 }.
+          flat_map { |v| Promise.new(executor: executor) { fail } }.execute
+        sleep 0.1
+        expect(child).to be_rejected
+      end
+
+    end
+
     context 'fulfillment' do
 
       it 'passes the result of each block to all its children' do

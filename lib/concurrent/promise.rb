@@ -110,6 +110,30 @@ module Concurrent
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
+    # Yield the successful result to the block that returns a promise. If that
+    # promise is also successful the result is the result of the yielded promise.
+    # If either part fails the whole also fails.
+    #
+    # @example
+    #   Promise.execute { 1 }.flat_map { |v| Promise.execute { v + 2 } }.value! #=> 3
+    #
+    # @return [Promise]
+    def flat_map(&block)
+      child = Promise.new(
+        parent: self
+      )
+
+      on_error { |e| child.on_reject(e) }
+      on_success do |result1|
+        inner = block.call(result1)
+        inner.execute
+        inner.on_success { |result2| child.on_fulfill(result2) }
+        inner.on_error { |e| child.on_reject(e) }
+      end
+
+      child
+    end
+
     protected
 
     def set_pending
