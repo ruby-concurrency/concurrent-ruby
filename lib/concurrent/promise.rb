@@ -134,6 +134,22 @@ module Concurrent
       child
     end
 
+    # Builds a promise that produces the result of self and others in an Array
+    # and fails if any of them fails.
+    #
+    # @param [Array<Promise>] others
+    #
+    # @return [Promise]
+    def zip(*others)
+      others.reduce(self) do |p1, p2|
+        p1.flat_map do |result1|
+          p2.then do |result2|
+            [result1, result2].flatten
+          end
+        end
+      end
+    end
+
     protected
 
     def set_pending
