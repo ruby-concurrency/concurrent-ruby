@@ -12,6 +12,9 @@ module Concurrent
     # @yieldreturn [String] a message
     def log(level, progname, message = nil, &block)
       (@logger || Concurrent.configuration.logger).call level, progname, message, &block
+    rescue => error
+      $stderr.puts "`Concurrent.configuration.logger` failed to log #{[level, progname, message, block]}\n" +
+          "#{error.message} (#{error.class})\n#{error.backtrace.join "\n"}"
     end
   end
 end
