@@ -141,10 +141,10 @@ module Concurrent
     #
     # @return [Promise]
     def zip(*others)
-      others.reduce(self) do |p1, p2|
-        p1.flat_map do |result1|
-          p2.then do |result2|
-            [result1, result2].flatten
+      others.reduce(self.then { |x| [x] }) do |p1, p2|
+        p1.flat_map do |results|
+          p2.then do |next_result|
+            results << next_result
           end
         end
       end

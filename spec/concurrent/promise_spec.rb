@@ -294,12 +294,12 @@ module Concurrent
     describe '#zip' do
       let(:promise1) { Promise.new(executor: executor) { 1 } }
       let(:promise2) { Promise.new(executor: executor) { 2 } }
-      let(:promise3) { Promise.new(executor: executor) { 3 } }
+      let(:promise3) { Promise.new(executor: executor) { [3] } }
 
       it 'yields the results as an array' do
         composite = promise1.zip(promise2, promise3).execute
         sleep 0.1
-        expect(composite.value).to eq([1,2,3])
+        expect(composite.value).to eq([1, 2, [3]])
       end
 
       it 'fails if one component fails' do
