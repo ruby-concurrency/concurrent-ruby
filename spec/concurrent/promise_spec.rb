@@ -270,22 +270,22 @@ module Concurrent
 
       it 'succeeds if both promises succeed' do
         child = Promise.new(executor: executor) { 1 }.
-          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute
-        sleep 0.1
+          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute.wait
+
         expect(child.value!).to eq(11)
       end
 
       it 'fails if the left promise fails' do
         child = Promise.new(executor: executor) { fail }.
-          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute
-        sleep 0.1
+          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute.wait
+
         expect(child).to be_rejected
       end
 
       it 'fails if the right promise fails' do
         child = Promise.new(executor: executor) { 1 }.
-          flat_map { |v| Promise.new(executor: executor) { fail } }.execute
-        sleep 0.1
+          flat_map { |v| Promise.new(executor: executor) { fail } }.execute.wait
+
         expect(child).to be_rejected
       end
 
@@ -297,14 +297,14 @@ module Concurrent
       let(:promise3) { Promise.new(executor: executor) { [3] } }
 
       it 'yields the results as an array' do
-        composite = promise1.zip(promise2, promise3).execute
-        sleep 0.1
+        composite = promise1.zip(promise2, promise3).execute.wait
+
         expect(composite.value).to eq([1, 2, [3]])
       end
 
       it 'fails if one component fails' do
-        composite = promise1.zip(promise2, rejected_subject, promise3).execute
-        sleep 0.1
+        composite = promise1.zip(promise2, rejected_subject, promise3).execute.wait
+
         expect(composite).to be_rejected
       end
     end
