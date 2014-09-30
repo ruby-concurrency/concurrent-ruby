@@ -289,6 +289,12 @@ module Concurrent
         expect(child).to be_rejected
       end
 
+      it 'fails if the generating block fails' do
+        child = Promise.new(executor: executor) { }.flat_map { fail }.execute.wait
+
+        expect(child).to be_rejected
+      end
+
     end
 
     describe '#zip' do

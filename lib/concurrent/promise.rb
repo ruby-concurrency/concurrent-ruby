@@ -126,10 +126,14 @@ module Concurrent
 
       on_error { |e| child.on_reject(e) }
       on_success do |result1|
-        inner = block.call(result1)
-        inner.execute
-        inner.on_success { |result2| child.on_fulfill(result2) }
-        inner.on_error { |e| child.on_reject(e) }
+        begin
+          inner = block.call(result1)
+          inner.execute
+          inner.on_success { |result2| child.on_fulfill(result2) }
+          inner.on_error { |e| child.on_reject(e) }
+        rescue => e
+          child.on_reject(e)
+        end
       end
 
       child
