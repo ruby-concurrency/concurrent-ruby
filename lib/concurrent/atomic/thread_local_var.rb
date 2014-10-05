@@ -4,16 +4,45 @@ module Concurrent
 
   module ThreadLocalRubyStorage
 
+    protected
+
     def allocate_storage
       @storage = Atomic.new Hash.new
     end
 
     def get
-      @storage.get[Thread.current]
+      @storage.get[Thread.current.object_id]
     end
 
-    def set(value)
-      @storage.update { |s| s.merge Thread.current => value }
+    def set(value, &block)
+      key = Thread.current.object_id
+
+      @storage.update do |s|
+        s.merge(key => value)
+      end
+
+      if block_given?
+        begin
+          block.call
+        ensure
+          @storage.update do |s|
+            s.clone.tap { |h| h.delete key }
+          end
+        end
+
+      else
+        unless ThreadLocalRubyStorage.i_know_it_may_leak_values?
+          warn "it may leak values if used without block\n#{caller[0]}"
+        end
+      end
+    end
+
+    def self.i_know_it_may_leak_values!
+      @leak_acknowledged = true
+    end
+
+    def self.i_know_it_may_leak_values?
+      @leak_acknowledged
     end
 
   end
@@ -57,14 +86,19 @@ module Concurrent
       end
     end
 
+    # may leak the value, #bind is preferred
     def value=(value)
+      bind value
+    end
+
+    def bind(value, &block)
       if value.nil?
         stored_value = NIL_SENTINEL
       else
         stored_value = value
       end
 
-      set stored_value
+      set stored_value, &block
 
       value
     end

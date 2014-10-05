@@ -3,9 +3,11 @@ require 'rbconfig'
 
 module Concurrent
 
+  ThreadLocalRubyStorage.i_know_it_may_leak_values!
+
   describe ThreadLocalVar do
 
-    subject{ ThreadLocalVar.new }
+    subject { ThreadLocalVar.new }
 
     context '#initialize' do
 
@@ -20,7 +22,7 @@ module Concurrent
       end
 
       it 'sets the same initial value for all threads' do
-        v = ThreadLocalVar.new(14)
+        v  = ThreadLocalVar.new(14)
         t1 = Thread.new { v.value }
         t2 = Thread.new { v.value }
         expect(t1.value).to eq 14
@@ -38,6 +40,19 @@ module Concurrent
       end
     end
 
+    unless jruby?
+      context 'GC' do
+        it 'does not leave values behind when bind is used' do
+          var = ThreadLocalVar.new(0)
+          100.times.map do |i|
+            Thread.new { var.bind(i) { var.value } }
+          end.each(&:join)
+          var.value = 0
+          expect(var.instance_variable_get(:@storage).get.size).to be == 1
+        end
+      end
+    end
+
     context '#value' do
 
       it 'returns the current value' do
@@ -46,7 +61,7 @@ module Concurrent
       end
 
       it 'returns the value after modification' do
-        v = ThreadLocalVar.new(14)
+        v       = ThreadLocalVar.new(14)
         v.value = 2
         expect(v.value).to eq 2
       end
@@ -56,7 +71,7 @@ module Concurrent
     context '#value=' do
 
       it 'sets a new value' do
-        v = ThreadLocalVar.new(14)
+        v       = ThreadLocalVar.new(14)
         v.value = 2
         expect(v.value).to eq 2
       end
@@ -67,14 +82,14 @@ module Concurrent
       end
 
       it 'does not modify the initial value for other threads' do
-        v = ThreadLocalVar.new(14)
+        v       = ThreadLocalVar.new(14)
         v.value = 2
-        t = Thread.new { v.value }
+        t       = Thread.new { v.value }
         expect(t.value).to eq 14
       end
 
       it 'does not modify the value for other threads' do
-        v = ThreadLocalVar.new(14)
+        v       = ThreadLocalVar.new(14)
         v.value = 2
 
         b1 = CountDownLatch.new(2)
