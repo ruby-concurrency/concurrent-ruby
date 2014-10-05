@@ -121,7 +121,7 @@ module Concurrent
     def flat_map(&block)
       child = Promise.new(
         parent: self,
-        executor: @executor,
+        executor: ImmediateExecutor.new,
       )
 
       on_error { |e| child.on_reject(e) }
