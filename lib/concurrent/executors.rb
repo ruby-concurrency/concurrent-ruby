@@ -1,6 +1,7 @@
 require 'concurrent/executor/cached_thread_pool'
 require 'concurrent/executor/fixed_thread_pool'
 require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/indirect_immediate_executor'
 require 'concurrent/executor/per_thread_executor'
 require 'concurrent/executor/safe_task_executor'
 require 'concurrent/executor/single_thread_executor'
