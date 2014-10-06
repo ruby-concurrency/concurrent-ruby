@@ -16,15 +16,31 @@ module Concurrent
   #
   # @note Intended for use primarily in testing and debugging.
   class IndirectImmediateExecutor < ImmediateExecutor
+    # Creates a new executor
+    def initialize
+      super
+      @internal_executor = PerThreadExecutor.new
+    end
+
     # @!macro executor_method_post
     def post(*args, &task)
+      raise ArgumentError.new("no block given") unless block_given?
       return false unless running?
 
-      executor = SingleThreadExecutor.new
-      executor.post(*args, &task)
-      executor.shutdown
-      executor.wait_for_termination
+      event = Concurrent::Event.new
+      internal_executor.post do
+        begin
+          task.call(*args)
+        ensure
+          event.set
+        end
+      end
+      event.wait
+
       true
     end
+
+    private
+    attr_reader :internal_executor
   end
 end
