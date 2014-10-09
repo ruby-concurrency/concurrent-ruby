@@ -315,6 +315,24 @@ module Concurrent
       end
     end
 
+    describe '.zip' do
+      let(:promise1) { Promise.new(executor: executor) { 1 } }
+      let(:promise2) { Promise.new(executor: executor) { 2 } }
+      let(:promise3) { Promise.new(executor: executor) { [3] } }
+
+      it 'yields the results as an array' do
+        composite = Promise.zip(promise1, promise2, promise3).execute.wait
+
+        expect(composite.value).to eq([1, 2, [3]])
+      end
+
+      it 'fails if one component fails' do
+        composite = Promise.zip(promise1, promise2, rejected_subject, promise3).execute.wait
+
+        expect(composite).to be_rejected
+      end
+    end
+
     context 'fulfillment' do
 
       it 'passes the result of each block to all its children' do
