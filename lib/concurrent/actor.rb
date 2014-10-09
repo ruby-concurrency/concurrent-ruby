@@ -67,9 +67,6 @@ module Concurrent
     # @param args see {.spawn_optionify}
     # @return [Reference] never the actual actor
     def self.spawn(*args, &block)
-      experimental_acknowledged? or
-          warn '[EXPERIMENTAL] A full release of `Actor`, is expected in the 0.7.0 release.'
-
       if Actor.current
         Core.new(spawn_optionify(*args).merge(parent: Actor.current), &block).reference
       else
@@ -100,11 +97,7 @@ module Concurrent
 
     # call this to disable experimental warning
     def self.i_know_it_is_experimental!
-      @experimental_acknowledged = true
-    end
-
-    def self.experimental_acknowledged?
-      !!@experimental_acknowledged
+      warn 'Method Actor.i_know_it_is_experimental! is deprecated. The Actors are no longer experimental.'
     end
   end
 end
