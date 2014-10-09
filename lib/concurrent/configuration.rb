@@ -17,6 +17,9 @@ module Concurrent
     #   lambda { |level, progname, message = nil, &block| _ }
     attr_accessor :logger
 
+    # defines if executors should be auto-terminated in at_exit callback
+    attr_accessor :auto_terminate
+
     # Create a new configuration object.
     def initialize
       immediate_executor     = ImmediateExecutor.new
@@ -24,6 +27,7 @@ module Concurrent
       @global_operation_pool = Delay.new(executor: immediate_executor) { new_operation_pool }
       @global_timer_set      = Delay.new(executor: immediate_executor) { Concurrent::TimerSet.new }
       @logger                = no_logger
+      @auto_terminate        = true
     end
 
     # if assigned to {#logger}, it will log nothing.
@@ -129,6 +133,12 @@ module Concurrent
     yield(configuration)
   end
 
+  def self.finalize_global_executors
+    self.finalize_executor(self.configuration.global_timer_set)
+    self.finalize_executor(self.configuration.global_task_pool)
+    self.finalize_executor(self.configuration.global_operation_pool)
+  end
+
   private
 
   # Attempt to properly shutdown the given executor using the `shutdown` or
@@ -150,12 +160,8 @@ module Concurrent
     false
   end
 
-
   # set exit hook to shutdown global thread pools
   at_exit do
-    self.finalize_executor(self.configuration.global_timer_set)
-    self.finalize_executor(self.configuration.global_task_pool)
-    self.finalize_executor(self.configuration.global_operation_pool)
-    # TODO may break other test suites using concurrent-ruby, terminates before test is run
+    finalize_global_executors if configuration.auto_terminate
   end
 end
