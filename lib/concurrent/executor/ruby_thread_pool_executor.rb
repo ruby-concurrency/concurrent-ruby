@@ -254,10 +254,11 @@ module Concurrent
     # @!visibility private
     def prune_pool
       if Time.now.to_f - @gc_interval >= @last_gc_time
-        @pool.delete_if do |worker|
-          worker.dead? ||
-            (@idletime == 0 ? false : Time.now.to_f - @idletime > worker.last_activity)
-        end
+        @pool.delete_if { |worker| worker.dead? }
+        # send :stop for each thread over idletime
+        @pool.
+            select { |worker| @idletime != 0 && Time.now.to_f - @idletime > worker.last_activity }.
+            each { @queue << :stop }
         @last_gc_time = Time.now.to_f
       end
     end
