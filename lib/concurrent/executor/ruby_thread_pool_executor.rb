@@ -11,20 +11,20 @@ module Concurrent
     include RubyExecutor
 
     # Default maximum number of threads that will be created in the pool.
-    DEFAULT_MAX_POOL_SIZE = 2**15 # 32768
+    DEFAULT_MAX_POOL_SIZE      = 2**15 # 32768
 
     # Default minimum number of threads that will be retained in the pool.
-    DEFAULT_MIN_POOL_SIZE = 0
+    DEFAULT_MIN_POOL_SIZE      = 0
 
     # Default maximum number of tasks that may be added to the task queue.
-    DEFAULT_MAX_QUEUE_SIZE = 0
+    DEFAULT_MAX_QUEUE_SIZE     = 0
 
     # Default maximum number of seconds a thread in the pool may remain idle
     # before being reclaimed.
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
     # The set of possible overflow policies that may be set at thread pool creation.
-    OVERFLOW_POLICIES = [:abort, :discard, :caller_runs]
+    OVERFLOW_POLICIES          = [:abort, :discard, :caller_runs]
 
     # The maximum number of threads that may be created in the pool.
     attr_reader :max_length
@@ -77,10 +77,10 @@ module Concurrent
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
     def initialize(opts = {})
-      @min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
-      @max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
-      @idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
-      @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+      @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+      @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+      @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
+      @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
       @overflow_policy = opts.fetch(:overflow_policy, :abort)
 
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
@@ -90,13 +90,13 @@ module Concurrent
 
       init_executor
 
-      @pool = []
-      @queue = Queue.new
+      @pool                 = []
+      @queue                = Queue.new
       @scheduled_task_count = 0
       @completed_task_count = 0
-      @largest_length = 0
+      @largest_length       = 0
 
-      @gc_interval = opts.fetch(:gc_interval, 1).to_i # undocumented
+      @gc_interval  = opts.fetch(:gc_interval, 1).to_i # undocumented
       @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
     end
 
@@ -109,15 +109,16 @@ module Concurrent
     #
     # @return [Integer] the length
     def length
-      mutex.synchronize{ running? ? @pool.length : 0 }
+      mutex.synchronize { running? ? @pool.length : 0 }
     end
+
     alias_method :current_length, :length
 
     # The number of tasks in the queue awaiting execution.
     #
     # @return [Integer] the queue_length
     def queue_length
-      mutex.synchronize{ running? ? @queue.length : 0 }
+      mutex.synchronize { running? ? @queue.length : 0 }
     end
 
     # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
@@ -152,7 +153,7 @@ module Concurrent
     def on_worker_exit(worker)
       mutex.synchronize do
         @pool.delete(worker)
-        if @pool.empty? && ! running?
+        if @pool.empty? && !running?
           stop_event.set
           stopped_event.set
         end
@@ -177,7 +178,7 @@ module Concurrent
       if @pool.empty?
         stopped_event.set
       else
-        @pool.length.times{ @queue << :stop }
+        @pool.length.times { @queue << :stop }
       end
     end
 
@@ -196,7 +197,7 @@ module Concurrent
     # @!visibility private
     def ensure_capacity?
       additional = 0
-      capacity = true
+      capacity   = true
 
       if @pool.size < @min_length
         additional = @min_length - @pool.size
@@ -267,7 +268,7 @@ module Concurrent
     #
     # @!visibility private
     def drain_pool
-      @pool.each {|worker| worker.kill }
+      @pool.each { |worker| worker.kill }
       @pool.clear
     end
 
