@@ -24,17 +24,19 @@ module Concurrent
       subject{ described_class.new(idletime: 1, max_threads: 2, gc_interval: 0) }
 
       it 'removes from pool any thread that has been idle too long' do
-        subject.instance_variable_set(:@idletime, 1)
         latch = Concurrent::CountDownLatch.new(3)
-        3.times { subject << proc{ sleep(0.1); latch.count_down } }
+        4.times { subject << proc { sleep 0.1; latch.count_down } }
         expect(latch.wait(1)).to be true
+
+        subject.instance_variable_set(:@idletime, 1)
+
+        sleep 1.5
 
         max_threads = subject.length
-        sleep(2)
 
-        latch = Concurrent::CountDownLatch.new(1)
-        subject << proc{ latch.count_down }
-        expect(latch.wait(1)).to be true
+        subject.send :prune_pool
+        sleep 0.1
+        subject.send :prune_pool
 
         expect(subject.length).to be < max_threads
       end
