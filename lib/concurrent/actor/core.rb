@@ -46,10 +46,14 @@ module Concurrent
         synchronize do
           @mailbox              = Array.new
           @serialized_execution = SerializedExecution.new
-          @executor             = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
           @children             = Set.new
-          @context_class        = Child! opts.fetch(:class), AbstractContext
+
+          @context_class = Child! opts.fetch(:class), AbstractContext
           allocate_context
+
+          @executor = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
+          raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
+
           @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
           @name      = (Type! opts.fetch(:name), String, Symbol).to_s
 
@@ -82,7 +86,7 @@ module Concurrent
                 handle_envelope Envelope.new(message, nil, parent, reference)
               end
 
-              initialized.set true if initialized
+              initialized.set reference if initialized
             rescue => ex
               log ERROR, ex
               @first_behaviour.terminate!
