@@ -54,6 +54,10 @@ module Concurrent
       #   set_trace_func nil
       # end
 
+      it 'forbids Immediate executor' do
+        expect { Utils::AdHoc.spawn name: 'test', executor: ImmediateExecutor.new }.to raise_error
+      end
+
       describe 'stress test' do
         1.times do |i|
           it format('run %3d', i) do

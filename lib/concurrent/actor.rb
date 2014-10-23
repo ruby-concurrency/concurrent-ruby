@@ -70,7 +70,7 @@ module Concurrent
       if Actor.current
         Core.new(spawn_optionify(*args).merge(parent: Actor.current), &block).reference
       else
-        root.ask([:spawn, spawn_optionify(*args), block]).value
+        root.ask([:spawn, spawn_optionify(*args), block]).value!
       end
     end
 
