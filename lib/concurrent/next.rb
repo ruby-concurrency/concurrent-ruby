@@ -59,20 +59,21 @@ module Concurrent
         Future.execute executor, &block
       end
 
+      # @return [Delay]
+      def delay(executor = :fast, &block)
+        Delay.new(executor, &block)
+      end
+
       alias_method :async, :future
     end
 
     extend Shortcuts
 
-    # TODO benchmark java implementation, is it faster as expected?
-    class SynchronizedObject
+    begin
+      require 'jruby'
 
-      engine = defined?(RUBY_ENGINE) && RUBY_ENGINE
-
-      case engine
-      when 'jruby'
-        require 'jruby'
-
+      # roughly more than 2x faster
+      class JavaSynchronizedObject
         def initialize
         end
 
@@ -81,51 +82,59 @@ module Concurrent
         end
 
         def wait(timeout)
-          JRuby.reference0(self).wait(timeout ? timeout * 1000 : nil)
+          if timeout
+            JRuby.reference0(self).wait(timeout * 1000)
+          else
+            JRuby.reference0(self).wait
+          end
         end
 
         def notify_all
           JRuby.reference0(self).notifyAll
         end
+      end
+    rescue LoadError
+      # ignore
+    end
 
-      when 'rbx'
+    class RubySynchronizedObject
+      def initialize
+        @mutex     = Mutex.new
+        @condition = Concurrent::Condition.new
+      end
 
-        raise NotImplementedError # TODO
-
-        # def synchronize
-        #   Rubinius.lock(self)
+      def synchronize
+        # if @mutex.owned?
         #   yield
-        # ensure
-        #   Rubinius.unlock(self)
+        # else
+        @mutex.synchronize { yield }
+      rescue ThreadError
+        yield
         # end
+      end
 
-      else
+      def wait(timeout)
+        @condition.wait @mutex, timeout
+      end
 
-        def initialize
-          @mutex     = Mutex.new
-          @condition = Concurrent::Condition.new
-        end
+      def notify
+        @condition.signal
+      end
 
-        def synchronize
-          if @mutex.owned?
-            yield
-          else
-            @mutex.synchronize { yield }
-          end
-        end
+      def notify_all
+        @condition.broadcast
+      end
+    end
 
-        def wait(timeout)
-          @condition.wait @mutex, timeout
-        end
-
-        def notify
-          @condition.signal
-        end
-
-        def notify_all
-          @condition.broadcast
-        end
-
+    engine = defined?(RUBY_ENGINE) && RUBY_ENGINE
+    case engine
+    when 'jruby'
+      class SynchronizedObject < JavaSynchronizedObject
+      end
+    when 'rbx'
+      raise NotImplementedError # TODO
+    else
+      class SynchronizedObject < RubySynchronizedObject
       end
     end
 
@@ -161,6 +170,7 @@ module Concurrent
 
       singleton_class.send :alias_method, :dataflow, :join
 
+      # @api private
       def initialize(default_executor = :fast)
         super()
         synchronize do
@@ -361,9 +371,15 @@ module Concurrent
     end
 
     class Promise < SynchronizedObject
-      def initialize(executor = :fast)
+      # @api private
+      def initialize(executor_or_future = :fast)
         super()
-        synchronize { @future = Future.new(executor) }
+        future = if Future === executor_or_future
+                   executor_or_future
+                 else
+                   Future.new(executor_or_future)
+                 end
+        synchronize { @future = future }
       end
 
       def future
@@ -416,6 +432,33 @@ module Concurrent
 
     end
 
+    class Delay < Future
+
+      def initialize(default_executor = :fast, &block)
+        super(default_executor)
+        raise ArgumentError.new('no block given') unless block_given?
+        synchronize do
+          @computing = false
+          @task      = block
+        end
+      end
+
+      def wait(timeout = nil)
+        execute_task_once
+        super timeout
+      end
+
+      private
+
+      def execute_task_once
+        execute, task = synchronize do
+          [(@computing = true unless @computing), @task]
+        end
+
+        Next.executor(default_executor).post { Promise.new(self).evaluate_to &task } if execute
+      end
+    end
+
   end
 end
 
@@ -465,4 +508,77 @@ futures.each_with_index { |f, i| puts '%5i %7s %10s %6s %4s' % [i, f.success?, f
 #     6    true        Boo          io
 #     7    true [3, "boo"]        fast
 
+puts '-- delay'
 
+# evaluated on #wait, #value
+delay = delay { 1 + 1 }
+p delay.completed?, delay.value
+
+puts '-- promise like tree'
+
+# if head of the tree is not constructed with #future but with #delay it does not start execute,
+# it's triggered later by `head.wait`
+head   = delay { 1 }
+tree   = head.then(&:succ).then(&:succ).then(&:succ)
+thread = Thread.new { p tree.value } # prints 4
+head.wait
+thread.join
+
+puts '-- bench'
+require 'benchmark'
+
+Benchmark.bmbm(20) do |b|
+
+  parents = [RubySynchronizedObject, (JavaSynchronizedObject if defined? JavaSynchronizedObject)].compact
+  classes = parents.map do |parent|
+    klass = Class.new(parent) do
+      def initialize
+        super
+        synchronize do
+          @q = []
+        end
+      end
+
+      def add(v)
+        synchronize do
+          @q << v
+          if @q.size > 100
+            @q.clear
+          end
+        end
+      end
+    end
+    [parent, klass]
+  end
+
+  classes.each do |parent, klass|
+    b.report(parent) do
+      s = klass.new
+      2.times.map do
+        Thread.new do
+          5_000_000.times { s.add :a }
+        end
+      end.each &:join
+    end
+
+  end
+
+end
+
+# MRI
+# Rehearsal ----------------------------------------------------------------------------
+# Concurrent::Next::RubySynchronizedObject   8.010000   6.290000  14.300000 ( 12.197402)
+# ------------------------------------------------------------------ total: 14.300000sec
+#
+# user     system      total        real
+# Concurrent::Next::RubySynchronizedObject   8.950000   9.320000  18.270000 ( 15.053220)
+#
+# JRuby
+# Rehearsal ----------------------------------------------------------------------------
+# Concurrent::Next::RubySynchronizedObject  10.500000   6.440000  16.940000 ( 10.640000)
+# Concurrent::Next::JavaSynchronizedObject   8.410000   0.050000   8.460000 (  4.132000)
+# ------------------------------------------------------------------ total: 25.400000sec
+#
+# user     system      total        real
+# Concurrent::Next::RubySynchronizedObject   9.090000   6.640000  15.730000 ( 10.690000)
+# Concurrent::Next::JavaSynchronizedObject   8.200000   0.030000   8.230000 (  4.141000)
