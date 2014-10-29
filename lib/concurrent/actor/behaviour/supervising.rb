@@ -1,6 +1,10 @@
 module Concurrent
   module Actor
     module Behaviour
+
+      # Handles supervised actors. Handle configures what to do with failed child: :terminate!, :resume!, :reset!,
+      # or :restart!. Strategy sets :one_for_one (restarts just failed actor) or :one_for_all (restarts all child actors).
+      # @note TODO missing example
       class Supervising < Abstract
         def initialize(core, subsequent, handle, strategy)
           super core, subsequent

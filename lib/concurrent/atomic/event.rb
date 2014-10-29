@@ -18,8 +18,8 @@ module Concurrent
     # Creates a new `Event` in the unset state. Threads calling `#wait` on the
     # `Event` will block.
     def initialize
-      @set = false
-      @mutex = Mutex.new
+      @set       = false
+      @mutex     = Mutex.new
       @condition = Condition.new
     end
 

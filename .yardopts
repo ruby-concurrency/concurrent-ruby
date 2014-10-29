@@ -1,5 +1,5 @@
 --protected
---no-private
+--private
 --embed-mixins
 --output-dir ./yardoc
 --markup markdown

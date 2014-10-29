@@ -3,7 +3,7 @@ module Concurrent
 
     require 'set'
 
-    # Core of the actor
+    # Core of the actor.
     # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
     # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
     #   that would eat up all threads in task pool and deadlock
@@ -13,34 +13,38 @@ module Concurrent
       include Synchronization
 
       # @!attribute [r] reference
-      #   @return [Reference] reference to this actor which can be safely passed around
+      #   Reference to this actor which can be safely passed around.
+      #   @return [Reference]
       # @!attribute [r] name
-      #   @return [String] the name of this instance, it should be uniq (not enforced right now)
+      #   The name of actor instance, it should be uniq (not enforced). Allows easier orientation
+      #   between actor instances.
+      #   @return [String]
       # @!attribute [r] path
-      #   @return [String] a path of this actor. It is used for easier orientation and logging.
-      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actor.root},
-      #     e.g. `/an_actor/its_child`.
-      #     (It will also probably form a supervision path (failures will be reported up to parents)
-      #     in future versions.)
+      #   Path of this actor. It is used for easier orientation and logging.
+      #   Path is constructed recursively with: `parent.path + self.name` up to a {Actor.root},
+      #   e.g. `/an_actor/its_child`.
+      #   @return [String]
       # @!attribute [r] executor
-      #   @return [Executor] which is used to process messages
+      #   Executor which is used to process messages.
+      #   @return [Executor]
       # @!attribute [r] actor_class
-      #   @return [Context] a class including {Context} representing Actor's behaviour
+      #   A subclass of {AbstractContext} representing Actor's behaviour.
+      #   @return [Context]
       attr_reader :reference, :name, :path, :executor, :context_class, :context, :behaviour_definition
 
       # @option opts [String] name
-      # @option opts [Reference, nil] parent of an actor spawning this one
-      # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
       # @option opts [true, false] link, atomically link the actor to its parent
       # @option opts [true, false] supervise, atomically supervise the actor by its parent
+      # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
       #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
       # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
+      # @option opts [Reference, nil] parent **private api** parent of the actor (the one spawning )
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
-      #   can be used to hook actor instance to any logging system
+      #   can be used to hook actor instance to any logging system, see {Concurrent::Logging}
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
         synchronize do
@@ -83,7 +87,8 @@ module Concurrent
               build_context
 
               messages.each do |message|
-                handle_envelope Envelope.new(message, nil, parent, reference)
+                log DEBUG, "preprocessing #{message} from #{parent}"
+                process_envelope Envelope.new(message, nil, parent, reference)
               end
 
               initialized.set reference if initialized
@@ -96,7 +101,9 @@ module Concurrent
         end
       end
 
-      # @return [Reference, nil] of parent actor
+      # A parent Actor. When actor is spawned the {Actor.current} becomes its parent.
+      # When actor is spawned from a thread outside of an actor ({Actor.current} is nil) {Actor.root} is assigned.
+      # @return [Reference, nil]
       def parent
         @parent_core && @parent_core.reference
       end
@@ -132,7 +139,10 @@ module Concurrent
       # can be called from other alternative Reference implementations
       # @param [Envelope] envelope
       def on_envelope(envelope)
-        schedule_execution { handle_envelope envelope }
+        schedule_execution do
+          log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
+          process_envelope envelope
+        end
         nil
       end
 
@@ -194,12 +204,12 @@ module Concurrent
         @context.send :initialize, *@args, &@block
       end
 
-      private
-
-      def handle_envelope(envelope)
-        log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
+      # @api private
+      def process_envelope(envelope)
         @first_behaviour.on_envelope envelope
       end
+
+      private
 
       def initialize_behaviours(opts)
         @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |v|

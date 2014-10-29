@@ -3,8 +3,39 @@ module Concurrent
     module Behaviour
 
       # Links the actor to other actors and sends actor's events to them,
-      # like: `:terminated`, `:paused`, errors, etc
-      # TODO example
+      # like: `:terminated`, `:paused`, errors, etc.
+      #
+      #     listener = AdHoc.spawn name: :listener do
+      #       lambda do |message|
+      #         case message
+      #         when Reference
+      #           if message.ask!(:linked?)
+      #             message << :unlink
+      #           else
+      #             message << :link
+      #           end
+      #         else
+      #           puts "got event #{message.inspect} from #{envelope.sender}"
+      #         end
+      #       end
+      #     end
+      #
+      #     an_actor = AdHoc.spawn name: :an_actor, supervise: true, behaviour_definition: Behaviour.restarting_behaviour_definition do
+      #       lambda { |message| raise 'failed'}
+      #     end
+      #
+      #     # link the actor
+      #     listener.ask(an_actor).wait
+      #     an_actor.ask(:fail).wait
+      #     # unlink the actor
+      #     listener.ask(an_actor).wait
+      #     an_actor.ask(:fail).wait
+      #     an_actor << :terminate!
+      #
+      # produces only two events, other events happened after unlinking
+      #
+      #     got event #<RuntimeError: failed> from #<Concurrent::Actor::Reference /an_actor (Concurrent::Actor::Utils::AdHoc)>
+      #     got event :reset from #<Concurrent::Actor::Reference /an_actor (Concurrent::Actor::Utils::AdHoc)>
       class Linking < Abstract
         def initialize(core, subsequent)
           super core, subsequent

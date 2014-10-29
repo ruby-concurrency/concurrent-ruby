@@ -4,6 +4,7 @@ module Concurrent
 
       # Handles actor termination.
       # @note Actor rejects envelopes when terminated.
+      # @note TODO missing example
       class Termination < Abstract
 
         # @!attribute [r] terminated
@@ -12,7 +13,7 @@ module Concurrent
 
         def initialize(core, subsequent)
           super core, subsequent
-          @terminated = Event.new
+          @terminated = Concurrent::Event.new
         end
 
         # @note Actor rejects envelopes when terminated.

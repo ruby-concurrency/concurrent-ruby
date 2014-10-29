@@ -14,6 +14,7 @@ module Concurrent
           result = pass envelope
           if result != MESSAGE_PROCESSED && !envelope.ivar.nil?
             envelope.ivar.set result
+            log Logging::DEBUG, "finished processing of #{envelope.message.inspect}"
           end
           nil
         rescue => error

@@ -10,13 +10,6 @@ module Concurrent
   # TODO IO interoperation
   # TODO un/become
 
-  # TODO doc
-  # - what happens if I try to supervise using a normal Context?
-  # - how to change behaviours
-  # - how to implement custom restarting?
-  # - pool for io operations using different executor
-  # - document guaranteed ordering
-
   # {include:file:doc/actor/main.md}
   module Actor
 
@@ -50,18 +43,21 @@ module Concurrent
       @root.value!
     end
 
-    # Spawns a new actor.
-    #
-    # @example simple
+    # Spawns a new actor. {Concurrent::Actor::AbstractContext.spawn} allows to omit class parameter.
+    # To see the list of avaliable options see {Core#initialize}
+    # @see Concurrent::Actor::AbstractContext.spawn
+    # @see Core#initialize
+    # @example by class and name
     #   Actor.spawn(AdHoc, :ping1) { -> message { message } }
     #
-    # @example complex
-    #   Actor.spawn name:     :ping3,
-    #                 class:    AdHoc,
-    #                 args:     [1]
-    #                 executor: Concurrent.configuration.global_task_pool do |add|
-    #     lambda { |number| number + add }
+    # @example by option hash
+    #   inc2 = Actor.spawn(class:    AdHoc,
+    #                      name:     'increment by 2',
+    #                      args:     [2],
+    #                      executor: Concurrent.configuration.global_task_pool) do |increment_by|
+    #     lambda { |number| number + increment_by }
     #   end
+    #   inc2.ask!(2) # => 4
     #
     # @param block for context_class instantiation
     # @param args see {.spawn_optionify}
@@ -74,7 +70,7 @@ module Concurrent
       end
     end
 
-    # as {.spawn} but it'll raise when Actor not initialized properly
+    # as {.spawn} but it'll block until actor is initialized or it'll raise exception on error
     def self.spawn!(*args, &block)
       spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
     end

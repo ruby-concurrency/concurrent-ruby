@@ -5,6 +5,25 @@ module Concurrent
       # Sets and holds the supervisor of the actor if any. There is at most one supervisor
       # for each actor. Each supervisor is automatically linked. Messages:
       # `:pause!, :resume!, :reset!, :restart!` are accepted only from supervisor.
+      #
+      #     actor    = AdHoc.spawn(name: 'supervisor', behaviour_definition: Behaviour.restarting_behaviour_definition) do
+      #       child = AdHoc.spawn(name: 'supervised', behaviour_definition: Behaviour.restarting_behaviour_definition) do
+      #         p 'restarted'
+      #         # message handle of supervised
+      #         -> message { raise 'failed' }
+      #       end
+      #       # supervise the child
+      #       child << :supervise
+      #
+      #       # message handle of supervisor
+      #       -> message do
+      #         child << message if message != :reset
+      #       end
+      #     end
+      #
+      #     actor << :bug
+      #     # will be delegated to 'supervised', 'supervised' fails and is reset by its 'supervisor'
+      #
       class Supervised < Abstract
         attr_reader :supervisor
 

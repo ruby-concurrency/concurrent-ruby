@@ -1,9 +1,8 @@
 module Concurrent
   module Actor
 
-    # Abstract implementation of Actor context. Children has to implement
-    # {AbstractContext#on_message} and {AbstractContext#behaviour_definition} methods.
-    # There are two implementations:
+    # New actor is defined by subclassing {RestartingContext}, {Context} and defining its abstract methods.
+    # {AbstractContext} can be subclassed directly to implement more specific behaviour see {Root} implementation.
     #
     # -   {Context}
     #
@@ -12,6 +11,14 @@ module Concurrent
     # -   {RestartingContext}.
     #
     #     > {include:Actor::RestartingContext}
+    #
+    # Example of ac actor definition:
+    # 
+    # {include:file:doc/actor/define.out.rb}
+    #
+    # See methods of {AbstractContext} what else can be tweaked, e.g {AbstractContext#default_reference_class}
+    #
+    # @abstract implement {AbstractContext#on_message} and {AbstractContext#behaviour_definition}
     class AbstractContext
       include TypeCheck
       include InternalDelegations
@@ -27,7 +34,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # override to add custom code invocation on events like `:terminated`, `:resumed`, `anError`.
+      # override to add custom code invocation on internal events like `:terminated`, `:resumed`, `anError`.
       def on_event(event)
       end
 
@@ -70,6 +77,7 @@ module Concurrent
         Reference
       end
 
+      # tell self a message
       def tell(message)
         reference.tell message
       end
@@ -81,23 +89,32 @@ module Concurrent
       alias_method :<<, :tell
       alias_method :ask!, :ask
 
-      private
-
-      def initialize_core(core)
-        @core = Type! core, Core
-      end
-
-      # behaves as {Concurrent::Actor.spawn} but :class is auto-inserted based on receiver
+      # Behaves as {Concurrent::Actor.spawn} but :class is auto-inserted based on receiver so it can be omitted.
+      # @example by class and name
+      #   AdHoc.spawn(:ping1) { -> message { message } }
+      #
+      # @example by option hash
+      #   inc2 = AdHoc.spawn(name:     'increment by 2',
+      #                      args:     [2],
+      #                      executor: Concurrent.configuration.global_task_pool) do |increment_by|
+      #     lambda { |number| number + increment_by }
+      #   end
+      #   inc2.ask!(2) # => 4
+      # @see Concurrent::Actor.spawn
       def self.spawn(name_or_opts, *args, &block)
         Actor.spawn spawn_optionify(name_or_opts, *args), &block
       end
 
-      # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver
+      # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver so it can be omitted.
       def self.spawn!(name_or_opts, *args, &block)
         Actor.spawn! spawn_optionify(name_or_opts, *args), &block
       end
 
       private
+
+      def initialize_core(core)
+        @core = Type! core, Core
+      end
 
       def self.spawn_optionify(name_or_opts, *args)
         if name_or_opts.is_a? Hash
@@ -115,36 +132,20 @@ module Concurrent
       undef_method :spawn
     end
 
-    # Basic Context of an Actor. It does not support supervision and pausing.
-    # It simply terminates on error.
+    # Basic Context of an Actor. It supports only linking and it simply terminates on error.
+    # Uses {Behaviour.basic_behaviour_definition}:
     #
-    # -   linking
-    # -   terminates on error
-    #
-    # TODO describe behaviour
-    # TODO usage
-    # @example ping
-    #   class Ping < Context
-    #     def on_message(message)
-    #       message
-    #     end
-    #   end
-    #
-    #   Ping.spawn(:ping1).ask(:m).value #=> :m
+    # @abstract implement {AbstractContext#on_message}
     class Context < AbstractContext
       def behaviour_definition
         Behaviour.basic_behaviour_definition
       end
     end
 
-    # Context of an Actor for complex robust systems.
+    # Context of an Actor for robust systems. It supports supervision, linking, pauses on error.
+    # Uses {Behaviour.restarting_behaviour_definition}
     #
-    # -   linking
-    # -   supervising
-    # -   pauses on error
-    #
-    # TODO describe behaviour
-    # TODO usage
+    # @abstract implement {AbstractContext#on_message}
     class RestartingContext < AbstractContext
       def behaviour_definition
         Behaviour.restarting_behaviour_definition
