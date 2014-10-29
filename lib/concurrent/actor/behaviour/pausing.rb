@@ -66,7 +66,7 @@ module Concurrent
             @buffer.each { |envelope| reject_envelope envelope }
             @buffer.clear
           when :resumed, :reset
-            @buffer.each { |envelope| core.schedule_execution { pass envelope } }
+            @buffer.each { |envelope| core.schedule_execution { core.process_envelope envelope } }
             @buffer.clear
           end
           super event

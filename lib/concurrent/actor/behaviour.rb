@@ -33,24 +33,30 @@ module Concurrent
       require 'concurrent/actor/behaviour/terminates_children'
 
       def self.basic_behaviour_definition
-        [*base,
-         *user_messages(:terminate!)]
+        [*base(:terminate!),
+         *linking,
+         *user_messages]
       end
 
-      def self.restarting_behaviour_definition
-        [*base,
+      def self.restarting_behaviour_definition(handle = :reset!, strategy = :one_for_one)
+        [*base(:pause!),
+         *linking,
          *supervised,
-         [Behaviour::Supervising, [:reset!, :one_for_one]],
-         *user_messages(:pause!)]
+         *supervising(handle, strategy),
+         *user_messages]
       end
 
-      def self.base
-        [[SetResults, [:terminate!]],
+      def self.base(on_error)
+        [[SetResults, [on_error]],
          # has to be before Termination to be able to remove children form terminated actor
          [RemovesChild, []],
          [Termination, []],
-         [TerminatesChildren, []],
-         [Linking, []]]
+         [TerminatesChildren, []]]
+      end
+
+      # @see '' its source code
+      def self.linking
+        [[Linking, []]]
       end
 
       def self.supervised
@@ -58,10 +64,12 @@ module Concurrent
          [Pausing, []]]
       end
 
-      def self.user_messages(on_error)
-        [[Buffer, []],
-         [SetResults, [on_error]],
-         [Awaits, []],
+      def self.supervising(handle = :reset!, strategy = :one_for_one)
+        [[Behaviour::Supervising, [handle, strategy]]]
+      end
+
+      def self.user_messages
+        [[Awaits, []],
          [ExecutesContext, []],
          [ErrorsOnUnknownMessage, []]]
       end

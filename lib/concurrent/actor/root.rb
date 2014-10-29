@@ -28,9 +28,9 @@ module Concurrent
       end
 
       def behaviour_definition
-        [*Behaviour.base,
-         [Behaviour::Supervising, [:reset!, :one_for_one]],
-         *Behaviour.user_messages(:just_log)]
+        [*Behaviour.base(:just_log),
+         *Behaviour.supervising,
+         *Behaviour.user_messages]
       end
     end
   end

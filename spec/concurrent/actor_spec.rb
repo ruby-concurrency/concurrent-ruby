@@ -282,13 +282,7 @@ module Concurrent
       describe 'pausing' do
         it 'pauses on error' do
           queue              = Queue.new
-          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
-            if Behaviour::Supervising == c
-              [c, [:resume!, :one_for_one]]
-            else
-              [c, args]
-            end
-          end
+          resuming_behaviour = Behaviour.restarting_behaviour_definition(:resume!)
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
             actor = AdHoc.spawn name:                 :pausing,
@@ -302,9 +296,7 @@ module Concurrent
             actor << nil
             queue << actor.ask(:add)
 
-            -> m do
-              queue << m
-            end
+            -> m { queue << m }
           end
 
           expect(queue.pop).to eq :init
