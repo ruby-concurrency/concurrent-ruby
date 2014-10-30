@@ -96,6 +96,10 @@ Blocking operations could starve the `default_task_pool`. However there are two 
   (which is intended for blocking operations) sending results back to self in messages.
 - Create an actor using `global_operation_pool` instead of `global_task_pool`, e.g.
   `AnIOActor.spawn name: :blocking, executor: Concurrent.configuration.global_operation_pool`.
+  
+### Example
+  
+{include:file:doc/actor/io.out.rb}
 
 ## Dead letter routing
 

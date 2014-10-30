@@ -7,8 +7,9 @@ require 'concurrent/atomic/synchronization'
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?
   # TODO Remote actors using DRb
-  # TODO IO interoperation
   # TODO un/become
+  # TODO supervision tree, pause children on error in parent, pause may need higher priority
+  # TODO more effective executor
 
   # {include:file:doc/actor/main.md}
   module Actor
