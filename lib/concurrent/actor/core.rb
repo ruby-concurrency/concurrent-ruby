@@ -55,7 +55,7 @@ module Concurrent
           @context_class = Child! opts.fetch(:class), AbstractContext
           allocate_context
 
-          @executor = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
+          @executor = Type! opts.fetch(:executor, @context.default_executor), Executor
           raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
 
           @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self

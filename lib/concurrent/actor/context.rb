@@ -77,6 +77,12 @@ module Concurrent
         Reference
       end
 
+      # override to se different default executor, e.g. to change it to global_operation_pool
+      # @return [Executor]
+      def default_executor
+        Concurrent.configuration.global_task_pool
+      end
+
       # tell self a message
       def tell(message)
         reference.tell message
