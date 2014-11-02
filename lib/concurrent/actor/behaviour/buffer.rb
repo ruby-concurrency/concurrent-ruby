@@ -40,13 +40,13 @@ module Concurrent
           core.schedule_execution { process_envelopes? }
         end
 
-        def on_event(event)
+        def on_event(public, event)
           case event
           when :terminated, :restarted
             @buffer.each { |envelope| reject_envelope envelope }
             @buffer.clear
           end
-          super event
+          super public, event
         end
       end
     end

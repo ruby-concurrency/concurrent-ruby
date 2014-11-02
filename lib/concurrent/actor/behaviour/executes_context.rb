@@ -7,10 +7,9 @@ module Concurrent
           context.on_envelope envelope
         end
 
-        def on_event(event)
+        def on_event(public, event)
           context.on_event(event)
-          core.log Logging::DEBUG, "event: #{event.inspect}"
-          super event
+          super public, event
         end
       end
     end

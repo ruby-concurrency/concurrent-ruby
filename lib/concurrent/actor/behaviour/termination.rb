@@ -28,7 +28,7 @@ module Concurrent
             terminated?
           when :terminate!
             terminate!
-          when :terminated_event
+          when :terminated_event # TODO rename to :termination_event
             terminated
           else
             if terminated?
@@ -45,7 +45,7 @@ module Concurrent
         def terminate!
           return true if terminated?
           terminated.set
-          broadcast(:terminated) # TODO do not end up in Dead Letter Router
+          broadcast(true, :terminated) # TODO do not end up in Dead Letter Router
           parent << :remove_child if parent
           true
         end

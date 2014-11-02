@@ -25,15 +25,15 @@ module Concurrent
 
         # override to add extra behaviour
         # @note super needs to be called not to break the chain
-        def on_event(event)
-          subsequent.on_event event if subsequent
+        def on_event(public, event)
+          subsequent.on_event public, event if subsequent
         end
 
         # broadcasts event to all behaviours and context
         # @see #on_event
         # @see AbstractContext#on_event
-        def broadcast(event)
-          core.broadcast(event)
+        def broadcast(public, event)
+          core.broadcast(public, event)
         end
 
         def reject_envelope(envelope)

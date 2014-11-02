@@ -3,10 +3,10 @@ module Concurrent
     module Behaviour
       # Terminates all children when the actor terminates.
       class TerminatesChildren < Abstract
-        def on_event(event)
+        def on_event(public, event)
           # TODO set event in Termination after all children are terminated, requires new non-blocking join on Future
           children.map { |ch| ch << :terminate! } if event == :terminated
-          super event
+          super public, event
         end
       end
     end

@@ -35,41 +35,77 @@ module Concurrent
         end
 
         def pause!(error = nil)
-          @paused = true
-          broadcast(error || :paused)
+          do_pause
+          broadcast true, error || :paused
           true
         end
 
-        def resume!(broadcast = true)
-          @paused = false
-          broadcast(:resumed) if broadcast
+        def resume!
+          do_resume
+          broadcast(true, :resumed)
           true
         end
 
-        def reset!(broadcast = true)
-          core.allocate_context
-          core.build_context
-          resume!(false)
-          broadcast(:reset) if broadcast
+        def reset!
+          broadcast(false, :resetting)
+          do_reset
+          broadcast(true, :reset)
           true
         end
 
         def restart!
-          reset! false
-          broadcast(:restarted)
+          broadcast(false, :restarting)
+          do_restart
+          broadcast(true, :restarted)
           true
         end
 
-        def on_event(event)
-          case event
-          when :terminated, :restarted
-            @buffer.each { |envelope| reject_envelope envelope }
-            @buffer.clear
-          when :resumed, :reset
-            @buffer.each { |envelope| core.schedule_execution { core.process_envelope envelope } }
-            @buffer.clear
-          end
-          super event
+        def on_event(public, event)
+          reject_buffer if event == :terminated
+          super public, event
+        end
+
+        private
+
+        def do_pause
+          @paused = true
+          nil
+        end
+
+        def do_resume
+          @paused = false
+          reschedule_buffer
+          nil
+        end
+
+        def do_reset
+          rebuild_context
+          do_resume
+          reschedule_buffer
+          nil
+        end
+
+        def do_restart
+          rebuild_context
+          reject_buffer
+          do_resume
+          nil
+        end
+
+        def rebuild_context
+          core.allocate_context
+          core.build_context
+          nil
+        end
+
+        def reschedule_buffer
+          @buffer.each { |envelope| core.schedule_execution { core.process_envelope envelope } }
+          @buffer.clear
+        end
+
+        def reject_buffer
+          @buffer.each { |envelope| reject_envelope envelope }
+          @buffer.clear
         end
       end
     end

@@ -68,9 +68,9 @@ module Concurrent
           end
         end
 
-        def on_event(event)
+        def on_event(public, event)
           @supervisor = nil if event == :terminated
-          super event
+          super public, event
         end
       end
     end

@@ -87,7 +87,7 @@ module Concurrent
               build_context
 
               messages.each do |message|
-                log DEBUG, "preprocessing #{message} from #{parent}"
+                log DEBUG, "preprocessing #{message.inspect} from #{parent}"
                 process_envelope Envelope.new(message, nil, parent, reference)
               end
 
@@ -176,8 +176,9 @@ module Concurrent
         nil
       end
 
-      def broadcast(event)
-        @first_behaviour.on_event(event)
+      def broadcast(public, event)
+        log Logging::DEBUG, "event: #{event.inspect} (#{public ? 'public' : 'private'})"
+        @first_behaviour.on_event(public, event)
       end
 
       # @param [Class] behaviour_class

@@ -3,7 +3,8 @@ module Concurrent
     module Behaviour
 
       # Links the actor to other actors and sends actor's events to them,
-      # like: `:terminated`, `:paused`, errors, etc.
+      # like: `:terminated`, `:paused`, `:resumed`, errors, etc.
+      # Linked actor needs to handle those messages.
       #
       #     listener = AdHoc.spawn name: :listener do
       #       lambda do |message|
@@ -65,10 +66,10 @@ module Concurrent
           true
         end
 
-        def on_event(event)
-          @linked.each { |a| a << event }
+        def on_event(public, event)
+          @linked.each { |a| a << event } if public
           @linked.clear if event == :terminated
-          super event
+          super public, event
         end
       end
     end
