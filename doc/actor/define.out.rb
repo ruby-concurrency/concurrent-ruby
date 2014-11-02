@@ -35,5 +35,5 @@ an_actor.ask!(Message.new(:value, nil))            # => 9
 an_actor << :boo << Message.new(:add, 1) 
 an_actor.ask!(Message.new(:value, nil))            # => 1
 an_actor << :terminate!
-    # => #<Concurrent::Actor::Reference /an_actor (AnActor)>
+    # => #<Concurrent::Actor::Reference:0x7fd6451f78e0 /an_actor (AnActor)>
 

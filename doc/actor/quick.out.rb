@@ -16,12 +16,13 @@ end
 
 # `supervise: true` makes the actor supervised by root actor
 adder = Adder.spawn(name: :adder, supervise: true, args: [1])
-    # => #<Concurrent::Actor::Reference /adder (Adder)>
+    # => #<Concurrent::Actor::Reference:0x7fd64420ac48 /adder (Adder)>
 adder.parent
-    # => #<Concurrent::Actor::Reference / (Concurrent::Actor::Root)>
+    # => #<Concurrent::Actor::Reference:0x7fd644229008 / (Concurrent::Actor::Root)>
 
 # tell and forget
-adder.tell(:add) << :add                           # => #<Concurrent::Actor::Reference /adder (Adder)>
+adder.tell(:add) << :add
+    # => #<Concurrent::Actor::Reference:0x7fd64420ac48 /adder (Adder)>
 # ask to get result
 adder.ask!(:add)                                   # => 4
 # fail the actor
