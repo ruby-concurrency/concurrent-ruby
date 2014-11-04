@@ -56,12 +56,12 @@ module Concurrent
 
       # @return [Future]
       def future(executor = :fast, &block)
-        Future.execute executor, &block
+        Immediate.new(executor, &block).future
       end
 
       # @return [Delay]
       def delay(executor = :fast, &block)
-        Delay.new(executor, &block)
+        Delay.new(nil, executor, &block).future
       end
 
       alias_method :async, :future
@@ -144,21 +144,15 @@ module Concurrent
       # @return [Future]
       def join(*futures)
         countdown = Concurrent::AtomicFixnum.new futures.size
-        promise   = Promise.new.add_blocked_by(*futures) # TODO add injectable executor
+        promise   = ExternalPromise.new(futures)
         futures.each { |future| future.add_callback :join, countdown, promise, *futures }
-        promise.future
-      end
-
-      # @return [Future]
-      def execute(executor = :fast, &block)
-        promise = Promise.new(executor)
-        Next.executor(executor).post { promise.evaluate_to &block }
         promise.future
       end
     end
 
     class Future < SynchronizedObject
       extend FutureHelpers
+      extend Shortcuts
 
       singleton_class.send :alias_method, :dataflow, :join
 
@@ -264,24 +258,45 @@ module Concurrent
         reason.exception(*args)
       end
 
-      # TODO add #then_delay { ... } and such to be able to chain delayed evaluations
+      # TODO needs better name
+      def connect(executor = default_executor)
+        ConnectedPromise.new(self, executor).future
+      end
 
       # @yield [success, value, reason] of the parent
       def chain(executor = default_executor, &callback)
-        add_callback :chain_callback, executor, promise = Promise.new(default_executor).add_blocked_by(self), callback
+        add_callback :chain_callback, executor, promise = ExternalPromise.new([self], default_executor), callback
         promise.future
       end
 
       # @yield [value] executed only on parent success
       def then(executor = default_executor, &callback)
-        add_callback :then_callback, executor, promise = Promise.new(default_executor).add_blocked_by(self), callback
+        add_callback :then_callback, executor, promise = ExternalPromise.new([self], default_executor), callback
         promise.future
       end
 
       # @yield [reason] executed only on parent failure
       def rescue(executor = default_executor, &callback)
-        add_callback :rescue_callback, executor, promise = Promise.new(default_executor).add_blocked_by(self), callback
+        add_callback :rescue_callback, executor, promise = ExternalPromise.new([self], default_executor), callback
         promise.future
+      end
+
+      # lazy version of #chain
+      def chain_delay(executor = default_executor, &callback)
+        delay = Delay.new(self, executor) { callback_on_completion callback }
+        delay.future
+      end
+
+      # lazy version of #then
+      def then_delay(executor = default_executor, &callback)
+        delay = Delay.new(self, executor) { conditioned_callback callback }
+        delay.future
+      end
+
+      # lazy version of #rescue
+      def rescue_delay(executor = default_executor, &callback)
+        delay = Delay.new(self, executor) { callback_on_failure callback }
+        delay.future
       end
 
       # @yield [success, value, reason] executed async on `executor` when completed
@@ -399,27 +414,15 @@ module Concurrent
       end
 
       def chain_callback(executor, promise, callback)
-        with_async(executor) do
-          with_promise(promise) do
-            callback_on_completion callback
-          end
-        end
+        with_async(executor) { with_promise(promise) { callback_on_completion callback } }
       end
 
       def then_callback(executor, promise, callback)
-        with_async(executor) do
-          with_promise(promise) do
-            success? ? callback.call(value) : raise(reason)
-          end
-        end
+        with_async(executor) { with_promise(promise) { conditioned_callback callback } }
       end
 
       def rescue_callback(executor, promise, callback)
-        with_async(executor) do
-          with_promise(promise) do
-            callback_on_failure callback
-          end
-        end
+        with_async(executor) { with_promise(promise) { callback_on_failure callback } }
       end
 
       def with_async(executor)
@@ -450,6 +453,10 @@ module Concurrent
         callback.call reason if failed?
       end
 
+      def conditioned_callback(callback)
+        self.success? ? callback.call(value) : raise(reason)
+      end
+
       def call_callback(method, *args)
         self.send method, *args
       end
@@ -457,13 +464,9 @@ module Concurrent
 
     class Promise < SynchronizedObject
       # @api private
-      def initialize(executor_or_future = :fast)
+      def initialize(executor = :fast)
         super()
-        future = if Future === executor_or_future
-                   executor_or_future
-                 else
-                   Future.new(self, executor_or_future)
-                 end
+        future = Future.new(self, executor)
 
         synchronize do
           @future     = future
@@ -478,6 +481,48 @@ module Concurrent
 
       def blocked_by
         synchronize { @blocked_by }
+      end
+
+      def state
+        future.state
+      end
+
+      def touch
+        blocked_by.each(&:touch) if synchronize { @touched ? false : (@touched = true) }
+      end
+
+      def to_s
+        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>"
+      end
+
+      def inspect
+        "#{to_s[0..-2]} blocked_by:[#{synchronize { @blocked_by }.map(&:to_s).join(', ')}]>"
+      end
+
+      private
+
+      def add_blocked_by(*futures)
+        synchronize { @blocked_by += futures }
+        self
+      end
+
+      def complete(success, value, reason, raise = true)
+        future.complete(success, value, reason, raise)
+        synchronize { @blocked_by.clear }
+      end
+
+      # @return [Future]
+      def evaluate_to(&block) # TODO for parent
+        complete true, block.call, nil
+      rescue => error
+        complete false, nil, error
+      end
+    end
+
+    class ExternalPromise < Promise
+      def initialize(blocked_by_futures, executor = :fast)
+        super executor
+        add_blocked_by *blocked_by_futures
       end
 
       # Set the `IVar` to a value and wake or notify all threads waiting on it.
@@ -506,26 +551,24 @@ module Concurrent
         !!complete(false, nil, reason, false)
       end
 
-      def complete(success, value, reason, raise = true)
-        future.complete(success, value, reason, raise)
-        synchronize { @blocked_by.clear }
-      end
-
-      def state
-        future.state
-      end
-
-      # @return [Future]
-      def evaluate_to(&block)
-        success block.call
-      rescue => error
-        fail error
-      end
+      public :evaluate_to
 
       # @return [Future]
       def evaluate_to!(&block)
         evaluate_to(&block).no_error!
       end
+    end
+
+    class ConnectedPromise < Promise
+      def initialize(future, executor = :fast)
+        super(executor)
+        connect_to future
+      end
+
+      # @api private
+      public :complete
+
+      private
 
       # @return [Future]
       def connect_to(future)
@@ -533,49 +576,44 @@ module Concurrent
         future.add_callback :set_promise_on_completion, self
         self.future
       end
+    end
 
-      def touch
-        blocked_by.each(&:touch) if synchronize { @touched ? false : (@touched = true) }
-      end
-
-      def to_s
-        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>"
-      end
-
-      def inspect
-        "#{to_s[0..-2]} blocked_by:[#{synchronize { @blocked_by }.map(&:to_s).join(', ')}]>"
-      end
-
-      # @api private
-      def add_blocked_by(*futures)
-        synchronize { @blocked_by += futures }
-        self
+    class Immediate < Promise
+      def initialize(executor = :fast, &task)
+        super(executor)
+        Next.executor(executor).post { evaluate_to &task }
       end
     end
 
-    class Delay < Future
-
-      def initialize(default_executor = :fast, &block)
-        super(Promise.new(self), default_executor)
-        raise ArgumentError.new('no block given') unless block_given?
+    class Delay < Promise
+      def initialize(blocked_by_future, executor = :fast, &task)
+        super(executor)
         synchronize do
+          @task      = task
           @computing = false
-          @task      = block
+        end
+        add_blocked_by blocked_by_future if blocked_by_future
+      end
+
+      def touch
+        if blocked_by.all?(&:completed?)
+          execute_once
+        else
+          blocked_by.each { |f| f.on_success! { self.touch } unless synchronize { @touched } }
+          super
         end
       end
 
-      def wait(timeout = nil)
-        touch
-        super timeout
-      end
+      private
 
-      # starts executing the value without blocking
-      def touch
+      def execute_once
         execute, task = synchronize do
           [(@computing = true unless @computing), @task]
         end
 
-        Next.executor(default_executor).post { promise.evaluate_to &task } if execute
+        if execute
+          Next.executor(future.default_executor).post { evaluate_to &task }
+        end
         self
       end
     end
@@ -610,7 +648,7 @@ future1 = future0.then(:io) { raise 'boo' } # executed on IO_EXECUTOR
 future2 = future1.then { |v| v + 1 } # will fail with 'boo' error, executed on default FAST_EXECUTOR
 future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
 future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
-future5 = Promise.new(:io).connect_to(future3)
+future5 = future3.connect(:io) # connects new future with different executor, the new future is completed when future3 is
 future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
 future7 = Future.join(future0, future3)
 
@@ -642,22 +680,78 @@ p delay.completed?, delay.value
 puts '-- promise like tree'
 
 # if head of the tree is not constructed with #future but with #delay it does not start execute,
-# it's triggered later by calling wait or value on any of the depedent futures or the delay itself
-tree = (head = delay { 1 }).then { |v| v.succ }.then(&:succ).then(&:succ)
+# it's triggered later by calling wait or value on any of the dependent futures or the delay itself
+three = (head = delay { 1 }).then { |v| v.succ }.then(&:succ)
+four  = three.then_delay(&:succ)
 
 # meaningful to_s and inspect defined for Future and Promise
 puts head
-# <#Concurrent::Next::Delay:7f89b4bccc68 pending>
+# <#Concurrent::Next::Future:0x7fb9dcabacc8 pending>
 p head
-# <#Concurrent::Next::Delay:7f89b4bccc68 pending [<#Concurrent::Next::Promise:7f89b4bccb00 pending>]]>
+# <#Concurrent::Next::Future:0x7fb9dcabacc8 pending blocks:[<#Concurrent::Next::ExternalPromise:0x7fb9dcabaac0 pending>]>
 p head.callbacks
-# [[:then_callback, :fast, <#Concurrent::Next::Promise:0x7fa54b31d218 pending [<#Concurrent::Next::Delay:0x7fa54b31d380 pending>]>, #<Proc:0x007fa54b31d290>]]
-p tree.value
+# [[:then_callback, :fast, <#Concurrent::Next::ExternalPromise:0x7fb9dcabaac0 pending blocked_by:[<#Concurrent::Next::Future:0x7fb9dcabacc8 pending>]>,
+#     #<Proc:0x007fb9dcabab38@/Users/pitr/Workspace/redhat/concurrent-ruby/lib/concurrent/next.rb:690>]]
+
+
+# evaluates only up to three, four is left unevaluated
+p three.value # 3
+p four, four.promise
+# until value is called on four
+p four.value # 4
+
+# futures hidden behind two delays trigger evaluation of both
+double_delay = delay { 1 }.then_delay(&:succ)
+p double_delay.value # 2
+
+puts '-- graph'
+
+head    = future { 1 }
+branch1 = head.then(&:succ).then(&:succ)
+branch2 = head.then(&:succ).then_delay(&:succ)
+result  = Future.join(branch1, branch2).then { |b1, b2| b1 + b2 }
+
+sleep 0.1
+p branch1.completed?, branch2.completed? # true, false
+# force evaluation of whole graph
+p result.value # 6
 
 puts '-- bench'
 require 'benchmark'
 
-Benchmark.bmbm(20) do |b|
+module Benchmark
+  def self.bmbmbm(rehearsals, width)
+    job = Job.new(width)
+    yield(job)
+    width       = job.width + 1
+    sync        = STDOUT.sync
+    STDOUT.sync = true
+
+    # rehearsal
+    rehearsals.times do
+      puts 'Rehearsal '.ljust(width+CAPTION.length, '-')
+      ets = job.list.inject(Tms.new) { |sum, (label, item)|
+        print label.ljust(width)
+        res = Benchmark.measure(&item)
+        print res.format
+        sum + res
+      }.format("total: %tsec")
+      print " #{ets}\n\n".rjust(width+CAPTION.length+2, '-')
+    end
+
+    # take
+    print ' '*width + CAPTION
+    job.list.map { |label, item|
+      GC.start
+      print label.ljust(width)
+      Benchmark.measure(label, &item).tap { |res| print res }
+    }
+  ensure
+    STDOUT.sync = sync unless sync.nil?
+  end
+end
+
+Benchmark.bmbmbm(20, 20) do |b|
 
   parents = [RubySynchronizedObject, (JavaSynchronizedObject if defined? JavaSynchronizedObject)].compact
   classes = parents.map do |parent|
