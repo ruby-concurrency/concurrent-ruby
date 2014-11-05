@@ -163,7 +163,6 @@ The following gem builds will be built at every release:
 * concurrent-ruby-x.y.z-x86_64-linux.gem (Linux 64-bit)
 * concurrent-ruby-x.y.z-x86-mingw32.gem (Windows 32-bit)
 * concurrent-ruby-x.y.z-x64-mingw32.gem (Windows 64-bit)
-* concurrent-ruby-x.y.z-x86_64-darwin-13.gem (OS X)
 * concurrent-ruby-x.y.z-x86-solaris-2.11.gem (Solaris)
 
 ### Installing
