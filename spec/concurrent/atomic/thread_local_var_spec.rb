@@ -3,7 +3,7 @@ require 'rbconfig'
 
 module Concurrent
 
-  ThreadLocalRubyStorage.i_know_it_may_leak_values!
+  require 'concurrent/atomic/thread_local_var'
 
   describe ThreadLocalVar do
 
@@ -31,11 +31,11 @@ module Concurrent
 
       if jruby?
         it 'uses ThreadLocalJavaStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::ThreadLocalJavaStorage)
+          expect(subject.class.ancestors).to include(Concurrent::AbstractThreadLocalVar::ThreadLocalJavaStorage)
         end
       else
         it 'uses ThreadLocalNewStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::ThreadLocalRubyStorage)
+          expect(subject.class.ancestors).to include(Concurrent::AbstractThreadLocalVar::ThreadLocalRubyStorage)
         end
       end
     end
@@ -48,7 +48,20 @@ module Concurrent
             Thread.new { var.bind(i) { var.value } }
           end.each(&:join)
           var.value = 0
-          expect(var.instance_variable_get(:@storage).get.size).to be == 1
+          expect(var.instance_variable_get(:@storage).keys.size).to be == 1
+        end
+
+        it 'does not leave values behind when bind is not used' do
+          var = ThreadLocalVar.new(0)
+          100.times.map do |i|
+            Thread.new { var.value = i; var.value }
+          end.each(&:join)
+          var.value = 0
+          sleep 0.1
+          GC.start
+          sleep 0.1
+          GC.start
+          expect(var.instance_variable_get(:@storage).keys.size).to be == 1
         end
       end
     end

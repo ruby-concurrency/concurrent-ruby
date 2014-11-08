@@ -2,70 +2,59 @@ require 'concurrent/atomic'
 
 module Concurrent
 
-  module ThreadLocalRubyStorage
+  class AbstractThreadLocalVar
 
-    protected
+    module ThreadLocalRubyStorage
 
-    def allocate_storage
-      @storage = Atomic.new Hash.new
-    end
+      protected
 
-    def get
-      @storage.get[Thread.current.object_id]
-    end
-
-    def set(value, &block)
-      key = Thread.current.object_id
-
-      @storage.update do |s|
-        s.merge(key => value)
+      begin
+        require 'ref'
+      rescue LoadError
+        raise LoadError,
+              'ThreadLocalVar requires ref gem installed on MRI to avoid memory leaks. It\'s not concurrent-ruby dependency.'
       end
 
-      if block_given?
-        begin
-          block.call
-        ensure
-          @storage.update do |s|
-            s.clone.tap { |h| h.delete key }
+      def allocate_storage
+        @storage = Ref::WeakKeyMap.new
+      end
+
+      def get
+        @storage[Thread.current]
+      end
+
+      def set(value, &block)
+        key = Thread.current
+
+        @storage[key] = value
+
+        if block_given?
+          begin
+            block.call
+          ensure
+            @storage.delete key
           end
         end
-
-      else
-        unless ThreadLocalRubyStorage.i_know_it_may_leak_values?
-          warn "it may leak values if used without block\n#{caller[0]}"
-        end
       end
     end
 
-    def self.i_know_it_may_leak_values!
-      @leak_acknowledged = true
+    module ThreadLocalJavaStorage
+
+      protected
+
+      def allocate_storage
+        @var = java.lang.ThreadLocal.new
+      end
+
+      def get
+        @var.get
+      end
+
+      def set(value)
+        @var.set(value)
+      end
+
     end
-
-    def self.i_know_it_may_leak_values?
-      @leak_acknowledged
-    end
-
-  end
-
-  module ThreadLocalJavaStorage
-
-    protected
-
-    def allocate_storage
-      @var = java.lang.ThreadLocal.new
-    end
-
-    def get
-      @var.get
-    end
-
-    def set(value)
-      @var.set(value)
-    end
-
-  end
-
-  class AbstractThreadLocalVar
 
     NIL_SENTINEL = Object.new
 
@@ -86,7 +75,6 @@ module Concurrent
       end
     end
 
-    # may leak the value, #bind is preferred
     def value=(value)
       bind value
     end
