@@ -145,7 +145,7 @@ module ConcurrentNext
       def join(*futures)
         countdown = Concurrent::AtomicFixnum.new futures.size
         promise   = OuterPromise.new(futures)
-        futures.each { |future| future.add_callback :join, countdown, promise, *futures }
+        futures.each { |future| future.add_callback :join_callback, countdown, promise, *futures }
         promise.future
       end
     end
@@ -345,6 +345,12 @@ module ConcurrentNext
       "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
     end
 
+    def join(*futures)
+      ConcurrentNext.join self, *futures
+    end
+
+    alias_method :+, :join
+
     # @api private
     def complete(success, value, reason, raise = true) # :nodoc:
       callbacks = synchronize do
@@ -401,7 +407,7 @@ module ConcurrentNext
       promise.complete success?, value, reason
     end
 
-    def join(countdown, promise, *futures)
+    def join_callback(countdown, promise, *futures)
       if success?
         promise.success futures.map(&:value) if countdown.decrement.zero?
       else
@@ -409,20 +415,16 @@ module ConcurrentNext
       end
     end
 
-    def with_promise(promise, &block)
-      promise.evaluate_to &block
-    end
-
     def chain_callback(executor, promise, callback)
-      with_async(executor) { with_promise(promise) { callback_on_completion callback } }
+      with_async(executor) { promise.evaluate_to { callback_on_completion callback } }
     end
 
     def then_callback(executor, promise, callback)
-      with_async(executor) { with_promise(promise) { conditioned_callback callback } }
+      with_async(executor) { promise.evaluate_to { conditioned_callback callback } }
     end
 
     def rescue_callback(executor, promise, callback)
-      with_async(executor) { with_promise(promise) { callback_on_failure callback } }
+      with_async(executor) { promise.evaluate_to { callback_on_failure callback } }
     end
 
     def with_async(executor)
@@ -725,6 +727,9 @@ head    = ConcurrentNext.future { 1 }
 branch1 = head.then(&:succ).then(&:succ)
 branch2 = head.then(&:succ).then_delay(&:succ)
 result  = ConcurrentNext.join(branch1, branch2).then { |b1, b2| b1 + b2 }
+# other variants
+result  = branch1.join(branch2).then { |b1, b2| b1 + b2 }
+result  = (branch1 + branch2).then { |b1, b2| b1 + b2 }
 
 sleep 0.1
 p branch1.completed?, branch2.completed? # true, false
