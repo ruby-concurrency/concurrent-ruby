@@ -150,6 +150,12 @@ module ConcurrentNext
         ConcurrentNext::OuterPromise.new([], executor)
       end
 
+      # Schedules the block to be executed on executor in given intended_time.
+      # @return [Future]
+      def schedule(intended_time, executor = :fast, &task)
+        Scheduled.new(intended_time, executor, &task).future
+      end
+
       # fails on first error
       # does not block a thread
       # @return [Future]
@@ -609,6 +615,24 @@ module ConcurrentNext
     end
   end
 
+  class Scheduled < Promise
+    def initialize(intended_time, executor = :fast, &task)
+      super(executor)
+      schedule_time = synchronize do
+        @schedule_time = Concurrent::TimerSet.calculate_schedule_time(intended_time)
+      end
+
+      # TODO review
+      Concurrent::timer(schedule_time.to_f - Time.now.to_f) do
+        ConcurrentNext.executor(executor).post { evaluate_to &task }
+      end
+    end
+
+    def schedule_time
+      synchronize { @schedule_time }
+    end
+  end
+
   # will be evaluated to task when first requested
   class Delay < Promise
     def initialize(blocked_by_future, executor = :fast, &task)
@@ -754,6 +778,12 @@ promise.connect_to source
 p promise.future.value # 1
 # or just
 p ConcurrentNext.promise.connect_to(source).value
+
+puts '-- scheduled'
+
+start = Time.now.to_f
+ConcurrentNext.schedule(0.1) { 1 + 1 }.then { |v| p v, Time.now.to_f - start}
+sleep 0.2
 
 puts '-- using shortcuts'
 
