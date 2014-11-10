@@ -128,6 +128,7 @@ module ConcurrentNext
   class Future < SynchronizedObject
     module Shortcuts
 
+      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
       def future(executor = :fast, &block)
         ConcurrentNext::Immediate.new(executor, &block).future
@@ -135,11 +136,16 @@ module ConcurrentNext
 
       alias_method :async, :future
 
+      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation is delays until
+      # requested by {Future#wait} method, {Future#value} and {Future#value!} methods are calling {Future#wait} internally.
       # @return [Delay]
       def delay(executor = :fast, &block)
         ConcurrentNext::Delay.new(nil, executor, &block).future
       end
 
+      # Constructs {Promise} which helds its {Future} in {Promise#future} method. Intended for completion by user.
+      # User is responsible not to complete the Promise twice.
+      # @return [Promise] in this case instance of {OuterPromise}
       def promise(executor = :fast)
         ConcurrentNext::OuterPromise.new([], executor)
       end
