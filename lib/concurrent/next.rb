@@ -2,8 +2,9 @@ require 'concurrent'
 
 # TODO Dereferencable
 # TODO document new global pool setting: no overflow, user has to buffer when there is too many tasks
+# TODO behaviour with Interrupt exceptions is undefined, use Signal.trap to avoid issues
 
-# different name just not to collide
+# @note different name just not to collide for now
 module ConcurrentNext
 
   # executors do not allocate the threads immediately so they can be constants
@@ -42,9 +43,17 @@ module ConcurrentNext
         raise TypeError
       end
     end
+
+    module Shortcuts
+      def post(executor = :fast, &job)
+        ConcurrentNext.executor(executor).post &job
+      end
+    end
   end
 
   extend Executors
+  extend Executors::Shortcuts
+  include Executors::Shortcuts
 
   begin
     require 'jruby'
@@ -91,7 +100,7 @@ module ConcurrentNext
     end
 
     def wait(timeout)
-      @condition.wait @mutex, timeout
+      synchronize { @condition.wait @mutex, timeout }
     end
 
     def notify
@@ -118,10 +127,6 @@ module ConcurrentNext
 
   class Future < SynchronizedObject
     module Shortcuts
-      def post(executor = :fast, &job)
-        ConcurrentNext.executor(executor).post &job
-        self
-      end
 
       # @return [Future]
       def future(executor = :fast, &block)
@@ -203,7 +208,6 @@ module ConcurrentNext
     def wait(timeout = nil)
       synchronize do
         touch
-        # TODO interruptions ?
         super timeout if incomplete?
         self
       end
