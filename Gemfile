@@ -5,7 +5,6 @@ gemspec
 group :development do
   gem 'rake', '~> 10.3.2'
   gem 'rake-compiler', '~> 0.9.2'
-  gem 'ref', '~> 1.0.5'
 end
 
 group :testing do
