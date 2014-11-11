@@ -8,11 +8,8 @@ module Concurrent
 
       protected
 
-      begin
+      unless RUBY_PLATFORM == 'java'
         require 'ref'
-      rescue LoadError
-        raise LoadError,
-              'ThreadLocalVar requires ref gem installed on MRI to avoid memory leaks. It\'s not concurrent-ruby dependency.'
       end
 
       def allocate_storage
