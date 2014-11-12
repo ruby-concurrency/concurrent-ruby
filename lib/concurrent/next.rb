@@ -160,6 +160,7 @@ module ConcurrentNext
       # does not block a thread
       # @return [Future]
       def join(*futures)
+        # TODO consider renaming to zip as in scala
         countdown = Concurrent::AtomicFixnum.new futures.size
         promise   = OuterPromise.new(futures)
         futures.each { |future| future.add_callback :join_callback, countdown, promise, *futures }
@@ -300,13 +301,13 @@ module ConcurrentNext
 
     # lazy version of #then
     def then_delay(executor = default_executor, &callback)
-      delay = Delay.new(self, executor) { conditioned_callback callback }
+      delay = Delay.new(self, executor) { conditioned_success_callback callback }
       delay.future
     end
 
     # lazy version of #rescue
     def rescue_delay(executor = default_executor, &callback)
-      delay = Delay.new(self, executor) { callback_on_failure callback }
+      delay = Delay.new(self, executor) { conditioned_failure_callback callback }
       delay.future
     end
 
@@ -436,11 +437,11 @@ module ConcurrentNext
     end
 
     def then_callback(executor, promise, callback)
-      with_async(executor) { promise.evaluate_to { conditioned_callback callback } }
+      with_async(executor) { promise.evaluate_to { conditioned_success_callback callback } }
     end
 
     def rescue_callback(executor, promise, callback)
-      with_async(executor) { promise.evaluate_to { callback_on_failure callback } }
+      with_async(executor) { promise.evaluate_to { conditioned_failure_callback callback } }
     end
 
     def with_async(executor)
@@ -471,8 +472,12 @@ module ConcurrentNext
       callback.call reason if failed?
     end
 
-    def conditioned_callback(callback)
+    def conditioned_success_callback(callback)
       self.success? ? callback.call(value) : raise(reason)
+    end
+
+    def conditioned_failure_callback(callback)
+      self.failed? ? callback.call(reason) : value
     end
 
     def call_callback(method, *args)
@@ -615,6 +620,7 @@ module ConcurrentNext
     end
   end
 
+  # will be evaluated to task in intended_time
   class Scheduled < Promise
     def initialize(intended_time, executor = :fast, &task)
       super(executor)
@@ -702,11 +708,12 @@ future4 = future0.chain { |success, value, reason| success } # executed on defau
 future5 = future3.with_default_executor(:io) # connects new future with different executor, the new future is completed when future3 is
 future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
 future7 = ConcurrentNext.join(future0, future3)
+future8 = future0.rescue { raise 'never happens' } # future0 succeeds so future8'll have same value as future 0
 
 p future3, future5
 p future3.callbacks, future5.callbacks
 
-futures = [future0, future1, future2, future3, future4, future5, future6, future7]
+futures = [future0, future1, future2, future3, future4, future5, future6, future7, future8]
 futures.each &:wait
 
 
@@ -721,6 +728,7 @@ futures.each_with_index { |f, i| puts '%5i %7s %10s %6s %4s' % [i, f.success?, f
 #     5    true        boo          io
 #     6    true        Boo          io
 #     7    true [3, "boo"]        fast
+#     8    true          3        fast
 
 puts '-- delay'
 
@@ -782,7 +790,7 @@ p ConcurrentNext.promise.connect_to(source).value
 puts '-- scheduled'
 
 start = Time.now.to_f
-ConcurrentNext.schedule(0.1) { 1 + 1 }.then { |v| p v, Time.now.to_f - start}
+ConcurrentNext.schedule(0.1) { 1 + 1 }.then { |v| p v, Time.now.to_f - start }
 sleep 0.2
 
 puts '-- using shortcuts'
