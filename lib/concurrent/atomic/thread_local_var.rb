@@ -2,41 +2,56 @@ require 'concurrent/atomic'
 
 module Concurrent
 
-  module ThreadLocalRubyStorage
-
-    def allocate_storage
-      @storage = Atomic.new Hash.new
-    end
-
-    def get
-      @storage.get[Thread.current]
-    end
-
-    def set(value)
-      @storage.update { |s| s.merge Thread.current => value }
-    end
-
-  end
-
-  module ThreadLocalJavaStorage
-
-    protected
-
-    def allocate_storage
-      @var = java.lang.ThreadLocal.new
-    end
-
-    def get
-      @var.get
-    end
-
-    def set(value)
-      @var.set(value)
-    end
-
-  end
-
   class AbstractThreadLocalVar
+
+    module ThreadLocalRubyStorage
+
+      protected
+
+      unless RUBY_PLATFORM == 'java'
+        require 'ref'
+      end
+
+      def allocate_storage
+        @storage = Ref::WeakKeyMap.new
+      end
+
+      def get
+        @storage[Thread.current]
+      end
+
+      def set(value, &block)
+        key = Thread.current
+
+        @storage[key] = value
+
+        if block_given?
+          begin
+            block.call
+          ensure
+            @storage.delete key
+          end
+        end
+      end
+    end
+
+    module ThreadLocalJavaStorage
+
+      protected
+
+      def allocate_storage
+        @var = java.lang.ThreadLocal.new
+      end
+
+      def get
+        @var.get
+      end
+
+      def set(value)
+        @var.set(value)
+      end
+
+    end
 
     NIL_SENTINEL = Object.new
 
@@ -58,13 +73,17 @@ module Concurrent
     end
 
     def value=(value)
+      bind value
+    end
+
+    def bind(value, &block)
       if value.nil?
         stored_value = NIL_SENTINEL
       else
         stored_value = value
       end
 
-      set stored_value
+      set stored_value, &block
 
       value
     end
