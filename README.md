@@ -74,8 +74,9 @@ This gem adheres to the rules of [semantic versioning](http://semver.org/).
 ### Supported Ruby versions
 
 MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x.
-This library is pure Ruby and has no gem dependencies.
-It should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
+Although native code is used for performance optimizations on some platforms, all functionality
+is available in pure Ruby. This gem should be fully compatible with any interpreter that is
+compliant with Ruby 1.9.3 or newer.
 
 ### Examples
 
