@@ -5,8 +5,9 @@ require 'concurrent/options_parser'
 
 module Concurrent
 
-  # TODO unify promise and future to single class, with dataflow
+  # {include:file:doc/promise.md}
   class Promise
+    # TODO unify promise and future to single class, with dataflow
     include Obligation
 
     # Initialize a new Promise with the provided options.

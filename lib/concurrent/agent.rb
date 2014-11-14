@@ -8,28 +8,7 @@ require 'concurrent/logging'
 
 module Concurrent
 
-  # An agent is a single atomic value that represents an identity. The current value
-  # of the agent can be requested at any time (`#deref`). Each agent has a work queue and operates on
-  # the global thread pool. Consumers can `#post` code blocks to the agent. The code block (function)
-  # will receive the current value of the agent as its sole parameter. The return value of the block
-  # will become the new value of the agent. Agents support two error handling modes: fail and continue.
-  # A good example of an agent is a shared incrementing counter, such as the score in a video game.
-  #
-  # @example Basic usage
-  #   score = Concurrent::Agent.new(10)
-  #   score.value #=> 10
-  #   
-  #   score << proc{|current| current + 100 }
-  #   sleep(0.1)
-  #   score.value #=> 110
-  #   
-  #   score << proc{|current| current * 2 }
-  #   sleep(0.1)
-  #   score.value #=> 220
-  #   
-  #   score << proc{|current| current - 50 }
-  #   sleep(0.1)
-  #   score.value #=> 170
+  # {include:file:doc/agent.md}
   #
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
