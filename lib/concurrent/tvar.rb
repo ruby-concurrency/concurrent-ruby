@@ -4,6 +4,8 @@ module Concurrent
 
   # A `TVar` is a transactional variable - a single-element container that
   # is used as part of a transaction - see `Concurrent::atomically`.
+  #
+  # {include:file:doc/tvar.md}
   class TVar
 
     # Create a new `TVar` with an initial value.
