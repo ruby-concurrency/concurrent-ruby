@@ -34,7 +34,7 @@ module Concurrent
         end
 
         def on_message(message)
-          @balancer << message
+          redirect @balancer
         end
       end
 

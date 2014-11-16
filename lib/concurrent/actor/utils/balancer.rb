@@ -25,14 +25,15 @@ module Concurrent
           when :subscribed?
             @receivers.include? envelope.sender
           else
-            @buffer << message
+            @buffer << envelope
             distribute
+            Behaviour::MESSAGE_PROCESSED
           end
         end
 
         def distribute
           while !@receivers.empty? && !@buffer.empty?
-            @receivers.shift << @buffer.shift
+            redirect @receivers.shift, @buffer.shift
           end
         end
       end
