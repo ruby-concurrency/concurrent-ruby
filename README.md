@@ -30,7 +30,7 @@
       </p>
     </td>
     <td align="right" valign="top">
-      <img src="https://raw.githubusercontent.com/wiki/ruby-concurrency/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
+      <img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png"/>
     </td>
   </tr>
 </table>

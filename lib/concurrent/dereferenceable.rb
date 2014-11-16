@@ -3,8 +3,15 @@ module Concurrent
   # Object references in Ruby are mutable. This can lead to serious problems when
   # the `#value` of a concurrent object is a mutable reference. Which is always the
   # case unless the value is a `Fixnum`, `Symbol`, or similar "primitive" data type.
-  # Most classes in this library that expose a `#value` getter method do so using
-  # this mixin module.
+  # Most classes in this library that expose a `#value` getter method do so using the
+  # `Dereferenceable` mixin module. 
+  # 
+  # Objects with this mixin can be configured with a few options that can help protect
+  # the program from potentially dangerous operations.
+  # 
+  # * `:dup_on_deref` when true  will call the `#dup` method on the `value` object every time the `#value` method is called (default: false)
+  # * `:freeze_on_deref` when true  will call the `#freeze` method on the `value` object every time the `#value` method is called (default: false)
+  # * `:copy_on_deref` when given a `Proc` object the `Proc` will be run every time the `#value` method is called. The `Proc` will be given the current `value` as its only parameter and the result returned by the block will be the return value of the `#value` call. When `nil` this option will be ignored (default: nil)
   module Dereferenceable
 
     # Return the value this object represents after applying the options specified
