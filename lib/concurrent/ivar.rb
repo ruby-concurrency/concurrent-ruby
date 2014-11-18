@@ -6,6 +6,10 @@ require 'concurrent/observable'
 
 module Concurrent
 
+  # An `IVar` is like a future that you can assign. As a future is a value that is being computed that you can wait on, an `IVar` is a value that is waiting to be assigned, that you can wait on. `IVars` are single assignment and deterministic.
+  # 
+  # Then, express futures as an asynchronous computation that assigns an `IVar`. The `IVar` becomes the primitive on which [futures](Future) and [dataflow](Dataflow) are built.
+  #
   # An `IVar` is a single-element container that is normally created empty, and
   # can only be set once. The I in `IVar` stands for immutable. Reading an `IVar`
   # normally blocks until it is set. It is safe to set and read an `IVar` from
@@ -15,6 +19,11 @@ module Concurrent
   # a `Future`. If you want to create a graph of parallel tasks all executed when
   # the values they depend on are ready you want `dataflow`. `IVar` is generally
   # a low-level primitive.
+  # 
+  # **See Also:**
+  #
+  # * For the theory: Arvind, R. Nikhil, and K. Pingali. [I-Structures: Data structures for parallel computing](http://dl.acm.org/citation.cfm?id=69562). In Proceedings of Workshop on Graph Reduction, 1986.
+  # * For recent application: [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
   #
   # @example Create, set and get an `IVar`
   #   ivar = Concurrent::IVar.new

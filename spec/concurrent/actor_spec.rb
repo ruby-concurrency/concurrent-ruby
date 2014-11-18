@@ -369,6 +369,22 @@ module Concurrent
 
       end
 
+      describe 'pool' do
+        it 'supports asks' do
+          worker = Class.new Concurrent::Actor::Utils::AbstractWorker do
+            def work(message)
+              5 + message
+            end
+          end
+
+          pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |balancer, index|
+            worker.spawn name: "worker-#{index}", supervise: true, args: [balancer]
+          end
+
+          expect(pool.ask!(5)).to eq 10
+          terminate_actors pool
+        end
+      end
 
     end
   end

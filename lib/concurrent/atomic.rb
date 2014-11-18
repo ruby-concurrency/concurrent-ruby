@@ -25,7 +25,7 @@ begin
 
   require "concurrent/atomic_reference/#{ruby_engine}"
 rescue LoadError
-  warn 'Compiled extensions not installed, pure Ruby Atomic will be used.'
+  #warn 'Compiled extensions not installed, pure Ruby Atomic will be used.'
 end
 
 if defined? Concurrent::JavaAtomic

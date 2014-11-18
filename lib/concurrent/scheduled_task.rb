@@ -4,6 +4,7 @@ require 'concurrent/executor/safe_task_executor'
 
 module Concurrent
 
+  # {include:file:doc/scheduled_task.md}
   class ScheduledTask < IVar
 
     attr_reader :schedule_time

@@ -1,5 +1,5 @@
 # Concurrent Ruby
-[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.png)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby) [![Coverage Status](https://coveralls.io/repos/ruby-concurrency/concurrent-ruby/badge.png)](https://coveralls.io/r/ruby-concurrency/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.png)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.png)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby) [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.png)](https://gemnasium.com/ruby-concurrency/concurrent-ruby) [![License](http://img.shields.io/license/MIT.png?color=green)](http://opensource.org/licenses/MIT) [![Gitter chat](https://badges.gitter.im/ruby-concurrency/concurrent-ruby.png)](https://gitter.im/ruby-concurrency/concurrent-ruby)
+[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby) [![Coverage Status](https://img.shields.io/coveralls/ruby-concurrency/concurrent-ruby/master.svg)](https://coveralls.io/r/ruby-concurrency/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.svg)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby) [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg)](https://gemnasium.com/ruby-concurrency/concurrent-ruby) [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT) [![Gitter chat](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
 <table>
   <tr>
@@ -30,7 +30,7 @@
       </p>
     </td>
     <td align="right" valign="top">
-      <img src="https://raw.githubusercontent.com/wiki/ruby-concurrency/concurrent-ruby/logo/concurrent-ruby-logo-300x300.png"/>
+      <img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png"/>
     </td>
   </tr>
 </table>
@@ -74,8 +74,9 @@ This gem adheres to the rules of [semantic versioning](http://semver.org/).
 ### Supported Ruby versions
 
 MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x.
-This library is pure Ruby and has no gem dependencies.
-It should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
+Although native code is used for performance optimizations on some platforms, all functionality
+is available in pure Ruby. This gem should be fully compatible with any interpreter that is
+compliant with Ruby 1.9.3 or newer.
 
 ### Examples
 
@@ -163,7 +164,6 @@ The following gem builds will be built at every release:
 * concurrent-ruby-x.y.z-x86_64-linux.gem (Linux 64-bit)
 * concurrent-ruby-x.y.z-x86-mingw32.gem (Windows 32-bit)
 * concurrent-ruby-x.y.z-x64-mingw32.gem (Windows 64-bit)
-* concurrent-ruby-x.y.z-x86_64-darwin-13.gem (OS X)
 * concurrent-ruby-x.y.z-x86-solaris-2.11.gem (Solaris)
 
 ### Installing

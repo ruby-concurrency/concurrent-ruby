@@ -4,16 +4,33 @@ require 'concurrent/atomic/event'
 
 module Concurrent
 
-  # An `MVar` is a single-element container that blocks on `get` if it is empty,
-  # and blocks on `put` if it is full. It is safe to use an `MVar` from
-  # multiple threads. `MVar` can be seen as a single-element blocking queue, or
-  # a rendezvous variable.
+  # An `MVar` is a synchronized single element container. They are empty or contain one item.
+  # Taking a value from an empty `MVar` blocks, as does putting a value into a full one.
+  # You can either think of them as blocking queue of length one, or a special kind of
+  # mutable variable. 
+  # 
+  # On top of the fundamental `#put` and `#take` operations, we also provide a `#mutate`
+  # that is atomic with respect to operations on the same instance. These operations all
+  # support timeouts. 
+  # 
+  # We also support non-blocking operations `#try_put!` and `#try_take!`, a `#set!` that
+  # ignores existing values, a `#value` that returns the value without removing it or
+  # returns `MVar::EMPTY`, and a `#modify!` that yields `MVar::EMPTY` if the `MVar` is
+  # empty and can be used to set `MVar::EMPTY`. You shouldn't use these operations in the
+  # first instance. 
+  # 
+  # `MVar` is a [Dereferenceable](Dereferenceable).
+  # 
+  # `MVar` is related to M-structures in Id, `MVar` in Haskell and `SyncVar` in Scala.
   #
-  # An `MVar` is typically used to transfer objects between threads, where the
-  # sending thread will block if the previous message hasn't been taken yet by the
-  # receiving thread. It can also be used to control access to some global shared
-  # state, where threads `take` the value, perform some operation, and then
-  # `put` it back.
+  # Note that unlike the original Haskell paper, our `#take` is blocking. This is how
+  # Haskell and Scala do it today.
+  # 
+  # **See Also:**
+  # 
+  # 1. P. Barth, R. Nikhil, and Arvind. [M-Structures: Extending a parallel, non-
+  # strict, functional language with state](http://dl.acm.org/citation.cfm?id=652538). In Proceedings of the 5th ACM Conference on Functional Programming Languages and Computer Architecture (FPCA), 1991.
+  # 2. S. Peyton Jones, A. Gordon, and S. Finne. [Concurrent Haskell](http://dl.acm.org/citation.cfm?id=237794). In Proceedings of the 23rd Symposium on Principles of Programming Languages (PoPL), 1996.
   class MVar
 
     include Dereferenceable

@@ -31,4 +31,8 @@ Gem::Specification.new do |s|
   end
 
   s.required_ruby_version = '>= 1.9.3'
+
+  unless defined?(JRUBY_VERSION)
+    s.add_dependency 'ref', '~> 1.0.5'
+  end
 end
