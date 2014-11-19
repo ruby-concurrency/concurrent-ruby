@@ -119,6 +119,15 @@ module Concurrent
           expect(task.kill).to be_truthy
         end
       end
+
+      context '#shutdown' do
+
+        it 'returns true on success' do
+          task = TimerTask.execute(run_now: false) { nil }
+          sleep(0.1)
+          expect(task.shutdown).to be_truthy
+        end
+      end
     end
 
     context 'arguments' do
