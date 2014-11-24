@@ -45,7 +45,7 @@ module Concurrent
   #
   # @example Basic usage
   #   task = Concurrent::TimerTask.new{ puts 'Boom!' }
-  #   task.run!
+  #   task.execute
   #   
   #   task.execution_interval #=> 60 (default)
   #   task.timeout_interval   #=> 30 (default)
@@ -53,7 +53,7 @@ module Concurrent
   #   # wait 60 seconds...
   #   #=> 'Boom!'
   #   
-  #   task.stop #=> true
+  #   task.shutdown #=> true
   #
   # @example Configuring `:execution_interval` and `:timeout_interval`
   #   task = Concurrent::TimerTask.new(execution_interval: 5, timeout_interval: 5) do
@@ -65,7 +65,7 @@ module Concurrent
   #
   # @example Immediate execution with `:run_now`
   #   task = Concurrent::TimerTask.new(run_now: true){ puts 'Boom!' }
-  #   task.run!
+  #   task.execute
   #   
   #   #=> 'Boom!'
   #
@@ -75,7 +75,7 @@ module Concurrent
   #     execution_interval: 5
   #   ){ Time.now }
   #   
-  #   task.run!
+  #   task.execute
   #   Time.now   #=> 2013-11-07 18:06:50 -0500
   #   sleep(10)
   #   task.value #=> 2013-11-07 18:06:55 -0500
@@ -87,11 +87,11 @@ module Concurrent
   #     task.execution_interval += 1
   #     if task.execution_interval > 5
   #       puts 'Stopping...'
-  #       task.stop
+  #       task.shutdown
   #     end
   #   end
   #   
-  #   timer_task.run # blocking call - this task will stop itself
+  #   timer_task.execute # blocking call - this task will stop itself
   #   #=> Boom!
   #   #=> Boom! Boom!
   #   #=> Boom! Boom! Boom!
@@ -114,30 +114,30 @@ module Concurrent
   #   
   #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ 42 }
   #   task.add_observer(TaskObserver.new)
-  #   task.run!
+  #   task.execute
   #   
   #   #=> (2013-10-13 19:08:58 -0400) Execution successfully returned 42
   #   #=> (2013-10-13 19:08:59 -0400) Execution successfully returned 42
   #   #=> (2013-10-13 19:09:00 -0400) Execution successfully returned 42
-  #   task.stop
+  #   task.shutdown
   #   
   #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ sleep }
   #   task.add_observer(TaskObserver.new)
-  #   task.run!
+  #   task.execute
   #   
   #   #=> (2013-10-13 19:07:25 -0400) Execution timed out
   #   #=> (2013-10-13 19:07:27 -0400) Execution timed out
   #   #=> (2013-10-13 19:07:29 -0400) Execution timed out
-  #   task.stop
+  #   task.shutdown
   #   
   #   task = Concurrent::TimerTask.new(execution_interval: 1){ raise StandardError }
   #   task.add_observer(TaskObserver.new)
-  #   task.run!
+  #   task.execute
   #   
   #   #=> (2013-10-13 19:09:37 -0400) Execution failed with error StandardError
   #   #=> (2013-10-13 19:09:38 -0400) Execution failed with error StandardError
   #   #=> (2013-10-13 19:09:39 -0400) Execution failed with error StandardError
-  #   task.stop
+  #   task.shutdown
   #
   # @see http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html
@@ -316,7 +316,7 @@ module Concurrent
     # @!visibility private
     def execute_task(completion)
       return unless @running.true?
-      Concurrent::timer(timeout_interval, completion, &method(:timeout_task))
+      Concurrent::timer(execution_interval, completion, &method(:timeout_task))
       success, value, reason = @executor.execute(self)
       if completion.try?
         self.value = value

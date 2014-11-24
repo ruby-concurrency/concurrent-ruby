@@ -14,6 +14,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Prevent `Actor` from using an `ImmediateExecutor` (causes deadlock)
 * Added missing synchronizations to `TimerSet`
 * Fixed bug with return value of `Concurrent::Actor::Utils::Pool#ask`
+* Fixed timing bug in `TimerTask`
 * Removed confusing warning when not using native extenstions
 * Improved documentation
 
