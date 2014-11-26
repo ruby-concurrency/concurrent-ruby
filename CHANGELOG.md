@@ -15,6 +15,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Added missing synchronizations to `TimerSet`
 * Fixed bug with return value of `Concurrent::Actor::Utils::Pool#ask`
 * Fixed timing bug in `TimerTask`
+* Fixed bug when creating a `JavaThreadPoolExecutor` with minimum pool size of zero
 * Removed confusing warning when not using native extenstions
 * Improved documentation
 
