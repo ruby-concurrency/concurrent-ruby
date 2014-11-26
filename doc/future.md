@@ -19,22 +19,34 @@ The `Future` class also includes the behavior of the Ruby standard library [Obse
 
 A fulfilled example:
 
-```ruby
+```ruby    
 require 'concurrent'
+require 'thread'   # for Queue
+require 'open-uri' # for open(uri)
 
-count = Concurrent::Future.new{ sleep(10); 10 }.execute
-count.state #=> :pending
-count.pending? #=> true
+class Ticker
+  def get_year_end_closing(symbol, year)
+    uri = "http://ichart.finance.yahoo.com/table.csv?s=#{symbol}&a=11&b=01&c=#{year}&d=11&e=31&f=#{year}&g=m"
+    data = open(uri) {|f| f.collect{|line| line.strip } }
+    data[1].split(',')[4].to_f
+  end
+end
 
-# do stuff...
+# Future
+price = Concurrent::Future.execute{ Ticker.new.get_year_end_closing('TWTR', 2013) }
+price.state #=> :pending
+price.pending? #=> true
+price.value(0) #=> nil (does not block)
 
-count.value(0) #=> nil (does not block)
+sleep(1)    # do other stuff
 
-count.value #=> 10 (after blocking)
-count.state #=> :fulfilled
-count.fulfilled? #=> true
-count.value #=> 10
+price.value #=> 63.65 (after blocking if neccesary)
+price.state #=> :fulfilled
+price.fulfilled? #=> true
+price.value #=> 63.65
 ```
+
+
 
 A rejected example:
 
@@ -47,6 +59,10 @@ count.value #=> nil (after blocking)
 count.rejected? #=> true
 count.reason #=> #<StandardError: Boom!> 
 ```
+
+
+
+
 
 An example with observation:
 

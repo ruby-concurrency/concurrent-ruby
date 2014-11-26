@@ -1,5 +1,35 @@
 `ScheduledTask` is a close relative of `Concurrent::Future` but with one important difference. A `Future` is set to execute as soon as possible whereas a `ScheduledTask` is set to execute at a specific time. This implementation is loosely based on Java's [ScheduledExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html). 
 
+### Example
+
+```ruby    
+require 'concurrent'
+require 'thread'   # for Queue
+require 'open-uri' # for open(uri)
+
+class Ticker
+  def get_year_end_closing(symbol, year)
+    uri = "http://ichart.finance.yahoo.com/table.csv?s=#{symbol}&a=11&b=01&c=#{year}&d=11&e=31&f=#{year}&g=m"
+    data = open(uri) {|f| f.collect{|line| line.strip } }
+    data[1].split(',')[4].to_f
+  end
+end
+
+# Future
+price = Concurrent::Future.execute{ Ticker.new.get_year_end_closing('TWTR', 2013) }
+price.state #=> :pending
+sleep(1)    # do other stuff
+price.value #=> 63.65
+price.state #=> :fulfilled
+
+# ScheduledTask
+task = Concurrent::ScheduledTask.execute(2){ Ticker.new.get_year_end_closing('INTC', 2013) }
+task.state #=> :pending
+sleep(3)   # do other stuff
+task.value #=> 25.96
+```
+
+
 ### Scheduling
 
 The *intended* schedule time of task execution is set on object construction with first argument. The time can be a numeric (floating point or integer) representing a number of seconds in the future or it can ba a `Time` object representing the approximate time of execution. Any other value, a numeric equal to or less than zero, or a time in the past will result in an exception. 
