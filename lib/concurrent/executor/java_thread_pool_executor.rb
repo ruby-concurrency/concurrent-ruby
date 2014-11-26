@@ -74,9 +74,7 @@ if RUBY_PLATFORM == 'java'
         raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
         raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
 
-        if min_length == 0 && @max_queue == 0
-          queue = java.util.concurrent.SynchronousQueue.new
-        elsif @max_queue == 0
+        if @max_queue == 0
           queue = java.util.concurrent.LinkedBlockingQueue.new
         else
           queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)
@@ -90,7 +88,7 @@ if RUBY_PLATFORM == 'java'
         set_shutdown_hook
       end
 
-    # @!macro executor_module_method_can_overflow_question
+      # @!macro executor_module_method_can_overflow_question
       def can_overflow?
         @max_queue != 0
       end
