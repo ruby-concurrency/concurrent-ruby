@@ -39,13 +39,46 @@ describe 'ConcurrentNext' do
 
   describe '.schedule' do
     it 'scheduled execution' do
-      start = Time.now.to_f
-      queue = Queue.new
-      f     = ConcurrentNext.schedule(0.1) { 1 + 1 }.then { |v| queue << v << Time.now.to_f - start }
+      start  = Time.now.to_f
+      queue  = Queue.new
+      future = ConcurrentNext.schedule(0.1) { 1 + 1 }.then { |v| queue << v << Time.now.to_f - start }
 
-      expect(f.value).to eq queue
+      expect(future.value).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be_between(0.1, 0.15)
+    end
+
+    it 'scheduled execution in graph' do
+      start  = Time.now.to_f
+      queue  = Queue.new
+      future = ConcurrentNext.
+          future { sleep 0.1; 1 }.
+          schedule(0.1).
+          then { |v| v + 1 }.
+          then { |v| queue << v << Time.now.to_f - start }
+
+      expect(future.value).to eq queue
+      expect(queue.pop).to eq 2
+      expect(queue.pop).to be_between(0.2, 0.25)
+    end
+  end
+
+  describe '.any' do
+    it 'continues on first result' do
+      queue = Queue.new
+      f1    = ConcurrentNext.future(:io) { queue.pop }
+      f2    = ConcurrentNext.future(:io) { queue.pop }
+
+      queue << 1 << 2
+
+      anys = [ConcurrentNext.any(f1, f2),
+              f1 | f2,
+              f1.or(f2)]
+
+      anys.each do |any|
+        expect(any.value.to_s).to match /1|2/
+      end
+
     end
   end
 
@@ -76,19 +109,21 @@ describe 'ConcurrentNext' do
       futures.each &:wait
 
       table = futures.each_with_index.map do |f, i|
-        '%5i %7s %10s %6s %4s %6s' % [i, f.success?, f.value, f.reason, f.default_executor, f.promise.executor]
+        '%5i %7s %10s %6s %4s %6s' % [i, f.success?, f.value, f.reason,
+                                      (f.promise.executor if f.promise.respond_to?(:executor)),
+                                      f.default_executor]
       end.unshift('index success      value reason pool d.pool')
 
       expect(table.join("\n")).to eq <<-TABLE.gsub(/^\s+\|/, '').strip
         |index success      value reason pool d.pool
         |    0    true          3        fast   fast
-        |    1   false               boo fast     io
+        |    1   false               boo   io   fast
         |    2   false               boo fast   fast
         |    3    true        boo        fast   fast
         |    4    true       true        fast   fast
-        |    5    true        boo          io     io
+        |    5    true        boo                 io
         |    6    true        Boo          io     io
-        |    7    true [3, "boo"]        fast   fast
+        |    7    true [3, "boo"]               fast
         |    8    true          3        fast   fast
       TABLE
     end
@@ -135,6 +170,41 @@ describe 'ConcurrentNext' do
       f = ConcurrentNext.future { ConcurrentNext.future { 1 } }.flat.then(&:succ)
       expect(f.value).to eq 2
     end
+  end
+
+  it 'interoperability' do
+    actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
+      -> v { v * 2 }
+    end
+
+    # convert ivar to future
+    Concurrent::IVar.class_eval do
+      def to_future
+        ConcurrentNext.promise.tap do |p|
+          with_observer { p.complete fulfilled?, value, reason }
+        end.future
+      end
+    end
+
+    expect(ConcurrentNext.
+               future { 2 }.
+               then { |v| actor.ask(v).to_future }.
+               flat.
+               then { |v| v + 2 }.
+               value).to eq 6
+
+    # possible simplification with helper
+    ConcurrentNext::Future.class_eval do
+      def then_ask(actor)
+        self.then { |v| actor.ask(v).to_future }.flat
+      end
+    end
+
+    expect(ConcurrentNext.
+               future { 2 }.
+               then_ask(actor).
+               then { |v| v + 2 }.
+               value).to eq 6
   end
 
 end
