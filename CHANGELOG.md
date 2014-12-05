@@ -1,4 +1,4 @@
-### Upcoming Release v0.7.1 (TBD)
+## Current Release v0.7.1 (4 December 2014)
 
 Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/issues/142) for more information on the next planned release.
 
@@ -19,7 +19,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Removed confusing warning when not using native extenstions
 * Improved documentation
 
-## Current Release v0.7.0 (13 August 2014)
+### Release v0.7.0 (13 August 2014)
 
 * Merge the [atomic](https://github.com/ruby-concurrency/atomic) gem
   - Pure Ruby `MutexAtomic` atomic reference class
