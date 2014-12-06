@@ -8,6 +8,7 @@ group :development do
 end
 
 group :testing do
+  gem 'concurrent-ruby-ext', :platforms => :mri, git: 'https://github.com/ruby-concurrency/concurrent-ruby-ext', branch: 'master'
   gem 'rspec', '~> 3.0.0'
   gem 'simplecov', '~> 0.8.2', :require => false
   gem 'coveralls', '~> 0.7.0', :require => false

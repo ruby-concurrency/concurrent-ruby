@@ -178,6 +178,7 @@ module Concurrent
       end
     elsif defined? Concurrent::CAtomicBoolean
       it 'inherits from CAtomicBoolean' do
+        pending('first release of concurrent-ruby-ext')
         expect(AtomicBoolean.ancestors).to include(CAtomicBoolean)
       end
     else

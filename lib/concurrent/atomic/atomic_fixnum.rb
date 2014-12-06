@@ -1,6 +1,3 @@
-require_relative '../../extension_helper'
-Concurrent.safe_require_c_extensions
-
 module Concurrent
 
   # @!macro [attach] atomic_fixnum
@@ -166,7 +163,7 @@ module Concurrent
     class AtomicFixnum < JavaAtomicFixnum
     end
 
-  elsif Concurrent.allow_c_native_class?('CAtomicFixnum')
+  elsif defined? Concurrent::CAtomicFixnum
 
     # @!macro atomic_fixnum
     class CAtomicFixnum

@@ -16,6 +16,8 @@ SimpleCov.start do
 end
 
 require 'concurrent'
+require 'concurrent_ext' if RUBY_ENGINE == 'ruby'
+
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::WARN

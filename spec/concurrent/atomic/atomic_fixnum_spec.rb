@@ -192,6 +192,7 @@ module Concurrent
       end
     elsif defined? Concurrent::CAtomicFixnum
       it 'inherits from CAtomicFixnum' do
+        pending('first release of concurrent-ruby-ext')
         expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
       end
     else

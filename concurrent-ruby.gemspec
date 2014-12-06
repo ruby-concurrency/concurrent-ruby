@@ -25,14 +25,9 @@ Gem::Specification.new do |s|
   if defined?(JRUBY_VERSION)
     s.files += Dir['lib/concurrent_ruby_ext.jar']
     s.platform = 'java'
-  elsif ! ENV['BUILD_PURE_RUBY']
-    s.extensions = 'ext/concurrent_ruby_ext/extconf.rb'
-    s.files += Dir['ext/**/*.{h,c,cpp}']
+  else
+    s.add_dependency 'ref', '~> 1.0.5'
   end
 
   s.required_ruby_version = '>= 1.9.3'
-
-  unless defined?(JRUBY_VERSION)
-    s.add_dependency 'ref', '~> 1.0.5'
-  end
 end

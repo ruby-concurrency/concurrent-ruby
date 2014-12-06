@@ -156,8 +156,9 @@ module Concurrent
       it 'inherits from JavaAtomic' do
         expect(Atomic.ancestors).to include(JavaAtomic)
       end
-    elsif TestHelpers.use_c_extensions?
+    elsif TestHelpers.c_extensions?
       it 'inherits from CAtomic' do
+        pending('first release of concurrent-ruby-ext')
         expect(Atomic.ancestors).to include(CAtomic)
       end
     elsif TestHelpers.rbx?
