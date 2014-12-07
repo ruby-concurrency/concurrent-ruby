@@ -208,7 +208,7 @@ module Concurrent
           latch.wait(0.1)
         end
 
-        specify '#<< executes the task on the current thread when the queue is at capacity' do
+        specify '#<< executes the task on the current thread when the executor is shutting down' do
           latch = Concurrent::CountDownLatch.new(1)
           subject.shutdown
           subject << proc { latch.count_down }
