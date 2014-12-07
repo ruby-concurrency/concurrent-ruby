@@ -78,7 +78,16 @@ module Concurrent
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       mutex.synchronize do
-        return false unless running?
+        unless running?
+          # The executor is shut down - figure out how to reject this task
+          if self.respond_to?(:handle_overflow, true)
+            # Reject this task in the same way we'd reject an overflow
+            return handle_overflow(*args, &task)
+          else
+            # No handle_overflow method defined - just return false
+            return false
+          end
+        end
         execute(*args, &task)
         true
       end
