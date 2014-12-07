@@ -5,7 +5,11 @@ require 'concurrent/atomic/event'
 module Concurrent
 
   module Executor
-    
+    # The policy defining how rejected tasks (tasks received once the queue size reaches
+    # the configured `max_queue`) are handled. Must be one of the values specified in
+    # `OVERFLOW_POLICIES`.
+    attr_reader :overflow_policy
+
     # @!macro [attach] executor_module_method_can_overflow_question
     #
     #   Does the task queue have a maximum size?
@@ -15,6 +19,31 @@ module Concurrent
     # @note Always returns `false`
     def can_overflow?
       false
+    end
+
+    # Handler which executes the `overflow_policy` once the queue size
+    # reaches `max_queue`.
+    #
+    # @param [Array] args the arguments to the task which is being handled.
+    #
+    # @!visibility private
+    def handle_overflow(*args)
+      case @overflow_policy
+      when :abort
+        raise RejectedExecutionError
+      when :discard
+        false
+      when :caller_runs
+        begin
+          yield(*args)
+        rescue => ex
+          # let it fail
+          log DEBUG, ex
+        end
+        true
+      else
+        fail "Unknown overflow policy #{@overflow_policy}"
+      end
     end
 
     # @!macro [attach] executor_module_method_serialized_question
@@ -63,6 +92,9 @@ module Concurrent
     include Executor
     include Logging
 
+    # The set of possible overflow policies that may be set at thread pool creation.
+    OVERFLOW_POLICIES          = [:abort, :discard, :caller_runs]
+
     # @!macro [attach] executor_method_post
     #
     #   Submit a task to the executor for asynchronous processing.
@@ -78,16 +110,8 @@ module Concurrent
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       mutex.synchronize do
-        unless running?
-          # The executor is shut down - figure out how to reject this task
-          if self.respond_to?(:handle_overflow, true)
-            # Reject this task in the same way we'd reject an overflow
-            return handle_overflow(*args, &task)
-          else
-            # No handle_overflow method defined - just return false
-            return false
-          end
-        end
+        # If the executor is shut down, reject this task
+        return handle_overflow(*args, &task) unless running?
         execute(*args, &task)
         true
       end
@@ -219,16 +243,20 @@ module Concurrent
       include Executor
       java_import 'java.lang.Runnable'
 
+      # The set of possible overflow policies that may be set at thread pool creation.
+      OVERFLOW_POLICIES = {
+        abort: java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
+        discard: java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
+        caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
+      }.freeze
+
       # @!macro executor_method_post
       def post(*args)
         raise ArgumentError.new('no block given') unless block_given?
-        if running?
-          executor_submit = @executor.java_method(:submit, [Runnable.java_class])
-          executor_submit.call { yield(*args) }
-          true
-        else
-          false
-        end
+        return handle_overflow(*args, &task) unless running?
+        executor_submit = @executor.java_method(:submit, [Runnable.java_class])
+        executor_submit.call { yield(*args) }
+        true
       rescue Java::JavaUtilConcurrent::RejectedExecutionException
         raise RejectedExecutionError
       end

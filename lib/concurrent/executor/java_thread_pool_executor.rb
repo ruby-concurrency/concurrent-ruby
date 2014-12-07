@@ -20,13 +20,6 @@ if RUBY_PLATFORM == 'java'
       # before being reclaimed.
       DEFAULT_THREAD_IDLETIMEOUT = 60
 
-      # The set of possible overflow policies that may be set at thread pool creation.
-      OVERFLOW_POLICIES = {
-        abort: java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
-        discard: java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
-        caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
-      }.freeze
-
       # The maximum number of threads that may be created in the pool.
       attr_reader :max_length
 

@@ -23,9 +23,6 @@ module Concurrent
     # before being reclaimed.
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
-    # The set of possible overflow policies that may be set at thread pool creation.
-    OVERFLOW_POLICIES          = [:abort, :discard, :caller_runs]
-
     # The maximum number of threads that may be created in the pool.
     attr_reader :max_length
 
@@ -48,11 +45,6 @@ module Concurrent
     # When the queue size reaches `max_queue` subsequent tasks will be rejected in
     # accordance with the configured `overflow_policy`.
     attr_reader :max_queue
-
-    # The policy defining how rejected tasks (tasks received once the queue size reaches
-    # the configured `max_queue`) are handled. Must be one of the values specified in
-    # `OVERFLOW_POLICIES`.
-    attr_reader :overflow_policy
 
     # Create a new thread pool.
     #
@@ -222,29 +214,6 @@ module Concurrent
       end
 
       capacity
-    end
-
-    # Handler which executes the `overflow_policy` once the queue size
-    # reaches `max_queue`.
-    #
-    # @param [Array] args the arguments to the task which is being handled.
-    #
-    # @!visibility private
-    def handle_overflow(*args)
-      case @overflow_policy
-      when :abort
-        raise RejectedExecutionError
-      when :discard
-        false
-      when :caller_runs
-        begin
-          yield(*args)
-        rescue => ex
-          # let it fail
-          log DEBUG, ex
-        end
-        true
-      end
     end
 
     # Scan all threads in the pool and reclaim any that are dead or
