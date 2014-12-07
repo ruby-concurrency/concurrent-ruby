@@ -80,6 +80,18 @@ module Concurrent
           }.to raise_error(Concurrent::RejectedExecutionError)
         end
 
+        specify '#post raises an error when the executor is shutting down' do
+          expect {
+            subject.shutdown; subject.post{ sleep(1) }
+          }.to raise_error(Concurrent::RejectedExecutionError)
+        end
+
+        specify '#<< raises an error when the executor is shutting down' do
+          expect {
+            subject.shutdown; subject << proc { sleep(1) }
+          }.to raise_error(Concurrent::RejectedExecutionError)
+        end
+
         specify 'a #post task is never executed when the queue is at capacity' do
           executed = Concurrent::AtomicFixnum.new(0)
           10.times do
@@ -134,6 +146,29 @@ module Concurrent
           sleep(0.1)
           expect(executed.value).to be < 1000
         end
+
+        specify 'a #post task is never executed when the executor is shutting down' do
+          executed = Concurrent::AtomicFixnum.new(0)
+          subject.shutdown
+          subject.post{ executed.increment }
+          sleep(0.1)
+          expect(executed.value).to be 0
+        end
+
+        specify 'a #<< task is never executed when the executor is shutting down' do
+          executed = Concurrent::AtomicFixnum.new(0)
+          subject.shutdown
+          subject << proc { executed.increment }
+          sleep(0.1)
+          expect(executed.value).to be 0
+        end
+
+        specify '#post returns false when the executor is shutting down' do
+          executed = Concurrent::AtomicFixnum.new(0)
+          subject.shutdown
+          ret = subject.post{ executed.increment }
+          expect(ret).to be false
+        end
       end
 
       context ':caller_runs' do
@@ -163,6 +198,20 @@ module Concurrent
           latch = Concurrent::CountDownLatch.new(5)
           subject.post{ sleep(1) }
           5.times{|i| subject.post{ latch.count_down } }
+          latch.wait(0.1)
+        end
+
+        specify '#post executes the task on the current thread when the executor is shutting down' do
+          latch = Concurrent::CountDownLatch.new(1)
+          subject.shutdown
+          subject.post{ latch.count_down }
+          latch.wait(0.1)
+        end
+
+        specify '#<< executes the task on the current thread when the queue is at capacity' do
+          latch = Concurrent::CountDownLatch.new(1)
+          subject.shutdown
+          subject << proc { latch.count_down }
           latch.wait(0.1)
         end
       end
