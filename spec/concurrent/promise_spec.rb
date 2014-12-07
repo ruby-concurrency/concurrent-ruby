@@ -339,15 +339,15 @@ module Concurrent
       let(:promise2) { Promise.new(executor: executor) { 2 } }
       let(:promise3) { Promise.new(executor: executor) { [3] } }
   
-      describe '.all' do
+      describe '.all?' do
   
         it 'returns a new Promise' do
-          composite = Promise.all(promise1, promise2, promise3).execute
+          composite = Promise.all?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
   
         it 'does not execute the returned Promise' do
-          composite = Promise.all(promise1, promise2, promise3)
+          composite = Promise.all?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
   
@@ -355,7 +355,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.all(promise1, promise2, promise3).
+          composite = Promise.all?(promise1, promise2, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -369,7 +369,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.all.
+          composite = Promise.all?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -383,7 +383,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.all(promise1, promise2, rejected_subject, promise3).
+          composite = Promise.all?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -394,15 +394,15 @@ module Concurrent
         end
       end
   
-      describe '.any' do
+      describe '.any?' do
   
         it 'returns a new Promise' do
-          composite = Promise.any(promise1, promise2, promise3).execute
+          composite = Promise.any?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
   
         it 'does not execute the returned Promise' do
-          composite = Promise.any(promise1, promise2, promise3)
+          composite = Promise.any?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
   
@@ -410,7 +410,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.any(promise1, promise2, rejected_subject, promise3).
+          composite = Promise.any?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -424,7 +424,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.any.
+          composite = Promise.any?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -438,7 +438,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.any(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
+          composite = Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -449,15 +449,15 @@ module Concurrent
         end
       end
   
-      describe '.none' do
+      describe '.none?' do
   
         it 'returns a new Promise' do
-          composite = Promise.none(promise1, promise2, promise3).execute
+          composite = Promise.none?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
   
         it 'does not execute the returned Promise' do
-          composite = Promise.none(promise1, promise2, promise3)
+          composite = Promise.none?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
   
@@ -465,7 +465,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.none(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
+          composite = Promise.none?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -479,7 +479,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.none.
+          composite = Promise.none?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -493,7 +493,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.none(promise1, promise2, rejected_subject, promise3).
+          composite = Promise.none?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -504,15 +504,15 @@ module Concurrent
         end
       end
   
-      describe '.one' do
+      describe '.one?' do
   
         it 'returns a new Promise' do
-          composite = Promise.one(promise1, promise2, promise3).execute
+          composite = Promise.one?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
   
         it 'does not execute the returned Promise' do
-          composite = Promise.one(promise1, promise2, promise3)
+          composite = Promise.one?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
   
@@ -520,7 +520,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.one(promise1, rejected_subject, rejected_subject, rejected_subject).
+          composite = Promise.one?(promise1, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -534,7 +534,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.one.
+          composite = Promise.one?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
@@ -548,7 +548,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
   
-          composite = Promise.one(promise1, promise2, rejected_subject, promise3).
+          composite = Promise.one?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
