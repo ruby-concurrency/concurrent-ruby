@@ -252,7 +252,7 @@ module Concurrent
       }.freeze
 
       # @!macro executor_method_post
-      def post(*args)
+      def post(*args, &task)
         raise ArgumentError.new('no block given') unless block_given?
         return handle_fallback(*args, &task) unless running?
         executor_submit = @executor.java_method(:submit, [Runnable.java_class])
