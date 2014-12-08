@@ -20,25 +20,13 @@ if RUBY_PLATFORM == 'java'
       # before being reclaimed.
       DEFAULT_THREAD_IDLETIMEOUT = 60
 
-      # The set of possible overflow policies that may be set at thread pool creation.
-      OVERFLOW_POLICIES = {
-        abort: java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
-        discard: java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
-        caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
-      }.freeze
-
       # The maximum number of threads that may be created in the pool.
       attr_reader :max_length
 
       # The maximum number of tasks that may be waiting in the work queue at any one time.
       # When the queue size reaches `max_queue` subsequent tasks will be rejected in
-      # accordance with the configured `overflow_policy`.
+      # accordance with the configured `fallback_policy`.
       attr_reader :max_queue
-
-      # The policy defining how rejected tasks (tasks received once the queue size reaches
-      # the configured `max_queue`) are handled. Must be one of the values specified in
-      # `OVERFLOW_POLICIES`.
-      attr_reader :overflow_policy
 
       # Create a new thread pool.
       #
@@ -52,14 +40,15 @@ if RUBY_PLATFORM == 'java'
       #   number of seconds a thread may be idle before being reclaimed
       # @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
       #   number of tasks allowed in the work queue at any one time; a value of
-      #   zero means the queue may grow without bounnd
-      # @option opts [Symbol] :overflow_policy (:abort) the policy for handling new
-      #   tasks that are received when the queue size has reached `max_queue`
+      #   zero means the queue may grow without bound
+      # @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
+      #   tasks that are received when the queue size has reached
+      #   `max_queue` or the executir has shut down
       #
       # @raise [ArgumentError] if `:max_threads` is less than one
       # @raise [ArgumentError] if `:min_threads` is less than zero
-      # @raise [ArgumentError] if `:overflow_policy` is not one of the values specified
-      #   in `OVERFLOW_POLICIES`
+      # @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
+      #   in `FALLBACK_POLICIES`
       #
       # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
       def initialize(opts = {})
@@ -67,12 +56,12 @@ if RUBY_PLATFORM == 'java'
         max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
         idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
         @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
-        @overflow_policy = opts.fetch(:overflow_policy, :abort)
+        @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
 
         raise ArgumentError.new('max_threads must be greater than zero') if max_length <= 0
         raise ArgumentError.new('min_threads cannot be less than zero') if min_length < 0
         raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
-        raise ArgumentError.new("#{@overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.keys.include?(@overflow_policy)
+        raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
 
         if @max_queue == 0
           queue = java.util.concurrent.LinkedBlockingQueue.new
@@ -83,7 +72,7 @@ if RUBY_PLATFORM == 'java'
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
           min_length, max_length,
           idletime, java.util.concurrent.TimeUnit::SECONDS,
-          queue, OVERFLOW_POLICIES[@overflow_policy].new)
+          queue, FALLBACK_POLICIES[@fallback_policy].new)
 
         set_shutdown_hook
       end
