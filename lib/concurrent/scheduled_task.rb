@@ -26,7 +26,7 @@ module Concurrent
     def execute
       if compare_and_set_state(:pending, :unscheduled)
         @schedule_time = TimerSet.calculate_schedule_time(@intended_time)
-        Concurrent::timer(@schedule_time.to_f - Time.now.to_f) { @executor.post &method(:process_task) }
+        Concurrent::timer(@schedule_time.to_f - Time.now.to_f) { @executor.post(&method(:process_task)) }
         self
       end
     end

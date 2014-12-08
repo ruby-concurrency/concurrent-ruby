@@ -12,7 +12,7 @@ module Concurrent
 
     Job = Struct.new(:executor, :args, :block) do
       def call
-        block.call *args
+        block.call(*args)
       end
     end
 

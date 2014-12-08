@@ -13,6 +13,7 @@ module Concurrent
       @parent = parent
       @mutex = Mutex.new
       @last_activity = Time.now.to_f
+      @thread = nil
     end
 
     # @!visibility private

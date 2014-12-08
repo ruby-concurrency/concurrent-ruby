@@ -25,8 +25,8 @@ module Concurrent
   class MutexAtomicFixnum
 
     # http://stackoverflow.com/questions/535721/ruby-max-integer
-    MIN_VALUE = -(2**(0.size * 8 -2))
-    MAX_VALUE = (2**(0.size * 8 -2) -1)
+    MIN_VALUE = -(2**(0.size * 8 - 2))
+    MAX_VALUE = (2**(0.size * 8 - 2) - 1)
 
     # @!macro [attach] atomic_fixnum_method_initialize
     #
