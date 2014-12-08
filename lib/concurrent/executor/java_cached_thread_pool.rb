@@ -17,6 +17,7 @@ if RUBY_PLATFORM == 'java'
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool--
       def initialize(opts = {})
         @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
+        warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
         @max_queue = 0
 
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.keys.include?(@fallback_policy)
