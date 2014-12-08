@@ -24,16 +24,6 @@ if RUBY_PLATFORM == 'java'
         }.merge(opts)
         super(opts)
 
-
-        #@fallback_policy = opts.fetch(:fallback_policy, :abort)
-        #@max_queue = 0
-        #
-        #raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
-        #raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.keys.include?(@fallback_policy)
-        #
-        #@executor = java.util.concurrent.Executors.newFixedThreadPool(num_threads)
-        #@executor.setRejectedExecutionHandler(FALLBACK_POLICIES[@FALLBACK_policy].new)
-
         set_shutdown_hook
       end
     end

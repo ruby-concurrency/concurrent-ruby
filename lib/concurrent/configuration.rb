@@ -102,7 +102,7 @@ module Concurrent
           max_threads:     [20, Concurrent.processor_count * 15].max,
           idletime:        2 * 60, # 2 minutes
           max_queue:       0, # unlimited
-          overflow_policy: :abort # raise an exception
+          fallback_policy: :abort # raise an exception
       )
     end
 
@@ -112,7 +112,7 @@ module Concurrent
           max_threads:     [2, Concurrent.processor_count].max,
           idletime:        10 * 60, # 10 minutes
           max_queue:       [20, Concurrent.processor_count * 15].max,
-          overflow_policy: :abort # raise an exception
+          fallback_policy: :abort # raise an exception
       )
     end
   end
