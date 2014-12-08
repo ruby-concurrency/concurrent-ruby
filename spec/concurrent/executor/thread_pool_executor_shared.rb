@@ -342,8 +342,8 @@ shared_examples :thread_pool_executor do
     end
   end
 
-  context '#fallback_policy' do
-    context ':caller_runs is honoured even if the old fallback_policy arg is used' do
+  context '#overflow_policy' do
+    context ':caller_runs is honoured even if the old overflow_policy arg is used' do
 
       subject do
         described_class.new(
@@ -351,7 +351,7 @@ shared_examples :thread_pool_executor do
           max_threads: 1,
           idletime: 60,
           max_queue: 1,
-          fallback_policy: :caller_runs
+          overflow_policy: :caller_runs
         )
       end
 
