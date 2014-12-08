@@ -30,8 +30,8 @@ shared_examples :thread_pool_executor do
       expect(subject.max_queue).to eq described_class::DEFAULT_MAX_QUEUE_SIZE
     end
 
-    it 'defaults :overflow_policy to :abort' do
-      expect(subject.overflow_policy).to eq :abort
+    it 'defaults :fallback_policy to :abort' do
+      expect(subject.fallback_policy).to eq :abort
     end
   end
 
@@ -55,10 +55,10 @@ shared_examples :thread_pool_executor do
       }.to raise_error(ArgumentError)
     end
 
-    it 'accepts all valid overflow policies' do
-      Concurrent::RubyThreadPoolExecutor::OVERFLOW_POLICIES.each do |policy|
-        subject = described_class.new(overflow_policy: policy)
-        expect(subject.overflow_policy).to eq policy
+    it 'accepts all valid fallback policies' do
+      Concurrent::RubyThreadPoolExecutor::FALLBACK_POLICIES.each do |policy|
+        subject = described_class.new(fallback_policy: policy)
+        expect(subject.fallback_policy).to eq policy
       end
     end
 
@@ -75,9 +75,9 @@ shared_examples :thread_pool_executor do
       }.to raise_error(ArgumentError)
     end
 
-    it 'raises an exception if given an invalid :overflow_policy' do
+    it 'raises an exception if given an invalid :fallback_policy' do
       expect {
-        described_class.new(overflow_policy: :bogus)
+        described_class.new(fallback_policy: :bogus)
       }.to raise_error(ArgumentError)
     end
   end
@@ -114,7 +114,7 @@ shared_examples :thread_pool_executor do
         min_threads: 2,
         max_threads: 5,
         max_queue: expected_max,
-        overflow_policy: :discard
+        fallback_policy: :discard
       )
     end
 

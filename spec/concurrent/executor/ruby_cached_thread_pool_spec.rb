@@ -7,7 +7,7 @@ module Concurrent
 
     subject do
       described_class.new(
-        overflow_policy: :discard,
+        fallback_policy: :discard,
         gc_interval: 0
       )
     end

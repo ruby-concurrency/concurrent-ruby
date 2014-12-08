@@ -5,10 +5,11 @@ require 'concurrent/atomic/event'
 module Concurrent
 
   module Executor
-    # The policy defining how rejected tasks (tasks received once the queue size reaches
-    # the configured `max_queue`) are handled. Must be one of the values specified in
-    # `OVERFLOW_POLICIES`.
-    attr_reader :overflow_policy
+    # The policy defining how rejected tasks (tasks received once the
+    # queue size reaches the configured `max_queue`, or after the
+    # executor has shut down) are handled. Must be one of the values
+    # specified in `FALLBACK_POLICIES`.
+    attr_reader :fallback_policy
 
     # @!macro [attach] executor_module_method_can_overflow_question
     #
@@ -21,14 +22,14 @@ module Concurrent
       false
     end
 
-    # Handler which executes the `overflow_policy` once the queue size
+    # Handler which executes the `fallback_policy` once the queue size
     # reaches `max_queue`.
     #
     # @param [Array] args the arguments to the task which is being handled.
     #
     # @!visibility private
-    def handle_overflow(*args)
-      case @overflow_policy
+    def handle_fallback(*args)
+      case @fallback_policy
       when :abort
         raise RejectedExecutionError
       when :discard
@@ -42,7 +43,7 @@ module Concurrent
         end
         true
       else
-        fail "Unknown overflow policy #{@overflow_policy}"
+        fail "Unknown fallback policy #{@fallback_policy}"
       end
     end
 
@@ -92,8 +93,8 @@ module Concurrent
     include Executor
     include Logging
 
-    # The set of possible overflow policies that may be set at thread pool creation.
-    OVERFLOW_POLICIES          = [:abort, :discard, :caller_runs]
+    # The set of possible fallback policies that may be set at thread pool creation.
+    FALLBACK_POLICIES          = [:abort, :discard, :caller_runs]
 
     # @!macro [attach] executor_method_post
     #
@@ -111,7 +112,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       mutex.synchronize do
         # If the executor is shut down, reject this task
-        return handle_overflow(*args, &task) unless running?
+        return handle_fallback(*args, &task) unless running?
         execute(*args, &task)
         true
       end
@@ -243,8 +244,8 @@ module Concurrent
       include Executor
       java_import 'java.lang.Runnable'
 
-      # The set of possible overflow policies that may be set at thread pool creation.
-      OVERFLOW_POLICIES = {
+      # The set of possible fallback policies that may be set at thread pool creation.
+      FALLBACK_POLICIES = {
         abort: java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
         discard: java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
         caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
@@ -253,7 +254,7 @@ module Concurrent
       # @!macro executor_method_post
       def post(*args)
         raise ArgumentError.new('no block given') unless block_given?
-        return handle_overflow(*args, &task) unless running?
+        return handle_fallback(*args, &task) unless running?
         executor_submit = @executor.java_method(:submit, [Runnable.java_class])
         executor_submit.call { yield(*args) }
         true

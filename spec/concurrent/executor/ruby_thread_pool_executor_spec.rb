@@ -16,7 +16,7 @@ module Concurrent
         max_threads: 5,
         idletime: 60,
         max_queue: 10,
-        overflow_policy: :discard
+        fallback_policy: :discard
       )
     end
 
@@ -32,7 +32,7 @@ module Concurrent
           max_threads: 20,
           idletime: 60,
           max_queue: expected_max,
-          overflow_policy: :discard
+          fallback_policy: :discard
         )
       end
 
@@ -49,7 +49,7 @@ module Concurrent
       end
     end
 
-    context '#overload_policy' do
+    context '#fallback_policy' do
 
       let!(:min_threads){ 1 }
       let!(:max_threads){ 1 }
@@ -64,7 +64,7 @@ module Concurrent
             max_threads: max_threads,
             idletime: idletime,
             max_queue: max_queue,
-            overflow_policy: :abort
+            fallback_policy: :abort
           )
         end
 
@@ -125,7 +125,7 @@ module Concurrent
             max_threads: max_threads,
             idletime: idletime,
             max_queue: max_queue,
-            overflow_policy: :discard
+            fallback_policy: :discard
           )
         end
 
@@ -179,7 +179,7 @@ module Concurrent
             max_threads: 1,
             idletime: idletime,
             max_queue: 1,
-            overflow_policy: :caller_runs
+            fallback_policy: :caller_runs
           )
         end
 
@@ -190,7 +190,7 @@ module Concurrent
         end
 
         specify '#<< executes the task on the current thread when the queue is at capacity' do
-          expect(subject).to receive(:handle_overflow).with(any_args).at_least(:once)
+          expect(subject).to receive(:handle_fallback).with(any_args).at_least(:once)
           5.times{ subject << proc { sleep(0.1) } }
         end
 
@@ -206,6 +206,28 @@ module Concurrent
           subject.shutdown
           subject.post{ latch.count_down }
           latch.wait(0.1)
+        end
+
+        specify '#<< executes the task on the current thread when the executor is shutting down' do
+          latch = Concurrent::CountDownLatch.new(1)
+          subject.shutdown
+          subject << proc { latch.count_down }
+          latch.wait(0.1)
+        end
+      end
+    end
+
+    context '#fallback_policy' do
+      context ':caller_runs is honoured even if the old fallback_policy arg is used' do
+
+        subject do
+          described_class.new(
+            min_threads: 1,
+            max_threads: 1,
+            idletime: 60,
+            max_queue: 1,
+            fallback_policy: :caller_runs
+          )
         end
 
         specify '#<< executes the task on the current thread when the executor is shutting down' do
