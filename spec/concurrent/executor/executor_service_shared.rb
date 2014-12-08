@@ -16,29 +16,21 @@ shared_examples :executor_service do
       latch = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(1) }
       subject.shutdown
-      subject.post{ latch.count_down }
+      begin
+        subject.post{ latch.count_down }
+      rescue Concurrent::RejectedExecutionError
+      end
       expect(latch.wait(0.1)).to be_falsey
-    end
-
-    it 'returns false while shutting down' do
-      subject.post{ sleep(1) }
-      subject.shutdown
-      expect(subject.post{ nil }).to be_falsey
     end
 
     it 'rejects the block once shutdown' do
       subject.shutdown
       latch = Concurrent::CountDownLatch.new(1)
-      subject.post{ sleep(1) }
-      subject.post{ latch.count_down }
+      begin
+        subject.post{ latch.count_down }
+      rescue Concurrent::RejectedExecutionError
+      end
       expect(latch.wait(0.1)).to be_falsey
-    end
-
-    it 'returns false once shutdown' do
-      subject.post{ nil }
-      subject.shutdown
-      sleep(0.1)
-      expect(subject.post{ nil }).to be_falsey
     end
   end
 
@@ -75,7 +67,10 @@ shared_examples :executor_service do
       latch2 = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(0.2); latch1.count_down }
       subject.shutdown
-      expect(subject.post{ latch2.count_down }).to be_falsey
+      begin
+        expect(subject.post{ latch2.count_down }).to be_falsey
+      rescue Concurrent::RejectedExecutionError
+      end
       expect(latch1.wait(1)).to be_truthy
       expect(latch2.wait(0.2)).to be_falsey
     end
@@ -121,7 +116,10 @@ shared_examples :executor_service do
       subject.post{ sleep(0.1); expected.increment }
       subject.post{ sleep(0.1); expected.increment }
       subject.shutdown
-      subject.post{ expected.increment }
+      begin
+        subject.post{ expected.increment }
+      rescue Concurrent::RejectedExecutionError
+      end
       subject.wait_for_termination(1)
       expect(expected.value).to eq(2)
     end
@@ -135,7 +133,10 @@ shared_examples :executor_service do
       subject.post{ sleep(0.1); latch.count_down }
       latch.wait(1)
       subject.kill
-      expect(subject.post{ expected.make_true }).to be_falsey
+      begin
+        expect(subject.post{ expected.make_true }).to be_falsey
+      rescue Concurrent::RejectedExecutionError
+      end
       sleep(0.1)
       expect(expected.value).to be_falsey
     end
@@ -145,7 +146,10 @@ shared_examples :executor_service do
       sleep(0.1)
       subject.kill
       sleep(0.1)
-      expect(subject.post{ nil }).to be_falsey
+      begin
+        expect(subject.post{ nil }).to be_falsey
+      rescue Concurrent::RejectedExecutionError
+      end
     end
   end
 

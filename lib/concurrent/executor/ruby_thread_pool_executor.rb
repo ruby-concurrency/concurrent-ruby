@@ -23,9 +23,6 @@ module Concurrent
     # before being reclaimed.
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
-    # The set of possible overflow policies that may be set at thread pool creation.
-    OVERFLOW_POLICIES          = [:abort, :discard, :caller_runs]
-
     # The maximum number of threads that may be created in the pool.
     attr_reader :max_length
 
@@ -46,13 +43,8 @@ module Concurrent
 
     # The maximum number of tasks that may be waiting in the work queue at any one time.
     # When the queue size reaches `max_queue` subsequent tasks will be rejected in
-    # accordance with the configured `overflow_policy`.
+    # accordance with the configured `fallback_policy`.
     attr_reader :max_queue
-
-    # The policy defining how rejected tasks (tasks received once the queue size reaches
-    # the configured `max_queue`) are handled. Must be one of the values specified in
-    # `OVERFLOW_POLICIES`.
-    attr_reader :overflow_policy
 
     # Create a new thread pool.
     #
@@ -66,14 +58,15 @@ module Concurrent
     #   number of seconds a thread may be idle before being reclaimed
     # @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
     #   number of tasks allowed in the work queue at any one time; a value of
-    #   zero means the queue may grow without bounnd
-    # @option opts [Symbol] :overflow_policy (:abort) the policy for handling new
-    #   tasks that are received when the queue size has reached `max_queue`
+    #   zero means the queue may grow without bound
+    # @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
+    #   tasks that are received when the queue size has reached
+    #   `max_queue` or the executor has shut down
     #
     # @raise [ArgumentError] if `:max_threads` is less than one
     # @raise [ArgumentError] if `:min_threads` is less than zero
-    # @raise [ArgumentError] if `:overflow_policy` is not one of the values specified
-    #   in `OVERFLOW_POLICIES`
+    # @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
+    #   in `FALLBACK_POLICIES`
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
     def initialize(opts = {})
@@ -81,11 +74,12 @@ module Concurrent
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
-      @overflow_policy = opts.fetch(:overflow_policy, :abort)
+      @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
+      warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
 
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
       raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
-      raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(@overflow_policy)
+      raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
 
       init_executor
@@ -169,7 +163,7 @@ module Concurrent
         @scheduled_task_count += 1
         @queue << [args, task]
       else
-        handle_overflow(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
+        handle_fallback(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
       end
     end
 
@@ -222,29 +216,6 @@ module Concurrent
       end
 
       capacity
-    end
-
-    # Handler which executes the `overflow_policy` once the queue size
-    # reaches `max_queue`.
-    #
-    # @param [Array] args the arguments to the task which is being handled.
-    #
-    # @!visibility private
-    def handle_overflow(*args)
-      case @overflow_policy
-      when :abort
-        raise RejectedExecutionError
-      when :discard
-        false
-      when :caller_runs
-        begin
-          yield(*args)
-        rescue => ex
-          # let it fail
-          log DEBUG, ex
-        end
-        true
-      end
     end
 
     # Scan all threads in the pool and reclaim any that are dead or

@@ -4,7 +4,7 @@ require_relative 'thread_pool_shared'
 shared_examples :cached_thread_pool do
 
   subject do
-    described_class.new(overflow_policy: :discard)
+    described_class.new(fallback_policy: :discard)
   end
 
   after(:each) do

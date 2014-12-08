@@ -5,7 +5,7 @@ module Concurrent
 
   describe RubyFixedThreadPool, :type=> :mrirbx do
 
-    subject { described_class.new(5, overflow_policy: :discard) }
+    subject { described_class.new(5, fallback_policy: :discard) }
 
     after(:each) do
       subject.kill
