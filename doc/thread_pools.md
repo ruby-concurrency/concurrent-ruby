@@ -6,7 +6,7 @@ A Thread Pool is an abstraction that you can give a unit of work to, and the wor
 
 But there are some problems for which directly using a thread pool is an appropriate solution. Or, you may wish to make your own thread pool to run Futures on, to be separate or have different characteristics than the global thread pool that Futures run on by default.
 
-Thread pools are considered 'executors' -- an object you can give a unit of work to, to have it execucted.  In fact, thread pools are the main kind of executor you will see - others are mainly for testing or odd edge cases. In some documentation or source code you'll see reference to an 'executor' -- this is commonly a thread pool, or else something similar that executes units of work (usually supplied as Ruby blocks).
+Thread pools are considered 'executors' -- an object you can give a unit of work to, to have it executed.  In fact, thread pools are the main kind of executor you will see - others are mainly for testing or odd edge cases. In some documentation or source code you'll see reference to an 'executor' -- this is commonly a thread pool, or else something similar that executes units of work (usually supplied as Ruby blocks).
 
 ## FixedThreadPool
 
