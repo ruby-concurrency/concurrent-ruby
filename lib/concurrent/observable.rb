@@ -46,7 +46,7 @@ module Concurrent
     # as #add_observer but it can be used for chaining
     # @return [Observable] self
     def with_observer(*args, &block)
-      add_observer *args, &block
+      add_observer(*args, &block)
       self
     end
 
