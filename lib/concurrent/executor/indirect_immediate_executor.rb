@@ -28,7 +28,7 @@ module Concurrent
       return false unless running?
 
       event = Concurrent::Event.new
-      internal_executor.post do
+      @internal_executor.post do
         begin
           task.call(*args)
         ensure
@@ -39,8 +39,5 @@ module Concurrent
 
       true
     end
-
-    private
-    attr_reader :internal_executor
   end
 end

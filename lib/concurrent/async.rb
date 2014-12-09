@@ -81,13 +81,13 @@ module Concurrent
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
 
-        self.define_singleton_method(method) do |*args|
-          Async::validate_argc(@delegate, method, *args)
+        self.define_singleton_method(method) do |*args2|
+          Async::validate_argc(@delegate, method, *args2)
           ivar = Concurrent::IVar.new
           value, reason = nil, nil
           @serializer.post(@executor.value) do
             begin
-              value = @delegate.send(method, *args, &block)
+              value = @delegate.send(method, *args2, &block)
             rescue => reason
               # caught
             ensure

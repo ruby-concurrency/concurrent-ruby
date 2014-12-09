@@ -260,7 +260,7 @@ module Concurrent
     # @return [Promise]
     def on_success(&block)
       raise ArgumentError.new('no block given') unless block_given?
-      self.then &block
+      self.then(&block)
     end
 
     # @return [Promise]

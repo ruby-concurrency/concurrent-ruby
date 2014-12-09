@@ -317,7 +317,7 @@ module Concurrent
     def execute_task(completion)
       return unless @running.true?
       Concurrent::timer(execution_interval, completion, &method(:timeout_task))
-      success, value, reason = @executor.execute(self)
+      _success, value, reason = @executor.execute(self)
       if completion.try?
         self.value = value
         schedule_next_task
