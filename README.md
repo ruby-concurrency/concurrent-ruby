@@ -38,9 +38,7 @@
 ### Supported Ruby versions
 
 MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x are supported.
-Although native code is used for performance optimizations on some platforms, all functionality
-is available in pure Ruby. This gem should be fully compatible with any interpreter that is
-compliant with Ruby 1.9.3 or newer.
+This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
 
 ## Features & Documentation
 
@@ -96,30 +94,7 @@ Lower-level abstractions mainly used as building blocks.
 * [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
 * [software transactional memory](./doc/tvar.md) (TVar)
 
-
-
-## Installing and Building
-
-This gem includes several platform-specific optimizations. To reduce the possibility of
-compilation errors, we provide pre-compiled gem packages for several platforms as well
-as a pure-Ruby build. Installing the gem should be no different than installing any other
-Rubygems-hosted gem. Rubygems will automatically detect your platform and install the
-appropriate pre-compiled build. You should never see Rubygems attempt to compile the gem
-on installation. Additionally, to ensure compatability with the largest possible number
-of Ruby interpreters, the C extensions will *never* load under any Ruby other than MRI,
-even when installed.
-
-The following gem builds will be built at every release:
-
-* concurrent-ruby-x.y.z.gem (pure Ruby)
-* concurrent-ruby-x.y.z-java.gem (JRuby)
-* concurrent-ruby-x.y.z-x86-linux.gem (Linux 32-bit)
-* concurrent-ruby-x.y.z-x86_64-linux.gem (Linux 64-bit)
-* concurrent-ruby-x.y.z-x86-mingw32.gem (Windows 32-bit)
-* concurrent-ruby-x.y.z-x64-mingw32.gem (Windows 64-bit)
-* concurrent-ruby-x.y.z-x86-solaris-2.11.gem (Solaris)
-
-### Installing
+## Installing
 
 ```shell
 gem install concurrent-ruby
@@ -133,31 +108,28 @@ gem 'concurrent-ruby'
 
 and run `bundle install` from your shell.
 
-### Building
+### Installing Optional C Extensions (MRI)
 
-Because we provide pre-compiled gem builds, users should never need to build the gem manually.
-The build process for this gem is completely automated using open source tools. All of
-the automation components are available in the [ruby-concurrency/rake-compiler-dev-box](https://github.com/ruby-concurrency/rake-compiler-dev-box)
-GitHub repository.
-
-This gem will compile native C code under MRI and native Java code under JRuby. It is
-also possible to build a pure-Ruby version. All builds have identical functionality.
-The only difference is performance. Additionally, pure-Ruby classes are always available,
-even when using the native optimizations. Please see the [documentation](http://ruby-concurrency.github.io/concurrent-ruby/)
-for more details.
-
-To build and package the gem using MRI or JRuby, install the necessary build dependencies and run:
+For improved performance on MRI a compantion gem with called `concurrent-ruby-ext` is provided. When the
+extensions are installed `concurrent-ruby` will detect their presence and automatically load them.
 
 ```shell
-bundle exec rake compile
-bundle exec rake build
+gem install concurrent-ruby-ext
 ```
 
-To build and package a pure-Ruby gem, on *any* platform and interpreter
-(including MRI and JRuby), run:
+or add the following line to Gemfile:
 
-```shell
-BUILD_PURE_RUBY='true' bundle exec rake build
+```ruby
+gem 'concurrent-ruby'-ext
+```
+
+and run `bundle install` from your shell.
+
+In your code make sure you require the extension gem **before** you require the core gem:
+
+```ruby
+require 'concurrent_ext'
+require 'concurrent'
 ```
 
 ## Maintainers

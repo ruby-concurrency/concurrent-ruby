@@ -23,8 +23,8 @@ module Concurrent
       RUBY_ENGINE == 'rbx'
     end
 
-    def use_c_extensions?
-      Concurrent.allow_c_extensions? # from extension_helper.rb
+    def c_extensions?
+      defined? Concurrent::CAtomic
     end
 
     def do_no_reset!
