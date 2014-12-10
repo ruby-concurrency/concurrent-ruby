@@ -1,14 +1,4 @@
 require_relative '../../extension_helper'
-
-if Concurrent.allow_c_extensions?
-  begin
-    require 'concurrent_ruby_ext'
-  rescue LoadError
-    # may be a Windows cross-compiled native gem
-    require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
-  end
-end
-
 require 'concurrent/atomic_reference/direct_update'
 require 'concurrent/atomic_reference/numeric_cas_wrapper'
 

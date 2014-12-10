@@ -1,11 +1,6 @@
-require 'bundler/gem_tasks'
-require 'rake/extensiontask'
-require 'rake/javaextensiontask'
-
-GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
+CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
+EXT_GEMSPEC = Gem::Specification.load('concurrent-ruby-ext.gemspec')
 EXTENSION_NAME = 'concurrent_ruby_ext'
-
-Bundler::GemHelper.install_tasks
 
 $:.push File.join(File.dirname(__FILE__), 'lib')
 require 'extension_helper'
@@ -23,20 +18,22 @@ Dir.glob('tasks/**/*.rake').each do |rakefile|
   safe_load rakefile
 end
 
-desc 'Run benchmarks'
+#desc 'Run benchmarks'
 task :bench do
   exec 'ruby -Ilib -Iext examples/bench_atomic.rb'
 end
 
 if defined?(JRUBY_VERSION)
+  require 'rake/javaextensiontask'
 
-  Rake::JavaExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
+  Rake::JavaExtensionTask.new(EXTENSION_NAME, CORE_GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 
 elsif Concurrent.allow_c_extensions?
+  require 'rake/extensiontask'
 
-  Rake::ExtensionTask.new(EXTENSION_NAME, GEMSPEC) do |ext|
+  Rake::ExtensionTask.new(EXTENSION_NAME, EXT_GEMSPEC) do |ext|
     ext.ext_dir = "ext/#{EXTENSION_NAME}"
     ext.cross_compile = true
     ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
@@ -61,7 +58,6 @@ elsif Concurrent.allow_c_extensions?
 else
   task :clean
   task :compile
-  task "compile:#{EXTENSION_NAME}"
 end
 
 Rake::Task[:clean].enhance do
@@ -71,6 +67,7 @@ Rake::Task[:clean].enhance do
   rm_rf 'lib/2.0'
   rm_f Dir.glob('./lib/*.jar')
   rm_f Dir.glob('./**/*.bundle')
+  mkdir_p 'pkg'
 end
 
 begin
@@ -85,3 +82,30 @@ begin
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
 end
+
+namespace :build do
+  
+  build_deps = [:clean]
+  build_deps << :compile if defined?(JRUBY_VERSION)
+
+  desc 'Build the concurrent-ruby gem'
+  task :core => build_deps do
+    sh "gem build #{CORE_GEMSPEC.name}.gemspec"
+    sh 'mv *.gem pkg/'
+    Rake::Task[:clean].execute
+  end
+
+  if Concurrent.allow_c_extensions?
+    desc 'Build the concurrent-ruby-ext gem'
+    task :ext => [:clean, :compile] do
+      sh "gem build #{EXT_GEMSPEC.name}.gemspec"
+      sh 'mv *.gem pkg/'
+      Rake::Task[:clean].execute
+    end
+  else
+    task :ext
+  end
+end
+
+desc 'Build all gems for this platform'
+task :build => ['build:core', 'build:ext']

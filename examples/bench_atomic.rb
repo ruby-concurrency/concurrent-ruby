@@ -1,7 +1,8 @@
 require 'benchmark'
 require 'rbconfig'
 require 'thread'
-require 'concurrent'
+require 'concurrent/atomic'
+
 Thread.abort_on_exception = true
 
 $go = false # for synchronizing parallel threads
