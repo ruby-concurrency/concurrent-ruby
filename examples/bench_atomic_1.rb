@@ -6,7 +6,11 @@ require 'optparse'
 require 'thread'
 require 'benchmark'
 
-require 'concurrent'
+begin
+  require 'concurrent-ext'
+rescue LoadError
+  require 'concurrent'
+end
 
 Thread.abort_on_exception = true
 

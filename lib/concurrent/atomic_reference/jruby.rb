@@ -1,5 +1,4 @@
 require_relative '../../extension_helper'
-Concurrent.safe_require_java_extensions
 
 if defined?(Concurrent::JavaAtomic)
   require 'concurrent/atomic_reference/direct_update'

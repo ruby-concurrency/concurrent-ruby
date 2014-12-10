@@ -12,6 +12,7 @@ RUBY
 end
 #####################################################################
 
+require_relative '../extension_helper'
 require 'concurrent/atomic_reference/concurrent_update_error'
 require 'concurrent/atomic_reference/mutex_atomic'
 
@@ -77,7 +78,7 @@ elsif defined? Concurrent::RbxAtomic
   class Concurrent::Atomic < Concurrent::RbxAtomic
   end
 
-elsif Concurrent.allow_c_native_class?('CAtomic')
+elsif defined?(CAtomic)
 
   # @!macro atomic_reference
   class Concurrent::Atomic < Concurrent::CAtomic
