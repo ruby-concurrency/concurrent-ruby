@@ -1,5 +1,4 @@
 require_relative '../../extension_helper'
-Concurrent.safe_require_c_extensions
 
 module Concurrent
 
@@ -162,7 +161,7 @@ module Concurrent
     class AtomicBoolean < JavaAtomicBoolean
     end
 
-  elsif Concurrent.allow_c_native_class?('CAtomicBoolean')
+  elsif defined?(CAtomicBoolean)
 
     # @!macro atomic_boolean
     class CAtomicBoolean
