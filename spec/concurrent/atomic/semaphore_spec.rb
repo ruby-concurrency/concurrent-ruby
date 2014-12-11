@@ -156,7 +156,7 @@ module Concurrent
   describe Semaphore do
     if jruby?
       it 'inherits from JavaCountDownLatch' do
-        expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
+        expect(Semaphore.ancestors).to include(Semaphore)
       end
     else
       it 'inherits from MutexSemaphore' do
