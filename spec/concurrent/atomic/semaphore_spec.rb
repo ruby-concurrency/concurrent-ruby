@@ -1,11 +1,9 @@
 require 'spec_helper'
 
 shared_examples :semaphore do
-
   let(:semaphore) { described_class.new(3) }
 
   context '#initialize' do
-
     it 'raises an exception if the initial count is not an integer' do
       expect {
         described_class.new('foo')
@@ -14,7 +12,6 @@ shared_examples :semaphore do
   end
 
   describe '#acquire' do
-
     context 'permits available' do
       it 'should return true immediately' do
         result = semaphore.acquire
@@ -23,10 +20,9 @@ shared_examples :semaphore do
     end
 
     context 'not enough permits available' do
-
       it 'should block thread until permits are available' do
         semaphore.drain_permits
-        Thread.new { sleep(0.2); semaphore.release }
+        Thread.new { sleep(0.2) && semaphore.release }
 
         result = semaphore.acquire
         expect(result).to be_truthy
@@ -69,8 +65,8 @@ shared_examples :semaphore do
       end
 
       it 'acquires after if permits are available within timeout' do
-        x = semaphore.drain_permits
-        Thread.new { sleep 0.1; semaphore.release }
+        semaphore.drain_permits
+        Thread.new { sleep 0.1 && semaphore.release }
         result = semaphore.try_acquire(1, 0.2)
         expect(result).to be_truthy
       end
@@ -86,7 +82,7 @@ shared_examples :semaphore do
   describe '#reduce_permits' do
     it 'raises ArgumentError if reducing by negative number' do
       expect {
-        semaphore.reduce_permits -1
+        semaphore.reduce_permits(-1)
       }.to raise_error(ArgumentError)
     end
 
@@ -106,13 +102,10 @@ shared_examples :semaphore do
 end
 
 module Concurrent
-
   describe MutexSemaphore do
-
     it_should_behave_like :semaphore
 
     context 'spurious wake ups' do
-
       subject { described_class.new(1) }
 
       before(:each) do
@@ -127,7 +120,8 @@ module Concurrent
 
       it 'should resist to spurious wake ups without timeout' do
         @expected = true
-        Thread.new { @expected = subject.acquire } # would set @expected to false
+        # would set @expected to false
+        Thread.new { @expected = subject.acquire }
 
         sleep(0.1)
         subject.simulate_spurious_wake_up
@@ -138,7 +132,8 @@ module Concurrent
 
       it 'should resist to spurious wake ups with timeout' do
         @expected = true
-        t = Thread.new { @expected = subject.try_acquire(1, 0.3) } # sets @expected to false
+        # sets @expected to false in another thread
+        t = Thread.new { @expected = subject.try_acquire(1, 0.3) }
 
         sleep(0.1)
         subject.simulate_spurious_wake_up
@@ -146,16 +141,14 @@ module Concurrent
         sleep(0.1)
         expect(@expected).to be_truthy
 
-        t.join()
+        t.join
         expect(@expected).to be_falsey
       end
     end
   end
 
   if TestHelpers.jruby?
-
     describe JavaSemaphore do
-
       it_should_behave_like :semaphore
     end
   end
