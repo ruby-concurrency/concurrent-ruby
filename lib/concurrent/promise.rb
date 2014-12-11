@@ -363,28 +363,6 @@ module Concurrent
       aggregate(:any?, *promises)
     end
 
-    # Aggregates a collection of promises and executes the `then` condition
-    # if all aggregated promises fail. Executes the `rescue` handler with
-    # a `Concurrent::PromiseExecutionError` if any of the aggregated promises
-    # succeed. Upon execution will execute any of the aggregate promises that
-    # were not already executed.
-    #
-    # @!macro promise_self_aggregate
-    def self.none?(*promises)
-      aggregate(:none?, *promises)
-    end
-
-    # Aggregates a collection of promises and executes the `then` condition
-    # if one and only one of the  aggregated promises succeeds. Executes the
-    # `rescue` handler with a `Concurrent::PromiseExecutionError` more than one
-    # of the aggregated promises succeed. Upon execution will execute any of
-    # the aggregate promises that were not already executed.
-    #
-    # @!macro promise_self_aggregate
-    def self.one?(*promises)
-      aggregate(:one?, *promises)
-    end
-
     protected
 
     # Aggregate a collection of zero or more promises under a composite promise,
