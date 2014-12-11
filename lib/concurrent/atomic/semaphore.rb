@@ -188,9 +188,9 @@ module Concurrent
           fail ArgumentError, 'permits must be an integer greater than zero'
         end
         if timeout.nil?
-          @semaphore.try_acquire(permits)
+          @semaphore.tryAcquire(permits)
         else
-          @semaphore.try_acquire(permits,
+          @semaphore.tryAcquire(permits,
                                  timeout,
                                  java.util.concurrent.TimeUnit::SECONDS)
         end
@@ -210,7 +210,7 @@ module Concurrent
         unless reduction.is_a?(Fixnum) && reduction >= 0
           fail ArgumentError, 'reduction must be an non-negative integer'
         end
-        unless @semaphore.available_permits - reduction >= 0
+        unless @semaphore.availablePermits - reduction >= 0
           fail(ArgumentError,
                'cannot reduce number of available_permits below zero')
         end
