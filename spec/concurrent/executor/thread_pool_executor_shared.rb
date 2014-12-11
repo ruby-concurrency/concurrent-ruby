@@ -255,25 +255,25 @@ shared_examples :thread_pool_executor do
       specify 'a #post task is never executed when the queue is at capacity' do
         executed = Concurrent::AtomicFixnum.new(0)
         1000.times do
-          subject.post{ executed.increment }
+          subject.post{ sleep; executed.increment }
         end
         sleep(0.1)
-        expect(executed.value).to be < 1000
+        expect(executed.value).to be 0
       end
 
       specify 'a #<< task is never executed when the queue is at capacity' do
         executed = Concurrent::AtomicFixnum.new(0)
         1000.times do
-          subject << proc { executed.increment }
+          subject << proc { sleep; executed.increment }
         end
         sleep(0.1)
-        expect(executed.value).to be < 1000
+        expect(executed.value).to be 0
       end
 
       specify 'a #post task is never executed when the executor is shutting down' do
         executed = Concurrent::AtomicFixnum.new(0)
         subject.shutdown
-        subject.post{ executed.increment }
+        subject.post{ sleep; executed.increment }
         sleep(0.1)
         expect(executed.value).to be 0
       end
