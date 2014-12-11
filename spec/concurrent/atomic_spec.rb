@@ -154,19 +154,19 @@ module Concurrent
   describe Atomic do
     if TestHelpers.jruby?
       it 'inherits from JavaAtomic' do
-        expect(Atomic.ancestors).to include(JavaAtomic)
+        expect(Atomic.ancestors).to include(Concurrent::JavaAtomic)
       end
     elsif TestHelpers.use_c_extensions?
       it 'inherits from CAtomic' do
-        expect(Atomic.ancestors).to include(CAtomic)
+        expect(Atomic.ancestors).to include(Concurrent::CAtomic)
       end
     elsif TestHelpers.rbx?
       it 'inherits from RbxAtomic' do
-        expect(Atomic.ancestors).to include(RbxAtomic)
+        expect(Atomic.ancestors).to include(Concurrent::RbxAtomic)
       end
     else
       it 'inherits from MutexAtomic' do
-        expect(Atomic.ancestors).to include(MutexAtomic)
+        expect(Atomic.ancestors).to include(Concurrent::MutexAtomic)
       end
     end
   end
