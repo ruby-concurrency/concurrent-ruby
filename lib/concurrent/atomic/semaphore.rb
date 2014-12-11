@@ -210,7 +210,7 @@ module Concurrent
         unless reduction.is_a?(Fixnum) && reduction >= 0
           fail ArgumentError, 'reduction must be an non-negative integer'
         end
-        unless @free - reduction >= 0
+        unless @semaphore.available_permits - reduction >= 0
           fail(ArgumentError,
                'cannot reduce number of available_permits below zero')
         end
