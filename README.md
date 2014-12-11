@@ -38,9 +38,7 @@
 ### Supported Ruby versions
 
 MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x are supported.
-Although native code is used for performance optimizations on some platforms, all functionality
-is available in pure Ruby. This gem should be fully compatible with any interpreter that is
-compliant with Ruby 1.9.3 or newer.
+This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
 
 ## Features & Documentation
 
@@ -62,6 +60,7 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
+* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html): Communicating Sequential Processes (CSP). 
 
 ### Java-inspired ThreadPools and other executors
 
@@ -98,28 +97,45 @@ Lower-level abstractions mainly used as building blocks.
 * [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
 * [software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 
-## Installing and Building
+## Usage
 
-This gem includes several platform-specific optimizations. To reduce the possibility of
-compilation errors, we provide pre-compiled gem packages for several platforms as well
-as a pure-Ruby build. Installing the gem should be no different than installing any other
-Rubygems-hosted gem. Rubygems will automatically detect your platform and install the
-appropriate pre-compiled build. You should never see Rubygems attempt to compile the gem
-on installation. Additionally, to ensure compatability with the largest possible number
-of Ruby interpreters, the C extensions will *never* load under any Ruby other than MRI,
-even when installed.
+All abstractions within this gem can be loaded simply by requiring it:
 
-The following gem builds will be built at every release:
+```ruby
+require 'concurrent'
+```
 
-* concurrent-ruby-x.y.z.gem (pure Ruby)
-* concurrent-ruby-x.y.z-java.gem (JRuby)
-* concurrent-ruby-x.y.z-x86-linux.gem (Linux 32-bit)
-* concurrent-ruby-x.y.z-x86_64-linux.gem (Linux 64-bit)
-* concurrent-ruby-x.y.z-x86-mingw32.gem (Windows 32-bit)
-* concurrent-ruby-x.y.z-x64-mingw32.gem (Windows 64-bit)
-* concurrent-ruby-x.y.z-x86-solaris-2.11.gem (Solaris)
+To reduce the amount of code loaded at runtime, subsets of this gem can be required:
 
-### Installing
+```ruby
+require 'concurrent'                # everything
+
+# groups
+
+require 'concurrent/actor'          # Concurrent::Actor and supporting code
+require 'concurrent/atomics'        # atomic and thread synchronization classes
+require 'concurrent/channels'       # Concurrent::Channel and supporting code
+require 'concurrent/executors'      # Thread pools and other executors
+require 'concurrent/utilities'      # utility methods such as processor count and timers
+
+# individual abstractions
+
+require 'concurrent/agent'          # Concurrent::Agent
+require 'concurrent/async'          # Concurrent::Async
+require 'concurrent/atomic'         # Concurrent::Atomic (formerly the `atomic` gem)
+require 'concurrent/dataflow'       # Concurrent::dataflow
+require 'concurrent/delay'          # Concurrent::Delay
+require 'concurrent/exchanger'      # Concurrent::Exchanger
+require 'concurrent/future'         # Concurrent::Future
+require 'concurrent/ivar'           # Concurrent::IVar
+require 'concurrent/mvar'           # Concurrent::MVar
+require 'concurrent/promise'        # Concurrent::Promise
+require 'concurrent/scheduled_task' # Concurrent::ScheduledTask
+require 'concurrent/timer_task'     # Concurrent::TimerTask
+require 'concurrent/tvar'           # Concurrent::TVar
+```
+
+## Installation
 
 ```shell
 gem install concurrent-ruby
@@ -133,32 +149,33 @@ gem 'concurrent-ruby'
 
 and run `bundle install` from your shell.
 
-### Building
+### C Extensions for MRI
 
-Because we provide pre-compiled gem builds, users should never need to build the gem manually.
-The build process for this gem is completely automated using open source tools. All of
-the automation components are available in the [ruby-concurrency/rake-compiler-dev-box](https://github.com/ruby-concurrency/rake-compiler-dev-box)
-GitHub repository.
-
-This gem will compile native C code under MRI and native Java code under JRuby. It is
-also possible to build a pure-Ruby version. All builds have identical functionality.
-The only difference is performance. Additionally, pure-Ruby classes are always available,
-even when using the native optimizations. Please see the [documentation](http://ruby-concurrency.github.io/concurrent-ruby/)
-for more details.
-
-To build and package the gem using MRI or JRuby, install the necessary build dependencies and run:
+Potential performance improvements may be achieved under MRI by installing optional C extensions.
+To minimize installation errors the C extensions are available in the `concurrent-ruby-ext` extension
+gem. The extension gem lists `concurrent-ruby` as a dependency so it is not necessary to install both.
+Simply install the extension gen:
 
 ```shell
-bundle exec rake compile
-bundle exec rake build
+gem install concurrent-ruby-ext
 ```
 
-To build and package a pure-Ruby gem, on *any* platform and interpreter
-(including MRI and JRuby), run:
+or add the following line to Gemfile:
+
+```ruby
+gem 'concurrent-ruby-ext'
+```
+
+and run `bundle install` from your shell.
+
+In code it is only necessary to
 
 ```shell
-BUILD_PURE_RUBY='true' bundle exec rake build
+require 'concurrent'
 ```
+
+The `concurrent-ruby` gem will automatically detect the presence of the `concurrent-ruby-ext` gem
+and load the appropriate C extensions.
 
 ## Maintainers
 
@@ -167,6 +184,7 @@ BUILD_PURE_RUBY='true' bundle exec rake build
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Lucas Allan](https://github.com/lucasallan)
 * [Petr Chalupa](https://github.com/pitr-ch)
+* [Paweł Obrok](https://github.com/obrok)
 
 ### Contributing
 
