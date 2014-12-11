@@ -214,7 +214,7 @@ module Concurrent
           fail(ArgumentError,
                'cannot reduce number of available_permits below zero')
         end
-        @semaphore.reducePermits(void)
+        @semaphore.reducePermits(reduction)
       end
     end
 
