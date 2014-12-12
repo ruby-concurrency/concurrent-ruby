@@ -28,13 +28,14 @@ module Concurrent
     #   @raise [ArgumentError] if `permits` is not an integer or is less than
     #     one
     #
-    #   @return [True]
+    #   @return [Nil]
     def acquire(permits = 1)
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
       @mutex.synchronize do
         try_acquire_timed(permits, nil)
+        nil
       end
     end
 
@@ -95,7 +96,7 @@ module Concurrent
     #
     #   @raise [ArgumentError] if `permits` is not a number or is less than one
     #
-    #   @return [True]
+    #   @return [Nil]
     def release(permits = 1)
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
@@ -104,7 +105,7 @@ module Concurrent
         @free += permits
         permits.times { @condition.signal }
       end
-      true
+      nil
     end
 
     # @!macro [attach] semaphore_method_reduce_permits
@@ -117,7 +118,7 @@ module Concurrent
     #
     #   @raise [ArgumentError] if `@free` - `@reduction` is less than zero
     #
-    #   @return [True]
+    #   @return [Nil]
     def reduce_permits(reduction)
       unless reduction.is_a?(Fixnum) && reduction >= 0
         fail ArgumentError, 'reduction must be an non-negative integer'
@@ -127,7 +128,7 @@ module Concurrent
              'cannot reduce number of available_permits below zero')
       end
       @mutex.synchronize { @free -= reduction }
-      true
+      nil 
     end
 
     private

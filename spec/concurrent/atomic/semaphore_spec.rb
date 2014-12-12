@@ -15,7 +15,7 @@ shared_examples :semaphore do
     context 'permits available' do
       it 'should return true immediately' do
         result = semaphore.acquire
-        expect(result).to be_truthy
+        expect(result).to be_nil
       end
     end
 
@@ -25,7 +25,7 @@ shared_examples :semaphore do
         Thread.new { sleep(0.2) && semaphore.release }
 
         result = semaphore.acquire
-        expect(result).to be_truthy
+        expect(result).to be_nil
         expect(semaphore.available_permits).to eq 0
       end
     end
@@ -64,10 +64,10 @@ shared_examples :semaphore do
         expect(result).to be_truthy
       end
 
-      it 'acquires after if permits are available within timeout' do
+      it 'acquires when permits are available within timeout' do
         semaphore.drain_permits
         Thread.new { sleep 0.1 && semaphore.release }
-        result = semaphore.try_acquire(1, 0.2)
+        result = semaphore.try_acquire(1, 1)
         expect(result).to be_truthy
       end
 
@@ -155,7 +155,7 @@ module Concurrent
 
   describe Semaphore do
     if jruby?
-      it 'inherits from JavaCountDownLatch' do
+      it 'inherits from JavaSemaphore' do
         expect(Semaphore.ancestors).to include(JavaSemaphore)
       end
     else
