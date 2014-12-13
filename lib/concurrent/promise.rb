@@ -204,6 +204,7 @@ module Concurrent
       @children = []
 
       init_obligation
+      set_deref_options(opts)
     end
 
     # @return [Promise]
