@@ -1,9 +1,13 @@
 ### Next Release v0.7.2 (TBD)
 
+* New `Promise.all?` and `Promise.any?` class methods
 * Renamed `:overflow_policy` on thread pools to `:fallback_policy`
 * Thread pools still accept the `:overflow_policy` option but display a warning
 * Thread pools now implement `fallback_policy` behavior when not running (rather than universally rejecting tasks)
-* Test now run on new Travis build environment
+* Fixed minor `set_deref_options` constructor bug in `Promise` class
+* Numerous non-functional updates to clear warning when running in debug mode
+* Fixed more intermittently failing tests
+* Tests now run on new Travis build environment
 
 ## Current Release v0.7.1 (4 December 2014)
 
