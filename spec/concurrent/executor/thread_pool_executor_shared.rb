@@ -253,12 +253,49 @@ shared_examples :thread_pool_executor do
       end
 
       specify 'a #post task is never executed when the queue is at capacity' do
-        executed = Concurrent::AtomicFixnum.new(0)
-        1000.times do
-          subject.post{ sleep; executed.increment }
+        lock = Mutex.new
+        lock.lock
+
+        latch = Concurrent::CountDownLatch.new(max_threads)
+        
+        initial_executed = Concurrent::AtomicFixnum.new(0)
+        subsequent_executed = Concurrent::AtomicFixnum.new(0)
+
+        # Fill up all the threads (with a task that won't run until
+        # lock.unlock is called)
+        max_threads.times do
+          subject.post{ latch.count_down; lock.lock; initial_executed.increment; lock.unlock }
         end
-        sleep(0.1)
-        expect(executed.value).to be 0
+
+        # Wait for all those tasks to be taken off the queue onto a
+        # worker thread and start executing
+        latch.wait
+        
+        # Fill up the queue (with a task that won't run until
+        # lock.unlock is called)
+        max_queue.times do
+          subject.post{ lock.lock; initial_executed.increment; lock.unlock }
+        end
+
+        # Inject 100 more tasks, which should be dropped without an exception
+        100.times do
+          subject.post{ subsequent_executed.increment; }
+        end
+
+        # Unlock the lock, so that the tasks in the threads and on
+        # the queue can run to completion
+        lock.unlock
+
+        # Wait for all tasks to finish
+        subject.shutdown
+        subject.wait_for_termination
+
+        # The tasks should have run until all the threads and the
+        # queue filled up...
+        expect(initial_executed.value).to be (max_threads + max_queue)
+
+        # ..but been dropped after that
+        expect(subsequent_executed.value).to be 0
       end
 
       specify 'a #<< task is never executed when the queue is at capacity' do
