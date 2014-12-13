@@ -255,15 +255,22 @@ shared_examples :thread_pool_executor do
       specify 'a #post task is never executed when the queue is at capacity' do
         lock = Mutex.new
         lock.lock
+
+        latch = Concurrent::CountDownLatch.new(max_threads)
+        
         initial_executed = Concurrent::AtomicFixnum.new(0)
         subsequent_executed = Concurrent::AtomicFixnum.new(0)
 
         # Fill up all the threads (with a task that won't run until
         # lock.unlock is called)
         max_threads.times do
-          subject.post{ lock.lock; initial_executed.increment; lock.unlock }
+          subject.post{ latch.count_down; lock.lock; initial_executed.increment; lock.unlock }
         end
 
+        # Wait for all those tasks to be taken off the queue onto a
+        # worker thread and start executing
+        latch.wait
+        
         # Fill up the queue (with a task that won't run until
         # lock.unlock is called)
         max_queue.times do
