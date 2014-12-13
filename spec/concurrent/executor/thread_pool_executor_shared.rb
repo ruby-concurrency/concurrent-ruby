@@ -253,28 +253,27 @@ shared_examples :thread_pool_executor do
       end
 
       specify 'a #post task is never executed when the queue is at capacity' do
-        lock = Mutex.new
-        lock.lock
+        all_tasks_posted = Concurrent::Event.new
 
         latch = Concurrent::CountDownLatch.new(max_threads)
         
         initial_executed = Concurrent::AtomicFixnum.new(0)
         subsequent_executed = Concurrent::AtomicFixnum.new(0)
 
-        # Fill up all the threads (with a task that won't run until
-        # lock.unlock is called)
+        # Fill up all the threads (with a task that won't complete until
+        # all tasks are posted)
         max_threads.times do
-          subject.post{ latch.count_down; lock.lock; initial_executed.increment; lock.unlock }
+          subject.post{ latch.count_down; all_tasks_posted.wait ; initial_executed.increment;}
         end
 
         # Wait for all those tasks to be taken off the queue onto a
         # worker thread and start executing
         latch.wait
         
-        # Fill up the queue (with a task that won't run until
-        # lock.unlock is called)
+        # Fill up the queue (with a task that won't complete until
+        # all tasks are posted)
         max_queue.times do
-          subject.post{ lock.lock; initial_executed.increment; lock.unlock }
+          subject.post{ all_tasks_posted.wait; initial_executed.increment; }
         end
 
         # Inject 100 more tasks, which should be dropped without an exception
@@ -282,9 +281,9 @@ shared_examples :thread_pool_executor do
           subject.post{ subsequent_executed.increment; }
         end
 
-        # Unlock the lock, so that the tasks in the threads and on
+        # Trigger the event, so that the tasks in the threads and on
         # the queue can run to completion
-        lock.unlock
+        all_tasks_posted.set
 
         # Wait for all tasks to finish
         subject.shutdown
@@ -299,27 +298,71 @@ shared_examples :thread_pool_executor do
       end
 
       specify 'a #<< task is never executed when the queue is at capacity' do
-        executed = Concurrent::AtomicFixnum.new(0)
-        1000.times do
-          subject << proc { sleep; executed.increment }
+        all_tasks_posted = Concurrent::Event.new
+
+        latch = Concurrent::CountDownLatch.new(max_threads)
+        
+        initial_executed = Concurrent::AtomicFixnum.new(0)
+        subsequent_executed = Concurrent::AtomicFixnum.new(0)
+
+        # Fill up all the threads (with a task that won't complete until
+        # all tasks are posted)
+        max_threads.times do
+          subject << proc { latch.count_down; all_tasks_posted.wait ; initial_executed.increment;}
         end
-        sleep(0.1)
-        expect(executed.value).to be 0
+
+        # Wait for all those tasks to be taken off the queue onto a
+        # worker thread and start executing
+        latch.wait
+        
+        # Fill up the queue (with a task that won't complete until
+        # all tasks are posted)
+        max_queue.times do
+          subject << proc { all_tasks_posted.wait; initial_executed.increment; }
+        end
+
+        # Inject 100 more tasks, which should be dropped without an exception
+        100.times do
+          subject << proc { subsequent_executed.increment; }
+        end
+
+        # Trigger the event, so that the tasks in the threads and on
+        # the queue can run to completion
+        all_tasks_posted.set
+
+        # Wait for all tasks to finish
+        subject.shutdown
+        subject.wait_for_termination
+
+        # The tasks should have run until all the threads and the
+        # queue filled up...
+        expect(initial_executed.value).to be (max_threads + max_queue)
+
+        # ..but been dropped after that
+        expect(subsequent_executed.value).to be 0
       end
 
       specify 'a #post task is never executed when the executor is shutting down' do
         executed = Concurrent::AtomicFixnum.new(0)
+
         subject.shutdown
-        subject.post{ sleep; executed.increment }
-        sleep(0.1)
+        subject.post{ executed.increment }
+
+        # Wait for all tasks to finish
+        subject.wait_for_termination
+
         expect(executed.value).to be 0
       end
 
       specify 'a #<< task is never executed when the executor is shutting down' do
         executed = Concurrent::AtomicFixnum.new(0)
+
         subject.shutdown
         subject << proc { executed.increment }
-        sleep(0.1)
+
+        # Wait for all tasks to finish
+        subject.wait_for_termination
+
         expect(executed.value).to be 0
       end
 
