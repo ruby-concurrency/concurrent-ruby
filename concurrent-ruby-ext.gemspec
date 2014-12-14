@@ -1,6 +1,10 @@
+$:.push File.join(File.dirname(__FILE__), 'lib')
+
+require 'concurrent/version'
+
 Gem::Specification.new do |s|
   s.name        = 'concurrent-ruby-ext'
-  s.version     = '0.1.0.pre1'
+  s.version     = Concurrent::EXT_VERSION
   s.platform    = Gem::Platform::RUBY
   s.author      = "Jerry D'Antonio"
   s.email       = 'jerry.dantonio@gmail.com'
