@@ -65,8 +65,9 @@ Rake::Task[:clean].enhance do
   rm_rf 'tmp'
   rm_rf 'lib/1.9'
   rm_rf 'lib/2.0'
-  rm_f Dir.glob('./lib/*.jar')
+  rm_f Dir.glob('./**/*.so')
   rm_f Dir.glob('./**/*.bundle')
+  rm_f Dir.glob('./lib/*.jar')
   mkdir_p 'pkg'
 end
 

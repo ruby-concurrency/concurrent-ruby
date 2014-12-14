@@ -78,7 +78,7 @@ elsif defined? Concurrent::RbxAtomic
   class Concurrent::Atomic < Concurrent::RbxAtomic
   end
 
-elsif defined?(Concurrent::CAtomic)
+elsif defined? Concurrent::CAtomic
 
   # @!macro atomic_reference
   class Concurrent::Atomic < Concurrent::CAtomic
