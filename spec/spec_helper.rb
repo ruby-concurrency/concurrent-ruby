@@ -8,11 +8,15 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
 
 SimpleCov.start do
   project_name 'concurrent-ruby'
+  add_filter '/build-tests/'
   add_filter '/coverage/'
   add_filter '/doc/'
+  add_filter '/examples/'
   add_filter '/pkg/'
   add_filter '/spec/'
   add_filter '/tasks/'
+  add_filter '/yard-template/'
+  add_filter '/yardoc/'
 end
 
 require 'concurrent'
