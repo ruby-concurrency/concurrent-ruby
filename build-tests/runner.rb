@@ -30,6 +30,8 @@ TEST_FILES = Dir["#{TEST_PATH}/*_spec.rb"]
 
 RSPEC = "rspec --default-path #{TEST_PATH} -fd --color --seed 0"
 
+INSTALL_RSPEC_COMMAND = 'gem install rspec'
+
 UNINSTALL_GEMS_COMMAND = <<-CMD
 gem uninstall -q -a -I concurrent-ruby-ext
 gem uninstall -q -a -I concurrent-ruby
@@ -85,6 +87,9 @@ def run_test_suite(files, ext, platform = '')
 
   ok = system(UNINSTALL_GEMS_COMMAND)
 end
+
+ok = system(INSTALL_RSPEC_COMMAND)
+ok = system(UNINSTALL_GEMS_COMMAND)
 
 puts SUITE_BREAK
 run_test_suite(TEST_FILES, false)
