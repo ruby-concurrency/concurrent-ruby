@@ -109,6 +109,8 @@ module Concurrent
     end
 
     # @!macro [attach] semaphore_method_reduce_permits
+    # 
+    #   @api private
     #
     #   Shrinks the number of available permits by the indicated reduction.
     #
@@ -122,10 +124,6 @@ module Concurrent
     def reduce_permits(reduction)
       unless reduction.is_a?(Fixnum) && reduction >= 0
         fail ArgumentError, 'reduction must be an non-negative integer'
-      end
-      unless @free - reduction >= 0
-        fail(ArgumentError,
-             'cannot reduce number of available_permits below zero')
       end
       @mutex.synchronize { @free -= reduction }
       nil 
@@ -210,10 +208,6 @@ module Concurrent
       def reduce_permits(reduction)
         unless reduction.is_a?(Fixnum) && reduction >= 0
           fail ArgumentError, 'reduction must be an non-negative integer'
-        end
-        unless @semaphore.availablePermits - reduction >= 0
-          fail(ArgumentError,
-               'cannot reduce number of available_permits below zero')
         end
         @semaphore.reducePermits(reduction)
       end

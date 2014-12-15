@@ -86,10 +86,9 @@ shared_examples :semaphore do
       }.to raise_error(ArgumentError)
     end
 
-    it 'raises ArgumentError when reducing below zero' do
-      expect {
-        semaphore.reduce_permits 1000
-      }.to raise_error(ArgumentError)
+    it 'reduces permits below zero' do
+      semaphore.reduce_permits 1003
+      expect(semaphore.available_permits).to eq -1000
     end
 
     it 'reduces permits' do
