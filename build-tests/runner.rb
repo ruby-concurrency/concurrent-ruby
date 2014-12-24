@@ -33,8 +33,8 @@ RSPEC = "rspec --default-path #{TEST_PATH} -fd --color --seed 0"
 INSTALL_RSPEC_COMMAND = 'gem install rspec'
 
 UNINSTALL_GEMS_COMMAND = <<-CMD
-gem uninstall -q -a -I concurrent-ruby-ext
-gem uninstall -q -a -I concurrent-ruby
+gem uninstall -q -a -I concurrent-ruby-ext && \
+gem uninstall -q -a -I concurrent-ruby && \
 gem uninstall -q -a -I ref
 CMD
 
@@ -81,7 +81,11 @@ def run_test_suite(files, ext, platform = '')
   ok = system(cmd)
 
   files.each do |file|
-    cmd = "TEST_PLATFORM='#{test_platform}' #{RSPEC} #{file}"
+    if windows?
+      cmd = "set TEST_PLATFORM='#{test_platform}' && #{RSPEC} #{file}"
+    else
+      cmd = "TEST_PLATFORM='#{test_platform}' #{RSPEC} #{file}"
+    end
     ok = system(cmd)
   end
 
