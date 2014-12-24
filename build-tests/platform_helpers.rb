@@ -1,5 +1,10 @@
 require 'rbconfig'
 
+def windows?
+  host_os = RbConfig::CONFIG['host_os']
+  host_os =~ /mswin32/i || host_os =~ /mingw32/i
+end
+
 def mri?(engine = RUBY_ENGINE)
   engine == 'ruby'
 end
