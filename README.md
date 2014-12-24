@@ -54,19 +54,19 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 ### High-level, general-purpose asynchronous concurrency abstractions
 
-* [Actor](./doc/actor/main.md): Implements the Actor Model, where concurrent actors exchange messages. 
-* [Agent](./doc/agent.md): A single atomic value that represents an identity.
-* [Async](./doc/async.md): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
-* [Future](./doc/future.md): An asynchronous operation that produces a value.
-  * [Dataflow](./doc/dataflow.md): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
-* [Promise](./doc/promise.md): Similar to Futures, with more features. 
-* [ScheduledTask](./doc/scheduled_task.md): Like a Future scheduled for a specific future time. 
+* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements the Actor Model, where concurrent actors exchange messages.
+* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
+* [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
+* [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
+  * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Dataflow.html): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
+* [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
+* [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
 
 
 ### Java-inspired ThreadPools and other executors
 
-* See [ThreadPool](./doc/thread_pools.md) overview, which also contains a list of other Executors available.
+* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html) overview, which also contains a list of other Executors available.
 
 ### Thread-safe Observers
 
@@ -94,7 +94,7 @@ Lower-level abstractions mainly used as building blocks.
 * [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
 * [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
 * [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
-* [software transactional memory](./doc/tvar.md) (TVar)
+* [software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 
 
 
