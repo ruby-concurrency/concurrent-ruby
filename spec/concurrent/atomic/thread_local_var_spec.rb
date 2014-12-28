@@ -51,20 +51,25 @@ module Concurrent
           expect(var.instance_variable_get(:@storage).keys.size).to be == 1
         end
 
+        # TODO this test is really bad, but better than nothing. 
         it 'does not leave values behind when bind is not used' do
-          if rbx?
-            pending('fails on Rbx, possibly due to test dependency on GC')
-          end
-          tries = Array.new(10) do
+          # TODO find out why it fails from the begging sometimes, hence the 3 tries
+          tries = Array.new(3) do
             var = ThreadLocalVar.new(0)
             10.times.map do |i|
               Thread.new { var.value = i; var.value }
             end.each(&:join)
             var.value = 0
-            GC.start
-            var.instance_variable_get(:@storage).keys.size == 1
+            # TODO find out why long sleep is necessary, does it take longer for threads to be collected?
+            sleep 1
+            if rbx?
+              GC.run true # force GC run
+            else
+              GC.start
+            end
+            var.instance_variable_get(:@storage).keys.size
           end
-          expect(tries.any?).to be_truthy
+          expect(tries.any? { |v| v == 1 }).to be_truthy
         end
       end
     end
