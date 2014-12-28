@@ -10,5 +10,6 @@
 ./lib/**/*.rb
 ./ext/concurrent_ruby_ext/**/*.c
 -
+doc/thread_pools.md
 README.md
 LICENSE.txt
