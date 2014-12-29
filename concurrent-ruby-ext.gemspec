@@ -4,7 +4,7 @@ require 'concurrent/version'
 
 Gem::Specification.new do |s|
   s.name        = 'concurrent-ruby-ext'
-  s.version     = Concurrent::EXT_VERSION
+  s.version     = Concurrent::VERSION
   s.platform    = Gem::Platform::RUBY
   s.author      = "Jerry D'Antonio"
   s.email       = 'jerry.dantonio@gmail.com'
@@ -14,8 +14,8 @@ Gem::Specification.new do |s|
   s.date        = Time.now.strftime('%Y-%m-%d')
 
   s.description = <<-EOF
-    Modern concurrency tools including agents, futures, promises, thread pools, actors, supervisors, and more.
-    Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
+    C extensions to optimize the concurrent-ruby gem when running under MRI.
+    Please see http://concurrent-ruby.com for more information.
   EOF
 
   s.files            = Dir['ext/**/*.{h,c,cpp}']
@@ -30,5 +30,5 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 1.9.3'
 
-  s.add_runtime_dependency 'concurrent-ruby', '~> 0.8.0.pre1'
+  s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION}"
 end
