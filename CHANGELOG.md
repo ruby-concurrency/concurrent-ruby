@@ -1,5 +1,6 @@
 ### Next Release v0.7.2 (TBD)
 
+* New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
 * New `Promise.all?` and `Promise.any?` class methods
 * Renamed `:overflow_policy` on thread pools to `:fallback_policy`
 * Thread pools still accept the `:overflow_policy` option but display a warning

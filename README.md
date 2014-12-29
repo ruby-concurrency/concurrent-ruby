@@ -63,7 +63,6 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
 
-
 ### Java-inspired ThreadPools and other executors
 
 * See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
@@ -75,6 +74,7 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [CopyOnWriteObserverSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CopyOnWriteObserverSet.html)
 
 ### Thread synchronization classes and algorithms
+
 Lower-level abstractions mainly used as building blocks. 
 
 * [condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html)
@@ -82,10 +82,12 @@ Lower-level abstractions mainly used as building blocks.
 * [cyclic barrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
 * [event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
 * [exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
+* [semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
 * [timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
 * [timer](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timer-class_method)
 
 ### Thread-safe variables
+
 Lower-level abstractions mainly used as building blocks. 
 
 * [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html)
@@ -95,8 +97,6 @@ Lower-level abstractions mainly used as building blocks.
 * [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
 * [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
 * [software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
-
-
 
 ## Installing and Building
 
