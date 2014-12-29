@@ -156,7 +156,7 @@ To minimize installation errors the C extensions are available in the `concurren
 gem. The extension gem lists `concurrent-ruby` as a dependency so it is not necessary to install both.
 Simply install the extension gen:
 
-```shell
+```ruby
 gem install concurrent-ruby-ext
 ```
 
@@ -170,7 +170,7 @@ and run `bundle install` from your shell.
 
 In code it is only necessary to
 
-```shell
+```ruby
 require 'concurrent'
 ```
 
