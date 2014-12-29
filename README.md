@@ -66,7 +66,7 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 ### Java-inspired ThreadPools and other executors
 
-* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html) overview, which also contains a list of other Executors available.
+* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
 
 ### Thread-safe Observers
 

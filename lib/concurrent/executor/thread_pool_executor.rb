@@ -49,8 +49,6 @@ module Concurrent
     #   * `:discard`: Discard the task and return false.
     #   * `:caller_runs`: Execute the task on the calling thread.
     #
-    #   {include:file:doc/thread_pools.md}
-    #
     #   @note When running on the JVM (JRuby) this class will inherit from `JavaThreadPoolExecutor`.
     #     On all other platforms it will inherit from `RubyThreadPoolExecutor`.
     #
