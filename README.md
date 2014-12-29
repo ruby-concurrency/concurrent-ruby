@@ -177,6 +177,11 @@ require 'concurrent'
 The `concurrent-ruby` gem will automatically detect the presence of the `concurrent-ruby-ext` gem
 and load the appropriate C extensions.
 
+#### Note For gem developers
+
+No gems should depend on `concurrent-ruby-ext`. Doing so will force C extensions on your users.
+The best practice is to depend on `concurrent-ruby` and let users to decide if they want C extensions.
+
 ## Maintainers
 
 * [Jerry D'Antonio](https://github.com/jdantonio)
