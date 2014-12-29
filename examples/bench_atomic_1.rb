@@ -6,10 +6,11 @@ require 'optparse'
 require 'thread'
 require 'benchmark'
 
-begin
-  require 'concurrent-ext'
-rescue LoadError
-  require 'concurrent'
+require 'concurrent/atomic'
+
+unless defined? Concurrent::CAtomic
+  warn "[ERROR] C extensions not loaded!"
+  exit(1)
 end
 
 Thread.abort_on_exception = true
