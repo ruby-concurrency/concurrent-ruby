@@ -48,7 +48,7 @@ end
 def extension_gem_name(platform = RUBY_PLATFORM)
   platform = EXT_PLATFORMS.fetch(platform, '')
   platform = '-' + platform unless platform.empty?
-  "concurrent-ruby-ext-#{Concurrent::EXT_VERSION}#{platform}.gem"
+  "concurrent-ruby-ext-#{Concurrent::VERSION}#{platform}.gem"
 end
 
 def install_gems_command(ext, platform = '')
