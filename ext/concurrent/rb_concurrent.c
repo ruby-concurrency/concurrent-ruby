@@ -11,9 +11,9 @@ static VALUE rb_cAtomic;
 static VALUE rb_cAtomicBoolean;
 static VALUE rb_cAtomicFixnum;
 
-// Init_concurrent_ruby_ext
+// Init_extension
 
-void Init_concurrent_ruby_ext() {
+void Init_extension() {
 
   // define modules and classes
   rb_mConcurrent = rb_define_module("Concurrent");
