@@ -1,11 +1,16 @@
 module Concurrent
-  
+
   @@c_ext_loaded ||= false
   @@java_ext_loaded ||= false
 
   # @!visibility private
   def self.allow_c_extensions?
     defined?(RUBY_ENGINE) && RUBY_ENGINE == 'ruby'
+  end
+
+  # @!visibility private
+  def self.jruby?
+    RUBY_PLATFORM == 'java'
   end
 
   if allow_c_extensions? && !@@c_ext_loaded
@@ -21,7 +26,7 @@ module Concurrent
         warn 'Performance on MRI may be improved with the concurrent-ruby-ext gem. Please see http://concurrent-ruby.com'
       end
     end
-  elsif RUBY_PLATFORM == 'java' && !@@java_ext_loaded
+  elsif jruby? && !@@java_ext_loaded
     begin
       require 'concurrent/extension'
       @@java_ext_loaded = true
