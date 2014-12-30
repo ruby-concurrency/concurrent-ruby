@@ -1,6 +1,7 @@
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXT_GEMSPEC = Gem::Specification.load('concurrent-ruby-ext.gemspec')
-EXTENSION_NAME = 'concurrent_ruby_ext'
+GEM_NAME = 'concurrent-ruby'
+EXTENSION_NAME = 'extension'
 
 $:.push File.join(File.dirname(__FILE__), 'lib')
 require 'extension_helper'
@@ -18,15 +19,10 @@ Dir.glob('tasks/**/*.rake').each do |rakefile|
   safe_load rakefile
 end
 
-#desc 'Run benchmarks'
-task :bench do
-  exec 'ruby -Ilib -Iext examples/bench_atomic.rb'
-end
-
 if defined?(JRUBY_VERSION)
   require 'rake/javaextensiontask'
 
-  Rake::JavaExtensionTask.new(EXTENSION_NAME, CORE_GEMSPEC) do |ext|
+  Rake::JavaExtensionTask.new('concurrent_ruby_ext', CORE_GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 
@@ -34,9 +30,9 @@ elsif Concurrent.allow_c_extensions?
   require 'rake/extensiontask'
 
   Rake::ExtensionTask.new(EXTENSION_NAME, EXT_GEMSPEC) do |ext|
-    ext.ext_dir = "ext/#{EXTENSION_NAME}"
-    ext.cross_compile = true
-    ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
+    ext.ext_dir = 'ext/concurrent'
+    ext.lib_dir = 'lib/concurrent'
+    ext.source_pattern = '*.{c,h}'
   end
 
   ENV['RUBY_CC_VERSION'].to_s.split(':').each do |ruby_version|
@@ -56,11 +52,10 @@ elsif Concurrent.allow_c_extensions?
     end
   end
 else
-  task :clean
   task :compile
 end
 
-Rake::Task[:clean].enhance do
+task :clean do
   rm_rf 'pkg/classes'
   rm_rf 'tmp'
   rm_rf 'lib/1.9'
@@ -84,29 +79,39 @@ rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
 end
 
-namespace :build do
-  
-  build_deps = [:clean]
-  build_deps << :compile if defined?(JRUBY_VERSION)
+build_deps = [:clean]
+build_deps << :compile if defined?(JRUBY_VERSION)
 
-  desc 'Build the concurrent-ruby gem'
+build_tasks = ['build:core']
+build_tasks += ['build:ext', 'build:native'] if Concurrent.allow_c_extensions?
+
+CoreGem = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
+ExtensionGem = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
+NativeGem = "#{GEM_NAME}-ext-#{Concurrent::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
+
+namespace :build do
+
+  desc "Build #{CoreGem} into the pkg directory"
   task :core => build_deps do
     sh "gem build #{CORE_GEMSPEC.name}.gemspec"
     sh 'mv *.gem pkg/'
-    Rake::Task[:clean].execute
   end
 
   if Concurrent.allow_c_extensions?
-    desc 'Build the concurrent-ruby-ext gem'
-    task :ext => [:clean, :compile] do
+
+    desc "Build #{ExtensionGem}.gem into the pkg directory"
+    task :ext => [:clean] do
       sh "gem build #{EXT_GEMSPEC.name}.gemspec"
       sh 'mv *.gem pkg/'
-      Rake::Task[:clean].execute
     end
-  else
-    task :ext
+
+    desc "Build #{NativeGem} into the pkg directory"
+    task :native do
+      sh "gem compile pkg/#{ExtensionGem}"
+      sh 'mv *.gem pkg/'
+    end
   end
 end
 
 desc 'Build all gems for this platform'
-task :build => ['build:core', 'build:ext']
+task :build => build_tasks

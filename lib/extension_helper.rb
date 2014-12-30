@@ -10,12 +10,12 @@ module Concurrent
 
   if allow_c_extensions? && !@@c_ext_loaded
     begin
-      require 'concurrent_ruby_ext'
+      require 'concurrent/extension'
       @@c_ext_loaded = true
     rescue LoadError
       # may be a Windows cross-compiled native gem
       begin
-        require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
+        require "#{RUBY_VERSION[0..2]}/concurrent/extension"
         @@c_ext_loaded = true
       rescue LoadError
         warn 'Performance on MRI may be improved with the concurrent-ruby-ext gem. Please see http://concurrent-ruby.com'
@@ -23,7 +23,7 @@ module Concurrent
     end
   elsif RUBY_PLATFORM == 'java' && !@@java_ext_loaded
     begin
-      require 'concurrent_ruby_ext'
+      require 'concurrent/extension'
       @@java_ext_loaded = true
     rescue LoadError
       #warn 'Attempted to load Java extensions on unsupported platform. Continuing with pure-Ruby.'
