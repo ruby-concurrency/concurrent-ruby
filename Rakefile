@@ -1,16 +1,31 @@
+#!/usr/bin/env rake
+
+require_relative './lib/extension_helper'
+
+## load the two gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXT_GEMSPEC = Gem::Specification.load('concurrent-ruby-ext.gemspec')
+
+## constants used for compile/build tasks
+
 GEM_NAME = 'concurrent-ruby'
 EXTENSION_NAME = 'extension'
 
-$:.push File.join(File.dirname(__FILE__), 'lib')
-require 'extension_helper'
+if Concurrent.jruby?
+  CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
+else
+  CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
+  EXTENSION_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
+  NATIVE_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
+end
+
+## safely load all the rake tasks in the `tasks` directory
 
 def safe_load(file)
   begin
     load file
   rescue LoadError => ex
-    puts 'Error loading rake tasks, but will continue...'
+    puts "Error loading rake tasks from '#{file}' but will continue..."
     puts ex.message
   end
 end
@@ -19,17 +34,21 @@ Dir.glob('tasks/**/*.rake').each do |rakefile|
   safe_load rakefile
 end
 
-if defined?(JRUBY_VERSION)
+if Concurrent.jruby?
+
+  ## create the compile task for the JRuby-specific gem
   require 'rake/javaextensiontask'
 
-  Rake::JavaExtensionTask.new('concurrent_ruby_ext', CORE_GEMSPEC) do |ext|
+  Rake::JavaExtensionTask.new('java', CORE_GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 
 elsif Concurrent.allow_c_extensions?
+
+  ## create the compile tasks for the extension gem
   require 'rake/extensiontask'
 
-  Rake::ExtensionTask.new(EXTENSION_NAME, EXT_GEMSPEC) do |ext|
+  Rake::ExtensionTask.new('ext', EXT_GEMSPEC) do |ext|
     ext.ext_dir = 'ext/concurrent'
     ext.lib_dir = 'lib/concurrent'
     ext.source_pattern = '*.{c,h}'
@@ -52,6 +71,7 @@ elsif Concurrent.allow_c_extensions?
     end
   end
 else
+  ## create an empty compile task
   task :compile
 end
 
@@ -66,6 +86,46 @@ task :clean do
   mkdir_p 'pkg'
 end
 
+## create build tasks tailored to current platform
+
+namespace :build do
+
+  build_deps = [:clean]
+  build_deps << :compile if Concurrent.jruby?
+
+  desc "Build #{CORE_GEM} into the pkg directory"
+  task :core => build_deps do
+    sh "gem build #{CORE_GEMSPEC.name}.gemspec"
+    sh 'mv *.gem pkg/'
+  end
+
+  unless Concurrent.jruby?
+    desc "Build #{EXTENSION_GEM} into the pkg directory"
+    task :ext => [:clean] do
+      sh "gem build #{EXT_GEMSPEC.name}.gemspec"
+      sh 'mv *.gem pkg/'
+    end
+  end
+
+  if Concurrent.allow_c_extensions?
+    desc "Build #{NATIVE_GEM} into the pkg directory"
+    task :native do
+      sh "gem compile pkg/#{EXTENSION_GEM}"
+      sh 'mv *.gem pkg/'
+    end
+  end
+end
+
+if Concurrent.jruby?
+  desc 'Build JRuby-specific core gem (alias for `build:core`)'
+  task :build => ['build:core']
+else
+  desc 'Build core and extension gems'
+  task :build => ['build:core', 'build:ext']
+end
+
+## the RSpec task that compiles extensions when available
+
 begin
   require 'rspec'
   require 'rspec/core/rake_task'
@@ -78,40 +138,3 @@ begin
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
 end
-
-build_deps = [:clean]
-build_deps << :compile if defined?(JRUBY_VERSION)
-
-build_tasks = ['build:core']
-build_tasks += ['build:ext', 'build:native'] if Concurrent.allow_c_extensions?
-
-CoreGem = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
-ExtensionGem = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
-NativeGem = "#{GEM_NAME}-ext-#{Concurrent::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
-
-namespace :build do
-
-  desc "Build #{CoreGem} into the pkg directory"
-  task :core => build_deps do
-    sh "gem build #{CORE_GEMSPEC.name}.gemspec"
-    sh 'mv *.gem pkg/'
-  end
-
-  if Concurrent.allow_c_extensions?
-
-    desc "Build #{ExtensionGem}.gem into the pkg directory"
-    task :ext => [:clean] do
-      sh "gem build #{EXT_GEMSPEC.name}.gemspec"
-      sh 'mv *.gem pkg/'
-    end
-
-    desc "Build #{NativeGem} into the pkg directory"
-    task :native do
-      sh "gem compile pkg/#{ExtensionGem}"
-      sh 'mv *.gem pkg/'
-    end
-  end
-end
-
-desc 'Build all gems for this platform'
-task :build => build_tasks
