@@ -37,7 +37,7 @@
 
 ### Supported Ruby versions
 
-MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x are supported.
+MRI 1.9.3, 2.0, 2.1, 2.2, JRuby (1.9 mode), and Rubinius 2.x are supported.
 This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
 
 ## Features & Documentation
@@ -181,6 +181,33 @@ and load the appropriate C extensions.
 
 No gems should depend on `concurrent-ruby-ext`. Doing so will force C extensions on your users.
 The best practice is to depend on `concurrent-ruby` and let users to decide if they want C extensions.
+
+### Building
+
+All published versions of this gem (core, extension, and several platform-specific packages) are compiled,
+packaged, tested, and published using an open, [automated process](https://github.com/ruby-concurrency/rake-compiler-dev-box).
+This process can also be used to create pre-compiled binaries of the extension gem for virtally
+any platform. *Documentation is forthcoming...*
+
+```
+*MRI only*
+rake build:native       # Build concurrent-ruby-ext-<version>-<platform>.gem into the pkg directory
+
+*JRuby only*
+rake build              # Build JRuby-specific core gem (alias for `build:core`)
+rake build:core         # Build concurrent-ruby-<version>-java.gem into the pkg directory
+
+*All except JRuby*
+rake build              # Build core and extension gems
+rake build:core         # Build concurrent-ruby-<version>.gem into the pkg directory
+rake build:ext          # Build concurrent-ruby-ext-<version>.gem into the pkg directory
+
+*All*
+rake clean              # Remove any temporary products
+rake clobber            # Remove any generated file
+rake compile            # Compile all the extensions
+rake compile:extension  # Compile extension
+```
 
 ## Maintainers
 
