@@ -48,10 +48,12 @@ elsif Concurrent.allow_c_extensions?
   ## create the compile tasks for the extension gem
   require 'rake/extensiontask'
 
-  Rake::ExtensionTask.new('ext', EXT_GEMSPEC) do |ext|
+  Rake::ExtensionTask.new(EXTENSION_NAME, EXT_GEMSPEC) do |ext|
     ext.ext_dir = 'ext/concurrent'
     ext.lib_dir = 'lib/concurrent'
     ext.source_pattern = '*.{c,h}'
+    ext.cross_compile = true
+    ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
   end
 
   ENV['RUBY_CC_VERSION'].to_s.split(':').each do |ruby_version|
