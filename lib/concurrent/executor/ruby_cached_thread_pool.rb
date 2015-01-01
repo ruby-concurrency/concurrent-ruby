@@ -8,18 +8,18 @@ module Concurrent
     # Create a new thread pool.
     #
     # @param [Hash] opts the options defining pool behavior.
-    #   number of seconds a thread may be idle before it is reclaimed
+    # @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
     #
-    # @raise [ArgumentError] if `overflow_policy` is not a known policy
+    # @raise [ArgumentError] if `fallback_policy` is not a known policy
     def initialize(opts = {})
-      overflow_policy = opts.fetch(:overflow_policy, :abort)
+      fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
 
-      raise ArgumentError.new("#{overflow_policy} is not a valid overflow policy") unless OVERFLOW_POLICIES.include?(overflow_policy)
+      raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(fallback_policy)
 
       opts = opts.merge(
         min_threads: 0,
         max_threads: DEFAULT_MAX_POOL_SIZE,
-        overflow_policy: overflow_policy,
+        fallback_policy: fallback_policy,
         max_queue: DEFAULT_MAX_QUEUE_SIZE,
         idletime: DEFAULT_THREAD_IDLETIMEOUT
       )

@@ -1,4 +1,16 @@
-### Upcoming Release v0.7.1 (TBD)
+### Next Release v0.7.2 (TBD)
+
+* New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
+* New `Promise.all?` and `Promise.any?` class methods
+* Renamed `:overflow_policy` on thread pools to `:fallback_policy`
+* Thread pools still accept the `:overflow_policy` option but display a warning
+* Thread pools now implement `fallback_policy` behavior when not running (rather than universally rejecting tasks)
+* Fixed minor `set_deref_options` constructor bug in `Promise` class
+* Numerous non-functional updates to clear warning when running in debug mode
+* Fixed more intermittently failing tests
+* Tests now run on new Travis build environment
+
+## Current Release v0.7.1 (4 December 2014)
 
 Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/issues/142) for more information on the next planned release.
 
@@ -14,10 +26,12 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Prevent `Actor` from using an `ImmediateExecutor` (causes deadlock)
 * Added missing synchronizations to `TimerSet`
 * Fixed bug with return value of `Concurrent::Actor::Utils::Pool#ask`
+* Fixed timing bug in `TimerTask`
+* Fixed bug when creating a `JavaThreadPoolExecutor` with minimum pool size of zero
 * Removed confusing warning when not using native extenstions
 * Improved documentation
 
-## Current Release v0.7.0 (13 August 2014)
+### Release v0.7.0 (13 August 2014)
 
 * Merge the [atomic](https://github.com/ruby-concurrency/atomic) gem
   - Pure Ruby `MutexAtomic` atomic reference class

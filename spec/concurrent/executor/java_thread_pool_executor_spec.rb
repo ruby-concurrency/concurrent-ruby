@@ -19,7 +19,7 @@ if Concurrent::TestHelpers.jruby?
           max_threads: 5,
           idletime: 60,
           max_queue: 10,
-          overflow_policy: :discard
+          fallback_policy: :discard
         )
       end
 
@@ -36,7 +36,7 @@ if Concurrent::TestHelpers.jruby?
             max_threads: 5,
             idletime: 60,
             max_queue: 10,
-            overflow_policy: :abort
+            fallback_policy: :abort
           )
         end
 
@@ -49,7 +49,7 @@ if Concurrent::TestHelpers.jruby?
             max_threads: 5,
             idletime: 60,
             max_queue: 10,
-            overflow_policy: :discard
+            fallback_policy: :discard
           )
         end
 
@@ -62,7 +62,7 @@ if Concurrent::TestHelpers.jruby?
             max_threads: 5,
             idletime: 60,
             max_queue: 10,
-            overflow_policy: :caller_runs
+            fallback_policy: :caller_runs
           )
         end
       end

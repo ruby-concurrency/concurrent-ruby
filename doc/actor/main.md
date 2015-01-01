@@ -29,6 +29,40 @@ Concurrency is hard to get right, actors are one of many ways how to simplify th
 
 ## Quick example
 
+An example:
+
+```ruby
+class Counter < Concurrent::Actor::Context
+  # Include context of an actor which gives this class access to reference
+  # and other information about the actor
+
+  # use initialize as you wish
+  def initialize(initial_value)
+    @count = initial_value
+  end
+
+  # override on_message to define actor's behaviour
+  def on_message(message)
+    if Integer === message
+      @count += message
+    end
+  end
+end #
+
+# Create new actor naming the instance 'first'.
+# Return value is a reference to the actor, the actual actor is never returned.
+counter = Counter.spawn(:first, 5)
+
+# Tell a message and forget returning self.
+counter.tell(1)
+counter << 1
+# (First counter now contains 7.)
+
+# Send a messages asking for a result.
+counter.ask(0).class
+counter.ask(0).value
+```
+
 {include:file:doc/actor/quick.out.rb}
 
 ## Spawning actors

@@ -40,16 +40,14 @@ module Concurrent
     #   * `idletime`: The number of seconds that a thread may be idle before being reclaimed.
     #   * `max_queue`: The maximum number of tasks that may be waiting in the work queue at
     #     any one time. When the queue size reaches `max_queue` subsequent tasks will be
-    #     rejected in accordance with the configured `overflow_policy`.
-    #   * `overflow_policy`: The policy defining how rejected tasks are handled.    #
+    #     rejected in accordance with the configured `fallback_policy`.
+    #   * `fallback_policy`: The policy defining how rejected tasks are handled.    #
     #
-    #   Three overflow policies are supported:
+    #   Three fallback policies are supported:
     #
     #   * `:abort`: Raise a `RejectedExecutionError` exception and discard the task.
-    #   * `:discard`: Silently discard the task and return `nil` as the task result.
+    #   * `:discard`: Discard the task and return false.
     #   * `:caller_runs`: Execute the task on the calling thread.
-    #
-    #   {include:file:doc/thread_pools.md}
     #
     #   @note When running on the JVM (JRuby) this class will inherit from `JavaThreadPoolExecutor`.
     #     On all other platforms it will inherit from `RubyThreadPoolExecutor`.

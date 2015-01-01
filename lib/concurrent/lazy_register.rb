@@ -49,7 +49,7 @@ module Concurrent
     # @return self
     # @param [Object] key
     def unregister(key)
-      @data.update { |h| h.dup.tap { |h| h.delete(key) } }
+      @data.update { |h| h.dup.tap { |j| j.delete(key) } }
       self
     end
 

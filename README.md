@@ -35,115 +35,68 @@
   </tr>
 </table>
 
-## Features & Documentation
-
-Please see the [Concurrent Ruby Wiki](https://github.com/ruby-concurrency/concurrent-ruby/wiki)
-or the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
-for more information or join our [mailing list](http://groups.google.com/group/concurrent-ruby).
-
-There are many concurrency abstractions in this library. These abstractions can be broadly categorized
-into several general groups:
-
-* Asynchronous concurrency abstractions including
-  [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html),
-  [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html),
-  [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html),
-  [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html),
-  [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html),
-  and [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html) 
-* Fast, light-weight [Actor model](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html) implementation. 
-* Thread-safe variables including
-  [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html),
-  [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html),
-  [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html),
-  and [software transactional memory](https://github.com/ruby-concurrency/concurrent-ruby/wiki/TVar-(STM))
-* Thread synchronization classes and algorithms including
-  [condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html),
-  [countdown latch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html),
-  [dataflow](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Dataflow), 
-  [event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html),
-  [exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html),
-  and [timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
-* Java-inspired [executors](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Thread%20Pools) (thread pools and more)
-* [And many more](http://ruby-concurrency.github.io/concurrent-ruby/index.html)...
-
-### Semantic Versioning
-
-This gem adheres to the rules of [semantic versioning](http://semver.org/).
-
 ### Supported Ruby versions
 
-MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x.
+MRI 1.9.3, 2.0, 2.1, JRuby (1.9 mode), and Rubinius 2.x are supported.
 Although native code is used for performance optimizations on some platforms, all functionality
 is available in pure Ruby. This gem should be fully compatible with any interpreter that is
 compliant with Ruby 1.9.3 or newer.
 
-### Examples
+## Features & Documentation
 
-Many more code examples can be found in the documentation for each class (linked above).
+We have a roadmap guiding our work toward the [v1.0.0 release](https://github.com/ruby-concurrency/concurrent-ruby/wiki/v1.0-Roadmap).
 
-Future and ScheduledTask:
+The primary site for documentation is the automatically generated [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
 
-```ruby    
-require 'concurrent'
-require 'thread'   # for Queue
-require 'open-uri' # for open(uri)
+We also have a [mailing list](http://groups.google.com/group/concurrent-ruby).
 
-class Ticker
-  def get_year_end_closing(symbol, year)
-    uri = "http://ichart.finance.yahoo.com/table.csv?s=#{symbol}&a=11&b=01&c=#{year}&d=11&e=31&f=#{year}&g=m"
-    data = open(uri) {|f| f.collect{|line| line.strip } }
-    data[1].split(',')[4].to_f
-  end
-end
+This library contains a variety of concurrency abstractions at high and low levels. One of the high-level abstractions is likely to meet most common needs. 
 
-# Future
-price = Concurrent::Future.execute{ Ticker.new.get_year_end_closing('TWTR', 2013) }
-price.state #=> :pending
-sleep(1)    # do other stuff
-price.value #=> 63.65
-price.state #=> :fulfilled
+### High-level, general-purpose asynchronous concurrency abstractions
 
-# ScheduledTask
-task = Concurrent::ScheduledTask.execute(2){ Ticker.new.get_year_end_closing('INTC', 2013) }
-task.state #=> :pending
-sleep(3)   # do other stuff
-task.value #=> 25.96
-```
+* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements the Actor Model, where concurrent actors exchange messages.
+* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
+* [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
+* [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
+  * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Dataflow.html): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
+* [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
+* [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
+* [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
 
-Actor:
+### Java-inspired ThreadPools and other executors
 
-```ruby
-class Counter < Concurrent::Actor::Context
-  # Include context of an actor which gives this class access to reference
-  # and other information about the actor
+* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
 
-  # use initialize as you wish
-  def initialize(initial_value)
-    @count = initial_value
-  end
+### Thread-safe Observers
 
-  # override on_message to define actor's behaviour
-  def on_message(message)
-    if Integer === message
-      @count += message
-    end
-  end
-end #
+* [Concurrent::Observable](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Observable.html) mixin module
+* [CopyOnNotifyObserverSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CopyOnNotifyObserverSet.html)
+* [CopyOnWriteObserverSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CopyOnWriteObserverSet.html)
 
-# Create new actor naming the instance 'first'.
-# Return value is a reference to the actor, the actual actor is never returned.
-counter = Counter.spawn(:first, 5)
+### Thread synchronization classes and algorithms
 
-# Tell a message and forget returning self.
-counter.tell(1)
-counter << 1
-# (First counter now contains 7.)
+Lower-level abstractions mainly used as building blocks. 
 
-# Send a messages asking for a result.
-counter.ask(0).class
-counter.ask(0).value
-```
+* [condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html)
+* [countdown latch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)
+* [cyclic barrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
+* [event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
+* [exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
+* [semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
+* [timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
+* [timer](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timer-class_method)
+
+### Thread-safe variables
+
+Lower-level abstractions mainly used as building blocks. 
+
+* [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html)
+* [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html)
+* AtomicReference (no docs currently available, check source)
+* [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
+* [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
+* [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
+* [software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 
 ## Installing and Building
 

@@ -8,7 +8,7 @@ if Concurrent::TestHelpers.jruby?
 
     describe JavaFixedThreadPool, :type=>:jruby do
 
-      subject { described_class.new(5, overflow_policy: :discard) }
+      subject { described_class.new(5, fallback_policy: :discard) }
 
       after(:each) do
         subject.kill
@@ -20,13 +20,13 @@ if Concurrent::TestHelpers.jruby?
       context '#initialize' do
 
 
-        it 'sets :overflow_policy correctly' do
+        it 'sets :fallback_policy correctly' do
           clazz  = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
           policy = clazz.new
           expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
 
-          subject = JavaFixedThreadPool.new(5, overflow_policy: :discard)
-          expect(subject.overflow_policy).to eq :discard
+          subject = JavaFixedThreadPool.new(5, fallback_policy: :discard)
+          expect(subject.fallback_policy).to eq :discard
         end
 
       end

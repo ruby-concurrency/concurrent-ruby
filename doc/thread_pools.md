@@ -1,101 +1,137 @@
-## Background
+# Thread Pools
 
-Thread pools are neither a new idea nor an implementation of the actor pattern. Nevertheless, thread pools are still an extremely relevant concurrency tool. Every time a thread is created then subsequently destroyed there is overhead. Creating a pool of reusable worker threads then repeatedly' dipping into the pool can have huge performace benefits for a long-running application like a service. Ruby's blocks provide an excellent mechanism for passing a generic work request to a thread, making Ruby an excellent candidate language for thread pools. 
+A Thread Pool is an abstraction that you can give a unit of work to, and the work will be executed by one of possibly several threads in the pool. One motivation for using thread pools is the overhead of creating and destroying threads. Creating a pool of reusable worker threads then repeatedly re-using threads from the pool can have huge performance benefits for a long-running application like a service.
 
-The inspiration for thread pools in this library is Java's `java.util.concurrent` implementation of [thread pools](java.util.concurrent). The `java.util.concurrent` library is a well-designed, stable, scalable, and battle-tested concurrency library. It provides three different implementations of thread pools. One of those implementations is simply a special case of the first and doesn't offer much advantage in Ruby, so only the first two (`FixedThreadPool` and `CachedThreadPool`) are implemented here. 
+`concurrent-ruby` also offers some higher level abstractions than thread pools. For many problems, you will be better served by using one of these -- if you are thinking of using a thread pool, we especially recommend you look at and understand [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html)s before deciding to use thread pools directly instead.  Futures are implemented using thread pools, but offer a higher level abstraction.
 
-Thread pools share common behavior defined by several mixin modules including `Executor`. The most important method is `post` (aliased with the left-shift operator `<<`). The `post` method sends a block to the pool for future processing. 
+But there are some problems for which directly using a thread pool is an appropriate solution. Or, you may wish to make your own thread pool to run Futures on, to be separate or have different characteristics than the global thread pool that Futures run on by default.
 
-A running thread pool can be shutdown in an orderly or disruptive manner. Once a thread pool has been shutdown it cannot be started again. The `shutdown` method can be used to initiate an orderly shutdown of the thread pool. All new `post` calls will reject the given block and immediately return `false`. Threads in the pool will continue to process all in-progress work and will process all tasks still in the queue. The `kill` method can be used to immediately shutdown the pool. All new `post` calls will reject the given block and immediately return `false`. Ruby's `Thread.kill` will be called on all threads in the pool, aborting all in-progress work. Tasks in the queue will be discarded. 
+Thread pools are considered 'executors' -- an object you can give a unit of work to, to have it executed.  In fact, thread pools are the main kind of executor you will see - others are mainly for testing or odd edge cases. In some documentation or source code you'll see reference to an 'executor' -- this is commonly a thread pool, or else something similar that executes units of work (usually supplied as Ruby blocks).
 
-A client thread can choose to block and wait for pool shutdown to complete. This is useful when shutting down an application and ensuring the app doesn't exit before pool processing is complete. The method `wait_for_termination` will block for a maximum of the given number of seconds then return `true` if shutdown completed successfully or `false`. When the timeout value is `nil` the call will block indefinitely. Calling `wait_for_termination` on a stopped thread pool will immediately return `true`. 
+## FixedThreadPool
 
-Predicate methods are provided to describe the current state of the thread pool. Provided methods are `running?`, `shuttingdown?`, and `shutdown?`. The `shutdown` method will return true regardless of whether the pool was shutdown wil `shutdown` or `kill`. 
+A [FixedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/FixedThreadPool.html) contains a fixed number of threads. When you give a unit of work to it, an available thread will be used to execute.
 
-### FixedThreadPool
+~~~ruby
+pool = Concurrent::FixedThreadPool.new(5) # 5 threads
+pool.post do
+   # some parallel work
+end
+# As with all thread pools, execution resumes immediately here in the caller thread,
+# while work is concurrently being done in the thread pool, at some possibly future point.
+~~~
 
-From the docs:
+What happens if you post new work when all (e.g.) 5 threads are currently busy? It will be added to a queue, and executed when a thread becomes available.  In a `FixedThreadPool`, if you post work to the pool much faster than the work can be completed, the queue may grow without bounds, as the work piles up in the holding queue, using up memory without bounds.  To limit the queue and apply some form of 'back pressure' instead, you can use the more configurable `ThreadPoolExecutor` (See below).
 
-> Creates a thread pool that reuses a fixed number of threads operating off a shared unbounded queue.
-> At any point, at most `nThreads` threads will be active processing tasks. If additional tasks are submitted
-> when all threads are active, they will wait in the queue until a thread is available. If any thread terminates
-> due to a failure during execution prior to shutdown, a new one will take its place if needed to execute
-> subsequent tasks. The threads in the pool will exist until it is explicitly `shutdown`.
+If you'd like to base the number of threads in the pool on the number of processors available, your code can consult [Concurrent.processor_count](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ProcessorCounter.html#processor_count-instance_method).
 
-#### Examples
+The `FixedThreadPool` is based on the semantics used in Java for [java.util.concurrent.Executors.newFixedThreadPool(int nThreads)](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool(int))
 
-```ruby
-require 'concurrent'
+## CachedThreadPool
 
-pool = Concurrent::FixedThreadPool.new(5)
+A [CachedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CachedThreadPool.html) will create as many threads as necessary for work posted to it. If you post work to a `CachedThreadPool` when all its existing threads are busy, it will create a new thread to execute that work, and then keep that thread cached for future work. Cached threads are reclaimed (destroyed) after they are idle for a while.
 
-  pool.size     #=> 5
-  pool.running? #=> true
-  pool.status   #=> ["sleep", "sleep", "sleep", "sleep", "sleep"]
+CachedThreadPools typically improve the performance of programs that execute many short-lived asynchronous tasks.
 
-  pool.post(1,2,3){|*args| sleep(10) }
-  pool << proc{ sleep(10) }
-  pool.size     #=> 5
+~~~ruby
+pool = Concurrent::CachedThreadPool.new
+pool.post do
+  # some parallel work
+end
+~~~
 
-sleep(11)
-  pool.status   #=> ["sleep", "sleep", "sleep", "sleep", "sleep"]
+The behavior of `CachedThreadPool` is based on Java's [java.util.concurrent.Executors.newCachedThreadPool()](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool())
 
-  pool.shutdown #=> :shuttingdown
-  pool.status   #=> []
-  pool.wait_for_termination
+If you'd like to configure a maximum number of threads, you can use the more general configurable `ThreadPoolExecutor`.
 
-  pool.size      #=> 0
-  pool.status    #=> []
-  pool.shutdown? #=> true
-  ```
+## ThreadPoolExecutor
 
-### CachedThreadPool
+A [ThreadPoolExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html) is a general-purpose thread pool that can be configured to have various behaviors.
 
-  From the docs:
+The `CachedThreadPool` and `FixedThreadPool` are simply `ThreadPoolExecutor`s with certain configuration pre-determined. For instance, to create a `ThreadPoolExecutor` that works just like a `FixedThreadPool.new 5`, you could:
 
-  > Creates a thread pool that creates new threads as needed, but will reuse previously constructed threads when
-  > they are available. These pools will typically improve the performance of programs that execute many short-lived
-  > asynchronous tasks. Calls to [`post`] will reuse previously constructed threads if available. If no existing
-  > thread is available, a new thread will be created and added to the pool. Threads that have not been used for
-  > sixty seconds are terminated and removed from the cache. Thus, a pool that remains idle for long enough will
-  > not consume any resources. Note that pools with similar properties but different details (for example,
-      > timeout parameters) may be created using [`CachedThreadPool`] constructors.
+~~~ruby
+pool = Concurrent::ThreadPoolExecutor.new(
+   min_threads: 5,
+   max_threads: 5,
+   max_queue: 0 # unbounded work queue
+)
+~~~
 
-#### Examples
+If you want to provide a maximum queue size, you may also consider the `fallback_policy` -- what will happen if work is posted to a pool when the queue of waiting work has reached the maximum size? Available policies:
 
-  ```ruby
-  require 'concurrent'
+* abort: Raise a `Concurrent::RejectedExecutionError` exception and discard the task. (default policy)
+* discard: Silently discard the task and return nil as the task result.
+* caller_runs: The work will be executed in the thread of the caller, instead of being given to another thread in the pool.
 
-  pool = Concurrent::CachedThreadPool.new
+~~~ruby
+pool = Concurrent::ThreadPoolExecutor.new(
+   min_threads: 5,
+   max_threads: 5,
+   max_queue: 100,
+   fallback_policy: :caller_runs
+)
+~~~
 
-  pool.size     #=> 0
-  pool.running? #=> true
-  pool.status   #=> []
+Similarly, you can create something similar to a `CachedThreadPool`, but with a maximum number of threads. With an unbounded queue:
 
-  pool.post(1,2,3){|*args| sleep(10) }
-  pool << proc{ sleep(10) }
-  pool.size     #=> 2
-  pool.status   #=> [[:working, nil, "sleep"], [:working, nil, "sleep"]]
+~~~ruby
+pool = Concurrent::ThreadPoolExecutor.new(
+   min_threads: 3, # create 3 threads at startup
+   max_threads: 10, # create at most 10 threads
+   max_queue: 0, # unbounded queue of work waiting for an available thread
+)
+~~~
 
-sleep(11)
-  pool.status   #=> [[:idle, 23, "sleep"], [:idle, 23, "sleep"]]
+Or, with a variable number of threads like a CachedThreadPool, but with a bounded queue and a fallback_policy:
 
-sleep(60)
-  pool.size     #=> 0
-  pool.status   #=> []
+~~~ruby
+pool = Concurrent::ThreadPoolExecutor.new(
+   min_threads: 3, # create 3 threads at startup
+   max_threads: 10, # create at most 10 threads
+   max_queue: 100, # at most 100 jobs waiting in the queue,
+   fallback_policy: :abort
+)
+~~~
 
-  pool.shutdown #=> :shuttingdown
-  pool.status   #=> []
-  pool.wait_for_termination
+ThreadPoolExecutors with `min_threads` and `max_threads` set to different values will ordinarily reclaim idle threads.  You can supply an `idletime` argument, number of seconds that a thread may be idle before being reclaimed. The default is 60 seconds.
 
-  pool.size      #=> 0
-  pool.status    #=> []
-  pool.shutdown? #=> true
-  ```
+`concurrent-ruby` thread pools are based on designs from `java.util.concurrent` --  a well-designed, stable, scalable, and battle-tested concurrency library. The `ThreadPoolExecutor` is based on Java [java.util.concurrent.ThreadPoolExecutor](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html), and is in fact implemented with a Java ThreadPoolExecutor when running under JRuby. For more information on the design and concepts, you may find the Java documentation helpful:
 
-### Other Executors
+* http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
+* http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
+* http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
 
-  There are several other thread pools and executors in this library. See the API documentation for more information:
+## Thread Pool Status and Shutdown
+
+A running thread pool can be shutdown in an orderly or disruptive manner. Once a thread pool has been shutdown it cannot be started again.
+
+The `shutdown` method can be used to initiate an orderly shutdown of the thread pool. All new post calls will be handled according to the `fallback_policy` (i.e. failing with a RejectedExecutionError by default). Threads in the pool will continue to process all in-progress work and will process all tasks still in the queue.
+
+The `kill` method can be used to immediately shutdown the pool. All new post calls will be handled according to the `fallback_policy`. Ruby's `Thread.kill` will be called on all threads in the pool, aborting all in-progress work. Tasks in the queue will be discarded.
+
+The method `wait_for_termination` can be used to block and wait for pool shutdown to complete. This is useful when shutting down an application and ensuring the app doesn't exit before pool processing is complete. The method wait_for_termination will block for a maximum of the given number of seconds then return true (if shutdown completed successfully) or false (if it was still ongoing). When the timeout value is `nil` the call will block indefinitely. Calling `wait_for_termination` on a stopped thread pool will immediately return true.
+
+~~~ruby
+# tell the pool to shutdown in an orderly fashion, allowing in progress work to complete
+pool.shutdown
+# now wait for all work to complete, wait as long as it takes
+pool.wait_for_termination
+~~~
+
+You can check for current pool status:
+
+~~~ruby
+pool.running?
+pool.shuttingdown? # in process of shutting down, can't take any more work
+pool.shutdown? # it's done
+~~~
+
+The `shutdown?` method will return true for a stopped pool, regardless of whether the pool was stopped with `shutdown` or `kill`.
+
+## Other Executors
+
+  There are several other thread pools and executors in the `concurrent-ruby` library. See the API documentation for more information:
 
   * [CachedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CachedThreadPool.html)
   * [FixedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/FixedThreadPool.html)
@@ -108,18 +144,21 @@ sleep(60)
   * [ThreadPoolExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html)
   * [TimerSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerSet.html)
 
-### Global Thread Pools
+## Global Thread Pools
 
-  For efficiency, Concurrent Ruby provides a few global thread pools. These executors are used by the higher-level abstractions for running asynchronous operations without creating new threads more often than necessary. These executors are lazy-loaded so they do not create overhead when not needed. The global executors may also be accessed directly if desired. For more information regarding the global thread pools and their configuration, refer to the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Configuration.html).
+Concurrent Ruby provides several global thread pools. Higher-level abstractions use global thread pools, by default, for running asynchronous operations without creating new threads more often than necessary. These executors are lazy-loaded so they do not create overhead when not needed. The global executors may also be accessed directly if desired. For more information regarding the global thread pools and their configuration, refer to the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Configuration.html).
 
-#### Changing the Global Thread Pool
+When using a higher-level abstraction, which ordinarily uses a global thread pool, you may wish to instead supply your own thread pool, for separation of work, or to control the thread pool behavior with configuration.
 
-  It should rarely be necessary to reconfigure the global executors. If necessary, it is possible to change the gem configuration during application initialization. Gem configration must be done *before* the global executors are lazy-loaded. Once the global thread pools are initialized they may no longer be reconfigured. Doing so will raise an exception. 
+~~~ruby
+pool = Concurrent::ThreadPoolExecutor.new(
+  :min_threads => [2, Concurrent.processor_count].max,
+  :max_threads => [2, Concurrent.processor_count].max,
+  :max_queue   => [2, Concurrent.processor_count].max * 5,
+  :fallback_policy => :caller_runs
+)
 
-```ruby
-require 'concurrent'
-
-Concurrent.configure do |config|
-  config.global_operation_pool = Concurrent::CachedThreadPool.new
+future = Future.new(:executor => pool).execute do
+   #work
 end
-```
+~~~

@@ -26,8 +26,8 @@ shared_examples :fixed_thread_pool do
       expect(subject.max_length).to eq 5
     end
 
-    it 'defaults :overflow_policy to :abort' do
-      expect(subject.overflow_policy).to eq :abort
+    it 'defaults :fallback_policy to :abort' do
+      expect(subject.fallback_policy).to eq :abort
     end
 
 
@@ -55,9 +55,9 @@ shared_examples :fixed_thread_pool do
       expect(subject.max_queue).to eq 10
     end
 
-    it 'correctly sets valid :overflow_policy' do
-      subject = described_class.new(5, :overflow_policy => :caller_runs)
-      expect(subject.overflow_policy).to eq :caller_runs
+    it 'correctly sets valid :fallback_policy' do
+      subject = described_class.new(5, :fallback_policy => :caller_runs)
+      expect(subject.fallback_policy).to eq :caller_runs
     end
 
     it "correctly sets valid :idletime" do
@@ -65,9 +65,9 @@ shared_examples :fixed_thread_pool do
       expect(subject.idletime).to eq 10
     end
 
-    it 'raises an exception if given an invalid :overflow_policy' do
+    it 'raises an exception if given an invalid :fallback_policy' do
       expect {
-        described_class.new(5, overflow_policy: :bogus)
+        described_class.new(5, fallback_policy: :bogus)
       }.to raise_error(ArgumentError)
     end
 
@@ -180,7 +180,7 @@ shared_examples :fixed_thread_pool do
     end
   end
 
-  context 'overflow policy' do
+  context 'fallback policy' do
 
     before(:each) do
       @queue = Queue.new
@@ -195,7 +195,7 @@ shared_examples :fixed_thread_pool do
       latch = Concurrent::CountDownLatch.new(5)
       mutex = Mutex.new
 
-      subject = described_class.new(2, :max_queue => 2, :overflow_policy => :abort)
+      subject = described_class.new(2, :max_queue => 2, :fallback_policy => :abort)
       expect {
         5.times do |i|
           subject.post do
@@ -209,11 +209,11 @@ shared_examples :fixed_thread_pool do
     end
 
     # On discard, we'd expect no error, but also not all five results
-    it 'discards when overflow is :discard' do
+    it 'discards when fallback_policy is :discard' do
       latch = Concurrent::CountDownLatch.new(5)
       mutex = Mutex.new
 
-      subject = described_class.new(2, :max_queue => 2, :overflow_policy => :discard)
+      subject = described_class.new(2, :max_queue => 2, :fallback_policy => :discard)
       5.times do |i|
         subject.post do
           sleep 0.1
@@ -233,7 +233,7 @@ shared_examples :fixed_thread_pool do
       latch = Concurrent::CountDownLatch.new(5)
       mutex = Mutex.new
 
-      subject = described_class.new(2, :max_queue => 2, :overflow_policy => :caller_runs)
+      subject = described_class.new(2, :max_queue => 2, :fallback_policy => :caller_runs)
 
       5.times do |i|
         subject.post do
