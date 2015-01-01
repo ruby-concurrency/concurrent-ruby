@@ -55,11 +55,10 @@ module Concurrent
           @queue.push(Task.new(time, args, task))
           @timer_executor.post(&method(:process_tasks))
         end
-
-        true
       end
-      @condition.signal
 
+      @condition.signal
+      true
     end
 
     # For a timer, #kill is like an orderly shutdown, except we need to manually
