@@ -17,8 +17,17 @@ end
 
 require 'concurrent'
 
-logger                          = Logger.new($stderr)
-logger.level                    = Logger::WARN
+logger       = Logger.new($stderr)
+logger.level = Logger::WARN
+
+logger.formatter = lambda do |severity, datetime, progname, msg|
+  format "[%s] %5s -- %s: %s\n",
+         datetime.strftime('%Y-%m-%d %H:%M:%S.%L'),
+         severity,
+         progname,
+         msg
+end
+
 Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
   logger.add level, message, progname, &block
 end

@@ -5,8 +5,8 @@ module Concurrent
       class SetResults < Abstract
         attr_reader :error_strategy
 
-        def initialize(core, subsequent, error_strategy)
-          super core, subsequent
+        def initialize(core, subsequent, core_options, error_strategy)
+          super core, subsequent, core_options
           @error_strategy = Match! error_strategy, :just_log, :terminate!, :pause!
         end
 

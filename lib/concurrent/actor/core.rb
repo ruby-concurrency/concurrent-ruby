@@ -36,8 +36,8 @@ module Concurrent
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
-      # @option opts [true, false] link, atomically link the actor to its parent
-      # @option opts [true, false] supervise, atomically supervise the actor by its parent
+      # @option opts [true, false] link, atomically link the actor to its parent (default: true)
+      # @option opts [true, false] supervise, atomically supervise the actor by its parent (default: true)
       # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
       #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
@@ -78,19 +78,9 @@ module Concurrent
           @block      = block
           initialized = Type! opts[:initialized], IVar, NilClass
 
-          messages = []
-          messages << :link if opts[:link]
-          messages << :supervise if opts[:supervise]
-
           schedule_execution do
             begin
               build_context
-
-              messages.each do |message|
-                log DEBUG, "preprocessing #{message.inspect} from #{parent}"
-                process_envelope Envelope.new(message, nil, parent, reference)
-              end
-
               initialized.set reference if initialized
             rescue => ex
               log ERROR, ex
@@ -221,7 +211,7 @@ module Concurrent
         end
         @behaviours           = {}
         @first_behaviour      = @behaviour_definition.reverse.
-            reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, *args) }
+            reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, opts, *args) }
       end
     end
   end

@@ -5,9 +5,10 @@ module Concurrent
       # Handles supervised actors. Handle configures what to do with failed child: :terminate!, :resume!, :reset!,
       # or :restart!. Strategy sets :one_for_one (restarts just failed actor) or :one_for_all (restarts all child actors).
       # @note TODO missing example
+      # @note this will change in next version to support supervision trees better
       class Supervising < Abstract
-        def initialize(core, subsequent, handle, strategy)
-          super core, subsequent
+        def initialize(core, subsequent, core_options, handle, strategy)
+          super core, subsequent, core_options
           @handle   = Match! handle, :terminate!, :resume!, :reset!, :restart!
           @strategy = case @handle
                       when :terminate!

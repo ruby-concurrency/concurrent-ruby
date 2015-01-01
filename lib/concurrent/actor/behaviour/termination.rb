@@ -11,8 +11,8 @@ module Concurrent
         #   @return [Event] event which will become set when actor is terminated.
         attr_reader :terminated
 
-        def initialize(core, subsequent)
-          super core, subsequent
+        def initialize(core, subsequent, core_options)
+          super core, subsequent, core_options
           @terminated = Concurrent::Event.new
         end
 

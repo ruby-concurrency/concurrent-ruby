@@ -7,7 +7,7 @@ module Concurrent
 
         attr_reader :core, :subsequent
 
-        def initialize(core, subsequent)
+        def initialize(core, subsequent, core_options)
           @core       = Type! core, Core
           @subsequent = Type! subsequent, Abstract, NilClass
         end

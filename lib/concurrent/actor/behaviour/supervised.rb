@@ -27,9 +27,14 @@ module Concurrent
       class Supervised < Abstract
         attr_reader :supervisor
 
-        def initialize(core, subsequent)
-          super core, subsequent
-          @supervisor = nil
+        def initialize(core, subsequent, core_options)
+          super core, subsequent, core_options
+
+          @supervisor = if core_options[:supervise] != false
+                          Actor.current
+                        else
+                          nil
+                        end
         end
 
         def on_envelope(envelope)

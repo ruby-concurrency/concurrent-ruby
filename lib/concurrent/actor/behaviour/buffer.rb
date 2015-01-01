@@ -8,8 +8,8 @@ module Concurrent
       # and they can be processed before messages arriving into buffer. This allows to
       # process internal actor messages like (`:link`, `:supervise`) processed first.
       class Buffer < Abstract
-        def initialize(core, subsequent)
-          super core, subsequent
+        def initialize(core, subsequent, core_options)
+          super core, subsequent, core_options
           @buffer                     = []
           @receive_envelope_scheduled = false
         end

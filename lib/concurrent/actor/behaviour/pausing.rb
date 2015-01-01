@@ -8,8 +8,8 @@ module Concurrent
       # Reset also reinitialized context.
       # @note TODO missing example
       class Pausing < Abstract
-        def initialize(core, subsequent)
-          super core, subsequent
+        def initialize(core, subsequent, core_options)
+          super core, subsequent, core_options
           @paused = false
           @buffer = []
         end

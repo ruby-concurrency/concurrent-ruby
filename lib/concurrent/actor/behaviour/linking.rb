@@ -38,9 +38,12 @@ module Concurrent
       #     got event #<RuntimeError: failed> from #<Concurrent::Actor::Reference /an_actor (Concurrent::Actor::Utils::AdHoc)>
       #     got event :reset from #<Concurrent::Actor::Reference /an_actor (Concurrent::Actor::Utils::AdHoc)>
       class Linking < Abstract
-        def initialize(core, subsequent)
-          super core, subsequent
+        def initialize(core, subsequent, core_options)
+          super core, subsequent, core_options
           @linked = Set.new
+          if core_options[:link] != false || core_options[:supervise] != false
+            @linked.add Actor.current
+          end
         end
 
         def on_envelope(envelope)
