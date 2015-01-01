@@ -58,6 +58,7 @@ module Concurrent
 
         true
       end
+      @condition.signal
 
     end
 
