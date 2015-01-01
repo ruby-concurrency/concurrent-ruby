@@ -55,10 +55,10 @@ module Concurrent
           @queue.push(Task.new(time, args, task))
           @timer_executor.post(&method(:process_tasks))
         end
-
-        true
       end
 
+      @condition.signal
+      true
     end
 
     # For a timer, #kill is like an orderly shutdown, except we need to manually
@@ -129,8 +129,20 @@ module Concurrent
         interval = task.time - Time.now.to_f
 
         if interval <= 0
+          # We need to remove the task from the queue before passing
+          # it to the executor, to avoid race conditions where we pass
+          # the peek'ed task to the executor and then pop a different
+          # one that's been added in the meantime.
+          #
+          # Note that there's no race condition between the peek and
+          # this pop - this pop could retrieve a different task from
+          # the peek, but that task would be due to fire now anyway
+          # (because @queue is a priority queue, and this thread is
+          # the only reader, so whatever timer is at the head of the
+          # queue now must have the same pop time, or a closer one, as
+          # when we peeked).
+          task = mutex.synchronize { @queue.pop }
           @task_executor.post(*task.args, &task.op)
-          mutex.synchronize { @queue.pop }
         else
           mutex.synchronize do
             @condition.wait(mutex, [interval, 60].min)
