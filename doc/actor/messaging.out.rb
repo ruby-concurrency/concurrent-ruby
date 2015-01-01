@@ -25,8 +25,8 @@ class Calculator < Concurrent::Actor::RestartingContext
 end 
 
 calculator = Calculator.spawn('calculator')
-    # => #<Concurrent::Actor::Reference:0x7fd646110700 /calculator (Calculator)>
+    # => #<Concurrent::Actor::Reference:0x7fb94a2565d8 /calculator (Calculator)>
 calculator.ask! Add[1, 2]                          # => 3
 calculator.ask! Subtract[1, 0.5]                   # => 0.5
 calculator << :terminate!
-    # => #<Concurrent::Actor::Reference:0x7fd646110700 /calculator (Calculator)>
+    # => #<Concurrent::Actor::Reference:0x7fb94a2565d8 /calculator (Calculator)>

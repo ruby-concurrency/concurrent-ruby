@@ -37,7 +37,6 @@ module Concurrent
       # @option opts [Array<Object>] args arguments for actor_class instantiation
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
       # @option opts [true, false] link, atomically link the actor to its parent (default: true)
-      # @option opts [true, false] supervise, atomically supervise the actor by its parent (default: true)
       # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
       #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}

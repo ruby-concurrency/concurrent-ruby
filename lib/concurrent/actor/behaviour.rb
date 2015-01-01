@@ -64,7 +64,6 @@ module Concurrent
       require 'concurrent/actor/behaviour/pausing'
       require 'concurrent/actor/behaviour/removes_child'
       require 'concurrent/actor/behaviour/sets_results'
-      require 'concurrent/actor/behaviour/supervised'
       require 'concurrent/actor/behaviour/supervising'
       require 'concurrent/actor/behaviour/termination'
       require 'concurrent/actor/behaviour/terminates_children'
@@ -126,8 +125,7 @@ module Concurrent
 
       # @see '' its source code
       def self.supervised
-        [[Supervised, []],
-         [Pausing, []]]
+        [[Pausing, []]]
       end
 
       # @see '' its source code

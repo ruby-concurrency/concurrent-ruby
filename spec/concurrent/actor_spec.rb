@@ -280,7 +280,7 @@ module Concurrent
       end
 
       describe 'pausing' do
-        it 'pauses on error' do
+        it 'pauses on error and resumes' do
           queue              = Queue.new
           resuming_behaviour = Behaviour.restarting_behaviour_definition(:resume!)
 
@@ -291,8 +291,8 @@ module Concurrent
               -> m { m == :add ? 1 : pass }
             end
 
-            actor << :supervise
-            queue << actor.ask!(:supervisor)
+            actor << :link
+            queue << actor.ask!(:linked?)
             actor << nil
             queue << actor.ask(:add)
 
@@ -300,21 +300,23 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq test
+          expect(queue.pop).to eq true
           expect(queue.pop.value).to eq 1
           expect(queue.pop).to eq :resumed
           terminate_actors test
+        end
 
+        it 'pauses on error and resets' do
+          queue              = Queue.new
           test = AdHoc.spawn name:                 :tester,
                              behaviour_definition: Behaviour.restarting_behaviour_definition do
             actor = AdHoc.spawn name:                 :pausing,
-                                supervise:            true,
                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :object_id ? self.object_id : pass }
             end
 
-            queue << actor.ask!(:supervisor)
+            queue << actor.ask!(:linked?)
             queue << actor.ask!(:object_id)
             actor << nil
             queue << actor.ask(:object_id)
@@ -325,14 +327,16 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq test
+          expect(queue.pop).to eq true
           first_id  = queue.pop
           second_id = queue.pop.value
           expect(first_id).not_to eq second_id # context already reset
           expect(queue.pop).to eq :init # rebuilds context
           expect(queue.pop).to eq :reset
           terminate_actors test
+        end
 
+        it 'pauses on error and restarts' do
           queue              = Queue.new
           resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
             if Behaviour::Supervising == c
@@ -349,8 +353,8 @@ module Concurrent
               -> m { m == :add ? 1 : pass }
             end
 
-            actor << :supervise
-            queue << actor.ask!(:supervisor)
+            actor << :link
+            queue << actor.ask!(:linked?)
             actor << nil
             queue << actor.ask(:add)
 
@@ -360,7 +364,7 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq test
+          expect(queue.pop).to eq true
           expect(queue.pop.wait.reason).to be_a_kind_of(ActorTerminated)
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq :restarted
@@ -378,7 +382,7 @@ module Concurrent
           end
 
           pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |balancer, index|
-            worker.spawn name: "worker-#{index}", supervise: true, args: [balancer]
+            worker.spawn name: "worker-#{index}", args: [balancer]
           end
 
           expect(pool.ask!(5)).to eq 10

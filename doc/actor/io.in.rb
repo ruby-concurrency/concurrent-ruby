@@ -33,7 +33,7 @@ class IOWorker < Concurrent::Actor::Utils::AbstractWorker
 end #
 
 pool = Concurrent::Actor::Utils::Pool.spawn('pool', 2) do |balancer, index|
-  IOWorker.spawn(name: "worker-#{index}", supervise: true, args: [balancer])
+  IOWorker.spawn(name: "worker-#{index}", args: [balancer])
 end
 
 pool << 1 << 2 << 3 << 4 << 5 << 6

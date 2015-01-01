@@ -1,6 +1,8 @@
 module Concurrent
   module Actor
     module Behaviour
+      # TODO track what is linked, clean when :terminated
+      #   send :linked/:unlinked messages back to build the array of linked actors
 
       # Links the actor to other actors and sends actor's events to them,
       # like: `:terminated`, `:paused`, `:resumed`, errors, etc.
@@ -41,10 +43,10 @@ module Concurrent
         def initialize(core, subsequent, core_options)
           super core, subsequent, core_options
           @linked = Set.new
-          if core_options[:link] != false || core_options[:supervise] != false
-            @linked.add Actor.current
-          end
+          @linked.add Actor.current if core_options[:link] != false
         end
+
+        # TODO also handle :linked_actors returning array
 
         def on_envelope(envelope)
           case envelope.message

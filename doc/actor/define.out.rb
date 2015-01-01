@@ -29,7 +29,7 @@ class AnActor < Concurrent::Actor::RestartingContext
   end
 end 
 
-an_actor = AnActor.spawn name: 'an_actor', args: 10, supervise: true 
+an_actor = AnActor.spawn name: 'an_actor', args: 10 
 an_actor << Message.new(:add, 1) << Message.new(:subtract, 2) 
 an_actor.ask!(Message.new(:value, nil))            # => 9
 an_actor << :boo << Message.new(:add, 1) 

@@ -14,12 +14,13 @@ class Adder < Concurrent::Actor::RestartingContext
   end
 end #
 
-# `supervise: true` makes the actor supervised by root actor
-adder = Adder.spawn(name: :adder, supervise: true, args: [1])
+# `link: true` makes the actor linked to root actor and supervised
+# which is default behavior
+adder = Adder.spawn(name: :adder, link: true, args: [1])
 adder.parent
 
 # tell and forget
-adder.tell(:add) << :add
+adder.tell(:add).tell(:add)
 # ask to get result
 adder.ask!(:add)
 # fail the actor
