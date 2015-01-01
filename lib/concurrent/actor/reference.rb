@@ -6,8 +6,8 @@ module Concurrent
     # see {PublicDelegations}.
     #
     #     AdHoc.spawn('printer') { -> message { puts message } }
-    #     # => #<Concurrent::Actor::Reference /printer (Concurrent::Actor::Utils::AdHoc)>
-    #     #                                   ^path     ^context class
+    #     # => #<Concurrent::Actor::Reference:0x7fd0d2883218 /printer (Concurrent::Actor::Utils::AdHoc)>
+    #     #                                   ^object_id     ^path     ^context class
     class Reference
       include TypeCheck
       include PublicDelegations
