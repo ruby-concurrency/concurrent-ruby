@@ -35,6 +35,14 @@ module Concurrent
       expect(latch.wait(0.2)).to be_truthy
     end
 
+    it 'executes a given task when given an interval in seconds, even if longer tasks have been scheduled' do
+      latch = CountDownLatch.new(1)
+      subject.post(0.5){ nil }
+      sleep 0.1
+      subject.post(0.1){ latch.count_down }
+      expect(latch.wait(0.2)).to be_truthy
+    end
+
     it 'passes all arguments to the task on execution' do
       expected = nil
       latch = CountDownLatch.new(1)
