@@ -292,7 +292,7 @@ module Concurrent
             end
 
             actor << :link
-            queue << actor.ask!(:linked?)
+            queue << actor.ask!(:linked)
             actor << nil
             queue << actor.ask(:add)
 
@@ -300,7 +300,7 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq true
+          expect(queue.pop).to include(test)
           expect(queue.pop.value).to eq 1
           expect(queue.pop).to eq :resumed
           terminate_actors test
@@ -316,7 +316,7 @@ module Concurrent
               -> m { m == :object_id ? self.object_id : pass }
             end
 
-            queue << actor.ask!(:linked?)
+            queue << actor.ask!(:linked)
             queue << actor.ask!(:object_id)
             actor << nil
             queue << actor.ask(:object_id)
@@ -327,7 +327,7 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq true
+          expect(queue.pop).to include(test)
           first_id  = queue.pop
           second_id = queue.pop.value
           expect(first_id).not_to eq second_id # context already reset
@@ -354,7 +354,7 @@ module Concurrent
             end
 
             actor << :link
-            queue << actor.ask!(:linked?)
+            queue << actor.ask!(:linked)
             actor << nil
             queue << actor.ask(:add)
 
@@ -364,7 +364,7 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq true
+          expect(queue.pop).to include(test)
           expect(queue.pop.wait.reason).to be_a_kind_of(ActorTerminated)
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq :restarted

@@ -46,8 +46,6 @@ module Concurrent
           @linked.add Actor.current if core_options[:link] != false
         end
 
-        # TODO also handle :linked_actors returning array
-
         def on_envelope(envelope)
           case envelope.message
           when :link
@@ -56,6 +54,8 @@ module Concurrent
             unlink envelope.sender
           when :linked?
             @linked.include? envelope.sender
+          when :linked
+            @linked.to_a
           else
             pass envelope
           end
