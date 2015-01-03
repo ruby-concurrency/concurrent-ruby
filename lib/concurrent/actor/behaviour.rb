@@ -70,14 +70,14 @@ module Concurrent
 
       # Array of behaviours and their construction parameters.
       #
-      #     [[Behaviour::SetResults, [:terminate!]],
-      #      [Behaviour::RemovesChild, []],
-      #      [Behaviour::Termination, []],
-      #      [Behaviour::TerminatesChildren, []],
-      #      [Behaviour::Linking, []],
-      #      [Behaviour::Awaits, []],
-      #      [Behaviour::ExecutesContext, []],
-      #      [Behaviour::ErrorsOnUnknownMessage, []]]
+      #     [[Behaviour::SetResults, :terminate!],
+      #      [Behaviour::RemovesChild],
+      #      [Behaviour::Termination],
+      #      [Behaviour::TerminatesChildren],
+      #      [Behaviour::Linking],
+      #      [Behaviour::Awaits],
+      #      [Behaviour::ExecutesContext],
+      #      [Behaviour::ErrorsOnUnknownMessage]]
       #
       # @see '' its source code
       def self.basic_behaviour_definition
@@ -88,17 +88,16 @@ module Concurrent
 
       # Array of behaviours and their construction parameters.
       #
-      #     [[Behaviour::SetResults, [:pause!]],
-      #      [Behaviour::RemovesChild, []],
-      #      [Behaviour::Termination, []],
-      #      [Behaviour::TerminatesChildren, []],
-      #      [Behaviour::Linking, []],
-      #      [Behaviour::Supervised, []],
-      #      [Behaviour::Pausing, []],
-      #      [Behaviour::Supervising, [:reset!, :one_for_one]],
-      #      [Behaviour::Awaits, []],
-      #      [Behaviour::ExecutesContext, []],
-      #      [Behaviour::ErrorsOnUnknownMessage, []]]
+      #     [[Behaviour::SetResults, :pause!],
+      #      [Behaviour::RemovesChild],
+      #      [Behaviour::Termination],
+      #      [Behaviour::TerminatesChildren],
+      #      [Behaviour::Linking],
+      #      [Behaviour::Pausing],
+      #      [Behaviour::Supervising, :reset!, :one_for_one],
+      #      [Behaviour::Awaits],
+      #      [Behaviour::ExecutesContext],
+      #      [Behaviour::ErrorsOnUnknownMessage]]
       #
       # @see '' its source code
       def self.restarting_behaviour_definition(handle = :reset!, strategy = :one_for_one)
@@ -111,33 +110,33 @@ module Concurrent
 
       # @see '' its source code
       def self.base(on_error)
-        [[SetResults, [on_error]],
+        [[SetResults, on_error],
          # has to be before Termination to be able to remove children form terminated actor
-         [RemovesChild, []],
-         [Termination, []],
-         [TerminatesChildren, []]]
+         RemovesChild,
+         Termination,
+         TerminatesChildren]
       end
 
       # @see '' its source code
       def self.linking
-        [[Linking, []]]
+        [Linking]
       end
 
       # @see '' its source code
       def self.supervised
-        [[Pausing, []]]
+        [Pausing]
       end
 
       # @see '' its source code
       def self.supervising(handle = :reset!, strategy = :one_for_one)
-        [[Behaviour::Supervising, [handle, strategy]]]
+        [[Behaviour::Supervising, handle, strategy]]
       end
 
       # @see '' its source code
       def self.user_messages
-        [[Awaits, []],
-         [ExecutesContext, []],
-         [ErrorsOnUnknownMessage, []]]
+        [Awaits,
+         ExecutesContext,
+         ErrorsOnUnknownMessage]
       end
     end
   end

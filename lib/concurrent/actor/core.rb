@@ -202,15 +202,12 @@ module Concurrent
       private
 
       def initialize_behaviours(opts)
-        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |v|
-          Type! v, Array
-          Match! v.size, 2
-          Child! v[0], Behaviour::Abstract
-          Type! v[1], Array
+        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |(behaviour, *args)|
+          Child! behaviour, Behaviour::Abstract
         end
         @behaviours           = {}
         @first_behaviour      = @behaviour_definition.reverse.
-            reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, opts, *args) }
+            reduce(nil) { |last, (behaviour, *args)| @behaviours[behaviour] = behaviour.new(self, last, opts, *args) }
       end
     end
   end

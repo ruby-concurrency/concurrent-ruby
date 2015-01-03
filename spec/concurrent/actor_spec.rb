@@ -338,11 +338,11 @@ module Concurrent
 
         it 'pauses on error and restarts' do
           queue              = Queue.new
-          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
+          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, *args|
             if Behaviour::Supervising == c
-              [c, [:restart!, :one_for_one]]
+              [c, *[:restart!, :one_for_one]]
             else
-              [c, args]
+              [c, *args]
             end
           end
 
