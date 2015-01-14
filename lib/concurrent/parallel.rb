@@ -9,6 +9,7 @@ module Concurrent
 
     def initialize(list, opts = {})
       super list
+      @opts = opts
       @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_task_pool
     end
 
@@ -27,10 +28,18 @@ module Concurrent
 
         # return the results
         latch.wait
-        results
+        Parallel.new results, @opts
       else
         super
       end
+    end
+
+    def parallel
+      self
+    end
+
+    def serial
+      __getobj__
     end
   end
 end

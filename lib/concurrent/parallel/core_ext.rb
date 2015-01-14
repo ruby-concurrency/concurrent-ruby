@@ -5,8 +5,11 @@
 require 'concurrent/parallel'
 
 module Enumerable
-
   def parallel(opts = {})
     Concurrent::Parallel.new(self, opts)
+  end
+
+  def serial
+    self
   end
 end
