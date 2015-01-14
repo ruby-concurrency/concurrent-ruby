@@ -13,22 +13,24 @@ module Concurrent
     end
 
     def map
-      raise ArgumentError.new('no block given') unless block_given?
+      if block_given?
+        latch = Concurrent::CountDownLatch.new(size)
 
-      latch = Concurrent::CountDownLatch.new(size)
+        results = Array.new(size)
 
-      results = Array.new(size)
+        # post a job for every thread
+        index = Concurrent::AtomicFixnum.new(-1)
+        each do |item|
+          i = index.increment
+          @executor.post { results[i] = yield(item); latch.count_down }
+        end
 
-      # post a job for every thread
-      index = Concurrent::AtomicFixnum.new(-1)
-      each do |item|
-        i = index.increment
-        @executor.post { results[i] = yield(item); latch.count_down }
+        # return the results
+        latch.wait
+        results
+      else
+        super
       end
-
-      # return the results
-      latch.wait
-      results
     end
   end
 end
@@ -99,6 +101,7 @@ if $0 == __FILE__
       prices = symbols.parallel.map do |symbol|
         get_year_end_closing(symbol, year)
       end
+
       #p prices
     end
 
