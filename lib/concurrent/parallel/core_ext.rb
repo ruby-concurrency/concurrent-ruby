@@ -6,7 +6,7 @@ require 'concurrent/parallel'
 
 module Enumerable
 
-  def parallel_map(opts = {}, &block)
-    Concurrent::Parallel.map(self, opts, &block)
+  def parallel(opts = {})
+    Concurrent::Parallel.new(self, opts)
   end
 end

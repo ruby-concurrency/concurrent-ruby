@@ -4,23 +4,26 @@ require 'concurrent/executors'
 
 module Concurrent
 
-  module Parallel
-    extend self
+  class Parallel < SimpleDelegator
+    protected :__getobj__, :__setobj__
 
-    def map(list, opts = {})
+    def initialize(list, opts = {})
+      super list
+      @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_task_pool
+    end
+
+    def map
       raise ArgumentError.new('no block given') unless block_given?
 
-      executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_task_pool
-      latch = Concurrent::CountDownLatch.new(list.size)
-      size = list.size
+      latch = Concurrent::CountDownLatch.new(size)
 
       results = Array.new(size)
 
       # post a job for every thread
       index = Concurrent::AtomicFixnum.new(-1)
-      list.each do |item|
+      each do |item|
         i = index.increment
-        executor.post { results[i] = yield(item); latch.count_down }
+        @executor.post { results[i] = yield(item); latch.count_down }
       end
 
       # return the results
@@ -32,22 +35,22 @@ end
 
 # $ bundle exec ruby lib/concurrent/parallel.rb
 #        user     system      total        real
-# 
+#
 # Concurrent::Parallel.map (global task pool)
 #   0.010000   0.000000   0.010000 (  0.105637)
-# 
+#
 # Concurrent::Parallel.map (pre-allocated pool)
 #   0.000000   0.010000   0.010000 (  0.101435)
-# 
+#
 # Concurrent::Parallel--Enumerable (global task pool)
 #   0.010000   0.000000   0.010000 (  0.090622)
-# 
+#
 # Concurrent::Parallel.map--Enumerable (pre-allocated pool)
 #   0.000000   0.000000   0.000000 (  0.104036)
-# 
+#
 # Concurrent::Future
 #   0.010000   0.010000   0.020000 (  0.257162)
-# 
+#
 # Pmap gem
 #   0.010000   0.000000   0.010000 (  0.110250)
 
@@ -76,7 +79,7 @@ if $0 == __FILE__
 
     puts "\nConcurrent::Parallel.map (global task pool)"
     stats.report do
-      prices = Concurrent::Parallel.map(symbols) do |symbol|
+      prices = Concurrent::Parallel.new(symbols).map do |symbol|
         get_year_end_closing(symbol, year)
       end
       #p prices
@@ -85,7 +88,7 @@ if $0 == __FILE__
     puts "\nConcurrent::Parallel.map (pre-allocated pool)"
     stats.report do
       executor = Concurrent::FixedThreadPool.new(symbols.size)
-      prices = Concurrent::Parallel.map(symbols, executor: executor) do |symbol|
+      prices = Concurrent::Parallel.new(symbols, executor: executor).map do |symbol|
         get_year_end_closing(symbol, year)
       end
       #p prices
@@ -93,7 +96,7 @@ if $0 == __FILE__
 
     puts "\nConcurrent::Parallel--Enumerable (global task pool)"
     stats.report do
-      prices = symbols.parallel_map do |symbol|
+      prices = symbols.parallel.map do |symbol|
         get_year_end_closing(symbol, year)
       end
       #p prices
@@ -102,7 +105,7 @@ if $0 == __FILE__
     puts "\nConcurrent::Parallel.map--Enumerable (pre-allocated pool)"
     stats.report do
       executor = Concurrent::FixedThreadPool.new(symbols.size)
-      prices = Concurrent::Parallel.map(symbols, executor: executor) do |symbol|
+      prices = Concurrent::Parallel.new(symbols, executor: executor).map do |symbol|
         get_year_end_closing(symbol, year)
       end
       #p prices
