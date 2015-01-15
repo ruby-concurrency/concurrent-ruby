@@ -50,22 +50,6 @@ module Concurrent
           var.value = 0
           expect(var.instance_variable_get(:@storage).keys.size).to be == 1
         end
-
-        it 'does not leave values behind when bind is not used' do
-          if rbx?
-            pending('fails on Rbx, possibly due to test dependency on GC')
-          end
-          tries = Array.new(10) do
-            var = ThreadLocalVar.new(0)
-            10.times.map do |i|
-              Thread.new { var.value = i; var.value }
-            end.each(&:join)
-            var.value = 0
-            GC.start
-            var.instance_variable_get(:@storage).keys.size == 1
-          end
-          expect(tries.any?).to be_truthy
-        end
       end
     end
 
