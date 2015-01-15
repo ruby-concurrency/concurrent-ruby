@@ -10,6 +10,7 @@ EXT_GEMSPEC = Gem::Specification.load('concurrent-ruby-ext.gemspec')
 
 GEM_NAME = 'concurrent-ruby'
 EXTENSION_NAME = 'extension'
+JAVA_EXT_NAME = 'concurrent_ruby_ext'
 
 if Concurrent.jruby?
   CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
@@ -39,7 +40,7 @@ if Concurrent.jruby?
   ## create the compile task for the JRuby-specific gem
   require 'rake/javaextensiontask'
 
-  Rake::JavaExtensionTask.new('java', CORE_GEMSPEC) do |ext|
+  Rake::JavaExtensionTask.new(JAVA_EXT_NAME, CORE_GEMSPEC) do |ext|
     ext.ext_dir = 'ext'
   end
 
