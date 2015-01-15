@@ -31,7 +31,7 @@ module Concurrent
       require 'concurrent_ruby_ext'
       @@java_ext_loaded = true
     rescue LoadError
-      warn 'Attempted to load Java extensions on unsupported platform. Continuing with pure-Ruby.'
+      warn 'Performance on JRuby may be improved by installing the pre-compiled Java extensions. Please see http://concurrent-ruby.com'
     end
   end
 end
