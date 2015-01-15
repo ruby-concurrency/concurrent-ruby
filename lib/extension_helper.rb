@@ -28,10 +28,10 @@ module Concurrent
     end
   elsif jruby? && !@@java_ext_loaded
     begin
-      require 'concurrent/extension'
+      require 'concurrent_ruby_ext'
       @@java_ext_loaded = true
     rescue LoadError
-      #warn 'Attempted to load Java extensions on unsupported platform. Continuing with pure-Ruby.'
+      warn 'Attempted to load Java extensions on unsupported platform. Continuing with pure-Ruby.'
     end
   end
 end

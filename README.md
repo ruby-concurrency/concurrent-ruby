@@ -192,6 +192,7 @@ any platform. *Documentation is forthcoming...*
 ```
 *MRI only*
 rake build:native       # Build concurrent-ruby-ext-<version>-<platform>.gem into the pkg directory
+rake compile:extension  # Compile extension
 
 *JRuby only*
 rake build              # Build JRuby-specific core gem (alias for `build:core`)
@@ -206,7 +207,6 @@ rake build:ext          # Build concurrent-ruby-ext-<version>.gem into the pkg d
 rake clean              # Remove any temporary products
 rake clobber            # Remove any generated file
 rake compile            # Compile all the extensions
-rake compile:extension  # Compile extension
 ```
 
 ## Maintainers

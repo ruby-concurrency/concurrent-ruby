@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.require_paths    = ['lib']
 
   if defined?(JRUBY_VERSION)
-    s.files += Dir['lib/concurrent_ruby_ext.jar']
+    s.files += Dir['lib/**/*.jar']
     s.platform = 'java'
   else
     s.add_runtime_dependency 'ref', '~> 1.0', '>= 1.0.5'
