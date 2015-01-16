@@ -50,6 +50,23 @@ module Concurrent
           var.value = 0
           expect(var.instance_variable_get(:@storage).keys.size).to be == 1
         end
+
+        it 'does not leave values behind when bind is not used' do
+          skip 'GC.run works reliably only on MRI' unless mri? # TODO
+
+          result = 7.times.any? do |i|
+            var = ThreadLocalVar.new(0)
+            5.times.map { |i| Thread.new { var.value = i; var.value } }.each(&:join)
+            var.value = 0
+            # TODO find out why long sleep is necessary, does it take longer for threads to be collected?
+            sleep 0.1 * 2**i
+            GC.start
+
+            var.instance_variable_get(:@storage).keys.size == 1
+          end
+
+          expect(result).to be_truthy
+        end
       end
     end
 
