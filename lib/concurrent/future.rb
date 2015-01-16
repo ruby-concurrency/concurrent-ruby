@@ -23,6 +23,8 @@ module Concurrent
     #   global task pool (for short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
+    # @option opts [object, Array] :args zero or more arguments to be passed the task block on execution
+    #
     # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
     # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
@@ -35,6 +37,7 @@ module Concurrent
       @state = :unscheduled
       @task = block
       @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
+      @args = OptionsParser::get_arguments_from(opts)
     end
 
     # Execute an `:unscheduled` `Future`. Immediately sets the state to `:pending` and
@@ -52,11 +55,9 @@ module Concurrent
     # @example Instance and execute in one line
     #   future = Concurrent::Future.new{ sleep(1); 42 }.execute
     #   future.state #=> :pending
-    #
-    # @since 0.5.0
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        @executor.post{ work }
+        @executor.post(@args){ work }
         self
       end
     end
@@ -72,6 +73,8 @@ module Concurrent
     #   global task pool (for short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
+    # @option opts [object, Array] :args zero or more arguments to be passed the task block on execution
+    #
     # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
     # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
@@ -84,8 +87,6 @@ module Concurrent
     # @example
     #   future = Concurrent::Future.execute{ sleep(1); 42 }
     #   future.state #=> :pending
-    #
-    # @since 0.5.0
     def self.execute(opts = {}, &block)
       Future.new(opts, &block).execute
     end
@@ -96,7 +97,7 @@ module Concurrent
 
     # @!visibility private
     def work # :nodoc:
-      success, val, reason = SafeTaskExecutor.new(@task).execute
+      success, val, reason = SafeTaskExecutor.new(@task).execute(*@args)
       complete(success, val, reason)
     end
   end

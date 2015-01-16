@@ -172,22 +172,25 @@ module Concurrent
 
     # Initialize a new Promise with the provided options.
     #
-    # @param [Hash] opts the options used to define the behavior at update and deref
+    # @!macro [attach] promise_init_options
     #
-    # @option opts [Promise] :parent the parent `Promise` when building a chain/tree
-    # @option opts [Proc] :on_fulfill fulfillment handler
-    # @option opts [Proc] :on_reject rejection handler
+    #   @param [Hash] opts the options used to define the behavior at update and deref
     #
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
+    #   @option opts [Promise] :parent the parent `Promise` when building a chain/tree
+    #   @option opts [Proc] :on_fulfill fulfillment handler
+    #   @option opts [Proc] :on_reject rejection handler
     #
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    #   @option opts [Boolean] :operation (false) when `true` will execute the future on the global
+    #     operation pool (for long-running operations), when `false` will execute the future on the
+    #     global task pool (for short-running tasks)
+    #   @option opts [object] :executor when provided will run all operations on
+    #     this executor rather than the global thread pool (overrides :operation)
+    #   @option opts [object, Array] :args zero or more arguments to be passed the task block on execution
+    #
+    #   @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
+    #   @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
+    #   @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
+    #     returning the value returned from the proc
     #
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
@@ -195,6 +198,8 @@ module Concurrent
       opts.delete_if { |k, v| v.nil? }
 
       @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
+      @args = OptionsParser::get_arguments_from(opts)
+
       @parent = opts.fetch(:parent) { nil }
       @on_fulfill = opts.fetch(:on_fulfill) { Proc.new { |result| result } }
       @on_reject = opts.fetch(:on_reject) { Proc.new { |reason| raise reason } }
@@ -219,7 +224,6 @@ module Concurrent
     end
 
     # @return [Promise]
-    # @since 0.5.0
     def execute
       if root?
         if compare_and_set_state(:pending, :unscheduled)
@@ -232,7 +236,18 @@ module Concurrent
       self
     end
 
-    # @since 0.5.0
+    # Create a new `Promise` object with the given block, execute it, and return the
+    # `:pending` object.
+    #
+    # @!macro promise_init_options
+    #
+    # @return [Promise] the newly created `Promise` in the `:pending` state
+    #
+    # @raise [ArgumentError] if no block is given
+    #
+    # @example
+    #   promise = Concurrent::Promise.execute{ sleep(1); 42 }
+    #   promise.state #=> :pending
     def self.execute(opts = {}, &block)
       new(opts, &block).execute
     end
@@ -389,6 +404,7 @@ module Concurrent
       composite
     end
 
+    # @!visibility private
     def set_pending
       mutex.synchronize do
         @state = :pending
@@ -413,6 +429,7 @@ module Concurrent
       nil
     end
 
+    # @!visibility private
     def notify_child(child)
       if_state(:fulfilled) { child.on_fulfill(apply_deref_options(@value)) }
       if_state(:rejected) { child.on_reject(@reason) }
@@ -421,7 +438,7 @@ module Concurrent
     # @!visibility private
     def realize(task)
       @executor.post do
-        success, value, reason = SafeTaskExecutor.new(task).execute
+        success, value, reason = SafeTaskExecutor.new(task).execute(*@args)
 
         children_to_notify = mutex.synchronize do
           set_state!(success, value, reason)
@@ -432,11 +449,13 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     def set_state!(success, value, reason)
       set_state(success, value, reason)
       event.set
     end
 
+    # @!visibility private
     def synchronized_set_state!(success, value, reason)
       mutex.lock
       set_state!(success, value, reason)

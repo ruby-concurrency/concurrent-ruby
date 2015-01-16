@@ -1,5 +1,6 @@
 require 'spec_helper'
 require_relative 'obligation_shared'
+require_relative 'thread_arguments_shared'
 
 module Concurrent
 
@@ -23,7 +24,24 @@ module Concurrent
       Promise.reject(rejected_reason, executor: executor)
     end
 
-    it_should_behave_like :obligation
+    context 'behavior' do
+
+      # thread_arguments
+
+      def get_ivar_from_no_args
+        Concurrent::Promise.execute{|*args| args }
+      end
+
+      def get_ivar_from_args(opts)
+        Concurrent::Promise.execute(opts){|*args| args }
+      end
+
+      it_should_behave_like :thread_arguments
+
+      # obligation
+
+      it_should_behave_like :obligation
+    end
 
     it 'includes Dereferenceable' do
       promise = Promise.new{ nil }

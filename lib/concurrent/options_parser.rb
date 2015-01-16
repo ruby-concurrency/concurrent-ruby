@@ -23,6 +23,10 @@ module Concurrent
       end
     end
 
+    def get_arguments_from(opts = {})
+      [*opts.fetch(:args, [])]
+    end
+
     # Get the requested `Executor` based on the values set in the options hash.
     #
     # @param [Hash] opts the options defining the requested executor
