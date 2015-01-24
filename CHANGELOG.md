@@ -1,4 +1,4 @@
-### Next Release v0.7.2 (TBD)
+### Next Release v0.7.2 (24 January 2015)
 
 * New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
 * New `Promise.all?` and `Promise.any?` class methods
@@ -6,9 +6,14 @@
 * Thread pools still accept the `:overflow_policy` option but display a warning
 * Thread pools now implement `fallback_policy` behavior when not running (rather than universally rejecting tasks)
 * Fixed minor `set_deref_options` constructor bug in `Promise` class
+* Fixed minor `require` bug in `ThreadLocalVar` class
+* Fixed race condition bug in `TimerSet` class
+* Fixed race condition bug in `TimerSet` class
+* Fixed signal bug in `TimerSet#post` method
 * Numerous non-functional updates to clear warning when running in debug mode
 * Fixed more intermittently failing tests
 * Tests now run on new Travis build environment
+* Multiple documentation updates
 
 ## Current Release v0.7.1 (4 December 2014)
 
