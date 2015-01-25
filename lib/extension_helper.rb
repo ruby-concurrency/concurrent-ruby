@@ -20,7 +20,7 @@ module Concurrent
     rescue LoadError
       # may be a Windows cross-compiled native gem
       begin
-        require "#{RUBY_VERSION[0..2]}/concurrent/extension"
+        require "concurrent/#{RUBY_VERSION[0..2]}/extension"
         @@c_ext_loaded = true
       rescue LoadError
         warn 'Performance on MRI may be improved with the concurrent-ruby-ext gem. Please see http://concurrent-ruby.com'
