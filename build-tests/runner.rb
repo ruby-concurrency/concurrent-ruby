@@ -15,10 +15,11 @@ $:.push File.join(File.dirname(__FILE__), '..', 'lib')
 require 'concurrent/version'
 require_relative 'platform_helpers'
 
+
 EXT_PLATFORMS = {
   'i686-linux' => 'x86-linux',
   'x86_64-linux' => 'x86_64-linux',
-  'x86-mingw32' => 'x86-mingw32',
+  'i386-mingw32' => 'x86-mingw32',
   'x64-mingw32' => 'x64-mingw32',
   'i386-solaris2.11' => 'x86-solaris-2.11',
   'x86_64-darwin14.0' => 'x86_64-darwin-14',
@@ -28,7 +29,7 @@ TEST_PATH = File.dirname(__FILE__)
 PKG_PATH = File.join(File.dirname(__FILE__), '..', 'pkg')
 TEST_FILES = Dir["#{TEST_PATH}/*_spec.rb"]
 
-RSPEC = "rspec --default-path #{TEST_PATH} -fd --color --seed 0"
+RSPEC = "rspec --default-path #{TEST_PATH} -fd #{windows? ? '' : '--color'} --seed 0"
 
 INSTALL_RSPEC_COMMAND = 'gem install rspec'
 
@@ -55,7 +56,7 @@ end
 def install_gems_command(ext, platform = '')
   cmd = "gem install #{PKG_PATH}/concurrent-ruby-#{Concurrent::VERSION}.gem"
   if ext
-    cmd << "\ngem install #{PKG_PATH}/#{extension_gem_name(platform)}"
+    cmd << " && gem install #{PKG_PATH}/#{extension_gem_name(platform)}"
   end
   cmd
 end
@@ -83,7 +84,7 @@ def run_test_suite(files, ext, platform = '')
 
   files.each do |file|
     if windows?
-      cmd = "set TEST_PLATFORM='#{test_platform}' && #{RSPEC} #{file}"
+      cmd = "set TEST_PLATFORM=#{test_platform} && #{RSPEC} #{file}"
     else
       cmd = "TEST_PLATFORM='#{test_platform}' #{RSPEC} #{file}"
     end
@@ -105,8 +106,10 @@ if jruby?
   puts SUITE_BREAK
   run_test_suite(TEST_FILES, false, 'jruby')
 elsif mri?
-  puts SUITE_BREAK
-  run_test_suite(TEST_FILES, true)
+  if ! windows?
+    puts SUITE_BREAK
+    run_test_suite(TEST_FILES, true)
+  end
   if platform_specific_extensions?(RUBY_PLATFORM)
     puts SUITE_BREAK
     run_test_suite(TEST_FILES, true, RUBY_PLATFORM)

@@ -40,7 +40,7 @@ describe Concurrent::Atomic do
     end
   end
 
-  if jruby? && 'JRUBY' == ENV['TEST_PLATFORM']
+  if jruby? && 'JRUBY' == ENV['TEST_PLATFORM'].strip
 
     describe Concurrent::JavaAtomic do
 
@@ -61,7 +61,7 @@ describe Concurrent::Atomic do
     end
   end
 
-  if 'EXT' == ENV['TEST_PLATFORM']
+  if 'EXT' == ENV['TEST_PLATFORM'].strip
 
     describe Concurrent::CAtomic do
 

@@ -61,7 +61,7 @@ describe Concurrent::AtomicFixnum do
     end
   end
 
-  if 'EXT' == ENV['TEST_PLATFORM']
+  if 'EXT' == ENV['TEST_PLATFORM'].strip
 
     describe Concurrent::CAtomicFixnum do
 
