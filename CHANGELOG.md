@@ -1,4 +1,8 @@
-### Next Release v0.7.2 (24 January 2015)
+### Next Release v0.8.0 (25 January 2015)
+
+* Better variable isolation in `Promise` and `Future` via an `:args` option
+
+## Current Release v0.7.2 (24 January 2015)
 
 * New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
 * New `Promise.all?` and `Promise.any?` class methods
@@ -15,7 +19,7 @@
 * Tests now run on new Travis build environment
 * Multiple documentation updates
 
-## Current Release v0.7.1 (4 December 2014)
+### Release v0.7.1 (4 December 2014)
 
 Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/issues/142) for more information on the next planned release.
 

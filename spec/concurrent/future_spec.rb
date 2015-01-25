@@ -2,6 +2,7 @@ require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'
+require_relative 'thread_arguments_shared'
 
 module Concurrent
 
@@ -17,6 +18,18 @@ module Concurrent
     end
 
     context 'behavior' do
+
+      # thread_arguments
+
+      def get_ivar_from_no_args
+        Concurrent::Future.execute{|*args| args }
+      end
+
+      def get_ivar_from_args(opts)
+        Concurrent::Future.execute(opts){|*args| args }
+      end
+
+      it_should_behave_like :thread_arguments
 
       # obligation
 
