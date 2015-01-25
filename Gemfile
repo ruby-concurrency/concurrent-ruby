@@ -1,10 +1,11 @@
 source 'https://rubygems.org'
 
-gemspec
+gemspec name: 'concurrent-ruby'
 
 group :development do
   gem 'rake', '~> 10.3.2'
   gem 'rake-compiler', '~> 0.9.2'
+  gem 'gem-compiler', '~> 0.3.0'
 end
 
 group :testing do

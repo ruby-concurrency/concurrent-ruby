@@ -1,9 +1,8 @@
 require 'fileutils'
 
-$:.push File.join(File.dirname(__FILE__), '../../lib')
-require 'extension_helper'
+require_relative '../../lib/extension_helper'
 
-EXTENSION_NAME = 'concurrent_ruby_ext'
+EXTENSION_NAME = 'extension'
 
 def create_dummy_makefile
   File.open('Makefile', 'w') do |f|
@@ -50,7 +49,7 @@ else
       }
 CODE
 
-    create_makefile(EXTENSION_NAME)
+    create_makefile('concurrent/' + EXTENSION_NAME)
   rescue
     create_dummy_makefile
     warn 'C optimizations cannot be compiled on this version of Ruby.'

@@ -1,7 +1,17 @@
+#!/usr/bin/env ruby
+
+$: << File.expand_path('../../lib', __FILE__)
+
 require 'benchmark'
 require 'rbconfig'
 require 'thread'
-require 'concurrent'
+
+require 'concurrent/atomic'
+
+if RUBY_PLATFORM != 'java' && ! defined? Concurrent::CAtomic
+  warn "[WARN] C extensions not loaded!"
+end
+
 Thread.abort_on_exception = true
 
 $go = false # for synchronizing parallel threads

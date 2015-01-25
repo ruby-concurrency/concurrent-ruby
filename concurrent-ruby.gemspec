@@ -18,21 +18,16 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   EOF
 
-  s.files            = Dir['lib/**/*']
+  s.files            = Dir['lib/**/*.rb']
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
 
   if defined?(JRUBY_VERSION)
-    s.files += Dir['lib/concurrent_ruby_ext.jar']
+    s.files += Dir['lib/**/*.jar']
     s.platform = 'java'
-  elsif ! ENV['BUILD_PURE_RUBY']
-    s.extensions = 'ext/concurrent_ruby_ext/extconf.rb'
-    s.files += Dir['ext/**/*.{h,c,cpp}']
+  else
+    s.add_runtime_dependency 'ref', '~> 1.0', '>= 1.0.5'
   end
 
   s.required_ruby_version = '>= 1.9.3'
-
-  unless defined?(JRUBY_VERSION)
-    s.add_dependency 'ref', '~> 1.0.5'
-  end
 end

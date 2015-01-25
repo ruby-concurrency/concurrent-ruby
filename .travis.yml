@@ -25,4 +25,4 @@ matrix:
     - rvm: jruby-head
     - rvm: 1.9.3
 
-script: "bundle exec rake compile && bundle exec rspec --color --backtrace --tag ~unfinished --seed 1 --format documentation ./spec"
+script: "rake compile && bundle exec rspec --color --backtrace --tag ~unfinished --seed 1 --format documentation ./spec"
