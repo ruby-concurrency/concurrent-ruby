@@ -1,5 +1,7 @@
 ### Next Release v0.8.0 (25 January 2015)
 
+* C extension for MRI have been extracted into the `concurrent-ruby-ext` companion gem.
+  Please see the README for more detail.
 * Better variable isolation in `Promise` and `Future` via an `:args` option
 
 ## Current Release v0.7.2 (24 January 2015)
