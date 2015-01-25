@@ -22,7 +22,7 @@ module Concurrent
       Concurrent::timer(0.1){ latch.count_down }
       latch.wait(1)
       diff = Time.now.to_f - start
-      expect(diff).to be > 0.9
+      expect(diff).to be > 0.09
       expect(diff).to be < 0.5
     end
 
