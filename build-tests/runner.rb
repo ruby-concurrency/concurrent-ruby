@@ -38,7 +38,8 @@ gem uninstall -q -a -I concurrent-ruby && \
 gem uninstall -q -a -I ref
 CMD
 
-SUITE_BREAK = "######################################################################\n"
+PLATFORM_BREAK = "######################################################################\n"
+SUITE_BREAK    = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 
 def platform_specific_extensions?(platform = RUBY_PLATFORM)
   EXT_PLATFORMS.keys.include?(platform) &&
@@ -95,7 +96,10 @@ end
 ok = system(INSTALL_RSPEC_COMMAND)
 ok = system(UNINSTALL_GEMS_COMMAND)
 
+puts PLATFORM_BREAK
+puts RUBY_PLATFORM
 puts SUITE_BREAK
+
 run_test_suite(TEST_FILES, false)
 if jruby?
   puts SUITE_BREAK

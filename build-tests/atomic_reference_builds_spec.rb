@@ -40,7 +40,7 @@ describe Concurrent::Atomic do
     end
   end
 
-  if jruby?
+  if jruby? && 'JRUBY' == ENV['TEST_PLATFORM']
 
     describe Concurrent::JavaAtomic do
 
