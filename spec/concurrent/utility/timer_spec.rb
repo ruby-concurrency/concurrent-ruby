@@ -22,8 +22,7 @@ module Concurrent
       Concurrent::timer(0.1){ latch.count_down }
       latch.wait(1)
       diff = Time.now.to_f - start
-      expect(diff).to be > 0.1
-      expect(diff).to be < 0.5
+      expect(diff).to be_within(0.02).of(0.1)
     end
 
     it 'suppresses exceptions thrown by the block' do
