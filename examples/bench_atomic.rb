@@ -8,9 +8,8 @@ require 'thread'
 
 require 'concurrent/atomic'
 
-unless defined? Concurrent::CAtomic
-  warn "[ERROR] C extensions not loaded!"
-  exit(1)
+if RUBY_PLATFORM != 'java' && ! defined? Concurrent::CAtomic
+  warn "[WARN] C extensions not loaded!"
 end
 
 Thread.abort_on_exception = true
