@@ -7,6 +7,7 @@ public class ConcurrentRubyExtService implements BasicLibraryService {
     public boolean basicLoad(final Ruby runtime) throws IOException {
         new com.concurrent_ruby.ext.AtomicReferenceLibrary().load(runtime, false);
         new com.concurrent_ruby.ext.JavaAtomicBooleanLibrary().load(runtime, false);
+        new com.concurrent_ruby.ext.JavaAtomicFixnumLibrary().load(runtime, false);
         return true;
     }
 }
