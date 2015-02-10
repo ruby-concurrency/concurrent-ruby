@@ -97,14 +97,14 @@ module Concurrent
     alias_method :down, :decrement
 
     # @!macro [attach] atomic_fixnum_method_compare_and_set
-    # 
+    #
     #   Atomically sets the value to the given updated value if the current
     #   value == the expected value.
     #
     #   @param [Fixnum] expect the expected value
     #   @param [Fixnum] update the new value
     #
-    #   @return [Boolean] true if the value was updated else false 
+    #   @return [Boolean] true if the value was updated else false
     def compare_and_set(expect, update)
       @mutex.lock
       if @value == expect
@@ -119,47 +119,6 @@ module Concurrent
   end
 
   if RUBY_PLATFORM == 'java'
-
-    # @!macro atomic_fixnum
-    class JavaAtomicFixnum
-
-      MIN_VALUE = Java::JavaLang::Long::MIN_VALUE
-      MAX_VALUE = Java::JavaLang::Long::MAX_VALUE
-
-      # @!macro atomic_fixnum_method_initialize
-      def initialize(init = 0)
-        raise ArgumentError.new('initial value must be a Fixnum') unless init.is_a?(Fixnum)
-        @atomic = java.util.concurrent.atomic.AtomicLong.new(init)
-      end
-
-      # @!macro atomic_fixnum_method_value_get
-      def value
-        @atomic.get
-      end
-
-      # @!macro atomic_fixnum_method_value_set
-      def value=(value)
-        raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
-        @atomic.set(value)
-      end
-
-      # @!macro atomic_fixnum_method_increment
-      def increment
-        @atomic.increment_and_get
-      end
-      alias_method :up, :increment
-
-      # @!macro atomic_fixnum_method_decrement
-      def decrement
-        @atomic.decrement_and_get
-      end
-      alias_method :down, :decrement
-
-      # @!macro atomic_fixnum_method_compare_and_set
-      def compare_and_set(expect, update)
-        @atomic.compare_and_set(expect, update)
-      end
-    end
 
     # @!macro atomic_fixnum
     class AtomicFixnum < JavaAtomicFixnum

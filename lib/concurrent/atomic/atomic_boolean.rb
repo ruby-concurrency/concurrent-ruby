@@ -115,49 +115,6 @@ module Concurrent
 
   if RUBY_PLATFORM == 'java'
 
-    # @!macro atomic_boolean
-    class JavaAtomicBoolean
-
-      # @!macro atomic_boolean_method_initialize
-      #
-      def initialize(initial = false)
-        @atomic = java.util.concurrent.atomic.AtomicBoolean.new(!!initial)
-      end
-
-      # @!macro atomic_boolean_method_value_get
-      #
-      def value
-        @atomic.get
-      end
-
-      # @!macro atomic_boolean_method_value_set
-      #
-      def value=(value)
-        @atomic.set(!!value)
-      end
-
-      # @!macro atomic_boolean_method_true_question
-      def true?
-        @atomic.get
-      end
-
-      # @!macro atomic_boolean_method_false_question
-      def false?
-        !@atomic.get
-      end
-
-      # @!macro atomic_boolean_method_make_true
-      def make_true
-        @atomic.compareAndSet(false, true)
-      end
-
-      # @!macro atomic_boolean_method_make_false
-      def make_false
-        @atomic.compareAndSet(true, false)
-      end
-    end
-
-    # @!macro atomic_boolean
     class AtomicBoolean < JavaAtomicBoolean
     end
 
