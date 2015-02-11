@@ -158,13 +158,13 @@ module Concurrent
 
     # @!visibility private
     def execute(*args, &task)
-      prune_pool
       if ensure_capacity?
         @scheduled_task_count += 1
         @queue << [args, task]
       else
         handle_fallback(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
       end
+      prune_pool
     end
 
     # @!visibility private
