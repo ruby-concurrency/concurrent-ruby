@@ -7,7 +7,7 @@ require 'concurrent/observable'
 module Concurrent
 
   # An `IVar` is like a future that you can assign. As a future is a value that is being computed that you can wait on, an `IVar` is a value that is waiting to be assigned, that you can wait on. `IVars` are single assignment and deterministic.
-  # 
+  #
   # Then, express futures as an asynchronous computation that assigns an `IVar`. The `IVar` becomes the primitive on which [futures](Future) and [dataflow](Dataflow) are built.
   #
   # An `IVar` is a single-element container that is normally created empty, and
@@ -19,7 +19,7 @@ module Concurrent
   # a `Future`. If you want to create a graph of parallel tasks all executed when
   # the values they depend on are ready you want `dataflow`. `IVar` is generally
   # a low-level primitive.
-  # 
+  #
   # **See Also:**
   #
   # * For the theory: Arvind, R. Nikhil, and K. Pingali. [I-Structures: Data structures for parallel computing](http://dl.acm.org/citation.cfm?id=69562). In Proceedings of Workshop on Graph Reduction, 1986.
@@ -60,7 +60,7 @@ module Concurrent
 
     # Add an observer on this object that will receive notification on update.
     #
-    # Upon completion the `IVar` will notify all observers in a thread-say way. The `func`
+    # Upon completion the `IVar` will notify all observers in a thread-safe way. The `func`
     # method of the observer will be called with three arguments: the `Time` at which the
     # `Future` completed the asynchronous operation, the final `value` (or `nil` on rejection),
     # and the final `reason` (or `nil` on fulfillment).
