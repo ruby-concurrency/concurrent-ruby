@@ -33,7 +33,6 @@ public class JavaAtomicBooleanLibrary implements Library {
     public static class JavaAtomicBoolean extends RubyObject {
 
         private AtomicBoolean atomicBoolean;
-        private ThreadContext context;
 
         public JavaAtomicBoolean(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -42,14 +41,12 @@ public class JavaAtomicBooleanLibrary implements Library {
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context, IRubyObject value) {
             atomicBoolean = new AtomicBoolean(convertRubyBooleanToJavaBoolean(value));
-            this.context = context;
             return context.nil;
         }
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context) {
             atomicBoolean = new AtomicBoolean();
-            this.context = context;
             return context.nil;
         }
 
@@ -69,7 +66,7 @@ public class JavaAtomicBooleanLibrary implements Library {
         }
 
         @JRubyMethod(name = "value=")
-        public IRubyObject setAtomic(IRubyObject newValue) {
+        public IRubyObject setAtomic(ThreadContext context, IRubyObject newValue) {
             atomicBoolean.set(convertRubyBooleanToJavaBoolean(newValue));
             return context.nil;
         }

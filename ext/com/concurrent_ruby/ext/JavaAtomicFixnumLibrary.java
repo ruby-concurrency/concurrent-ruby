@@ -1,5 +1,6 @@
 package com.concurrent_ruby.ext;
 
+
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jruby.Ruby;
@@ -22,7 +23,6 @@ public class JavaAtomicFixnumLibrary implements Library {
         RubyClass atomicCls = concurrentMod.defineClassUnder("JavaAtomicFixnum", runtime.getObject(), JRUBYREFERENCE_ALLOCATOR);
 
         atomicCls.defineAnnotatedMethods(JavaAtomicFixnum.class);
-
     }
 
     private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
@@ -35,7 +35,6 @@ public class JavaAtomicFixnumLibrary implements Library {
     public static class JavaAtomicFixnum extends RubyObject {
 
         private AtomicLong atomicLong;
-        private ThreadContext context;
 
         public JavaAtomicFixnum(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -44,14 +43,12 @@ public class JavaAtomicFixnumLibrary implements Library {
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context) {
             this.atomicLong = new AtomicLong(0);
-            this.context = context;
             return context.nil;
         }
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context, IRubyObject value) {
             this.atomicLong = new AtomicLong(rubyFixnumToLong(value));
-            this.context = context;
             return context.nil;
         }
 
@@ -61,7 +58,7 @@ public class JavaAtomicFixnumLibrary implements Library {
         }
 
         @JRubyMethod(name = "value=")
-        public IRubyObject setValue(IRubyObject newValue) {
+        public IRubyObject setValue(ThreadContext context, IRubyObject newValue) {
             atomicLong.set(rubyFixnumToLong(newValue));
             return context.nil;
         }
@@ -77,7 +74,7 @@ public class JavaAtomicFixnumLibrary implements Library {
         }
 
         @JRubyMethod(name = "compare_and_set")
-        public IRubyObject compareAndSet(IRubyObject expect, IRubyObject update) {
+        public IRubyObject compareAndSet(ThreadContext context, IRubyObject expect, IRubyObject update) {
             return RubyBoolean.newBoolean(getRuntime(), atomicLong.compareAndSet(rubyFixnumToLong(expect), rubyFixnumToLong(update)));
         }
 
