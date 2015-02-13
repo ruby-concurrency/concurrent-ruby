@@ -81,7 +81,8 @@ module Concurrent
 
     # @overload spawn_optionify(context_class, name, *args)
     #   @param [AbstractContext] context_class to be spawned
-    #   @param [String, Symbol] name of the instance, it's used to generate the {Core#path} of the actor
+    #   @param [String, Symbol] name of the instance, it's used to generate the
+    #     {Core#path} of the actor
     #   @param args for context_class instantiation
     # @overload spawn_optionify(opts)
     #   see {Core#initialize} opts

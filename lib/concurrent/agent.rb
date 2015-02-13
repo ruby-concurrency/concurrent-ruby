@@ -32,8 +32,8 @@ module Concurrent
     #
     # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
     # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     def initialize(initial, opts = {})
       @value                = initial
       @rescuers             = []
@@ -63,7 +63,7 @@ module Concurrent
     #             rescue(NoMethodError){|ex| puts "Bam!" }.
     #             rescue(ArgumentError){|ex| puts "Pow!" }.
     #             rescue{|ex| puts "Boom!" }
-    #   
+    #
     #   score << proc{|current| raise ArgumentError }
     #   sleep(0.1)
     #   #=> puts "Pow!"

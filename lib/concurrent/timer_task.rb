@@ -6,67 +6,73 @@ require 'concurrent/executor/safe_task_executor'
 
 module Concurrent
 
-  # A very common currency pattern is to run a thread that performs a task at regular
-  # intervals. The thread that performs the task sleeps for the given interval then
-  # wakes up and performs the task. Lather, rinse, repeat... This pattern causes two
-  # problems. First, it is difficult to test the business logic of the task because the
-  # task itself is tightly coupled with the concurrency logic. Second, an exception
-  # raised while performing the task can cause the entire thread to abend. In a
-  # long-running application where the task thread is intended to run for days/weeks/years
-  # a crashed task thread can pose a significant problem. `TimerTask` alleviates both problems.
-  # 
-  # When a `TimerTask` is launched it starts a thread for monitoring the execution interval.
-  # The `TimerTask` thread does not perform the task, however. Instead, the TimerTask
-  # launches the task on a separate thread. Should the task experience an unrecoverable
-  # crash only the task thread will crash. This makes the `TimerTask` very fault tolerant
-  # Additionally, the `TimerTask` thread can respond to the success or failure of the task,
-  # performing logging or ancillary operations. `TimerTask` can also be configured with a
-  # timeout value allowing it to kill a task that runs too long.
-  # 
-  # One other advantage of `TimerTask` is that it forces the business logic to be completely decoupled
-  # from the concurrency logic. The business logic can be tested separately then passed to the
-  # `TimerTask` for scheduling and running.
-  # 
-  # In some cases it may be necessary for a `TimerTask` to affect its own execution cycle.
-  # To facilitate this, a reference to the TimerTask instance is passed as an argument
-  # to the provided block every time the task is executed.
-  # 
-  # The `TimerTask` class includes the `Dereferenceable` mixin module so the result of
-  # the last execution is always available via the `#value` method. Derefencing options
-  # can be passed to the `TimerTask` during construction or at any later time using the
-  # `#set_deref_options` method.
-  # 
+  # A very common currency pattern is to run a thread that performs a task at
+  # regular intervals. The thread that performs the task sleeps for the given
+  # interval then wakes up and performs the task. Lather, rinse, repeat... This
+  # pattern causes two problems. First, it is difficult to test the business
+  # logic of the task because the task itself is tightly coupled with the
+  # concurrency logic. Second, an exception raised while performing the task can
+  # cause the entire thread to abend. In a long-running application where the
+  # task thread is intended to run for days/weeks/years a crashed task thread
+  # can pose a significant problem. `TimerTask` alleviates both problems.
+  #
+  # When a `TimerTask` is launched it starts a thread for monitoring the
+  # execution interval. The `TimerTask` thread does not perform the task,
+  # however. Instead, the TimerTask launches the task on a separate thread.
+  # Should the task experience an unrecoverable crash only the task thread will
+  # crash. This makes the `TimerTask` very fault tolerant Additionally, the
+  # `TimerTask` thread can respond to the success or failure of the task,
+  # performing logging or ancillary operations. `TimerTask` can also be
+  # configured with a timeout value allowing it to kill a task that runs too
+  # long.
+  #
+  # One other advantage of `TimerTask` is that it forces the business logic to
+  # be completely decoupled from the concurrency logic. The business logic can
+  # be tested separately then passed to the `TimerTask` for scheduling and
+  # running.
+  #
+  # In some cases it may be necessary for a `TimerTask` to affect its own
+  # execution cycle. To facilitate this, a reference to the TimerTask instance
+  # is passed as an argument to the provided block every time the task is
+  # executed.
+  #
+  # The `TimerTask` class includes the `Dereferenceable` mixin module so the
+  # result of the last execution is always available via the `#value` method.
+  # Derefencing options can be passed to the `TimerTask` during construction or
+  # at any later time using the `#set_deref_options` method.
+  #
   # `TimerTask` supports notification through the Ruby standard library
-  # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html Observable}
-  # module. On execution the `TimerTask` will notify the observers
-  # with three arguments: time of execution, the result of the block (or nil on failure),
-  # and any raised exceptions (or nil on success). If the timeout interval is exceeded
-  # the observer will receive a `Concurrent::TimeoutError` object as the third argument.
+  # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
+  # Observable} module. On execution the `TimerTask` will notify the observers
+  # with three arguments: time of execution, the result of the block (or nil on
+  # failure), and any raised exceptions (or nil on success). If the timeout
+  # interval is exceeded the observer will receive a `Concurrent::TimeoutError`
+  # object as the third argument.
   #
   # @example Basic usage
   #   task = Concurrent::TimerTask.new{ puts 'Boom!' }
   #   task.execute
-  #   
+  #
   #   task.execution_interval #=> 60 (default)
   #   task.timeout_interval   #=> 30 (default)
-  #   
+  #
   #   # wait 60 seconds...
   #   #=> 'Boom!'
-  #   
+  #
   #   task.shutdown #=> true
   #
   # @example Configuring `:execution_interval` and `:timeout_interval`
   #   task = Concurrent::TimerTask.new(execution_interval: 5, timeout_interval: 5) do
   #          puts 'Boom!'
   #        end
-  #   
+  #
   #   task.execution_interval #=> 5
   #   task.timeout_interval   #=> 5
   #
   # @example Immediate execution with `:run_now`
   #   task = Concurrent::TimerTask.new(run_now: true){ puts 'Boom!' }
   #   task.execute
-  #   
+  #
   #   #=> 'Boom!'
   #
   # @example Last `#value` and `Dereferenceable` mixin
@@ -74,7 +80,7 @@ module Concurrent
   #     dup_on_deref: true,
   #     execution_interval: 5
   #   ){ Time.now }
-  #   
+  #
   #   task.execute
   #   Time.now   #=> 2013-11-07 18:06:50 -0500
   #   sleep(10)
@@ -90,7 +96,7 @@ module Concurrent
   #       task.shutdown
   #     end
   #   end
-  #   
+  #
   #   timer_task.execute # blocking call - this task will stop itself
   #   #=> Boom!
   #   #=> Boom! Boom!
@@ -111,29 +117,29 @@ module Concurrent
   #       end
   #     end
   #   end
-  #   
+  #
   #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ 42 }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
-  #   
+  #
   #   #=> (2013-10-13 19:08:58 -0400) Execution successfully returned 42
   #   #=> (2013-10-13 19:08:59 -0400) Execution successfully returned 42
   #   #=> (2013-10-13 19:09:00 -0400) Execution successfully returned 42
   #   task.shutdown
-  #   
+  #
   #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ sleep }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
-  #   
+  #
   #   #=> (2013-10-13 19:07:25 -0400) Execution timed out
   #   #=> (2013-10-13 19:07:27 -0400) Execution timed out
   #   #=> (2013-10-13 19:07:29 -0400) Execution timed out
   #   task.shutdown
-  #   
+  #
   #   task = Concurrent::TimerTask.new(execution_interval: 1){ raise StandardError }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
-  #   
+  #
   #   #=> (2013-10-13 19:09:37 -0400) Execution failed with error StandardError
   #   #=> (2013-10-13 19:09:38 -0400) Execution failed with error StandardError
   #   #=> (2013-10-13 19:09:39 -0400) Execution failed with error StandardError
@@ -163,22 +169,22 @@ module Concurrent
     #   @option opts [Boolean] :run_now Whether to run the task immediately
     #     upon instantiation or to wait until the first #  execution_interval
     #     has passed (default: false)
-    #  
+    #
     #   @raise ArgumentError when no block is given.
-    #  
+    #
     #   @yield to the block after :execution_interval seconds have passed since
     #     the last yield
     #   @yieldparam task a reference to the `TimerTask` instance so that the
     #     block can control its own lifecycle. Necessary since `self` will
     #     refer to the execution context of the block rather than the running
     #     `TimerTask`.
-    #  
+    #
     #   @note Calls Concurrent::Dereferenceable#  set_deref_options passing `opts`.
     #     All options supported by Concurrent::Dereferenceable can be set
     #     during object initialization.
     #
     #   @return [TimerTask] the new `TimerTask`
-    #  
+    #
     #   @see Concurrent::Dereferenceable#  set_deref_options
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
@@ -231,7 +237,7 @@ module Concurrent
     #
     # @!macro timer_task_initialize
     #
-    # @example 
+    # @example
     #   task = Concurrent::TimerTask.execute(execution_interval: 10){ print "Hello World\n" }
     #   task.running? #=> true
     #

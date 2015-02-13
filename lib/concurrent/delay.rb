@@ -11,7 +11,7 @@ module Concurrent
   # Where a `Future` schedules an operation for immediate execution and
   # performs the operation asynchronously, a `Delay` (as the name implies)
   # delays execution of the operation until the result is actually needed.
-  # 
+  #
   # When a `Delay` is created its state is set to `pending`. The value and
   # reason are both `nil`. The first time the `#value` method is called the
   # enclosed opration will be run and the calling thread will block. Other
@@ -39,10 +39,12 @@ module Concurrent
     # @yield the delayed operation to perform
     #
     # @param [Hash] opts the options to create a message with
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @option opts [String] :dup_on_deref (false) call `#dup` before returning
+    #   the data
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before
+    #   returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     #
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)

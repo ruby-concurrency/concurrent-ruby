@@ -251,7 +251,8 @@ module Concurrent
       it 'links' do
         queue   = Queue.new
         failure = nil
-        # failure = AdHoc.spawn(:failure) { -> m { terminate! } } # FIXME this leads to weird message processing ordering
+        # FIXME this leads to weird message processing ordering
+        # failure = AdHoc.spawn(:failure) { -> m { terminate! } }
         monitor = AdHoc.spawn!(:monitor) do
           failure = AdHoc.spawn(:failure) { -> m { m } }
           failure << :link

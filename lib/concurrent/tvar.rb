@@ -57,28 +57,31 @@ module Concurrent
   end
 
   # Run a block that reads and writes `TVar`s as a single atomic transaction.
-  # With respect to the value of `TVar` objects, the transaction is atomic,
-  # in that it either happens or it does not, consistent, in that the `TVar`
+  # With respect to the value of `TVar` objects, the transaction is atomic, in
+  # that it either happens or it does not, consistent, in that the `TVar`
   # objects involved will never enter an illegal state, and isolated, in that
   # transactions never interfere with each other. You may recognise these
   # properties from database transactions.
-  # 
+  #
   # There are some very important and unusual semantics that you must be aware of:
-  # 
-  # *   Most importantly, the block that you pass to atomically may be executed more than once. In most cases your code should be free of side-effects, except for via TVar.
-  # 
-  # *   If an exception escapes an atomically block it will abort the transaction.
-  # 
-  # *   It is undefined behaviour to use callcc or Fiber with atomically.
-  # 
-  # *   If you create a new thread within an atomically, it will not be part of the transaction. Creating a thread counts as a side-effect.
-  # 
+  #
+  # * Most importantly, the block that you pass to atomically may be executed
+  #     more than once. In most cases your code should be free of
+  #     side-effects, except for via TVar.
+  #
+  # * If an exception escapes an atomically block it will abort the transaction.
+  #
+  # * It is undefined behaviour to use callcc or Fiber with atomically.
+  #
+  # * If you create a new thread within an atomically, it will not be part of
+  #     the transaction. Creating a thread counts as a side-effect.
+  #
   # Transactions within transactions are flattened to a single transaction.
-  # 
+  #
   # @example
   #   a = new TVar(100_000)
   #   b = new TVar(100)
-  #   
+  #
   #   Concurrent::atomically do
   #     a.value -= 10
   #     b.value += 10

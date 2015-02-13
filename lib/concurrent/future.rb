@@ -23,12 +23,12 @@ module Concurrent
     #   global task pool (for short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
-    # @option opts [object, Array] :args zero or more arguments to be passed the task block on execution
-    #
+    # @option opts [object, Array] :args zero or more arguments to be passed the task
+    #   block on execution
     # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
     # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     #
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
@@ -73,12 +73,13 @@ module Concurrent
     #   global task pool (for short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
-    # @option opts [object, Array] :args zero or more arguments to be passed the task block on execution
+    # @option opts [object, Array] :args zero or more arguments to be passed the
+    #   task block on execution
     #
     # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
     # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     #
     # @return [Future] the newly created `Future` in the `:pending` state
     #
