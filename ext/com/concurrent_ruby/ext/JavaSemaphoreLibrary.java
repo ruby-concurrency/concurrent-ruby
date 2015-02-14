@@ -3,7 +3,6 @@ package com.concurrent_ruby.ext;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 import org.jruby.Ruby;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyModule;
@@ -22,7 +21,6 @@ public class JavaSemaphoreLibrary {
         RubyClass atomicCls = concurrentMod.defineClassUnder("JavaSemaphore", runtime.getObject(), JRUBYREFERENCE_ALLOCATOR);
 
         atomicCls.defineAnnotatedMethods(JavaSemaphore.class);
-
     }
 
     private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
@@ -54,12 +52,12 @@ public class JavaSemaphoreLibrary {
 
         @JRubyMethod(name = "available_permits")
         public IRubyObject availablePermits(ThreadContext context) {
-            return new RubyFixnum(getRuntime(), this.semaphore.availablePermits());
+            return getRuntime().newFixnum(this.semaphore.availablePermits());
         }
 
         @JRubyMethod(name = "drain_permits")
         public IRubyObject drainPermits(ThreadContext context) {
-            return new RubyFixnum(getRuntime(), this.semaphore.drainPermits());
+            return getRuntime().newFixnum(this.semaphore.drainPermits());
         }
 
         @JRubyMethod
@@ -70,17 +68,17 @@ public class JavaSemaphoreLibrary {
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context) throws InterruptedException {
-           return RubyBoolean.newBoolean(getRuntime(), semaphore.tryAcquire(1));
+           return getRuntime().newBoolean(semaphore.tryAcquire(1));
         }
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context, IRubyObject permits) throws InterruptedException {
-           return RubyBoolean.newBoolean(getRuntime(), semaphore.tryAcquire(rubyFixnumToInt(permits, "permits")));
+           return getRuntime().newBoolean(semaphore.tryAcquire(rubyFixnumToInt(permits, "permits")));
         }
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context, IRubyObject permits, IRubyObject timeout) throws InterruptedException {
-             return RubyBoolean.newBoolean(getRuntime(),
+             return getRuntime().newBoolean(
                         semaphore.tryAcquire(
                                 rubyFixnumToInt(permits, "permits"),
                                 rubyNumericToLong(timeout, "timeout"),
@@ -91,13 +89,13 @@ public class JavaSemaphoreLibrary {
         @JRubyMethod
         public IRubyObject release(ThreadContext context) {
             this.semaphore.release(1);
-            return RubyBoolean.newBoolean(getRuntime(), true);
+            return getRuntime().newBoolean(true);
         }
 
         @JRubyMethod
         public IRubyObject release(ThreadContext context, IRubyObject value) {
             this.semaphore.release(rubyFixnumToInt(value, "permits"));
-            return RubyBoolean.newBoolean(getRuntime(), true);
+            return getRuntime().newBoolean(true);
         }
 
         @JRubyMethod(name = "reduce_permits")
@@ -141,4 +139,3 @@ public class JavaSemaphoreLibrary {
         }
     }
 }
-

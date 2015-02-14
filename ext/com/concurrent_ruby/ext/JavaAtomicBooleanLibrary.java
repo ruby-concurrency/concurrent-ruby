@@ -52,17 +52,17 @@ public class JavaAtomicBooleanLibrary implements Library {
 
         @JRubyMethod(name = "value")
         public IRubyObject value() {
-            return RubyBoolean.newBoolean(getRuntime(), atomicBoolean.get());
+            return getRuntime().newBoolean(atomicBoolean.get());
         }
 
         @JRubyMethod(name = "true?")
         public IRubyObject isAtomicTrue() {
-            return RubyBoolean.newBoolean(getRuntime(), atomicBoolean.get());
+            return getRuntime().newBoolean(atomicBoolean.get());
         }
 
         @JRubyMethod(name = "false?")
         public IRubyObject isAtomicFalse() {
-            return RubyBoolean.newBoolean(getRuntime(), (atomicBoolean.get() == false));
+            return getRuntime().newBoolean((atomicBoolean.get() == false));
         }
 
         @JRubyMethod(name = "value=")
@@ -73,12 +73,12 @@ public class JavaAtomicBooleanLibrary implements Library {
 
         @JRubyMethod(name = "make_true")
         public IRubyObject makeTrue() {
-            return RubyBoolean.newBoolean(getRuntime(), atomicBoolean.compareAndSet(false, true));
+            return getRuntime().newBoolean(atomicBoolean.compareAndSet(false, true));
         }
 
         @JRubyMethod(name = "make_false")
         public IRubyObject makeFalse() {
-            return RubyBoolean.newBoolean(getRuntime(), atomicBoolean.compareAndSet(true, false));
+            return getRuntime().newBoolean(atomicBoolean.compareAndSet(true, false));
         }
 
         private boolean convertRubyBooleanToJavaBoolean(IRubyObject newValue) {
@@ -90,4 +90,3 @@ public class JavaAtomicBooleanLibrary implements Library {
         }
     }
 }
-
