@@ -11,18 +11,21 @@ module Concurrent
       @physical_processor_count = Delay.new(executor: immediate_executor) { compute_physical_processor_count }
     end
 
-    # Number of processors seen by the OS and used for process scheduling. For performance
-    # reasons the calculated value will be memoized on the first call.
+    # Number of processors seen by the OS and used for process scheduling. For
+    # performance reasons the calculated value will be memoized on the first
+    # call.
     #
-    # When running under JRuby the Java runtime call `java.lang.Runtime.getRuntime.availableProcessors`
-    # will be used. According to the Java documentation this "value may change
-    # during a particular invocation of the virtual machine... [applications]
-    # should therefore occasionally poll this property." Subsequently the result
-    # will NOT be memoized under JRuby.
+    # When running under JRuby the Java runtime call
+    # `java.lang.Runtime.getRuntime.availableProcessors` will be used. According
+    # to the Java documentation this "value may change during a particular
+    # invocation of the virtual machine... [applications] should therefore
+    # occasionally poll this property." Subsequently the result will NOT be
+    # memoized under JRuby.
     #
-    # On Windows the Win32 API will be queried for the `NumberOfLogicalProcessors from Win32_Processor`.
-    # This will return the total number "logical processors for the current instance of the processor",
-    # which taked into account hyperthreading.
+    # On Windows the Win32 API will be queried for the
+    # `NumberOfLogicalProcessors from Win32_Processor`. This will return the
+    # total number "logical processors for the current instance of the
+    # processor", which taked into account hyperthreading.
     #
     # * AIX: /usr/sbin/pmcycles (AIX 5+), /usr/sbin/lsdev
     # * BSD: /sbin/sysctl
@@ -46,14 +49,15 @@ module Concurrent
       @processor_count.value
     end
 
-    # Number of physical processor cores on the current system. For performance reasons
-    # the calculated value will be memoized on the first call.
+    # Number of physical processor cores on the current system. For performance
+    # reasons the calculated value will be memoized on the first call.
     #
-    # On Windows the Win32 API will be queried for the `NumberOfCores from Win32_Processor`.
-    # This will return the total number "of cores for the current instance of the processor."
-    # On Unix-like operating systems either the `hwprefs` or `sysctl` utility will be called
-    # in a subshell and the returned value will be used. In the rare case where none of these
-    # methods work or an exception is raised the function will simply return 1.
+    # On Windows the Win32 API will be queried for the `NumberOfCores from
+    # Win32_Processor`. This will return the total number "of cores for the
+    # current instance of the processor." On Unix-like operating systems either
+    # the `hwprefs` or `sysctl` utility will be called in a subshell and the
+    # returned value will be used. In the rare case where none of these methods
+    # work or an exception is raised the function will simply return 1.
     #
     # @return [Integer] number physical processor cores on the current system
     #

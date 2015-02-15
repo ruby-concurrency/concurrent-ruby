@@ -1,13 +1,14 @@
 module Concurrent
 
-  # Condition is a better implementation of standard Ruby ConditionVariable.
-  # The biggest difference is the wait return value: Condition#wait returns
-  # Condition::Result which make possible to know if waiting thread has been woken up
-  # by an another thread (using #signal or #broadcast) or due to timeout.
+  # Condition is a better implementation of standard Ruby ConditionVariable. The
+  # biggest difference is the wait return value: Condition#wait returns
+  # Condition::Result which make possible to know if waiting thread has been
+  # woken up by an another thread (using #signal or #broadcast) or due to
+  # timeout.
   #
-  # Every #wait must be guarded by a locked Mutex or a ThreadError will be risen.
-  # Although it's not mandatory, it's recommended to call also #signal and #broadcast within
-  # the same mutex
+  # Every #wait must be guarded by a locked Mutex or a ThreadError will be
+  # risen. Although it's not mandatory, it's recommended to call also #signal
+  # and #broadcast within the same mutex
   class Condition
 
     class Result
@@ -17,12 +18,14 @@ module Concurrent
 
       attr_reader :remaining_time
 
-      # @return [Boolean] true if current thread has been waken up by a #signal or a #broadcast call, otherwise false
+      # @return [Boolean] true if current thread has been waken up by a #signal
+      #  or a #broadcast call , otherwise false
       def woken_up?
         @remaining_time.nil? || @remaining_time > 0
       end
 
-      # @return [Boolean] true if current thread has been waken up due to a timeout, otherwise false
+      # @return [Boolean] true if current thread has been waken up due to a
+      #   timeout, otherwise false
       def timed_out?
         @remaining_time != nil && @remaining_time <= 0
       end

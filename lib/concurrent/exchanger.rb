@@ -9,7 +9,8 @@ module Concurrent
     end
 
     # @param [Object] value the value to exchange with an other thread
-    # @param [Numeric] timeout the maximum time in second to wait for one other thread. nil (default value) means no timeout
+    # @param [Numeric] timeout the maximum time in second to wait for one other
+    #   thread. nil (default value) means no timeout
     # @return [Object] the value exchanged by the other thread; nil if timed out
     def exchange(value, timeout = nil)
       first = @first.take(timeout)

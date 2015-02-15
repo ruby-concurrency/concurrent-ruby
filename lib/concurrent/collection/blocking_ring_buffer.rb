@@ -42,7 +42,8 @@ module Concurrent
       end
     end
 
-    # @return [Object] the first available value and removes it from the buffer. If buffer is empty it blocks until an element is available
+    # @return [Object] the first available value and removes it from the buffer.
+    #   If buffer is empty it blocks until an element is available
     def take
       @mutex.synchronize do
         wait_while_empty
@@ -52,7 +53,8 @@ module Concurrent
       end
     end
 
-    # @return [Object] the first available value and without removing it from the buffer. If buffer is empty returns nil
+    # @return [Object] the first available value and without removing it from
+    #   the buffer. If buffer is empty returns nil
     def peek
       @mutex.synchronize { @buffer.peek }
     end

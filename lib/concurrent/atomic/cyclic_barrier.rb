@@ -8,7 +8,8 @@ module Concurrent
     # Create a new `CyclicBarrier` that waits for `parties` threads
     #
     # @param [Fixnum] parties the number of parties
-    # @yield an optional block that will be executed that will be executed after the last thread arrives and before the others are released
+    # @yield an optional block that will be executed that will be executed after
+    #  the last thread arrives and before the others are released
     #
     # @raise [ArgumentError] if `parties` is not an integer or is less than zero
     def initialize(parties, &block)
@@ -31,10 +32,14 @@ module Concurrent
       @number_waiting
     end
 
-    # Blocks on the barrier until the number of waiting threads is equal to `parties` or until `timeout` is reached or `reset` is called
-    # If a block has been passed to the constructor, it will be executed once by the last arrived thread before releasing the others
-    # @param [Fixnum] timeout the number of seconds to wait for the counter or `nil` to block indefinitely
-    # @return [Boolean] `true` if the `count` reaches zero else false on `timeout` or on `reset` or if the barrier is broken
+    # Blocks on the barrier until the number of waiting threads is equal to
+    # `parties` or until `timeout` is reached or `reset` is called
+    # If a block has been passed to the constructor, it will be executed once by
+    #  the last arrived thread before releasing the others
+    # @param [Fixnum] timeout the number of seconds to wait for the counter or
+    #  `nil` to block indefinitely
+    # @return [Boolean] `true` if the `count` reaches zero else false on
+    #  `timeout` or on `reset` or if the barrier is broken
     def wait(timeout = nil)
       @mutex.synchronize do
 
@@ -55,7 +60,8 @@ module Concurrent
 
 
     # resets the barrier to its initial state
-    # If there is at least one waiting thread, it will be woken up, the `wait` method will return false and the barrier will be broken
+    # If there is at least one waiting thread, it will be woken up, the `wait`
+    # method will return false and the barrier will be broken
     # If the barrier is broken, this method restores it to the original state
     #
     # @return [nil]

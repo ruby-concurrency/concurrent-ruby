@@ -4,9 +4,11 @@ module Concurrent
     require 'set'
 
     # Core of the actor
-    # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
-    # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
-    #   that would eat up all threads in task pool and deadlock
+    # @note Whole class should be considered private. An user should use
+    #   {Context}s and {Reference}s only.
+    # @note devel: core should not block on anything, e.g. it cannot wait on
+    #   children to terminate that would eat up all threads in task pool and
+    #   deadlock
     class Core
       include TypeCheck
       include Concurrent::Logging
@@ -36,11 +38,14 @@ module Concurrent
       # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
       # @option opts [true, false] link, atomically link the actor to its parent
       # @option opts [true, false] supervise, atomically supervise the actor by its parent
-      # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
-      #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
-      # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
-      # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
-      #   can be used to hook actor instance to any logging system
+      # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>]
+      #   behaviour_definition, array of pairs where each pair is behaviour
+      #   class and its args, see {Behaviour.basic_behaviour_definition}
+      # @option opts [IVar, nil] initialized, if present it'll be set or failed
+      #   after {Context} initialization
+      # @option opts [Proc, nil] logger a proc accepting (level, progname,
+      #   message = nil, &block) params, can be used to hook actor instance to
+      #   any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
         synchronize do

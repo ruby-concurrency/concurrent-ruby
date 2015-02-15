@@ -58,7 +58,8 @@ module Concurrent
             var = ThreadLocalVar.new(0)
             5.times.map { |i| Thread.new { var.value = i; var.value } }.each(&:join)
             var.value = 0
-            # TODO find out why long sleep is necessary, does it take longer for threads to be collected?
+            # TODO: find out why long sleep is necessary, does it take longer for
+            #   threads to be collected?
             sleep 0.1 * 2**i
             GC.start
 

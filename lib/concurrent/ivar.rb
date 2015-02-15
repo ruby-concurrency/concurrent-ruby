@@ -6,24 +6,32 @@ require 'concurrent/observable'
 
 module Concurrent
 
-  # An `IVar` is like a future that you can assign. As a future is a value that is being computed that you can wait on, an `IVar` is a value that is waiting to be assigned, that you can wait on. `IVars` are single assignment and deterministic.
+  # An `IVar` is like a future that you can assign. As a future is a value that
+  # is being computed that you can wait on, an `IVar` is a value that is waiting
+  # to be assigned, that you can wait on. `IVars` are single assignment and
+  # deterministic.
   #
-  # Then, express futures as an asynchronous computation that assigns an `IVar`. The `IVar` becomes the primitive on which [futures](Future) and [dataflow](Dataflow) are built.
+  # Then, express futures as an asynchronous computation that assigns an `IVar`.
+  # The `IVar` becomes the primitive on which [futures](Future) and
+  # [dataflow](Dataflow) are built.
   #
   # An `IVar` is a single-element container that is normally created empty, and
-  # can only be set once. The I in `IVar` stands for immutable. Reading an `IVar`
-  # normally blocks until it is set. It is safe to set and read an `IVar` from
-  # different threads.
+  # can only be set once. The I in `IVar` stands for immutable. Reading an
+  # `IVar` normally blocks until it is set. It is safe to set and read an `IVar`
+  # from different threads.
   #
   # If you want to have some parallel task set the value in an `IVar`, you want
-  # a `Future`. If you want to create a graph of parallel tasks all executed when
-  # the values they depend on are ready you want `dataflow`. `IVar` is generally
-  # a low-level primitive.
+  # a `Future`. If you want to create a graph of parallel tasks all executed
+  # when the values they depend on are ready you want `dataflow`. `IVar` is
+  # generally a low-level primitive.
   #
   # **See Also:**
   #
-  # * For the theory: Arvind, R. Nikhil, and K. Pingali. [I-Structures: Data structures for parallel computing](http://dl.acm.org/citation.cfm?id=69562). In Proceedings of Workshop on Graph Reduction, 1986.
-  # * For recent application: [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
+  # * For the theory: Arvind, R. Nikhil, and K. Pingali.
+  #     [I-Structures: Data structures for parallel computing](http://dl.acm.org/citation.cfm?id=69562).
+  #     In Proceedings of Workshop on Graph Reduction, 1986.
+  # * For recent application:
+  #     [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
   #
   # @example Create, set and get an `IVar`
   #   ivar = Concurrent::IVar.new
@@ -42,10 +50,12 @@ module Concurrent
     #
     # @param [Object] value the initial value
     # @param [Hash] opts the options to create a message with
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @option opts [String] :dup_on_deref (false) call `#dup` before returning
+    #   the data
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before
+    #   returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
       init_obligation
       self.observers = CopyOnWriteObserverSet.new
@@ -60,13 +70,15 @@ module Concurrent
 
     # Add an observer on this object that will receive notification on update.
     #
-    # Upon completion the `IVar` will notify all observers in a thread-safe way. The `func`
-    # method of the observer will be called with three arguments: the `Time` at which the
-    # `Future` completed the asynchronous operation, the final `value` (or `nil` on rejection),
-    # and the final `reason` (or `nil` on fulfillment).
+    # Upon completion the `IVar` will notify all observers in a thread-safe way.
+    # The `func` method of the observer will be called with three arguments: the
+    # `Time` at which the `Future` completed the asynchronous operation, the
+    # final `value` (or `nil` on rejection), and the final `reason` (or `nil` on
+    # fulfillment).
     #
     # @param [Object] observer the object that will be notified of changes
-    # @param [Symbol] func symbol naming the method to call when this `Observable` has changes`
+    # @param [Symbol] func symbol naming the method to call when this
+    #   `Observable` has changes`
     def add_observer(observer = nil, func = :update, &block)
       raise ArgumentError.new('cannot provide both an observer and a block') if observer && block
       direct_notification = false
@@ -91,7 +103,8 @@ module Concurrent
     # Set the `IVar` to a value and wake or notify all threads waiting on it.
     #
     # @param [Object] value the value to store in the `IVar`
-    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
+    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #   been set or otherwise completed
     def set(value)
       complete(true, value, nil)
     end
@@ -99,7 +112,8 @@ module Concurrent
     # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
     #
     # @param [Object] reason for the failure
-    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
+    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #   been set or otherwise completed
     def fail(reason = StandardError.new)
       complete(false, nil, reason)
     end

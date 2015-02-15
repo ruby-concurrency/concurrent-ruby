@@ -11,9 +11,11 @@ module Concurrent
     end
 
     # Adds an observer to this set
-    # If a block is passed, the observer will be created by this method and no other params should be passed
+    # If a block is passed, the observer will be created by this method and no
+    #   other params should be passed
     # @param [Object] observer the observer to add
-    # @param [Symbol] func the function to call on the observer during notification. Default is :update
+    # @param [Symbol] func the function to call on the observer during notification.
+    #   Default is :update
     # @return [Object] the added observer
     def add_observer(observer=nil, func=:update, &block)
       if observer.nil? && block.nil?
