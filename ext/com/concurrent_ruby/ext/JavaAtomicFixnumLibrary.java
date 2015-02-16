@@ -1,10 +1,8 @@
 package com.concurrent_ruby.ext;
 
-
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jruby.Ruby;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyModule;
@@ -54,7 +52,7 @@ public class JavaAtomicFixnumLibrary implements Library {
 
         @JRubyMethod(name = "value")
         public IRubyObject getValue() {
-            return new RubyFixnum(getRuntime(), atomicLong.get());
+            return getRuntime().newFixnum(atomicLong.get());
         }
 
         @JRubyMethod(name = "value=")
@@ -65,17 +63,17 @@ public class JavaAtomicFixnumLibrary implements Library {
 
         @JRubyMethod(name = {"increment", "up"})
         public IRubyObject increment() {
-            return new RubyFixnum(getRuntime(), atomicLong.incrementAndGet());
+            return getRuntime().newFixnum(atomicLong.incrementAndGet());
         }
 
         @JRubyMethod(name = {"decrement", "down"})
         public IRubyObject decrement() {
-            return new RubyFixnum(getRuntime(), atomicLong.decrementAndGet());
+            return getRuntime().newFixnum(atomicLong.decrementAndGet());
         }
 
         @JRubyMethod(name = "compare_and_set")
         public IRubyObject compareAndSet(ThreadContext context, IRubyObject expect, IRubyObject update) {
-            return RubyBoolean.newBoolean(getRuntime(), atomicLong.compareAndSet(rubyFixnumToLong(expect), rubyFixnumToLong(update)));
+            return getRuntime().newBoolean(atomicLong.compareAndSet(rubyFixnumToLong(expect), rubyFixnumToLong(update)));
         }
 
         private long rubyFixnumToLong(IRubyObject value) {
@@ -88,4 +86,3 @@ public class JavaAtomicFixnumLibrary implements Library {
         }
     }
 }
-
