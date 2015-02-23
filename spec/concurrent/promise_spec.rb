@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'obligation_shared'
 require_relative 'thread_arguments_shared'
 
@@ -356,113 +355,113 @@ module Concurrent
       let(:promise1) { Promise.new(executor: executor) { 1 } }
       let(:promise2) { Promise.new(executor: executor) { 2 } }
       let(:promise3) { Promise.new(executor: executor) { [3] } }
-  
+
       describe '.all?' do
-  
+
         it 'returns a new Promise' do
           composite = Promise.all?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
-  
+
         it 'does not execute the returned Promise' do
           composite = Promise.all?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
-  
+
         it 'executes the #then condition when all components succeed' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.all?(promise1, promise2, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
-  
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
         end
-  
+
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.all?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
-  
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
         end
-  
+
         it 'executes the #rescue handler if even one component fails' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.all?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
-  
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq -1
         end
       end
-  
+
       describe '.any?' do
-  
+
         it 'returns a new Promise' do
           composite = Promise.any?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
-  
+
         it 'does not execute the returned Promise' do
           composite = Promise.any?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
-  
+
         it 'executes the #then condition when any components succeed' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.any?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
-  
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
         end
-  
+
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.any?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
-  
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
         end
-  
+
         it 'executes the #rescue handler if all componenst fail' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
             execute
-  
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq -1
         end
       end

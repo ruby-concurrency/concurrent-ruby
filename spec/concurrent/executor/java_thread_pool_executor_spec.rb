@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 if Concurrent::TestHelpers.jruby?
 
   require_relative 'thread_pool_executor_shared'

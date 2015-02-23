@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe 'dataflow' do
@@ -233,7 +231,7 @@ module Concurrent
         sleep(0.1)
         expect(expected.value).to eq 13
       end
-      
+
     end
   end
 end

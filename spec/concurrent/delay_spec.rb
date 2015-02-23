@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 

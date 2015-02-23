@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe TimerSet do
@@ -114,7 +112,7 @@ module Concurrent
         subject.post(interval * i) { expected << Time.now - start; latch.count_down }
       end
 
-      expect(latch.wait((tests * interval) + 1)).to be true 
+      expect(latch.wait((tests * interval) + 1)).to be true
 
       (1..tests).each do |i|
         delta = expected.pop

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :observable do
 
   let(:observer_set) do
@@ -64,9 +62,9 @@ shared_examples :observable do
       }.to raise_error(ArgumentError)
     end
   end
-  
+
   context '#delete_observer' do
-  
+
     it 'deletes the given observer if called before first notification' do
       expect(subject.count_observers).to eq 0
       subject.add_observer(observer)
@@ -84,7 +82,7 @@ shared_examples :observable do
       expect(subject.delete_observer(observer)).to eq observer
     end
   end
-  
+
   context '#delete_observers' do
 
     it 'deletes all observers when called before first notification' do
@@ -98,9 +96,9 @@ shared_examples :observable do
       expect(subject.delete_observers).to eq subject
     end
   end
-  
+
   context '#count_observers' do
-  
+
     it 'returns zero for a new observable object' do
       expect(subject.count_observers).to eq 0
     end
@@ -152,7 +150,7 @@ shared_examples :observable do
 
     it 'does not notify any observers removed with #delete_observer' do
       latch = Concurrent::CountDownLatch.new(5)
-      
+
       obs = observer_class.new{ latch.count_down }
       subject.add_observer(obs)
       subject.delete_observer(obs)

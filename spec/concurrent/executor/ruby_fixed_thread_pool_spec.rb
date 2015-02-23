@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'fixed_thread_pool_shared'
 
 module Concurrent

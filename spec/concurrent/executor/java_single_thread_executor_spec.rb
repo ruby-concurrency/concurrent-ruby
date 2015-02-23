@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 if Concurrent::TestHelpers.jruby?
 
   require_relative 'executor_service_shared'

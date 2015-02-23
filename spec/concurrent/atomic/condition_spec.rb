@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe Condition do

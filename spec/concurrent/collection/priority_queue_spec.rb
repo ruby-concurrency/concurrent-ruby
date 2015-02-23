@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :priority_queue do
 
   subject{ described_class.new }
