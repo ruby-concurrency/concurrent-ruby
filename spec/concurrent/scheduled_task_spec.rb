@@ -130,6 +130,10 @@ module Concurrent
         end
       end
 
+      it 'allows setting the execution interval to 0' do
+        expect { 1000.times { ScheduledTask.execute(0) { } } }.not_to raise_error
+      end
+
       it 'sets the sate to :pending' do
         task = ScheduledTask.new(1){ nil }
         task.execute
