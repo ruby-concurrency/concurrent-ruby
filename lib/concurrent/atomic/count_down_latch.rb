@@ -20,7 +20,7 @@ module Concurrent
     #   @param [Fixnum] count the initial count
     #
     #   @raise [ArgumentError] if `count` is not an integer or is less than zero
-    def initialize(count)
+    def initialize(count = 1)
       unless count.is_a?(Fixnum) && count >= 0
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
@@ -75,7 +75,7 @@ module Concurrent
     class JavaCountDownLatch
 
       # @!macro count_down_latch_method_initialize
-      def initialize(count)
+      def initialize(count = 1)
         unless count.is_a?(Fixnum) && count >= 0
           raise ArgumentError.new('count must be in integer greater than or equal zero')
         end
