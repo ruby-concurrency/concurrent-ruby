@@ -12,23 +12,6 @@ module Concurrent
   #   When the latch counter reaches zero the waiting thread is unblocked and continues
   #   with its work. A `CountDownLatch` can be used only once. Its value cannot be reset.
   class MutexCountDownLatch
-
-    # @!macro [attach] count_down_latch_method_initialize
-    #
-    #   Create a new `CountDownLatch` with the initial `count`.
-    #
-    #   @param [Fixnum] count the initial count
-    #
-    #   @raise [ArgumentError] if `count` is not an integer or is less than zero
-    def initialize(count = 1)
-      unless count.is_a?(Fixnum) && count >= 0
-        raise ArgumentError.new('count must be in integer greater than or equal zero')
-      end
-      @mutex = Mutex.new
-      @condition = Condition.new
-      @count = count
-    end
-
     # @!macro [attach] count_down_latch_method_wait
     #
     #   Block on the latch until the counter reaches zero or until `timeout` is reached.
@@ -67,50 +50,65 @@ module Concurrent
     def count
       @mutex.synchronize { @count }
     end
+
+    private
+
+    def init_internals(count) # :nodoc:
+      @mutex = Mutex.new
+      @condition = Condition.new
+      @count = count
+    end
   end
 
-  if RUBY_PLATFORM == 'java'
-
-    # @!macro count_down_latch
-    class JavaCountDownLatch
-
-      # @!macro count_down_latch_method_initialize
-      def initialize(count = 1)
-        unless count.is_a?(Fixnum) && count >= 0
-          raise ArgumentError.new('count must be in integer greater than or equal zero')
-        end
-        @latch = java.util.concurrent.CountDownLatch.new(count)
-      end
-
-      # @!macro count_down_latch_method_wait
-      def wait(timeout = nil)
-        if timeout.nil?
-          @latch.await
-          true
-        else
-          @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
-        end
-      end
-
-      # @!macro count_down_latch_method_count_down
-      def count_down
-        @latch.countDown
-      end
-
-      # @!macro count_down_latch_method_count
-      def count
-        @latch.getCount
+  # @!macro count_down_latch
+  class JavaCountDownLatch
+    # @!macro count_down_latch_method_wait
+    def wait(timeout = nil)
+      if timeout.nil?
+        @latch.await
+        true
+      else
+        @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
       end
     end
 
-    # @!macro count_down_latch
-    class CountDownLatch < JavaCountDownLatch
+    # @!macro count_down_latch_method_count_down
+    def count_down
+      @latch.countDown
     end
 
+    # @!macro count_down_latch_method_count
+    def count
+      @latch.getCount
+    end
+
+    private
+
+    def init_internals(count) # :nodoc:
+      @latch = java.util.concurrent.CountDownLatch.new(count)
+    end
+  end
+
+  superclass = if RUBY_PLATFORM == 'java'
+    JavaCountDownLatch
   else
+    MutexCountDownLatch
+  end
 
-    # @!macro count_down_latch
-    class CountDownLatch < MutexCountDownLatch
+  class CountDownLatch < superclass
+    # @!macro [attach] count_down_latch_method_initialize
+    #
+    #   Create a new `CountDownLatch` with the initial `count`.
+    #
+    #   @param [Fixnum] count the initial count
+    #
+    #   @raise [ArgumentError] if `count` is not an integer or is less than zero
+    def initialize(count = 1)
+      unless count.is_a?(Fixnum) && count >= 0
+        raise ArgumentError.new('count must be in integer greater than or equal zero')
+      end
+
+      init_internals count
     end
   end
 end
