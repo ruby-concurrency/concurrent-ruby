@@ -1,5 +1,6 @@
 require 'thread'
 
+require 'concurrent/configuration'
 require 'concurrent/options_parser'
 require 'concurrent/ivar'
 require 'concurrent/executor/safe_task_executor'
