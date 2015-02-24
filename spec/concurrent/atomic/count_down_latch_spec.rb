@@ -18,6 +18,11 @@ shared_examples :count_down_latch do
         described_class.new('foo')
       }.to raise_error(ArgumentError)
     end
+
+    it 'defaults the count to 1' do
+      latch = described_class.new
+      expect(latch.count).to eq 1
+    end
   end
 
   describe '#count' do
