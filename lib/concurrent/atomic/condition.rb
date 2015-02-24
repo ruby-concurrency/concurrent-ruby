@@ -42,13 +42,13 @@ module Concurrent
     # @param [Object] timeout nil means no timeout
     # @return [Result]
     def wait(mutex, timeout = nil)
-      start_time = Time.now.to_f
+      start_time = clock_time
       @condition.wait(mutex, timeout)
 
       if timeout.nil?
         Result.new(nil)
       else
-        Result.new(start_time + timeout - Time.now.to_f)
+        Result.new(start_time + timeout - clock_time)
       end
     end
 
@@ -64,6 +64,18 @@ module Concurrent
     def broadcast
       @condition.broadcast
       true
+    end
+
+    private
+
+    if defined?(Process::CLOCK_MONOTONIC)
+      def clock_time
+        Process.clock_gettime Process::CLOCK_MONOTONIC
+      end
+    else
+      def clock_time
+        Time.now.to_f
+      end
     end
 
   end
