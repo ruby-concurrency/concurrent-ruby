@@ -12,12 +12,6 @@ module Concurrent
   #   When the latch counter reaches zero the waiting thread is unblocked and continues
   #   with its work. A `CountDownLatch` can be used only once. Its value cannot be reset.
   class MutexCountDownLatch
-    def init_internals(count) # :nodoc:
-      @mutex = Mutex.new
-      @condition = Condition.new
-      @count = count
-    end
-
     # @!macro [attach] count_down_latch_method_wait
     #
     #   Block on the latch until the counter reaches zero or until `timeout` is reached.
@@ -56,14 +50,18 @@ module Concurrent
     def count
       @mutex.synchronize { @count }
     end
+
+    private
+
+    def init_internals(count) # :nodoc:
+      @mutex = Mutex.new
+      @condition = Condition.new
+      @count = count
+    end
   end
 
   # @!macro count_down_latch
   class JavaCountDownLatch
-    def init_internals(count) # :nodoc:
-      @latch = java.util.concurrent.CountDownLatch.new(count)
-    end
-
     # @!macro count_down_latch_method_wait
     def wait(timeout = nil)
       if timeout.nil?
@@ -82,6 +80,12 @@ module Concurrent
     # @!macro count_down_latch_method_count
     def count
       @latch.getCount
+    end
+
+    private
+
+    def init_internals(count) # :nodoc:
+      @latch = java.util.concurrent.CountDownLatch.new(count)
     end
   end
 
