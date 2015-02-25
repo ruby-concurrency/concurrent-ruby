@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'global_thread_pool_shared'
 
 shared_examples :executor_service do

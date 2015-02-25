@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'timecop'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'

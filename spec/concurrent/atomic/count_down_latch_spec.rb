@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :count_down_latch do
 
   let(:latch) { described_class.new(3) }

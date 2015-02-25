@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :atomic do
 
   specify :test_construct do

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples "an observer set" do
 
   let (:observer_set) { described_class.new }

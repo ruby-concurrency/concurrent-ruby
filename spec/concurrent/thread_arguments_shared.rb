@@ -1,4 +1,3 @@
-require 'spec_helper'
 
 shared_examples :thread_arguments do
 

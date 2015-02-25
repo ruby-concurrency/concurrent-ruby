@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative '../observable_shared'
 
 module Concurrent
@@ -11,9 +10,9 @@ module Concurrent
     describe 'behavior' do
 
       # observable
-      
+
       subject{ Channel::Probe.new }
-      
+
       def trigger_observable(observable)
         observable.set('value')
       end

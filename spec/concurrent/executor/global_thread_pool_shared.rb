@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :global_thread_pool do
 
   context '#post' do

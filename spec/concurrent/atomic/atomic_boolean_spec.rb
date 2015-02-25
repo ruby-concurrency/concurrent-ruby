@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :atomic_boolean do
 
   describe 'construction' do

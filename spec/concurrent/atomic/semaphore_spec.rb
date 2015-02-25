@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :semaphore do
   let(:semaphore) { described_class.new(3) }
 

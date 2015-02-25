@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'thread_pool_shared'
 require 'thread'
 
