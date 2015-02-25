@@ -1,4 +1,5 @@
 Gemfile.lock
+.rspec-local
 *.gem
 lib/1.8
 lib/1.9
