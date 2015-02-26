@@ -62,9 +62,12 @@ module Concurrent
 
     protected
 
-    def enable_at_exit_handler!
-      # without this the process may fail to exit
-      at_exit { self.kill }
+    def enable_at_exit_handler!(opts = {})
+      if opts.fetch(:stop_on_exit, true)
+        # without this the application may fail to exit
+        this = self
+        at_exit { this.kill }
+      end
     end
   end
 
