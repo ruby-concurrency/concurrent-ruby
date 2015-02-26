@@ -75,7 +75,7 @@ if RUBY_PLATFORM == 'java'
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           queue, FALLBACK_POLICIES[@fallback_policy].new)
 
-        set_shutdown_hook
+        enable_at_exit_handler!
       end
 
       # @!macro executor_module_method_can_overflow_question

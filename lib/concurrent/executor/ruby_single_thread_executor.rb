@@ -22,6 +22,7 @@ module Concurrent
       @fallback_policy = opts.fetch(:fallback_policy, :discard)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       init_executor
+      enable_at_exit_handler!
     end
 
     protected

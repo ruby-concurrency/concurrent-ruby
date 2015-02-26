@@ -59,6 +59,13 @@ module Concurrent
     def serialized?
       false
     end
+
+    protected
+
+    def enable_at_exit_handler!
+      # without this the process may fail to exit
+      at_exit { self.kill }
+    end
   end
 
   # Indicates that the including `Executor` or `ExecutorService` guarantees
@@ -307,13 +314,6 @@ module Concurrent
       def kill
         @executor.shutdownNow
         nil
-      end
-
-      protected
-
-      def set_shutdown_hook
-        # without this the process may fail to exit
-        at_exit { self.kill }
       end
     end
   end
