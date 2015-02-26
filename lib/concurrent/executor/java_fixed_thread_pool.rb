@@ -5,6 +5,7 @@ if RUBY_PLATFORM == 'java'
   module Concurrent
 
     # @!macro fixed_thread_pool
+    # @!macro thread_pool_options
     class JavaFixedThreadPool < JavaThreadPoolExecutor
 
       # Create a new thread pool.

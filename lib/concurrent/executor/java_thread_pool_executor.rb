@@ -4,6 +4,7 @@ if RUBY_PLATFORM == 'java'
   module Concurrent
 
     # @!macro thread_pool_executor
+    # @!macro thread_pool_options
     class JavaThreadPoolExecutor
       include JavaExecutor
 

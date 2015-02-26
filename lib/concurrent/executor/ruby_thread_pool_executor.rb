@@ -8,6 +8,7 @@ require 'concurrent/utility/monotonic_time'
 module Concurrent
 
   # @!macro thread_pool_executor
+  # @!macro thread_pool_options
   class RubyThreadPoolExecutor
     include RubyExecutor
 

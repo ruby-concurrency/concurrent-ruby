@@ -3,6 +3,7 @@ require 'concurrent/executor/ruby_thread_pool_executor'
 module Concurrent
 
   # @!macro cached_thread_pool
+  # @!macro thread_pool_options
   class RubyCachedThreadPool < RubyThreadPoolExecutor
 
     # Create a new thread pool.
