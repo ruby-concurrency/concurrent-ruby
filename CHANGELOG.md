@@ -1,11 +1,13 @@
-### Next Release v0.8.0 (25 January 2015)
+### Next Release 
+
+## Current Release v0.8.0 (25 January 2015)
 
 * C extension for MRI have been extracted into the `concurrent-ruby-ext` companion gem.
   Please see the README for more detail.
 * Better variable isolation in `Promise` and `Future` via an `:args` option
 * Continued to update intermittently failing tests
 
-## Current Release v0.7.2 (24 January 2015)
+## Release v0.7.2 (24 January 2015)
 
 * New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
 * New `Promise.all?` and `Promise.any?` class methods
