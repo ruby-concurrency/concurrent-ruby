@@ -15,6 +15,13 @@
 * Deprecated all clock-time based timer scheduling
   - Only support scheduling by delay
   - Effects `Concurrent.timer`, `TimerSet`, and `ScheduledTask`
+* Consistent `at_exit` behavior for Java and Ruby thread pools.
+*	Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
+* Updated thread pool docs to better explain shutting down thread pools
+* Simpler `:executor` option syntax for all abstractions which support this option
+* Added `Executor#auto_terminate?` predicate method (for thread pools)
+* Added `at_exit` handler to `TimerSet`
+* Simplified auto-termination of the global thread pools
 
 ## Current Release v0.8.0 (25 January 2015)
 
