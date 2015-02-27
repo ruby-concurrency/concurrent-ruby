@@ -9,6 +9,31 @@ shared_examples :thread_pool do
 
   it_should_behave_like :executor_service
 
+  context '#auto_terminate?' do
+
+    it 'returns true by default' do
+      expect(subject.auto_terminate?).to be true
+    end
+
+    it 'returns true when :enable_at_exit_handler is true' do
+      if described_class.to_s =~ /FixedThreadPool$/
+        subject = described_class.new(1, stop_on_exit: true)
+      else
+        subject = described_class.new(stop_on_exit: true)
+      end
+      expect(subject.auto_terminate?).to be true
+    end
+
+    it 'returns false when :enable_at_exit_handler is false' do
+      if described_class.to_s =~ /FixedThreadPool$/
+        subject = described_class.new(1, stop_on_exit: false)
+      else
+        subject = described_class.new(stop_on_exit: false)
+      end
+      expect(subject.auto_terminate?).to be false
+    end
+  end
+
   context '#length' do
 
     it 'returns zero on creation' do

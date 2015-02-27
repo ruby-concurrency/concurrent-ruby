@@ -60,11 +60,16 @@ module Concurrent
       false
     end
 
+    def auto_terminate?
+      !! @auto_terminate
+    end
+
     protected
 
     def enable_at_exit_handler!(opts = {})
       if opts.fetch(:stop_on_exit, true)
         # without this the application may fail to exit
+        @auto_terminate = true
         this = self
         at_exit { this.kill }
       end
