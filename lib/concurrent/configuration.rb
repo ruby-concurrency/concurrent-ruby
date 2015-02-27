@@ -1,8 +1,7 @@
 require 'thread'
 require 'concurrent/delay'
 require 'concurrent/errors'
-require 'concurrent/atomic'
-require 'concurrent/executor/immediate_executor'
+require 'concurrent/atomics'
 require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/processor_count'
@@ -17,17 +16,25 @@ module Concurrent
     #   lambda { |level, progname, message = nil, &block| _ }
     attr_accessor :logger
 
-    # defines if executors should be auto-terminated in at_exit callback
-    attr_accessor :auto_terminate
-
     # Create a new configuration object.
     def initialize
       @global_task_pool      = Delay.new(executor: :immediate) { new_task_pool }
       @global_operation_pool = Delay.new(executor: :immediate) { new_operation_pool }
       @global_timer_set      = Delay.new(executor: :immediate) { Concurrent::TimerSet.new }
       @logger                = no_logger
-      @auto_terminate        = true
+      @auto_terminate        = Concurrent::AtomicBoolean.new(true)
     end
+
+    # defines if executors should be auto-terminated in at_exit callback
+    def auto_terminate=(value)
+      @auto_terminate.value = value
+    end
+
+    # defines if executors should be auto-terminated in at_exit callback
+    def auto_terminate
+      @auto_terminate.value
+    end
+    alias :auto_terminate? :auto_terminate
 
     # if assigned to {#logger}, it will log nothing.
     def no_logger
@@ -72,8 +79,9 @@ module Concurrent
     #
     # @raise [Concurrent::ConfigurationError] if this thread pool has already been set
     def global_task_pool=(executor)
+      warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
       @global_task_pool.reconfigure { executor } or
-          raise ConfigurationError.new('global task pool was already set')
+        raise ConfigurationError.new('global task pool was already set')
     end
 
     # Global thread pool optimized for long *operations*.
@@ -91,33 +99,36 @@ module Concurrent
     #
     # @raise [Concurrent::ConfigurationError] if this thread pool has already been set
     def global_operation_pool=(executor)
+      warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
       @global_operation_pool.reconfigure { executor } or
-          raise ConfigurationError.new('global operation pool was already set')
+        raise ConfigurationError.new('global operation pool was already set')
     end
 
     def new_task_pool
       Concurrent::ThreadPoolExecutor.new(
-          min_threads:     [2, Concurrent.processor_count].max,
-          max_threads:     [20, Concurrent.processor_count * 15].max,
-          idletime:        2 * 60, # 2 minutes
-          max_queue:       0, # unlimited
-          fallback_policy: :abort # raise an exception
+        stop_on_exit:    true,
+        min_threads:     [2, Concurrent.processor_count].max,
+        max_threads:     [20, Concurrent.processor_count * 15].max,
+        idletime:        2 * 60, # 2 minutes
+        max_queue:       0, # unlimited
+        fallback_policy: :abort # raise an exception
       )
     end
 
     def new_operation_pool
       Concurrent::ThreadPoolExecutor.new(
-          min_threads:     [2, Concurrent.processor_count].max,
-          max_threads:     [2, Concurrent.processor_count].max,
-          idletime:        10 * 60, # 10 minutes
-          max_queue:       [20, Concurrent.processor_count * 15].max,
-          fallback_policy: :abort # raise an exception
+        stop_on_exit:    true,
+        min_threads:     [2, Concurrent.processor_count].max,
+        max_threads:     [2, Concurrent.processor_count].max,
+        idletime:        10 * 60, # 10 minutes
+        max_queue:       [20, Concurrent.processor_count * 15].max,
+        fallback_policy: :abort # raise an exception
       )
     end
   end
 
   # create the default configuration on load
-  @configuration = Atomic.new Configuration.new
+  @configuration = Atomic.new(Configuration.new)
 
   # @return [Configuration]
   def self.configuration
@@ -132,35 +143,17 @@ module Concurrent
     yield(configuration)
   end
 
-  def self.finalize_global_executors
-    self.finalize_executor(self.configuration.global_timer_set)
-    self.finalize_executor(self.configuration.global_task_pool)
-    self.finalize_executor(self.configuration.global_operation_pool)
-  end
-
-  private
-
-  # Attempt to properly shutdown the given executor using the `shutdown` or
-  # `kill` method when available.
-  #
-  # @param [Executor] executor the executor to shutdown
-  #
-  # @return [Boolean] `true` if the executor is successfully shut down or `nil`, else `false`
-  def self.finalize_executor(executor)
-    return true if executor.nil?
-    if executor.respond_to?(:shutdown)
-      executor.shutdown
-    elsif executor.respond_to?(:kill)
-      executor.kill
-    end
-    true
-  rescue => ex
-    log DEBUG, ex
-    false
-  end
-
   # set exit hook to shutdown global thread pools
   at_exit do
-    finalize_global_executors if configuration.auto_terminate
+    if Concurrent::Configuration.configuration.auto_terminate?
+      [
+        Concurrent::Configuration.configuration.global_timer_set,
+        Concurrent::Configuration.configuration.global_task_pool,
+        Concurrent::Configuration.configuration.global_operation_pool
+      ].each do |pool|
+        # kill the thread pool unless it has its own at_exit handler
+        pool.kill unless pool.auto_terminate?
+      end
+    end
   end
 end
