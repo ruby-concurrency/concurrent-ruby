@@ -31,6 +31,7 @@ module Concurrent
       @timer_executor = SingleThreadExecutor.new
       @condition      = Condition.new
       init_executor
+      enable_at_exit_handler!(opts)
     end
 
     # Post a task to be execute run after a given delay (in seconds). If the
