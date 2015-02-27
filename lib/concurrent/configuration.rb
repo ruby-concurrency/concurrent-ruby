@@ -22,10 +22,9 @@ module Concurrent
 
     # Create a new configuration object.
     def initialize
-      immediate_executor     = ImmediateExecutor.new
-      @global_task_pool      = Delay.new(executor: immediate_executor) { new_task_pool }
-      @global_operation_pool = Delay.new(executor: immediate_executor) { new_operation_pool }
-      @global_timer_set      = Delay.new(executor: immediate_executor) { Concurrent::TimerSet.new }
+      @global_task_pool      = Delay.new(executor: :immediate) { new_task_pool }
+      @global_operation_pool = Delay.new(executor: :immediate) { new_operation_pool }
+      @global_timer_set      = Delay.new(executor: :immediate) { Concurrent::TimerSet.new }
       @logger                = no_logger
       @auto_terminate        = true
     end

@@ -6,9 +6,8 @@ module Concurrent
 
   class ProcessorCounter
     def initialize
-      immediate_executor        = ImmediateExecutor.new
-      @processor_count          = Delay.new(executor: immediate_executor) { compute_processor_count }
-      @physical_processor_count = Delay.new(executor: immediate_executor) { compute_physical_processor_count }
+      @processor_count          = Delay.new(executor: :immediate) { compute_processor_count }
+      @physical_processor_count = Delay.new(executor: :immediate) { compute_physical_processor_count }
     end
 
     # Number of processors seen by the OS and used for process scheduling. For
