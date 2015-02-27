@@ -18,15 +18,16 @@ module Concurrent
 
     # Create a new set of timed tasks.
     #
-    # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
+    # @!macro [attach] executor_options
+    #  
+    #   @param [Hash] opts the options used to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
     def initialize(opts = {})
       @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_task_pool
+      @task_executor  = OptionsParser::get_task_executor_from(opts)
       @timer_executor = SingleThreadExecutor.new
       @condition      = Condition.new
       init_executor

@@ -194,13 +194,21 @@ module Concurrent
     # @raise [Concurrent::InitializationError] when called more than once
     def init_mutex
       raise InitializationError.new('#init_mutex was already called') if @__async_initialized__
+
       @__async_initialized__ = true
       serializer = Concurrent::SerializedExecution.new
-      @__async_executor__ = Delay.new{ Concurrent.configuration.global_operation_pool }
-      @__await_delegator__ = Delay.new{ AsyncDelegator.new(
-        self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true) }
-      @__async_delegator__ = Delay.new{ AsyncDelegator.new(
-        self, @__async_executor__, serializer, false) }
+
+      @__async_executor__ = Delay.new(executor: :immediate) {
+        Concurrent.configuration.global_task_pool
+      }
+
+      @__await_delegator__ = Delay.new(executor: :immediate) {
+        AsyncDelegator.new(self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true)
+      }
+
+      @__async_delegator__ = Delay.new(executor: :immediate) {
+        AsyncDelegator.new(self, @__async_executor__, serializer, false)
+      }
     end
   end
 end

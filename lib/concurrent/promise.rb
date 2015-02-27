@@ -187,33 +187,24 @@ module Concurrent
 
     # Initialize a new Promise with the provided options.
     #
-    # @!macro [attach] promise_init_options
+    # @!macro executor_and_deref_options
     #
-    #   @param [Hash] opts the options used to define the behavior at update and deref
+    # @!macro [attach] promise_init_options
     #
     #   @option opts [Promise] :parent the parent `Promise` when building a chain/tree
     #   @option opts [Proc] :on_fulfill fulfillment handler
     #   @option opts [Proc] :on_reject rejection handler
-    #   @option opts [Boolean] :operation (false) when `true` will execute the
-    #     future on the global operation pool (for long-running operations),
-    #     when `false` will execute the future on the global task pool (for
-    #     short-running tasks)
-    #   @option opts [object] :executor when provided will run all operations on
-    #     this executor rather than the global thread pool (overrides :operation)
     #   @option opts [object, Array] :args zero or more arguments to be passed
     #    the task block on execution
-    #   @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    #   @option opts [String] :freeze_on_deref (false) call `#freeze` before
-    #     returning the data
-    #   @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
-    #     the internal value and returning the value returned from the proc
+    #
+    # @raise [ArgumentError] if no block is given
     #
     # @see http://wiki.commonjs.org/wiki/Promises/A
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
 
-      @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
+      @executor = OptionsParser::get_task_executor_from(opts)
       @args = OptionsParser::get_arguments_from(opts)
 
       @parent = opts.fetch(:parent) { nil }
@@ -254,6 +245,8 @@ module Concurrent
 
     # Create a new `Promise` object with the given block, execute it, and return the
     # `:pending` object.
+    #
+    # @!macro executor_and_deref_options
     #
     # @!macro promise_init_options
     #

@@ -22,18 +22,8 @@ module Concurrent
     # Initialize a new Agent with the given initial value and provided options.
     #
     # @param [Object] initial the initial value
-    # @param [Hash] opts the options used to define the behavior at update and deref
     #
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
-    #
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
-    #   the internal value and returning the value returned from the proc
+    # @!macro executor_and_deref_options
     def initialize(initial, opts = {})
       @value                = initial
       @rescuers             = []
