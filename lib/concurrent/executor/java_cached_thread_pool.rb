@@ -26,7 +26,7 @@ if RUBY_PLATFORM == 'java'
         @executor = java.util.concurrent.Executors.newCachedThreadPool
         @executor.setRejectedExecutionHandler(FALLBACK_POLICIES[@fallback_policy].new)
 
-        enable_at_exit_handler!
+        enable_at_exit_handler!(opts)
       end
     end
   end

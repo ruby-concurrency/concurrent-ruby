@@ -85,7 +85,7 @@ module Concurrent
       raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
 
       init_executor
-      enable_at_exit_handler!
+      enable_at_exit_handler!(opts)
 
       @pool                 = []
       @queue                = Queue.new

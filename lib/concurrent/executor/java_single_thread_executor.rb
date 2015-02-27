@@ -22,7 +22,7 @@ if RUBY_PLATFORM == 'java'
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor
         @fallback_policy = opts.fetch(:fallback_policy, :discard)
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.keys.include?(@fallback_policy)
-        enable_at_exit_handler!
+        enable_at_exit_handler!(opts)
       end
     end
   end

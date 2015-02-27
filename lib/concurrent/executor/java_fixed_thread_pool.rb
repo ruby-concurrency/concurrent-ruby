@@ -25,7 +25,7 @@ if RUBY_PLATFORM == 'java'
         }.merge(opts)
         super(opts)
 
-        enable_at_exit_handler!
+        enable_at_exit_handler!(opts)
       end
     end
   end
