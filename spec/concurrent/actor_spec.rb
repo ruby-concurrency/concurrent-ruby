@@ -57,42 +57,42 @@ module Concurrent
         expect { Utils::AdHoc.spawn name: 'test', executor: ImmediateExecutor.new }.to raise_error
       end
 
-      describe 'stress test' do
-        1.times do |i|
-          it format('run %3d', i) do
-            # puts format('run %3d', i)
-            Array.new(10).map do
-              Thread.new do
-                10.times do
-                  # trace! do
-                  queue = Queue.new
-                  actor = Ping.spawn :ping, queue
+      #describe 'stress test' do
+        #1.times do |i|
+          #it format('run %3d', i) do
+            ## puts format('run %3d', i)
+            #Array.new(10).map do
+              #Thread.new do
+                #10.times do
+                  ## trace! do
+                  #queue = Queue.new
+                  #actor = Ping.spawn :ping, queue
 
-                  # when spawn returns children are set
-                  expect(Concurrent::Actor.root.send(:core).instance_variable_get(:@children)).to include(actor)
+                  ## when spawn returns children are set
+                  #expect(Concurrent::Actor.root.send(:core).instance_variable_get(:@children)).to include(actor)
 
-                  actor << 'a' << 1
-                  expect(queue.pop).to eq 'a'
-                  expect(actor.ask(2).value).to eq 2
+                  #actor << 'a' << 1
+                  #expect(queue.pop).to eq 'a'
+                  #expect(actor.ask(2).value).to eq 2
 
-                  expect(actor.parent).to eq Concurrent::Actor.root
-                  expect(Concurrent::Actor.root.path).to eq '/'
-                  expect(actor.path).to eq '/ping'
-                  child = actor.ask(:child).value
-                  expect(child.path).to eq '/ping/pong'
-                  queue.clear
-                  child.ask(3)
-                  expect(queue.pop).to eq 3
+                  #expect(actor.parent).to eq Concurrent::Actor.root
+                  #expect(Concurrent::Actor.root.path).to eq '/'
+                  #expect(actor.path).to eq '/ping'
+                  #child = actor.ask(:child).value
+                  #expect(child.path).to eq '/ping/pong'
+                  #queue.clear
+                  #child.ask(3)
+                  #expect(queue.pop).to eq 3
 
-                  actor << :terminate!
-                  expect(actor.ask(:blow_up).wait).to be_rejected
-                  terminate_actors actor, child
-                end
-              end
-            end.each(&:join)
-          end
-        end
-      end
+                  #actor << :terminate!
+                  #expect(actor.ask(:blow_up).wait).to be_rejected
+                  #terminate_actors actor, child
+                #end
+              #end
+            #end.each(&:join)
+          #end
+        #end
+      #end
 
       describe 'spawning' do
         describe 'Actor#spawn' do

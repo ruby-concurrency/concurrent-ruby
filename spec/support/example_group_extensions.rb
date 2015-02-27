@@ -34,8 +34,18 @@ module Concurrent
     @@killed = false
 
     def reset_gem_configuration
-      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new if @@killed
-      @@killed = false
+      if @@killed
+        Concurrent.class_variable_set(
+          :@@global_fast_executor,
+          Concurrent::Delay.new(executor: :immediate){ Concurrent.new_fast_executor })
+        Concurrent.class_variable_set(
+          :@@global_io_executor,
+          Concurrent::Delay.new(executor: :immediate){ Concurrent.new_io_executor })
+        Concurrent.class_variable_set(
+          :@@global_timer_set,
+          Concurrent::Delay.new(executor: :immediate){ Concurrent::TimerSet.new })
+        @@killed = false
+      end
     end
 
     def kill_rogue_threads(warning = true)

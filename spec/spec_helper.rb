@@ -19,6 +19,7 @@ SimpleCov.start do
   add_filter '/yardoc/'
 end
 
+$VERBOSE = nil # suppress our deprecation warnings
 require 'concurrent'
 
 logger                          = Logger.new($stderr)
