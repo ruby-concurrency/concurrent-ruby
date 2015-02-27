@@ -21,6 +21,8 @@ if Concurrent::TestHelpers.jruby?
         )
       end
 
+      it_should_behave_like :thread_pool
+
       it_should_behave_like :thread_pool_executor
 
       context '#overload_policy' do

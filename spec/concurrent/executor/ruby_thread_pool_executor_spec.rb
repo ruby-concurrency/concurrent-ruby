@@ -19,6 +19,8 @@ module Concurrent
       )
     end
 
+    it_should_behave_like :thread_pool
+
     it_should_behave_like :thread_pool_executor
 
     context '#remaining_capacity' do
