@@ -11,9 +11,9 @@ module Concurrent
       [*opts.fetch(:args, [])]
     end
 
-    # @!macro [attach] get_executor_from
+    # Get the requested `Executor` based on the values set in the options hash.
     #
-    #   Get the requested `Executor` based on the values set in the options hash.
+    # @!macro [attach] get_executor_from
     #  
     #   @param [Hash] opts the options defining the requested executor
     #   @option opts [Executor] :executor when set use the given `Executor` instance.
@@ -49,6 +49,8 @@ module Concurrent
       end
     end
 
+    # Get the requested `Executor` based on the values set in the options hash.
+    #
     # @!macro get_executor_from
     #
     # @return [Executor] the requested thread pool (default: global task pool)
@@ -58,6 +60,8 @@ module Concurrent
       get_executor_from(opts) || Concurrent.configuration.global_task_pool
     end
 
+    # Get the requested `Executor` based on the values set in the options hash.
+    #
     # @!macro get_executor_from
     #
     # @return [Executor] the requested thread pool (default: global operation pool)
