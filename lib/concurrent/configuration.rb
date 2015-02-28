@@ -61,6 +61,26 @@ module Concurrent
     @@global_timer_set.value
   end
 
+  def self.shutdown_global_executors
+    global_fast_executor.shutdown
+    global_io_executor.shutdown
+    global_timer_set.shutdown
+  end
+
+  def self.kill_global_executors
+    global_fast_executor.kill
+    global_io_executor.kill
+    global_timer_set.kill
+  end
+
+  def self.wait_for_global_executors_termination(timeout = nil)
+    latch = Concurrent::CountDownLatch.new(3)
+    [ global_fast_executor, global_io_executor, global_timer_set ].each do |executor|
+      Thread.new{ executor.wait_for_termination(timeout); latch.count_down }
+    end
+    latch.wait(timeout)
+  end
+
   def self.new_fast_executor(opts = {})
     Concurrent::FixedThreadPool.new(
       [2, Concurrent.processor_count].max,
