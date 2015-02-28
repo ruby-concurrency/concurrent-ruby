@@ -1,7 +1,7 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/delay'
-require 'concurrent/lazy'
+require 'concurrent/lazy_reference'
 require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/executor/immediate_executor'
@@ -202,7 +202,7 @@ module Concurrent
       }
 
       @__await_delegator__ = Delay.new(executor: :immediate) {
-        AsyncDelegator.new(self, Lazy.new{ Concurrent::ImmediateExecutor.new }, serializer, true)
+        AsyncDelegator.new(self, LazyReference.new{ Concurrent::ImmediateExecutor.new }, serializer, true)
       }
 
       @__async_delegator__ = Delay.new(executor: :immediate) {

@@ -1,23 +1,23 @@
 module Concurrent
 
   # Lazy evaluation of a block yielding an immutable result. Useful for
-  # expensive operations that may never be needed. `Lazy` is a simpler,
+  # expensive operations that may never be needed. `LazyReference` is a simpler,
   # blocking version of `Delay` and has an API similar to `AtomicReference`.
   # The first time `#value` is called the caller will block until the
   # block given at construction is executed. Once the result has been
   # computed the value will be immutably set. Any exceptions thrown during
   # computation will be suppressed.
   #
-  # Because of its simplicity `Lazy` is much faster than `Delay`:
+  # Because of its simplicity `LazyReference` is much faster than `Delay`:
   #
   #            user     system      total        real
   #     Benchmarking Delay...
   #        0.730000   0.000000   0.730000 (  0.738434)
-  #     Benchmarking Lazy...
+  #     Benchmarking LazyReference...
   #        0.040000   0.000000   0.040000 (  0.042322)
   #
   # @see Concurrent::Delay
-  class Lazy
+  class LazyReference
 
     # Creates anew unfulfilled object.
     #

@@ -7,7 +7,7 @@ module Concurrent
 
   # Lazy evaluation of a block yielding an immutable result. Useful for
   # expensive operations that may never be needed. `Delay` is a more
-  # complex and feature-rich version of `Lazy`. It is non-blocking,
+  # complex and feature-rich version of `LazyReference`. It is non-blocking,
   # supports the `Obligation` interface, and accepts the injection of
   # custom executor upon which to execute the block. Processing of
   # block will be deferred until the first time `#value` is called.
@@ -28,16 +28,16 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
-  # Because of its simplicity `Lazy` is much faster than `Delay`:
+  # Because of its simplicity `LazyReference` is much faster than `Delay`:
   #
   #            user     system      total        real
   #     Benchmarking Delay...
   #        0.730000   0.000000   0.730000 (  0.738434)
-  #     Benchmarking Lazy...
+  #     Benchmarking LazyReference...
   #        0.040000   0.000000   0.040000 (  0.042322)
   #
   # @see Concurrent::Dereferenceable
-  # @see Concurrent::Lazy
+  # @see Concurrent::LazyReference
   class Delay
     include Obligation
     include ExecutorOptions
@@ -46,18 +46,7 @@ module Concurrent
     #
     # @yield the delayed operation to perform
     #
-    # @!macro [attach] executor_and_deref_options
-    #  
-    #   @param [Hash] opts the options used to define the behavior at update and deref
-    #     and to specify the executor on which to perform actions
-    #   @option opts [Executor] :executor when set use the given `Executor` instance.
-    #     Three special values are also supported: `:task` returns the global task pool,
-    #     `:operation` returns the global operation pool, and `:immediate` returns a new
-    #     `ImmediateExecutor` object.
-    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
-    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
-    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
-    #     the internal value and returning the value returned from the proc
+    # @!macro executor_and_deref_options
     #
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)

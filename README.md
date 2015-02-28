@@ -66,36 +66,29 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 * See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
 
-### Thread-safe Observers
-
-* [Concurrent::Observable](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Observable.html) mixin module
-* [CopyOnNotifyObserverSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CopyOnNotifyObserverSet.html)
-* [CopyOnWriteObserverSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CopyOnWriteObserverSet.html)
-
 ### Thread synchronization classes and algorithms
 
-Lower-level abstractions mainly used as building blocks. 
-
-* [condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html)
-* [countdown latch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)
-* [cyclic barrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
-* [event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
-* [exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
-* [semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
-* [timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
-* [timer](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timer-class_method)
+* [Condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html)
+* [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)
+* [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
+* [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
+* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
+* [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
+* [Timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
+* [Timer](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timer-class_method)
 
 ### Thread-safe variables
 
-Lower-level abstractions mainly used as building blocks. 
-
 * [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html)
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html)
-* AtomicReference (no docs currently available, check source)
+* [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html)
+* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html)
+* [LazyReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyReference.html)
+* [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
 * [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
-* [thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
-* [software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
+* [Thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
+* [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 
 ## Usage
 
@@ -128,6 +121,8 @@ require 'concurrent/delay'          # Concurrent::Delay
 require 'concurrent/exchanger'      # Concurrent::Exchanger
 require 'concurrent/future'         # Concurrent::Future
 require 'concurrent/ivar'           # Concurrent::IVar
+require 'concurrent/lazy_register'  # Concurrent::LazyRegister
+require 'concurrent/lazy_reference' # Concurrent::LazyReference
 require 'concurrent/mvar'           # Concurrent::MVar
 require 'concurrent/promise'        # Concurrent::Promise
 require 'concurrent/scheduled_task' # Concurrent::ScheduledTask

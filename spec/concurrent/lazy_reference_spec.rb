@@ -1,12 +1,12 @@
 module Concurrent
 
-  describe Lazy do
+  describe LazyReference do
 
     context '#initialize' do
 
       it 'raises an exception when no block given' do
         expect {
-          Lazy.new
+          LazyReference.new
         }.to raise_error(ArgumentError)
       end
     end
@@ -17,17 +17,17 @@ module Concurrent
 
       it 'does not call the block before #value is called' do
         expect(task).to_not receive(:call).with(any_args)
-        Lazy.new(&task)
+        LazyReference.new(&task)
       end
 
       it 'calls the block when #value is called' do
         expect(task).to receive(:call).once.with(any_args).and_return(nil)
-        Lazy.new(&task).value
+        LazyReference.new(&task).value
       end
 
       it 'only calls the block once no matter how often #value is called' do
         expect(task).to receive(:call).once.with(any_args).and_return(nil)
-        lazy = Lazy.new(&task)
+        lazy = LazyReference.new(&task)
         5.times{ lazy.value }
       end
 
@@ -35,7 +35,7 @@ module Concurrent
         mutex = Mutex.new
         allow(Mutex).to receive(:new).and_return(mutex)
 
-        lazy = Lazy.new(&task)
+        lazy = LazyReference.new(&task)
         lazy.value
 
         expect(mutex).to_not receive(:synchronize).with(any_args)
@@ -49,17 +49,17 @@ module Concurrent
 
         it 'suppresses the error' do
           expect {
-            Lazy.new{ raise StandardError }
+            LazyReference.new{ raise StandardError }
           }.to_not raise_exception
         end
 
         it 'sets the value to nil when no default is given' do
-          lazy = Lazy.new{ raise StandardError }
+          lazy = LazyReference.new{ raise StandardError }
           expect(lazy.value).to be_nil
         end
 
         it 'sets the value appropriately when given a default' do
-          lazy = Lazy.new(100){ raise StandardError }
+          lazy = LazyReference.new(100){ raise StandardError }
           expect(lazy.value).to eq 100
         end
 
@@ -67,7 +67,7 @@ module Concurrent
           mutex = Mutex.new
           allow(Mutex).to receive(:new).and_return(mutex)
 
-          lazy = Lazy.new{ raise StandardError }
+          lazy = LazyReference.new{ raise StandardError }
           lazy.value
 
           expect(mutex).to_not receive(:synchronize).with(any_args)

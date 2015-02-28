@@ -1,5 +1,5 @@
 require 'thread'
-require 'concurrent/lazy'
+require 'concurrent/lazy_reference'
 require 'concurrent/atomics'
 require 'concurrent/errors'
 require 'concurrent/executors'
@@ -12,17 +12,17 @@ module Concurrent
   class << self
     @@auto_terminate_global_executors = Concurrent::AtomicBoolean.new(true)
 
-    @@global_fast_executor = Lazy.new do
+    @@global_fast_executor = LazyReference.new do
       Concurrent.new_fast_executor(
         stop_on_exit: @@auto_terminate_global_executors.value)
     end
 
-    @@global_io_executor = Lazy.new do
+    @@global_io_executor = LazyReference.new do
       Concurrent.new_io_executor(
         stop_on_exit: @@auto_terminate_global_executors.value)
     end
 
-    @@global_timer_set = Lazy.new do
+    @@global_timer_set = LazyReference.new do
       Concurrent::TimerSet.new(
         stop_on_exit: @@auto_terminate_global_executors.value)
     end

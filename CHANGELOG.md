@@ -32,8 +32,8 @@
 * All high-level abstractions default to the "io executor"
 * Added shutdown/kill/wait_for_termination variants for global executors
 * Fixed bug in `Actor` causing it to prematurely warm global thread pools on gem load
-* Added `Lazy`, a simpler and faster varition of `Delay`
-  - Updated most internal uses of `Delay` with `Lazy`
+* Added `LazyReference`, a simpler and faster varition of `Delay`
+  - Updated most internal uses of `Delay` with `LazyReference`
 
 ## Current Release v0.8.0 (25 January 2015)
 

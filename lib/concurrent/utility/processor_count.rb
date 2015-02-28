@@ -1,12 +1,12 @@
 require 'rbconfig'
-require 'concurrent/lazy'
+require 'concurrent/lazy_reference'
 
 module Concurrent
 
   class ProcessorCounter
     def initialize
-      @processor_count          = Lazy.new { compute_processor_count }
-      @physical_processor_count = Lazy.new { compute_physical_processor_count }
+      @processor_count          = LazyReference.new { compute_processor_count }
+      @physical_processor_count = LazyReference.new { compute_physical_processor_count }
     end
 
     # Number of processors seen by the OS and used for process scheduling. For
