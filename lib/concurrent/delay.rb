@@ -1,7 +1,7 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/obligation'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -32,7 +32,7 @@ module Concurrent
   # @see http://aphyr.com/posts/306-clojure-from-the-ground-up-state
   class Delay
     include Obligation
-    include OptionsParser
+    include ExecutorOptions
 
     # Create a new `Delay` in the `:pending` state.
     #

@@ -1,7 +1,7 @@
 require 'thread'
 
 require 'concurrent/obligation'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -183,7 +183,7 @@ module Concurrent
   # - `rescue` is aliased by `catch` and `on_error`
   class Promise
     include Obligation
-    include OptionsParser
+    include ExecutorOptions
 
     # Initialize a new Promise with the provided options.
     #

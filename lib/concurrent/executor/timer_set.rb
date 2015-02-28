@@ -4,6 +4,7 @@ require 'concurrent/collection/priority_queue'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/single_thread_executor'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -14,7 +15,7 @@ module Concurrent
   # @!macro monotonic_clock_warning
   class TimerSet
     include RubyExecutor
-    include OptionsParser
+    include ExecutorOptions
 
     # Create a new set of timed tasks.
     #

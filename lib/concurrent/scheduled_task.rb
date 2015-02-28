@@ -1,7 +1,7 @@
 require 'concurrent/ivar'
 require 'concurrent/utility/timer'
 require 'concurrent/executor/safe_task_executor'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -134,7 +134,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class ScheduledTask < IVar
-    include OptionsParser
+    include ExecutorOptions
 
     attr_reader :delay
 

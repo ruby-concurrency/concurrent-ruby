@@ -1,13 +1,13 @@
 module Concurrent
 
-  describe OptionsParser do
+  describe ExecutorOptions do
 
     let(:executor){ ImmediateExecutor.new }
 
     let(:io_executor){ ImmediateExecutor.new }
     let(:fast_executor){ ImmediateExecutor.new }
 
-    subject { Class.new{ include OptionsParser }.new }
+    subject { Class.new{ include ExecutorOptions }.new }
 
     context '#get_executor_from' do
 

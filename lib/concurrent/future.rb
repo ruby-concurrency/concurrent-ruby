@@ -2,7 +2,7 @@ require 'thread'
 
 require 'concurrent/ivar'
 require 'concurrent/executor/safe_task_executor'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -12,7 +12,7 @@ module Concurrent
   # @see http://clojuredocs.org/clojure_core/clojure.core/future Clojure's future function
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
   class Future < IVar
-    include OptionsParser
+    include ExecutorOptions
 
     # Create a new `Future` in the `:unscheduled` state.
     #

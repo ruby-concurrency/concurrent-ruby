@@ -4,7 +4,8 @@ require 'concurrent/executor/immediate_executor'
 module Concurrent
 
   # A mixin module for parsing options hashes related to gem-level configuration.
-  module OptionsParser
+  # @!visibility private
+  module ExecutorOptions # :nodoc:
 
     # Get the requested `Executor` based on the values set in the options hash.
     #  

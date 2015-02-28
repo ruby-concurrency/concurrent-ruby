@@ -2,7 +2,7 @@ require 'thread'
 
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor_options'
 require 'concurrent/utility/timeout'
 require 'concurrent/logging'
 
@@ -15,7 +15,7 @@ module Concurrent
   class Agent
     include Dereferenceable
     include Observable
-    include OptionsParser
+    include ExecutorOptions
     include Logging
 
     attr_reader :timeout, :io_executor, :fast_executor
