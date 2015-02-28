@@ -31,6 +31,7 @@
   - New functions have updated names as appropriate
 * All high-level abstractions default to the "io executor"
 * Added shutdown/kill/wait_for_termination variants for global executors
+* Fixed bug in `Actor` causing it to prematurely warm global thread pools on gem load
 
 ## Current Release v0.8.0 (25 January 2015)
 
