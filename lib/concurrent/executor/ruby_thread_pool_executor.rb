@@ -1,8 +1,9 @@
 require 'thread'
 
-require_relative 'executor'
 require 'concurrent/atomic/event'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/ruby_thread_pool_worker'
+require 'concurrent/utility/clock_time'
 
 module Concurrent
 
@@ -91,7 +92,7 @@ module Concurrent
       @largest_length       = 0
 
       @gc_interval  = opts.fetch(:gc_interval, 1).to_i # undocumented
-      @last_gc_time = Time.now.to_f - [1.0, (@gc_interval * 2.0)].max
+      @last_gc_time = Concurrent::clock_time - [1.0, (@gc_interval * 2.0)].max
     end
 
     # @!macro executor_module_method_can_overflow_question
@@ -225,13 +226,13 @@ module Concurrent
     #
     # @!visibility private
     def prune_pool
-      if Time.now.to_f - @gc_interval >= @last_gc_time
+      if Concurrent::clock_time - @gc_interval >= @last_gc_time
         @pool.delete_if { |worker| worker.dead? }
         # send :stop for each thread over idletime
         @pool.
-            select { |worker| @idletime != 0 && Time.now.to_f - @idletime > worker.last_activity }.
+            select { |worker| @idletime != 0 && Concurrent::clock_time - @idletime > worker.last_activity }.
             each { @queue << :stop }
-        @last_gc_time = Time.now.to_f
+        @last_gc_time = Concurrent::clock_time
       end
     end
 

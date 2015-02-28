@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/logging'
+require 'concurrent/utility/clock_time'
 
 module Concurrent
 
@@ -12,7 +13,7 @@ module Concurrent
       @queue = queue
       @parent = parent
       @mutex = Mutex.new
-      @last_activity = Time.now.to_f
+      @last_activity = Concurrent::clock_time
       @thread = nil
     end
 
@@ -64,7 +65,7 @@ module Concurrent
           # let it fail
           log DEBUG, ex
         ensure
-          @last_activity = Time.now.to_f
+          @last_activity = Concurrent::clock_time
           @parent.on_end_task
         end
       end
