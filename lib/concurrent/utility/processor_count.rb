@@ -1,13 +1,12 @@
 require 'rbconfig'
-require 'concurrent/delay'
-require 'concurrent/executor/immediate_executor'
+require 'concurrent/lazy'
 
 module Concurrent
 
   class ProcessorCounter
     def initialize
-      @processor_count          = Delay.new(executor: :immediate) { compute_processor_count }
-      @physical_processor_count = Delay.new(executor: :immediate) { compute_physical_processor_count }
+      @processor_count          = Lazy.new { compute_processor_count }
+      @physical_processor_count = Lazy.new { compute_physical_processor_count }
     end
 
     # Number of processors seen by the OS and used for process scheduling. For
@@ -79,7 +78,7 @@ module Concurrent
         if os_name =~ /mingw|mswin/
           require 'win32ole'
           result = WIN32OLE.connect("winmgmts://").ExecQuery(
-              "select NumberOfLogicalProcessors from Win32_Processor")
+            "select NumberOfLogicalProcessors from Win32_Processor")
           result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
         elsif File.readable?("/proc/cpuinfo")
           IO.read("/proc/cpuinfo").scan(/^processor/).size
@@ -128,7 +127,7 @@ module Concurrent
             when /mswin|mingw/
               require 'win32ole'
               result_set = WIN32OLE.connect("winmgmts://").ExecQuery(
-                  "select NumberOfCores from Win32_Processor")
+                "select NumberOfCores from Win32_Processor")
               result_set.to_enum.collect(&:NumberOfCores).reduce(:+)
             else
               processor_count

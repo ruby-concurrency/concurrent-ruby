@@ -5,13 +5,15 @@ require 'concurrent/executor/executor_options'
 
 module Concurrent
 
-  # Lazy evaluation of a block yielding an immutable result. Useful for expensive
-  # operations that may never be needed.
-  #
-  # A `Delay` is similar to `Future` but solves a different problem.
-  # Where a `Future` schedules an operation for immediate execution and
-  # performs the operation asynchronously, a `Delay` (as the name implies)
-  # delays execution of the operation until the result is actually needed.
+  # Lazy evaluation of a block yielding an immutable result. Useful for
+  # expensive operations that may never be needed. `Delay` is a more
+  # complex and feature-rich version of `Lazy`. It is non-blocking,
+  # supports the `Obligation` interface, and accepts the injection of
+  # custom executor upon which to execute the block. Processing of
+  # block will be deferred until the first time `#value` is called.
+  # At that time the caller can choose to return immediately and let
+  # the block execute asynchronously, block indefinitely, or block
+  # with a timeout.
   #
   # When a `Delay` is created its state is set to `pending`. The value and
   # reason are both `nil`. The first time the `#value` method is called the
@@ -26,10 +28,16 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
-  # @see Concurrent::Dereferenceable
+  # Because of its simplicity `Lazy` is much faster than `Delay`:
   #
-  # @see http://clojuredocs.org/clojure_core/clojure.core/delay
-  # @see http://aphyr.com/posts/306-clojure-from-the-ground-up-state
+  #            user     system      total        real
+  #     Benchmarking Delay...
+  #        0.730000   0.000000   0.730000 (  0.738434)
+  #     Benchmarking Lazy...
+  #        0.040000   0.000000   0.040000 (  0.042322)
+  #
+  # @see Concurrent::Dereferenceable
+  # @see Concurrent::Lazy
   class Delay
     include Obligation
     include ExecutorOptions
@@ -63,12 +71,20 @@ module Concurrent
       @computing     = false
     end
 
-    def wait(timeout)
+    # Return the value this object represents after applying the options
+    # specified by the `#set_deref_options` method.
+    #
+    # @param [Integer] timeout (nil) the maximum number of seconds to wait for
+    #   the value to be computed. When `nil` the caller will block indefinitely.
+    #
+    # @return [Object] the current value of the object
+    def wait(timeout = nil)
       execute_task_once
-      super timeout
+      super(timeout)
     end
 
-    # reconfigures the block returning the value if still #incomplete?
+    # Reconfigures the block returning the value if still `#incomplete?`
+    #
     # @yield the delayed operation to perform
     # @return [true, false] if success
     def reconfigure(&block)
@@ -86,7 +102,8 @@ module Concurrent
 
     private
 
-    def execute_task_once
+    # @!visibility private
+    def execute_task_once # :nodoc:
       mutex.lock
       execute = @computing = true unless @computing
       task    = @task

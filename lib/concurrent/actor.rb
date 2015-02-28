@@ -1,4 +1,5 @@
 require 'concurrent/configuration'
+require 'concurrent/delay'
 require 'concurrent/executor/serialized_execution'
 require 'concurrent/ivar'
 require 'concurrent/logging'
