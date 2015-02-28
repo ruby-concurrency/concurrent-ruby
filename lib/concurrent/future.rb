@@ -28,7 +28,7 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      @executor = OptionsParser::get_task_executor_from(opts)
+      @executor = OptionsParser::get_io_executor_from(opts)
       @args = OptionsParser::get_arguments_from(opts)
     end
 

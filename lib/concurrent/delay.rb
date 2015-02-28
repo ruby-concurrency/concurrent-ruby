@@ -59,7 +59,7 @@ module Concurrent
       @state = :pending
       @task  = block
       set_deref_options(opts)
-      @task_executor = OptionsParser.get_task_executor_from(opts)
+      @task_executor = OptionsParser.get_io_executor_from(opts)
       @computing     = false
     end
 

@@ -204,7 +204,7 @@ module Concurrent
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
 
-      @executor = OptionsParser::get_task_executor_from(opts)
+      @executor = OptionsParser::get_io_executor_from(opts)
       @args = OptionsParser::get_arguments_from(opts)
 
       @parent = opts.fetch(:parent) { nil }

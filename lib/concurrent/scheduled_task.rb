@@ -164,7 +164,7 @@ module Concurrent
       self.observers = CopyOnNotifyObserverSet.new
       @state         = :unscheduled
       @task          = block
-      @executor      = OptionsParser::get_task_executor_from(opts)
+      @executor      = OptionsParser::get_io_executor_from(opts)
     end
 
 

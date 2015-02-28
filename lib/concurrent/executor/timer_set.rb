@@ -27,7 +27,7 @@ module Concurrent
     #     `ImmediateExecutor` object.
     def initialize(opts = {})
       @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = OptionsParser::get_task_executor_from(opts)
+      @task_executor  = OptionsParser::get_io_executor_from(opts)
       @timer_executor = SingleThreadExecutor.new
       @condition      = Condition.new
       init_executor
