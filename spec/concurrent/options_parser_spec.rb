@@ -4,8 +4,8 @@ module Concurrent
 
     let(:executor){ ImmediateExecutor.new }
 
-    let(:task_pool){ ImmediateExecutor.new }
-    let(:operation_pool){ ImmediateExecutor.new }
+    let(:io_executor){ ImmediateExecutor.new }
+    let(:fast_executor){ ImmediateExecutor.new }
 
     context '#get_arguments_from' do
 
@@ -57,16 +57,14 @@ module Concurrent
         expect(OptionsParser::get_executor_from(executor: executor)).to eq executor
       end
 
-      it 'returns the global task pool when :executor is :task' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).
-          and_return(:task_pool)
-        OptionsParser::get_executor_from(executor: :task)
+      it 'returns the global io executor when :executor is :io' do
+        expect(Concurrent).to receive(:global_io_executor).and_return(:io_executor)
+        OptionsParser::get_executor_from(executor: :io)
       end
 
-      it 'returns the global operation pool when :executor is :operation' do
-        expect(Concurrent.configuration).to receive(:global_operation_pool).
-          and_return(:operation_pool)
-        OptionsParser::get_executor_from(executor: :operation)
+      it 'returns the global fast executor when :executor is :fast' do
+        expect(Concurrent).to receive(:global_fast_executor).and_return(:fast_executor)
+        OptionsParser::get_executor_from(executor: :fast)
       end
 
       it 'returns an immediate executor when :executor is :immediate' do
@@ -79,35 +77,35 @@ module Concurrent
         }.to raise_error(ArgumentError)
       end
 
-      it 'returns the global operation pool when :operation is true' do
+      it 'returns the global fast executor when :operation is true' do
         warn 'deprecated syntax'
         expect(Kernel).to receive(:warn).with(anything)
-        expect(Concurrent.configuration).to receive(:global_operation_pool).
-          and_return(:operation_pool)
+        expect(Concurrent).to receive(:global_fast_executor).
+          and_return(:fast_executor)
         OptionsParser::get_executor_from(operation: true)
       end
 
-      it 'returns the global task pool when :operation is false' do
+      it 'returns the global io executor when :operation is false' do
         warn 'deprecated syntax'
         expect(Kernel).to receive(:warn).with(anything)
-        expect(Concurrent.configuration).to receive(:global_task_pool).
-          and_return(:task_pool)
+        expect(Concurrent).to receive(:global_io_executor).
+          and_return(:io_executor)
         OptionsParser::get_executor_from(operation: false)
       end
 
-      it 'returns the global operation pool when :task is false' do
+      it 'returns the global fast executor when :task is false' do
         warn 'deprecated syntax'
         expect(Kernel).to receive(:warn).with(anything)
-        expect(Concurrent.configuration).to receive(:global_operation_pool).
-          and_return(:operation_pool)
+        expect(Concurrent).to receive(:global_fast_executor).
+          and_return(:fast_executor)
         OptionsParser::get_executor_from(task: false)
       end
 
-      it 'returns the global task pool when :task is true' do
+      it 'returns the global io executor when :task is true' do
         warn 'deprecated syntax'
         expect(Kernel).to receive(:warn).with(anything)
-        expect(Concurrent.configuration).to receive(:global_task_pool).
-          and_return(:task_pool)
+        expect(Concurrent).to receive(:global_io_executor).
+          and_return(:io_executor)
         OptionsParser::get_executor_from(task: true)
       end
 
@@ -115,7 +113,7 @@ module Concurrent
         expect(OptionsParser::get_executor_from(executor: nil)).to be_nil
       end
 
-      it 'returns nil task pool when no option is given' do
+      it 'returns nil when no option is given' do
         expect(OptionsParser::get_executor_from).to be_nil
       end
 
@@ -134,38 +132,38 @@ module Concurrent
       specify ':operation overrides :task' do
         warn 'deprecated syntax'
         expect(Kernel).to receive(:warn).with(anything)
-        expect(Concurrent.configuration).to receive(:global_operation_pool).
-          and_return(:operation_pool)
+        expect(Concurrent).to receive(:global_fast_executor).
+          and_return(:fast_executor)
         OptionsParser::get_executor_from(operation: true, task: true)
       end
     end
 
-    context '#get_task_executor_from' do
+    context '#get_io_executor_from' do
 
-      it 'returns the global task pool when no :executor option given' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).
-          and_return(:task_pool)
-        OptionsParser::get_task_executor_from({})
+      it 'returns the global io executor when no :executor option given' do
+        expect(Concurrent).to receive(:global_io_executor).
+          and_return(:io_executor)
+        OptionsParser::get_io_executor_from({})
       end
 
       it 'defers to #get_executor_from when an :executor option is given' do
         opts = {executor: :immediate}
-        executor = OptionsParser::get_task_executor_from(opts)
+        executor = OptionsParser::get_io_executor_from(opts)
         expect(executor).to be_a(ImmediateExecutor)
       end
     end
 
-    context '#get_operation_executor_from' do
+    context '#get_fast_executor_from' do
 
-      it 'returns the global operation pool when no :executor option given' do
-        expect(Concurrent.configuration).to receive(:global_operation_pool).
-          and_return(:operation_pool)
-        OptionsParser::get_operation_executor_from({})
+      it 'returns the global fast executor when no :executor option given' do
+        expect(Concurrent).to receive(:global_fast_executor).
+          and_return(:fast_executor)
+        OptionsParser::get_fast_executor_from({})
       end
 
       it 'defers to #get_executor_from when an :executor option is given' do
         opts = {executor: :immediate}
-        executor = OptionsParser::get_operation_executor_from(opts)
+        executor = OptionsParser::get_fast_executor_from(opts)
         expect(executor).to be_a(ImmediateExecutor)
       end
     end

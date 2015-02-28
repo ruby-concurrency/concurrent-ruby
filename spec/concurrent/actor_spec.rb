@@ -121,7 +121,7 @@ module Concurrent
                 subject { super().name }
                 it { is_expected.to eq 'ping' }
               end
-              it('executor should be global') { expect(subject.executor).to eq Concurrent.global_fast_executor }
+              it('executor should be global') { expect(subject.executor).to eq Concurrent.global_io_executor }
 
               describe '#reference' do
                 subject { super().reference }

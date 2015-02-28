@@ -104,7 +104,7 @@ module Concurrent
     context 'executor' do
 
       it 'returns the default executor when #executor= has never been called' do
-        expect(Concurrent).to receive(:global_fast_executor).
+        expect(Concurrent).to receive(:global_io_executor).
           and_return(ImmediateExecutor.new)
         subject = async_class.new
         subject.async.echo(:foo)

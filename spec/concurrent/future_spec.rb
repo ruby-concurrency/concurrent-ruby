@@ -116,18 +116,32 @@ module Concurrent
         Future.execute(executor: executor){ nil }
       end
 
-      it 'uses the global io executor when :operation is true' do
-        expect(Concurrent).to receive(:global_io_executor).and_return(executor)
+      it 'uses the global fast executor when :operation is true' do
+        warn 'deprecated syntax'
+        expect(Concurrent).to receive(:global_fast_executor).and_return(executor)
         Future.execute(operation: true){ nil }
       end
 
-      it 'uses the global fast executor when :task is true' do
-        expect(Concurrent).to receive(:global_fast_executor).and_return(executor)
+      it 'uses the global io executor when :task is true' do
+        warn 'deprecated syntax'
+        expect(Concurrent).to receive(:global_io_executor).and_return(executor)
         Future.execute(task: true){ nil }
       end
 
-      it 'uses the global fast executor by default' do
+      it 'uses the global fast executor when :operation is true' do
+        warn 'deprecated syntax'
         expect(Concurrent).to receive(:global_fast_executor).and_return(executor)
+        Future.execute(operation: true){ nil }
+      end
+
+      it 'uses the global io executor when :task is true' do
+        warn 'deprecated syntax'
+        expect(Concurrent).to receive(:global_io_executor).and_return(executor)
+        Future.execute(task: true){ nil }
+      end
+
+      it 'uses the global io executor by default' do
+        expect(Concurrent).to receive(:global_io_executor).and_return(executor)
         Future.execute{ nil }
       end
     end

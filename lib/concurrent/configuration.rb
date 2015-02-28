@@ -38,14 +38,14 @@ module Concurrent
     @@auto_terminate_global_executors.value
   end
 
-  # Global thread pool optimized for short, fast *tasks*.
+  # Global thread pool optimized for short, fast *operations*.
   #
   # @return [ThreadPoolExecutor] the thread pool
   def self.global_fast_executor
     @@global_fast_executor.value
   end
 
-  # Global thread pool optimized for long, blocking (IO) *operations*.
+  # Global thread pool optimized for long, blocking (IO) *tasks*.
   #
   # @return [ThreadPoolExecutor] the thread pool
   def self.global_io_executor
@@ -99,16 +99,16 @@ module Concurrent
       lambda { |level, progname, message = nil, &block| }
     end
 
-    # @deprecated Use Concurrent.global_fast_executor instead
-    def global_task_pool
-      warn '[DEPRECATED] Use Concurrent.global_fast_executor instead'
-      Concurrent.global_fast_executor
-    end
-
     # @deprecated Use Concurrent.global_io_executor instead
-    def global_operation_pool
+    def global_task_pool
       warn '[DEPRECATED] Use Concurrent.global_io_executor instead'
       Concurrent.global_io_executor
+    end
+
+    # @deprecated Use Concurrent.global_fast_executor instead
+    def global_operation_pool
+      warn '[DEPRECATED] Use Concurrent.global_fast_executor instead'
+      Concurrent.global_fast_executor
     end
 
     # @deprecated Use Concurrent.global_timer_set instead
@@ -121,7 +121,7 @@ module Concurrent
     #   Use the :executor constructor option instead.
     def global_task_pool=(executor)
       warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
-      var = Concurrent.class_variable_get(:@@global_fast_executor)
+      var = Concurrent.class_variable_get(:@@global_io_executor)
       var.reconfigure { executor } or
         raise ConfigurationError.new('global task pool was already set')
     end
@@ -130,21 +130,21 @@ module Concurrent
     #   Use the :executor constructor option instead.
     def global_operation_pool=(executor)
       warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
-      var = Concurrent.class_variable_get(:@@global_io_executor)
+      var = Concurrent.class_variable_get(:@@global_fast_executor)
       var.reconfigure { executor } or
         raise ConfigurationError.new('global operation pool was already set')
     end
 
-    # @deprecated Use Concurrent.new_fast_executor instead
-    def new_task_pool
-      warn '[DEPRECATED] Use Concurrent.new_fast_executor instead'
-      Concurrent.new_fast_executor
-    end
-
     # @deprecated Use Concurrent.new_io_executor instead
-    def new_operation_pool
+    def new_task_pool
       warn '[DEPRECATED] Use Concurrent.new_io_executor instead'
       Concurrent.new_io_executor
+    end
+
+    # @deprecated Use Concurrent.new_fast_executor instead
+    def new_operation_pool
+      warn '[DEPRECATED] Use Concurrent.new_fast_executor instead'
+      Concurrent.new_fast_executor
     end
 
     # @deprecated Use Concurrent.disable_auto_termination_of_global_executors! instead
