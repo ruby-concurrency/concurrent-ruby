@@ -14,8 +14,8 @@ module Concurrent
       sleep(0.1)
     end
 
-    it 'uses the global task pool be default' do
-      expect(Concurrent.configuration.global_task_pool).to receive(:post).with(no_args)
+    it 'uses the global fast executor be default' do
+      expect(Concurrent.global_fast_executor).to receive(:post).with(no_args)
       subject = TimerSet.new
       subject.post(0){ nil }
       sleep(0.1)

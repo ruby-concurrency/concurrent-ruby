@@ -121,13 +121,13 @@ module Concurrent
         Future.execute(operation: true){ nil }
       end
 
-      it 'uses the global task pool when :task is true' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
+      it 'uses the global fast executor when :task is true' do
+        expect(Concurrent).to receive(:global_fast_executor).and_return(executor)
         Future.execute(task: true){ nil }
       end
 
-      it 'uses the global task pool by default' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
+      it 'uses the global fast executor by default' do
+        expect(Concurrent).to receive(:global_fast_executor).and_return(executor)
         Future.execute{ nil }
       end
     end

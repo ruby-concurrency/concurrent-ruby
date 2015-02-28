@@ -91,16 +91,16 @@ module Concurrent
         agent.post { |value| 0 }
       end
 
-      it 'uses the global task pool when :executor is :task' do
-        expect(Concurrent.configuration).to \
-          receive(:global_task_pool).at_least(:once).and_return(executor)
+      it 'uses the global fast executor when :executor is :task' do
+        expect(Concurrent).to \
+          receive(:global_fast_executor).at_least(:once).and_return(executor)
         agent = Agent.new(0, executor: :task)
         agent.post { |value| 0 }
       end
 
-      it 'uses the global task pool for #post by default' do
-        expect(Concurrent.configuration).to \
-          receive(:global_task_pool).at_least(:once).and_return(executor)
+      it 'uses the global fast executor for #post by default' do
+        expect(Concurrent).to \
+          receive(:global_fast_executor).at_least(:once).and_return(executor)
         agent = Agent.new(0)
         agent.post { |value| 0 }
       end

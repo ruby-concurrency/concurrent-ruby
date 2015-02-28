@@ -31,32 +31,11 @@ module Concurrent
       expect(Concurrent.configuration.global_timer_set).to respond_to(:post)
     end
 
-    context 'global task pool' do
+    context 'global fast executor' do
 
       specify 'reader creates a default pool when first called if none exists' do
-        expect(Concurrent.configuration.global_task_pool).not_to be_nil
-        expect(Concurrent.configuration.global_task_pool).to respond_to(:post)
-      end
-
-      specify 'writer memoizes the given executor' do
-        executor = ImmediateExecutor.new
-        Concurrent.configure do |config|
-          config.global_task_pool = executor
-        end
-        expect(Concurrent.configuration.global_task_pool).to eq executor
-      end
-
-      specify 'writer raises an exception if called after initialization' do
-        executor = ImmediateExecutor.new
-        Concurrent.configure do |config|
-          config.global_task_pool = executor
-        end
-        Concurrent.configuration.global_task_pool
-        expect {
-          Concurrent.configure do |config|
-            config.global_task_pool = executor
-          end
-        }.to raise_error(ConfigurationError)
+        expect(Concurrent.global_fast_executor).not_to be_nil
+        expect(Concurrent.global_fast_executor).to respond_to(:post)
       end
     end
 
