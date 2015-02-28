@@ -10,10 +10,10 @@ module Concurrent
       expect { Concurrent::dataflow_with(root_executor) }.to raise_error(ArgumentError)
     end
 
-    specify '#dataflow uses the global operation pool' do
+    specify '#dataflow uses the global io executor' do
       input = Future.execute{0}
       expect(Concurrent).to receive(:dataflow_with).once.
-        with(Concurrent.configuration.global_operation_pool, input)
+        with(Concurrent.global_io_executor, input)
       Concurrent::dataflow(input){0}
     end
 

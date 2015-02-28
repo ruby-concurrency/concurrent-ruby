@@ -116,8 +116,8 @@ module Concurrent
         Future.execute(executor: executor){ nil }
       end
 
-      it 'uses the global operation pool when :operation is true' do
-        expect(Concurrent.configuration).to receive(:global_operation_pool).and_return(executor)
+      it 'uses the global io executor when :operation is true' do
+        expect(Concurrent).to receive(:global_io_executor).and_return(executor)
         Future.execute(operation: true){ nil }
       end
 

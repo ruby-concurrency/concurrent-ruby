@@ -84,9 +84,9 @@ module Concurrent
         agent.post { |value| 0 }
       end
 
-      it 'uses the global operation pool when :executor is :operation' do
-        expect(Concurrent.configuration).to \
-          receive(:global_operation_pool).at_least(:once).and_return(executor)
+      it 'uses the global io executor when :executor is :operation' do
+        expect(Concurrent).to \
+          receive(:global_io_executor).at_least(:once).and_return(executor)
         agent = Agent.new(0, executor: :operation)
         agent.post { |value| 0 }
       end
@@ -105,9 +105,9 @@ module Concurrent
         agent.post { |value| 0 }
       end
 
-      it 'uses the global operation pool for #post_off by default' do
-        expect(Concurrent.configuration).to \
-          receive(:global_operation_pool).at_least(:once).and_return(executor)
+      it 'uses the global io executor for #post_off by default' do
+        expect(Concurrent).to \
+          receive(:global_io_executor).at_least(:once).and_return(executor)
         agent = Agent.new(0)
         agent.post_off { |value| 0 }
       end
