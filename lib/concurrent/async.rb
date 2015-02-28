@@ -10,8 +10,6 @@ module Concurrent
 
   # {include:file:doc/async.md}
   #
-  # @since 0.6.0
-  #
   # @see Concurrent::Obligation
   module Async
 

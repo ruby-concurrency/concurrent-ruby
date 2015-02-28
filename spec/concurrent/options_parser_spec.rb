@@ -7,73 +7,31 @@ module Concurrent
     let(:io_executor){ ImmediateExecutor.new }
     let(:fast_executor){ ImmediateExecutor.new }
 
-    context '#get_arguments_from' do
-
-      it 'returns an empty array when opts is not given' do
-        args = OptionsParser::get_arguments_from
-        expect(args).to be_a Array
-        expect(args).to be_empty
-      end
-
-      it 'returns an empty array when opts is an empty hash' do
-        args = OptionsParser::get_arguments_from({})
-        expect(args).to be_a Array
-        expect(args).to be_empty
-      end
-
-      it 'returns an empty array when there is no :args key' do
-        args = OptionsParser::get_arguments_from(foo: 'bar')
-        expect(args).to be_a Array
-        expect(args).to be_empty
-      end
-
-      it 'returns an empty array when the :args key has a nil value' do
-        args = OptionsParser::get_arguments_from(args: nil)
-        expect(args).to be_a Array
-        expect(args).to be_empty
-      end
-
-      it 'returns a one-element array when the :args key has a non-array value' do
-        args = OptionsParser::get_arguments_from(args: 'foo')
-        expect(args).to eq ['foo']
-      end
-
-      it 'returns an array when when the :args key has an array value' do
-        expected = [1, 2, 3, 4]
-        args = OptionsParser::get_arguments_from(args: expected)
-        expect(args).to eq expected
-      end
-
-      it 'returns the given array when the :args key has a complex array value' do
-        expected = [(1..10).to_a, (20..30).to_a, (100..110).to_a]
-        args = OptionsParser::get_arguments_from(args: expected)
-        expect(args).to eq expected
-      end
-    end
+    subject { Class.new{ include OptionsParser }.new }
 
     context '#get_executor_from' do
 
       it 'returns the given :executor' do
-        expect(OptionsParser::get_executor_from(executor: executor)).to eq executor
+        expect(subject.get_executor_from(executor: executor)).to eq executor
       end
 
       it 'returns the global io executor when :executor is :io' do
         expect(Concurrent).to receive(:global_io_executor).and_return(:io_executor)
-        OptionsParser::get_executor_from(executor: :io)
+        subject.get_executor_from(executor: :io)
       end
 
       it 'returns the global fast executor when :executor is :fast' do
         expect(Concurrent).to receive(:global_fast_executor).and_return(:fast_executor)
-        OptionsParser::get_executor_from(executor: :fast)
+        subject.get_executor_from(executor: :fast)
       end
 
       it 'returns an immediate executor when :executor is :immediate' do
-        executor = OptionsParser::get_executor_from(executor: :immediate)
+        executor = subject.get_executor_from(executor: :immediate)
       end
 
       it 'raises an exception when :executor is an unrecognized symbol' do
         expect {
-          OptionsParser::get_executor_from(executor: :bogus)
+          subject.get_executor_from(executor: :bogus)
         }.to raise_error(ArgumentError)
       end
 
@@ -82,7 +40,7 @@ module Concurrent
         expect(Kernel).to receive(:warn).with(anything)
         expect(Concurrent).to receive(:global_fast_executor).
           and_return(:fast_executor)
-        OptionsParser::get_executor_from(operation: true)
+        subject.get_executor_from(operation: true)
       end
 
       it 'returns the global io executor when :operation is false' do
@@ -90,7 +48,7 @@ module Concurrent
         expect(Kernel).to receive(:warn).with(anything)
         expect(Concurrent).to receive(:global_io_executor).
           and_return(:io_executor)
-        OptionsParser::get_executor_from(operation: false)
+        subject.get_executor_from(operation: false)
       end
 
       it 'returns the global fast executor when :task is false' do
@@ -98,7 +56,7 @@ module Concurrent
         expect(Kernel).to receive(:warn).with(anything)
         expect(Concurrent).to receive(:global_fast_executor).
           and_return(:fast_executor)
-        OptionsParser::get_executor_from(task: false)
+        subject.get_executor_from(task: false)
       end
 
       it 'returns the global io executor when :task is true' do
@@ -106,26 +64,26 @@ module Concurrent
         expect(Kernel).to receive(:warn).with(anything)
         expect(Concurrent).to receive(:global_io_executor).
           and_return(:io_executor)
-        OptionsParser::get_executor_from(task: true)
+        subject.get_executor_from(task: true)
       end
 
       it 'returns nil when :executor is nil' do
-        expect(OptionsParser::get_executor_from(executor: nil)).to be_nil
+        expect(subject.get_executor_from(executor: nil)).to be_nil
       end
 
       it 'returns nil when no option is given' do
-        expect(OptionsParser::get_executor_from).to be_nil
+        expect(subject.get_executor_from).to be_nil
       end
 
       specify ':executor overrides :operation' do
         warn 'deprecated syntax'
-        expect(OptionsParser::get_executor_from(executor: executor, operation: true)).
+        expect(subject.get_executor_from(executor: executor, operation: true)).
           to eq executor
       end
 
       specify ':executor overrides :task' do
         warn 'deprecated syntax'
-        expect(OptionsParser::get_executor_from(executor: executor, task: true)).
+        expect(subject.get_executor_from(executor: executor, task: true)).
           to eq executor
       end
 
@@ -134,37 +92,7 @@ module Concurrent
         expect(Kernel).to receive(:warn).with(anything)
         expect(Concurrent).to receive(:global_fast_executor).
           and_return(:fast_executor)
-        OptionsParser::get_executor_from(operation: true, task: true)
-      end
-    end
-
-    context '#get_io_executor_from' do
-
-      it 'returns the global io executor when no :executor option given' do
-        expect(Concurrent).to receive(:global_io_executor).
-          and_return(:io_executor)
-        OptionsParser::get_io_executor_from({})
-      end
-
-      it 'defers to #get_executor_from when an :executor option is given' do
-        opts = {executor: :immediate}
-        executor = OptionsParser::get_io_executor_from(opts)
-        expect(executor).to be_a(ImmediateExecutor)
-      end
-    end
-
-    context '#get_fast_executor_from' do
-
-      it 'returns the global fast executor when no :executor option given' do
-        expect(Concurrent).to receive(:global_fast_executor).
-          and_return(:fast_executor)
-        OptionsParser::get_fast_executor_from({})
-      end
-
-      it 'defers to #get_executor_from when an :executor option is given' do
-        opts = {executor: :immediate}
-        executor = OptionsParser::get_fast_executor_from(opts)
-        expect(executor).to be_a(ImmediateExecutor)
+        subject.get_executor_from(operation: true, task: true)
       end
     end
   end

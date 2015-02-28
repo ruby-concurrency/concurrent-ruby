@@ -22,6 +22,14 @@
 * Added `Executor#auto_terminate?` predicate method (for thread pools)
 * Added `at_exit` handler to `TimerSet`
 * Simplified auto-termination of the global thread pools
+* Deprecated terms "task pool" and "operation pool"
+  - New terms are "io executor" and "fast executor"
+  - New functions added with new names
+  - Deprecation warnings added to functions referencing old names
+* Moved all thread pool related functions from `Concurrent::Configuration` to `Concurrent`
+  - Old functions still exist with deprecation warnings
+  - New functions have updated names as appropriate
+* All high-level abstractions default to the "io executor"
 
 ## Current Release v0.8.0 (25 January 2015)
 

@@ -100,6 +100,11 @@ module Concurrent
     protected
 
     # @!visibility private
+    def get_arguments_from(opts = {}) # :nodoc:
+      [*opts.fetch(:args, [])]
+    end
+
+    # @!visibility private
     def init_obligation # :nodoc:
       init_mutex
       @event = Event.new

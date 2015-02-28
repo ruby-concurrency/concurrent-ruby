@@ -150,7 +150,7 @@ module Concurrent
   class TimerTask
     include Dereferenceable
     include RubyExecutor
-    include Concurrent::Observable
+    include Observable
 
     # Default `:execution_interval` in seconds.
     EXECUTION_INTERVAL = 60
@@ -221,8 +221,6 @@ module Concurrent
     # @example Instance and execute in one line
     #   task = Concurrent::TimerTask.new(execution_interval: 10){ print "Hello World\n" }.execute
     #   task.running? #=> true
-    #
-    # @since 0.6.0
     def execute
       mutex.synchronize do
         if @running.false?
@@ -240,8 +238,6 @@ module Concurrent
     # @example
     #   task = Concurrent::TimerTask.execute(execution_interval: 10){ print "Hello World\n" }
     #   task.running? #=> true
-    #
-    # @since 0.6.0
     def self.execute(opts = {}, &task)
       TimerTask.new(opts, &task).execute
     end

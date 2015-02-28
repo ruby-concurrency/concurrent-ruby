@@ -182,8 +182,8 @@ module Concurrent
   # - `rescue { |reason| ... }` is the same as `then(Proc.new { |reason| ... } )`
   # - `rescue` is aliased by `catch` and `on_error`
   class Promise
-    # TODO unify promise and future to single class, with dataflow
     include Obligation
+    include OptionsParser
 
     # Initialize a new Promise with the provided options.
     #
@@ -204,8 +204,8 @@ module Concurrent
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
 
-      @executor = OptionsParser::get_io_executor_from(opts)
-      @args = OptionsParser::get_arguments_from(opts)
+      @executor = get_executor_from(opts) || Concurrent.global_io_executor
+      @args = get_arguments_from(opts)
 
       @parent = opts.fetch(:parent) { nil }
       @on_fulfill = opts.fetch(:on_fulfill) { Proc.new { |result| result } }

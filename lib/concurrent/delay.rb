@@ -1,4 +1,5 @@
 require 'thread'
+require 'concurrent/configuration'
 require 'concurrent/obligation'
 require 'concurrent/options_parser'
 
@@ -25,14 +26,13 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
-  # @since 0.6.0
-  #
   # @see Concurrent::Dereferenceable
   #
   # @see http://clojuredocs.org/clojure_core/clojure.core/delay
   # @see http://aphyr.com/posts/306-clojure-from-the-ground-up-state
   class Delay
     include Obligation
+    include OptionsParser
 
     # Create a new `Delay` in the `:pending` state.
     #
@@ -59,7 +59,7 @@ module Concurrent
       @state = :pending
       @task  = block
       set_deref_options(opts)
-      @task_executor = OptionsParser.get_io_executor_from(opts)
+      @task_executor = get_executor_from(opts) || Concurrent.global_io_executor
       @computing     = false
     end
 

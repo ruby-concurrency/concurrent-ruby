@@ -14,7 +14,8 @@ module Concurrent
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   class Agent
     include Dereferenceable
-    include Concurrent::Observable
+    include Observable
+    include OptionsParser
     include Logging
 
     attr_reader :timeout, :io_executor, :fast_executor
@@ -30,8 +31,8 @@ module Concurrent
       @validator            = Proc.new { |result| true }
       self.observers        = CopyOnWriteObserverSet.new
       @serialized_execution = SerializedExecution.new
-      @io_executor          = OptionsParser.get_io_executor_from(opts)
-      @fast_executor        = OptionsParser.get_fast_executor_from(opts)
+      @io_executor          = get_executor_from(opts) || Concurrent.global_io_executor
+      @fast_executor        = get_executor_from(opts) || Concurrent.global_fast_executor
       init_mutex
       set_deref_options(opts)
     end

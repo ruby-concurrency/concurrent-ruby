@@ -1,6 +1,7 @@
 require 'concurrent/ivar'
 require 'concurrent/utility/timer'
 require 'concurrent/executor/safe_task_executor'
+require 'concurrent/options_parser'
 
 module Concurrent
 
@@ -133,6 +134,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class ScheduledTask < IVar
+    include OptionsParser
 
     attr_reader :delay
 
@@ -164,9 +166,8 @@ module Concurrent
       self.observers = CopyOnNotifyObserverSet.new
       @state         = :unscheduled
       @task          = block
-      @executor      = OptionsParser::get_io_executor_from(opts)
+      @executor      = get_executor_from(opts) || Concurrent.global_io_executor
     end
-
 
     # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
     # and starts counting down toward execution. Does nothing if the `ScheduledTask` is
@@ -206,6 +207,10 @@ module Concurrent
     def schedule_time
       warn '[DEPRECATED] time is now based on a monotonic clock'
       @schedule_time
+=======
+    def self.execute(intended_time, opts = {}, &block)
+      return ScheduledTask.new(intended_time, opts, &block).execute
+>>>>>>> Refactor, cleanup, document.
     end
 
     # Has the task been cancelled?

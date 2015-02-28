@@ -1,8 +1,8 @@
 require 'thread'
 
-require 'concurrent/options_parser'
 require 'concurrent/ivar'
 require 'concurrent/executor/safe_task_executor'
+require 'concurrent/options_parser'
 
 module Concurrent
 
@@ -12,6 +12,7 @@ module Concurrent
   # @see http://clojuredocs.org/clojure_core/clojure.core/future Clojure's future function
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
   class Future < IVar
+    include OptionsParser
 
     # Create a new `Future` in the `:unscheduled` state.
     #
@@ -28,8 +29,8 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      @executor = OptionsParser::get_io_executor_from(opts)
-      @args = OptionsParser::get_arguments_from(opts)
+      @executor = get_executor_from(opts) || Concurrent.global_io_executor
+      @args = get_arguments_from(opts)
     end
 
     # Execute an `:unscheduled` `Future`. Immediately sets the state to `:pending` and
