@@ -71,7 +71,7 @@ module Concurrent
         # without this the application may fail to exit
         @auto_terminate = true
         this = self
-        at_exit { this.kill }
+        at_exit { this.kill if Concurrent.auto_terminate_all_executors? }
       end
     end
   end
