@@ -13,7 +13,7 @@ module Concurrent
     specify '#dataflow uses the global fast executor' do
       input = Future.execute{0}
       expect(Concurrent).to receive(:dataflow_with).once.
-        with(Concurrent.global_fast_executor, input)
+        with(Concurrent.global_io_executor, input)
       Concurrent::dataflow(input){0}
     end
 

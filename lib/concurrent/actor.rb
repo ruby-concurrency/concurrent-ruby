@@ -60,7 +60,7 @@ module Concurrent
     #   Actor.spawn name:     :ping3,
     #                 class:    AdHoc,
     #                 args:     [1]
-    #                 executor: Concurrent.configuration.global_task_pool do |add|
+    #                 executor: Concurrent.global_io_executor do |add|
     #     lambda { |number| number + add }
     #   end
     #

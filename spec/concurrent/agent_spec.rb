@@ -98,22 +98,6 @@ module Concurrent
         agent.post { |value| 0 }
       end
 
-      it 'uses the global io executor when :executor is :task' do
-        warn 'deprecated syntax'
-        expect(Concurrent).to \
-          receive(:global_io_executor).at_least(:once).and_return(executor)
-        agent = Agent.new(0, executor: :task)
-        agent.post { |value| 0 }
-      end
-
-      it 'uses the global fast executor when :executor is :operation' do
-        warn 'deprecated syntax'
-        expect(Concurrent).to \
-          receive(:global_fast_executor).at_least(:once).and_return(executor)
-        agent = Agent.new(0, executor: :operation)
-        agent.post { |value| 0 }
-      end
-
       it 'uses the global io executor for #post by default' do
         expect(Concurrent).to \
           receive(:global_io_executor).at_least(:once).and_return(executor)

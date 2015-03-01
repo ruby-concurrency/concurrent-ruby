@@ -198,7 +198,7 @@ module Concurrent
       serializer = Concurrent::SerializedExecution.new
 
       @__async_executor__ = Delay.new(executor: :immediate) {
-        Concurrent.configuration.global_task_pool
+        Concurrent.global_io_executor
       }
 
       @__await_delegator__ = Delay.new(executor: :immediate) {
