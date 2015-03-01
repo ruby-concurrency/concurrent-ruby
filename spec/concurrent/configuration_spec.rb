@@ -5,25 +5,17 @@ module Concurrent
     before(:each) do
       Concurrent.class_variable_set(
         :@@global_fast_executor,
-        Concurrent::Delay.new(executor: :immediate){ Concurrent::ImmediateExecutor.new })
+        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
       Concurrent.class_variable_set(
         :@@global_io_executor,
-        Concurrent::Delay.new(executor: :immediate){ Concurrent::ImmediateExecutor.new })
+        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
       Concurrent.class_variable_set(
         :@@global_timer_set,
-        Concurrent::Delay.new(executor: :immediate){ Concurrent::ImmediateExecutor.new })
+        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
     end
 
     after(:each) do
-      Concurrent.class_variable_set(
-        :@@global_fast_executor,
-        Concurrent::Delay.new(executor: :immediate){ Concurrent.new_fast_executor })
-      Concurrent.class_variable_set(
-        :@@global_io_executor,
-        Concurrent::Delay.new(executor: :immediate){ Concurrent.new_io_executor })
-      Concurrent.class_variable_set(
-        :@@global_timer_set,
-        Concurrent::Delay.new(executor: :immediate){ Concurrent::TimerSet.new })
+      reset_gem_configuration
     end
 
     context 'global executors' do
