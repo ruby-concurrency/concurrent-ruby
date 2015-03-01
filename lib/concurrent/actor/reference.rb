@@ -27,8 +27,8 @@ module Concurrent
 
       # @note it's a good practice to use tell whenever possible. Ask should be used only for
       # testing and when it returns very shortly. It can lead to deadlock if all threads in
-      # global_task_pool will block on while asking. It's fine to use it form outside of actors and
-      # global_task_pool.
+      # global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      # global_io_executor.
       #
       # sends message to the actor and asks for the result of its processing, returns immediately
       # @param [Object] message
@@ -40,8 +40,8 @@ module Concurrent
 
       # @note it's a good practice to use tell whenever possible. Ask should be used only for
       # testing and when it returns very shortly. It can lead to deadlock if all threads in
-      # global_task_pool will block on while asking. It's fine to use it form outside of actors and
-      # global_task_pool.
+      # global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      # global_io_executor.
       #
       # sends message to the actor and asks for the result of its processing, blocks
       # @param [Object] message

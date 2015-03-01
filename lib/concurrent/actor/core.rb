@@ -35,7 +35,7 @@ module Concurrent
       # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
-      # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
+      # @option opts [Executor] executor, default is `Concurrent.global_io_executor`
       # @option opts [true, false] link, atomically link the actor to its parent
       # @option opts [true, false] supervise, atomically supervise the actor by its parent
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>]
@@ -56,7 +56,7 @@ module Concurrent
           @context_class = Child! opts.fetch(:class), AbstractContext
           allocate_context
 
-          @executor = Type! opts.fetch(:executor, Concurrent.configuration.global_task_pool), Executor
+          @executor = Type! opts.fetch(:executor, Concurrent.global_io_executor), Executor
           raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
 
           @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
