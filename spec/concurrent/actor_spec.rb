@@ -43,56 +43,9 @@ module Concurrent
         end
       end
 
-      # def trace!
-      #   set_trace_func proc { |event, file, line, id, binding, classname|
-      #     # thread = eval('Thread.current', binding).object_id.to_s(16)
-      #     printf "%8s %20s %20s %s %s:%-2d\n", event, id, classname, nil, file, line
-      #   }
-      #   yield
-      # ensure
-      #   set_trace_func nil
-      # end
-
       it 'forbids Immediate executor' do
         expect { Utils::AdHoc.spawn name: 'test', executor: ImmediateExecutor.new }.to raise_error
       end
-
-      #describe 'stress test' do
-        #1.times do |i|
-          #it format('run %3d', i) do
-            ## puts format('run %3d', i)
-            #Array.new(10).map do
-              #Thread.new do
-                #10.times do
-                  ## trace! do
-                  #queue = Queue.new
-                  #actor = Ping.spawn :ping, queue
-
-                  ## when spawn returns children are set
-                  #expect(Concurrent::Actor.root.send(:core).instance_variable_get(:@children)).to include(actor)
-
-                  #actor << 'a' << 1
-                  #expect(queue.pop).to eq 'a'
-                  #expect(actor.ask(2).value).to eq 2
-
-                  #expect(actor.parent).to eq Concurrent::Actor.root
-                  #expect(Concurrent::Actor.root.path).to eq '/'
-                  #expect(actor.path).to eq '/ping'
-                  #child = actor.ask(:child).value
-                  #expect(child.path).to eq '/ping/pong'
-                  #queue.clear
-                  #child.ask(3)
-                  #expect(queue.pop).to eq 3
-
-                  #actor << :terminate!
-                  #expect(actor.ask(:blow_up).wait).to be_rejected
-                  #terminate_actors actor, child
-                #end
-              #end
-            #end.each(&:join)
-          #end
-        #end
-      #end
 
       describe 'spawning' do
         describe 'Actor#spawn' do
@@ -292,7 +245,7 @@ module Concurrent
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
             actor = AdHoc.spawn name:                 :pausing,
-                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+              behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
@@ -314,22 +267,22 @@ module Concurrent
           terminate_actors test
 
           test = AdHoc.spawn name:                 :tester,
-                             behaviour_definition: Behaviour.restarting_behaviour_definition do
+            behaviour_definition: Behaviour.restarting_behaviour_definition do
             actor = AdHoc.spawn name:                 :pausing,
-                                supervise:            true,
-                                behaviour_definition: Behaviour.restarting_behaviour_definition do
-              queue << :init
-              -> m { m == :object_id ? self.object_id : pass }
-            end
+              supervise:            true,
+              behaviour_definition: Behaviour.restarting_behaviour_definition do
+                queue << :init
+                -> m { m == :object_id ? self.object_id : pass }
+              end
 
-            queue << actor.ask!(:supervisor)
-            queue << actor.ask!(:object_id)
-            actor << nil
-            queue << actor.ask(:object_id)
+              queue << actor.ask!(:supervisor)
+              queue << actor.ask!(:object_id)
+              actor << nil
+              queue << actor.ask(:object_id)
 
-            -> m do
-              queue << m
-            end
+              -> m do
+                queue << m
+              end
           end
 
           expect(queue.pop).to eq :init
@@ -352,7 +305,7 @@ module Concurrent
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
             actor = AdHoc.spawn name:                 :pausing,
-                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+              behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
