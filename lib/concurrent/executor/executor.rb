@@ -68,10 +68,27 @@ module Concurrent
 
     def enable_at_exit_handler!(opts = {})
       if opts.fetch(:stop_on_exit, true)
-        # without this the application may fail to exit
         @auto_terminate = true
-        this = self
-        at_exit { this.kill if Concurrent.auto_terminate_all_executors? }
+        if RUBY_PLATFORM == 'java'
+          create_java_at_exit_handler!(self)
+        else
+          create_ruby_at_exit_handler!(self.object_id)
+        end
+      end
+    end
+
+    def create_ruby_at_exit_handler!(id)
+      at_exit do
+        if Concurrent.auto_terminate_all_executors?
+          this = ObjectSpace._id2ref(id)
+          this.kill if this
+        end
+      end
+    end
+
+    def create_java_at_exit_handler!(this)
+      at_exit do
+        this.kill if Concurrent.auto_terminate_all_executors?
       end
     end
   end
