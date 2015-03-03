@@ -1,4 +1,4 @@
-require 'concurrent/utility/clock_time'
+require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
@@ -44,13 +44,13 @@ module Concurrent
     # @param [Object] timeout nil means no timeout
     # @return [Result]
     def wait(mutex, timeout = nil)
-      start_time = Concurrent::clock_time
+      start_time = Concurrent.monotonic_time
       @condition.wait(mutex, timeout)
 
       if timeout.nil?
         Result.new(nil)
       else
-        Result.new(start_time + timeout - Concurrent::clock_time)
+        Result.new(start_time + timeout - Concurrent.monotonic_time)
       end
     end
 
