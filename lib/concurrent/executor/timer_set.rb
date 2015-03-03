@@ -1,15 +1,18 @@
 require 'thread'
-require_relative 'executor'
 require 'concurrent/options_parser'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/single_thread_executor'
+require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
   # Executes a collection of tasks at the specified times. A master thread
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
+  #
+  # @!macro monotonic_clock_warning
   class TimerSet
     include RubyExecutor
 
@@ -42,17 +45,33 @@ module Concurrent
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
+    #
+    # @!macro [attach] convert_time_to_interval_warning
+    #
+    #   @note Clock times are susceptible to changes in the system clock that
+    #     occur while the application is running. Timers based on intervals are
+    #     much more accurate because they can be set based on a monotonic clock.
+    #     Subsequently, execution intervals based on clock times will be
+    #     immediately converted to intervals based on a monotonic clock. Under
+    #     most scenarios this will make no difference. Should the system clock
+    #     change *after* the interval has been calculated, the interval will *not*
+    #     change. This is the intended behavior. This timer is not intended for
+    #     use in realtime operations or as a replacement for `cron` or similar
+    #     services. This level of accuracy is sufficient for the use cases this
+    #     timer was intended to solve.
+    #
+    #   @!macro monotonic_clock_warning
     def post(intended_time, *args, &task)
-      time = TimerSet.calculate_schedule_time(intended_time).to_f
       raise ArgumentError.new('no block given') unless block_given?
+      interval = calculate_interval(intended_time)
 
       mutex.synchronize do
         return false unless running?
 
-        if (time - Time.now.to_f) <= 0.01
+        if (interval) <= 0.01
           @task_executor.post(*args, &task)
         else
-          @queue.push(Task.new(time, args, task))
+          @queue.push(Task.new(Concurrent.monotonic_time + interval, args, task))
           @timer_executor.post(&method(:process_tasks))
         end
       end
@@ -68,30 +87,32 @@ module Concurrent
       shutdown
     end
 
-    # Calculate an Epoch time with milliseconds at which to execute a
+    private
+
+    # Calculate a time interval with milliseconds at which to execute a
     # task. If the given time is a `Time` object it will be converted
-    # accordingly. If the time is an integer value greater than zero
-    # it will be understood as a number of seconds in the future and
-    # will be added to the current time to calculate Epoch.
+    # accordingly. If the time is a floating point value greater than
+    # zero it will be understood as a number of seconds in the future.
     #
-    # @param [Object] intended_time the time (as a `Time` object or an integer)
-    #   to schedule the task for execution
-    # @param [Time] now (Time.now) the time from which to calculate an interval
+    # @param [Time, Float] intended_time the time to schedule the task for
+    #   execution, expressed as a `Time` object or a floating point number
+    #   representing a number of seconds
     #
-    # @return [Fixnum] the intended time as seconds/millis from Epoch
+    # @return [Float] the intended time interval as seconds/millis
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
-    def self.calculate_schedule_time(intended_time, now = Time.now)
+    #
+    # @!macro convert_time_to_interval_warning
+    def calculate_interval(intended_time)
       if intended_time.is_a?(Time)
+        now = Time.now
         raise ArgumentError.new('schedule time must be in the future') if intended_time <= now
-        intended_time
+        intended_time.to_f - now.to_f
       else
         raise ArgumentError.new('seconds must be greater than zero') if intended_time.to_f < 0.0
-        now + intended_time
+        intended_time.to_f
       end
     end
-
-    private
 
     # A struct for encapsulating a task and its intended execution time.
     # It facilitates proper prioritization by overriding the comparison
@@ -126,9 +147,11 @@ module Concurrent
       loop do
         task = mutex.synchronize { @queue.peek }
         break unless task
-        interval = task.time - Time.now.to_f
 
-        if interval <= 0
+        now = Concurrent.monotonic_time
+        diff = task.time - now
+
+        if diff <= 0
           # We need to remove the task from the queue before passing
           # it to the executor, to avoid race conditions where we pass
           # the peek'ed task to the executor and then pop a different
@@ -145,7 +168,7 @@ module Concurrent
           @task_executor.post(*task.args, &task.op)
         else
           mutex.synchronize do
-            @condition.wait(mutex, [interval, 60].min)
+            @condition.wait(mutex, [diff, 60].min)
           end
         end
       end
