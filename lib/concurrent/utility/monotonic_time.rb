@@ -1,14 +1,19 @@
 module Concurrent
 
+  # Clock that cannot be set and represents monotonic time since
+  # some unspecified starting point.
+  # @!visibility private
   GLOBAL_MONOTONIC_CLOCK = Class.new {
 
     if defined?(Process::CLOCK_MONOTONIC)
-      def get_time(other = 0.0)
-        Process.clock_gettime(Process::CLOCK_MONOTONIC) - other.to_f
+      # @!visibility private
+      def get_time(since = 0.0)
+        Process.clock_gettime(Process::CLOCK_MONOTONIC) - since.to_f
       end
     elsif RUBY_PLATFORM == 'java'
-      def get_time(other = 0.0)
-        (java.lang.System.nanoTime() / 1_000_000_000.0) - other.to_f
+      # @!visibility private
+      def get_time(since = 0.0)
+        (java.lang.System.nanoTime() / 1_000_000_000.0) - since.to_f
       end
     else
 
@@ -21,7 +26,8 @@ module Concurrent
         @last_time = Time.now.to_f
       end
 
-      def get_time(other = 0.0)
+      # @!visibility private
+      def get_time(since = 0.0)
         @mutex.synchronize {
           @correction ||= 0 # compensating any back time shifts
           now = Time.now.to_f
@@ -32,13 +38,26 @@ module Concurrent
             @correction += @last_time - corrected_now + 0.000_001
             @last_time = @correction + now
           end
-        } - other.to_f
+        } - since.to_f
       end
     end
   }.new
 
-  def monotonic_time(other = 0.0)
-    GLOBAL_MONOTONIC_CLOCK.get_time(other)
+  # @!macro [attach] monotonic_get_time
+  # 
+  #   Returns the current time a tracked by the application monotonic clock.
+  #   When no `since` time is given the return value will bet he current time.
+  #   When an `since` value is given the return value will be the monotonic time
+  #   interval which has been passed since the `since` time.
+  #
+  #   @param [Float] since the monotonic time from which to calculate
+  #     the time interval
+  #   @return [Float] The current monotonic time when `since` not given else
+  #     the elapsed monotonic time between `since` and the current time
+  #
+  #   @!macro monotonic_clock_warning
+  def monotonic_time(since = 0.0)
+    GLOBAL_MONOTONIC_CLOCK.get_time(since)
   end
   module_function :monotonic_time
 end
@@ -76,8 +95,8 @@ class MonotonicClock
     Process.clock_gettime(Process::CLOCK_MONOTONIC)
   end
 
-  def get_interval_native(other)
-    Process.clock_gettime(Process::CLOCK_MONOTONIC) - other.to_f
+  def get_interval_native(since)
+    Process.clock_gettime(Process::CLOCK_MONOTONIC) - since.to_f
   end
 
   def get_time_ruby
@@ -94,8 +113,8 @@ class MonotonicClock
     end
   end
 
-  def get_interval_ruby(other)
-    get_time_ruby - other.to_f
+  def get_interval_ruby(since)
+    get_time_ruby - since.to_f
   end
 end
 

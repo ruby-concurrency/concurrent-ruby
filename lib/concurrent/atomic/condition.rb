@@ -43,6 +43,8 @@ module Concurrent
     # @param [Mutex] mutex the locked mutex guarding the wait
     # @param [Object] timeout nil means no timeout
     # @return [Result]
+    #
+    # @!macro monotonic_clock_warning
     def wait(mutex, timeout = nil)
       start_time = Concurrent.monotonic_time
       @condition.wait(mutex, timeout)
