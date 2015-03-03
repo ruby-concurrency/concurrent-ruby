@@ -11,33 +11,31 @@ module Concurrent
   else
 
     require 'thread'
-    class << self
 
-      # @!visibility private
-      @@global_monotonic_clock = Class.new {
-        def initialize
-          @mutex = Mutex.new
-          @correction = 0
-          @last_time = Time.now.to_f
-        end
-        def get_time
-          @mutex.synchronize do
-            @correction ||= 0 # compensating any back time shifts
-            now = Time.now.to_f
-            corrected_now = now + @correction
-            if @last_time < corrected_now
-              return @last_time = corrected_now 
-            else
-              @correction += @last_time - corrected_now + 0.000_001
-              return @last_time = @correction + now
-            end
+    # @!visibility private
+    GLOBAL_MONOTONIC_CLOCK = Class.new {
+      def initialize
+        @mutex = Mutex.new
+        @correction = 0
+        @last_time = Time.now.to_f
+      end
+      def get_time
+        @mutex.synchronize do
+          @correction ||= 0 # compensating any back time shifts
+          now = Time.now.to_f
+          corrected_now = now + @correction
+          if @last_time < corrected_now
+            return @last_time = corrected_now 
+          else
+            @correction += @last_time - corrected_now + 0.000_001
+            return @last_time = @correction + now
           end
         end
-      }.new
-    end
+      end
+    }.new
 
     def monotonic_time
-      @@global_monotonic_clock.get_time
+      GLOBAL_MONOTONIC_CLOCK.get_time
     end
   end
 
