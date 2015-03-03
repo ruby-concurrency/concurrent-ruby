@@ -8,7 +8,7 @@ require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
-  # Executes a collection of tasks at the specified times. A master thread
+  # Executes a collection of tasks, each after a given delay. A master thread
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
   #
@@ -32,12 +32,11 @@ module Concurrent
       init_executor
     end
 
-    # Post a task to be execute at the specified time. The given time may be either
-    # a `Time` object or the number of seconds to wait. If the intended execution
-    # time is within 1/100th of a second of the current time the task will be
-    # immediately post to the executor.
+    # Post a task to be execute run after a given delay (in seconds). If the
+    # delay is less than 1/100th of a second the task will be immediately post
+    # to the executor.
     #
-    # @param [Object] intended_time the time to schedule the task for execution
+    # @param [Float] delay the number of seconds to wait for before executing the task
     #
     # @yield the task to be performed
     #
@@ -46,24 +45,10 @@ module Concurrent
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
     #
-    # @!macro [attach] convert_time_to_interval_warning
-    #
-    #   @note Clock times are susceptible to changes in the system clock that
-    #     occur while the application is running. Timers based on intervals are
-    #     much more accurate because they can be set based on a monotonic clock.
-    #     Subsequently, execution intervals based on clock times will be
-    #     immediately converted to intervals based on a monotonic clock. Under
-    #     most scenarios this will make no difference. Should the system clock
-    #     change *after* the interval has been calculated, the interval will *not*
-    #     change. This is the intended behavior. This timer is not intended for
-    #     use in realtime operations or as a replacement for `cron` or similar
-    #     services. This level of accuracy is sufficient for the use cases this
-    #     timer was intended to solve.
-    #
-    #   @!macro monotonic_clock_warning
-    def post(intended_time, *args, &task)
+    # @!macro deprecated_scheduling_by_clock_time
+    def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      interval = calculate_interval(intended_time)
+      interval = TimerSet.calculate_interval(delay)
 
       mutex.synchronize do
         return false unless running?
@@ -80,6 +65,12 @@ module Concurrent
       true
     end
 
+    # @!visibility private
+    def <<(task)
+      post(0.0, &task)
+      self
+    end
+
     # For a timer, #kill is like an orderly shutdown, except we need to manually
     # (and destructively) clear the queue first
     def kill
@@ -87,32 +78,31 @@ module Concurrent
       shutdown
     end
 
-    private
-
-    # Calculate a time interval with milliseconds at which to execute a
-    # task. If the given time is a `Time` object it will be converted
-    # accordingly. If the time is a floating point value greater than
-    # zero it will be understood as a number of seconds in the future.
+    # Schedule a task to be execute run after a given delay (in seconds).
     #
-    # @param [Time, Float] intended_time the time to schedule the task for
-    #   execution, expressed as a `Time` object or a floating point number
-    #   representing a number of seconds
+    # @param [Float] delay the number of seconds to wait for before executing the task
     #
-    # @return [Float] the intended time interval as seconds/millis
+    # @return [Float] the number of seconds to delay
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
+    # @raise [ArgumentError] if no block is given
     #
-    # @!macro convert_time_to_interval_warning
-    def calculate_interval(intended_time)
-      if intended_time.is_a?(Time)
+    # @!macro deprecated_scheduling_by_clock_time
+    #
+    # @!visibility private
+    def self.calculate_interval(delay)
+      if delay.is_a?(Time)
+        warn '[DEPRECATED] Use an interval not a clock time, schedule is now based on a monotonic clock'
         now = Time.now
-        raise ArgumentError.new('schedule time must be in the future') if intended_time <= now
-        intended_time.to_f - now.to_f
+        raise ArgumentError.new('schedule time must be in the future') if delay <= now
+        delay.to_f - now.to_f
       else
-        raise ArgumentError.new('seconds must be greater than zero') if intended_time.to_f < 0.0
-        intended_time.to_f
+        raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
+        delay.to_f
       end
     end
+
+    private
 
     # A struct for encapsulating a task and its intended execution time.
     # It facilitates proper prioritization by overriding the comparison
