@@ -6,6 +6,8 @@ require 'concurrent/errors'
 module Concurrent
 
   # Wait the given number of seconds for the block operation to complete.
+  # Intended to be a simpler and more reliable replacement to the Ruby
+  # standard library `Timeout::timeout` method.
   #
   # @param [Integer] seconds The number of seconds to wait
   #
@@ -14,8 +16,9 @@ module Concurrent
   # @raise [Concurrent::TimeoutError] when the block operation does not complete
   #   in the allotted number of seconds.
   #
-  # @note This method is intended to be a simpler and more reliable replacement
-  # to the Ruby standard library `Timeout::timeout` method.
+  # @see http://ruby-doc.org/stdlib-2.2.0/libdoc/timeout/rdoc/Timeout.html Ruby Timeout::timeout
+  #
+  # @!macro monotonic_clock_warning
   def timeout(seconds)
 
     thread = Thread.new do

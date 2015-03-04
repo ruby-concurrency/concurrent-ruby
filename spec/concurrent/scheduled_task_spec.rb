@@ -53,17 +53,20 @@ module Concurrent
     context '#initialize' do
 
       it 'accepts a number of seconds (from now) as the schedule time' do
+        expected = 60
         Timecop.freeze do
           now = Time.now
-          task = ScheduledTask.new(60){ nil }.execute
-          expect(task.schedule_time.to_i).to eq now.to_i + 60
+          task = ScheduledTask.new(expected){ nil }.execute
+          expect(task.delay).to be_within(0.1).of(expected)
         end
       end
 
-      it 'accepts a time object as the schedule time' do
-        schedule = Time.now + (60*10)
+      it 'accepts a Time object as the schedule time' do
+        warn 'deprecated syntax'
+        expected = 60 * 10
+        schedule = Time.now + expected
         task = ScheduledTask.new(schedule){ nil }.execute
-        expect(task.schedule_time).to eq schedule
+        expect(task.delay).to be_within(0.1).of(expected)
       end
 
       it 'raises an exception when seconds is less than zero' do
@@ -88,11 +91,6 @@ module Concurrent
         task = ScheduledTask.new(1){ nil }
         expect(task).to be_unscheduled
       end
-
-      it 'sets the #schedule_time to nil prior to execution' do
-        task = ScheduledTask.new(1){ nil }
-        expect(task.schedule_time).to be_nil
-      end
     end
 
     context 'instance #execute' do
@@ -106,27 +104,6 @@ module Concurrent
         task.execute
         task.instance_variable_set(:@state, :fulfilled)
         task.execute
-      end
-
-      it 'calculates the #schedule_time on execution' do
-        Timecop.freeze do
-          now = Time.now
-          task = ScheduledTask.new(5){ nil }
-          Timecop.travel(10)
-          task.execute
-          expect(task.schedule_time.to_i).to eq now.to_i + 15
-        end
-      end
-
-      it 'raises an exception if expected schedule time is in the past' do
-        Timecop.freeze do
-          schedule = Time.now + (10)
-          task = ScheduledTask.new(schedule){ nil }
-          Timecop.travel(60)
-          expect {
-            task.execute
-          }.to raise_error(ArgumentError)
-        end
       end
 
       it 'allows setting the execution interval to 0' do
@@ -267,24 +244,6 @@ module Concurrent
         expect(task.add_observer(observer)).to be_truthy
       end
 
-      it 'returns false for an observer added once :cancelled' do
-        task = ScheduledTask.new(1){ 42 }
-        task.cancel
-        expect(task.add_observer(observer)).to be_falsey
-      end
-
-      it 'returns false for an observer added once :fulfilled' do
-        task = ScheduledTask.new(0.1){ 42 }.execute
-        task.value(1)
-        expect(task.add_observer(observer)).to be_falsey
-      end
-
-      it 'returns false for an observer added once :rejected' do
-        task = ScheduledTask.new(0.1){ raise StandardError }.execute
-        task.value(0.2)
-        expect(task.add_observer(observer)).to be_falsey
-      end
-
       it 'notifies all observers on fulfillment' do
         task = ScheduledTask.new(0.1){ 42 }.execute
         task.add_observer(observer)
@@ -299,30 +258,6 @@ module Concurrent
         observer.latch.wait(1)
         expect(observer.value).to be_nil
         expect(observer.reason).to be_a(StandardError)
-      end
-
-      it 'does not notify an observer added after fulfillment' do
-        expect(observer).not_to receive(:update).with(any_args)
-        task = ScheduledTask.new(0.1){ 42 }.execute
-        task.value(1)
-        task.add_observer(observer)
-        sleep(0.1)
-      end
-
-      it 'does not notify an observer added after rejection' do
-        expect(observer).not_to receive(:update).with(any_args)
-        task = ScheduledTask.new(0.1){ raise StandardError }.execute
-        task.value(1)
-        task.add_observer(observer)
-        sleep(0.1)
-      end
-
-      it 'does not notify an observer added after cancellation' do
-        expect(observer).not_to receive(:update).with(any_args)
-        task = ScheduledTask.new(0.1){ 42 }.execute
-        task.cancel
-        task.add_observer(observer)
-        task.value(1)
       end
     end
   end

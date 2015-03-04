@@ -1,4 +1,4 @@
-### Next Release v0.8.1 (TBD)
+### Next Release v0.9.0 (Target Date: 5 April 2015)
 
 * Pure Java implementations of
   - `AtomicBoolean`
@@ -7,7 +7,14 @@
 * Fixed bug when pruning Ruby thread pools
 * Fixed bug in time calculations within `ScheduledTask`
 * Default `count` in `CountDownLatch` to 1
-* Use monotonic clock for timeouts on all platforms where supported
+* Use monotonic clock for all timers via `Concurrent.monotonic_time`
+  - Use `Process.clock_gettime(Process::CLOCK_MONOTONIC)` when available
+  - Fallback to `java.lang.System.nanoTime()` on unsupported JRuby versions
+  - Pure Ruby implementation for everything else
+  - Effects `Concurrent.timer`, `Concurrent.timeout`, `TimerSet`, `TimerTask`, and `ScheduledTask`
+* Deprecated all clock-time based timer scheduling
+  - Only support scheduling by delay
+  - Effects `Concurrent.timer`, `TimerSet`, and `ScheduledTask`
 
 ## Current Release v0.8.0 (25 January 2015)
 

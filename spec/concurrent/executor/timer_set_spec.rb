@@ -22,6 +22,7 @@ module Concurrent
     end
 
     it 'executes a given task when given a Time' do
+      warn 'deprecated syntax'
       latch = CountDownLatch.new(1)
       subject.post(Time.now + 0.1){ latch.count_down }
       expect(latch.wait(0.2)).to be_truthy
@@ -70,6 +71,7 @@ module Concurrent
     end
 
     it 'raises an exception when given a task with a past Time value' do
+      warn 'deprecated syntax'
       expect {
         subject.post(Time.now - 10){ nil }
       }.to raise_error(ArgumentError)

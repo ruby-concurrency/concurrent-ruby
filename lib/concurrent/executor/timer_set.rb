@@ -1,15 +1,18 @@
 require 'thread'
-require_relative 'executor'
 require 'concurrent/options_parser'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/single_thread_executor'
+require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
-  # Executes a collection of tasks at the specified times. A master thread
+  # Executes a collection of tasks, each after a given delay. A master task
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
+  #
+  # @!macro monotonic_clock_warning
   class TimerSet
     include RubyExecutor
 
@@ -29,12 +32,11 @@ module Concurrent
       init_executor
     end
 
-    # Post a task to be execute at the specified time. The given time may be either
-    # a `Time` object or the number of seconds to wait. If the intended execution
-    # time is within 1/100th of a second of the current time the task will be
-    # immediately post to the executor.
+    # Post a task to be execute run after a given delay (in seconds). If the
+    # delay is less than 1/100th of a second the task will be immediately post
+    # to the executor.
     #
-    # @param [Object] intended_time the time to schedule the task for execution
+    # @param [Float] delay the number of seconds to wait for before executing the task
     #
     # @yield the task to be performed
     #
@@ -42,17 +44,19 @@ module Concurrent
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
-    def post(intended_time, *args, &task)
-      time = TimerSet.calculate_schedule_time(intended_time).to_f
+    #
+    # @!macro deprecated_scheduling_by_clock_time
+    def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
+      delay = TimerSet.calculate_delay!(delay) # raises exceptions
 
       mutex.synchronize do
         return false unless running?
 
-        if (time - Time.now.to_f) <= 0.01
+        if (delay) <= 0.01
           @task_executor.post(*args, &task)
         else
-          @queue.push(Task.new(time, args, task))
+          @queue.push(Task.new(Concurrent.monotonic_time + delay, args, task))
           @timer_executor.post(&method(:process_tasks))
         end
       end
@@ -61,33 +65,41 @@ module Concurrent
       true
     end
 
+    # @!visibility private
+    def <<(task)
+      post(0.0, &task)
+      self
+    end
+
     # For a timer, #kill is like an orderly shutdown, except we need to manually
     # (and destructively) clear the queue first
     def kill
       mutex.synchronize { @queue.clear }
+      # possible race condition
       shutdown
     end
 
-    # Calculate an Epoch time with milliseconds at which to execute a
-    # task. If the given time is a `Time` object it will be converted
-    # accordingly. If the time is an integer value greater than zero
-    # it will be understood as a number of seconds in the future and
-    # will be added to the current time to calculate Epoch.
+    # Schedule a task to be executed after a given delay (in seconds).
     #
-    # @param [Object] intended_time the time (as a `Time` object or an integer)
-    #   to schedule the task for execution
-    # @param [Time] now (Time.now) the time from which to calculate an interval
+    # @param [Float] delay the number of seconds to wait for before executing the task
     #
-    # @return [Fixnum] the intended time as seconds/millis from Epoch
+    # @return [Float] the number of seconds to delay
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
-    def self.calculate_schedule_time(intended_time, now = Time.now)
-      if intended_time.is_a?(Time)
-        raise ArgumentError.new('schedule time must be in the future') if intended_time <= now
-        intended_time
+    # @raise [ArgumentError] if no block is given
+    #
+    # @!macro deprecated_scheduling_by_clock_time
+    #
+    # @!visibility private
+    def self.calculate_delay!(delay)
+      if delay.is_a?(Time)
+        warn '[DEPRECATED] Use an interval not a clock time; schedule is now based on a monotonic clock'
+        now = Time.now
+        raise ArgumentError.new('schedule time must be in the future') if delay <= now
+        delay.to_f - now.to_f
       else
-        raise ArgumentError.new('seconds must be greater than zero') if intended_time.to_f < 0.0
-        now + intended_time
+        raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
+        delay.to_f
       end
     end
 
@@ -126,9 +138,11 @@ module Concurrent
       loop do
         task = mutex.synchronize { @queue.peek }
         break unless task
-        interval = task.time - Time.now.to_f
 
-        if interval <= 0
+        now = Concurrent.monotonic_time
+        diff = task.time - now
+
+        if diff <= 0
           # We need to remove the task from the queue before passing
           # it to the executor, to avoid race conditions where we pass
           # the peek'ed task to the executor and then pop a different
@@ -145,7 +159,7 @@ module Concurrent
           @task_executor.post(*task.args, &task.op)
         else
           mutex.synchronize do
-            @condition.wait(mutex, [interval, 60].min)
+            @condition.wait(mutex, [diff, 60].min)
           end
         end
       end

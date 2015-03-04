@@ -1,3 +1,5 @@
+require 'concurrent/utility/monotonic_time'
+
 module Concurrent
 
   # Condition is a better implementation of standard Ruby ConditionVariable. The
@@ -41,14 +43,16 @@ module Concurrent
     # @param [Mutex] mutex the locked mutex guarding the wait
     # @param [Object] timeout nil means no timeout
     # @return [Result]
+    #
+    # @!macro monotonic_clock_warning
     def wait(mutex, timeout = nil)
-      start_time = clock_time
+      start_time = Concurrent.monotonic_time
       @condition.wait(mutex, timeout)
 
       if timeout.nil?
         Result.new(nil)
       else
-        Result.new(start_time + timeout - clock_time)
+        Result.new(start_time + timeout - Concurrent.monotonic_time)
       end
     end
 
@@ -64,22 +68,6 @@ module Concurrent
     def broadcast
       @condition.broadcast
       true
-    end
-
-    private
-
-    if defined?(Process::CLOCK_MONOTONIC)
-      def clock_time
-        Process.clock_gettime Process::CLOCK_MONOTONIC
-      end
-    elsif RUBY_PLATFORM == 'java'
-      def clock_time
-        java.lang.System.nanoTime() / 1_000_000_000.0
-      end
-    else
-      def clock_time
-        Time.now.to_f
-      end
     end
   end
 end

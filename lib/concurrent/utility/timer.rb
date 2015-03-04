@@ -10,6 +10,8 @@ module Concurrent
   # @yield the task to execute
   #
   # @return [Boolean] true
+  #
+  # @!macro monotonic_clock_warning
   def timer(seconds, *args, &block)
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('interval must be greater than or equal to zero') if seconds < 0
