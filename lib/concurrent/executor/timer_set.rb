@@ -8,7 +8,7 @@ require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
-  # Executes a collection of tasks, each after a given delay. A master thread
+  # Executes a collection of tasks, each after a given delay. A master task
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global task pool or on the supplied executor.
   #
@@ -48,15 +48,15 @@ module Concurrent
     # @!macro deprecated_scheduling_by_clock_time
     def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      interval = TimerSet.calculate_interval(delay)
+      delay = TimerSet.calculate_delay!(delay) # raises exceptions
 
       mutex.synchronize do
         return false unless running?
 
-        if (interval) <= 0.01
+        if (delay) <= 0.01
           @task_executor.post(*args, &task)
         else
-          @queue.push(Task.new(Concurrent.monotonic_time + interval, args, task))
+          @queue.push(Task.new(Concurrent.monotonic_time + delay, args, task))
           @timer_executor.post(&method(:process_tasks))
         end
       end
@@ -75,10 +75,11 @@ module Concurrent
     # (and destructively) clear the queue first
     def kill
       mutex.synchronize { @queue.clear }
+      # possible race condition
       shutdown
     end
 
-    # Schedule a task to be execute run after a given delay (in seconds).
+    # Schedule a task to be executed after a given delay (in seconds).
     #
     # @param [Float] delay the number of seconds to wait for before executing the task
     #
@@ -90,9 +91,9 @@ module Concurrent
     # @!macro deprecated_scheduling_by_clock_time
     #
     # @!visibility private
-    def self.calculate_interval(delay)
+    def self.calculate_delay!(delay)
       if delay.is_a?(Time)
-        warn '[DEPRECATED] Use an interval not a clock time, schedule is now based on a monotonic clock'
+        warn '[DEPRECATED] Use an interval not a clock time; schedule is now based on a monotonic clock'
         now = Time.now
         raise ArgumentError.new('schedule time must be in the future') if delay <= now
         delay.to_f - now.to_f

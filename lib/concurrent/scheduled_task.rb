@@ -5,13 +5,13 @@ require 'concurrent/executor/safe_task_executor'
 module Concurrent
 
   # `ScheduledTask` is a close relative of `Concurrent::Future` but with one
-  # important difference. A `Future` is set to execute as soon as possible
-  # whereas a `ScheduledTask` is set to execute at a specific time. This
+  # important difference: A `Future` is set to execute as soon as possible
+  # whereas a `ScheduledTask` is set to execute after a specified delay. This
   # implementation is loosely based on Java's
   # [ScheduledExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html). 
   # 
   # The *intended* schedule time of task execution is set on object construction
-  # with first argument, `delay`. The delay is a numeric (floating point or integer)
+  # with the `delay` argument. The delay is a numeric (floating point or integer)
   # representing a number of seconds in the future. Any other value or a numeric
   # equal to or less than zero will result in an exception. The *actual* schedule
   # time of task execution is set when the `execute` method is called.
@@ -95,6 +95,9 @@ module Concurrent
   #   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
   #   task.state         #=> pending
   # 
+  #   task = Concurrent::ScheduledTask.execute(2){ 'What do you get when you multiply 6 by 9?' }
+  #   task.state         #=> pending
+  # 
   # @example Failed task execution
   # 
   #   task = Concurrent::ScheduledTask.execute(2){ raise StandardError.new('Call me maybe?') }
@@ -129,21 +132,32 @@ module Concurrent
   #   #>> The task completed at 2013-11-07 12:26:09 -0500 with value 'What does the fox say?'
   #
   # @!macro monotonic_clock_warning
-  #
-  # @!macro [attach] deprecated_scheduling_by_clock_time
-  #
-  #   @note Scheduling is now based on a monotonic clock. This makes the timer much
-  #     more accurate, but only when scheduling by passing a delay in seconds.
-  #     Scheduling a task based on a clock time is deprecated. It will still work
-  #     but will not be supported in the 1.0 release.
   class ScheduledTask < IVar
 
     attr_reader :delay
 
-    # @!macro deprecated_scheduling_by_clock_time
+    # Schedule a task for execution at a specified future time.
+    #
+    # @yield the task to be performed
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @param [Hash] opts the options controlling how the future will be processed
+    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
+    #   operation pool (for long-running operations), when `false` will execute the future on the
+    #   global task pool (for short-running tasks)
+    # @option opts [object] :executor when provided will run all operations on
+    #   this executor rather than the global thread pool (overrides :operation)
+    #
+    # @!macro [attach] deprecated_scheduling_by_clock_time
+    #
+    #   @note Scheduling is now based on a monotonic clock. This makes the timer much
+    #     more accurate, but only when scheduling based on a delay interval.
+    #     Scheduling a task based on a clock time is deprecated. It will still work
+    #     but will not be supported in the 1.0 release.
     def initialize(delay, opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      @delay = TimerSet.calculate_interval(delay)
+      @delay = TimerSet.calculate_delay!(delay)
 
       super(NO_VALUE, opts)
 
@@ -153,6 +167,12 @@ module Concurrent
       @executor      = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
     end
 
+
+    # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
+    # and starts counting down toward execution. Does nothing if the `ScheduledTask` is
+    # in any state other than `:unscheduled`.
+    #
+    # @return [ScheduledTask] a reference to `self`
     def execute
       if compare_and_set_state(:pending, :unscheduled)
         @schedule_time = Time.now + @delay
@@ -161,6 +181,22 @@ module Concurrent
       end
     end
 
+    # Create a new `ScheduledTask` object with the given block, execute it, and return the
+    # `:pending` object.
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @param [Hash] opts the options controlling how the future will be processed
+    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
+    #   operation pool (for long-running operations), when `false` will execute the future on the
+    #   global task pool (for short-running tasks)
+    # @option opts [object] :executor when provided will run all operations on
+    #   this executor rather than the global thread pool (overrides :operation)
+    #
+    # @return [ScheduledTask] the newly created `ScheduledTask` in the `:pending` state
+    #
+    # @raise [ArgumentError] if no block is given
+    #
     # @!macro deprecated_scheduling_by_clock_time
     def self.execute(delay, opts = {}, &block)
       return ScheduledTask.new(delay, opts, &block).execute
@@ -172,14 +208,25 @@ module Concurrent
       @schedule_time
     end
 
+    # Has the task been cancelled?
+    #
+    # @return [Boolean] true if the task is in the given state else false
     def cancelled?
       state == :cancelled
     end
 
+    # In the task execution in progress?
+    #
+    # @return [Boolean] true if the task is in the given state else false
     def in_progress?
       state == :in_progress
     end
 
+    # Cancel this task and prevent it from executing. A task can only be
+    # cancelled if it is pending or unscheduled.
+    #
+    # @return [Boolean] true if task execution is successfully cancelled
+    #   else false
     def cancel
       if_state(:unscheduled, :pending) do
         @state = :cancelled
@@ -193,6 +240,7 @@ module Concurrent
 
     private
 
+    # @!visibility private
     def process_task
       if compare_and_set_state(:in_progress, :pending)
         success, val, reason = SafeTaskExecutor.new(@task).execute
