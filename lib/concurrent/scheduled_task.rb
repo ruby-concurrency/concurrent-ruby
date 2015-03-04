@@ -207,10 +207,6 @@ module Concurrent
     def schedule_time
       warn '[DEPRECATED] time is now based on a monotonic clock'
       @schedule_time
-=======
-    def self.execute(intended_time, opts = {}, &block)
-      return ScheduledTask.new(intended_time, opts, &block).execute
->>>>>>> Refactor, cleanup, document.
     end
 
     # Has the task been cancelled?
