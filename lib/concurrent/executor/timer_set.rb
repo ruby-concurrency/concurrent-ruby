@@ -74,11 +74,8 @@ module Concurrent
       self
     end
 
-    # For a timer, #kill is like an orderly shutdown, except we need to manually
-    # (and destructively) clear the queue first
+    # @!macro executor_method_shutdown
     def kill
-      mutex.synchronize { @queue.clear }
-      # possible race condition
       shutdown
     end
 
