@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/atomic'
+require 'concurrent/errors'
 
 module Concurrent
 
@@ -23,9 +24,16 @@ module Concurrent
   #   This will lead to deadlock
   class ReadWriteLock
 
+    # @!visibility private
     WAITING_WRITER  = 1 << 15
+
+    # @!visibility private
     RUNNING_WRITER  = 1 << 30
+
+    # @!visibility private
     MAX_READERS     = WAITING_WRITER - 1
+
+    # @!visibility private
     MAX_WRITERS     = RUNNING_WRITER - MAX_READERS - 1
 
     # Implementation notes: 
@@ -39,6 +47,7 @@ module Concurrent
     # The counter is increased by (1 << 15) for each writer waiting to acquire the
     #   write lock, and by (1 << 30) if the write lock is taken
 
+    # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
       @counter      = Atomic.new(0)         # single integer which represents lock state
       @reader_q     = ConditionVariable.new # queue for waiting readers
@@ -47,24 +56,48 @@ module Concurrent
       @writer_mutex = Mutex.new             # to protect writer queue
     end
 
+    # Execute a block operation within a read lock.
+    #
+    # @yield the task to be performed within the lock.
+    #
+    # @return [Object] the result of the block operation.
+    #
+    # @raise [ArgumentError] when no block is given.
+    # @raise [Concurrent::ResourceLimitError] if the maximum number of readers
+    #   is exceeded.
     def with_read_lock
+      raise ArgumentError.new('no block given') unless block_given?
       acquire_read_lock
-      result = yield
-      release_read_lock
-      result
+      yield
+    ensure => ex
+      release_read_lock unless ex.is_a? Concurrent::ResourceLimitError
     end
 
+    # Execute a block operation within a write lock.
+    #
+    # @yield the task to be performed within the lock.
+    #
+    # @return [Object] the result of the block operation.
+    #
+    # @raise [ArgumentError] when no block is given.
+    # @raise [Concurrent::ResourceLimitError] if the maximum number of readers
+    #   is exceeded.
     def with_write_lock
+      raise ArgumentError.new('no block given') unless block_given?
       acquire_write_lock
-      result = yield
-      release_write_lock
-      result
+      yield
+    ensure => ex
+      release_write_lock unless ex.is_a? Concurrent::ResourceLimitError
     end
 
+    # Acquire a read lock.
+    #
+    # @raise [Concurrent::ResourceLimitError] if the maximum number of readers
+    #   is exceeded.
     def acquire_read_lock
       while(true)
         c = @counter.value
-        raise "Too many reader threads!" if (c & MAX_READERS) == MAX_READERS
+        raise ResourceLimitError.new('Too many reader threads') if (c & MAX_READERS) == MAX_READERS
 
         # If a writer is waiting when we first queue up, we need to wait
         if c >= WAITING_WRITER
@@ -90,8 +123,10 @@ module Concurrent
           break if @counter.compare_and_swap(c,c+1)
         end
       end    
+      true
     end
 
+    # Release a previously acquired read lock.
     def release_read_lock
       while(true)
         c = @counter.value
@@ -103,12 +138,17 @@ module Concurrent
           break
         end
       end
+      true
     end
 
+    # Acquire a write lock.
+    #
+    # @raise [Concurrent::ResourceLimitError] if the maximum number of writers
+    #   is exceeded.
     def acquire_write_lock
       while(true)
         c = @counter.value
-        raise "Too many writers!" if (c & MAX_WRITERS) == MAX_WRITERS
+        raise ResourceLimitError.new('Too many writer threads') if (c & MAX_WRITERS) == MAX_WRITERS
 
         if c == 0 # no readers OR writers running
           # if we successfully swap the RUNNING_WRITER bit on, then we can go ahead
@@ -137,8 +177,10 @@ module Concurrent
           break
         end
       end
+      true
     end
 
+    # Release a previously acquired write lock.
     def release_write_lock
       while(true)
         c = @counter.value
@@ -150,8 +192,11 @@ module Concurrent
           break
         end
       end
+      true
     end
 
+    # Returns a string representing *obj*. Includes the current reader and
+    # writer counts.
     def to_s
       c = @counter.value
       s = if c >= RUNNING_WRITER

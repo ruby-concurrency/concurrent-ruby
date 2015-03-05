@@ -24,6 +24,10 @@ module Concurrent
   # possibly because of a reject policy or other internal error.
   RejectedExecutionError = Class.new(StandardError)
 
+  # Raised when any finite resource, such as a lock counter, exceeds its
+  # maximum limit/threshold.
+  ResourceLimitError = Class.new(StandardError)
+
   # Raised when an operation times out.
   TimeoutError = Class.new(StandardError)
 
