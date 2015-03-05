@@ -4,50 +4,140 @@ module Concurrent
 
     context '#with_read_lock' do
 
-      it 'acquires the lock'
+      it 'acquires the lock' do
+        expect(subject).to receive(:acquire_read_lock).with(no_args)
+        subject.with_read_lock { nil }
+      end
 
-      it 'returns the value of the block operation'
+      it 'returns the value of the block operation' do
+        expected = 100
+        actual = subject.with_read_lock { expected }
+        expect(actual).to eq expected
+      end
 
-      it 'releases the lock'
+      it 'releases the lock' do
+        expect(subject).to receive(:release_read_lock).with(no_args)
+        subject.with_read_lock { nil }
+      end
 
-      it 'raises an exception if no block is given'
+      it 'raises an exception if no block is given' do
+        expect {
+          subject.with_read_lock
+        }.to raise_error(ArgumentError)
+      end
 
-      it 'raises an exception if maximum lock limit is exceeded'
+      it 'raises an exception if maximum lock limit is exceeded' do
+        counter = Concurrent::Atomic.new(ReadWriteLock::MAX_READERS)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        expect {
+          subject.with_read_lock { nil }
+        }.to raise_error(Concurrent::ResourceLimitError)
+      end
 
-      it 'does not release the lock when an exception is raised'
+      it 'does not release the lock when an exception is raised' do
+        expect(subject).to_not receive(:release_read_lock).with(any_args)
+        lambda do
+          subject.with_read_lock { raise StandardError }
+        end
+      end
     end
 
     context '#with_write_lock' do
 
-      it 'acquires the lock'
+      it 'acquires the lock' do
+        expect(subject).to receive(:acquire_write_lock).with(no_args)
+        subject.with_write_lock { nil }
+      end
 
-      it 'returns the value of the block operation'
+      it 'returns the value of the block operation' do
+        expected = 100
+        actual = subject.with_write_lock { expected }
+        expect(actual).to eq expected
+      end
 
-      it 'releases the lock'
+      it 'releases the lock' do
+        expect(subject).to receive(:release_write_lock).with(no_args)
+        subject.with_write_lock { nil }
+      end
 
-      it 'raises an exception if no block is given'
+      it 'raises an exception if no block is given' do
+        expect {
+          subject.with_write_lock
+        }.to raise_error(ArgumentError)
+      end
 
-      it 'raises an exception if maximum lock limit is exceeded'
+      it 'raises an exception if maximum lock limit is exceeded' do
+        counter = Concurrent::Atomic.new(ReadWriteLock::MAX_WRITERS)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        expect {
+          subject.with_write_lock { nil }
+        }.to raise_error(Concurrent::ResourceLimitError)
+      end
 
-      it 'does not release the lock when an exception is raised'
+      it 'does not release the lock when an exception is raised' do
+        expect(subject).to_not receive(:release_write_lock).with(any_args)
+        lambda do
+          subject.with_write_lock { raise StandardError }
+        end
+      end
     end
 
     context '#acquire_read_lock' do
 
-      it 'increments the lock count'
+      it 'increments the lock count' do
+        counter = Concurrent::Atomic.new(0)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        subject.acquire_read_lock
+        expect(counter.value).to eq 1
+      end
 
-      it 'waits for a running writer to finish'
+      it 'waits for a running writer to finish' do
+        pending('need to figure out the timing')
+        expect(true).to be false
+      end
 
-      it 'does not wait for any running readers'
+      it 'does not wait for any running readers' do
+        pending('need to figure out the timing')
+        expect(true).to be false
+      end
 
-      it 'raises an exception if maximum lock limit is exceeded'
+      it 'raises an exception if maximum lock limit is exceeded' do
+        counter = Concurrent::Atomic.new(ReadWriteLock::MAX_WRITERS)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        expect {
+          subject.acquire_write_lock { nil }
+        }.to raise_error(Concurrent::ResourceLimitError)
+      end
+
+      it 'returns true if the lock is acquired' do
+        expect(subject.acquire_read_lock).to be true
+      end
     end
 
     context '#release_read_lock' do
 
-      it 'decrements the counter'
+      it 'decrements the counter' do
+        counter = Concurrent::Atomic.new(0)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        subject.acquire_read_lock
+        expect(counter.value).to eq 1
+        subject.release_read_lock
+        expect(counter.value).to eq 0
+      end
 
-      it 'unblocks running writers'
+      it 'unblocks running writers' do
+        pending('need to figure out the timing')
+        expect(true).to be false
+      end
+
+      it 'returns true if the lock is released' do
+        subject.acquire_read_lock
+        expect(subject.release_read_lock).to be true
+      end
+
+      it 'returns true if the lock was never set' do
+        expect(subject.release_read_lock).to be true
+      end
     end
 
     context '#acquire_write_lock' do
@@ -59,24 +149,77 @@ module Concurrent
       it 'waits for a running reader to finish'
 
       it 'raises an exception if maximum lock limit is exceeded'
+
+      it 'returns true if the lock is acquired'
     end
 
     context '#release_write_lock' do
 
-      it 'decrements the counter'
+      it 'decrements the counter' do
+        counter = Concurrent::Atomic.new(0)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        subject.acquire_write_lock
+        expect(counter.value).to be > 1
+        subject.release_write_lock
+        expect(counter.value).to eq 0
+      end
 
-      it 'unblocks running readers'
+      it 'unblocks running readers' do
+        pending('need to figure out the timing')
+        expect(true).to be false
+      end
 
-      it 'unblocks running writers'
+      it 'unblocks running writers' do
+        pending('need to figure out the timing')
+        expect(true).to be false
+      end
+
+      it 'returns true if the lock is released' do
+        subject.acquire_write_lock
+        expect(subject.release_write_lock).to be true
+      end
+
+      it 'returns true if the lock was never set' do
+        expect(subject.release_write_lock).to be true
+      end
     end
 
     context '#to_s' do
 
-      it 'includes the running reader count'
+      it 'includes the running reader count' do
+        subject.with_read_lock do
+          expect(subject.to_s).to match(/1 readers running/)
+        end
+        expect(subject.to_s).to_not match(/readers running/)
+      end
 
-      it 'includes the running writer count'
+      it 'includes the running writer count' do
+        subject.with_write_lock do
+          expect(subject.to_s).to match(/1 writer running/)
+        end
+        expect(subject.to_s).to_not match(/writer running/)
+      end
 
-      it 'includes the waiting writer count'
+      it 'includes the waiting writer count' do
+        start_latch = Concurrent::CountDownLatch.new(1)
+        end_latch = Concurrent::CountDownLatch.new(1)
+
+        thread = Thread.new do
+          start_latch.wait(1)
+          subject.acquire_write_lock
+          subject.release_write_lock
+          end_latch.count_down
+        end
+
+        subject.with_write_lock do
+          start_latch.count_down
+          sleep(0.1)
+          expect(subject.to_s).to match(/1 writers waiting/)
+        end
+        expect(subject.to_s).to match(/1 writers waiting/)
+        end_latch.wait(1)
+        expect(subject.to_s).to match(/0 writers waiting/)
+      end
     end
   end
 end

@@ -72,11 +72,9 @@ module Concurrent
     def with_read_lock
       raise ArgumentError.new('no block given') unless block_given?
       acquire_read_lock
-      yield
-    rescue => ex
-      raise ex
-    ensure
-      if block_given? && ! ex.is_a?(Concurrent::ResourceLimitError)
+      begin
+        yield
+      ensure
         release_read_lock
       end
     end
@@ -93,16 +91,17 @@ module Concurrent
     def with_write_lock
       raise ArgumentError.new('no block given') unless block_given?
       acquire_write_lock
-      yield
-    rescue => ex
-      raise ex
-    ensure
-      if block_given? && ! ex.is_a?(Concurrent::ResourceLimitError)
+      begin
+        yield
+      ensure
         release_write_lock
       end
     end
 
-    # Acquire a read lock.
+    # Acquire a read lock. If a write lock has been acquired will block until
+    # it is released. Will not block if other read locks have been acquired.
+    #
+    # @return [Boolean] true if the lock is successfully acquired
     #
     # @raise [Concurrent::ResourceLimitError] if the maximum number of readers
     #   is exceeded.
@@ -139,6 +138,8 @@ module Concurrent
     end
 
     # Release a previously acquired read lock.
+    #
+    # @return [Boolean] true if the lock is successfully released
     def release_read_lock
       while(true)
         c = @counter.value
@@ -153,7 +154,9 @@ module Concurrent
       true
     end
 
-    # Acquire a write lock.
+    # Acquire a write lock. Will block and wait for all active readers and writers.
+    #
+    # @return [Boolean] true if the lock is successfully acquired
     #
     # @raise [Concurrent::ResourceLimitError] if the maximum number of writers
     #   is exceeded.
@@ -193,6 +196,8 @@ module Concurrent
     end
 
     # Release a previously acquired write lock.
+    #
+    # @return [Boolean] true if the lock is successfully released
     def release_write_lock
       while(true)
         c = @counter.value
