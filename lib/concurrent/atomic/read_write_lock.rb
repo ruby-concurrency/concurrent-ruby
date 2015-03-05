@@ -14,6 +14,8 @@ module Concurrent
   # Any additional readers that come when the writer is already waiting, will also
   # wait (so writers are not starved).
   #
+  # This implementation is based on `java.util.concurrent.ReentrantReadWriteLock`.
+  #
   # @example
   #   lock = Concurrent::ReadWriteLock.new
   #   lock.with_read_lock  { data.retrieve }
@@ -22,6 +24,8 @@ module Concurrent
   # @note Do **not** try to acquire the write lock while already holding a read lock
   #   **or** try to acquire the write lock while you already have it.
   #   This will lead to deadlock
+  #
+  # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/locks/ReentrantReadWriteLock.html java.util.concurrent.ReentrantReadWriteLock
   class ReadWriteLock
 
     # @!visibility private
@@ -69,8 +73,12 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       acquire_read_lock
       yield
-    ensure => ex
-      release_read_lock unless ex.is_a? Concurrent::ResourceLimitError
+    rescue => ex
+      raise ex
+    ensure
+      if block_given? && ! ex.is_a?(Concurrent::ResourceLimitError)
+        release_read_lock
+      end
     end
 
     # Execute a block operation within a write lock.
@@ -86,8 +94,12 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       acquire_write_lock
       yield
-    ensure => ex
-      release_write_lock unless ex.is_a? Concurrent::ResourceLimitError
+    rescue => ex
+      raise ex
+    ensure
+      if block_given? && ! ex.is_a?(Concurrent::ResourceLimitError)
+        release_write_lock
+      end
     end
 
     # Acquire a read lock.
