@@ -92,13 +92,76 @@ module Concurrent
       end
 
       it 'waits for a running writer to finish' do
-        pending('need to figure out the timing')
-        expect(true).to be false
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        write_flag = Concurrent::AtomicBoolean.new(false)
+        read_flag = Concurrent::AtomicBoolean.new(false)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          write_flag.make_true
+          subject.release_write_lock
+        end
+
+        thread_2 = Thread.new do
+          latch_2.wait(1)
+          expect(write_flag.value).to be false
+          latch_3.count_down
+          subject.acquire_read_lock
+          expect(write_flag.value).to be true
+          read_flag.make_true
+          subject.release_read_lock
+        end
+
+        latch_1.count_down
+        [thread_1, thread_2].each(&:join)
+
+        expect(write_flag.value).to be true
+        expect(read_flag.value).to be true
       end
 
       it 'does not wait for any running readers' do
-        pending('need to figure out the timing')
-        expect(true).to be false
+        counter = Concurrent::Atomic.new(0)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        read_flag_1 = Concurrent::AtomicBoolean.new(false)
+        read_flag_2 = Concurrent::AtomicBoolean.new(false)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_read_lock
+          expect(counter.value).to eq 1
+          latch_2.count_down
+          latch_3.wait(1)
+          read_flag_1.make_true
+          subject.release_read_lock
+        end
+
+        thread_2 = Thread.new do
+          latch_2.wait(1)
+          expect(read_flag_1.value).to be false
+          subject.acquire_read_lock
+          expect(counter.value).to eq 2
+          latch_3.count_down
+          read_flag_2.make_true
+          subject.release_read_lock
+        end
+
+        latch_1.count_down
+        [thread_1, thread_2].each(&:join)
+
+        expect(read_flag_1.value).to be true
+        expect(read_flag_2.value).to be true
+        expect(counter.value).to eq 0
       end
 
       it 'raises an exception if maximum lock limit is exceeded' do
@@ -125,9 +188,26 @@ module Concurrent
         expect(counter.value).to eq 0
       end
 
-      it 'unblocks running writers' do
-        pending('need to figure out the timing')
-        expect(true).to be false
+      it 'unblocks waiting writers' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        write_flag = Concurrent::AtomicBoolean.new(false)
+
+        thread = Thread.new do
+          latch_1.wait(1)
+          latch_2.count_down
+          subject.acquire_write_lock
+          write_flag.make_true
+          subject.release_write_lock
+        end
+
+        subject.acquire_read_lock
+        latch_1.count_down
+        latch_2.wait(1)
+        expect(write_flag.value).to be false
+        subject.release_read_lock
+        thread.join
+        expect(write_flag.value).to be true
       end
 
       it 'returns true if the lock is released' do
@@ -142,15 +222,92 @@ module Concurrent
 
     context '#acquire_write_lock' do
 
-      it 'increments the lock count'
+      it 'increments the lock count' do
+        counter = Concurrent::Atomic.new(0)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        subject.acquire_write_lock
+        expect(counter.value).to be > 1
+      end
 
-      it 'waits for a running writer to finish'
+      it 'waits for a running writer to finish' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
 
-      it 'waits for a running reader to finish'
+        write_flag_1 = Concurrent::AtomicBoolean.new(false)
+        write_flag_2 = Concurrent::AtomicBoolean.new(false)
 
-      it 'raises an exception if maximum lock limit is exceeded'
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          write_flag_1.make_true
+          subject.release_write_lock
+        end
 
-      it 'returns true if the lock is acquired'
+        thread_2 = Thread.new do
+          latch_2.wait(1)
+          expect(write_flag_1.value).to be false
+          latch_3.count_down
+          subject.acquire_write_lock
+          expect(write_flag_1.value).to be true
+          write_flag_2.make_true
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        [thread_1, thread_2].each(&:join)
+
+        expect(write_flag_1.value).to be true
+        expect(write_flag_2.value).to be true
+      end
+
+      it 'waits for a running reader to finish' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        read_flag = Concurrent::AtomicBoolean.new(false)
+        write_flag = Concurrent::AtomicBoolean.new(false)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_read_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          read_flag.make_true
+          subject.release_read_lock
+        end
+
+        thread_2 = Thread.new do
+          latch_2.wait(1)
+          expect(read_flag.value).to be false
+          latch_3.count_down
+          subject.acquire_write_lock
+          expect(read_flag.value).to be true
+          write_flag.make_true
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        [thread_1, thread_2].each(&:join)
+
+        expect(read_flag.value).to be true
+        expect(write_flag.value).to be true
+      end
+
+      it 'raises an exception if maximum lock limit is exceeded' do
+        counter = Concurrent::Atomic.new(ReadWriteLock::MAX_WRITERS)
+        allow(Concurrent::Atomic).to receive(:new).with(anything).and_return(counter)
+        expect {
+          subject.acquire_write_lock { nil }
+        }.to raise_error(Concurrent::ResourceLimitError)
+      end
+
+      it 'returns true if the lock is acquired' do
+        expect(subject.acquire_write_lock).to be true
+      end
     end
 
     context '#release_write_lock' do
@@ -164,14 +321,48 @@ module Concurrent
         expect(counter.value).to eq 0
       end
 
-      it 'unblocks running readers' do
-        pending('need to figure out the timing')
-        expect(true).to be false
+      it 'unblocks waiting readers' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        read_flag = Concurrent::AtomicBoolean.new(false)
+
+        thread = Thread.new do
+          latch_1.wait(1)
+          latch_2.count_down
+          subject.acquire_read_lock
+          read_flag.make_true
+          subject.release_read_lock
+        end
+
+        subject.acquire_write_lock
+        latch_1.count_down
+        latch_2.wait(1)
+        expect(read_flag.value).to be false
+        subject.release_write_lock
+        thread.join
+        expect(read_flag.value).to be true
       end
 
-      it 'unblocks running writers' do
-        pending('need to figure out the timing')
-        expect(true).to be false
+      it 'unblocks waiting writers' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        write_flag = Concurrent::AtomicBoolean.new(false)
+
+        thread = Thread.new do
+          latch_1.wait(1)
+          latch_2.count_down
+          subject.acquire_write_lock
+          write_flag.make_true
+          subject.release_write_lock
+        end
+
+        subject.acquire_write_lock
+        latch_1.count_down
+        latch_2.wait(1)
+        expect(write_flag.value).to be false
+        subject.release_write_lock
+        thread.join
+        expect(write_flag.value).to be true
       end
 
       it 'returns true if the lock is released' do
