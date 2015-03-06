@@ -185,8 +185,7 @@ module Concurrent
             # Then we are OK to stop waiting and go ahead
             # Otherwise go back and wait again
             c = @counter.value
-            break if (c < RUNNING_WRITER) && 
-              ((c & MAX_READERS) == 0) &&
+            break if !running_writer?(c) && !running_readers?(c) &&
               @counter.compare_and_swap(c,c+RUNNING_WRITER-WAITING_WRITER)
           end
           break
@@ -244,12 +243,12 @@ module Concurrent
     private
 
     # @!visibility private
-    def running_readers(c)
+    def running_readers(c = @counter.value)
       c & MAX_READERS
     end
 
     # @!visibility private
-    def running_readers?(c)
+    def running_readers?(c = @counter.value)
       (c & MAX_READERS) > 0
     end
 
@@ -259,7 +258,7 @@ module Concurrent
     end
 
     # @!visibility private
-    def waiting_writers(c)
+    def waiting_writers(c = @counter.value)
       (c & MAX_WRITERS) / WAITING_WRITER
     end
 
@@ -269,12 +268,12 @@ module Concurrent
     end
 
     # @!visibility private
-    def max_readers?(c)
+    def max_readers?(c = @counter.value)
       (c & MAX_READERS) == MAX_READERS
     end
 
     # @!visibility private
-    def max_writers?(c)
+    def max_writers?(c = @counter.value)
       (c & MAX_WRITERS) == MAX_WRITERS
     end
   end
