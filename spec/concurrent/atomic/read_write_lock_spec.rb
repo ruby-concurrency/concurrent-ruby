@@ -2,6 +2,121 @@ module Concurrent
 
   describe ReadWriteLock do
 
+    context '#write_locked?' do
+
+      it 'returns true when the write lock is held' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+
+        thread = Thread.new do
+          subject.with_write_lock do
+            latch_1.count_down
+            latch_2.wait(1)
+          end
+        end
+
+        latch_1.wait(1)
+        expect(subject).to be_write_locked
+        latch_2.count_down
+        thread.join
+      end
+
+      it 'returns false when the write lock is not held' do
+        expect(subject).to_not be_write_locked
+      end
+
+      it 'returns false when the write lock is not held but there are readers' do
+        latch = Concurrent::CountDownLatch.new(1)
+
+        thread = Thread.new do
+          subject.with_read_lock do
+            latch.wait(1)
+          end
+        end
+
+        expect(subject).to_not be_write_locked
+        latch.count_down
+        thread.join
+      end
+    end
+
+    context '#has_waiters?' do
+
+      it 'returns false when no locks are held' do
+        expect(subject).to_not have_waiters
+      end
+
+      it 'returns false when there are readers but no writers' do
+        latch = Concurrent::CountDownLatch.new(1)
+
+        thread = Thread.new do
+          subject.with_read_lock do
+            latch.wait(1)
+          end
+        end
+
+        expect(subject).to_not have_waiters
+        latch.count_down
+        thread.join
+      end
+
+      it 'returns true when the write lock is held and there are waiting readers' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          subject.release_write_lock
+        end
+
+        thread_2 = Thread.new do
+          latch_2.wait(1)
+          subject.acquire_read_lock
+          subject.release_read_lock
+        end
+
+        latch_1.count_down
+        latch_2.wait(1)
+
+        expect(subject).to have_waiters
+
+        latch_3.count_down
+        [thread_1, thread_2].each(&:join)
+      end
+
+      it 'returns true when the write lock is held and there are waiting writers' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          subject.release_write_lock
+        end
+
+        thread_2 = Thread.new do
+          latch_2.wait(1)
+          subject.acquire_write_lock
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        latch_2.wait(1)
+
+        expect(subject).to have_waiters
+
+        latch_3.count_down
+        [thread_1, thread_2].each(&:join)
+      end
+    end
+
     context '#with_read_lock' do
 
       it 'acquires the lock' do

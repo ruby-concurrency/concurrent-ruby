@@ -108,23 +108,23 @@ module Concurrent
     def acquire_read_lock
       while(true)
         c = @counter.value
-        raise ResourceLimitError.new('Too many reader threads') if (c & MAX_READERS) == MAX_READERS
+        raise ResourceLimitError.new('Too many reader threads') if max_readers?(c)
 
         # If a writer is waiting when we first queue up, we need to wait
-        if c >= WAITING_WRITER
+        if waiting_writer?(c)
           # But it is possible that the writer could finish and decrement @counter right here...
           @reader_mutex.synchronize do 
             # So check again inside the synchronized section
-            @reader_q.wait(@reader_mutex) if @counter.value >= WAITING_WRITER
+            @reader_q.wait(@reader_mutex) if waiting_writer?
           end
 
           # after a reader has waited once, they are allowed to "barge" ahead of waiting writers
           # but if a writer is *running*, the reader still needs to wait (naturally)
           while(true)
             c = @counter.value
-            if c >= RUNNING_WRITER
+            if running_writer?(c)
               @reader_mutex.synchronize do
-                @reader_q.wait(@reader_mutex) if @counter.value >= RUNNING_WRITER
+                @reader_q.wait(@reader_mutex) if running_writer?
               end
             else
               return if @counter.compare_and_swap(c,c+1)
@@ -145,7 +145,7 @@ module Concurrent
         c = @counter.value
         if @counter.compare_and_swap(c,c-1)
           # If one or more writers were waiting, and we were the last reader, wake a writer up
-          if c >= WAITING_WRITER && (c & MAX_READERS) == 1
+          if waiting_writer?(c) && running_readers(c) == 1
             @writer_mutex.synchronize { @writer_q.signal }
           end
           break
@@ -163,7 +163,7 @@ module Concurrent
     def acquire_write_lock
       while(true)
         c = @counter.value
-        raise ResourceLimitError.new('Too many writer threads') if (c & MAX_WRITERS) == MAX_WRITERS
+        raise ResourceLimitError.new('Too many writer threads') if max_writers?(c)
 
         if c == 0 # no readers OR writers running
           # if we successfully swap the RUNNING_WRITER bit on, then we can go ahead
@@ -177,7 +177,7 @@ module Concurrent
               # So we have to do another check inside the synchronized section
               # If a writer OR reader is running, then go to sleep
               c = @counter.value
-              @writer_q.wait(@writer_mutex) if (c >= RUNNING_WRITER) || ((c & MAX_READERS) > 0)
+              @writer_q.wait(@writer_mutex) if running_writer?(c) || running_readers?(c)
             end
 
             # We just came out of a wait
@@ -203,7 +203,7 @@ module Concurrent
         c = @counter.value
         if @counter.compare_and_swap(c,c-RUNNING_WRITER)
           @reader_mutex.synchronize { @reader_q.broadcast }
-          if (c & MAX_WRITERS) > 0 # if any writers are waiting...
+          if waiting_writers(c) > 0 # if any writers are waiting...
             @writer_mutex.synchronize { @writer_q.signal }
           end
           break
@@ -216,15 +216,66 @@ module Concurrent
     # writer counts.
     def to_s
       c = @counter.value
-      s = if c >= RUNNING_WRITER
+      s = if running_writer?(c)
             "1 writer running, "
-          elsif (c & MAX_READERS) > 0
-            "#{c & MAX_READERS} readers running, "
+          elsif running_readers(c) > 0
+            "#{running_readers(c)} readers running, "
           else
             ""
           end
 
-      "#<ReadWriteLock:#{object_id.to_s(16)} #{s}#{(c & MAX_WRITERS) / WAITING_WRITER} writers waiting>"
+      "#<ReadWriteLock:#{object_id.to_s(16)} #{s}#{waiting_writers(c)} writers waiting>"
+    end
+
+    # Queries if the write lock is held by any thread.
+    #
+    # @return [Boolean] true if the write lock is held else false`
+    def write_locked?
+      @counter.value >= RUNNING_WRITER
+    end
+
+    # Queries whether any threads are waiting to acquire the read or write lock.
+    #
+    # @return [Boolean] true if any threads are waiting for a lock else false
+    def has_waiters?
+      waiting_writer?(@counter.value)
+    end
+
+    private
+
+    # @!visibility private
+    def running_readers(c)
+      c & MAX_READERS
+    end
+
+    # @!visibility private
+    def running_readers?(c)
+      (c & MAX_READERS) > 0
+    end
+
+    # @!visibility private
+    def running_writer?(c = @counter.value)
+      c >= RUNNING_WRITER
+    end
+
+    # @!visibility private
+    def waiting_writers(c)
+      (c & MAX_WRITERS) / WAITING_WRITER
+    end
+
+    # @!visibility private
+    def waiting_writer?(c = @counter.value)
+      c >= WAITING_WRITER
+    end
+
+    # @!visibility private
+    def max_readers?(c)
+      (c & MAX_READERS) == MAX_READERS
+    end
+
+    # @!visibility private
+    def max_writers?(c)
+      (c & MAX_WRITERS) == MAX_WRITERS
     end
   end
 end
