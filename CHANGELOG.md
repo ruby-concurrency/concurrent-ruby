@@ -15,6 +15,7 @@
 * Deprecated all clock-time based timer scheduling
   - Only support scheduling by delay
   - Effects `Concurrent.timer`, `TimerSet`, and `ScheduledTask`
+* Added new `ReadWriteLock` class
 * Consistent `at_exit` behavior for Java and Ruby thread pools.
 * Added `at_exit` handler to Ruby thread pools (already in Java thread pools)
   - Ruby handler stores the object id and retrieves from `ObjectSpace`
