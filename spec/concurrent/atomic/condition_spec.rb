@@ -32,8 +32,15 @@ module Concurrent
         describe '#wait without timeout' do
 
           it 'should block the thread' do
-            t = Thread.new { mutex.synchronize { subject.wait(mutex) } }
-            sleep(0.1)
+            latch = Concurrent::CountDownLatch.new
+            t = Thread.new do
+              mutex.synchronize do
+                latch.count_down
+                subject.wait(mutex)
+              end
+            end
+
+            latch.wait(1)
             expect(t.status).to eq 'sleep'
             t.kill
           end
@@ -70,8 +77,15 @@ module Concurrent
         describe '#wait' do
 
           it 'should block the thread' do
-            t = Thread.new { mutex.synchronize { subject.wait(mutex, 1) } }
-            sleep(0.1)
+            latch = Concurrent::CountDownLatch.new
+            t = Thread.new do
+              mutex.synchronize do
+                latch.count_down
+                subject.wait(mutex, 1)
+              end
+            end
+
+            latch.wait(1)
             expect(t.status).to eq 'sleep'
             t.kill
           end
