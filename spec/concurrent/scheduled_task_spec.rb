@@ -96,7 +96,7 @@ module Concurrent
     context 'instance #execute' do
 
       it 'does nothing unless the state is :unscheduled' do
-        expect(Thread).not_to receive(:new).with(any_args)
+        expect(Concurrent).not_to receive(:timer).with(any_args)
         task = ScheduledTask.new(1){ nil }
         task.instance_variable_set(:@state, :pending)
         task.execute

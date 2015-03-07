@@ -47,7 +47,7 @@ class ActorStressTester
       "with #{@threads} thread#{plural.call(@threads)} each " +
       "and #{@loops} loop#{plural.call(@loops)} per thread..."
 
-    Benchmark.bm do |bm|
+    Benchmark.bmbm do |bm|
       @tests.times do
         bm.report do
           test(@threads, @loops)
