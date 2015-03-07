@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gemspec name: 'concurrent-ruby'
 
 group :development do
-  gem 'rake', '~> 10.3.2'
+  gem 'rake', '~> 10.4.2'
   gem 'rake-compiler', '~> 0.9.5'
   gem 'gem-compiler', '~> 0.3.0'
 end

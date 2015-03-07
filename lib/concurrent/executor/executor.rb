@@ -69,15 +69,15 @@ module Concurrent
     def enable_at_exit_handler!(opts = {})
       if opts.fetch(:stop_on_exit, true)
         @auto_terminate = true
-        if RUBY_PLATFORM == 'java'
-          create_java_at_exit_handler!(self)
+        if RUBY_PLATFORM == 'ruby'
+          create_mri_at_exit_handler!(self.object_id)
         else
-          create_ruby_at_exit_handler!(self.object_id)
+          create_at_exit_handler!(self)
         end
       end
     end
 
-    def create_ruby_at_exit_handler!(id)
+    def create_mri_at_exit_handler!(id)
       at_exit do
         if Concurrent.auto_terminate_all_executors?
           this = ObjectSpace._id2ref(id)
@@ -86,7 +86,7 @@ module Concurrent
       end
     end
 
-    def create_java_at_exit_handler!(this)
+    def create_at_exit_handler!(this)
       at_exit do
         this.kill if Concurrent.auto_terminate_all_executors?
       end
