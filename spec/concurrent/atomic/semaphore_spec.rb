@@ -116,30 +116,34 @@ module Concurrent
       end
 
       it 'should resist to spurious wake ups without timeout' do
-        @expected = true
-        # would set @expected to false
-        Thread.new { @expected = subject.acquire }
+        actual = Concurrent::AtomicBoolean.new(true)
+        latch = Concurrent::CountDownLatch.new
 
-        sleep(0.1)
+        # would set actual to false
+        t = Thread.new { latch.wait(1); actual.value = subject.acquire }
+
+        latch.count_down
         subject.simulate_spurious_wake_up
+        t.join(0.1)
 
-        sleep(0.1)
-        expect(@expected).to be_truthy
+        expect(actual.value).to be true
+        t.kill
       end
 
       it 'should resist to spurious wake ups with timeout' do
-        @expected = true
-        # sets @expected to false in another thread
-        t = Thread.new { @expected = subject.try_acquire(1, 0.3) }
+        actual = Concurrent::AtomicBoolean.new(true)
+        latch = Concurrent::CountDownLatch.new
 
-        sleep(0.1)
+        # sets actual to false in another thread
+        t = Thread.new { latch.wait(1); actual.value = subject.try_acquire(1, 0.3) }
+
+        latch.count_down
         subject.simulate_spurious_wake_up
+        t.join(0.1)
 
-        sleep(0.1)
-        expect(@expected).to be_truthy
-
+        expect(actual.value).to be true
         t.join
-        expect(@expected).to be_falsey
+        expect(actual.value).to be false
       end
     end
   end
