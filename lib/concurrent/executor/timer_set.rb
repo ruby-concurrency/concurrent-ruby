@@ -1,10 +1,10 @@
 require 'thread'
-require 'concurrent/options_parser'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/single_thread_executor'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -15,21 +15,24 @@ module Concurrent
   # @!macro monotonic_clock_warning
   class TimerSet
     include RubyExecutor
+    include ExecutorOptions
 
     # Create a new set of timed tasks.
     #
-    # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
+    # @!macro [attach] executor_options
+    #  
+    #   @param [Hash] opts the options used to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
     def initialize(opts = {})
       @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_task_pool
+      @task_executor  = get_executor_from(opts) || Concurrent.global_io_executor
       @timer_executor = SingleThreadExecutor.new
       @condition      = Condition.new
       init_executor
+      enable_at_exit_handler!(opts)
     end
 
     # Post a task to be execute run after a given delay (in seconds). If the
@@ -71,11 +74,8 @@ module Concurrent
       self
     end
 
-    # For a timer, #kill is like an orderly shutdown, except we need to manually
-    # (and destructively) clear the queue first
+    # @!macro executor_method_shutdown
     def kill
-      mutex.synchronize { @queue.clear }
-      # possible race condition
       shutdown
     end
 

@@ -25,19 +25,15 @@ module Concurrent
     #
     #   The API and behavior of this class are based on Java's `CachedThreadPool`
     #
-    #   @note When running on the JVM (JRuby) this class will inherit from `JavaCachedThreadPool`.
-    #     On all other platforms it will inherit from `RubyCachedThreadPool`.
-    #
     #   @see Concurrent::RubyCachedThreadPool
     #   @see Concurrent::JavaCachedThreadPool
     #
-    #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
-    #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+    # @!macro thread_pool_options
     class CachedThreadPool < JavaCachedThreadPool
     end
   else
     # @!macro cached_thread_pool
+    # @!macro thread_pool_options
     class CachedThreadPool < RubyCachedThreadPool
     end
   end

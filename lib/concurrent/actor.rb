@@ -1,4 +1,5 @@
 require 'concurrent/configuration'
+require 'concurrent/delay'
 require 'concurrent/executor/serialized_execution'
 require 'concurrent/ivar'
 require 'concurrent/logging'
@@ -39,7 +40,7 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    @root = Delay.new do
+    @root = Delay.new(executor: :immediate) do
       Core.new(parent: nil, name: '/', class: Root, initialized: ivar = IVar.new).reference.tap do
         ivar.no_error!
       end
@@ -59,7 +60,7 @@ module Concurrent
     #   Actor.spawn name:     :ping3,
     #                 class:    AdHoc,
     #                 args:     [1]
-    #                 executor: Concurrent.configuration.global_task_pool do |add|
+    #                 executor: Concurrent.global_io_executor do |add|
     #     lambda { |number| number + add }
     #   end
     #

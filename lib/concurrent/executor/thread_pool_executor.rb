@@ -33,35 +33,12 @@ module Concurrent
     #   > background thread), that preconfigure settings for the most common usage
     #   > scenarios.
     #
-    #   Thread pools support several configuration options:
-    #
-    #   * `max_threads`: The maximum number of threads that may be created in the pool.
-    #   * `min_threads`: The minimum number of threads that may be retained in the pool.
-    #   * `idletime`: The number of seconds that a thread may be idle before being reclaimed.
-    #   * `max_queue`: The maximum number of tasks that may be waiting in the work queue at
-    #     any one time. When the queue size reaches `max_queue` subsequent tasks will be
-    #     rejected in accordance with the configured `fallback_policy`.
-    #   * `fallback_policy`: The policy defining how rejected tasks are handled.    #
-    #
-    #   Three fallback policies are supported:
-    #
-    #   * `:abort`: Raise a `RejectedExecutionError` exception and discard the task.
-    #   * `:discard`: Discard the task and return false.
-    #   * `:caller_runs`: Execute the task on the calling thread.
-    #
-    #   @note When running on the JVM (JRuby) this class will inherit from `JavaThreadPoolExecutor`.
-    #     On all other platforms it will inherit from `RubyThreadPoolExecutor`.
-    #
-    #   @see Concurrent::RubyThreadPoolExecutor
-    #   @see Concurrent::JavaThreadPoolExecutor
-    #
-    #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
-    #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+    # @!macro thread_pool_options
     class ThreadPoolExecutor < JavaThreadPoolExecutor
     end
   else
     # @!macro thread_pool_executor
+    # @!macro thread_pool_options
     class ThreadPoolExecutor < RubyThreadPoolExecutor
     end
   end

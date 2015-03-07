@@ -1,8 +1,8 @@
 require 'thread'
 
-require 'concurrent/options_parser'
 require 'concurrent/ivar'
 require 'concurrent/executor/safe_task_executor'
+require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -12,23 +12,16 @@ module Concurrent
   # @see http://clojuredocs.org/clojure_core/clojure.core/future Clojure's future function
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future
   class Future < IVar
+    include ExecutorOptions
 
     # Create a new `Future` in the `:unscheduled` state.
     #
     # @yield the asynchronous operation to perform
     #
-    # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
+    # @!macro executor_and_deref_options
+    #
     # @option opts [object, Array] :args zero or more arguments to be passed the task
     #   block on execution
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
-    #   the internal value and returning the value returned from the proc
     #
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
@@ -36,8 +29,8 @@ module Concurrent
       super(IVar::NO_VALUE, opts)
       @state = :unscheduled
       @task = block
-      @executor = OptionsParser::get_executor_from(opts) || Concurrent.configuration.global_operation_pool
-      @args = OptionsParser::get_arguments_from(opts)
+      @executor = get_executor_from(opts) || Concurrent.global_io_executor
+      @args = get_arguments_from(opts)
     end
 
     # Execute an `:unscheduled` `Future`. Immediately sets the state to `:pending` and
@@ -67,23 +60,14 @@ module Concurrent
     #
     # @yield the asynchronous operation to perform
     #
-    # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
-    # @option opts [object, Array] :args zero or more arguments to be passed the
-    #   task block on execution
+    # @!macro executor_and_deref_options
     #
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
-    #   the internal value and returning the value returned from the proc
-    #
-    # @return [Future] the newly created `Future` in the `:pending` state
+    # @option opts [object, Array] :args zero or more arguments to be passed the task
+    #   block on execution
     #
     # @raise [ArgumentError] if no block is given
+    #
+    # @return [Future] the newly created `Future` in the `:pending` state
     #
     # @example
     #   future = Concurrent::Future.execute{ sleep(1); 42 }

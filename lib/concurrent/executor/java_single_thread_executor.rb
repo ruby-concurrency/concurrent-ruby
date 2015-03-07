@@ -4,6 +4,7 @@ if RUBY_PLATFORM == 'java'
   module Concurrent
 
     # @!macro single_thread_executor
+    # @!macro thread_pool_options
     class JavaSingleThreadExecutor
       include JavaExecutor
       include SerialExecutor
@@ -21,7 +22,7 @@ if RUBY_PLATFORM == 'java'
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor
         @fallback_policy = opts.fetch(:fallback_policy, :discard)
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.keys.include?(@fallback_policy)
-        set_shutdown_hook
+        enable_at_exit_handler!(opts)
       end
     end
   end

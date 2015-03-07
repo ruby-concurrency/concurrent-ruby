@@ -2,7 +2,6 @@ require_relative 'thread_pool_shared'
 
 shared_examples :thread_pool_executor do
 
-
   after(:each) do
     subject.kill
     subject.wait_for_termination(0.1)

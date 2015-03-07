@@ -16,19 +16,15 @@ module Concurrent
     #
     #   The API and behavior of this class are based on Java's `SingleThreadExecutor`
     #
-    #   @note When running on the JVM (JRuby) this class will inherit from `JavaSingleThreadExecutor`.
-    #     On all other platforms it will inherit from `RubySingleThreadExecutor`.
-    #
     #   @see Concurrent::RubySingleThreadExecutor
     #   @see Concurrent::JavaSingleThreadExecutor
     #
-    #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
-    #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+    # @!macro thread_pool_options
     class SingleThreadExecutor < JavaSingleThreadExecutor
     end
   else
     # @!macro single_thread_executor
+    # @!macro thread_pool_options
     class SingleThreadExecutor < RubySingleThreadExecutor
     end
   end

@@ -2,7 +2,7 @@ require 'thread'
 
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor_options'
 require 'concurrent/utility/timeout'
 require 'concurrent/logging'
 
@@ -14,39 +14,41 @@ module Concurrent
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   class Agent
     include Dereferenceable
-    include Concurrent::Observable
+    include Observable
+    include ExecutorOptions
     include Logging
 
-    attr_reader :timeout, :task_executor, :operation_executor
+    attr_reader :timeout, :io_executor, :fast_executor
 
     # Initialize a new Agent with the given initial value and provided options.
     #
     # @param [Object] initial the initial value
-    # @param [Hash] opts the options used to define the behavior at update and deref
     #
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
-    #
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
-    #   the internal value and returning the value returned from the proc
+    # @!macro [attach] executor_and_deref_options
+    #  
+    #   @param [Hash] opts the options used to define the behavior at update and deref
+    #     and to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
+    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
+    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
+    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
+    #     the internal value and returning the value returned from the proc
     def initialize(initial, opts = {})
       @value                = initial
       @rescuers             = []
       @validator            = Proc.new { |result| true }
       self.observers        = CopyOnWriteObserverSet.new
       @serialized_execution = SerializedExecution.new
-      @task_executor        = OptionsParser.get_task_executor_from(opts)
-      @operation_executor   = OptionsParser.get_operation_executor_from(opts)
+      @io_executor          = get_executor_from(opts) || Concurrent.global_io_executor
+      @fast_executor        = get_executor_from(opts) || Concurrent.global_fast_executor
       init_mutex
       set_deref_options(opts)
     end
 
-    # Specifies a block operation to be performed when an update operation raises
+    # Specifies a block fast to be performed when an update fast raises
     # an exception. Rescue blocks will be checked in order they were added. The first
     # block for which the raised exception "is-a" subclass of the given `clazz` will
     # be called. If no `clazz` is given the block will match any caught exception.
@@ -78,13 +80,13 @@ module Concurrent
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
-    # A block operation to be performed after every update to validate if the new
+    # A block fast to be performed after every update to validate if the new
     # value is valid. If the new value is not valid then the current value is not
     # updated. If no validator is provided then all updates are considered valid.
     #
-    # @yield the block to be called after every update operation to determine if
+    # @yield the block to be called after every update fast to determine if
     #   the result is valid
-    # @yieldparam [Object] value the result of the last update operation
+    # @yieldparam [Object] value the result of the last update fast
     # @yieldreturn [Boolean] true if the value is valid else false
     def validate(&block)
 
@@ -102,24 +104,24 @@ module Concurrent
     alias_method :validate_with, :validate
     alias_method :validates_with, :validate
 
-    # Update the current value with the result of the given block operation,
+    # Update the current value with the result of the given block fast,
     # block should not do blocking calls, use #post_off for blocking calls
     #
-    # @yield the operation to be performed with the current value in order to calculate
+    # @yield the fast to be performed with the current value in order to calculate
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
     def post(&block)
-      post_on(@task_executor, &block)
+      post_on(@io_executor, &block)
     end
 
-    # Update the current value with the result of the given block operation,
+    # Update the current value with the result of the given block fast,
     # block can do blocking calls
     #
     # @param [Fixnum, nil] timeout maximum number of seconds before an update is cancelled
     #
-    # @yield the operation to be performed with the current value in order to calculate
+    # @yield the fast to be performed with the current value in order to calculate
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
@@ -130,13 +132,13 @@ module Concurrent
               else
                 block
               end
-      post_on(@operation_executor, &block)
+      post_on(@fast_executor, &block)
     end
 
-    # Update the current value with the result of the given block operation,
+    # Update the current value with the result of the given block fast,
     # block should not do blocking calls, use #post_off for blocking calls
     #
-    # @yield the operation to be performed with the current value in order to calculate
+    # @yield the fast to be performed with the current value in order to calculate
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value

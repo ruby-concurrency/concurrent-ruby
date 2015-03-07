@@ -32,7 +32,7 @@ module Concurrent
   # @raise [ArgumentError] if no block is given
   # @raise [ArgumentError] if any of the inputs are not `IVar`s
   def dataflow(*inputs, &block)
-    dataflow_with(Concurrent.configuration.global_operation_pool, *inputs, &block)
+    dataflow_with(Concurrent.global_io_executor, *inputs, &block)
   end
   module_function :dataflow
 
@@ -42,7 +42,7 @@ module Concurrent
   module_function :dataflow_with
   
   def dataflow!(*inputs, &block)
-    dataflow_with!(Concurrent.configuration.global_task_pool, *inputs, &block)
+    dataflow_with!(Concurrent.global_io_executor, *inputs, &block)
   end
   module_function :dataflow!
 

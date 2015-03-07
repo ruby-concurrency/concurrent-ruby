@@ -84,22 +84,32 @@ module Concurrent
         agent.post { |value| 0 }
       end
 
-      it 'uses the global operation pool when :operation is true' do
-        expect(Concurrent.configuration).to receive(:global_operation_pool).and_return(executor)
-        agent = Agent.new(0, operation: true)
+      it 'uses the global io executor when :executor is :io' do
+        expect(Concurrent).to \
+          receive(:global_io_executor).at_least(:once).and_return(executor)
+        agent = Agent.new(0, executor: :io)
         agent.post { |value| 0 }
       end
 
-      it 'uses the global task pool when :task is true' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
-        agent = Agent.new(0, task: true)
+      it 'uses the global fast executor when :executor is :fast' do
+        expect(Concurrent).to \
+          receive(:global_fast_executor).at_least(:once).and_return(executor)
+        agent = Agent.new(0, executor: :fast)
         agent.post { |value| 0 }
       end
 
-      it 'uses the global task pool by default' do
-        expect(Concurrent.configuration).to receive(:global_task_pool).and_return(executor)
+      it 'uses the global io executor for #post by default' do
+        expect(Concurrent).to \
+          receive(:global_io_executor).at_least(:once).and_return(executor)
         agent = Agent.new(0)
         agent.post { |value| 0 }
+      end
+
+      it 'uses the global io executor for #post_off by default' do
+        expect(Concurrent).to \
+          receive(:global_io_executor).at_least(:once).and_return(executor)
+        agent = Agent.new(0)
+        agent.post_off { |value| 0 }
       end
     end
 
@@ -163,9 +173,9 @@ module Concurrent
         subject.post { nil }
         sleep(0.1)
         expect(subject.
-                   instance_variable_get(:@serialized_execution).
-                   instance_variable_get(:@stash).
-                   size).to eq 2
+               instance_variable_get(:@serialized_execution).
+               instance_variable_get(:@stash).
+               size).to eq 2
       end
 
       it 'does not add to the queue when no block is given' do
@@ -282,77 +292,77 @@ module Concurrent
       it 'calls the first exception block with a matching class' do
         expected = nil
         agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(StandardError) { |ex| expected = 1 }.
-            rescue(StandardError) { |ex| expected = 2 }.
-            rescue(StandardError) { |ex| expected = 3 }
-        agent.post { raise StandardError }
-        expect(expected).to eq 1
-      end
+      rescue(StandardError) { |ex| expected = 1 }.
+        rescue(StandardError) { |ex| expected = 2 }.
+        rescue(StandardError) { |ex| expected = 3 }
+          agent.post { raise StandardError }
+          expect(expected).to eq 1
+        end
 
       it 'matches all with a rescue with no class given' do
         expected = nil
         agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(LoadError) { |ex| expected = 1 }.
-            rescue { |ex| expected = 2 }.
-            rescue(StandardError) { |ex| expected = 3 }
-        agent.post { raise NoMethodError }
-        expect(expected).to eq 2
-      end
+      rescue(LoadError) { |ex| expected = 1 }.
+        rescue { |ex| expected = 2 }.
+        rescue(StandardError) { |ex| expected = 3 }
+          agent.post { raise NoMethodError }
+          expect(expected).to eq 2
+        end
 
       it 'searches associated rescue handlers in order' do
         expected = nil
         agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(ArgumentError) { |ex| expected = 1 }.
-            rescue(LoadError) { |ex| expected = 2 }.
-            rescue(StandardError) { |ex| expected = 3 }
-        agent.post { raise ArgumentError }
-        expect(expected).to eq 1
+      rescue(ArgumentError) { |ex| expected = 1 }.
+        rescue(LoadError) { |ex| expected = 2 }.
+        rescue(StandardError) { |ex| expected = 3 }
+          agent.post { raise ArgumentError }
+          expect(expected).to eq 1
 
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(ArgumentError) { |ex| expected = 1 }.
-            rescue(LoadError) { |ex| expected = 2 }.
-            rescue(StandardError) { |ex| expected = 3 }
-        agent.post { raise LoadError }
-        expect(expected).to eq 2
+          expected = nil
+          agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+        rescue(ArgumentError) { |ex| expected = 1 }.
+          rescue(LoadError) { |ex| expected = 2 }.
+          rescue(StandardError) { |ex| expected = 3 }
+            agent.post { raise LoadError }
+            expect(expected).to eq 2
 
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(ArgumentError) { |ex| expected = 1 }.
+            expected = nil
+            agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
+          rescue(ArgumentError) { |ex| expected = 1 }.
             rescue(LoadError) { |ex| expected = 2 }.
             rescue(StandardError) { |ex| expected = 3 }
-        agent.post { raise StandardError }
-        expect(expected).to eq 3
-      end
+              agent.post { raise StandardError }
+              expect(expected).to eq 3
+            end
 
       it 'passes the exception object to the matched block' do
         expected = nil
         agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(ArgumentError) { |ex| expected = ex }.
-            rescue(LoadError) { |ex| expected = ex }.
-            rescue(StandardError) { |ex| expected = ex }
-        agent.post { raise StandardError }
-        expect(expected).to be_a(StandardError)
-      end
+      rescue(ArgumentError) { |ex| expected = ex }.
+        rescue(LoadError) { |ex| expected = ex }.
+        rescue(StandardError) { |ex| expected = ex }
+          agent.post { raise StandardError }
+          expect(expected).to be_a(StandardError)
+        end
 
       it 'ignores rescuers without a block' do
         expected = nil
         agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-            rescue(StandardError).
-            rescue(StandardError) { |ex| expected = ex }
-        agent.post { raise StandardError }
-        expect(expected).to be_a(StandardError)
-      end
+      rescue(StandardError).
+        rescue(StandardError) { |ex| expected = ex }
+          agent.post { raise StandardError }
+          expect(expected).to be_a(StandardError)
+        end
 
       it 'supresses the exception if no rescue matches' do
         expect {
           agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-              rescue(ArgumentError) { |ex| @expected = ex }.
-              rescue(NotImplementedError) { |ex| @expected = ex }.
-              rescue(NoMethodError) { |ex| @expected = ex }
+      rescue(ArgumentError) { |ex| @expected = ex }.
+        rescue(NotImplementedError) { |ex| @expected = ex }.
+        rescue(NoMethodError) { |ex| @expected = ex }
           agent.post { raise StandardError }
         }.not_to raise_error
-      end
+        end
 
       it 'suppresses exceptions thrown from rescue handlers' do
         expect {

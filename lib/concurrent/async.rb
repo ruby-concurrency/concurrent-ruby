@@ -1,6 +1,7 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/delay'
+require 'concurrent/lazy_reference'
 require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/executor/immediate_executor'
@@ -9,8 +10,6 @@ require 'concurrent/executor/serialized_execution'
 module Concurrent
 
   # {include:file:doc/async.md}
-  #
-  # @since 0.6.0
   #
   # @see Concurrent::Obligation
   module Async
@@ -194,13 +193,21 @@ module Concurrent
     # @raise [Concurrent::InitializationError] when called more than once
     def init_mutex
       raise InitializationError.new('#init_mutex was already called') if @__async_initialized__
+
       @__async_initialized__ = true
       serializer = Concurrent::SerializedExecution.new
-      @__async_executor__ = Delay.new{ Concurrent.configuration.global_operation_pool }
-      @__await_delegator__ = Delay.new{ AsyncDelegator.new(
-        self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true) }
-      @__async_delegator__ = Delay.new{ AsyncDelegator.new(
-        self, @__async_executor__, serializer, false) }
+
+      @__async_executor__ = Delay.new(executor: :immediate) {
+        Concurrent.global_io_executor
+      }
+
+      @__await_delegator__ = Delay.new(executor: :immediate) {
+        AsyncDelegator.new(self, LazyReference.new{ Concurrent::ImmediateExecutor.new }, serializer, true)
+      }
+
+      @__async_delegator__ = Delay.new(executor: :immediate) {
+        AsyncDelegator.new(self, @__async_executor__, serializer, false)
+      }
     end
   end
 end

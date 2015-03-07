@@ -3,6 +3,7 @@ require_relative 'executor'
 module Concurrent
 
   # @!macro single_thread_executor
+  # @!macro thread_pool_options
   class RubySingleThreadExecutor
     include RubyExecutor
     include SerialExecutor
@@ -22,6 +23,7 @@ module Concurrent
       @fallback_policy = opts.fetch(:fallback_policy, :discard)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       init_executor
+      enable_at_exit_handler!(opts)
     end
 
     protected

@@ -8,6 +8,7 @@ require 'concurrent/utility/monotonic_time'
 module Concurrent
 
   # @!macro thread_pool_executor
+  # @!macro thread_pool_options
   class RubyThreadPoolExecutor
     include RubyExecutor
 
@@ -84,6 +85,7 @@ module Concurrent
       raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
 
       init_executor
+      enable_at_exit_handler!(opts)
 
       @pool                 = []
       @queue                = Queue.new

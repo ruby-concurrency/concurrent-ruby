@@ -3,6 +3,7 @@ require_relative '../../lib/extension_helper.rb'
 
 module Concurrent
   module TestHelpers
+
     def delta(v1, v2)
       if block_given?
         v1 = yield(v1)
@@ -31,11 +32,25 @@ module Concurrent
       @do_not_reset = true
     end
 
+    GLOBAL_EXECUTORS = [
+      [:@@global_fast_executor, ->{ LazyReference.new{ Concurrent.new_fast_executor }}],
+      [:@@global_io_executor, ->{ LazyReference.new{ Concurrent.new_io_executor }}],
+      [:@@global_timer_set, ->{ LazyReference.new{ Concurrent::TimerSet.new }}],
+    ]
+
     @@killed = false
 
     def reset_gem_configuration
-      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new if @@killed
-      @@killed = false
+      if @@killed
+        GLOBAL_EXECUTORS.each do |var, factory|
+          executor = Concurrent.class_variable_get(var).value
+          executor.shutdown
+          executor.kill
+          executor = nil
+          Concurrent.class_variable_set(var, factory.call)
+        end
+        @@killed = false
+      end
     end
 
     def kill_rogue_threads(warning = true)

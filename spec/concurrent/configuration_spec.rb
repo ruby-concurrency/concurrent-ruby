@@ -1,66 +1,62 @@
 module Concurrent
 
   describe Configuration do
-    it 'creates a global timer pool' do
-      expect(Concurrent.configuration.global_timer_set).not_to be_nil
-      expect(Concurrent.configuration.global_timer_set).to respond_to(:post)
+
+    before(:each) do
+      Concurrent.class_variable_set(
+        :@@global_fast_executor,
+        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
+      Concurrent.class_variable_set(
+        :@@global_io_executor,
+        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
+      Concurrent.class_variable_set(
+        :@@global_timer_set,
+        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
     end
 
-    context 'global task pool' do
-
-      specify 'reader creates a default pool when first called if none exists' do
-        expect(Concurrent.configuration.global_task_pool).not_to be_nil
-        expect(Concurrent.configuration.global_task_pool).to respond_to(:post)
-      end
-
-      specify 'writer memoizes the given executor' do
-        executor = ImmediateExecutor.new
-        Concurrent.configure do |config|
-          config.global_task_pool = executor
-        end
-        expect(Concurrent.configuration.global_task_pool).to eq executor
-      end
-
-      specify 'writer raises an exception if called after initialization' do
-        executor = ImmediateExecutor.new
-        Concurrent.configure do |config|
-          config.global_task_pool = executor
-        end
-        Concurrent.configuration.global_task_pool
-        expect {
-          Concurrent.configure do |config|
-            config.global_task_pool = executor
-          end
-        }.to raise_error(ConfigurationError)
-      end
+    after(:each) do
+      reset_gem_configuration
     end
 
-    context 'global operation pool' do
+    context 'global executors' do
 
-      specify 'reader creates a default pool when first called if none exists' do
-        expect(Concurrent.configuration.global_operation_pool).not_to be_nil
-        expect(Concurrent.configuration.global_operation_pool).to respond_to(:post)
+      it 'creates a global timer set' do
+        expect(Concurrent.global_timer_set).not_to be_nil
+        expect(Concurrent.global_timer_set).to respond_to(:post)
       end
 
-      specify 'writer memoizes the given executor' do
-        executor = ImmediateExecutor.new
-        Concurrent.configure do |config|
-          config.global_operation_pool = executor
-        end
-        expect(Concurrent.configuration.global_operation_pool).to eq executor
+      it 'creates a global fast executor' do
+        expect(Concurrent.global_fast_executor).not_to be_nil
+        expect(Concurrent.global_fast_executor).to respond_to(:post)
       end
 
-      specify 'writer raises an exception if called after initialization' do
-        executor = ImmediateExecutor.new
-        Concurrent.configure do |config|
-          config.global_operation_pool = executor
+      it 'creates a global io executor' do
+        expect(Concurrent.global_io_executor).not_to be_nil
+        expect(Concurrent.global_io_executor).to respond_to(:post)
+      end
+
+      specify '#shutdown_global_executors acts on all global executors' do
+        expect(Concurrent.global_fast_executor).to receive(:shutdown).with(no_args)
+        expect(Concurrent.global_io_executor).to receive(:shutdown).with(no_args)
+        expect(Concurrent.global_timer_set).to receive(:shutdown).with(no_args)
+        Concurrent.shutdown_global_executors
+      end
+
+      specify '#kill_global_executors acts on all global executors' do
+        expect(Concurrent.global_fast_executor).to receive(:kill).with(no_args)
+        expect(Concurrent.global_io_executor).to receive(:kill).with(no_args)
+        expect(Concurrent.global_timer_set).to receive(:kill).with(no_args)
+        Concurrent.kill_global_executors
+      end
+
+      context '#wait_for_global_executors_termination' do
+
+        it 'acts on all global executors' do
+          expect(Concurrent.global_fast_executor).to receive(:wait_for_termination).with(0.1)
+          expect(Concurrent.global_io_executor).to receive(:wait_for_termination).with(0.1)
+          expect(Concurrent.global_timer_set).to receive(:wait_for_termination).with(0.1)
+          Concurrent.wait_for_global_executors_termination(0.1)
         end
-        Concurrent.configuration.global_operation_pool
-        expect {
-          Concurrent.configure do |config|
-            config.global_operation_pool = executor
-          end
-        }.to raise_error(ConfigurationError)
       end
     end
   end

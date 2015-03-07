@@ -15,6 +15,33 @@
 * Deprecated all clock-time based timer scheduling
   - Only support scheduling by delay
   - Effects `Concurrent.timer`, `TimerSet`, and `ScheduledTask`
+* Consistent `at_exit` behavior for Java and Ruby thread pools.
+* Added `at_exit` handler to Ruby thread pools (already in Java thread pools)
+  - Ruby handler stores the object id and retrieves from `ObjectSpace`
+  - JRuby disables `ObjectSpace` by default so that handler stores the object reference
+*	Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
+* Updated thread pool docs to better explain shutting down thread pools
+* Simpler `:executor` option syntax for all abstractions which support this option
+* Added `Executor#auto_terminate?` predicate method (for thread pools)
+* Added `at_exit` handler to `TimerSet`
+* Simplified auto-termination of the global executors
+  - Can now disable auto-termination of global executors
+  - Added shutdown/kill/wait_for_termination variants for global executors
+* Can now disable auto-termination for *all* executors (the nuclear option)
+* Simplified auto-termination of the global executors
+* Deprecated terms "task pool" and "operation pool"
+  - New terms are "io executor" and "fast executor"
+  - New functions added with new names
+  - Deprecation warnings added to functions referencing old names
+* Moved all thread pool related functions from `Concurrent::Configuration` to `Concurrent`
+  - Old functions still exist with deprecation warnings
+  - New functions have updated names as appropriate
+* All high-level abstractions default to the "io executor"
+* Fixed bug in `Actor` causing it to prematurely warm global thread pools on gem load
+  - This also fixed a `RejectedExecutionError` bug when running with minitest/autorun via JRuby
+* Added `LazyReference`, a simpler and faster varition of `Delay`
+  - Updated most internal uses of `Delay` with `LazyReference`
+* Moved global logger up to the `Concurrent` namespace and refactored the code
 
 ## Current Release v0.8.0 (25 January 2015)
 

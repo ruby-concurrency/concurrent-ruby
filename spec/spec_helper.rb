@@ -19,11 +19,12 @@ SimpleCov.start do
   add_filter '/yardoc/'
 end
 
+$VERBOSE = nil # suppress our deprecation warnings
 require 'concurrent'
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::WARN
-Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
+Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
   logger.add level, message, progname, &block
 end
 
