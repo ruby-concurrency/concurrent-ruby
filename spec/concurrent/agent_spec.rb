@@ -9,6 +9,10 @@ module Concurrent
 
     subject { Agent.new(0, executor: executor) }
 
+    after(:each) do
+      executor.kill
+    end
+
     let(:observer) do
       Class.new do
         attr_reader :value
@@ -196,17 +200,12 @@ module Concurrent
     context '#await' do
 
       it 'waits until already sent updates are done' do
-        fn = false
-        subject.post { fn = true; sleep 0.1 }
+        actual = Concurrent::AtomicBoolean.new(false)
+        latch = Concurrent::CountDownLatch.new
+        subject.post { latch.count_down; sleep(0.1); actual.make_true }
+        latch.wait(1)
         subject.await
-        expect(fn).to be_truthy
-      end
-
-      it 'does not waits until updates sent after are done' do
-        fn = false
-        subject.await
-        subject.post { fn = true; sleep 0.1 }
-        expect(fn).to be_falsey
+        expect(actual.value).to be true
       end
 
       it 'does not alter the value' do
