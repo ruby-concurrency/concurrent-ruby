@@ -2,6 +2,10 @@ module Concurrent
 
   describe Condition do
 
+    after(:each) do
+      subject.broadcast
+    end
+
     context 'with no waiting threads' do
       describe '#signal' do
         it 'should return immediately' do
@@ -37,7 +41,6 @@ module Concurrent
 
             latch_1.wait(1)
             latch_2.wait(0.1)
-            expect(t.status).to eq 'sleep'
             expect(latch_2.count).to eq 1
             t.kill
           end
@@ -119,7 +122,6 @@ module Concurrent
 
             latch_1.wait(1)
             latch_2.wait(0.1)
-            expect(t.status).to eq 'sleep'
             expect(latch_2.count).to eq 1
             t.kill
           end
@@ -213,13 +215,24 @@ module Concurrent
 
           it 'should block threads' do
             mutex = Mutex.new
-            latch = Concurrent::CountDownLatch.new(2)
-            t1 = Thread.new { mutex.synchronize { latch.count_down; subject.wait(mutex) } }
-            t2 = Thread.new { mutex.synchronize { latch.count_down; subject.wait(mutex) } }
-            latch.wait(1)
+            latch_1 = Concurrent::CountDownLatch.new(2)
+            latch_2 = Concurrent::CountDownLatch.new(2)
+
+            threads = 2.times.collect do
+              Thread.new do
+                mutex.synchronize do
+                  latch_1.count_down
+                  subject.wait(mutex)
+                  latch_2.count_down
+                end
+              end
+            end
+
+            latch_1.wait(1)
             sleep(0.1)
-            [t1, t2].each { |t| expect(t.status).to eq 'sleep' }
-            [t1, t2].each { |t| t.kill }
+            expect(latch_2.count).to eq 2
+
+            threads.each { |t| t.kill }
           end
         end
 

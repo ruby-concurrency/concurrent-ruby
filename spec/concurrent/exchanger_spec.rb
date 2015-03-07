@@ -20,7 +20,6 @@ module Concurrent
 
           latch_1.wait(1)
           latch_2.wait(0.1)
-          expect(t.status).to eq 'sleep'
           expect(latch_2.count).to eq 1
           t.kill
         end
