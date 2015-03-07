@@ -55,6 +55,22 @@ module Concurrent
     GLOBAL_MONOTONIC_CLOCK.get_time
   end
   module_function :monotonic_time
+
+  # Runs the given block and returns the number of seconds that elapsed.
+  #
+  # @yield the block to run and time
+  # @return [Float] the number of seconds the block took to run
+  #
+  # @raise [ArgumentError] when no block given
+  #
+  # @!macro monotonic_clock_warning
+  def monotonic_interval
+    raise ArgumentError.new('no block given') unless block_given?
+    start_time = GLOBAL_MONOTONIC_CLOCK.get_time
+    yield
+    GLOBAL_MONOTONIC_CLOCK.get_time - start_time
+  end
+  module_function :monotonic_interval
 end
 
 __END__

@@ -1,5 +1,3 @@
-require 'hitimes'
-
 module Concurrent
 
   describe '#timer' do
@@ -17,12 +15,8 @@ module Concurrent
     end
 
     it 'executes the block after the given number of seconds' do
-      latch = CountDownLatch.new(1)
-      duration = Hitimes::Interval.measure do
-        Concurrent::timer(0.2){ latch.count_down }
-        latch.wait(1)
-      end
-      expect(duration).to be_within(0.1).of(0.2)
+      expect(Concurrent.configuration.global_timer_set).to receive(:post).with(0.1)
+      Concurrent::timer(0.1){ nil }
     end
 
     it 'suppresses exceptions thrown by the block' do

@@ -1,5 +1,3 @@
-require 'hitimes'
-
 module Concurrent
 
   describe Exchanger do
@@ -58,7 +56,7 @@ module Concurrent
       context 'with timeout' do
 
         it 'should block until timeout' do
-          duration = Hitimes::Interval.measure do
+          duration = Concurrent.monotonic_interval do
             subject.exchange(2, 0.1)
           end
           expect(duration).to be_within(0.05).of(0.1)

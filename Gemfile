@@ -13,7 +13,6 @@ group :testing do
   gem 'simplecov', '~> 0.9.2', :require => false
   gem 'coveralls', '~> 0.7.11', :require => false
   gem 'timecop', '~> 0.7.3'
-  gem 'hitimes', '~> 1.2.2'
 end
 
 group :documentation do
