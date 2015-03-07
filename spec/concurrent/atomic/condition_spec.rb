@@ -70,7 +70,7 @@ module Concurrent
             expect(result).to be_woken_up
             expect(result).not_to be_timed_out
             expect(result.remaining_time).to be_nil
-            expect(t.status).to be_falsey
+            t.kill
           end
 
           it 'should return a woken up result when is woken up by #broadcast' do
@@ -98,7 +98,7 @@ module Concurrent
             expect(result).to be_woken_up
             expect(result).not_to be_timed_out
             expect(result.remaining_time).to be_nil
-            expect(t.status).to be_falsey
+            t.kill
           end
         end
       end
@@ -152,7 +152,7 @@ module Concurrent
             expect(result).to be_woken_up
             expect(result).not_to be_timed_out
             expect(result.remaining_time).to be < 1.0
-            expect(t.status).to be_falsey
+            t.kill
           end
 
           it 'should return remaining time when is woken up by #broadcast' do
@@ -181,7 +181,7 @@ module Concurrent
             expect(result).to be_woken_up
             expect(result).not_to be_timed_out
             expect(result.remaining_time).to be < 1.0
-            expect(t.status).to be_falsey
+            t.kill
           end
 
           it 'should return 0 or negative number if timed out' do
@@ -201,7 +201,7 @@ module Concurrent
             expect(result).not_to be_woken_up
             expect(result).to be_timed_out
             expect(result.remaining_time).to be_less_than_or_equal_to(0)
-            expect(t.status).to be_falsey
+            t.kill
           end
         end
       end

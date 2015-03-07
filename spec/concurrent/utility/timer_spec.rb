@@ -19,15 +19,16 @@ module Concurrent
     it 'executes the block after the given number of seconds' do
       latch = CountDownLatch.new(1)
       duration = Hitimes::Interval.measure do
-        Concurrent::timer(0.1){ latch.count_down }
+        Concurrent::timer(0.2){ latch.count_down }
         latch.wait(1)
       end
-      expect(duration).to be_within(0.05).of(0.1)
+      expect(duration).to be_within(0.1).of(0.2)
     end
 
     it 'suppresses exceptions thrown by the block' do
       expect {
-        Concurrent::timer(0.5){ raise Exception }
+        Concurrent::timer(0.1){ raise Exception }
+        sleep(0.2)
       }.to_not raise_error
     end
 
@@ -38,7 +39,7 @@ module Concurrent
         expected = args
         latch.count_down
       end
-      latch.wait(0.2)
+      latch.wait(1)
       expect(expected).to eq [1, 2, 3]
     end
 
