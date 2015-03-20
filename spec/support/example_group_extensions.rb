@@ -3,6 +3,7 @@ require_relative '../../lib/extension_helper.rb'
 
 module Concurrent
   module TestHelpers
+    extend self
 
     def delta(v1, v2)
       if block_given?
@@ -62,7 +63,12 @@ module Concurrent
       @@killed = true
     end
 
-    extend self
+    def monotonic_interval
+      raise ArgumentError.new('no block given') unless block_given?
+      start_time = GLOBAL_MONOTONIC_CLOCK.get_time
+      yield
+      GLOBAL_MONOTONIC_CLOCK.get_time - start_time
+    end
   end
 end
 
