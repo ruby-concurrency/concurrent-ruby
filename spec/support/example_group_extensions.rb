@@ -34,9 +34,9 @@ module Concurrent
     end
 
     GLOBAL_EXECUTORS = [
-      [:@@global_fast_executor, ->{ LazyReference.new{ Concurrent.new_fast_executor }}],
-      [:@@global_io_executor, ->{ LazyReference.new{ Concurrent.new_io_executor }}],
-      [:@@global_timer_set, ->{ LazyReference.new{ Concurrent::TimerSet.new }}],
+      [:GLOBAL_FAST_EXECUTOR, ->{ LazyReference.new{ Concurrent.new_fast_executor }}],
+      [:GLOBAL_IO_EXECUTOR, ->{ LazyReference.new{ Concurrent.new_io_executor }}],
+      [:GLOBAL_TIMER_SET, ->{ LazyReference.new{ Concurrent::TimerSet.new }}],
     ]
 
     @@killed = false
@@ -44,11 +44,11 @@ module Concurrent
     def reset_gem_configuration
       if @@killed
         GLOBAL_EXECUTORS.each do |var, factory|
-          executor = Concurrent.class_variable_get(var).value
+          executor = Concurrent.const_get(var).value
           executor.shutdown
           executor.kill
           executor = nil
-          Concurrent.class_variable_set(var, factory.call)
+          Concurrent.const_set(var, factory.call)
         end
         @@killed = false
       end

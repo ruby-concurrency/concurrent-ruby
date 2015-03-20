@@ -38,6 +38,7 @@ module Concurrent
       end
     end
   }.new
+  private_constant :GLOBAL_MONOTONIC_CLOCK
 
   # @!macro [attach] monotonic_get_time
   # 

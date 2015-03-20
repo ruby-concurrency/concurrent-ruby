@@ -10,43 +10,46 @@ module Concurrent
 
   # Suppresses all output when used for logging.
   NULL_LOGGER = lambda { |level, progname, message = nil, &block| }
+  private_constant :NULL_LOGGER
 
-  # initialize the global executors
-  class << self
+  # @!visibility private
+  GLOBAL_LOGGER = Atomic.new(NULL_LOGGER)
+  private_constant :GLOBAL_LOGGER
 
-    # @!visibility private
-    @@global_logger = Atomic.new(NULL_LOGGER)
+  # @!visibility private
+  AUTO_TERMINATE_GLOBAL_EXECUTORS = AtomicBoolean.new(true)
+  private_constant :AUTO_TERMINATE_GLOBAL_EXECUTORS
 
-    # @!visibility private
-    @@auto_terminate_global_executors = AtomicBoolean.new(true)
+  # @!visibility private
+  AUTO_TERMINATE_ALL_EXECUTORS = AtomicBoolean.new(true)
+  private_constant :AUTO_TERMINATE_ALL_EXECUTORS
 
-    # @!visibility private
-    @@auto_terminate_all_executors = AtomicBoolean.new(true)
-
-    # @!visibility private
-    @@global_fast_executor = LazyReference.new do
-      Concurrent.new_fast_executor(
-        stop_on_exit: @@auto_terminate_global_executors.value)
-    end
-
-    # @!visibility private
-    @@global_io_executor = LazyReference.new do
-      Concurrent.new_io_executor(
-        stop_on_exit: @@auto_terminate_global_executors.value)
-    end
-
-    # @!visibility private
-    @@global_timer_set = LazyReference.new do
-      TimerSet.new(stop_on_exit: @@auto_terminate_global_executors.value)
-    end
+  # @!visibility private
+  GLOBAL_FAST_EXECUTOR = LazyReference.new do
+    Concurrent.new_fast_executor(
+      stop_on_exit: AUTO_TERMINATE_GLOBAL_EXECUTORS.value)
   end
+  private_constant :GLOBAL_FAST_EXECUTOR
+
+  # @!visibility private
+  GLOBAL_IO_EXECUTOR = LazyReference.new do
+    Concurrent.new_io_executor(
+      stop_on_exit: AUTO_TERMINATE_GLOBAL_EXECUTORS.value)
+  end
+  private_constant :GLOBAL_IO_EXECUTOR
+
+  # @!visibility private
+  GLOBAL_TIMER_SET = LazyReference.new do
+    TimerSet.new(stop_on_exit: AUTO_TERMINATE_GLOBAL_EXECUTORS.value)
+  end
+  private_constant :GLOBAL_TIMER_SET
 
   def self.global_logger
-    @@global_logger.value
+    GLOBAL_LOGGER.value
   end
 
   def self.global_logger=(value)
-    @@global_logger.value = value
+    GLOBAL_LOGGER.value = value
   end
 
   # Defines if global executors should be auto-terminated with an
@@ -64,7 +67,7 @@ module Concurrent
   #   application and even then it should be used only when necessary.
   #
   def self.disable_auto_termination_of_global_executors!
-    @@auto_terminate_global_executors.make_false
+    AUTO_TERMINATE_GLOBAL_EXECUTORS.make_false
   end
 
   # Defines if global executors should be auto-terminated with an
@@ -85,7 +88,7 @@ module Concurrent
   #   application exit using an `at_exit` handler; false when no auto-termination
   #   will occur.
   def self.auto_terminate_global_executors?
-    @@auto_terminate_global_executors.value
+    AUTO_TERMINATE_GLOBAL_EXECUTORS.value
   end
 
   # Defines if *ALL* executors should be auto-terminated with an
@@ -105,7 +108,7 @@ module Concurrent
   #   gem. It should *only* be used from within the main application.
   #   And even then it should be used only when necessary.
   def self.disable_auto_termination_of_all_executors!
-    @@auto_terminate_all_executors.make_false
+    AUTO_TERMINATE_ALL_EXECUTORS.make_false
   end
 
   # Defines if *ALL* executors should be auto-terminated with an
@@ -129,21 +132,21 @@ module Concurrent
   #   application exit using an `at_exit` handler; false when no auto-termination
   #   will occur.
   def self.auto_terminate_all_executors?
-    @@auto_terminate_all_executors.value
+    AUTO_TERMINATE_ALL_EXECUTORS.value
   end
 
   # Global thread pool optimized for short, fast *operations*.
   #
   # @return [ThreadPoolExecutor] the thread pool
   def self.global_fast_executor
-    @@global_fast_executor.value
+    GLOBAL_FAST_EXECUTOR.value
   end
 
   # Global thread pool optimized for long, blocking (IO) *tasks*.
   #
   # @return [ThreadPoolExecutor] the thread pool
   def self.global_io_executor
-    @@global_io_executor.value
+    GLOBAL_IO_EXECUTOR.value
   end
 
   # Global thread pool user for global *timers*.
@@ -152,7 +155,7 @@ module Concurrent
   #
   # @see Concurrent::timer
   def self.global_timer_set
-    @@global_timer_set.value
+    GLOBAL_TIMER_SET.value
   end
 
   def self.shutdown_global_executors
@@ -250,8 +253,7 @@ module Concurrent
     #   Use the :executor constructor option instead.
     def global_task_pool=(executor)
       warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
-      var = Concurrent.class_variable_get(:@@global_io_executor)
-      var.reconfigure { executor } or
+      GLOBAL_IO_EXECUTOR.reconfigure { executor } or
         raise ConfigurationError.new('global task pool was already set')
     end
 
@@ -259,8 +261,7 @@ module Concurrent
     #   Use the :executor constructor option instead.
     def global_operation_pool=(executor)
       warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
-      var = Concurrent.class_variable_get(:@@global_fast_executor)
-      var.reconfigure { executor } or
+      GLOBAL_FAST_EXECUTOR.reconfigure { executor } or
         raise ConfigurationError.new('global operation pool was already set')
     end
 
