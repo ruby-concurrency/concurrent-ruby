@@ -7,8 +7,7 @@ require 'concurrent/executor/immediate_executor'
 module Concurrent
 
   # Lazy evaluation of a block yielding an immutable result. Useful for
-  # expensive operations that may never be needed. `Delay` is a more
-  # complex and feature-rich version of `LazyReference`. It is non-blocking,
+  # expensive operations that may never be needed. It may be non-blocking,
   # supports the `Obligation` interface, and accepts the injection of
   # custom executor upon which to execute the block. Processing of
   # block will be deferred until the first time `#value` is called.
@@ -29,13 +28,26 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
+  # @!macro [attach] delay_note_regarding_blocking
+  #   @note The default behavior of `Delay` is to block indefinitely when
+  #     calling either `value` or `wait`, executing the delayed operation on
+  #     the current thread. This makes the `timeout` value completely
+  #     irrelevant. To enable non-blocking behavior, use the `executor`
+  #     constructor option. This will cause the delayed operation to be
+  #     execute on the given executor, allowing the call to timeout.
+  #
   # Because of its simplicity `LazyReference` is much faster than `Delay`:
   #
-  #            user     system      total        real
-  #     Benchmarking Delay...
-  #        0.730000   0.000000   0.730000 (  0.738434)
-  #     Benchmarking LazyReference...
-  #        0.040000   0.000000   0.040000 (  0.042322)
+  #     Rehearsal -------------------------------------------------------
+  #     Delay#value           0.210000   0.000000   0.210000 (  0.208207)
+  #     Delay#value!          0.240000   0.000000   0.240000 (  0.247136)
+  #     LazyReference#value   0.160000   0.000000   0.160000 (  0.158399)
+  #     ---------------------------------------------- total: 0.610000sec
+  #     
+  #                               user     system      total        real
+  #     Delay#value           0.200000   0.000000   0.200000 (  0.203602)
+  #     Delay#value!          0.250000   0.000000   0.250000 (  0.252535)
+  #     LazyReference#value   0.150000   0.000000   0.150000 (  0.154053)
   #
   # @see Concurrent::Dereferenceable
   # @see Concurrent::LazyReference
@@ -54,11 +66,67 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
 
       init_obligation
-      @state = :pending
-      @task  = block
+
+      @state     = :pending
+      @task      = block
+      @computing = false
+
       set_deref_options(opts)
-      @task_executor = get_executor_from(opts) || Concurrent::GLOBAL_IMMEDIATE_EXECUTOR
-      @computing     = false
+
+      @task_executor = get_executor_from(opts)
+    end
+
+    # Return the value this object represents after applying the options
+    # specified by the `#set_deref_options` method. If the delayed operation
+    # raised an exception this method will return nil. The execption object
+    # can be accessed via the `#reason` method.
+    #
+    # @param [Numeric] timeout the maximum number of seconds to wait
+    # @return [Object] the current value of the object
+    #
+    # @!macro delay_note_regarding_blocking
+    def value(timeout = nil)
+      if @task_executor
+        super
+      else
+        # this function has been optimized for performance and
+        # should not be modified without running new benchmarks
+        mutex.synchronize do
+          execute = @computing = true unless @computing
+          if execute
+            begin
+              set_state(true, @task.call, nil)
+            rescue => ex
+              set_state(false, nil, ex)
+            end
+          end
+        end
+        if @do_nothing_on_deref
+          @value
+        else
+          apply_deref_options(@value)
+        end
+      end
+    end
+
+    # Return the value this object represents after applying the options
+    # specified by the `#set_deref_options` method. If the delayed operation
+    # raised an exception, this method will raise that exception (even when)
+    # the operation has already been executed).
+    #
+    # @param [Numeric] timeout the maximum number of seconds to wait
+    # @return [Object] the current value of the object
+    # @raise [Exception] when `#rejected?` raises `#reason`
+    #
+    # @!macro delay_note_regarding_blocking
+    def value!(timeout = nil)
+      if @task_executor
+        super
+      else
+        result = value
+        raise @reason if @reason
+        result
+      end
     end
 
     # Return the value this object represents after applying the options
@@ -67,10 +135,17 @@ module Concurrent
     # @param [Integer] timeout (nil) the maximum number of seconds to wait for
     #   the value to be computed. When `nil` the caller will block indefinitely.
     #
-    # @return [Object] the current value of the object
+    # @return [Object] self
+    #
+    # @!macro delay_note_regarding_blocking
     def wait(timeout = nil)
-      execute_task_once
-      super(timeout)
+      if @task_executor
+        execute_task_once
+        super(timeout)
+      else
+        value
+      end
+      self
     end
 
     # Reconfigures the block returning the value if still `#incomplete?`
@@ -108,7 +183,7 @@ module Concurrent
             reason = ex
           end
           mutex.lock
-          set_state success, result, reason
+          set_state(success, result, reason)
           event.set
           mutex.unlock
         end

@@ -10,14 +10,16 @@ module Concurrent
   #
   # Because of its simplicity `LazyReference` is much faster than `Delay`:
   #
-  #     Rehearsal -------------------------------------------------
-  #     Delay           0.200000   0.000000   0.200000 (  0.201775)
-  #     LazyReference   0.150000   0.000000   0.150000 (  0.151327)
-  #     ---------------------------------------- total: 0.350000sec
-  #   
-  #                         user     system      total        real
-  #     Delay           0.200000   0.000000   0.200000 (  0.201151)
-  #     LazyReference   0.150000   0.000000   0.150000 (  0.152647)
+  #     Rehearsal -------------------------------------------------------
+  #     Delay#value           0.210000   0.000000   0.210000 (  0.208207)
+  #     Delay#value!          0.240000   0.000000   0.240000 (  0.247136)
+  #     LazyReference#value   0.160000   0.000000   0.160000 (  0.158399)
+  #     ---------------------------------------------- total: 0.610000sec
+  #     
+  #                               user     system      total        real
+  #     Delay#value           0.200000   0.000000   0.200000 (  0.203602)
+  #     Delay#value!          0.250000   0.000000   0.250000 (  0.252535)
+  #     LazyReference#value   0.150000   0.000000   0.150000 (  0.154053)
   #
   # @see Concurrent::Delay
   class LazyReference
