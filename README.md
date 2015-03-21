@@ -83,7 +83,6 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html)
 * [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html)
 * [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html)
-* [LazyReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyReference.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
 * [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
@@ -123,7 +122,6 @@ require 'concurrent/exchanger'      # Concurrent::Exchanger
 require 'concurrent/future'         # Concurrent::Future
 require 'concurrent/ivar'           # Concurrent::IVar
 require 'concurrent/lazy_register'  # Concurrent::LazyRegister
-require 'concurrent/lazy_reference' # Concurrent::LazyReference
 require 'concurrent/mvar'           # Concurrent::MVar
 require 'concurrent/promise'        # Concurrent::Promise
 require 'concurrent/scheduled_task' # Concurrent::ScheduledTask

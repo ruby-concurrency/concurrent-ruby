@@ -3,14 +3,36 @@
 $: << File.expand_path('../../lib', __FILE__)
 
 require 'benchmark'
-
-require 'concurrent/delay'
-require 'concurrent/lazy_reference'
+require 'thread'
+require 'concurrent'
 
 n = 500_000
 
+class LazyReference
+  def initialize(&block)
+    raise ArgumentError.new('no block given') unless block_given?
+    @task = block
+    @mutex = Mutex.new
+    @value = nil
+    @fulfilled = false
+  end
+
+  def value
+    @mutex.synchronize do
+      unless @fulfilled
+        begin
+          @value = @task.call
+        ensure
+          @fulfilled = true
+        end
+      end
+    end
+    return @value
+  end
+end
+
 delay = Concurrent::Delay.new{ nil }
-lazy = Concurrent::LazyReference.new{ nil }
+lazy = LazyReference.new{ nil }
 
 delay.value
 lazy.value

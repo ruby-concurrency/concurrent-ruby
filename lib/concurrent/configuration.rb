@@ -1,5 +1,4 @@
 require 'thread'
-require 'concurrent/lazy_reference'
 require 'concurrent/atomics'
 require 'concurrent/errors'
 require 'concurrent/executors'
@@ -25,21 +24,21 @@ module Concurrent
   private_constant :AUTO_TERMINATE_ALL_EXECUTORS
 
   # @!visibility private
-  GLOBAL_FAST_EXECUTOR = LazyReference.new do
+  GLOBAL_FAST_EXECUTOR = Delay.new do
     Concurrent.new_fast_executor(
       stop_on_exit: AUTO_TERMINATE_GLOBAL_EXECUTORS.value)
   end
   private_constant :GLOBAL_FAST_EXECUTOR
 
   # @!visibility private
-  GLOBAL_IO_EXECUTOR = LazyReference.new do
+  GLOBAL_IO_EXECUTOR = Delay.new do
     Concurrent.new_io_executor(
       stop_on_exit: AUTO_TERMINATE_GLOBAL_EXECUTORS.value)
   end
   private_constant :GLOBAL_IO_EXECUTOR
 
   # @!visibility private
-  GLOBAL_TIMER_SET = LazyReference.new do
+  GLOBAL_TIMER_SET = Delay.new do
     TimerSet.new(stop_on_exit: AUTO_TERMINATE_GLOBAL_EXECUTORS.value)
   end
   private_constant :GLOBAL_TIMER_SET

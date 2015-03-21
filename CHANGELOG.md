@@ -40,9 +40,9 @@
 * All high-level abstractions default to the "io executor"
 * Fixed bug in `Actor` causing it to prematurely warm global thread pools on gem load
   - This also fixed a `RejectedExecutionError` bug when running with minitest/autorun via JRuby
-* Added `LazyReference`, a simpler and faster varition of `Delay`
-  - Updated most internal uses of `Delay` with `LazyReference`
 * Moved global logger up to the `Concurrent` namespace and refactored the code
+* Optimized the performance of `Delay`
+  - Fixed a bug in which no executor option on construction caused block execution on a global thread pool
 
 ## Current Release v0.8.0 (25 January 2015)
 

@@ -36,21 +36,7 @@ module Concurrent
   #     constructor option. This will cause the delayed operation to be
   #     execute on the given executor, allowing the call to timeout.
   #
-  # Because of its simplicity `LazyReference` is much faster than `Delay`:
-  #
-  #     Rehearsal -------------------------------------------------------
-  #     Delay#value           0.210000   0.000000   0.210000 (  0.208207)
-  #     Delay#value!          0.240000   0.000000   0.240000 (  0.247136)
-  #     LazyReference#value   0.160000   0.000000   0.160000 (  0.158399)
-  #     ---------------------------------------------- total: 0.610000sec
-  #     
-  #                               user     system      total        real
-  #     Delay#value           0.200000   0.000000   0.200000 (  0.203602)
-  #     Delay#value!          0.250000   0.000000   0.250000 (  0.252535)
-  #     LazyReference#value   0.150000   0.000000   0.150000 (  0.154053)
-  #
   # @see Concurrent::Dereferenceable
-  # @see Concurrent::LazyReference
   class Delay
     include Obligation
     include ExecutorOptions
@@ -66,14 +52,12 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
 
       init_obligation
-
-      @state     = :pending
-      @task      = block
-      @computing = false
-
       set_deref_options(opts)
-
       @task_executor = get_executor_from(opts)
+
+      @task      = block
+      @state     = :pending
+      @computing = false
     end
 
     # Return the value this object represents after applying the options

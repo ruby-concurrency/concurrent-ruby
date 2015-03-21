@@ -34,9 +34,9 @@ module Concurrent
     end
 
     GLOBAL_EXECUTORS = [
-      [:GLOBAL_FAST_EXECUTOR, ->{ LazyReference.new{ Concurrent.new_fast_executor }}],
-      [:GLOBAL_IO_EXECUTOR, ->{ LazyReference.new{ Concurrent.new_io_executor }}],
-      [:GLOBAL_TIMER_SET, ->{ LazyReference.new{ Concurrent::TimerSet.new }}],
+      [:GLOBAL_FAST_EXECUTOR, ->{ Delay.new{ Concurrent.new_fast_executor }}],
+      [:GLOBAL_IO_EXECUTOR, ->{ Delay.new{ Concurrent.new_io_executor }}],
+      [:GLOBAL_TIMER_SET, ->{ Delay.new{ Concurrent::TimerSet.new }}],
     ]
 
     @@killed = false

@@ -5,13 +5,13 @@ module Concurrent
     before(:each) do
       Concurrent.const_set(
         :GLOBAL_FAST_EXECUTOR,
-        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
+        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
       Concurrent.const_set(
         :GLOBAL_IO_EXECUTOR,
-        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
+        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
       Concurrent.const_set(
         :GLOBAL_TIMER_SET,
-        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
+        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
     end
 
     after(:each) do
