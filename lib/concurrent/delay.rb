@@ -2,6 +2,7 @@ require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/obligation'
 require 'concurrent/executor/executor_options'
+require 'concurrent/executor/immediate_executor'
 
 module Concurrent
 
@@ -56,7 +57,7 @@ module Concurrent
       @state = :pending
       @task  = block
       set_deref_options(opts)
-      @task_executor = get_executor_from(opts) || Concurrent.global_io_executor
+      @task_executor = get_executor_from(opts) || Concurrent::GLOBAL_IMMEDIATE_EXECUTOR
       @computing     = false
     end
 

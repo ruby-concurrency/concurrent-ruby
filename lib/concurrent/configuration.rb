@@ -44,6 +44,9 @@ module Concurrent
   end
   private_constant :GLOBAL_TIMER_SET
 
+  # @!visibility private
+  GLOBAL_IMMEDIATE_EXECUTOR = ImmediateExecutor.new
+
   def self.global_logger
     GLOBAL_LOGGER.value
   end
