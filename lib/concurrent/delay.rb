@@ -41,6 +41,14 @@ module Concurrent
     include Obligation
     include ExecutorOptions
 
+    # NOTE: Because the global thread pools are lazy-loaded with these objects
+    # there is a performance hit every time we post a new task to one of these
+    # thread pools. Subsequently it is critical that `Delay` perform as fast
+    # as possible post-completion. This class has been highly optimized using
+    # the benchmark script `examples/lazy_and_delay.rb`. Do NOT attempt to
+    # DRY-up this class or perform other refactoring with running the
+    # benchmarks and ensuring that performance is not negatively impacted.
+
     # Create a new `Delay` in the `:pending` state.
     #
     # @yield the delayed operation to perform
@@ -153,6 +161,8 @@ module Concurrent
 
     # @!visibility private
     def execute_task_once # :nodoc:
+      # this function has been optimized for performance and
+      # should not be modified without running new benchmarks
       mutex.lock
       execute = @computing = true unless @computing
       task    = @task

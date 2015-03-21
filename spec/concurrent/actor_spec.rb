@@ -144,7 +144,7 @@ module Concurrent
           envelope = subject.ask!('a')
           expect(envelope).to be_a_kind_of Envelope
           expect(envelope.message).to eq 'a'
-          expect(envelope.ivar).to be_completed
+          expect(envelope.ivar).to be_complete
           expect(envelope.ivar.value).to eq envelope
           expect(envelope.sender).to eq Thread.current
           terminate_actors subject
