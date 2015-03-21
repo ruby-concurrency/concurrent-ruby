@@ -10,11 +10,14 @@ module Concurrent
   #
   # Because of its simplicity `LazyReference` is much faster than `Delay`:
   #
-  #            user     system      total        real
-  #     Benchmarking Delay...
-  #        0.730000   0.000000   0.730000 (  0.738434)
-  #     Benchmarking LazyReference...
-  #        0.040000   0.000000   0.040000 (  0.042322)
+  #     Rehearsal -------------------------------------------------
+  #     Delay           0.200000   0.000000   0.200000 (  0.201775)
+  #     LazyReference   0.150000   0.000000   0.150000 (  0.151327)
+  #     ---------------------------------------- total: 0.350000sec
+  #   
+  #                         user     system      total        real
+  #     Delay           0.200000   0.000000   0.200000 (  0.201151)
+  #     LazyReference   0.150000   0.000000   0.150000 (  0.152647)
   #
   # @see Concurrent::Delay
   class LazyReference
@@ -35,16 +38,7 @@ module Concurrent
       @fulfilled = false
     end
 
-    # The calculated value of the object or the default value if one
-    # was given at construction. This first time this method is called
-    # it will block indefinitely while the block is processed.
-    # Subsequent calls will not block.
-    #
-    # @return [Object] the calculated value
     def value
-      # double-checked locking is safe because we only update once
-      return @value if @fulfilled
-
       @mutex.synchronize do
         unless @fulfilled
           begin
@@ -55,8 +49,8 @@ module Concurrent
             @fulfilled = true
           end
         end
-        return @value
       end
+      return @value
     end
   end
 end

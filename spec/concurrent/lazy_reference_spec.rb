@@ -31,20 +31,6 @@ module Concurrent
         5.times{ lazy.value }
       end
 
-      it 'does not lock the mutex once the block has been called' do
-        mutex = Mutex.new
-        allow(Mutex).to receive(:new).and_return(mutex)
-
-        lazy = LazyReference.new(&task)
-        lazy.value
-
-        expect(mutex).to_not receive(:synchronize).with(any_args)
-        expect(mutex).to_not receive(:lock).with(any_args)
-        expect(mutex).to_not receive(:try_lock).with(any_args)
-
-        5.times{ lazy.value }
-      end
-
       context 'on exception' do
 
         it 'suppresses the error' do
@@ -61,20 +47,6 @@ module Concurrent
         it 'sets the value appropriately when given a default' do
           lazy = LazyReference.new(100){ raise StandardError }
           expect(lazy.value).to eq 100
-        end
-
-        it 'does not try to call the block again' do
-          mutex = Mutex.new
-          allow(Mutex).to receive(:new).and_return(mutex)
-
-          lazy = LazyReference.new{ raise StandardError }
-          lazy.value
-
-          expect(mutex).to_not receive(:synchronize).with(any_args)
-          expect(mutex).to_not receive(:lock).with(any_args)
-          expect(mutex).to_not receive(:try_lock).with(any_args)
-
-          5.times{ lazy.value }
         end
       end
     end
