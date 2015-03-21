@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   EOF
 
-  s.files            = Dir['lib/**/*.rb']
+  s.files            = Dir['lib/**/*.rb'].delete_if{|path| path =~ /actor|channel|edge/}
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
 

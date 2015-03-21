@@ -52,7 +52,6 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 ### High-level, general-purpose asynchronous concurrency abstractions
 
-* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements the Actor Model, where concurrent actors exchange messages.
 * [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
 * [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
@@ -60,7 +59,6 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
-* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html): Communicating Sequential Processes (CSP). 
 
 ### Java-inspired ThreadPools and other executors
 
@@ -90,6 +88,14 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html)
 
+### Experimental features
+
+These features are under active, experimental development and may change frequently. They are minimally
+documented and tested. They are available in the `concurrent-ruby-experimental` companion gem.
+
+* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements the Actor Model, where concurrent actors exchange messages.
+* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html): Communicating Sequential Processes (CSP). 
+
 ## Usage
 
 All abstractions within this gem can be loaded simply by requiring it:
@@ -105,9 +111,7 @@ require 'concurrent'                # everything
 
 # groups
 
-require 'concurrent/actor'          # Concurrent::Actor and supporting code
 require 'concurrent/atomics'        # atomic and thread synchronization classes
-require 'concurrent/channels'       # Concurrent::Channel and supporting code
 require 'concurrent/executors'      # Thread pools and other executors
 require 'concurrent/utilities'      # utility methods such as processor count and timers
 
@@ -127,6 +131,11 @@ require 'concurrent/promise'        # Concurrent::Promise
 require 'concurrent/scheduled_task' # Concurrent::ScheduledTask
 require 'concurrent/timer_task'     # Concurrent::TimerTask
 require 'concurrent/tvar'           # Concurrent::TVar
+
+# experimental - available in `concurrent-ruby-experimental` companion gem
+
+require 'concurrent/actor'          # Concurrent::Actor and supporting code
+require 'concurrent/channel '       # Concurrent::Channel and supporting code
 ```
 
 ## Installation
