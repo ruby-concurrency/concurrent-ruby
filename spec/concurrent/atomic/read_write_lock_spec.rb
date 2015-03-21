@@ -489,43 +489,5 @@ module Concurrent
         expect(subject.release_write_lock).to be true
       end
     end
-
-    context '#to_s' do
-
-      it 'includes the running reader count' do
-        subject.with_read_lock do
-          expect(subject.to_s).to match(/1 readers running/)
-        end
-        expect(subject.to_s).to_not match(/readers running/)
-      end
-
-      it 'includes the running writer count' do
-        subject.with_write_lock do
-          expect(subject.to_s).to match(/1 writer running/)
-        end
-        expect(subject.to_s).to_not match(/writer running/)
-      end
-
-      it 'includes the waiting writer count' do
-        start_latch = Concurrent::CountDownLatch.new(1)
-        end_latch = Concurrent::CountDownLatch.new(1)
-
-        thread = Thread.new do
-          start_latch.wait(1)
-          subject.acquire_write_lock
-          subject.release_write_lock
-          end_latch.count_down
-        end
-
-        subject.with_write_lock do
-          start_latch.count_down
-          sleep(0.1)
-          expect(subject.to_s).to match(/1 writers waiting/)
-        end
-        expect(subject.to_s).to match(/1 writers waiting/)
-        end_latch.wait(1)
-        expect(subject.to_s).to match(/0 writers waiting/)
-      end
-    end
   end
 end

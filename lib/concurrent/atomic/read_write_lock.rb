@@ -211,21 +211,6 @@ module Concurrent
       true
     end
 
-    # Returns a string representing *obj*. Includes the current reader and
-    # writer counts.
-    def to_s
-      c = @counter.value
-      s = if running_writer?(c)
-            "1 writer running, "
-          elsif running_readers(c) > 0
-            "#{running_readers(c)} readers running, "
-          else
-            ""
-          end
-
-      "#<ReadWriteLock:#{object_id.to_s(16)} #{s}#{waiting_writers(c)} writers waiting>"
-    end
-
     # Queries if the write lock is held by any thread.
     #
     # @return [Boolean] true if the write lock is held else false`
