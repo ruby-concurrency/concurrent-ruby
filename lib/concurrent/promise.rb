@@ -230,12 +230,22 @@ module Concurrent
       Promise.new(opts).tap { |p| p.send(:synchronized_set_state!, false, nil, reason) }
     end
 
+    # allow root promise body to be set later
+    # @example
+    #   pr = Promise.new
+    #   pr.with_body { :v }.execute.value # => :v
+    def with_body(&block)
+      raise 'supported only on root promises' unless root?
+      mutex.synchronize { @promise_body = block }
+      self
+    end
+
     # @return [Promise]
     def execute
       if root?
         if compare_and_set_state(:pending, :unscheduled)
           set_pending
-          realize(@promise_body)
+          realize(mutex.synchronize { @promise_body })
         end
       else
         @parent.execute

@@ -517,6 +517,30 @@ module Concurrent
         expect(p2.value).to eq 22
         expect(p3.value).to eq 67
       end
+
+      it 'the body of root promise can be set later externally' do
+        p = Promise.new(executor: executor)
+        ch = p.then(&:to_s)
+        p.with_body { :value }.execute
+        p.execute
+
+        expect(p.value).to eq :value
+        expect(p.state).to eq :fulfilled
+
+        expect(ch.value).to eq 'value'
+        expect(ch.state).to eq :fulfilled
+
+        p = Promise.new(executor: executor)
+        ch = p.then(&:inspect)
+        p.execute
+
+        expect(p.value).to eq nil
+        expect(p.state).to eq :fulfilled
+
+        expect(ch.value).to eq 'nil'
+        expect(ch.state).to eq :fulfilled
+      end
+
     end
 
     context 'rejection' do
