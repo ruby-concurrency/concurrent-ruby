@@ -22,7 +22,7 @@ module Concurrent
     shared_examples :incomplete do
 
       it 'should be not completed' do
-        expect(obligation).not_to be_completed
+        expect(obligation).not_to be_complete
       end
 
       it 'should be incomplete' do
@@ -79,7 +79,7 @@ module Concurrent
       end
 
       it 'should be completed' do
-        expect(obligation).to be_completed
+        expect(obligation).to be_complete
       end
 
       it 'should be not incomplete' do
@@ -156,7 +156,7 @@ module Concurrent
       end
 
       it 'should be completed' do
-        expect(obligation).to be_completed
+        expect(obligation).to be_complete
       end
 
       it 'should be not incomplete' do

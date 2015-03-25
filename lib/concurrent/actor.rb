@@ -40,7 +40,7 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    @root = Delay.new(executor: :immediate) do
+    @root = Delay.new do
       Core.new(parent: nil, name: '/', class: Root, initialized: ivar = IVar.new).reference.tap do
         ivar.no_error!
       end

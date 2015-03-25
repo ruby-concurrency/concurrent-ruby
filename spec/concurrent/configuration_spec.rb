@@ -3,15 +3,15 @@ module Concurrent
   describe Configuration do
 
     before(:each) do
-      Concurrent.class_variable_set(
-        :@@global_fast_executor,
-        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
-      Concurrent.class_variable_set(
-        :@@global_io_executor,
-        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
-      Concurrent.class_variable_set(
-        :@@global_timer_set,
-        Concurrent::LazyReference.new{ Concurrent::ImmediateExecutor.new })
+      Concurrent.const_set(
+        :GLOBAL_FAST_EXECUTOR,
+        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
+      Concurrent.const_set(
+        :GLOBAL_IO_EXECUTOR,
+        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
+      Concurrent.const_set(
+        :GLOBAL_TIMER_SET,
+        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
     end
 
     after(:each) do

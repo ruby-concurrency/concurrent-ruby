@@ -3,6 +3,7 @@ require_relative '../../lib/extension_helper.rb'
 
 module Concurrent
   module TestHelpers
+    extend self
 
     def delta(v1, v2)
       if block_given?
@@ -33,9 +34,9 @@ module Concurrent
     end
 
     GLOBAL_EXECUTORS = [
-      [:@@global_fast_executor, ->{ LazyReference.new{ Concurrent.new_fast_executor }}],
-      [:@@global_io_executor, ->{ LazyReference.new{ Concurrent.new_io_executor }}],
-      [:@@global_timer_set, ->{ LazyReference.new{ Concurrent::TimerSet.new }}],
+      [:GLOBAL_FAST_EXECUTOR, ->{ Delay.new{ Concurrent.new_fast_executor }}],
+      [:GLOBAL_IO_EXECUTOR, ->{ Delay.new{ Concurrent.new_io_executor }}],
+      [:GLOBAL_TIMER_SET, ->{ Delay.new{ Concurrent::TimerSet.new }}],
     ]
 
     @@killed = false
@@ -43,11 +44,11 @@ module Concurrent
     def reset_gem_configuration
       if @@killed
         GLOBAL_EXECUTORS.each do |var, factory|
-          executor = Concurrent.class_variable_get(var).value
+          executor = Concurrent.const_get(var).value
           executor.shutdown
           executor.kill
           executor = nil
-          Concurrent.class_variable_set(var, factory.call)
+          Concurrent.const_set(var, factory.call)
         end
         @@killed = false
       end
@@ -62,7 +63,12 @@ module Concurrent
       @@killed = true
     end
 
-    extend self
+    def monotonic_interval
+      raise ArgumentError.new('no block given') unless block_given?
+      start_time = GLOBAL_MONOTONIC_CLOCK.get_time
+      yield
+      GLOBAL_MONOTONIC_CLOCK.get_time - start_time
+    end
   end
 end
 

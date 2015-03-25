@@ -113,7 +113,7 @@ module Concurrent
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
     def post(&block)
-      post_on(@io_executor, &block)
+      post_on(@fast_executor, &block)
     end
 
     # Update the current value with the result of the given block fast,
@@ -132,7 +132,7 @@ module Concurrent
               else
                 block
               end
-      post_on(@fast_executor, &block)
+      post_on(@io_executor, &block)
     end
 
     # Update the current value with the result of the given block fast,
