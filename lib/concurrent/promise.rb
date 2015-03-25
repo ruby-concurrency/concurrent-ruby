@@ -1,5 +1,6 @@
 require 'thread'
 
+require 'concurrent/ivar'
 require 'concurrent/obligation'
 require 'concurrent/executor/executor_options'
 
@@ -181,8 +182,7 @@ module Concurrent
   # - `on_success { |result| ... }` is the same as `then {|result| ... }`
   # - `rescue { |reason| ... }` is the same as `then(Proc.new { |reason| ... } )`
   # - `rescue` is aliased by `catch` and `on_error`
-  class Promise
-    include Obligation
+  class Promise < IVar
     include ExecutorOptions
 
     # Initialize a new Promise with the provided options.
@@ -203,6 +203,7 @@ module Concurrent
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
+      super(IVar::NO_VALUE, opts)
 
       @executor = get_executor_from(opts) || Concurrent.global_io_executor
       @args = get_arguments_from(opts)
@@ -214,16 +215,12 @@ module Concurrent
       @promise_body = block || Proc.new { |result| result }
       @state = :unscheduled
       @children = []
-
-      init_obligation
-      set_deref_options(opts)
     end
 
     # @return [Promise]
     def self.fulfill(value, opts = {})
       Promise.new(opts).tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
-
 
     # @return [Promise]
     def self.reject(reason, opts = {})
@@ -388,6 +385,18 @@ module Concurrent
       aggregate(:any?, *promises)
     end
 
+    def set(value)
+      raise PromiseExecutionError.new('supported only on root promises') unless root?
+      super
+    end
+
+    def fail(reason = StandardError.new)
+      raise PromiseExecutionError.new('supported only on root promises') unless root?
+      super
+    end
+
+    protected :complete
+
     protected
 
     # Aggregate a collection of zero or more promises under a composite promise,
@@ -445,16 +454,20 @@ module Concurrent
     end
 
     # @!visibility private
+    def complete(success, value, reason)
+      children_to_notify = mutex.synchronize do
+        set_state!(success, value, reason)
+        @children.dup
+      end
+
+      children_to_notify.each { |child| notify_child(child) }
+    end
+
+    # @!visibility private
     def realize(task)
       @executor.post do
         success, value, reason = SafeTaskExecutor.new(task).execute(*@args)
-
-        children_to_notify = mutex.synchronize do
-          set_state!(success, value, reason)
-          @children.dup
-        end
-
-        children_to_notify.each { |child| notify_child(child) }
+        complete(success, value, reason)
       end
     end
 

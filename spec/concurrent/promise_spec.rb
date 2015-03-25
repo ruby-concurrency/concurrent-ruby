@@ -374,13 +374,13 @@ module Concurrent
 
           composite = Promise.all?(promise1, promise2, promise3).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
+        rescue { counter.down; latch.count_down }.
+          execute
 
           latch.wait(1)
 
           expect(counter.value).to eq 1
-        end
+          end
 
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -388,13 +388,13 @@ module Concurrent
 
           composite = Promise.all?.
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
+        rescue { counter.down; latch.count_down }.
+          execute
 
           latch.wait(1)
 
           expect(counter.value).to eq 1
-        end
+          end
 
         it 'executes the #rescue handler if even one component fails' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -402,13 +402,13 @@ module Concurrent
 
           composite = Promise.all?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
+        rescue { counter.down; latch.count_down }.
+          execute
 
           latch.wait(1)
 
           expect(counter.value).to eq -1
-        end
+          end
       end
 
       describe '.any?' do
@@ -429,13 +429,13 @@ module Concurrent
 
           composite = Promise.any?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
+        rescue { counter.down; latch.count_down }.
+          execute
 
           latch.wait(1)
 
           expect(counter.value).to eq 1
-        end
+          end
 
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -443,13 +443,13 @@ module Concurrent
 
           composite = Promise.any?.
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
+        rescue { counter.down; latch.count_down }.
+          execute
 
           latch.wait(1)
 
           expect(counter.value).to eq 1
-        end
+          end
 
         it 'executes the #rescue handler if all componenst fail' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -457,17 +457,55 @@ module Concurrent
 
           composite = Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
+        rescue { counter.down; latch.count_down }.
+          execute
 
           latch.wait(1)
 
           expect(counter.value).to eq -1
-        end
+          end
       end
     end
 
     context 'fulfillment' do
+
+      context '#set' do
+
+        it '#can only be called on the root promise' do
+          root = Promise.new{ :foo }
+          child = root.then{ :bar }
+
+          expect { child.set('foo') }.to raise_error PromiseExecutionError
+          expect { root.set('foo') }.not_to raise_error
+        end
+
+        it 'triggers children' do
+          expected = nil
+          root = Promise.new(executor: :immediate){ nil }
+          root.then{ |result| expected = result }
+          root.set(20)
+          expect(expected).to eq 20
+        end
+      end
+
+      context '#fail' do
+
+        it 'can only be called on the root promise' do
+          root = Promise.new{ :foo }
+          child = root.then{ :bar }
+
+          expect { child.fail }.to raise_error PromiseExecutionError
+          expect { root.fail }.not_to raise_error
+        end
+
+        it 'rejects children' do
+          expected = nil
+          root = Promise.new(executor: :immediate)
+          root.then(Proc.new{ |reason| expected = reason })
+          root.fail(ArgumentError.new('simulated error'))
+          expect(expected).to be_a ArgumentError
+        end
+      end
 
       it 'passes the result of each block to all its children' do
         expected = nil
