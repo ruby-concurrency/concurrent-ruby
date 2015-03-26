@@ -115,6 +115,33 @@ module Concurrent
         i = IVar.new
         expect(i.set(42)).to eq i
       end
+
+      it 'fulfils when given a block which executes successfully' do
+        i = IVar.new
+        i.set{ 42 }
+        expect(i.value).to eq 42
+      end
+
+      it 'rejects when given a block which raises an exception' do
+        i = IVar.new
+        expected = ArgumentError.new
+        i.set{ raise expected }
+        expect(i.reason).to eq expected
+      end
+
+      it 'raises an exception when given a value and a block' do
+        i = IVar.new
+        expect {
+          i.set(42){ :guide }
+        }.to raise_error(ArgumentError)
+      end
+
+      it 'raises an exception when given neither a value nor a block' do
+        i = IVar.new
+        expect {
+          i.set
+        }.to raise_error(ArgumentError)
+      end
     end
 
     context '#fail' do
@@ -129,6 +156,13 @@ module Concurrent
         i = IVar.new
         i.fail
         expect(i.value).to be_nil
+      end
+
+      it 'sets the reason to the given exception' do
+        i = IVar.new
+        expected = ArgumentError.new
+        i.fail(expected)
+        expect(i.reason).to eq expected
       end
 
       it 'raises an exception if set more than once' do

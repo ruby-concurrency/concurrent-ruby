@@ -385,13 +385,13 @@ module Concurrent
       aggregate(:any?, *promises)
     end
 
-    def set(value)
-      raise PromiseExecutionError.new('supported only on root promises') unless root?
+    def set(value = IVar::NO_VALUE)
+      raise PromiseExecutionError.new('supported only on root promise') unless root?
       super
     end
 
     def fail(reason = StandardError.new)
-      raise PromiseExecutionError.new('supported only on root promises') unless root?
+      raise PromiseExecutionError.new('supported only on root promise') unless root?
       super
     end
 

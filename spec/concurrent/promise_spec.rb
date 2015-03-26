@@ -486,6 +486,18 @@ module Concurrent
           root.set(20)
           expect(expected).to eq 20
         end
+
+        it 'can be called with a block' do
+          p = Promise.new(executor: executor)
+          ch = p.then(&:to_s)
+          p.set { :value }
+
+          expect(p.value).to eq :value
+          expect(p.state).to eq :fulfilled
+
+          expect(ch.value).to eq 'value'
+          expect(ch.state).to eq :fulfilled
+        end
       end
 
       context '#fail' do

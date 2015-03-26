@@ -105,8 +105,17 @@ module Concurrent
     # @param [Object] value the value to store in the `IVar`
     # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
     #   been set or otherwise completed
-    def set(value)
-      complete(true, value, nil)
+    def set(value = NO_VALUE)
+      if (block_given? && value != NO_VALUE) || (!block_given? && value == NO_VALUE)
+        raise ArgumentError.new('must set with either a value or a block')
+      end
+
+      begin
+        value = yield if block_given?
+        complete(true, value, nil)
+      rescue => ex
+        complete(false, nil, ex)
+      end
     end
 
     # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
