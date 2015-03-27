@@ -39,7 +39,7 @@ module Concurrent
 
         sleep(0.1)
 
-        expect(result).to eq 42
+        expect(result.first).to eq 42
       end
 
       it 'passes the pushed value to only one thread' do
@@ -62,7 +62,7 @@ module Concurrent
 
         sleep(0.1)
 
-        expect(result).to eq 57
+        expect(result.first).to eq 57
       end
     end
 
@@ -81,7 +81,7 @@ module Concurrent
 
         Thread.new { channel.push 82 }
 
-        expect(probe.value).to eq 82
+        expect(probe.value.first).to eq 82
       end
 
       it 'ignores already set probes and waits for a new one' do
@@ -101,7 +101,7 @@ module Concurrent
 
         sleep(0.05)
 
-        expect(new_probe.value).to eq 72
+        expect(new_probe.value.first).to eq 72
       end
 
     end

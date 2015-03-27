@@ -88,8 +88,6 @@ module Concurrent
       execute
     end
 
-    protected :complete
-
     private
 
     # @!visibility private

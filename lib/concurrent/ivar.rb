@@ -103,11 +103,8 @@ module Concurrent
     #   been set or otherwise completed
     # @return [IVar] self
     def set(value = NO_VALUE)
-      if (block_given? && value != NO_VALUE) || (!block_given? && value == NO_VALUE)
-        raise ArgumentError.new('must set with either a value or a block')
-      elsif ! compare_and_set_state(:processing, :pending)
-        raise MultipleAssignmentError
-      end
+      check_for_block_or_value!(block_given?, value)
+      raise MultipleAssignmentError unless compare_and_set_state(:processing, :pending)
 
       begin
         value = yield if block_given?
