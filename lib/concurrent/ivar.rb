@@ -39,7 +39,6 @@ module Concurrent
   #   ivar.get #=> 14
   #   ivar.set 2 # would now be an error
   class IVar
-
     include Obligation
     include Observable
 

@@ -1,8 +1,10 @@
+require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 
 shared_examples :ivar do
 
   it_should_behave_like :obligation
+  it_should_behave_like :dereferenceable
 
   context 'initialization' do
 

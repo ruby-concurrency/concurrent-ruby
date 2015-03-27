@@ -398,8 +398,6 @@ module Concurrent
       aggregate(:any?, *promises)
     end
 
-    protected :complete
-
     protected
 
     # Aggregate a collection of zero or more promises under a composite promise,
@@ -464,6 +462,7 @@ module Concurrent
       end
 
       children_to_notify.each { |child| notify_child(child) }
+      observers.notify_and_delete_observers{ [Time.now, self.value, reason] }
     end
 
     # @!visibility private

@@ -5,6 +5,7 @@ module Concurrent
 
   describe Promise do
 
+    let!(:value) { 10 }
     let(:executor) { PerThreadExecutor.new }
 
     let(:empty_root) { Promise.new(executor: executor){ nil } }
@@ -24,7 +25,22 @@ module Concurrent
     end
 
     it_should_behave_like :ivar do
-      subject{ Promise.new(executor: :immediate) }
+      subject{ Promise.new(executor: :immediate){ value } }
+
+      def dereferenceable_subject(value, opts = {})
+        opts = opts.merge(executor: executor)
+        Promise.new(opts){ value }.execute.tap{ sleep(0.1) }
+      end
+
+      def dereferenceable_observable(opts = {})
+        opts = opts.merge(executor: executor)
+        Promise.new(opts){ 'value' }
+      end
+
+      def execute_dereferenceable(subject)
+        subject.execute
+        sleep(0.1)
+      end
     end
 
     it_should_behave_like :thread_arguments do
@@ -36,11 +52,6 @@ module Concurrent
       def get_ivar_from_args(opts)
         Concurrent::Promise.execute(opts){|*args| args }
       end
-    end
-
-    it 'includes Dereferenceable' do
-      promise = Promise.new{ nil }
-      expect(promise).to be_a(Dereferenceable)
     end
 
     context 'initializers' do

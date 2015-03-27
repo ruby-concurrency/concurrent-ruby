@@ -1,4 +1,3 @@
-require_relative 'dereferenceable_shared'
 require_relative 'ivar_shared'
 require_relative 'observable_shared'
 require_relative 'thread_arguments_shared'
@@ -32,21 +31,7 @@ module Concurrent
     end
 
     it_should_behave_like :ivar do
-      subject { Future.new(executor: :immediate){ nil } }
-    end
-
-    it_should_behave_like :thread_arguments do
-
-      def get_ivar_from_no_args
-        Concurrent::Future.execute{|*args| args }
-      end
-
-      def get_ivar_from_args(opts)
-        Concurrent::Future.execute(opts){|*args| args }
-      end
-    end
-
-    it_should_behave_like :dereferenceable do
+      subject { Future.new(executor: :immediate){ value } }
 
       def dereferenceable_subject(value, opts = {})
         opts = opts.merge(executor: executor)
@@ -61,6 +46,17 @@ module Concurrent
       def execute_dereferenceable(subject)
         subject.execute
         sleep(0.1)
+      end
+    end
+
+    it_should_behave_like :thread_arguments do
+
+      def get_ivar_from_no_args
+        Concurrent::Future.execute{|*args| args }
+      end
+
+      def get_ivar_from_args(opts)
+        Concurrent::Future.execute(opts){|*args| args }
       end
     end
 

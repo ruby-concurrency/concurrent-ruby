@@ -1,4 +1,3 @@
-require_relative 'dereferenceable_shared'
 require_relative 'ivar_shared'
 require_relative 'observable_shared'
 
@@ -32,9 +31,6 @@ module Concurrent
 
     it_should_behave_like :ivar do
       subject{ IVar.new }
-    end
-
-    it_should_behave_like :dereferenceable do
 
       def dereferenceable_subject(value, opts = {})
         IVar.new(value, opts)
