@@ -127,6 +127,13 @@ module Concurrent
       set { raise reason }
     end
 
+    def set?(value = NO_VALUE, &block)
+      set(value, &block)
+      true
+    rescue MultipleAssignmentError
+      false
+    end
+
     protected
 
     # @!visibility private
