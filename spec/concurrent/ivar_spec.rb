@@ -1,5 +1,4 @@
 require_relative 'ivar_shared'
-require_relative 'observable_shared'
 
 module Concurrent
 
@@ -43,11 +42,6 @@ module Concurrent
       def execute_dereferenceable(subject)
         subject.set('value')
       end
-    end
-
-    it_should_behave_like :observable do
-
-      subject{ IVar.new }
 
       def trigger_observable(observable)
         observable.set('value')

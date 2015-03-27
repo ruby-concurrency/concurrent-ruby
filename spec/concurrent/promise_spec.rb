@@ -41,6 +41,11 @@ module Concurrent
         subject.execute
         sleep(0.1)
       end
+
+      def trigger_observable(observable)
+        observable.execute
+        sleep(0.1)
+      end
     end
 
     it_should_behave_like :thread_arguments do

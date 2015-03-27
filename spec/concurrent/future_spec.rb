@@ -1,5 +1,4 @@
 require_relative 'ivar_shared'
-require_relative 'observable_shared'
 require_relative 'thread_arguments_shared'
 
 module Concurrent
@@ -47,6 +46,11 @@ module Concurrent
         subject.execute
         sleep(0.1)
       end
+
+      def trigger_observable(observable)
+        observable.execute
+        sleep(0.1)
+      end
     end
 
     it_should_behave_like :thread_arguments do
@@ -57,16 +61,6 @@ module Concurrent
 
       def get_ivar_from_args(opts)
         Concurrent::Future.execute(opts){|*args| args }
-      end
-    end
-
-    it_should_behave_like :observable do
-
-      subject{ Future.new{ nil } }
-
-      def trigger_observable(observable)
-        observable.execute
-        sleep(0.1)
       end
     end
 
