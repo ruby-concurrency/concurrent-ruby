@@ -76,7 +76,19 @@ module Concurrent
       Future.new(opts, &block).execute
     end
 
-    protected :set, :fail, :complete
+    def set(value = IVar::NO_VALUE, &block)
+      check_for_block_or_value!(block_given?, value)
+      mutex.synchronize do
+        if @state != :unscheduled
+          raise MultipleAssignmentError
+        else
+          @task = block || Proc.new { value }
+        end
+      end
+      execute
+    end
+
+    protected :complete
 
     private
 

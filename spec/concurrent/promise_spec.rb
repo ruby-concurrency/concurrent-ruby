@@ -1,3 +1,4 @@
+require_relative 'ivar_shared'
 require_relative 'obligation_shared'
 require_relative 'thread_arguments_shared'
 
@@ -21,6 +22,11 @@ module Concurrent
 
     let(:rejected_subject) do
       Promise.reject(rejected_reason, executor: executor)
+    end
+
+    context 'manual completion' do
+      subject{ Promise.new(executor: :immediate) }
+      it_should_behave_like :ivar
     end
 
     context 'behavior' do

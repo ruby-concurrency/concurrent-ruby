@@ -242,22 +242,15 @@ module Concurrent
 
     def set(value = IVar::NO_VALUE, &block)
       raise PromiseExecutionError.new('supported only on root promise') unless root?
-      if (block_given? && value != NO_VALUE) || (!block_given? && value == NO_VALUE)
-        raise ArgumentError.new('must set with either a value or a block')
-      end
+      check_for_block_or_value!(block_given?, value)
       mutex.synchronize do
         if @state != :unscheduled
-          raise PromiseExecutionError.new('execution has already begun')
+          raise MultipleAssignmentError
         else
           @promise_body = block || Proc.new { |result| value }
         end
       end
       execute
-    end
-
-    def fail(reason = StandardError.new)
-      raise PromiseExecutionError.new('supported only on root promise') unless root?
-      super
     end
 
     # Create a new `Promise` object with the given block, execute it, and return the

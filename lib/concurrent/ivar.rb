@@ -60,12 +60,9 @@ module Concurrent
       init_obligation
       self.observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
+      @state = :pending
 
-      if value == NO_VALUE
-        @state = :pending
-      else
-        set(value)
-      end
+      set(value) unless value == NO_VALUE
     end
 
     # Add an observer on this object that will receive notification on update.
@@ -108,6 +105,8 @@ module Concurrent
     def set(value = NO_VALUE)
       if (block_given? && value != NO_VALUE) || (!block_given? && value == NO_VALUE)
         raise ArgumentError.new('must set with either a value or a block')
+      elsif ! compare_and_set_state(:processing, :pending)
+        raise MultipleAssignmentError
       end
 
       begin
@@ -124,13 +123,15 @@ module Concurrent
     # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
     #   been set or otherwise completed
     def fail(reason = StandardError.new)
-      complete(false, nil, reason)
+      set { raise reason }
     end
+
+    protected
 
     # @!visibility private
     def complete(success, value, reason) # :nodoc:
       mutex.synchronize do
-        raise MultipleAssignmentError.new('multiple assignment') if [:fulfilled, :rejected].include? @state
+        raise MultipleAssignmentError if [:fulfilled, :rejected].include? @state
         set_state(success, value, reason)
         event.set
       end
@@ -138,6 +139,13 @@ module Concurrent
       time = Time.now
       observers.notify_and_delete_observers{ [time, self.value, reason] }
       self
+    end
+
+    # @!visibility private
+    def check_for_block_or_value!(block_given, value) # :nodoc:
+      if (block_given && value != NO_VALUE) || (! block_given && value == NO_VALUE)
+        raise ArgumentError.new('must set with either a value or a block')
+      end
     end
   end
 end

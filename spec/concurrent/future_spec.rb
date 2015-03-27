@@ -1,4 +1,5 @@
 require_relative 'dereferenceable_shared'
+require_relative 'ivar_shared'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'
 require_relative 'thread_arguments_shared'
@@ -14,6 +15,11 @@ module Concurrent
       Future.new(executor: executor){
         value
       }.execute.tap{ sleep(0.1) }
+    end
+
+    context 'manual completion' do
+      subject { Future.new(executor: :immediate){ nil } }
+      it_should_behave_like :ivar
     end
 
     context 'behavior' do
@@ -78,23 +84,6 @@ module Concurrent
       end
 
       it_should_behave_like :observable
-    end
-
-    context 'subclassing' do
-
-      subject{ Future.execute(executor: executor){ 42 } }
-
-      it 'protects #set' do
-        expect{ subject.set(100) }.to raise_error
-      end
-
-      it 'protects #fail' do
-        expect{ subject.fail }.to raise_error
-      end
-
-      it 'protects #complete' do
-        expect{ subject.complete(true, 100, nil) }.to raise_error
-      end
     end
 
     context '#initialize' do

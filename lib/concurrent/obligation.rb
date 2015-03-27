@@ -59,7 +59,7 @@ module Concurrent
     #
     # @return [Boolean]
     def incomplete?
-      [:unscheduled, :pending].include? state
+      ! complete?
     end
 
     # The current value of the obligation. Will be `nil` while the state is

@@ -1,4 +1,5 @@
 require_relative 'dereferenceable_shared'
+require_relative 'ivar_shared'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'
 
@@ -12,6 +13,11 @@ module Concurrent
       i = IVar.new
       i.set(14)
       i
+    end
+
+    context 'manual completion' do
+      subject{ IVar.new }
+      it_should_behave_like :ivar
     end
 
     context 'behavior' do
@@ -85,103 +91,9 @@ module Concurrent
 
       it 'can set an initial value' do
         i = IVar.new(14)
-        expect(i).to be_completed
+        expect(i).to be_complete
       end
 
-    end
-
-    context '#set' do
-
-      it 'sets the state to be fulfilled' do
-        i = IVar.new
-        i.set(14)
-        expect(i).to be_fulfilled
-      end
-
-      it 'sets the value' do
-        i = IVar.new
-        i.set(14)
-        expect(i.value).to eq 14
-      end
-
-      it 'raises an exception if set more than once' do
-        i = IVar.new
-        i.set(14)
-        expect {i.set(2)}.to raise_error(Concurrent::MultipleAssignmentError)
-        expect(i.value).to eq 14
-      end
-
-      it 'returns self' do
-        i = IVar.new
-        expect(i.set(42)).to eq i
-      end
-
-      it 'fulfils when given a block which executes successfully' do
-        i = IVar.new
-        i.set{ 42 }
-        expect(i.value).to eq 42
-      end
-
-      it 'rejects when given a block which raises an exception' do
-        i = IVar.new
-        expected = ArgumentError.new
-        i.set{ raise expected }
-        expect(i.reason).to eq expected
-      end
-
-      it 'raises an exception when given a value and a block' do
-        i = IVar.new
-        expect {
-          i.set(42){ :guide }
-        }.to raise_error(ArgumentError)
-      end
-
-      it 'raises an exception when given neither a value nor a block' do
-        i = IVar.new
-        expect {
-          i.set
-        }.to raise_error(ArgumentError)
-      end
-    end
-
-    context '#fail' do
-
-      it 'sets the state to be rejected' do
-        i = IVar.new
-        i.fail
-        expect(i).to be_rejected
-      end
-
-      it 'sets the value to be nil' do
-        i = IVar.new
-        i.fail
-        expect(i.value).to be_nil
-      end
-
-      it 'sets the reason to the given exception' do
-        i = IVar.new
-        expected = ArgumentError.new
-        i.fail(expected)
-        expect(i.reason).to eq expected
-      end
-
-      it 'raises an exception if set more than once' do
-        i = IVar.new
-        i.fail
-        expect {i.fail}.to raise_error(Concurrent::MultipleAssignmentError)
-        expect(i.value).to be_nil
-      end
-
-      it 'defaults the reason to a StandardError' do
-        i = IVar.new
-        i.fail
-        expect(i.reason).to be_a StandardError
-      end
-
-      it 'returns self' do
-        i = IVar.new
-        expect(i.fail).to eq i
-      end
     end
 
     context 'observation' do
