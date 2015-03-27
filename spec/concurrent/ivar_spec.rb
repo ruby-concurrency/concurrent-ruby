@@ -1,6 +1,5 @@
 require_relative 'dereferenceable_shared'
 require_relative 'ivar_shared'
-require_relative 'obligation_shared'
 require_relative 'observable_shared'
 
 module Concurrent
@@ -9,48 +8,33 @@ module Concurrent
 
     let!(:value) { 10 }
 
-    subject do
-      i = IVar.new
-      i.set(14)
-      i
+    let!(:fulfilled_value) { 10 }
+    let(:rejected_reason) { StandardError.new('Boom!') }
+
+    subject { IVar.new(value) }
+
+    let(:pending_subject) do
+      ivar = IVar.new
+      Thread.new do
+        sleep(0.1)
+        ivar.set(fulfilled_value)
+      end
+      ivar
     end
 
-    context 'manual completion' do
+    let(:fulfilled_subject) do
+      IVar.new.set(fulfilled_value)
+    end
+
+    let(:rejected_subject) do
+      IVar.new.fail(rejected_reason)
+    end
+
+    it_should_behave_like :ivar do
       subject{ IVar.new }
-      it_should_behave_like :ivar
     end
 
-    context 'behavior' do
-
-      # obligation
-
-      let!(:fulfilled_value) { 10 }
-      let(:rejected_reason) { StandardError.new('Boom!') }
-
-      let(:pending_subject) do
-        @i = IVar.new
-        Thread.new do
-          sleep(3)
-          @i.set(fulfilled_value)
-        end
-        @i
-      end
-
-      let(:fulfilled_subject) do
-        i = IVar.new
-        i.set(fulfilled_value)
-        i
-      end
-
-      let(:rejected_subject) do
-        i = IVar.new
-        i.fail(rejected_reason)
-        i
-      end
-
-      it_should_behave_like :obligation
-
-      # dereferenceable
+    it_should_behave_like :dereferenceable do
 
       def dereferenceable_subject(value, opts = {})
         IVar.new(value, opts)
@@ -63,18 +47,15 @@ module Concurrent
       def execute_dereferenceable(subject)
         subject.set('value')
       end
+    end
 
-      it_should_behave_like :dereferenceable
-
-      # observable
+    it_should_behave_like :observable do
 
       subject{ IVar.new }
 
       def trigger_observable(observable)
         observable.set('value')
       end
-
-      it_should_behave_like :observable
     end
 
     context '#initialize' do
@@ -93,7 +74,6 @@ module Concurrent
         i = IVar.new(14)
         expect(i).to be_complete
       end
-
     end
 
     context 'observation' do
@@ -154,7 +134,6 @@ module Concurrent
           expect(obs.value).to eq 42
         end
       end
-
     end
   end
 end

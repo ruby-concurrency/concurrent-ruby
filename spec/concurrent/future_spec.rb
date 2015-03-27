@@ -1,6 +1,5 @@
 require_relative 'dereferenceable_shared'
 require_relative 'ivar_shared'
-require_relative 'obligation_shared'
 require_relative 'observable_shared'
 require_relative 'thread_arguments_shared'
 
@@ -17,14 +16,26 @@ module Concurrent
       }.execute.tap{ sleep(0.1) }
     end
 
-    context 'manual completion' do
-      subject { Future.new(executor: :immediate){ nil } }
-      it_should_behave_like :ivar
+    let!(:fulfilled_value) { 10 }
+    let!(:rejected_reason) { StandardError.new('mojo jojo') }
+
+    let(:pending_subject) do
+      Future.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
     end
 
-    context 'behavior' do
+    let(:fulfilled_subject) do
+      Future.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
+    end
 
-      # thread_arguments
+    let(:rejected_subject) do
+      Future.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
+    end
+
+    it_should_behave_like :ivar do
+      subject { Future.new(executor: :immediate){ nil } }
+    end
+
+    it_should_behave_like :thread_arguments do
 
       def get_ivar_from_no_args
         Concurrent::Future.execute{|*args| args }
@@ -33,29 +44,9 @@ module Concurrent
       def get_ivar_from_args(opts)
         Concurrent::Future.execute(opts){|*args| args }
       end
+    end
 
-      it_should_behave_like :thread_arguments
-
-      # obligation
-
-      let!(:fulfilled_value) { 10 }
-      let!(:rejected_reason) { StandardError.new('mojo jojo') }
-
-      let(:pending_subject) do
-        Future.new(executor: executor){ sleep(3); fulfilled_value }.execute
-      end
-
-      let(:fulfilled_subject) do
-        Future.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
-      end
-
-      let(:rejected_subject) do
-        Future.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
-      end
-
-      it_should_behave_like :obligation
-
-      # dereferenceable
+    it_should_behave_like :dereferenceable do
 
       def dereferenceable_subject(value, opts = {})
         opts = opts.merge(executor: executor)
@@ -71,10 +62,9 @@ module Concurrent
         subject.execute
         sleep(0.1)
       end
+    end
 
-      it_should_behave_like :dereferenceable
-
-      # observable
+    it_should_behave_like :observable do
 
       subject{ Future.new{ nil } }
 
@@ -82,8 +72,6 @@ module Concurrent
         observable.execute
         sleep(0.1)
       end
-
-      it_should_behave_like :observable
     end
 
     context '#initialize' do

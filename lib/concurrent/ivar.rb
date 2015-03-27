@@ -102,6 +102,7 @@ module Concurrent
     # @param [Object] value the value to store in the `IVar`
     # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
     #   been set or otherwise completed
+    # @return [IVar] self
     def set(value = NO_VALUE)
       if (block_given? && value != NO_VALUE) || (!block_given? && value == NO_VALUE)
         raise ArgumentError.new('must set with either a value or a block')
@@ -122,6 +123,7 @@ module Concurrent
     # @param [Object] reason for the failure
     # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
     #   been set or otherwise completed
+    # @return [IVar] self
     def fail(reason = StandardError.new)
       set { raise reason }
     end

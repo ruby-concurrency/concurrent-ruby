@@ -1,5 +1,4 @@
 require_relative 'ivar_shared'
-require_relative 'obligation_shared'
 require_relative 'thread_arguments_shared'
 
 module Concurrent
@@ -13,7 +12,7 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Promise.new(executor: executor){ sleep(0.3); fulfilled_value }.execute
+      Promise.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
     end
 
     let(:fulfilled_subject) do
@@ -24,14 +23,11 @@ module Concurrent
       Promise.reject(rejected_reason, executor: executor)
     end
 
-    context 'manual completion' do
+    it_should_behave_like :ivar do
       subject{ Promise.new(executor: :immediate) }
-      it_should_behave_like :ivar
     end
 
-    context 'behavior' do
-
-      # thread_arguments
+    it_should_behave_like :thread_arguments do
 
       def get_ivar_from_no_args
         Concurrent::Promise.execute{|*args| args }
@@ -40,12 +36,6 @@ module Concurrent
       def get_ivar_from_args(opts)
         Concurrent::Promise.execute(opts){|*args| args }
       end
-
-      it_should_behave_like :thread_arguments
-
-      # obligation
-
-      it_should_behave_like :obligation
     end
 
     it 'includes Dereferenceable' do
