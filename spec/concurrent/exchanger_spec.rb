@@ -25,44 +25,36 @@ module Concurrent
         it 'should receive the other value' do
           first_value = nil
           second_value = nil
-          latch = Concurrent::CountDownLatch.new(2)
 
           threads = [
-            Thread.new { first_value = subject.exchange(2); latch.count_down },
-            Thread.new { second_value = subject.exchange(4); latch.count_down }
+            Thread.new { first_value = subject.exchange(2) },
+            Thread.new { second_value = subject.exchange(4) }
           ]
 
-          latch.wait(1)
-
+          threads.each {|t| t.join }
           expect(first_value).to eq 4
           expect(second_value).to eq 2
-
-          threads.each {|t| t.kill }
         end
 
         it 'can be reused' do
           first_value = nil
           second_value = nil
-          latch_1 = Concurrent::CountDownLatch.new(2)
-          latch_2 = Concurrent::CountDownLatch.new(2)
 
           threads = [
-            Thread.new { first_value = subject.exchange(1); latch_1.count_down },
-            Thread.new { second_value = subject.exchange(0); latch_1.count_down }
+            Thread.new { first_value = subject.exchange(1) },
+            Thread.new { second_value = subject.exchange(0) }
           ]
 
-          latch_1.wait(1)
-          threads.each {|t| t.kill }
+          threads.each {|t| t.join }
 
           threads = [
-            Thread.new { first_value = subject.exchange(10); latch_2.count_down },
-            Thread.new { second_value = subject.exchange(12); latch_2.count_down }
+            Thread.new { first_value = subject.exchange(10) },
+            Thread.new { second_value = subject.exchange(12) }
           ]
 
-          latch_2.wait(1)
+          threads.each {|t| t.join }
           expect(first_value).to eq 12
           expect(second_value).to eq 10
-          threads.each {|t| t.kill }
         end
       end
 
