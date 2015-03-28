@@ -25,31 +25,44 @@ module Concurrent
         it 'should receive the other value' do
           first_value = nil
           second_value = nil
+          latch = Concurrent::CountDownLatch.new(2)
 
-          thread_1 = Thread.new { first_value = subject.exchange(2) }
-          thread_2 = Thread.new { second_value = subject.exchange(4) }
+          threads = [
+            Thread.new { first_value = subject.exchange(2); latch.count_down },
+            Thread.new { second_value = subject.exchange(4); latch.count_down }
+          ]
 
-          [thread_1, thread_2].each(&:join)
+          latch.wait(1)
+
           expect(first_value).to eq 4
           expect(second_value).to eq 2
+
+          threads.each {|t| t.kill }
         end
 
         it 'can be reused' do
           first_value = nil
           second_value = nil
+          latch_1 = Concurrent::CountDownLatch.new(2)
+          latch_2 = Concurrent::CountDownLatch.new(2)
 
-          thread_1 = Thread.new { first_value = subject.exchange(1) }
-          thread_2 = Thread.new { second_value = subject.exchange(0) }
+          threads = [
+            Thread.new { first_value = subject.exchange(1); latch_1.count_down },
+            Thread.new { second_value = subject.exchange(0); latch_1.count_down }
+          ]
 
-          [thread_1, thread_2].each(&:join)
+          latch_1.wait(1)
+          threads.each {|t| t.kill }
 
-          thread_1 = Thread.new { first_value = subject.exchange(10) }
-          thread_2 = Thread.new { second_value = subject.exchange(12) }
+          threads = [
+            Thread.new { first_value = subject.exchange(10); latch_2.count_down },
+            Thread.new { second_value = subject.exchange(12); latch_2.count_down }
+          ]
 
-          [thread_1, thread_2].each(&:join)
-
+          latch_2.wait(1)
           expect(first_value).to eq 12
           expect(second_value).to eq 10
+          threads.each {|t| t.kill }
         end
       end
 

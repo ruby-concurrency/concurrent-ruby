@@ -14,16 +14,17 @@ def atomic_test(clazz, opts = {})
   latch = Concurrent::CountDownLatch.new(threads)
 
   print "Testing with #{clazz}...\n"
-  stats = Benchmark.measure do
-    threads.times do |i|
-      Thread.new do
-        tests.times{ atomic.value = true }
-        latch.count_down
+  Benchmark.bmbm do |bm|
+    bm.report do
+      threads.times do |i|
+        Thread.new do
+          tests.times{ atomic.value = true }
+          latch.count_down
+        end
       end
+      latch.wait
     end
-    latch.wait
   end
-  print stats
 end
 
 puts "Testing with #{RbConfig::CONFIG['ruby_install_name']} #{RUBY_VERSION}"
