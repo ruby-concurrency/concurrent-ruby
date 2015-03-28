@@ -7,18 +7,15 @@ module Concurrent
       context 'without timeout' do
 
         it 'should block' do
-          latch_1 = Concurrent::CountDownLatch.new
-          latch_2 = Concurrent::CountDownLatch.new
+          latch = Concurrent::CountDownLatch.new
 
           t = Thread.new do
-            latch_1.count_down
             subject.exchange(1)
-            latch_2.count_down
+            latch.count_down
           end
 
-          latch_1.wait(1)
-          latch_2.wait(0.1)
-          expect(latch_2.count).to eq 1
+          t.join(0.3)
+          expect(latch.count).to eq 1
           t.kill
         end
 
@@ -31,7 +28,7 @@ module Concurrent
             Thread.new { second_value = subject.exchange(4) }
           ]
 
-          threads.each {|t| t.join }
+          threads.each {|t| t.join(1) }
           expect(first_value).to eq 4
           expect(second_value).to eq 2
         end
@@ -45,14 +42,14 @@ module Concurrent
             Thread.new { second_value = subject.exchange(0) }
           ]
 
-          threads.each {|t| t.join }
+          threads.each {|t| t.join(1) }
 
           threads = [
             Thread.new { first_value = subject.exchange(10) },
             Thread.new { second_value = subject.exchange(12) }
           ]
 
-          threads.each {|t| t.join }
+          threads.each {|t| t.join(1) }
           expect(first_value).to eq 12
           expect(second_value).to eq 10
         end
