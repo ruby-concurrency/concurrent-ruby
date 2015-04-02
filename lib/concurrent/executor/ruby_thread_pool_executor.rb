@@ -2,7 +2,6 @@ require 'thread'
 
 require 'concurrent/atomic/event'
 require 'concurrent/executor/executor'
-require 'concurrent/executor/ruby_thread_pool_worker'
 require 'concurrent/utility/monotonic_time'
 
 module Concurrent
@@ -87,35 +86,34 @@ module Concurrent
       init_executor
       enable_at_exit_handler!(opts)
 
-      @pool                 = []
-      @queue                = Queue.new
+      @pool                 = [] # all workers
+      @ready                = [] # used as a stash (most idle worker is at the start)
+      @queue                = [] # used as queue
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length       = 0
 
-      @gc_interval  = opts.fetch(:gc_interval, 1).to_i # undocumented
-      @last_gc_time = Concurrent.monotonic_time - [1.0, (@gc_interval * 2.0)].max
+      @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
+      @next_gc_time = Concurrent.monotonic_time + @gc_interval
     end
 
     # @!macro executor_module_method_can_overflow_question
     def can_overflow?
-      @max_queue != 0
+      mutex.synchronize { ns_limited_queue? }
     end
 
     # The number of threads currently in the pool.
     #
     # @return [Integer] the length
     def length
-      mutex.synchronize { running? ? @pool.length : 0 }
+      mutex.synchronize { @pool.length }
     end
-
-    alias_method :current_length, :length
 
     # The number of tasks in the queue awaiting execution.
     #
     # @return [Integer] the queue_length
     def queue_length
-      mutex.synchronize { running? ? @queue.length : 0 }
+      mutex.synchronize { @queue.length }
     end
 
     # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
@@ -123,142 +121,229 @@ module Concurrent
     #
     # @return [Integer] the remaining_capacity
     def remaining_capacity
-      mutex.synchronize { @max_queue == 0 ? -1 : @max_queue - @queue.length }
-    end
-
-    # Returns an array with the status of each thread in the pool
-    #
-    # This method is deprecated and will be removed soon.
-    def status
-      warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
-      mutex.synchronize { @pool.collect { |worker| worker.status } }
-    end
-
-    # Run on task completion.
-    #
-    # @!visibility private
-    def on_end_task
       mutex.synchronize do
-        @completed_task_count += 1 #if success
-        break unless running?
-      end
-    end
-
-    # Run when a thread worker exits.
-    #
-    # @!visibility private
-    def on_worker_exit(worker)
-      mutex.synchronize do
-        @pool.delete(worker)
-        if @pool.empty? && !running?
-          stop_event.set
-          stopped_event.set
+        if ns_limited_queue?
+          @max_queue - @queue.length
+        else
+          -1
         end
       end
     end
 
+    alias_method :current_length, :length # TODO remove?
+
+    # @api private
+    def remove_busy_worker(worker)
+      mutex.synchronize { ns_remove_busy_worker worker }
+    end
+
+    # @api private
+    def ready_worker(worker)
+      mutex.synchronize { ns_ready_worker worker }
+    end
+
+    # @api private
+    def worker_not_old_enough(worker)
+      mutex.synchronize { ns_worker_not_old_enough worker }
+    end
+
+    # @api private
+    def worker_died(worker)
+      mutex.synchronize { ns_worker_died worker }
+    end
+
     protected
 
-    # @!visibility private
-    def execute(*args, &task)
-      if ensure_capacity?
+    def ns_limited_queue?
+      @max_queue != 0
+    end
+
+    def ns_execute(*args, &task)
+      if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
         @scheduled_task_count += 1
-        @queue << [args, task]
       else
-        handle_fallback(*args, &task) if @max_queue != 0 && @queue.length >= @max_queue
+        handle_fallback(*args, &task)
       end
-      prune_pool
+
+      ns_prune_pool if @next_gc_time < Concurrent.monotonic_time
+      # raise unless @ready.empty? || @queue.empty? # assert
     end
 
-    # @!visibility private
-    def shutdown_execution
+    alias_method :execute, :ns_execute
+
+    def ns_shutdown_execution
       if @pool.empty?
+        # nothing to do
         stopped_event.set
+      end
+      if @queue.empty?
+        # no more tasks will be accepted, just stop all workers
+        @pool.each(&:stop)
+      end
+
+      # raise unless @ready.empty? || @queue.empty? # assert
+    end
+
+    alias_method :shutdown_execution, :ns_shutdown_execution
+
+    # @api private
+    def ns_kill_execution
+      ns_shutdown_execution
+      unless stopped_event.wait(3)
+        @pool.each &:kill
+        @pool.clear
+        @ready.clear
+      end
+    end
+
+    alias_method :kill_execution, :ns_kill_execution
+
+    # tries to assign task to a worker, tries to get one from @ready or to create new one
+    # @return [true, false] if task is assigned to a worker
+    def ns_assign_worker(*args, &task)
+      worker = @ready.pop || ns_add_busy_worker
+      if worker
+        worker << [task, args]
+        true
       else
-        @pool.length.times { @queue << :stop }
+        false
       end
     end
 
-    # @!visibility private
-    def kill_execution
-      @queue.clear
-      drain_pool
-    end
-
-    # Check the thread pool configuration and determine if the pool
-    # has enought capacity to handle the request. Will grow the size
-    # of the pool if necessary.
-    #
-    # @return [Boolean] true if the pool has enough capacity else false
-    #
-    # @!visibility private
-    def ensure_capacity?
-      additional = 0
-      capacity   = true
-
-      if @pool.size < @min_length
-        additional = @min_length - @pool.size
-      elsif @queue.empty? && @queue.num_waiting >= 1
-        additional = 0
-      elsif @pool.size == 0 && @min_length == 0
-        additional = 1
-      elsif @pool.size < @max_length || @max_length == 0
-        additional = 1
-      elsif @max_queue == 0 || @queue.size < @max_queue
-        additional = 0
+    # tries to enqueue task
+    # @return [true, false] if enqueued
+    def ns_enqueue(*args, &task)
+      if !ns_limited_queue? || @queue.size < @max_queue
+        @queue << [task, args]
+        true
       else
-        capacity = false
-      end
-
-      additional.times do
-        @pool << create_worker_thread
-      end
-
-      if additional > 0
-        @largest_length = [@largest_length, @pool.length].max
-      end
-
-      capacity
-    end
-
-    # Scan all threads in the pool and reclaim any that are dead or
-    # have been idle too long. Will check the last time the pool was
-    # pruned and only run if the configured garbage collection
-    # interval has passed.
-    #
-    # @!visibility private
-    def prune_pool
-      if Concurrent.monotonic_time - @gc_interval >= @last_gc_time
-        @pool.delete_if { |worker| worker.dead? }
-        # send :stop for each thread over idletime
-        @pool.
-            select { |worker| @idletime != 0 && Concurrent.monotonic_time - @idletime > worker.last_activity }.
-            each { @queue << :stop }
-        @last_gc_time = Concurrent.monotonic_time
+        false
       end
     end
 
-    # Reclaim all threads in the pool.
-    #
-    # @!visibility private
-    def drain_pool
-      @pool.each { |worker| worker.kill }
-      @pool.clear
+    def ns_worker_died(worker)
+      ns_remove_busy_worker worker
+      replacement_worker = ns_add_busy_worker
+      ns_ready_worker replacement_worker, false if replacement_worker
     end
 
-    # Create a single worker thread to be added to the pool.
-    #
-    # @return [Thread] the new thread.
-    #
-    # @!visibility private
-    def create_worker_thread
-      wrkr = RubyThreadPoolWorker.new(@queue, self)
-      Thread.new(wrkr, self) do |worker, parent|
-        Thread.current.abort_on_exception = false
-        worker.run
-        parent.on_worker_exit(worker)
-      end
-      return wrkr
+    # creates new worker which has to receive work to do after it's added
+    # @return [nil, Worker] nil of max capacity is reached
+    def ns_add_busy_worker
+      return if @pool.size >= @max_length
+
+      @largest_length = @pool.length if @pool.length > @largest_length
+      @pool << (worker = Worker.new(self))
+      worker
     end
+
+    # handle ready worker, giving it new job or assigning back to @ready
+    def ns_ready_worker(worker, success = true)
+      @completed_task_count += 1 if success
+      task_and_args         = @queue.shift
+      if task_and_args
+        worker << task_and_args
+      else
+        # stop workers when !running?, do not return them to @ready
+        if running?
+          @ready.push(worker)
+        else
+          worker.stop
+        end
+      end
+    end
+
+    # returns back worker to @ready which was not idle for enough time
+    def ns_worker_not_old_enough(worker)
+      # let's put workers coming from idle_test back to the start (as the oldest worker)
+      @ready.unshift(worker)
+      true
+    end
+
+    # removes a worker which is not in not tracked in @ready
+    def ns_remove_busy_worker(worker)
+      @pool.delete(worker)
+      stopped_event.set if @pool.empty? && !running?
+      true
+    end
+
+    # try oldest worker if it is idle for enough time, it's returned back at the start
+    def ns_prune_pool
+      return if @pool.size <= @min_length
+
+      last_used = @ready.shift
+      last_used << :idle_test if last_used
+
+      @next_gc_time = Concurrent.monotonic_time + @gc_interval
+    end
+
+    class Worker
+      include Logging
+
+      def initialize(pool)
+        # instance variables accessed only under pool's lock so no need to sync here again
+        @queue  = Queue.new
+        @pool   = pool
+        @thread = create_worker @queue, pool, pool.idletime
+      end
+
+      def <<(message)
+        @queue << message
+      end
+
+      def stop
+        @queue << :stop
+      end
+
+      def kill
+        @thread.kill
+      end
+
+      private
+
+      def create_worker(queue, pool, idletime)
+        Thread.new(queue, pool, idletime) do |queue, pool, idletime|
+          last_message = Concurrent.monotonic_time
+          catch(:stop) do
+            loop do
+
+              case message = queue.pop
+              when :idle_test
+                if (Concurrent.monotonic_time - last_message) > idletime
+                  pool.remove_busy_worker(self)
+                  throw :stop
+                else
+                  pool.worker_not_old_enough(self)
+                end
+
+              when :stop
+                pool.remove_busy_worker(self)
+                throw :stop
+
+              else
+                task, args = message
+                run_task pool, task, args
+                last_message = Concurrent.monotonic_time
+
+                pool.ready_worker(self)
+              end
+
+            end
+          end
+        end
+      end
+
+      def run_task(pool, task, args)
+        task.call(*args)
+      rescue => ex
+        # let it fail
+        log DEBUG, ex
+      rescue Exception => ex
+        log ERROR, ex
+        pool.worker_died(self)
+        throw :stop
+      end
+    end
+
   end
 end

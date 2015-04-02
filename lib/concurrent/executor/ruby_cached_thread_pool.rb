@@ -17,14 +17,13 @@ module Concurrent
 
       raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(fallback_policy)
 
-      opts = opts.merge(
-        min_threads: 0,
-        max_threads: DEFAULT_MAX_POOL_SIZE,
-        fallback_policy: fallback_policy,
-        max_queue: DEFAULT_MAX_QUEUE_SIZE,
-        idletime: DEFAULT_THREAD_IDLETIMEOUT
-      )
-      super(opts)
+      defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT }
+      overrides = { min_threads:     0,
+                    max_threads:     DEFAULT_MAX_POOL_SIZE,
+                    fallback_policy: fallback_policy,
+                    max_queue:       DEFAULT_MAX_QUEUE_SIZE }
+
+      super(defaults.merge(opts).merge(overrides))
     end
   end
 end
