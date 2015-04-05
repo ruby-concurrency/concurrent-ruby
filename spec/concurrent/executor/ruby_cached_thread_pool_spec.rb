@@ -73,14 +73,14 @@ module Concurrent
 
   context 'stress' do
     configurations = [
-        { min_threads:     [2, Concurrent.processor_count].max,
+        { min_threads:     2,
           max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
           stop_on_exit:    false,
           idletime:        0.1, # 1 minute
           max_queue:       0, # unlimited
           fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
           gc_interval:     0.1 },
-        { min_threads:     [2, Concurrent.processor_count].max,
+        { min_threads:     2,
           max_threads:     4,
           stop_on_exit:    false,
           idletime:        0.1, # 1 minute

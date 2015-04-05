@@ -6,6 +6,7 @@ group :development do
   gem 'rake', '~> 10.4.2'
   gem 'rake-compiler', '~> 0.9.5'
   gem 'gem-compiler', '~> 0.3.0'
+  gem 'benchmark-ips'
 end
 
 group :testing do
