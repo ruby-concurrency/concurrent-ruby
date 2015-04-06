@@ -89,6 +89,7 @@ module Concurrent
       @pool                 = [] # all workers
       @ready                = [] # used as a stash (most idle worker is at the start)
       @queue                = [] # used as queue
+      # @ready or @queue is empty at all times
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length       = 0
@@ -201,6 +202,7 @@ module Concurrent
     # tries to assign task to a worker, tries to get one from @ready or to create new one
     # @return [true, false] if task is assigned to a worker
     def ns_assign_worker(*args, &task)
+      # keep growing if the pool is not at the minimum yet
       worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
         worker << [task, args]

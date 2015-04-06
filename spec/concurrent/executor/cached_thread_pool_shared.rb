@@ -95,15 +95,6 @@ shared_examples :cached_thread_pool do
     end
   end
 
-  context '#status' do
-
-    it 'returns an array' do
-      skip 'not added' unless subject.respond_to? :status
-      allow(subject).to receive(:warn)
-      expect(subject.status).to be_kind_of(Array)
-    end
-  end
-
   context '#idletime' do
 
     subject{ described_class.new(idletime: 42) }

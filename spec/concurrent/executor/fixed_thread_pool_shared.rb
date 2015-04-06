@@ -145,16 +145,6 @@ shared_examples :fixed_thread_pool do
     end
   end
 
-  context '#status' do
-
-    it 'returns an array' do
-      skip 'not added' unless subject.respond_to? :status
-      allow(subject).to receive(:warn)
-      expect(subject.status).to be_kind_of(Array)
-    end
-  end
-
-
   context '#kill' do
 
     it 'attempts to kill all in-progress tasks' do
