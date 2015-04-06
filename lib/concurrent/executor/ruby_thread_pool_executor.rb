@@ -201,7 +201,7 @@ module Concurrent
     # tries to assign task to a worker, tries to get one from @ready or to create new one
     # @return [true, false] if task is assigned to a worker
     def ns_assign_worker(*args, &task)
-      worker = @ready.pop || ns_add_busy_worker
+      worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
         worker << [task, args]
         true
