@@ -148,6 +148,7 @@ shared_examples :fixed_thread_pool do
   context '#status' do
 
     it 'returns an array' do
+      skip 'not added' unless subject.respond_to? :status
       allow(subject).to receive(:warn)
       expect(subject.status).to be_kind_of(Array)
     end
