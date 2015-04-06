@@ -232,8 +232,8 @@ module Concurrent
     def ns_add_busy_worker
       return if @pool.size >= @max_length
 
-      @largest_length = @pool.length if @pool.length > @largest_length
       @pool << (worker = Worker.new(self))
+      @largest_length = @pool.length if @pool.length > @largest_length
       worker
     end
 
