@@ -148,14 +148,14 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
     describe JavaSemaphore do
       it_should_behave_like :semaphore
     end
   end
 
   describe Semaphore do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaSemaphore' do
         expect(Semaphore.ancestors).to include(JavaSemaphore)
       end

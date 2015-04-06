@@ -1,4 +1,4 @@
-require_relative '../../extension_helper'
+require 'concurrent/extension_helper'
 
 module Concurrent
 
@@ -118,7 +118,7 @@ module Concurrent
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     # @!macro atomic_fixnum
     class AtomicFixnum < JavaAtomicFixnum

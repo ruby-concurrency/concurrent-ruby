@@ -132,7 +132,7 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
 
     describe JavaCountDownLatch do
 
@@ -141,7 +141,7 @@ module Concurrent
   end
 
   describe CountDownLatch do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaCountDownLatch' do
         expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
       end

@@ -1,5 +1,5 @@
 require 'rbconfig'
-require_relative '../../lib/extension_helper.rb'
+require 'concurrent/extension_helper.rb'
 
 module Concurrent
   module TestHelpers
@@ -13,17 +13,7 @@ module Concurrent
       return (v1 - v2).abs
     end
 
-    def mri?
-      RUBY_ENGINE == 'ruby'
-    end
-
-    def jruby?
-      RUBY_ENGINE == 'jruby'
-    end
-
-    def rbx?
-      RUBY_ENGINE == 'rbx'
-    end
+    include EngineDetector
 
     def use_c_extensions?
       Concurrent.allow_c_extensions? # from extension_helper.rb

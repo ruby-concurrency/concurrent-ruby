@@ -150,7 +150,7 @@ module Concurrent
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     # @!macro semaphore
     #

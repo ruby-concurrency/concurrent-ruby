@@ -71,7 +71,7 @@ module Concurrent
     private
 
     def compute_processor_count
-      if RUBY_PLATFORM == 'java'
+      if Concurrent.on_jruby?
         java.lang.Runtime.getRuntime.availableProcessors
       else
         os_name = RbConfig::CONFIG["target_os"]

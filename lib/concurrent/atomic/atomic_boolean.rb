@@ -1,4 +1,4 @@
-require_relative '../../extension_helper'
+require 'concurrent/extension_helper'
 
 module Concurrent
 
@@ -113,7 +113,7 @@ module Concurrent
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     class AtomicBoolean < JavaAtomicBoolean
     end

@@ -1,4 +1,4 @@
-if Concurrent::TestHelpers.jruby?
+if Concurrent.on_jruby?
 
   require_relative 'fixed_thread_pool_shared'
 

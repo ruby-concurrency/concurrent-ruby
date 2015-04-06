@@ -69,7 +69,7 @@ module Concurrent
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     # @!macro count_down_latch
     class JavaCountDownLatch

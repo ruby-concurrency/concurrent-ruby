@@ -2,7 +2,7 @@ require 'concurrent/executor/ruby_cached_thread_pool'
 
 module Concurrent
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
     require 'concurrent/executor/java_cached_thread_pool'
     # @!macro [attach] cached_thread_pool
     #   A thread pool that dynamically grows and shrinks to fit the current workload.

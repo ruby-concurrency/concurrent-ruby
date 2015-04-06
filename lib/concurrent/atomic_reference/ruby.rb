@@ -1,5 +1,5 @@
 if defined? Concurrent::CAtomic
-  require_relative '../../extension_helper'
+  require 'concurrent/extension_helper'
   require 'concurrent/atomic_reference/direct_update'
   require 'concurrent/atomic_reference/numeric_cas_wrapper'
 

@@ -1,6 +1,6 @@
 require 'fileutils'
 
-require_relative '../../lib/extension_helper'
+require 'concurrent/extension_helper'
 
 EXTENSION_NAME = 'extension'
 

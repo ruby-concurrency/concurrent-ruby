@@ -1,4 +1,4 @@
-if RUBY_PLATFORM == 'java'
+if Concurrent.on_jruby?
   require_relative 'executor'
 
   module Concurrent
