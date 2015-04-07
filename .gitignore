@@ -8,8 +8,8 @@ lib/2.0
 .ruby-version
 .ruby-gemset
 .bundle/*
-.yardoc/*
-yardoc/*
+.yardoc
+yardoc
 tmp/*
 man/*
 *.tmproj
