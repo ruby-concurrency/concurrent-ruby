@@ -24,9 +24,9 @@ module Concurrent
     end
 
     GLOBAL_EXECUTORS = [
-      [:GLOBAL_FAST_EXECUTOR, ->{ Delay.new{ Concurrent.new_fast_executor }}],
-      [:GLOBAL_IO_EXECUTOR, ->{ Delay.new{ Concurrent.new_io_executor }}],
-      [:GLOBAL_TIMER_SET, ->{ Delay.new{ Concurrent::TimerSet.new }}],
+        [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
+        [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
+        [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
     ]
 
     @@killed = false
@@ -34,10 +34,9 @@ module Concurrent
     def reset_gem_configuration
       if @@killed
         GLOBAL_EXECUTORS.each do |var, factory|
-          executor = Concurrent.const_get(var).value
+          executor = Concurrent.const_get(var).value!
           executor.shutdown
           executor.kill
-          executor = nil
           Concurrent.const_set(var, factory.call)
         end
         @@killed = false

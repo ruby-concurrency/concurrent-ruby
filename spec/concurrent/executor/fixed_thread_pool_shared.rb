@@ -150,7 +150,10 @@ shared_examples :fixed_thread_pool do
     it 'attempts to kill all in-progress tasks' do
       thread_count = [subject.length, 5].max
       @expected = false
-      thread_count.times{ subject.post{ sleep(1) } }
+      thread_count.times do
+        # kill tries to shutdown first with 1sec timeout, so wait 2sec here
+        subject.post { sleep(2) }
+      end
       subject.post{ @expected = true }
       sleep(0.1)
       subject.kill

@@ -2,12 +2,12 @@ module Concurrent
 
   describe TimerSet do
 
-    subject{ TimerSet.new(executor: ImmediateExecutor.new) }
+    subject{ TimerSet.new(executor: :immediate) }
 
     after(:each){ subject.kill }
 
     it 'uses the executor given at construction' do
-      executor = double(:executor)
+      executor = Concurrent.global_immediate_executor
       expect(executor).to receive(:post).with(no_args)
       subject = TimerSet.new(executor: executor)
       subject.post(0){ nil }

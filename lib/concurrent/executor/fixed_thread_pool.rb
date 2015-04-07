@@ -27,7 +27,7 @@ module Concurrent
     #   * `max_queue`: The maximum number of tasks that may be waiting in the work queue at
     #     any one time. When the queue size reaches `max_queue` subsequent tasks will be
     #     rejected in accordance with the configured `fallback_policy`.
-    #   * `stop_on_exit`: When true (default) an `at_exit` handler will be registered which
+    #   * `auto_terminate`: When true (default) an `at_exit` handler will be registered which
     #     will stop the thread pool when the application exits. See below for more information
     #     on shutting down thread pools.
     #   * `fallback_policy`: The policy defining how rejected tasks are handled.
@@ -58,12 +58,12 @@ module Concurrent
     #   stop the thread pool when the application exists. This handler uses a brute
     #   force method to stop the pool and makes no guarantees regarding resources being
     #   used by any tasks still running. Registration of this `at_exit` handler can be
-    #   prevented by setting the thread pool's constructor `:stop_on_exit` option to
+    #   prevented by setting the thread pool's constructor `:auto_terminate` option to
     #   `false` when the thread pool is created. All thread pools support this option.
     #
     #   ```ruby
     #   pool1 = Concurrent::FixedThreadPool.new(5) # an `at_exit` handler will be registered
-    #   pool2 = Concurrent::FixedThreadPool.new(5, stop_on_exit: false) # prevent `at_exit` handler registration
+    #   pool2 = Concurrent::FixedThreadPool.new(5, auto_terminate: false) # prevent `at_exit` handler registration
     #   ```
     #
     #   @note Failure to properly shutdown a thread pool can lead to unpredictable results.

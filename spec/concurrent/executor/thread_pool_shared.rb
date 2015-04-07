@@ -17,18 +17,18 @@ shared_examples :thread_pool do
 
     it 'returns true when :enable_at_exit_handler is true' do
       if described_class.to_s =~ /FixedThreadPool$/
-        subject = described_class.new(1, stop_on_exit: true)
+        subject = described_class.new(1, auto_terminate: true)
       else
-        subject = described_class.new(stop_on_exit: true)
+        subject = described_class.new(auto_terminate: true)
       end
       expect(subject.auto_terminate?).to be true
     end
 
     it 'returns false when :enable_at_exit_handler is false' do
       if described_class.to_s =~ /FixedThreadPool$/
-        subject = described_class.new(1, stop_on_exit: false)
+        subject = described_class.new(1, auto_terminate: false)
       else
-        subject = described_class.new(stop_on_exit: false)
+        subject = described_class.new(auto_terminate: false)
       end
       expect(subject.auto_terminate?).to be false
     end

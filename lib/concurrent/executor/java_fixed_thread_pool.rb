@@ -25,7 +25,7 @@ if Concurrent.on_jruby?
         }.merge(opts)
         super(opts)
 
-        enable_at_exit_handler!(opts)
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end

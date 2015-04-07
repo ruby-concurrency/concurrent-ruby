@@ -84,7 +84,7 @@ module Concurrent
       raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
 
       init_executor
-      enable_at_exit_handler!(opts)
+      self.auto_terminate = opts.fetch(:auto_terminate, true)
 
       @pool                 = [] # all workers
       @ready                = [] # used as a stash (most idle worker is at the start)
@@ -190,10 +190,11 @@ module Concurrent
     # @api private
     def ns_kill_execution
       ns_shutdown_execution
-      unless stopped_event.wait(3)
+      unless stopped_event.wait(1)
         @pool.each &:kill
         @pool.clear
         @ready.clear
+        # TODO log out unprocessed tasks in queue
       end
     end
 

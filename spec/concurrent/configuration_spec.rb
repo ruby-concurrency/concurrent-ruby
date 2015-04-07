@@ -3,15 +3,7 @@ module Concurrent
   describe Configuration do
 
     before(:each) do
-      Concurrent.const_set(
-        :GLOBAL_FAST_EXECUTOR,
-        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
-      Concurrent.const_set(
-        :GLOBAL_IO_EXECUTOR,
-        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
-      Concurrent.const_set(
-        :GLOBAL_TIMER_SET,
-        Concurrent::Delay.new{ Concurrent::ImmediateExecutor.new })
+      reset_gem_configuration
     end
 
     after(:each) do
@@ -35,28 +27,11 @@ module Concurrent
         expect(Concurrent.global_io_executor).to respond_to(:post)
       end
 
-      specify '#shutdown_global_executors acts on all global executors' do
-        expect(Concurrent.global_fast_executor).to receive(:shutdown).with(no_args)
-        expect(Concurrent.global_io_executor).to receive(:shutdown).with(no_args)
-        expect(Concurrent.global_timer_set).to receive(:shutdown).with(no_args)
-        Concurrent.shutdown_global_executors
-      end
-
-      specify '#kill_global_executors acts on all global executors' do
-        expect(Concurrent.global_fast_executor).to receive(:kill).with(no_args)
-        expect(Concurrent.global_io_executor).to receive(:kill).with(no_args)
-        expect(Concurrent.global_timer_set).to receive(:kill).with(no_args)
-        Concurrent.kill_global_executors
-      end
-
-      context '#wait_for_global_executors_termination' do
-
-        it 'acts on all global executors' do
-          expect(Concurrent.global_fast_executor).to receive(:wait_for_termination).with(0.1)
-          expect(Concurrent.global_io_executor).to receive(:wait_for_termination).with(0.1)
-          expect(Concurrent.global_timer_set).to receive(:wait_for_termination).with(0.1)
-          Concurrent.wait_for_global_executors_termination(0.1)
-        end
+      specify '#terminate_pools! acts on all executors with auto_terminate: true' do
+        expect(Concurrent.global_fast_executor).to receive(:kill).with(no_args).and_call_original
+        expect(Concurrent.global_io_executor).to receive(:kill).with(no_args).and_call_original
+        expect(Concurrent.global_timer_set).to receive(:kill).with(no_args).and_call_original
+        Concurrent.terminate_pools!
       end
     end
   end

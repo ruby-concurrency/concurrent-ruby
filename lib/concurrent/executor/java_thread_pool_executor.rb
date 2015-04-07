@@ -76,7 +76,7 @@ if Concurrent.on_jruby?
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           queue, FALLBACK_POLICIES[@fallback_policy].new)
 
-        enable_at_exit_handler!(opts)
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
 
       # @!macro executor_module_method_can_overflow_question

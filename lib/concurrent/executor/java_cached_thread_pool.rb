@@ -25,8 +25,9 @@ if Concurrent.on_jruby?
 
         @executor = java.util.concurrent.Executors.newCachedThreadPool
         @executor.setRejectedExecutionHandler(FALLBACK_POLICIES[@fallback_policy].new)
+        @executor.setKeepAliveTime(opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT), java.util.concurrent.TimeUnit::SECONDS)
 
-        enable_at_exit_handler!(opts)
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end

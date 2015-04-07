@@ -32,19 +32,19 @@ module Concurrent
         expect(subject.length).to be < 4
       end
 
-      it 'removes from pool any dead thread' do
-        latch = Concurrent::CountDownLatch.new(3)
-        3.times { subject << proc { sleep(0.1); latch.count_down; raise Exception } }
+      it 'deals with dead threads' do
+        expect(subject).to receive(:ns_worker_died).exactly(5).times.and_call_original
+
+        5.times { subject.post { sleep 0.1 } }
+        worker_ids = subject.instance_variable_get(:@pool).map(&:object_id)
+        5.times { subject.post { sleep 0.1; raise Exception } }
+        sleep(0.1)
+        latch = Concurrent::CountDownLatch.new(5)
+        5.times { subject.post { sleep 0.1; latch.count_down } }
+        # processes
         expect(latch.wait(1)).to be true
 
-        max_threads = subject.length
-        sleep(2)
-
-        latch = Concurrent::CountDownLatch.new(1)
-        subject << proc { latch.count_down }
-        expect(latch.wait(1)).to be true
-
-        expect(subject.length).to be < max_threads
+        expect(worker_ids - subject.instance_variable_get(:@pool).map(&:object_id)).not_to be_empty # some were replaced
       end
     end
 
@@ -75,14 +75,14 @@ module Concurrent
     configurations = [
         { min_threads:     2,
           max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-          stop_on_exit:    false,
+          auto_terminate:  false,
           idletime:        0.1, # 1 minute
           max_queue:       0, # unlimited
           fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
           gc_interval:     0.1 },
         { min_threads:     2,
           max_threads:     4,
-          stop_on_exit:    false,
+          auto_terminate:  false,
           idletime:        0.1, # 1 minute
           max_queue:       0, # unlimited
           fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
@@ -100,7 +100,7 @@ module Concurrent
             pool.post { count.count_down }
           end
           count.wait
-          expect(pool.length).to be <= [110, config[:max_threads]].min
+          expect(pool.length).to be <= [200, config[:max_threads]].min
           if pool.length > [110, config[:max_threads]].min
             puts "ERRORSIZE #{pool.length} max #{config[:max_threads]}"
           end
