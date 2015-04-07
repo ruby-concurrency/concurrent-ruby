@@ -3,7 +3,7 @@ require 'concurrent/delay'
 require 'concurrent/executor/serialized_execution'
 require 'concurrent/ivar'
 require 'concurrent/logging'
-require 'concurrent/atomic/synchronization'
+require 'concurrent/synchronized_object'
 
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?

@@ -9,6 +9,7 @@ require 'concurrent/collections'
 require 'concurrent/errors'
 require 'concurrent/executors'
 require 'concurrent/utilities'
+require 'concurrent/synchronized_object'
 
 require 'concurrent/atomic'
 require 'concurrent/agent'

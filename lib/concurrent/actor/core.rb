@@ -9,10 +9,9 @@ module Concurrent
     # @note devel: core should not block on anything, e.g. it cannot wait on
     #   children to terminate that would eat up all threads in task pool and
     #   deadlock
-    class Core
+    class Core < SynchronizedObject
       include TypeCheck
       include Concurrent::Logging
-      include Synchronization
 
       # @!attribute [r] reference
       #   @return [Reference] reference to this actor which can be safely passed around
@@ -48,6 +47,7 @@ module Concurrent
       #   any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
+        super(&nil)
         synchronize do
           @mailbox              = Array.new
           @serialized_execution = SerializedExecution.new
