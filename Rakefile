@@ -1,7 +1,6 @@
 #!/usr/bin/env rake
 
 require_relative './lib/concurrent/version'
-require_relative './lib/concurrent/edge/version'
 require_relative './lib/extension_helper'
 
 ## load the two gemspec files
@@ -22,7 +21,7 @@ else
   CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
   EXT_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
   NATIVE_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
-  EDGE_GEM = "#{GEM_NAME}-edge-#{Concurrent::Edge::VERSION}.gem"
+  EDGE_GEM = "#{GEM_NAME}-edge-#{Concurrent::EDGE_VERSION}.gem"
 end
 
 ## safely load all the rake tasks in the `tasks` directory
