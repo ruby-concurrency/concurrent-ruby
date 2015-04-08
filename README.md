@@ -88,13 +88,18 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html)
 
-### Experimental features
+### Edge features
 
-These features are under active, experimental development and may change frequently. They are minimally
-documented and tested. They are available in the `concurrent-ruby-experimental` companion gem.
+They are available in the `concurrent-ruby-edge` companion gem, install with `gem install concurrent-ruby-edge`.
 
-* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements the Actor Model, where concurrent actors exchange messages.
-* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html): Communicating Sequential Processes (CSP). 
+These features are under active development and may change frequently. They are expected not to
+keep backward compatibility (there may also lack tests and documentation). Semantic versions will
+be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to `concurrent-ruby` when final.
+
+*   [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
+    Implements the Actor Model, where concurrent actors exchange messages.
+*   [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
+    Communicating Sequential Processes (CSP).
 
 ## Usage
 
@@ -132,7 +137,7 @@ require 'concurrent/scheduled_task' # Concurrent::ScheduledTask
 require 'concurrent/timer_task'     # Concurrent::TimerTask
 require 'concurrent/tvar'           # Concurrent::TVar
 
-# experimental - available in `concurrent-ruby-experimental` companion gem
+# experimental - available in `concurrent-ruby-edge` companion gem
 
 require 'concurrent/actor'          # Concurrent::Actor and supporting code
 require 'concurrent/channel '       # Concurrent::Channel and supporting code
@@ -156,8 +161,8 @@ and run `bundle install` from your shell.
 
 Potential performance improvements may be achieved under MRI by installing optional C extensions.
 To minimize installation errors the C extensions are available in the `concurrent-ruby-ext` extension
-gem. The extension gem lists `concurrent-ruby` as a dependency so it is not necessary to install both.
-Simply install the extension gen:
+gem. `concurrent-ruby` and `concurrent-ruby-ext` are always released together with same version.
+Simply install the extension gen too:
 
 ```ruby
 gem install concurrent-ruby-ext

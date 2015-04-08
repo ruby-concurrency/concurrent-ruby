@@ -10,7 +10,14 @@ Gem::Specification.new do |s|
   s.authors     = ["Jerry D'Antonio", 'The Ruby Concurrency Team']
   s.email       = ['jerry.dantonio@gmail.com', 'concurrent-ruby@googlegroups.com']
   s.homepage    = 'http://www.concurrent-ruby.com'
-  s.summary     = 'Experimental features and additions to the concurrent-ruby gem. Minimally tested and documented.'
+  s.summary     = <<-TXT
+Edge features and additions to the concurrent-ruby gem.
+
+These features are under active development and may change frequently. They are expected not to
+keep backward compatibility (there may also lack tests and documentation). Semantic versions will
+be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to `concurrent-ruby` when final.
+  TXT
+
   s.license     = 'MIT'
   s.date        = Time.now.strftime('%Y-%m-%d')
 
