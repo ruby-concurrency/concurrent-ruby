@@ -91,7 +91,7 @@ module Concurrent
       # @param [Numeric] timeout the maximum time in second to wait.
       # @return [Obligation] self
       def wait(timeout = nil)
-        synchronize { ns_wait(timeout) }
+        synchronize { ns_wait_until_complete(timeout) }
       end
 
       def touch
@@ -184,7 +184,7 @@ module Concurrent
         AllPromise.new([self], executor).future
       end
 
-      protected
+      private
 
       def ns_initialize(promise, default_executor = :fast)
         @promise          = promise
@@ -194,9 +194,9 @@ module Concurrent
         @touched          = false
       end
 
-      def ns_wait(timeout = nil)
+      def ns_wait_until_complete(timeout = nil)
         ns_touch
-        super timeout if ns_incomplete?
+        ns_wait_until(timeout) { ns_completed? }
         self
       end
 
@@ -234,11 +234,11 @@ module Concurrent
       end
 
       def pr_delay(default_executor)
-        self.pr_join(default_executor, Delay.new(default_executor).future)
+        pr_join(default_executor, Delay.new(default_executor).future)
       end
 
       def pr_schedule(default_executor, intended_time)
-        self.pr_chain(default_executor) { ScheduledPromise.new(intended_time).future.join(self) }.flat
+        pr_chain(default_executor) { ScheduledPromise.new(intended_time).future.join(self) }.flat
       end
 
       def pr_join(default_executor, *futures)
@@ -278,8 +278,6 @@ module Concurrent
         end
         self
       end
-
-      private
 
       def ns_complete_state
         @state = :completed
@@ -350,7 +348,7 @@ module Concurrent
       # @return [Obligation] self
       # @raise [Exception] when #failed? it raises #reason
       def wait!(timeout = nil)
-        synchronize { ns_wait! timeout }
+        synchronize { ns_wait_until_complete! timeout }
       end
 
       # @raise [Exception] when #failed? it raises #reason
@@ -427,7 +425,7 @@ module Concurrent
         self
       end
 
-      protected
+      private
 
       def ns_initialize(promise, default_executor = :fast)
         super(promise, default_executor)
@@ -448,23 +446,23 @@ module Concurrent
       end
 
       def ns_value(timeout = nil)
-        ns_wait timeout
+        ns_wait_until_complete timeout
         @value
       end
 
       def ns_reason(timeout = nil)
-        ns_wait timeout
+        ns_wait_until_complete timeout
         @reason
       end
 
-      def ns_wait!(timeout = nil)
-        ns_wait(timeout)
+      def ns_wait_until_complete!(timeout = nil)
+        ns_wait_until_complete(timeout)
         raise self if ns_failed?
         self
       end
 
       def ns_value!(timeout = nil)
-        ns_wait!(timeout)
+        ns_wait_until_complete!(timeout)
         @value
       end
 
