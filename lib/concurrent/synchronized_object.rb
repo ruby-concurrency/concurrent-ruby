@@ -60,11 +60,12 @@ module Concurrent
     def ns_wait_until(timeout, &condition)
       if timeout
         wait_until = Concurrent.monotonic_time + timeout
-        ns_wait timeout
-        while (now = Concurrent.monotonic_time) < wait_until
+        while true
+          now = Concurrent.monotonic_time
+          condition_result = condition.call
+          return condition_result if now >= wait_until || condition_result
           ns_wait wait_until - now
         end
-        condition.call
       else
         ns_wait timeout until condition.call
         true
