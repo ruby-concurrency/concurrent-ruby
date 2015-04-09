@@ -55,8 +55,16 @@ module Concurrent
         AnyPromise.new(futures).future
       end
 
-      def post(executor = :io, &job)
-        Concurrent.executor(executor).post &job
+      def post!(*args, &job)
+        post_on(:fast, *args, &job)
+      end
+
+      def post(*args, &job)
+        post_on(:io, *args, &job)
+      end
+
+      def post_on(executor, *args, &job)
+        Concurrent.executor(executor).post *args, &job
       end
 
       # TODO add first(futures, count=count)
@@ -294,7 +302,7 @@ module Concurrent
       end
 
       def pr_with_async(executor, &block)
-        Concurrent.executor(executor).post(&block)
+        Concurrent.post_on(executor, &block)
       end
 
       def pr_async_callback_on_completion(executor, callback)
@@ -341,6 +349,10 @@ module Concurrent
 
       def reason(timeout = nil)
         synchronize { ns_reason timeout }
+      end
+
+      def result(timeout = nil)
+        synchronize { ns_result timeout }
       end
 
       # wait until Obligation is #complete?
@@ -455,6 +467,11 @@ module Concurrent
         @reason
       end
 
+      def ns_result(timeout = nil)
+        value = ns_value(timeout)
+        [ns_success?, value, ns_reason]
+      end
+
       def ns_wait_until_complete!(timeout = nil)
         ns_wait_until_complete(timeout)
         raise self if ns_failed?
@@ -552,9 +569,9 @@ module Concurrent
     # @abstract
     class Promise < Concurrent::SynchronizedObject
       # @api private
-      def initialize(future)
-        super()
-        synchronize { ns_initialize(future) }
+      def initialize(*args, &block)
+        super(&nil)
+        synchronize { ns_initialize(*args, &block) }
       end
 
       def default_executor
@@ -594,14 +611,22 @@ module Concurrent
       end
 
       def complete(*args)
-        future.complete(*args)
+        synchronize { ns_complete(*args) }
+      end
+
+      def ns_complete(*args)
+        ns_future.complete(*args)
+      end
+
+      def evaluate_to(*args, &block)
+        synchronize { ns_evaluate_to(*args, &block) }
       end
 
       # @return [Future]
-      def evaluate_to(*args, &block)
-        complete true, block.call(*args), nil
+      def ns_evaluate_to(*args, &block)
+        ns_complete true, block.call(*args), nil
       rescue => error
-        complete false, nil, error
+        ns_complete false, nil, error
       end
     end
 
@@ -610,10 +635,6 @@ module Concurrent
     #   Concurrent.promise
     # @note TODO consider to allow being blocked_by
     class OuterPromise < Promise
-      def initialize(default_executor = :fast)
-        super Future.new(self, default_executor)
-      end
-
       # Set the `IVar` to a value and wake or notify all threads waiting on it.
       #
       # @param [Object] value the value to store in the `IVar`
@@ -644,11 +665,21 @@ module Concurrent
 
       # @return [Future]
       def evaluate_to!(*args, &block)
-        evaluate_to(*args, &block).no_error!
+        evaluate_to(*args, &block).wait!
       end
 
       # @api private
       public :complete
+
+      private
+
+      def ns_initialize(default_executor = :fast)
+        super Future.new(self, default_executor)
+      end
+
+      # def ns_evaluate_to!(*args, &block)
+      #   ns_evaluate_to(*args, &block).wait! # TODO remove double locking
+      # end
     end
 
     # @abstract
@@ -663,103 +694,125 @@ module Concurrent
         promise
       end
 
-      def initialize(future, blocked_by_futures)
-        super future
-        synchronize do
-          @blocked_by = Array(blocked_by_futures)
-          @countdown  = Concurrent::AtomicFixnum.new @blocked_by.size
-          @touched    = false
-        end
-      end
-
       # @api private
       def done(future) # FIXME pass in success/value/reason to avoid locking
-        # futures could be deleted from blocked_by one by one here, but that would too expensive,
+        # futures could be deleted from blocked_by one by one here, but that would be too expensive,
         # it's done once when all are done to free the reference
-        completable if synchronize { @countdown }.decrement.zero?
+        synchronize { ns_done(future) }
       end
 
       def touch
-        propagate_touch if synchronize { @touched ? false : (@touched = true) }
+        synchronize { ns_touch }
       end
 
       # @api private
       # for inspection only
       def blocked_by
-        synchronize { @blocked_by }
+        synchronize { ns_blocked_by }
       end
 
       def inspect
-        "#{to_s[0..-2]} blocked_by:[#{synchronize { @blocked_by }.map(&:to_s).join(', ')}]>"
+        "#{to_s[0..-2]} blocked_by:[#{ blocked_by.map(&:to_s).join(', ')}]>"
       end
 
       private
 
-      def completable
+      def ns_initialize(future, blocked_by_futures)
+        super future
+        @blocked_by = Array(blocked_by_futures)
+        @countdown  = Concurrent::AtomicFixnum.new @blocked_by.size
+        @touched    = false
+      end
+
+      def ns_done(future)
+        ns_completable if @countdown.decrement.zero?
+      end
+
+      def ns_completable
         raise NotImplementedError
       end
 
-      def propagate_touch
-        blocked_by.each(&:touch)
+      def ns_touch
+        ns_propagate_touch if @touched ? false : (@touched = true) # TODO remove double touch check
       end
 
-      def complete(*args)
+      def ns_propagate_touch
+        ns_blocked_by.each(&:touch)
+      end
+
+      def ns_complete(*args)
         super *args
-        synchronize { @blocked_by.clear }
+        ns_blocked_by.clear
+      end
+
+      def ns_blocked_by
+        @blocked_by
       end
     end
 
     # @abstract
     class BlockedTaskPromise < BlockedPromise
-      def initialize(blocked_by_future, default_executor = :fast, executor = default_executor, &task)
-        raise ArgumentError, 'no block given' unless block_given?
-        super Future.new(self, default_executor), [blocked_by_future]
-        synchronize do
-          @task     = task
-          @executor = executor
-        end
+      def executor
+        synchronize { ns_executor }
       end
 
-      def executor
-        synchronize { @executor }
+      private
+
+      def ns_initialize(blocked_by_future, default_executor = :fast, executor = default_executor, &task)
+        raise ArgumentError, 'no block given' unless block_given?
+        super Future.new(self, default_executor), [blocked_by_future]
+        @task     = task
+        @executor = executor
+      end
+
+      def ns_executor
+        @executor
+      end
+
+      def ns_task
+        @task
+      end
+
+      def task
+        synchronize { ns_task }
       end
 
     end
 
     class ThenPromise < BlockedTaskPromise
-      def initialize(blocked_by_future, default_executor = :fast, executor = default_executor, &task)
+      private
+
+      def ns_initialize(blocked_by_future, default_executor = :fast, executor = default_executor, &task)
         blocked_by_future.is_a? Future or
             raise ArgumentError, 'only Future can be appended with then'
         super(blocked_by_future, default_executor, executor, &task)
       end
 
-      private
-
-      def completable
-        future = blocked_by.first
+      def ns_completable
+        future = ns_blocked_by.first
         if future.success?
-          Concurrent.post(executor) { evaluate_to future.value, &synchronize { @task } }
+          Concurrent.post_on(ns_executor, future, ns_task) { |future, task| evaluate_to future.value, &task }
         else
-          complete false, nil, future.reason
+          ns_complete false, nil, future.reason
         end
       end
     end
 
     class RescuePromise < BlockedTaskPromise
-      def initialize(blocked_by_future, default_executor = :fast, executor = default_executor, &task)
+      private
+
+      def ns_initialize(blocked_by_future, default_executor = :fast, executor = default_executor, &task)
         blocked_by_future.is_a? Future or
             raise ArgumentError, 'only Future can be rescued'
         super(blocked_by_future, default_executor, executor, &task)
       end
 
-      private
-
-      def completable
-        future = blocked_by.first
+      def ns_completable
+        future = ns_blocked_by.first
         if future.failed?
-          Concurrent.post(executor) { evaluate_to future.reason, &synchronize { @task } }
+          Concurrent.post_on(ns_executor, future, ns_task) { |future, task| evaluate_to future.reason, &task }
         else
-          complete true, future.value, nil
+          ns_complete true, future.value, nil
         end
       end
     end
@@ -767,14 +820,12 @@ module Concurrent
     class ChainPromise < BlockedTaskPromise
       private
 
-      def completable
-        future = blocked_by.first
+      def ns_completable
+        future = ns_blocked_by.first
         if Future === future
-          Concurrent.post(executor) do
-            evaluate_to future.success?, future.value, future.reason, &synchronize { @task }
-          end
+          Concurrent.post_on(ns_executor, future, ns_task) { |future, task| evaluate_to *future.result, &task }
         else
-          Concurrent.post(executor) { evaluate_to &synchronize { @task } }
+          Concurrent.post_on(ns_executor, ns_task) { |task| evaluate_to &task }
         end
       end
     end
@@ -783,32 +834,27 @@ module Concurrent
     class ImmediatePromise < InnerPromise
       def self.new(*args)
         promise = super(*args)
-        Concurrent.post { promise.future.complete }
+        Concurrent.post_on(:fast, promise) { |promise| promise.future.complete }
         promise
       end
 
+      private
 
-      def initialize(default_executor = :fast)
+      def ns_initialize(default_executor = :fast)
         super Event.new(self, default_executor)
       end
     end
 
     # @note TODO add support for levels
     class FlattingPromise < BlockedPromise
-      def initialize(blocked_by_future, default_executor = :fast)
-        blocked_by_future.is_a? Future or
-            raise ArgumentError, 'only Future can be flatten'
-        super(Future.new(self, default_executor), [blocked_by_future])
-      end
+      private
 
-      def done(future)
+      def ns_done(future)
         value = future.value
         case value
         when Future
-          synchronize do
-            @countdown.increment
-            @blocked_by << value
-          end
+          @countdown.increment
+          @blocked_by << value
           value.add_callback :pr_notify_blocked, self
         when Event
           raise TypeError, 'cannot flatten to Event'
@@ -818,73 +864,94 @@ module Concurrent
         super future
       end
 
-      private
+      def ns_initialize(blocked_by_future, default_executor = :fast)
+        blocked_by_future.is_a? Future or
+            raise ArgumentError, 'only Future can be flatten'
+        super(Future.new(self, default_executor), [blocked_by_future])
+      end
 
-      def completable
-        future = blocked_by.last
-        complete future.success?, future.value, future.reason
+      def ns_completable
+        future = ns_blocked_by.last
+        ns_complete *future.result
       end
     end
 
     # used internally to support #with_default_executor
     class AllPromise < BlockedPromise
-      def initialize(blocked_by_futures, default_executor = :fast)
+      private
+
+      def ns_initialize(blocked_by_futures, default_executor = :fast)
         klass = blocked_by_futures.any? { |f| f.is_a?(Future) } ? Future : Event
         super(klass.new(self, default_executor), blocked_by_futures)
       end
 
-      private
-
-      def completable
-        results = blocked_by.select { |f| f.is_a?(Future) }
+      def ns_completable
+        results = ns_blocked_by.select { |f| f.is_a?(Future) }.map(&:result)
         if results.empty?
-          complete
+          ns_complete
         else
-          if results.all?(&:success?)
-            params = results.map(&:value)
-            complete(true, params.size == 1 ? params.first : params, nil)
+          if results.all? { |success, _, _| success }
+            params = results.map { |_, value, _| value }
+            ns_complete(true, params.size == 1 ? params.first : params, nil)
           else
             # TODO what about other reasons?
-            complete false, nil, results.find(&:failed?).reason
+            ns_complete false, nil, results.find { |success, _, _| !success }.last
           end
         end
       end
     end
 
     class AnyPromise < BlockedPromise
-      def initialize(blocked_by_futures, default_executor = :fast)
+
+      private
+
+      def ns_initialize(blocked_by_futures, default_executor = :fast)
         blocked_by_futures.all? { |f| f.is_a? Future } or
             raise ArgumentError, 'accepts only Futures not Events'
         super(Future.new(self, default_executor), blocked_by_futures)
       end
 
-      def done(future)
-        completable(future)
+      def ns_done(future)
+        ns_completable(future)
       end
 
-      private
-
-      def completable(future)
-        complete future.success?, future.value, future.reason, false
+      def ns_completable(future)
+        ns_complete *future.result, false
       end
     end
 
     class Delay < InnerPromise
-      def initialize(default_executor = :fast)
-        super Event.new(self, default_executor)
-        synchronize { @touched = false }
+      def touch
+        synchronize { ns_touch }
       end
 
-      def touch
-        complete if synchronize { @touched ? false : (@touched = true) }
+      private
+
+      def ns_touch
+        ns_complete if @touched ? false : (@touched = true)
+      end
+
+      def ns_initialize(default_executor = :fast)
+        super Event.new(self, default_executor)
+        @touched = false
       end
     end
 
     # will be evaluated to task in intended_time
     class ScheduledPromise < InnerPromise
-      def initialize(intended_time, default_executor = :fast)
+      def intended_time
+        synchronize { ns_intended_time }
+      end
+
+      def inspect
+        "#{to_s[0..-2]} intended_time:[#{intended_time}}>"
+      end
+
+      private
+
+      def ns_initialize(intended_time, default_executor = :fast)
         super Event.new(self, default_executor)
-        in_seconds = synchronize do
+        in_seconds = begin
           @intended_time = intended_time
           now            = Time.now
           schedule_time  = if intended_time.is_a? Time
@@ -898,12 +965,8 @@ module Concurrent
         Concurrent.global_timer_set.post(in_seconds) { complete }
       end
 
-      def intended_time
-        synchronize { @intended_time }
-      end
-
-      def inspect
-        "#{to_s[0..-2]} intended_time:[#{synchronize { @intended_time }}>"
+      def ns_intended_time
+        @intended_time
       end
     end
   end
