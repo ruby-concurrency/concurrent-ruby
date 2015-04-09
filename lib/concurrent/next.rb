@@ -1,226 +1,98 @@
 require 'concurrent'
 
 # TODO support Dereferencable ?
-# TODO document new global pool setting: no overflow, user has to buffer when there is too many tasks
 # TODO behaviour with Interrupt exceptions is undefined, use Signal.trap to avoid issues
 
 # @note different name just not to collide for now
 module ConcurrentNext
 
-  # executors do not allocate the threads immediately so they can be constants
-  # all thread pools are configured to never reject the job
-  # TODO optional auto termination
-  module Executors
-
-    IMMEDIATE_EXECUTOR = Concurrent::ImmediateExecutor.new
-
-    # Only non-blocking and short tasks can go into this pool, otherwise it can starve or deadlock
-    FAST_EXECUTOR      = Concurrent::FixedThreadPool.new(
-        [2, Concurrent.processor_count].max,
-        idletime:  60, # 1 minute same as Java pool default
-        max_queue: 0 # unlimited
-    )
-
-    # IO and blocking jobs should be executed on this pool
-    IO_EXECUTOR        = Concurrent::ThreadPoolExecutor.new(
-        min_threads: [2, Concurrent.processor_count].max,
-        max_threads: Concurrent.processor_count * 100,
-        idletime:    60, # 1 minute same as Java pool default
-        max_queue:   0 # unlimited
-    )
-
-    def executor(which)
-      case which
-      when :immediate, :immediately
-        IMMEDIATE_EXECUTOR
-      when :fast
-        FAST_EXECUTOR
-      when :io
-        IO_EXECUTOR
-      when Executor
-        which
-      else
-        raise TypeError
-      end
-    end
-
-    module Shortcuts
-      def post(executor = :fast, &job)
-        ConcurrentNext.executor(executor).post &job
-      end
-    end
+  def self.post(executor = :io, &job)
+    Concurrent.executor(executor).post &job
   end
 
-  extend Executors
-  extend Executors::Shortcuts
-  include Executors::Shortcuts
-
-  begin
-    require 'jruby'
-
-    # roughly more than 2x faster
-    class JavaSynchronizedObject
-      def initialize
-      end
-
-      def synchronize
-        JRuby.reference0(self).synchronized { yield }
-      end
-
-      def wait(timeout)
-        if timeout
-          JRuby.reference0(self).wait(timeout * 1000)
-        else
-          JRuby.reference0(self).wait
-        end
-      end
-
-      def notify_all
-        JRuby.reference0(self).notifyAll
-      end
-    end
-  rescue LoadError
-    # ignore
-  end
-
-  class RubySynchronizedObject
-    def initialize
-      @mutex     = Mutex.new
-      @condition = Concurrent::Condition.new
-    end
-
-    def synchronize
-      if @mutex.owned?
-        yield
-      else
-        @mutex.synchronize { yield }
-        # rescue ThreadError
-        #   yield
-      end
-    end
-
-    def wait(timeout)
-      synchronize { @condition.wait @mutex, timeout }
-    end
-
-    def notify
-      @condition.signal
-    end
-
-    def notify_all
-      @condition.broadcast
-    end
-  end
-
-  case defined?(RUBY_ENGINE) && RUBY_ENGINE
-  when 'jruby'
-    # @abstract
-    class SynchronizedObject < JavaSynchronizedObject
-    end
-  when 'rbx'
-    raise NotImplementedError # TODO
-  else
-    # @abstract
-    class SynchronizedObject < RubySynchronizedObject
-    end
-  end
-
-  # FIXME turn callbacks into objects
-
-  class Event < SynchronizedObject
+  class Event < Concurrent::SynchronizedObject
     # @api private
     def initialize(promise, default_executor = :fast)
       super()
-      synchronize do
-        @promise          = promise
-        @state            = :pending
-        @callbacks        = []
-        @default_executor = default_executor
-      end
+      synchronize { ns_initialize(promise, default_executor) }
     end
 
     # Is obligation completion still pending?
     # @return [Boolean]
     def pending?
-      state == :pending
+      synchronize { ns_pending? }
     end
 
     alias_method :incomplete?, :pending?
 
     def completed?
-      state == :completed
+      synchronize { ns_completed? }
     end
 
     # wait until Obligation is #complete?
     # @param [Numeric] timeout the maximum time in second to wait.
     # @return [Obligation] self
     def wait(timeout = nil)
-      synchronize do
-        touch
-        super timeout if incomplete?
-        self
-      end
+      synchronize { ns_wait(timeout) }
     end
 
     def touch
-      promise.touch
+      synchronize { ns_touch }
     end
 
     def state
-      synchronize { @state }
+      synchronize { ns_state }
     end
 
     def default_executor
-      synchronize { @default_executor }
+      synchronize { ns_default_executor }
     end
 
     # @yield [success, value, reason] of the parent
-    def chain(executor = default_executor, &callback)
-      ChainPromise.new(self, default_executor, executor, &callback).future
+    def chain(executor = nil, &callback)
+      pr_chain(default_executor, executor, &callback)
     end
 
-    def then(*args, &callback)
-      raise
-      chain(*args, &callback)
-    end
+    # def then(*args, &callback)
+    #   raise # FIXME
+    #   chain(*args, &callback)
+    # end
 
     def delay
-      self.join(Delay.new(default_executor).future)
+      pr_delay(default_executor)
     end
 
     def schedule(intended_time)
-      self.chain { Scheduled.new(intended_time).future.join(self) }.flat
+      pr_schedule(default_executor, intended_time)
     end
 
     # @yield [success, value, reason] executed async on `executor` when completed
     # @return self
-    def on_completion(executor = default_executor, &callback)
-      add_callback :async_callback_on_completion, executor, callback
+    def on_completion(executor = nil, &callback)
+      synchronize { ns_on_completion(ns_default_executor, executor, &callback) }
     end
 
     # @yield [success, value, reason] executed sync when completed
     # @return self
     def on_completion!(&callback)
-      add_callback :callback_on_completion, callback
+      synchronize { ns_on_completion!(&callback) }
     end
 
     # @return [Array<Promise>]
     def blocks
-      synchronize { @callbacks }.each_with_object([]) do |callback, promises|
-        promises.push *callback.select { |v| v.is_a? Promise }
-      end
+      pr_blocks(synchronize { @callbacks })
     end
 
     def to_s
-      "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>"
+      synchronize { ns_to_s }
     end
 
     def inspect
-      "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
+      synchronize { "#{ns_to_s[0..-2]} blocks:[#{pr_blocks(@callbacks).map(&:to_s).join(', ')}]>" }
     end
 
     def join(*futures)
-      AllPromise.new([self, *futures], default_executor).future
+      pr_join(default_executor, *futures)
     end
 
     alias_method :+, :join
@@ -228,15 +100,9 @@ module ConcurrentNext
 
     # @api private
     def complete(raise = true)
-      callbacks = synchronize do
-        check_multiple_assignment raise
-        complete_state
-        notify_all
-        @callbacks
-      end
-
-      call_callbacks callbacks
-
+      callbacks = synchronize { ns_complete(raise) }
+      pr_call_callbacks callbacks
+      synchronize { callbacks.clear } # TODO move to upper synchronize ?
       self
     end
 
@@ -248,69 +114,163 @@ module ConcurrentNext
 
     # @api private
     def add_callback(method, *args)
-      synchronize do
-        if completed?
-          call_callback method, *args
-        else
-          @callbacks << [method, *args]
-        end
-      end
-      self
+      synchronize { ns_add_callback(method, *args) }
     end
 
     # @api private, only for inspection
     def promise
-      synchronize { @promise }
+      synchronize { ns_promise }
+    end
+
+    def with_default_executor(executor = default_executor)
+      AllPromise.new([self], executor).future
+    end
+
+    protected
+
+    def ns_initialize(promise, default_executor = :fast)
+      @promise          = promise
+      @state            = :pending
+      @callbacks        = []
+      @default_executor = default_executor
+      @touched          = false
+    end
+
+    def ns_wait(timeout = nil)
+      ns_touch
+      super timeout if ns_incomplete?
+      self
+    end
+
+    def ns_state
+      @state
+    end
+
+    def ns_pending?
+      ns_state == :pending
+    end
+
+    alias_method :ns_incomplete?, :ns_pending?
+
+    def ns_completed?
+      ns_state == :completed
+    end
+
+    def ns_touch
+      unless @touched
+        @touched = true
+        ns_promise.touch
+      end
+    end
+
+    def ns_promise
+      @promise
+    end
+
+    def ns_default_executor
+      @default_executor
+    end
+
+    def pr_chain(default_executor, executor = nil, &callback)
+      ChainPromise.new(self, default_executor, executor || default_executor, &callback).future
+    end
+
+    def pr_delay(default_executor)
+      self.pr_join(default_executor, Delay.new(default_executor).future)
+    end
+
+    def pr_schedule(default_executor, intended_time)
+      self.pr_chain(default_executor) { Scheduled.new(intended_time).future.join(self) }.flat
+    end
+
+    def pr_join(default_executor, *futures)
+      AllPromise.new([self, *futures], default_executor).future
+    end
+
+    def ns_on_completion(default_executor, executor = nil, &callback)
+      ns_add_callback :pr_async_callback_on_completion, executor || default_executor, callback
+    end
+
+    def ns_on_completion!(&callback)
+      ns_add_callback :pr_callback_on_completion, callback
+    end
+
+    def pr_blocks(callbacks)
+      callbacks.each_with_object([]) do |callback, promises|
+        promises.push *callback.select { |v| v.is_a? Promise }
+      end
+    end
+
+    def ns_to_s
+      "<##{self.class}:0x#{'%x' % (object_id << 1)} #{ns_state}>"
+    end
+
+    def ns_complete(raise = true)
+      ns_check_multiple_assignment raise
+      ns_complete_state
+      ns_broadcast
+      @callbacks
+    end
+
+    def ns_add_callback(method, *args)
+      if ns_completed?
+        pr_call_callback method, *args
+      else
+        @callbacks << [method, *args]
+      end
+      self
     end
 
     private
 
-    def complete_state
+    def ns_complete_state
       @state = :completed
     end
 
-    def check_multiple_assignment(raise)
-      if completed?
+    def ns_check_multiple_assignment(raise, reason = nil)
+      if ns_completed?
         if raise
-          raise Concurrent::MultipleAssignmentError.new('multiple assignment')
+          raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment')
         else
           return nil
         end
       end
     end
 
-    def with_async(executor)
-      ConcurrentNext.executor(executor).post { yield }
+    def pr_with_async(executor, &block)
+      Concurrent.executor(executor).post(&block)
     end
 
-    def async_callback_on_completion(executor, callback)
-      with_async(executor) { callback_on_completion callback }
+    def pr_async_callback_on_completion(executor, callback)
+      pr_with_async(executor) { pr_callback_on_completion callback }
     end
 
-    def callback_on_completion(callback)
+    def pr_callback_on_completion(callback)
       callback.call
     end
 
-    def notify_blocked(promise)
+    def pr_notify_blocked(promise)
       promise.done self
     end
 
-    def call_callback(method, *args)
+    def pr_call_callback(method, *args)
+      # all methods has to be pure
+      raise unless method.to_s =~ /^pr_/ # TODO remove check
       self.send method, *args
     end
 
-    def call_callbacks(callbacks)
-      # FIXME pass in local vars to avoid syncing
-      callbacks.each { |method, *args| call_callback method, *args }
-      synchronize { callbacks.clear }
+    def pr_call_callbacks(callbacks)
+      callbacks.each { |method, *args| pr_call_callback method, *args }
     end
   end
 
   class Future < Event
     module Shortcuts
+      # TODO to construct event to be set later to trigger rest of the tree
 
       # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
+      # @note TODO allow to pass in variables as Thread.new(args) {|args| _ } does
       def future(default_executor = :fast, &task)
         ConcurrentNext::Immediate.new(default_executor).future.chain(&task)
       end
@@ -356,19 +316,10 @@ module ConcurrentNext
 
     extend Shortcuts
 
-    # @api private
-    def initialize(promise, default_executor = :fast)
-      super(promise, default_executor)
-      synchronize do
-        @value  = nil
-        @reason = nil
-      end
-    end
-
     # Has the obligation been success?
     # @return [Boolean]
     def success?
-      state == :success
+      synchronize { ns_success? }
     end
 
     # Has the obligation been failed?
@@ -377,88 +328,44 @@ module ConcurrentNext
       state == :failed
     end
 
-    # Is obligation completion still pending?
-    # @return [Boolean]
-    def pending?
-      state == :pending
-    end
-
-    alias_method :incomplete?, :pending?
-
-    def completed?
-      [:success, :failed].include? state
-    end
-
     # @return [Object] see Dereferenceable#deref
     def value(timeout = nil)
-      wait timeout
-      synchronize { @value }
+      synchronize { ns_value timeout }
     end
 
     def reason(timeout = nil)
-      wait timeout
-      synchronize { @reason }
-    end
-
-    # wait until Obligation is #complete?
-    # @param [Numeric] timeout the maximum time in second to wait.
-    # @return [Obligation] self
-    def wait(timeout = nil)
-      synchronize do
-        touch
-        super timeout if incomplete?
-        self
-      end
-    end
-
-    def touch
-      promise.touch
+      synchronize { ns_reason timeout }
     end
 
     # wait until Obligation is #complete?
     # @param [Numeric] timeout the maximum time in second to wait.
     # @return [Obligation] self
     # @raise [Exception] when #failed? it raises #reason
-    def no_error!(timeout = nil)
-      wait(timeout).tap { raise self if failed? }
+    def wait!(timeout = nil)
+      synchronize { ns_wait! timeout }
     end
 
     # @raise [Exception] when #failed? it raises #reason
     # @return [Object] see Dereferenceable#deref
     def value!(timeout = nil)
-      val = value(timeout)
-      if failed?
-        raise self
-      else
-        val
-      end
+      synchronize { ns_value! timeout }
     end
 
     # @example allows Obligation to be risen
     #   failed_ivar = Ivar.new.fail
     #   raise failed_ivar
     def exception(*args)
-      raise 'obligation is not failed' unless failed?
-      reason.exception(*args)
-    end
-
-    def with_default_executor(executor = default_executor)
-      AllPromise.new([self], executor).future
-    end
-
-    # @yield [success, value, reason] of the parent
-    def chain(executor = default_executor, &callback)
-      ChainPromise.new(self, default_executor, executor, &callback).future
+      synchronize { ns_exception(*args) }
     end
 
     # @yield [value] executed only on parent success
-    def then(executor = default_executor, &callback)
-      ThenPromise.new(self, default_executor, executor, &callback).future
+    def then(executor = nil, &callback)
+      pr_then(default_executor, executor, &callback)
     end
 
     # @yield [reason] executed only on parent failure
-    def rescue(executor = default_executor, &callback)
-      RescuePromise.new(self, default_executor, executor, &callback).future
+    def rescue(executor = nil, &callback)
+      pr_rescue(default_executor, executor, &callback)
     end
 
     def flat
@@ -473,68 +380,125 @@ module ConcurrentNext
 
     # @yield [value] executed async on `executor` when success
     # @return self
-    def on_success(executor = default_executor, &callback)
-      add_callback :async_callback_on_success, executor, callback
+    def on_success(executor = nil, &callback)
+      synchronize { ns_on_success(ns_default_executor, executor, &callback) }
     end
 
     # @yield [reason] executed async on `executor` when failed?
     # @return self
-    def on_failure(executor = default_executor, &callback)
-      add_callback :async_callback_on_failure, executor, callback
+    def on_failure(executor = nil, &callback)
+      synchronize { ns_on_failure(ns_default_executor, executor, &callback) }
     end
 
     # @yield [value] executed sync when success
     # @return self
     def on_success!(&callback)
-      add_callback :callback_on_success, callback
+      synchronize { ns_on_success!(&callback) }
     end
 
     # @yield [reason] executed sync when failed?
     # @return self
     def on_failure!(&callback)
-      add_callback :callback_on_failure, callback
+      synchronize { ns_on_failure!(&callback) }
     end
 
     # @api private
     def complete(success, value, reason, raise = true)
-      callbacks = synchronize do
-        check_multiple_assignment raise
-        complete_state success, value, reason
-        notify_all
-        @callbacks
-      end
-
-      call_callbacks callbacks
-
+      callbacks = synchronize { ns_complete(success, value, reason, raise) }
+      pr_call_callbacks callbacks, success, value, reason
+      synchronize { callbacks.clear } # TODO move up ?
       self
     end
 
-    # @api private
-    # just for inspection
-    def callbacks
-      synchronize { @callbacks }.clone.freeze
-    end
-
-    # @api private
-    def add_callback(method, *args)
-      synchronize do
-        if completed?
-          call_callback method, *args
-        else
-          @callbacks << [method, *args]
-        end
+    def ns_add_callback(method, *args)
+      if ns_completed?
+        pr_call_callback method, ns_completed?, ns_value, ns_reason, *args
+      else
+        @callbacks << [method, *args]
       end
       self
     end
 
-    # @api private, only for inspection
-    def promise
-      synchronize { @promise }
+    protected
+
+    def ns_initialize(promise, default_executor = :fast)
+      super(promise, default_executor)
+      @value  = nil
+      @reason = nil
+    end
+
+    def ns_success?
+      ns_state == :success
+    end
+
+    def ns_failed?
+      ns_state == :failed
+    end
+
+    def ns_completed?
+      [:success, :failed].include? ns_state
+    end
+
+    def ns_value(timeout = nil)
+      ns_wait timeout
+      @value
+    end
+
+    def ns_reason(timeout = nil)
+      ns_wait timeout
+      @reason
+    end
+
+    def ns_wait!(timeout = nil)
+      ns_wait(timeout)
+      raise self if ns_failed?
+      self
+    end
+
+    def ns_value!(timeout = nil)
+      ns_wait!(timeout)
+      @value
+    end
+
+    def ns_exception(*args)
+      raise 'obligation is not failed' unless ns_failed?
+      ns_reason.exception(*args)
+    end
+
+    def pr_then(default_executor, executor = nil, &callback)
+      ThenPromise.new(self, default_executor, executor || default_executor, &callback).future
+    end
+
+    def pr_rescue(default_executor, executor = nil, &callback)
+      RescuePromise.new(self, default_executor, executor || default_executor, &callback).future
+    end
+
+    def ns_on_success(default_executor, executor = nil, &callback)
+      ns_add_callback :pr_async_callback_on_success, executor || default_executor, callback
+    end
+
+    def ns_on_failure(default_executor, executor = nil, &callback)
+      ns_add_callback :pr_async_callback_on_failure, executor || default_executor, callback
+    end
+
+    def ns_on_success!(&callback)
+      ns_add_callback :pr_callback_on_success, callback
+    end
+
+    def ns_on_failure!(&callback)
+      ns_add_callback :pr_callback_on_failure, callback
+    end
+
+    def ns_complete(success, value, reason, raise = true)
+      ns_check_multiple_assignment raise, reason
+      ns_complete_state(success, value, reason)
+      ns_broadcast
+      @callbacks
     end
 
     private
 
-    def complete_state(success, value, reason)
+    def ns_complete_state(success, value, reason)
       if success
         @value = value
         @state = :success
@@ -544,24 +508,36 @@ module ConcurrentNext
       end
     end
 
-    def async_callback_on_success(executor, callback)
-      with_async(executor) { callback_on_success callback }
+    def pr_call_callbacks(callbacks, success, value, reason)
+      callbacks.each { |method, *args| pr_call_callback method, success, value, reason, *args }
     end
 
-    def async_callback_on_failure(executor, callback)
-      with_async(executor) { callback_on_failure callback }
+    def pr_async_callback_on_success(success, value, reason, executor, callback)
+      pr_with_async(executor) { pr_callback_on_success success, value, reason, callback }
     end
 
-    def callback_on_success(callback)
-      callback.call value if success?
+    def pr_async_callback_on_failure(success, value, reason, executor, callback)
+      pr_with_async(executor) { pr_callback_on_failure success, value, reason, callback }
     end
 
-    def callback_on_failure(callback)
-      callback.call reason if failed?
+    def pr_callback_on_success(success, value, reason, callback)
+      callback.call value if success
     end
 
-    def callback_on_completion(callback)
-      callback.call success?, value, reason
+    def pr_callback_on_failure(success, value, reason, callback)
+      callback.call reason unless success
+    end
+
+    def pr_callback_on_completion(success, value, reason, callback)
+      callback.call success, value, reason
+    end
+
+    def pr_notify_blocked(success, value, reason, promise)
+      super(promise)
+    end
+
+    def pr_async_callback_on_completion(success, value, reason, executor, callback)
+      pr_with_async(executor) { pr_callback_on_completion success, value, reason, callback }
     end
   end
 
@@ -571,7 +547,7 @@ module ConcurrentNext
   # TODO modularize blocked_by and notify blocked
 
   # @abstract
-  class Promise < SynchronizedObject
+  class Promise < Concurrent::SynchronizedObject
     # @api private
     def initialize(future)
       super()
@@ -672,7 +648,7 @@ module ConcurrentNext
   class BlockedPromise < InnerPromise
     def self.new(*args)
       promise = super(*args)
-      promise.blocked_by.each { |f| f.add_callback :notify_blocked, promise }
+      promise.blocked_by.each { |f| f.add_callback :pr_notify_blocked, promise }
       promise
     end
 
@@ -822,7 +798,7 @@ module ConcurrentNext
           @countdown.increment
           @blocked_by << value
         end
-        value.add_callback :notify_blocked, self
+        value.add_callback :pr_notify_blocked, self
       when Event
         raise TypeError, 'cannot flatten to Event'
       else
@@ -908,7 +884,7 @@ module ConcurrentNext
         [0, schedule_time.to_f - now.to_f].max
       end
 
-      Concurrent::timer(in_seconds) { complete }
+      Concurrent.global_timer_set.post(in_seconds) { complete }
     end
 
     def intended_time
@@ -921,103 +897,3 @@ module ConcurrentNext
   end
 
 end
-
-__END__
-
-puts '-- bench'
-require 'benchmark'
-
-count     = 5_000_000
-rehersals = 20
-count     = 5_000
-rehersals = 1
-
-module Benchmark
-  def self.bmbmbm(rehearsals, width)
-    job = Job.new(width)
-    yield(job)
-    width       = job.width + 1
-    sync        = STDOUT.sync
-    STDOUT.sync = true
-
-    # rehearsal
-    rehearsals.times do
-      puts 'Rehearsal '.ljust(width+CAPTION.length, '-')
-      ets = job.list.inject(Tms.new) { |sum, (label, item)|
-        print label.ljust(width)
-        res = Benchmark.measure(&item)
-        print res.format
-        sum + res
-      }.format("total: %tsec")
-      print " #{ets}\n\n".rjust(width+CAPTION.length+2, '-')
-    end
-
-    # take
-    print ' '*width + CAPTION
-    job.list.map { |label, item|
-      GC.start
-      print label.ljust(width)
-      Benchmark.measure(label, &item).tap { |res| print res }
-    }
-  ensure
-    STDOUT.sync = sync unless sync.nil?
-  end
-end
-
-Benchmark.bmbmbm(rehersals, 20) do |b|
-
-  parents = [ConcurrentNext::RubySynchronizedObject,
-             (ConcurrentNext::JavaSynchronizedObject if defined? ConcurrentNext::JavaSynchronizedObject)].compact
-  classes = parents.map do |parent|
-    klass = Class.new(parent) do
-      def initialize
-        super
-        synchronize do
-          @q = []
-        end
-      end
-
-      def add(v)
-        synchronize do
-          @q << v
-          if @q.size > 100
-            @q.clear
-          end
-        end
-      end
-    end
-    [parent, klass]
-  end
-
-
-  classes.each do |parent, klass|
-    b.report(parent) do
-      s = klass.new
-      2.times.map do
-        Thread.new do
-          count.times { s.add :a }
-        end
-      end.each &:join
-    end
-
-  end
-
-end
-
-# MRI
-# Rehearsal ----------------------------------------------------------------------------
-# ConcurrentNext::RubySynchronizedObject   8.010000   6.290000  14.300000 ( 12.197402)
-# ------------------------------------------------------------------ total: 14.300000sec
-#
-#                                              user     system      total        real
-# ConcurrentNext::RubySynchronizedObject   8.950000   9.320000  18.270000 ( 15.053220)
-#
-# JRuby
-# Rehearsal ----------------------------------------------------------------------------
-# ConcurrentNext::RubySynchronizedObject  10.500000   6.440000  16.940000 ( 10.640000)
-# ConcurrentNext::JavaSynchronizedObject   8.410000   0.050000   8.460000 (  4.132000)
-# ------------------------------------------------------------------ total: 25.400000sec
-#
-#                                              user     system      total        real
-# ConcurrentNext::RubySynchronizedObject   9.090000   6.640000  15.730000 ( 10.690000)
-# ConcurrentNext::JavaSynchronizedObject   8.200000   0.030000   8.230000 (  4.141000)

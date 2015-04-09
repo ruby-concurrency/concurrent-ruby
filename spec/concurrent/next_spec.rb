@@ -1,5 +1,5 @@
 require 'concurrent'
-require 'concurrent/next'
+# require_relative '../../lib/concurrent/next'
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::DEBUG
@@ -17,14 +17,12 @@ describe 'ConcurrentNext' do
       ConcurrentNext.post(:io) { queue << value }
       expect(queue.pop).to eq value
       expect(queue.pop).to eq value
-
-      # TODO test correct executor
     end
   end
 
   describe '.future' do
     it 'executes' do
-      future = ConcurrentNext.future { 1 + 1 }
+      future = ConcurrentNext.future(:immediate) { 1 + 1 }
       expect(future.value).to eq 2
     end
   end
@@ -57,6 +55,7 @@ describe 'ConcurrentNext' do
           then { |v| v + 1 }.
           then { |v| queue << v << Time.now.to_f - start }
 
+      future.wait!
       expect(future.value).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be_between(0.2, 0.25)
@@ -152,7 +151,7 @@ describe 'ConcurrentNext' do
 
     it 'allows graphs' do
       head    = ConcurrentNext.future { 1 }
-      branch1 = head.then(&:succ).then(&:succ)
+      branch1 = head.then(&:succ)
       branch2 = head.then(&:succ).delay.then(&:succ)
       results = [
           ConcurrentNext.join(branch1, branch2).then { |b1, b2| b1 + b2 },
@@ -163,7 +162,7 @@ describe 'ConcurrentNext' do
       expect(branch1).to be_completed
       expect(branch2).not_to be_completed
 
-      expect(results.map(&:value)).to eq [6, 6, 6]
+      expect(results.map(&:value)).to eq [5, 5, 5]
     end
 
     it 'has flat map' do
@@ -173,6 +172,7 @@ describe 'ConcurrentNext' do
   end
 
   it 'interoperability' do
+    skip
     actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
       -> v { v * 2 }
     end
