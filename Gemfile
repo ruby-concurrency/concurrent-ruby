@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gemspec name: 'concurrent-ruby'
+gemspec name: 'concurrent-ruby-edge'
 
 group :development do
   gem 'rake', '~> 10.4.2'
