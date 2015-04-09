@@ -2,7 +2,6 @@ require 'thread'
 
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
-require 'concurrent/executor/executor_options'
 require 'concurrent/utility/timeout'
 require 'concurrent/logging'
 
@@ -15,7 +14,6 @@ module Concurrent
   class Agent
     include Dereferenceable
     include Observable
-    include ExecutorOptions
     include Logging
 
     attr_reader :timeout, :io_executor, :fast_executor
@@ -42,8 +40,8 @@ module Concurrent
       @validator            = Proc.new { |result| true }
       self.observers        = CopyOnWriteObserverSet.new
       @serialized_execution = SerializedExecution.new
-      @io_executor          = get_executor_from(opts) || Concurrent.global_io_executor
-      @fast_executor        = get_executor_from(opts) || Concurrent.global_fast_executor
+      @io_executor          = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @fast_executor        = Executor.executor_from_options(opts) || Concurrent.global_fast_executor
       init_mutex
       set_deref_options(opts)
     end

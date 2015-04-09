@@ -35,4 +35,3 @@ ext/**/*.bundle
 ext/**/*.so
 ext/**/*.jar
 pkg
-*.gem

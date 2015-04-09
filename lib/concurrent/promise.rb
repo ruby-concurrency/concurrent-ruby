@@ -1,7 +1,6 @@
 require 'thread'
 
 require 'concurrent/obligation'
-require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -183,7 +182,6 @@ module Concurrent
   # - `rescue` is aliased by `catch` and `on_error`
   class Promise
     include Obligation
-    include ExecutorOptions
 
     # Initialize a new Promise with the provided options.
     #
@@ -204,7 +202,7 @@ module Concurrent
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
 
-      @executor = get_executor_from(opts) || Concurrent.global_io_executor
+      @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @args = get_arguments_from(opts)
 
       @parent = opts.fetch(:parent) { nil }

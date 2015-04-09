@@ -187,13 +187,11 @@ module Concurrent
 
     # @api private
     def ns_kill_execution
-      ns_shutdown_execution
-      unless stopped_event.wait(1)
-        @pool.each &:kill
-        @pool.clear
-        @ready.clear
-        # TODO log out unprocessed tasks in queue
-      end
+      # TODO log out unprocessed tasks in queue
+      # TODO try to shutdown first?
+      @pool.each &:kill
+      @pool.clear
+      @ready.clear
     end
 
     alias_method :kill_execution, :ns_kill_execution

@@ -1,7 +1,6 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/obligation'
-require 'concurrent/executor/executor_options'
 require 'concurrent/executor/immediate_executor'
 
 module Concurrent
@@ -39,7 +38,6 @@ module Concurrent
   # @see Concurrent::Dereferenceable
   class Delay
     include Obligation
-    include ExecutorOptions
 
     # NOTE: Because the global thread pools are lazy-loaded with these objects
     # there is a performance hit every time we post a new task to one of these
@@ -61,7 +59,7 @@ module Concurrent
 
       init_obligation
       set_deref_options(opts)
-      @task_executor = get_executor_from(opts)
+      @task_executor = Executor.executor_from_options(opts)
 
       @task      = block
       @state     = :pending

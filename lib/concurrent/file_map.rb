@@ -5,7 +5,8 @@ module Concurrent
   edge_lib_files = Dir['lib/concurrent/actor.rb',
                        'lib/concurrent/actor/**/*.rb',
                        'lib/concurrent/channel.rb',
-                       'lib/concurrent/channel/**/*.rb'] & git_files
+                       'lib/concurrent/channel/**/*.rb',
+                       'lib/concurrent/next.rb'] & git_files
   core_lib_files = all_lib_files - edge_lib_files
 
   FILE_MAP = {

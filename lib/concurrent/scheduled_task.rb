@@ -1,7 +1,6 @@
 require 'concurrent/ivar'
 require 'concurrent/utility/timer'
 require 'concurrent/executor/safe_task_executor'
-require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -134,7 +133,6 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class ScheduledTask < IVar
-    include ExecutorOptions
 
     attr_reader :delay
 
@@ -166,7 +164,7 @@ module Concurrent
       self.observers = CopyOnNotifyObserverSet.new
       @state         = :unscheduled
       @task          = block
-      @executor      = get_executor_from(opts) || Concurrent.global_io_executor
+      @executor      = Executor.executor_from_options(opts) || Concurrent.global_io_executor
     end
 
     # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
