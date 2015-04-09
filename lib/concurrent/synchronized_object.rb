@@ -61,7 +61,7 @@ module Concurrent
       if timeout
         wait_until = Concurrent.monotonic_time + timeout
         while true
-          now = Concurrent.monotonic_time
+          now              = Concurrent.monotonic_time
           condition_result = condition.call
           return condition_result if now >= wait_until || condition_result
           ns_wait wait_until - now
@@ -122,15 +122,15 @@ module Concurrent
 
   class RubySynchronizedObject < AbstractSynchronizedObject
     def initialize
-      @__mutex__do_not_use_directly     = Mutex.new
+      @__lock__do_not_use_directly      = Mutex.new
       @__condition__do_not_use_directly = ConditionVariable.new
     end
 
     def synchronize
-      if @__mutex__do_not_use_directly.owned?
+      if @__lock__do_not_use_directly.owned?
         yield
       else
-        @__mutex__do_not_use_directly.synchronize { yield }
+        @__lock__do_not_use_directly.synchronize { yield }
       end
     end
 
@@ -145,7 +145,24 @@ module Concurrent
     end
 
     def ns_wait(timeout)
-      @__condition__do_not_use_directly.wait @__mutex__do_not_use_directly, timeout
+      @__condition__do_not_use_directly.wait @__lock__do_not_use_directly, timeout
+    end
+  end
+
+  class Ruby19SynchronizedObject < RubySynchronizedObject
+    def initialize
+      @__lock__do_not_use_directly      = Monitor.new
+      @__condition__do_not_use_directly = @__lock__do_not_use_directly.new_cond
+    end
+
+    def synchronize
+      @__lock__do_not_use_directly.synchronize { yield }
+    end
+
+    private
+
+    def ns_wait(timeout)
+      @__condition__do_not_use_directly.wait timeout
     end
   end
 
@@ -153,8 +170,11 @@ module Concurrent
   SynchronizedObject = Class.new case
                                  when Concurrent.on_jruby?
                                    JavaSynchronizedObject
+                                 when Concurrent.on_cruby? && (RUBY_VERSION.split('.').map(&:to_i) <=> [1, 9, 3]) >= 0
+                                   Ruby19SynchronizedObject
+                                 when Concurrent.on_cruby?
+                                   RubySynchronizedObject
                                  else
                                    RubySynchronizedObject
                                  end
-
 end
