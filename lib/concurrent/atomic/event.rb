@@ -67,7 +67,7 @@ module Concurrent
       synchronize do
         unless @set
           iteration = @iteration
-          ns_wait_until(timeout) { iteration != @iteration || @set }
+          ns_wait_until(timeout) { iteration < @iteration || @set }
         else
           true
         end

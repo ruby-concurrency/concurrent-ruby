@@ -28,6 +28,8 @@ module Concurrent
       raise NotImplementedError
     end
 
+    private
+
     # wait until another thread calls #signal or #broadcast,
     # spurious wake-ups can happen.
     # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
@@ -54,8 +56,6 @@ module Concurrent
       synchronize { ns_broadcast }
     end
 
-    private
-
     # @yield condition
     def ns_wait_until(timeout, &condition)
       if timeout
@@ -63,7 +63,9 @@ module Concurrent
         while true
           now              = Concurrent.monotonic_time
           condition_result = condition.call
-          return condition_result if now >= wait_until || condition_result
+          # 0.001 correction to avoid error when `wait_until - now` is smaller than 0.0005 and rounded to 0
+          # when passed to java #wait(long timeout)
+          return condition_result if (now + 0.001) >= wait_until || condition_result
           ns_wait wait_until - now
         end
       else
@@ -123,7 +125,7 @@ module Concurrent
   class RubySynchronizedObject < AbstractSynchronizedObject
     def initialize
       @__lock__do_not_use_directly      = Mutex.new
-      @__condition__do_not_use_directly = ConditionVariable.new
+      @__condition__do_not_use_directly = ::ConditionVariable.new
     end
 
     def synchronize
