@@ -204,6 +204,11 @@ module Concurrent
         expect(future.value).to be_nil
       end
 
+      it 'sets the value to nil when the handler raises Exception' do
+        future = Future.new(executor: executor){ raise Exception }.execute
+        expect(future.value).to be_nil
+      end
+
       it 'sets the state to :rejected when the handler raises an exception' do
         future = Future.new(executor: executor){ raise StandardError }.execute
         expect(future).to be_rejected
