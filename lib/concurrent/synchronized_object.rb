@@ -122,7 +122,7 @@ module Concurrent
     # ignore
   end
 
-  class RubySynchronizedObject < AbstractSynchronizedObject
+  class MutexSynchronizedObject < AbstractSynchronizedObject
     def initialize
       @__lock__do_not_use_directly      = Mutex.new
       @__condition__do_not_use_directly = ::ConditionVariable.new
@@ -151,7 +151,7 @@ module Concurrent
     end
   end
 
-  class Ruby19SynchronizedObject < RubySynchronizedObject
+  class MonitorSynchronizedObject < MutexSynchronizedObject
     def initialize
       @__lock__do_not_use_directly      = Monitor.new
       @__condition__do_not_use_directly = @__lock__do_not_use_directly.new_cond
@@ -173,10 +173,13 @@ module Concurrent
                                  when Concurrent.on_jruby?
                                    JavaSynchronizedObject
                                  when Concurrent.on_cruby? && (RUBY_VERSION.split('.').map(&:to_i) <=> [1, 9, 3]) >= 0
-                                   Ruby19SynchronizedObject
+                                   MonitorSynchronizedObject
                                  when Concurrent.on_cruby?
-                                   RubySynchronizedObject
+                                   MutexSynchronizedObject
+                                 when Concurrent.on_rbx?
+                                   # TODO better implementation
+                                   MonitorSynchronizedObject
                                  else
-                                   RubySynchronizedObject
+                                   MutexSynchronizedObject
                                  end
 end
