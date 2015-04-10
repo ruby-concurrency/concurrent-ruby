@@ -10,11 +10,15 @@ module Concurrent
     module FutureShortcuts
       # TODO to construct event to be set later to trigger rest of the tree
 
+      def event(default_executor = :fast)
+        CompletableEvent.new(default_executor)
+      end
+
       # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
       # @note TODO allow to pass in variables as Thread.new(args) {|args| _ } does
       def future(default_executor = :fast, &task)
-        ImmediatePromise.new(default_executor).future.chain(&task)
+        ImmediatePromise.new(default_executor).event.chain(&task)
       end
 
       alias_method :async, :future
@@ -23,14 +27,14 @@ module Concurrent
       # requested by {Future#wait} method, {Future#value} and {Future#value!} methods are calling {Future#wait} internally.
       # @return [Delay]
       def delay(default_executor = :fast, &task)
-        Delay.new(default_executor).future.chain(&task)
+        Delay.new(default_executor).event.chain(&task)
       end
 
-      # Constructs {Promise} which helds its {Future} in {Promise#future} method. Intended for completion by user.
+      # Constructs {Promise} which helds its {Future} in {AbstractPromise#future} method. Intended for completion by user.
       # User is responsible not to complete the Promise twice.
-      # @return [Promise] in this case instance of {OuterPromise}
+      # @return [AbstractPromise] in this case instance of {OuterPromise}
       def promise(default_executor = :fast)
-        OuterPromise.new(default_executor)
+        CompletablePromise.new(default_executor)
       end
 
       # Schedules the block to be executed on executor in given intended_time.
@@ -99,11 +103,12 @@ module Concurrent
       # @param [Numeric] timeout the maximum time in second to wait.
       # @return [Obligation] self
       def wait(timeout = nil)
+        touch
         synchronize { ns_wait_until_complete(timeout) }
       end
 
       def touch
-        synchronize { ns_touch }
+        pr_touch synchronize { ns_promise_to_touch }
       end
 
       def state
@@ -119,10 +124,7 @@ module Concurrent
         pr_chain(default_executor, executor, &callback)
       end
 
-      # def then(*args, &callback)
-      #   raise # FIXME
-      #   chain(*args, &callback)
-      # end
+      alias_method :then, :chain
 
       def delay
         pr_delay(default_executor)
@@ -144,7 +146,7 @@ module Concurrent
         synchronize { ns_on_completion!(&callback) }
       end
 
-      # @return [Array<Promise>]
+      # @return [Array<AbstractPromise>]
       def blocks
         pr_blocks(synchronize { @callbacks })
       end
@@ -157,6 +159,7 @@ module Concurrent
         synchronize { "#{ns_to_s[0..-2]} blocks:[#{pr_blocks(@callbacks).map(&:to_s).join(', ')}]>" }
       end
 
+      # TODO take block optionally
       def join(*futures)
         pr_join(default_executor, *futures)
       end
@@ -168,7 +171,6 @@ module Concurrent
       def complete(raise = true)
         callbacks = synchronize { ns_complete(raise) }
         pr_call_callbacks callbacks
-        synchronize { callbacks.clear } # TODO move to upper synchronize ?
         self
       end
 
@@ -203,7 +205,6 @@ module Concurrent
       end
 
       def ns_wait_until_complete(timeout = nil)
-        ns_touch
         ns_wait_until(timeout) { ns_completed? }
         self
       end
@@ -222,11 +223,15 @@ module Concurrent
         ns_state == :completed
       end
 
-      def ns_touch
+      def ns_promise_to_touch
         unless @touched
           @touched = true
-          ns_promise.touch
+          ns_promise
         end
+      end
+
+      def pr_touch(promise)
+        promise.touch if promise
       end
 
       def ns_promise
@@ -263,7 +268,7 @@ module Concurrent
 
       def pr_blocks(callbacks)
         callbacks.each_with_object([]) do |callback, promises|
-          promises.push *callback.select { |v| v.is_a? Promise }
+          promises.push *callback.select { |v| v.is_a? AbstractPromise }
         end
       end
 
@@ -275,7 +280,8 @@ module Concurrent
         ns_check_multiple_assignment raise
         ns_complete_state
         ns_broadcast
-        @callbacks
+        callbacks, @callbacks = @callbacks, []
+        callbacks
       end
 
       def ns_add_callback(method, *args)
@@ -319,7 +325,6 @@ module Concurrent
 
       def pr_call_callback(method, *args)
         # all methods has to be pure
-        raise unless method.to_s =~ /^pr_/ # TODO remove check
         self.send method, *args
       end
 
@@ -344,14 +349,17 @@ module Concurrent
 
       # @return [Object] see Dereferenceable#deref
       def value(timeout = nil)
+        touch
         synchronize { ns_value timeout }
       end
 
       def reason(timeout = nil)
+        touch
         synchronize { ns_reason timeout }
       end
 
       def result(timeout = nil)
+        touch
         synchronize { ns_result timeout }
       end
 
@@ -360,6 +368,7 @@ module Concurrent
       # @return [Obligation] self
       # @raise [Exception] when #failed? it raises #reason
       def wait!(timeout = nil)
+        touch
         synchronize { ns_wait_until_complete! timeout }
       end
 
@@ -386,8 +395,8 @@ module Concurrent
         pr_rescue(default_executor, executor, &callback)
       end
 
-      def flat
-        FlattingPromise.new(self, default_executor).future
+      def flat(level = 1)
+        FlattingPromise.new(self, level, default_executor).future
       end
 
       def or(*futures)
@@ -424,7 +433,6 @@ module Concurrent
       def complete(success, value, reason, raise = true)
         callbacks = synchronize { ns_complete(success, value, reason, raise) }
         pr_call_callbacks callbacks, success, value, reason
-        synchronize { callbacks.clear } # TODO move up ?
         self
       end
 
@@ -516,7 +524,8 @@ module Concurrent
         ns_check_multiple_assignment raise, reason
         ns_complete_state(success, value, reason)
         ns_broadcast
-        @callbacks
+        callbacks, @callbacks = @callbacks, []
+        callbacks
       end
 
       private
@@ -567,7 +576,7 @@ module Concurrent
     # TODO modularize blocked_by and notify blocked
 
     # @abstract
-    class Promise < Concurrent::SynchronizedObject
+    class AbstractPromise < Concurrent::SynchronizedObject
       # @api private
       def initialize(*args, &block)
         super(&nil)
@@ -581,6 +590,8 @@ module Concurrent
       def future
         synchronize { ns_future }
       end
+
+      alias_method :event, :future
 
       def state
         future.state
@@ -597,13 +608,10 @@ module Concurrent
         to_s
       end
 
-      protected
-
       private
 
       def ns_initialize(future)
-        @future  = future
-        @touched = false
+        @future = future
       end
 
       def ns_future
@@ -611,22 +619,33 @@ module Concurrent
       end
 
       def complete(*args)
-        synchronize { ns_complete(*args) }
+        pr_complete(synchronize { ns_future }, *args)
       end
 
-      def ns_complete(*args)
-        ns_future.complete(*args)
+      def pr_complete(future, *args)
+        future.complete(*args)
       end
 
       def evaluate_to(*args, &block)
-        synchronize { ns_evaluate_to(*args, &block) }
+        pr_evaluate_to(synchronize { ns_future }, *args, &block)
       end
 
       # @return [Future]
-      def ns_evaluate_to(*args, &block)
-        ns_complete true, block.call(*args), nil
+      def pr_evaluate_to(future, *args, &block)
+        pr_complete future, true, block.call(*args), nil
       rescue => error
-        ns_complete false, nil, error
+        pr_complete future, false, nil, error
+      end
+    end
+
+    class CompletableEvent < AbstractPromise
+      # @api private
+      public :complete
+
+      private
+
+      def ns_initialize(default_executor = :fast)
+        super Event.new(self, default_executor)
       end
     end
 
@@ -634,7 +653,7 @@ module Concurrent
     # @example initialization
     #   Concurrent.promise
     # @note TODO consider to allow being blocked_by
-    class OuterPromise < Promise
+    class CompletablePromise < CompletableEvent
       # Set the `IVar` to a value and wake or notify all threads waiting on it.
       #
       # @param [Object] value the value to store in the `IVar`
@@ -668,22 +687,15 @@ module Concurrent
         evaluate_to(*args, &block).wait!
       end
 
-      # @api private
-      public :complete
-
       private
 
       def ns_initialize(default_executor = :fast)
         super Future.new(self, default_executor)
       end
-
-      # def ns_evaluate_to!(*args, &block)
-      #   ns_evaluate_to(*args, &block).wait! # TODO remove double locking
-      # end
     end
 
     # @abstract
-    class InnerPromise < Promise
+    class InnerPromise < AbstractPromise
     end
 
     # @abstract
@@ -698,11 +710,16 @@ module Concurrent
       def done(future) # FIXME pass in success/value/reason to avoid locking
         # futures could be deleted from blocked_by one by one here, but that would be too expensive,
         # it's done once when all are done to free the reference
-        synchronize { ns_done(future) }
+        completable, *args = synchronize do
+          completable             = ns_done(future)
+          blocked_by, @blocked_by = @blocked_by, [] if completable
+          [completable, *ns_completable_args(future, blocked_by)]
+        end
+        pr_completable(*args) if completable
       end
 
       def touch
-        synchronize { ns_touch }
+        synchronize { ns_blocked_by }.each(&:touch)
       end
 
       # @api private
@@ -720,29 +737,20 @@ module Concurrent
       def ns_initialize(future, blocked_by_futures)
         super future
         @blocked_by = Array(blocked_by_futures)
-        @countdown  = Concurrent::AtomicFixnum.new @blocked_by.size
-        @touched    = false
+        @countdown  = @blocked_by.size
       end
 
+      # @return [true,false] if completable
       def ns_done(future)
-        ns_completable if @countdown.decrement.zero?
+        (@countdown -= 1).zero?
       end
 
-      def ns_completable
+      def ns_completable_args(done_future, blocked_by)
+        [done_future, blocked_by, ns_future]
+      end
+
+      def pr_completable(_, _, _)
         raise NotImplementedError
-      end
-
-      def ns_touch
-        ns_propagate_touch if @touched ? false : (@touched = true) # TODO remove double touch check
-      end
-
-      def ns_propagate_touch
-        ns_blocked_by.each(&:touch)
-      end
-
-      def ns_complete(*args)
-        super *args
-        ns_blocked_by.clear
       end
 
       def ns_blocked_by
@@ -777,6 +785,13 @@ module Concurrent
         synchronize { ns_task }
       end
 
+      def ns_completable_args(done_future, blocked_by)
+        [done_future, blocked_by, ns_future, ns_executor, ns_task]
+      end
+
+      def pr_completable(_, _, _, _, _)
+        raise NotImplementedError
+      end
     end
 
     class ThenPromise < BlockedTaskPromise
@@ -788,12 +803,11 @@ module Concurrent
         super(blocked_by_future, default_executor, executor, &task)
       end
 
-      def ns_completable
-        future = ns_blocked_by.first
-        if future.success?
-          Concurrent.post_on(ns_executor, future, ns_task) { |future, task| evaluate_to future.value, &task }
+      def pr_completable(done_future, _, future, executor, task)
+        if done_future.success?
+          Concurrent.post_on(executor, done_future, task) { |done_future, task| evaluate_to done_future.value, &task }
         else
-          ns_complete false, nil, future.reason
+          pr_complete future, false, nil, done_future.reason
         end
       end
     end
@@ -807,12 +821,11 @@ module Concurrent
         super(blocked_by_future, default_executor, executor, &task)
       end
 
-      def ns_completable
-        future = ns_blocked_by.first
-        if future.failed?
-          Concurrent.post_on(ns_executor, future, ns_task) { |future, task| evaluate_to future.reason, &task }
+      def pr_completable(done_future, _, future, executor, task)
+        if done_future.failed?
+          Concurrent.post_on(executor, done_future, task) { |done_future, task| evaluate_to done_future.reason, &task }
         else
-          ns_complete true, future.value, nil
+          pr_complete future, true, done_future.value, nil
         end
       end
     end
@@ -820,12 +833,11 @@ module Concurrent
     class ChainPromise < BlockedTaskPromise
       private
 
-      def ns_completable
-        future = ns_blocked_by.first
-        if Future === future
-          Concurrent.post_on(ns_executor, future, ns_task) { |future, task| evaluate_to *future.result, &task }
+      def pr_completable(done_future, _, _, executor, task)
+        if Future === done_future
+          Concurrent.post_on(executor, done_future, task) { |future, task| evaluate_to *future.result, &task }
         else
-          Concurrent.post_on(ns_executor, ns_task) { |task| evaluate_to &task }
+          Concurrent.post_on(executor, task) { |task| evaluate_to &task }
         end
       end
     end
@@ -845,34 +857,36 @@ module Concurrent
       end
     end
 
-    # @note TODO add support for levels
     class FlattingPromise < BlockedPromise
       private
 
       def ns_done(future)
         value = future.value
-        case value
-        when Future
-          @countdown.increment
-          @blocked_by << value
-          value.add_callback :pr_notify_blocked, self
-        when Event
-          raise TypeError, 'cannot flatten to Event'
-        else
-          # nothing we are done flattening
+        if @levels > 0
+          case value
+          when Future
+            @countdown += 1
+            @blocked_by << value
+            @levels -= 1
+            value.add_callback :pr_notify_blocked, self
+          when Event
+            raise TypeError, 'cannot flatten to Event'
+          else
+            raise TypeError, "returned value '#{value}' is not a Future"
+          end
         end
         super future
       end
 
-      def ns_initialize(blocked_by_future, default_executor = :fast)
+      def ns_initialize(blocked_by_future, levels = 1, default_executor = :fast)
         blocked_by_future.is_a? Future or
             raise ArgumentError, 'only Future can be flatten'
         super(Future.new(self, default_executor), [blocked_by_future])
+        @levels = levels
       end
 
-      def ns_completable
-        future = ns_blocked_by.last
-        ns_complete *future.result
+      def pr_completable(done_future, _, future)
+        pr_complete future, *done_future.result
       end
     end
 
@@ -885,17 +899,17 @@ module Concurrent
         super(klass.new(self, default_executor), blocked_by_futures)
       end
 
-      def ns_completable
-        results = ns_blocked_by.select { |f| f.is_a?(Future) }.map(&:result)
+      def pr_completable(done_future, blocked_by, future)
+        results = blocked_by.select { |f| f.is_a?(Future) }.map(&:result)
         if results.empty?
-          ns_complete
+          pr_complete future
         else
           if results.all? { |success, _, _| success }
             params = results.map { |_, value, _| value }
-            ns_complete(true, params.size == 1 ? params.first : params, nil)
+            pr_complete(future, true, params.size == 1 ? params.first : params, nil)
           else
             # TODO what about other reasons?
-            ns_complete false, nil, results.find { |success, _, _| !success }.last
+            pr_complete future.false, nil, results.find { |success, _, _| !success }.last
           end
         end
       end
@@ -912,28 +926,23 @@ module Concurrent
       end
 
       def ns_done(future)
-        ns_completable(future)
+        true
       end
 
-      def ns_completable(future)
-        ns_complete *future.result, false
+      def pr_completable(done_future, _, future)
+        pr_complete future, *done_future.result, false
       end
     end
 
     class Delay < InnerPromise
       def touch
-        synchronize { ns_touch }
+        pr_complete synchronize { ns_future }
       end
 
       private
 
-      def ns_touch
-        ns_complete if @touched ? false : (@touched = true)
-      end
-
       def ns_initialize(default_executor = :fast)
         super Event.new(self, default_executor)
-        @touched = false
       end
     end
 

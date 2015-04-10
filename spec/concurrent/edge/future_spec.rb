@@ -61,6 +61,18 @@ describe 'Concurrent::Edge futures' do
     end
   end
 
+  describe '.event' do
+    specify do
+      completable_event = Concurrent.event
+      one               = completable_event.event.chain { 1 }
+      join              = Concurrent.join(completable_event.event).chain { 1 }
+      expect(one.completed?).to be false
+      completable_event.complete
+      expect(one.value).to eq 1
+      expect(join.wait.completed?).to be true
+    end
+  end
+
   describe '.any' do
     it 'continues on first result' do
       queue = Queue.new
