@@ -179,21 +179,65 @@ module Concurrent
 
     def ns_wait(timeout)
       @__condition__do_not_use_directly.wait timeout
+      self
     end
   end
 
-  # TODO add rbx implementation
-  SynchronizedObject = Class.new case
-                                 when Concurrent.on_jruby?
-                                   JavaSynchronizedObject
-                                 when Concurrent.on_cruby? && (RUBY_VERSION.split('.').map(&:to_i) <=> [1, 9, 3]) >= 0
-                                   MonitorSynchronizedObject
-                                 when Concurrent.on_cruby?
-                                   MutexSynchronizedObject
-                                 when Concurrent.on_rbx?
-                                   # TODO better implementation
-                                   MonitorSynchronizedObject
-                                 else
-                                   MutexSynchronizedObject
-                                 end
+  if Concurrent.on_rbx?
+    class RbxSynchronizedObject < AbstractSynchronizedObject
+      def initialize
+        @waiters = []
+      end
+
+      def synchronize(&block)
+        Rubinius.synchronize(self, &block)
+      end
+
+      private
+
+      def ns_wait(timeout = nil)
+        wchan = Rubinius::Channel.new
+
+        begin
+          @waiters.push wchan
+          Rubinius.unlock(self)
+          signaled = wchan.receive_timeout timeout
+        ensure
+          Rubinius.lock(self)
+
+          if !signaled && !@waiters.delete(wchan)
+            # we timed out, but got signaled afterwards,
+            # so pass that signal on to the next waiter
+            @waiters.shift << true unless @waiters.empty?
+          end
+        end
+
+        self
+      end
+
+      def ns_signal
+        @waiters.shift << true unless @waiters.empty?
+        self
+      end
+
+      def ns_broadcast
+        @waiters.shift << true until @waiters.empty?
+        self
+      end
+    end
+  end
+
+  class SynchronizedObject < case
+                             when Concurrent.on_jruby?
+                               JavaSynchronizedObject
+                             when Concurrent.on_cruby? && (RUBY_VERSION.split('.').map(&:to_i) <=> [1, 9, 3]) >= 0
+                               MonitorSynchronizedObject
+                             when Concurrent.on_cruby?
+                               MutexSynchronizedObject
+                             when Concurrent.on_rbx?
+                               RbxSynchronizedObject
+                             else
+                               MutexSynchronizedObject
+                             end
+  end
 end
