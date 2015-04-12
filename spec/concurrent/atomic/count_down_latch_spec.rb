@@ -88,7 +88,7 @@ end
 
 module Concurrent
 
-  describe MutexCountDownLatch do
+  describe PureCountDownLatch do
 
     it_should_behave_like :count_down_latch
 
@@ -98,9 +98,9 @@ module Concurrent
 
       before(:each) do
         def subject.simulate_spurious_wake_up
-          @mutex.synchronize do
-            @condition.signal
-            @condition.broadcast
+          synchronize do
+            signal
+            broadcast
           end
         end
       end
@@ -147,7 +147,7 @@ module Concurrent
       end
     else
       it 'inherits from MutexCountDownLatch' do
-        expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
+        expect(CountDownLatch.ancestors).to include(PureCountDownLatch)
       end
     end
   end
