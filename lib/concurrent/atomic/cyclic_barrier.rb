@@ -1,6 +1,8 @@
+require 'concurrent/synchronized_object'
+
 module Concurrent
 
-  class CyclicBarrier
+  class CyclicBarrier < SynchronizedObject
 
     Generation = Struct.new(:status)
     private_constant :Generation
@@ -13,23 +15,26 @@ module Concurrent
     #
     # @raise [ArgumentError] if `parties` is not an integer or is less than zero
     def initialize(parties, &block)
-      raise ArgumentError.new('count must be in integer greater than or equal zero') if !parties.is_a?(Fixnum) || parties < 1
-      @parties = parties
-      @mutex = Mutex.new
-      @condition = Condition.new
-      @number_waiting = 0
-      @action = block
-      @generation = Generation.new(:waiting)
+      super(&nil)
+      if !parties.is_a?(Fixnum) || parties < 1
+        raise ArgumentError.new('count must be in integer greater than or equal zero')
+      end
+      synchronize do
+        @parties        = parties
+        @number_waiting = 0
+        @action         = block
+        @generation     = Generation.new(:waiting)
+      end
     end
 
     # @return [Fixnum] the number of threads needed to pass the barrier
     def parties
-      @parties
+      synchronize { @parties }
     end
 
     # @return [Fixnum] the number of threads currently waiting on the barrier
     def number_waiting
-      @number_waiting
+      synchronize { @number_waiting }
     end
 
     # Blocks on the barrier until the number of waiting threads is equal to
@@ -41,7 +46,7 @@ module Concurrent
     # @return [Boolean] `true` if the `count` reaches zero else false on
     #  `timeout` or on `reset` or if the barrier is broken
     def wait(timeout = nil)
-      @mutex.synchronize do
+      synchronize do
 
         return false unless @generation.status == :waiting
 
@@ -58,7 +63,6 @@ module Concurrent
     end
 
 
-
     # resets the barrier to its initial state
     # If there is at least one waiting thread, it will be woken up, the `wait`
     # method will return false and the barrier will be broken
@@ -66,9 +70,7 @@ module Concurrent
     #
     # @return [nil]
     def reset
-      @mutex.synchronize do
-        set_status_and_restore(:reset)
-      end
+      synchronize { set_status_and_restore(:reset) }
     end
 
     # A barrier can be broken when:
@@ -78,35 +80,26 @@ module Concurrent
     # A broken barrier can be restored using `reset` it's safer to create a new one
     # @return [Boolean] true if the barrier is broken otherwise false
     def broken?
-      @mutex.synchronize { @generation.status != :waiting }
+      synchronize { @generation.status != :waiting }
     end
 
     private
 
     def set_status_and_restore(new_status)
       @generation.status = new_status
-      @condition.broadcast
-      @generation = Generation.new(:waiting)
+      ns_broadcast
+      @generation     = Generation.new(:waiting)
       @number_waiting = 0
     end
 
     def wait_for_wake_up(generation, timeout)
-      if wait_while_waiting(generation, timeout)
+      if ns_wait_until(timeout) { generation.status != :waiting }
         generation.status == :fulfilled
       else
         generation.status = :broken
-        @condition.broadcast
+        ns_broadcast
         false
       end
     end
-
-    def wait_while_waiting(generation, timeout)
-      remaining = Condition::Result.new(timeout)
-      while generation.status == :waiting && remaining.can_wait?
-        remaining = @condition.wait(@mutex, remaining.remaining_time)
-      end
-      remaining.woken_up?
-    end
-
   end
 end

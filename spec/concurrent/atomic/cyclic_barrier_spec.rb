@@ -211,9 +211,9 @@ module Concurrent
 
       before(:each) do
         def barrier.simulate_spurious_wake_up
-          @mutex.synchronize do
-            @condition.signal
-            @condition.broadcast
+          synchronize do
+            ns_signal
+            ns_broadcast
           end
         end
       end
