@@ -33,8 +33,10 @@ module Concurrent
     # wait until another thread calls #signal or #broadcast,
     # spurious wake-ups can happen.
     # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
+    # @return [self]
     def wait(timeout = nil)
       synchronize { ns_wait(timeout) }
+      self
     end
 
     # Wait until condition is met or timeout passes,
@@ -42,18 +44,23 @@ module Concurrent
     # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
     # @yield condition to be met
     # @yieldreturn [true, false]
+    # @return [true, false]
     def wait_until(timeout = nil, &condition)
       synchronize { ns_wait_until(timeout, &condition) }
     end
 
     # signal one waiting thread
+    # @return [self]
     def signal
       synchronize { ns_signal }
+      self
     end
 
     # broadcast to all waiting threads
+    # @return [self]
     def broadcast
       synchronize { ns_broadcast }
+      self
     end
 
     # @yield condition
@@ -74,21 +81,24 @@ module Concurrent
       end
     end
 
+    # @return [self]
     def ns_wait(timeout)
       raise NotImplementedError
     end
 
+    # @return [self]
     def ns_signal
       raise NotImplementedError
     end
 
+    # @return [self]
     def ns_broadcast
       raise NotImplementedError
     end
 
   end
 
-  begin
+  if Concurrent.on_jruby?
     require 'jruby'
 
     # roughly more than 2x faster
@@ -108,18 +118,19 @@ module Concurrent
         else
           JRuby.reference0(self).wait
         end
+        self
       end
 
       def ns_broadcast
         JRuby.reference0(self).notifyAll
+        self
       end
 
       def ns_signal
         JRuby.reference0(self).notify
+        self
       end
     end
-  rescue LoadError
-    # ignore
   end
 
   class MutexSynchronizedObject < AbstractSynchronizedObject
@@ -140,14 +151,17 @@ module Concurrent
 
     def ns_signal
       @__condition__do_not_use_directly.signal
+      self
     end
 
     def ns_broadcast
       @__condition__do_not_use_directly.broadcast
+      self
     end
 
     def ns_wait(timeout)
       @__condition__do_not_use_directly.wait @__lock__do_not_use_directly, timeout
+      self
     end
   end
 
