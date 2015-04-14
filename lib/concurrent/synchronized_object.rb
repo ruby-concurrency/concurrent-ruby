@@ -1,9 +1,17 @@
 module Concurrent
 
-  # Safe synchronization under any Ruby implementation
+  # Safe synchronization under any Ruby implementation.
+  # It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
   # Provides a single layer which can improve its implementation over time without changes needed to
   # the classes using it. Use {SynchronizedObject} not this abstract class.
-  # @example
+  #
+  # @note this object does not support usage together with {Thread#wakeup} and {Thread#raise}.
+  #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `SynchronizedObject#wait` and
+  #   `Thread#wakeup` will not work on all platforms.
+  #
+  # @see {Event} implementation as an example of this class use
+  #
+  # @example simple
   #   class AnClass < SynchronizedObject
   #     def initialize
   #       super
@@ -82,7 +90,7 @@ module Concurrent
     end
 
     # @return [self]
-    def ns_wait(timeout)
+    def ns_wait(timeout = nil)
       raise NotImplementedError
     end
 
@@ -155,7 +163,7 @@ module Concurrent
       self
     end
 
-    def ns_wait(timeout)
+    def ns_wait(timeout = nil)
       @__condition__do_not_use_directly.wait @__lock__do_not_use_directly, timeout
       self
     end
@@ -173,7 +181,7 @@ module Concurrent
 
     private
 
-    def ns_wait(timeout)
+    def ns_wait(timeout = nil)
       @__condition__do_not_use_directly.wait timeout
       self
     end
