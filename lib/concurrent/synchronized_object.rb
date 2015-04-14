@@ -112,12 +112,8 @@ module Concurrent
 
       private
 
-      def ns_wait(timeout)
-        if timeout
-          JRuby.reference0(self).wait(timeout * 1000)
-        else
-          JRuby.reference0(self).wait
-        end
+      def ns_wait(timeout = nil)
+        JRuby.reference0(Thread.current).wait_timeout(self, timeout)
         self
       end
 
