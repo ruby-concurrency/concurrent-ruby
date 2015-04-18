@@ -173,6 +173,15 @@ module Concurrent
             expect(barrier).to be_broken
           end
 
+          it 'breaks the barrier and release all other threads 2' do
+            t1 = Thread.new { barrier.wait(0.1) }
+            t2 = Thread.new { barrier.wait(0.1) }
+
+            [t1, t2].each(&:join)
+
+            expect(barrier).to be_broken
+          end
+
           it 'does not execute the block on timeout' do
             counter = AtomicFixnum.new
             barrier = described_class.new(parties) { counter.increment }
@@ -242,5 +251,4 @@ module Concurrent
       end
     end
   end
-
 end

@@ -2,6 +2,9 @@ require 'concurrent/utility/engine'
 
 module Concurrent
 
+  class AbstractSynchronizedObject # FIXME has to be present before Java extensions are loaded
+  end
+
   @@c_ext_loaded ||= false
   @@java_ext_loaded ||= false
 

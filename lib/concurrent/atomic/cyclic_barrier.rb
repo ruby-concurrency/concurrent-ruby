@@ -20,10 +20,9 @@ module Concurrent
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
       synchronize do
-        @parties        = parties
-        @number_waiting = 0
-        @action         = block
-        @generation     = Generation.new(:waiting)
+        @parties = parties
+        @action  = block
+        ns_next_generation
       end
     end
 
@@ -54,10 +53,16 @@ module Concurrent
 
         if @number_waiting == @parties
           @action.call if @action
-          set_status_and_restore(:fulfilled)
+          ns_generation_done @generation, :fulfilled
           true
         else
-          wait_for_wake_up(@generation, timeout)
+          generation = @generation
+          if ns_wait_until(timeout) { generation.status != :waiting }
+            generation.status == :fulfilled
+          else
+            ns_generation_done generation, :broken, false
+            false
+          end
         end
       end
     end
@@ -70,7 +75,7 @@ module Concurrent
     #
     # @return [nil]
     def reset
-      synchronize { set_status_and_restore(:reset) }
+      synchronize { ns_generation_done @generation, :reset }
     end
 
     # A barrier can be broken when:
@@ -85,21 +90,17 @@ module Concurrent
 
     private
 
-    def set_status_and_restore(new_status)
-      @generation.status = new_status
+    def ns_generation_done(generation, status, continue = true)
+      generation.status = status
+      ns_next_generation if continue
       ns_broadcast
+    end
+
+    def ns_next_generation
       @generation     = Generation.new(:waiting)
       @number_waiting = 0
     end
 
-    def wait_for_wake_up(generation, timeout)
-      if ns_wait_until(timeout) { generation.status != :waiting }
-        generation.status == :fulfilled
-      else
-        generation.status = :broken
-        ns_broadcast
-        false
-      end
-    end
+
   end
 end

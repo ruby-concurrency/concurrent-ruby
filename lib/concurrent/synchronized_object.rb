@@ -1,3 +1,5 @@
+require 'concurrent/utility/engine'
+
 module Concurrent
 
   # Safe synchronization under any Ruby implementation.
@@ -75,7 +77,7 @@ module Concurrent
     def ns_wait_until(timeout, &condition)
       if timeout
         wait_until = Concurrent.monotonic_time + timeout
-        while true
+        loop do
           now              = Concurrent.monotonic_time
           condition_result = condition.call
           # 0.001 correction to avoid error when `wait_until - now` is smaller than 0.0005 and rounded to 0
@@ -106,11 +108,12 @@ module Concurrent
 
   end
 
+  require 'concurrent/extension_helper' # FIXME weird order
+
   if Concurrent.on_jruby?
     require 'jruby'
 
-    # roughly more than 2x faster
-    class JavaSynchronizedObject < AbstractSynchronizedObject
+    class JavaPureSynchronizedObject < AbstractSynchronizedObject
       def initialize
       end
 
@@ -121,8 +124,10 @@ module Concurrent
       private
 
       def ns_wait(timeout = nil)
-        JRuby.reference0(Thread.current).wait_timeout(self, timeout)
+        success = JRuby.reference0(Thread.current).wait_timeout(JRuby.reference0(self), timeout)
         self
+      ensure
+        ns_signal unless success
       end
 
       def ns_broadcast
