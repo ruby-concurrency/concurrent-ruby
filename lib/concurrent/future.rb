@@ -82,7 +82,7 @@ module Concurrent
 
     # @!visibility private
     def work # :nodoc:
-      success, val, reason = SafeTaskExecutor.new(@task).execute(*@args)
+      success, val, reason = SafeTaskExecutor.new(@task, rescue_exception: true).execute(*@args)
       complete(success, val, reason)
     end
   end
