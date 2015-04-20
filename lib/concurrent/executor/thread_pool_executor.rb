@@ -2,7 +2,7 @@ require 'concurrent/executor/ruby_thread_pool_executor'
 
 module Concurrent
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
     require 'concurrent/executor/java_thread_pool_executor'
     # @!macro [attach] thread_pool_executor
     #

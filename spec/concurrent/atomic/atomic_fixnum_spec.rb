@@ -170,7 +170,7 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
@@ -184,7 +184,7 @@ module Concurrent
       end
     end
 
-    if TestHelpers.jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end

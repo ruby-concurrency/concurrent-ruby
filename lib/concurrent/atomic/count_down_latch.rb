@@ -1,4 +1,4 @@
-require 'concurrent/atomic/condition'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -11,7 +11,7 @@ module Concurrent
   #   method. Each of the other threads calls `#count_down` when done with its work.
   #   When the latch counter reaches zero the waiting thread is unblocked and continues
   #   with its work. A `CountDownLatch` can be used only once. Its value cannot be reset.
-  class MutexCountDownLatch
+  class PureCountDownLatch < Synchronization::Object
 
     # @!macro [attach] count_down_latch_method_initialize
     #
@@ -21,12 +21,11 @@ module Concurrent
     #
     #   @raise [ArgumentError] if `count` is not an integer or is less than zero
     def initialize(count = 1)
+      super()
       unless count.is_a?(Fixnum) && count >= 0
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
-      @mutex = Mutex.new
-      @condition = Condition.new
-      @count = count
+      synchronize { @count = count }
     end
 
     # @!macro [attach] count_down_latch_method_wait
@@ -37,15 +36,7 @@ module Concurrent
     #     to block indefinitely
     #   @return [Boolean] `true` if the `count` reaches zero else false on `timeout`
     def wait(timeout = nil)
-      @mutex.synchronize do
-
-        remaining = Condition::Result.new(timeout)
-        while @count > 0 && remaining.can_wait?
-          remaining = @condition.wait(@mutex, remaining.remaining_time)
-        end
-
-        @count == 0
-      end
+      synchronize { ns_wait_until(timeout) { @count == 0 } }
     end
 
     # @!macro [attach] count_down_latch_method_count_down
@@ -53,9 +44,9 @@ module Concurrent
     #   Signal the latch to decrement the counter. Will signal all blocked threads when
     #   the `count` reaches zero.
     def count_down
-      @mutex.synchronize do
+      synchronize do
         @count -= 1 if @count > 0
-        @condition.broadcast if @count == 0
+        ns_broadcast if @count == 0
       end
     end
 
@@ -65,11 +56,11 @@ module Concurrent
     #
     #   @return [Fixnum] the current value of the counter
     def count
-      @mutex.synchronize { @count }
+      synchronize { @count }
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     # @!macro count_down_latch
     class JavaCountDownLatch
@@ -110,7 +101,7 @@ module Concurrent
   else
 
     # @!macro count_down_latch
-    class CountDownLatch < MutexCountDownLatch
+    class CountDownLatch < PureCountDownLatch
     end
   end
 end

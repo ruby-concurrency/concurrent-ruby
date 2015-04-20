@@ -1,6 +1,6 @@
 #!/usr/bin/env rake
 
-require_relative './lib/extension_helper'
+require 'concurrent/native_extensions'
 
 ## load the two gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
@@ -12,7 +12,7 @@ GEM_NAME = 'concurrent-ruby'
 EXTENSION_NAME = 'extension'
 JAVA_EXT_NAME = 'concurrent_ruby_ext'
 
-if Concurrent.jruby?
+if Concurrent.on_jruby?
   CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
 else
   CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
@@ -35,7 +35,7 @@ Dir.glob('tasks/**/*.rake').each do |rakefile|
   safe_load rakefile
 end
 
-if Concurrent.jruby?
+if Concurrent.on_jruby?
 
   ## create the compile task for the JRuby-specific gem
   require 'rake/javaextensiontask'
@@ -95,7 +95,7 @@ end
 namespace :build do
 
   build_deps = [:clean]
-  build_deps << :compile if Concurrent.jruby?
+  build_deps << :compile if Concurrent.on_jruby?
 
   desc "Build #{CORE_GEM} into the pkg directory"
   task :core => build_deps do
@@ -103,7 +103,7 @@ namespace :build do
     sh 'mv *.gem pkg/'
   end
 
-  unless Concurrent.jruby?
+  unless Concurrent.on_jruby?
     desc "Build #{EXTENSION_GEM} into the pkg directory"
     task :ext => [:clean] do
       sh "gem build #{EXT_GEMSPEC.name}.gemspec"
@@ -120,7 +120,7 @@ namespace :build do
   end
 end
 
-if Concurrent.jruby?
+if Concurrent.on_jruby?
   desc 'Build JRuby-specific core gem (alias for `build:core`)'
   task :build => ['build:core']
 else

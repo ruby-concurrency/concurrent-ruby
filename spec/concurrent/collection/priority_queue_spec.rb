@@ -293,7 +293,7 @@ module Concurrent
     it_should_behave_like :priority_queue
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
 
     describe JavaPriorityQueue do
 
@@ -302,7 +302,7 @@ module Concurrent
   end
 
   describe PriorityQueue do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaPriorityQueue' do
         expect(PriorityQueue.ancestors).to include(JavaPriorityQueue)
       end

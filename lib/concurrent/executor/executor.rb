@@ -69,7 +69,7 @@ module Concurrent
     def enable_at_exit_handler!(opts = {})
       if opts.fetch(:stop_on_exit, true)
         @auto_terminate = true
-        if RUBY_PLATFORM == 'ruby'
+        if Concurrent.on_cruby?
           create_mri_at_exit_handler!(self.object_id)
         else
           create_at_exit_handler!(self)
@@ -270,7 +270,7 @@ module Concurrent
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     module JavaExecutor
       include Executor

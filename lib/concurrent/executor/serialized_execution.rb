@@ -1,14 +1,13 @@
 require 'delegate'
 require 'concurrent/executor/executor'
 require 'concurrent/logging'
-require 'concurrent/atomic/synchronization'
+require 'concurrent/synchronization'
 
 module Concurrent
 
   # Ensures passed jobs in a serialized order never running at the same time.
-  class SerializedExecution
+  class SerializedExecution < Synchronization::Object
     include Logging
-    include Synchronization
 
     Job = Struct.new(:executor, :args, :block) do
       def call
@@ -17,6 +16,7 @@ module Concurrent
     end
 
     def initialize
+      super(&nil)
       synchronize do
         @being_executed = false
         @stash          = []

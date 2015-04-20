@@ -10,7 +10,7 @@ module Concurrent
       def get_time
         Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
-    elsif RUBY_PLATFORM == 'java'
+    elsif Concurrent.on_jruby?
       # @!visibility private
       def get_time
         java.lang.System.nanoTime() / 1_000_000_000.0

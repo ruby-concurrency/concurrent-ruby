@@ -35,7 +35,7 @@ module Concurrent
 
       protected
 
-      unless RUBY_PLATFORM == 'java'
+      unless Concurrent.on_jruby?
         require 'ref'
       end
 
@@ -119,7 +119,7 @@ module Concurrent
 
   # @!macro abstract_thread_local_var
   class ThreadLocalVar < AbstractThreadLocalVar
-    if RUBY_PLATFORM == 'java'
+    if Concurrent.on_jruby?
       include ThreadLocalJavaStorage
     else
       include ThreadLocalRubyStorage

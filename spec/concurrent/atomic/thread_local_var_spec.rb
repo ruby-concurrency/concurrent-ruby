@@ -28,7 +28,7 @@ module Concurrent
         expect(t2.value).to eq 14
       end
 
-      if jruby?
+      if Concurrent.on_jruby?
         it 'uses ThreadLocalJavaStorage' do
           expect(subject.class.ancestors).to include(Concurrent::AbstractThreadLocalVar::ThreadLocalJavaStorage)
         end
@@ -39,7 +39,7 @@ module Concurrent
       end
     end
 
-    unless jruby?
+    unless Concurrent.on_jruby?
       context 'GC' do
         it 'does not leave values behind when bind is used' do
           var = ThreadLocalVar.new(0)
@@ -51,7 +51,7 @@ module Concurrent
         end
 
         it 'does not leave values behind when bind is not used' do
-          skip 'GC.run works reliably only on MRI' unless mri? # TODO
+          skip 'GC.run works reliably only on MRI' unless Concurrent.on_cruby? # TODO
 
           result = 7.times.any? do |i|
             var = ThreadLocalVar.new(0)

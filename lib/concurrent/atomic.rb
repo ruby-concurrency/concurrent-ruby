@@ -3,16 +3,17 @@
 # user that they should use the new implementation instead.
 
 if defined?(Atomic)
-  warn <<-RUBY
+  warn <<-TXT
 [ATOMIC] Detected an `Atomic` class, which may indicate a dependency
 on the ruby-atomic gem. That gem has been deprecated and merged into
 the concurrent-ruby gem. Please use the Concurrent::Atomic class for
 atomic references and not the Atomic class.
-RUBY
+  TXT
 end
 #####################################################################
 
-require_relative '../extension_helper'
+require 'concurrent/native_extensions'
+require 'concurrent/utility/engine'
 require 'concurrent/atomic_reference/concurrent_update_error'
 require 'concurrent/atomic_reference/mutex_atomic'
 
@@ -21,7 +22,7 @@ begin
   if /[^0fF]/ =~ ENV['FORCE_ATOMIC_FALLBACK']
     ruby_engine = 'mutex_atomic'
   else
-    ruby_engine = defined?(RUBY_ENGINE)? RUBY_ENGINE : 'ruby'
+    ruby_engine = Concurrent.ruby_engine
   end
 
   require "concurrent/atomic_reference/#{ruby_engine}"

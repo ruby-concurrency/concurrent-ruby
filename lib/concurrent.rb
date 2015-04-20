@@ -1,5 +1,7 @@
 require 'concurrent/version'
 
+require 'concurrent/synchronization'
+
 require 'concurrent/configuration'
 
 require 'concurrent/actor'
