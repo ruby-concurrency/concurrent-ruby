@@ -1,10 +1,10 @@
 module Concurrent
-  module SynchronizedObjectImplementations
+  module Synchronization
 
     if Concurrent.on_jruby?
       require 'jruby'
 
-      class JavaPure < Abstract
+      class JavaPureObject < AbstractObject
         def initialize
         end
 
@@ -17,6 +17,8 @@ module Concurrent
         def ns_wait(timeout = nil)
           success = JRuby.reference0(Thread.current).wait_timeout(JRuby.reference0(self), timeout)
           self
+        rescue java.lang.InterruptedException => e
+          raise ThreadError(e.message)
         ensure
           ns_signal unless success
         end
@@ -29,6 +31,10 @@ module Concurrent
         def ns_signal
           JRuby.reference0(self).notify
           self
+        end
+
+        def ensure_ivar_visibility!
+          # relying on undocumented behavior of JRuby, ivar access is volatile
         end
       end
     end

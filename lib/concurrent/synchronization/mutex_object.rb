@@ -1,6 +1,6 @@
 module Concurrent
-  module SynchronizedObjectImplementations
-    class Mutex < Abstract
+  module Synchronization
+    class MutexObject < AbstractObject
       def initialize
         @__lock__do_not_use_directly      = ::Mutex.new
         @__condition__do_not_use_directly = ::ConditionVariable.new
@@ -29,6 +29,10 @@ module Concurrent
       def ns_wait(timeout = nil)
         @__condition__do_not_use_directly.wait @__lock__do_not_use_directly, timeout
         self
+      end
+
+      def ensure_ivar_visibility!
+        # relying on undocumented behavior of CRuby, GVL quire has lock which ensures visibility of ivars
       end
     end
   end

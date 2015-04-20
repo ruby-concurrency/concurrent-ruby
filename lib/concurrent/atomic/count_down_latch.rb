@@ -1,4 +1,4 @@
-require 'concurrent/synchronized_object'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -11,7 +11,7 @@ module Concurrent
   #   method. Each of the other threads calls `#count_down` when done with its work.
   #   When the latch counter reaches zero the waiting thread is unblocked and continues
   #   with its work. A `CountDownLatch` can be used only once. Its value cannot be reset.
-  class PureCountDownLatch < SynchronizedObject
+  class PureCountDownLatch < Synchronization::Object
 
     # @!macro [attach] count_down_latch_method_initialize
     #

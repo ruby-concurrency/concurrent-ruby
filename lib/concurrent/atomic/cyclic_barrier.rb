@@ -1,8 +1,8 @@
-require 'concurrent/synchronized_object'
+require 'concurrent/synchronization'
 
 module Concurrent
 
-  class CyclicBarrier < SynchronizedObject
+  class CyclicBarrier < Synchronization::Object
 
     Generation = Struct.new(:status)
     private_constant :Generation

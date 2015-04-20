@@ -17,32 +17,33 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyNil;
 import org.jruby.runtime.ThreadContext;
 
-public class JavaSynchronizedObjectLibrary implements Library {
+public class SynchronizationLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule concurrentModule = runtime.
+        RubyModule synchronizationModule = runtime.
                 defineModule("Concurrent").
-                defineModuleUnder("SynchronizedObjectImplementations");
-        RubyClass parent = concurrentModule.
-                getClass("Abstract");
-        if (parent == null) throw runtime.newRuntimeError("Concurrent::SynchronizedObject::Abstract is missing");
+                defineModuleUnder("Synchronization");
+        RubyClass parentClass = synchronizationModule.getClass("AbstractObject");
 
-        RubyClass synchronizedObjectJavaClass = concurrentModule.
-                defineClassUnder("Java", parent, JRUBYREFERENCE_ALLOCATOR);
+        if (parentClass == null)
+            throw runtime.newRuntimeError("Concurrent::Synchronization::AbstractObject is missing");
 
-        synchronizedObjectJavaClass.defineAnnotatedMethods(Java.class);
+        RubyClass synchronizedObjectJavaClass =
+                synchronizationModule.defineClassUnder("JavaObject", parentClass, JRUBYREFERENCE_ALLOCATOR);
+
+        synchronizedObjectJavaClass.defineAnnotatedMethods(JavaObject.class);
     }
 
     private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new Java(runtime, klazz);
+            return new JavaObject(runtime, klazz);
         }
     };
 
-    @JRubyClass(name = "Java", parent = "Abstract")
-    public static class Java extends RubyObject {
+    @JRubyClass(name = "JavaObject", parent = "AbstractObject")
+    public static class JavaObject extends RubyObject {
 
-        public Java(Ruby runtime, RubyClass metaClass) {
+        public JavaObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }
 

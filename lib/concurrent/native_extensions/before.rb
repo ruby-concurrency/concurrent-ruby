@@ -1,1 +1,1 @@
-require 'concurrent/synchronized_object_implementations/abstract'
+require 'concurrent/synchronization/abstract_object'

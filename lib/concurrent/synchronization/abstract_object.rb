@@ -1,18 +1,20 @@
 module Concurrent
-  module SynchronizedObjectImplementations
+  # TODO rename to Synchronization
+  # TODO add newCondition
+  module Synchronization
     # Safe synchronization under any Ruby implementation.
     # It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
     # Provides a single layer which can improve its implementation over time without changes needed to
-    # the classes using it. Use {SynchronizedObject} not this abstract class.
+    # the classes using it. Use {Synchronization::Object} not this abstract class.
     #
     # @note this object does not support usage together with {Thread#wakeup} and {Thread#raise}.
-    #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `SynchronizedObject#wait` and
+    #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
     #   `Thread#wakeup` will not work on all platforms.
     #
     # @see {Event} implementation as an example of this class use
     #
     # @example simple
-    #   class AnClass < SynchronizedObject
+    #   class AnClass < Synchronization::Object
     #     def initialize
     #       super
     #       synchronize { @value = 'asd' }
@@ -22,7 +24,7 @@ module Concurrent
     #       synchronize { @value }
     #     end
     #   end
-    class Abstract
+    class AbstractObject
 
       # @abstract for helper ivar initialization if needed,
       #     otherwise it can be left empty.
@@ -115,6 +117,78 @@ module Concurrent
       # @see #broadcast
       def ns_broadcast
         raise NotImplementedError
+      end
+
+      # @example
+      # def initialize
+      #   @val = :val # final never changed value
+      #   ensure_ivar_visibility!
+      #   # not it can be shared as Java's immutable objects with final fields
+      # end
+      def ensure_ivar_visibility!
+        raise NotImplementedError
+      end
+
+      def self.attr_volatile *names
+        attr_accessor *names.map { |name| :"volatile_#{name}" }
+      end
+
+      module CasAttributes
+        def list_attr_volatile_cas
+          @attr_volatile_cas_names ||= []
+          # @attr_volatile_cas_names +
+          #     if superclass.respond_to?(:list_attr_volatile_cas)
+          #       superclass.list_attr_volatile_cas
+          #     else
+          #       []
+          #     end
+        end
+
+        def attr_volatile_cas *names
+          names.each do |name|
+            class_eval <<-RUBY
+            def #(name}
+              #{CasAttributes.ivar_name(name)}.get
+            end
+
+            def #(name}=(value)
+              #{CasAttributes.ivar_name(name)}.set value
+            end
+
+            def #(name}_cas(old, value)
+              #{CasAttributes.ivar_name(name)}.compare_and_set old, value
+            end
+
+            RUBY
+
+            define_method name do
+              instance_variable_get CasAttributes.ivar_name(name)
+            end
+
+            define_method "#{name}=" do |value|
+              instance_variable_set CasAttributes.ivar_name(name), value
+              Rubinius.memory_barrier
+            end
+          end
+        end
+
+        def self.ivar_name(name)
+          :"@volatile_cas_#{name}"
+        end
+
+        def self.extended(base)
+          base.include InstanceMethods
+        end
+
+        module InstanceMethods
+          def initialize
+            self.class.list_attr_volatile_cas.each do |name|
+              isntance_variable_set CasAttributes.ivar_name(name), Atomic.new(nil)
+            end
+            ensure_ivar_visibility!
+            super
+          end
+        end
       end
     end
   end

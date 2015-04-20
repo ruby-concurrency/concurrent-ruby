@@ -1,5 +1,5 @@
 require 'thread'
-require 'concurrent/synchronized_object'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -13,7 +13,7 @@ module Concurrent
   # `#reset` at any time once it has been set.
   #
   # @see http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx
-  class Event < SynchronizedObject
+  class Event < Synchronization::Object
 
     # Creates a new `Event` in the unset state. Threads calling `#wait` on the
     # `Event` will block.

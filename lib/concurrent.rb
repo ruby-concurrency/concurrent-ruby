@@ -1,6 +1,6 @@
 require 'concurrent/version'
 
-require 'concurrent/synchronized_object'
+require 'concurrent/synchronization'
 
 require 'concurrent/configuration'
 
