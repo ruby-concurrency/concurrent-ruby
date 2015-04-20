@@ -20,24 +20,29 @@ import org.jruby.runtime.ThreadContext;
 public class JavaSynchronizedObjectLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule concurrentMod = runtime.defineModule("Concurrent");
-        RubyClass javaSynchronizedObjectClass = concurrentMod.defineClassUnder(
-                "JavaSynchronizedObject",
-                concurrentMod.getClass("AbstractSynchronizedObject"),
-                JRUBYREFERENCE_ALLOCATOR);
-        javaSynchronizedObjectClass.defineAnnotatedMethods(JavaSynchronizedObject.class);
+        RubyModule concurrentModule = runtime.
+                defineModule("Concurrent").
+                defineModuleUnder("SynchronizedObjectImplementations");
+        RubyClass parent = concurrentModule.
+                getClass("Abstract");
+        if (parent == null) throw runtime.newRuntimeError("Concurrent::SynchronizedObject::Abstract is missing");
+
+        RubyClass synchronizedObjectJavaClass = concurrentModule.
+                defineClassUnder("Java", parent, JRUBYREFERENCE_ALLOCATOR);
+
+        synchronizedObjectJavaClass.defineAnnotatedMethods(Java.class);
     }
 
     private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new JavaSynchronizedObject(runtime, klazz);
+            return new Java(runtime, klazz);
         }
     };
 
-    @JRubyClass(name = "JavaSynchronizedObject", parent = "AbstractSynchronizedObject")
-    public static class JavaSynchronizedObject extends RubyObject {
+    @JRubyClass(name = "Java", parent = "Abstract")
+    public static class Java extends RubyObject {
 
-        public JavaSynchronizedObject(Ruby runtime, RubyClass metaClass) {
+        public Java(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }
 

@@ -1,0 +1,1 @@
+require 'concurrent/synchronized_object_implementations/abstract'

@@ -1,4 +1,4 @@
-require 'concurrent/extension_helper'
+require 'concurrent/native_extensions'
 
 module Concurrent
 

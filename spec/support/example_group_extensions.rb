@@ -1,5 +1,5 @@
 require 'rbconfig'
-require 'concurrent/extension_helper.rb'
+require 'concurrent/native_extensions'
 
 module Concurrent
   module TestHelpers

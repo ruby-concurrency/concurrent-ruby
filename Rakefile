@@ -1,6 +1,6 @@
 #!/usr/bin/env rake
 
-require 'concurrent/extension_helper'
+require 'concurrent/native_extensions'
 
 ## load the two gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')

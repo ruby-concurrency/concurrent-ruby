@@ -20,7 +20,6 @@ Gem::Specification.new do |s|
 
   s.files            = Dir['ext/**/*.{h,c,cpp}']
   s.files           += [
-    'lib/concurrent/extension_helper.rb',
     'lib/concurrent/atomic_reference/concurrent_update_error.rb',
     'lib/concurrent/atomic_reference/direct_update.rb',
     'lib/concurrent/atomic_reference/numeric_cas_wrapper.rb',

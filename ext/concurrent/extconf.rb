@@ -1,6 +1,6 @@
 require 'fileutils'
 
-require 'concurrent/extension_helper'
+require 'concurrent/native_extensions'
 
 EXTENSION_NAME = 'extension'
 

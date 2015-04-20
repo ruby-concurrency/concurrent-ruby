@@ -12,7 +12,7 @@ atomic references and not the Atomic class.
 end
 #####################################################################
 
-require 'concurrent/extension_helper'
+require 'concurrent/native_extensions'
 require 'concurrent/utility/engine'
 require 'concurrent/atomic_reference/concurrent_update_error'
 require 'concurrent/atomic_reference/mutex_atomic'
