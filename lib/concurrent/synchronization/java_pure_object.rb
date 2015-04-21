@@ -32,10 +32,6 @@ module Concurrent
           JRuby.reference0(self).notify
           self
         end
-
-        def ensure_ivar_visibility!
-          # relying on undocumented behavior of JRuby, ivar access is volatile
-        end
       end
     end
   end
