@@ -16,10 +16,6 @@ module Concurrent
         @__condition__do_not_use_directly.wait timeout
         self
       end
-
-      def ensure_ivar_visibility!
-        # relying on undocumented behavior of CRuby, GVL quire has lock which ensures visibility of ivars
-      end
     end
   end
 end

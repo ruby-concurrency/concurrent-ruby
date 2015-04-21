@@ -42,25 +42,6 @@ module Concurrent
           self
         end
       end
-
-      def ensure_ivar_visibility!
-        Rubinius.memory_barrier
-      end
-
-      def self.attr_volatile *names
-        names.each do |name|
-          ivar = :"@volatile_#{name}"
-          define_method name do
-            Rubinius.memory_barrier
-            instance_variable_get ivar
-          end
-
-          define_method "#{name}=" do |value|
-            instance_variable_set ivar, value
-            Rubinius.memory_barrier
-          end
-        end
-      end
     end
   end
 end
