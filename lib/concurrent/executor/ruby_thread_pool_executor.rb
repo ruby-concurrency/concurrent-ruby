@@ -131,8 +131,6 @@ module Concurrent
       end
     end
 
-    alias_method :current_length, :length # TODO remove?
-
     # @api private
     def remove_busy_worker(worker)
       mutex.synchronize { ns_remove_busy_worker worker }

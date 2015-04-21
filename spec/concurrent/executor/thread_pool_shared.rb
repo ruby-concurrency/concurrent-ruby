@@ -47,12 +47,6 @@ shared_examples :thread_pool do
       subject.wait_for_termination(1)
       expect(subject.length).to eq 0
     end
-
-    it 'aliased as #current_length' do
-      5.times{ subject.post{ sleep(0.1) } }
-      sleep(0.1)
-      expect(subject.current_length).to eq subject.length
-    end
   end
 
   context '#scheduled_task_count' do

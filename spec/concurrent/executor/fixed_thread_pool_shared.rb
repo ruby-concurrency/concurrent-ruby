@@ -168,7 +168,7 @@ shared_examples :fixed_thread_pool do
       pool = described_class.new(5)
       100.times{ pool << proc{ sleep(1) } }
       sleep(0.1)
-      expect(pool.current_length).to eq 5
+      expect(pool.length).to eq 5
       pool.kill
     end
   end

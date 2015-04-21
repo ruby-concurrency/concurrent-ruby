@@ -104,7 +104,6 @@ if Concurrent.on_jruby?
       def length
         @executor.getPoolSize
       end
-      alias_method :current_length, :length
 
       # The largest number of threads that have been created in the pool since construction.
       #
