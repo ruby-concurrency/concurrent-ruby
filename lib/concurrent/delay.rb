@@ -3,6 +3,7 @@ require 'concurrent/configuration'
 require 'concurrent/obligation'
 require 'concurrent/executor/executor_options'
 require 'concurrent/executor/immediate_executor'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -37,7 +38,7 @@ module Concurrent
   #     execute on the given executor, allowing the call to timeout.
   #
   # @see Concurrent::Dereferenceable
-  class Delay
+  class Delay < Synchronization::Object
     include Obligation
     include ExecutorOptions
 
@@ -59,7 +60,8 @@ module Concurrent
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
 
-      init_obligation
+      super(&nil)
+      init_obligation(self)
       set_deref_options(opts)
       @task_executor = get_executor_from(opts)
 
@@ -145,16 +147,15 @@ module Concurrent
     # @yield the delayed operation to perform
     # @return [true, false] if success
     def reconfigure(&block)
-      mutex.lock
-      raise ArgumentError.new('no block given') unless block_given?
-      unless @computing
-        @task = block
-        true
-      else
-        false
+      mutex.synchronize do
+        raise ArgumentError.new('no block given') unless block_given?
+        unless @computing
+          @task = block
+          true
+        else
+          false
+        end
       end
-    ensure
-      mutex.unlock
     end
 
     private
@@ -163,10 +164,11 @@ module Concurrent
     def execute_task_once # :nodoc:
       # this function has been optimized for performance and
       # should not be modified without running new benchmarks
-      mutex.lock
-      execute = @computing = true unless @computing
-      task    = @task
-      mutex.unlock
+      execute = task = nil
+      mutex.synchronize do
+        execute = @computing = true unless @computing
+        task    = @task
+      end
 
       if execute
         @task_executor.post do
@@ -176,10 +178,10 @@ module Concurrent
           rescue => ex
             reason = ex
           end
-          mutex.lock
-          set_state(success, result, reason)
-          event.set
-          mutex.unlock
+          mutex.synchronize do
+            set_state(success, result, reason)
+            event.set
+          end
         end
       end
     end
