@@ -481,10 +481,7 @@ module Concurrent
 
     # @!visibility private
     def synchronized_set_state!(success, value, reason)
-      mutex.lock
-      set_state!(success, value, reason)
-    ensure
-      mutex.unlock
+      mutex.synchronize { set_state!(success, value, reason) }
     end
   end
 end

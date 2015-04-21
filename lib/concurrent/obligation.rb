@@ -113,10 +113,7 @@ module Concurrent
     #
     # @return [Symbol] the current state
     def state
-      mutex.lock
-      @state
-    ensure
-      mutex.unlock
+      mutex.synchronize { @state }
     end
 
     # If an exception was raised during processing this will return the
@@ -125,10 +122,7 @@ module Concurrent
     #
     # @return [Exception] the exception raised during processing or `nil`
     def reason
-      mutex.lock
-      @reason
-    ensure
-      mutex.unlock
+      mutex.synchronize { @reason }
     end
 
     # @example allows Obligation to be risen
@@ -147,8 +141,8 @@ module Concurrent
     end
 
     # @!visibility private
-    def init_obligation # :nodoc:
-      init_mutex
+    def init_obligation(*args) # :nodoc:
+      init_mutex(*args)
       @event = Event.new
     end
 
@@ -170,10 +164,7 @@ module Concurrent
 
     # @!visibility private
     def state=(value) # :nodoc:
-      mutex.lock
-      @state = value
-    ensure
-      mutex.unlock
+      mutex.synchronize { @state = value }
     end
 
     # Atomic compare and set operation
@@ -186,15 +177,14 @@ module Concurrent
     #
     # @!visibility private
     def compare_and_set_state(next_state, expected_current) # :nodoc:
-      mutex.lock
-      if @state == expected_current
-        @state = next_state
-        true
-      else
-        false
+      mutex.synchronize do
+        if @state == expected_current
+          @state = next_state
+          true
+        else
+          false
+        end
       end
-    ensure
-      mutex.unlock
     end
 
     # executes the block within mutex if current state is included in expected_states
@@ -203,16 +193,15 @@ module Concurrent
     #
     # @!visibility private
     def if_state(*expected_states) # :nodoc:
-      mutex.lock
-      raise ArgumentError.new('no block given') unless block_given?
+      mutex.synchronize do
+        raise ArgumentError.new('no block given') unless block_given?
 
-      if expected_states.include? @state
-        yield
-      else
-        false
+        if expected_states.include? @state
+          yield
+        else
+          false
+        end
       end
-    ensure
-      mutex.unlock
     end
   end
 end

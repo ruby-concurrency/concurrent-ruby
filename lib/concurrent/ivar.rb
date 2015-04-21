@@ -3,6 +3,7 @@ require 'thread'
 require 'concurrent/errors'
 require 'concurrent/obligation'
 require 'concurrent/observable'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -38,7 +39,7 @@ module Concurrent
   #   ivar.set 14
   #   ivar.get #=> 14
   #   ivar.set 2 # would now be an error
-  class IVar
+  class IVar < Synchronization::Object
     include Obligation
     include Observable
 
@@ -56,7 +57,8 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
-      init_obligation
+      super(&nil)
+      init_obligation(self)
       self.observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
       @state = :pending
