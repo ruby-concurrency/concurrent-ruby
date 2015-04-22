@@ -78,7 +78,7 @@ module Concurrent
     extend FutureShortcuts
     include FutureShortcuts
 
-    class Event < Concurrent::SynchronizedObject
+    class Event < Synchronization::Object
       extend FutureShortcuts
 
       # @api private
@@ -576,7 +576,7 @@ module Concurrent
     # TODO modularize blocked_by and notify blocked
 
     # @abstract
-    class AbstractPromise < Concurrent::SynchronizedObject
+    class AbstractPromise < Synchronization::Object
       # @api private
       def initialize(*args, &block)
         super(&nil)
