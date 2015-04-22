@@ -35,16 +35,16 @@ module Concurrent
       it 'deals with dead threads' do
         expect(subject).to receive(:ns_worker_died).exactly(5).times.and_call_original
 
-        5.times { subject.post { sleep 0.1 } }
-        worker_ids = subject.instance_variable_get(:@pool).map(&:object_id)
-        5.times { subject.post { sleep 0.1; raise Exception } }
-        sleep(0.1)
+        dead_threads_queue = Queue.new
+        5.times { subject.post { sleep 0.1; dead_threads_queue.push Thread.current; raise Exception } }
+        sleep(0.2)
         latch = Concurrent::CountDownLatch.new(5)
         5.times { subject.post { sleep 0.1; latch.count_down } }
-        # processes
         expect(latch.wait(1)).to be true
 
-        expect(worker_ids - subject.instance_variable_get(:@pool).map(&:object_id)).not_to be_empty # some were replaced
+        dead_threads = []
+        dead_threads << dead_threads_queue.pop until dead_threads_queue.empty?
+        expect(dead_threads.all? { |t| !t.alive? }).to be true
       end
     end
 

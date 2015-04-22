@@ -1,61 +1,11 @@
 require 'concurrent/errors'
 require 'concurrent/logging'
+require 'concurrent/at_exit'
 require 'concurrent/atomic/event'
 
 module Concurrent
 
   module Executor
-    class AtExitAutoTermination
-      def initialize(enabled = true)
-        @mutex     = Mutex.new
-        @executors = Set.new
-        @enabled   = enabled
-        @installed = false
-      end
-
-      def add(executor)
-        @mutex.synchronize { @executors.add executor }
-      end
-
-      def remove(executor)
-        @mutex.synchronize { @executors.delete executor }
-      end
-
-      def enabled?
-        @mutex.synchronize { @enabled }
-      end
-
-      def enabled=(value)
-        @mutex.synchronize { @enabled = value }
-      end
-
-      def terminate
-        executors = @mutex.synchronize { @executors.to_a if @enabled }
-        if executors
-          executors.each(&:kill) # TODO be gentle first
-          executors.each(&:wait_for_termination)
-          executors.clear
-          true
-        else
-          false
-        end
-      end
-
-      def install
-        @installed ||= begin
-          at_exit { terminate }
-          true
-        end
-        self
-      end
-
-      def executors
-        @mutex.synchronize { @executors.to_a }
-      end
-    end
-
-    AT_EXIT_AUTO_TERMINATION = AtExitAutoTermination.new.install
-
     # The policy defining how rejected tasks (tasks received once the
     # queue size reaches the configured `max_queue`, or after the
     # executor has shut down) are handled. Must be one of the values
@@ -126,13 +76,25 @@ module Concurrent
     private
 
     def ns_auto_terminate?
-      @auto_terminate
+      !!@auto_terminate
     end
 
     def ns_auto_terminate=(value)
-      AT_EXIT_AUTO_TERMINATION.add self if value == true
-      AT_EXIT_AUTO_TERMINATION.remove self if value == false
-      @auto_terminate = value
+      case value
+      when true
+        AtExit.add(self) { terminate_at_exit }
+        @auto_terminate = true
+      when false
+        AtExit.delete(self)
+        @auto_terminate = false
+      else
+        raise ArgumentError
+      end
+    end
+
+    def terminate_at_exit
+      kill # TODO be gentle first
+      wait_for_termination(10)
     end
   end
 

@@ -1,6 +1,7 @@
 require 'thread'
 require 'concurrent/atomics'
 require 'concurrent/errors'
+require 'concurrent/at_exit'
 require 'concurrent/executors'
 require 'concurrent/utility/processor_count'
 
@@ -39,11 +40,11 @@ module Concurrent
     GLOBAL_LOGGER.value = value
   end
 
-  # Disables pool auto-termination which is called on `at_exit` callback.
+  # Disables AtExit hooks including pool auto-termination hooks.
   # When disabled it will be the application
-  # programmer's responsibility to ensure that the thread pools
+  # programmer's responsibility to ensure that the hooks
   # are shutdown properly prior to application exit
-  # by calling {.terminate_pools!} method.
+  # by calling {AtExit.run} method.
   #
   # @note this option should be needed only because of `at_exit` ordering
   #   issues which may arise when running some of the testing frameworks.
@@ -53,20 +54,28 @@ module Concurrent
   # @note This method should *never* be called
   #   from within a gem. It should *only* be used from within the main
   #   application and even then it should be used only when necessary.
+  # @see AtExit
+  def self.disable_at_exit_hooks!
+    AtExit.enabled = false
+  end
+
   def self.disable_executor_auto_termination!
-    Executor::AT_EXIT_AUTO_TERMINATION.enabled = false
+    warn '[DEPRECATED] Use Concurrent.disable_at_exit_hooks! instead'
+    disable_at_exit_hooks!
   end
 
   # @return [true,false]
   # @see .disable_executor_auto_termination!
   def self.disable_executor_auto_termination?
-    Executor::AT_EXIT_AUTO_TERMINATION.enabled?
+    warn '[DEPRECATED] Use Concurrent::AtExit.enabled? instead'
+    AtExit.enabled?
   end
 
   # terminates all pools and blocks until they are terminated
   # @see .disable_executor_auto_termination!
   def self.terminate_pools!
-    Executor::AT_EXIT_AUTO_TERMINATION.terminate
+    warn '[DEPRECATED] Use Concurrent::AtExit.run instead'
+    AtExit.run
   end
 
   # Global thread pool optimized for short, fast *operations*.
