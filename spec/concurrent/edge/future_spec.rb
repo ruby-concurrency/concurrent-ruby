@@ -65,12 +65,25 @@ describe 'Concurrent::Edge futures' do
   describe '.event' do
     specify do
       completable_event = Concurrent.event
-      one               = completable_event.event.chain { 1 }
-      join              = Concurrent.join(completable_event.event).chain { 1 }
+      one               = completable_event.chain { 1 }
+      join              = Concurrent.join(completable_event).chain { 1 }
       expect(one.completed?).to be false
       completable_event.complete
       expect(one.value).to eq 1
       expect(join.wait.completed?).to be true
+    end
+  end
+
+  describe '.future without block' do
+    specify do
+      completable_future = Concurrent.future
+      one                = completable_future.then(&:succ)
+      join               = Concurrent.join(completable_future).then { |v| v }
+      expect(one.completed?).to be false
+      completable_future.success 0
+      expect(one.value).to eq 1
+      expect(join.wait!.completed?).to be true
+      expect(join.value!).to eq 0
     end
   end
 
@@ -107,11 +120,11 @@ describe 'Concurrent::Edge futures' do
 
     it 'chains' do
       future0 = Concurrent.future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
-      future1 = future0.then(:io) { raise 'boo' } # executed on IO_EXECUTOR
+      future1 = future0.then(:fast) { raise 'boo' } # executed on IO_EXECUTOR
       future2 = future1.then { |v| v + 1 } # will fail with 'boo' error, executed on default FAST_EXECUTOR
       future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
-      future5 = future3.with_default_executor(:io) # connects new future with different executor, the new future is completed when future3 is
+      future5 = future3.with_default_executor(:fast) # connects new future with different executor, the new future is completed when future3 is
       future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
       future7 = Concurrent.join(future0, future3)
       future8 = future0.rescue { raise 'never happens' } # future0 succeeds so future8'll have same value as future 0
@@ -127,15 +140,15 @@ describe 'Concurrent::Edge futures' do
 
       expect(table.join("\n")).to eq <<-TABLE.gsub(/^\s+\|/, '').strip
         |index success      value reason pool d.pool
-        |    0    true          3        fast   fast
-        |    1   false               boo   io   fast
-        |    2   false               boo fast   fast
-        |    3    true        boo        fast   fast
-        |    4    true       true        fast   fast
-        |    5    true        boo                 io
-        |    6    true        Boo          io     io
-        |    7    true [3, "boo"]               fast
-        |    8    true          3        fast   fast
+        |    0    true          3          io     io
+        |    1   false               boo fast     io
+        |    2   false               boo   io     io
+        |    3    true        boo          io     io
+        |    4    true       true          io     io
+        |    5    true        boo               fast
+        |    6    true        Boo        fast   fast
+        |    7    true [3, "boo"]                 io
+        |    8    true          3          io     io
       TABLE
     end
 
