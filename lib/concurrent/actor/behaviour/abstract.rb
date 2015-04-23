@@ -38,7 +38,7 @@ module Concurrent
 
         def reject_envelope(envelope)
           envelope.reject! ActorTerminated.new(reference)
-          dead_letter_routing << envelope unless envelope.ivar
+          dead_letter_routing << envelope unless envelope.future
           log Logging::DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
         end
       end

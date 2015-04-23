@@ -1,9 +1,8 @@
 require 'concurrent/configuration'
-require 'concurrent/delay'
 require 'concurrent/executor/serialized_execution'
-require 'concurrent/ivar'
 require 'concurrent/logging'
 require 'concurrent/synchronization'
+require 'concurrent/edge/future'
 
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?
@@ -40,9 +39,9 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    @root = Delay.new do
-      Core.new(parent: nil, name: '/', class: Root, initialized: ivar = IVar.new).reference.tap do
-        ivar.no_error!
+    @root = Concurrent.delay do
+      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent.future).reference.tap do
+        future.wait!
       end
     end
 
@@ -77,7 +76,7 @@ module Concurrent
 
     # as {.spawn} but it'll raise when Actor not initialized properly
     def self.spawn!(*args, &block)
-      spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
+      spawn(spawn_optionify(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
     end
 
     # @overload spawn_optionify(context_class, name, *args)

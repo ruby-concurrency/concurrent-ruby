@@ -25,7 +25,7 @@ module Concurrent
       end
 
       def redirect(reference, envelope = self.envelope)
-        reference.message(envelope.message, envelope.ivar)
+        reference.message(envelope.message, envelope.future)
         Behaviour::MESSAGE_PROCESSED
       end
 

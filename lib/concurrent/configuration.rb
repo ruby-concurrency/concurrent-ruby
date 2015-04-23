@@ -121,7 +121,7 @@ module Concurrent
         auto_terminate:  opts.fetch(:auto_terminate, true),
         idletime:        60, # 1 minute
         max_queue:       0, # unlimited
-        fallback_policy: :caller_runs # shouldn't matter -- 0 max queue
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
 
@@ -133,7 +133,7 @@ module Concurrent
         auto_terminate:  opts.fetch(:auto_terminate, true),
         idletime:        60, # 1 minute
         max_queue:       0, # unlimited
-        fallback_policy: :caller_runs # shouldn't matter -- 0 max queue
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
 

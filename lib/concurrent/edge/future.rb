@@ -394,6 +394,11 @@ module Concurrent
         pr_then(default_executor, executor, &callback)
       end
 
+      # Creates new future where its value is result of asking actor with value of this Future.
+      def then_ask(actor)
+        self.then { |v| actor.ask(v) }.flat
+      end
+
       # @yield [reason] executed only on parent failure
       def rescue(executor = nil, &callback)
         pr_rescue(default_executor, executor, &callback)
@@ -695,10 +700,10 @@ module Concurrent
     #   Concurrent.promise
     # @note TODO consider to allow being blocked_by
     class CompletableFuturePromise < AbstractPromise
-      # Set the `IVar` to a value and wake or notify all threads waiting on it.
+      # Set the `Future` to a value and wake or notify all threads waiting on it.
       #
-      # @param [Object] value the value to store in the `IVar`
-      # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
+      # @param [Object] value the value to store in the `Future`
+      # @raise [Concurrent::MultipleAssignmentError] if the `Future` has already been set or otherwise completed
       # @return [Future]
       def success(value)
         complete(true, value, nil)
@@ -708,10 +713,10 @@ module Concurrent
         complete(true, value, nil, false)
       end
 
-      # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
+      # Set the `Future` to failed due to some error and wake or notify all threads waiting on it.
       #
       # @param [Object] reason for the failure
-      # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already been set or otherwise completed
+      # @raise [Concurrent::MultipleAssignmentError] if the `Future` has already been set or otherwise completed
       # @return [Future]
       def fail(reason = StandardError.new)
         complete(false, nil, reason)

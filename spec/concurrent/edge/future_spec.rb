@@ -197,32 +197,8 @@ describe 'Concurrent::Edge futures' do
   end
 
   it 'interoperability' do
-    skip
     actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
       -> v { v * 2 }
-    end
-
-    # convert ivar to future
-    Concurrent::IVar.class_eval do
-      def to_future
-        Concurrent.promise.tap do |p|
-          with_observer { p.complete fulfilled?, value, reason }
-        end.future
-      end
-    end
-
-    expect(Concurrent.
-               future { 2 }.
-               then { |v| actor.ask(v).to_future }.
-               flat.
-               then { |v| v + 2 }.
-               value).to eq 6
-
-    # possible simplification with helper
-    Concurrent::Future.class_eval do
-      def then_ask(actor)
-        self.then { |v| actor.ask(v).to_future }.flat
-      end
     end
 
     expect(Concurrent.

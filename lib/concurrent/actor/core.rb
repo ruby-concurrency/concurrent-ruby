@@ -40,7 +40,7 @@ module Concurrent
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>]
       #   behaviour_definition, array of pairs where each pair is behaviour
       #   class and its args, see {Behaviour.basic_behaviour_definition}
-      # @option opts [IVar, nil] initialized, if present it'll be set or failed
+      # @option opts [CompletableFuture, nil] initialized, if present it'll be set or failed
       #   after {Context} initialization
       # @option opts [Proc, nil] logger a proc accepting (level, progname,
       #   message = nil, &block) params, can be used to hook actor instance to
@@ -77,7 +77,7 @@ module Concurrent
 
           @args       = opts.fetch(:args, [])
           @block      = block
-          initialized = Type! opts[:initialized], IVar, NilClass
+          initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
 
           messages = []
           messages << :link if opts[:link]
@@ -91,7 +91,7 @@ module Concurrent
                 handle_envelope Envelope.new(message, nil, parent, reference)
               end
 
-              initialized.set reference if initialized
+              initialized.success reference if initialized
             rescue => ex
               log ERROR, ex
               @first_behaviour.terminate!
