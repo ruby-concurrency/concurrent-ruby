@@ -3,47 +3,47 @@ require 'concurrent/synchronization'
 
 module Concurrent
 
-  # Provides ability to add and remove hooks to be run at `Kernel#at_exit`, order is undefined.
-  # Each hook is executed at most once.
+  # Provides ability to add and remove handlers to be run at `Kernel#at_exit`, order is undefined.
+  # Each handler is executed at most once.
   class AtExitImplementation < Synchronization::Object
     include Logging
 
     def initialize(enabled = true)
       super()
       synchronize do
-        @hooks   = {}
-        @enabled = enabled
+        @handlers = {}
+        @enabled  = enabled
       end
     end
 
-    # Add a hook to be run at `Kernel#at_exit`
-    # @param [Object] hook_id optionally provide an id, if allready present, hook is replaced
-    # @yield the hook
-    # @return id of the hook
-    def add(hook_id = nil, &hook)
-      id = hook_id || hook.object_id
-      synchronize { @hooks[id] = hook }
+    # Add a handler to be run at `Kernel#at_exit`
+    # @param [Object] handler_id optionally provide an id, if allready present, handler is replaced
+    # @yield the handler
+    # @return id of the handler
+    def add(handler_id = nil, &handler)
+      id = handler_id || handler.object_id
+      synchronize { @handlers[id] = handler }
       id
     end
 
-    # Delete a hook by hook_id
+    # Delete a handler by handler_id
     # @return [true, false]
-    def delete(hook_id)
-      !!synchronize { @hooks.delete hook_id }
+    def delete(handler_id)
+      !!synchronize { @handlers.delete handler_id }
     end
 
-    # Is hook with hook_id rpesent?
+    # Is handler with handler_id rpesent?
     # @return [true, false]
-    def hook?(hook_id)
-      synchronize { @hooks.key? hook_id }
+    def handler?(handler_id)
+      synchronize { @handlers.key? handler_id }
     end
 
-    # @return copy of the hooks
-    def hooks
-      synchronize { @hooks }.clone
+    # @return copy of the handlers
+    def handlers
+      synchronize { @handlers }.clone
     end
 
-    # install `Kernel#at_exit` callback to execute added hooks
+    # install `Kernel#at_exit` callback to execute added handlers
     def install
       synchronize do
         @installed ||= begin
@@ -64,18 +64,18 @@ module Concurrent
       synchronize { @enabled = value }
     end
 
-    # run the hooks manually
-    # @return ids of the hooks
+    # run the handlers manually
+    # @return ids of the handlers
     def run
-      hooks, _ = synchronize { hooks, @hooks = @hooks, {} }
-      hooks.each do |_, hook|
+      handlers, _ = synchronize { handlers, @handlers = @handlers, {} }
+      handlers.each do |_, handler|
         begin
-          hook.call
+          handler.call
         rescue => error
           log ERROR, error
         end
       end
-      hooks.keys
+      handlers.keys
     end
 
     private
