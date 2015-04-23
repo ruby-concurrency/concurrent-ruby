@@ -1,5 +1,3 @@
-require 'concurrent/atomic'
-
 module Concurrent
 
   # @!macro [attach] abstract_thread_local_var
