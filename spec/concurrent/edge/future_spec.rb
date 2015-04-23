@@ -1,4 +1,5 @@
 require 'concurrent'
+require 'thread'
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::DEBUG
@@ -12,8 +13,8 @@ describe 'Concurrent::Edge futures' do
     it 'executes tasks asynchronously' do
       queue = Queue.new
       value = 12
-      Concurrent.post { queue << value }
-      Concurrent.post(:io) { queue << value }
+      Concurrent.post { queue.push(value) }
+      Concurrent.post(:io) { queue.push(value) }
       expect(queue.pop).to eq value
       expect(queue.pop).to eq value
     end
@@ -38,11 +39,11 @@ describe 'Concurrent::Edge futures' do
     it 'scheduled execution' do
       start  = Time.now.to_f
       queue  = Queue.new
-      future = Concurrent.schedule(0.1) { 1 + 1 }.then { |v| queue << v << Time.now.to_f - start }
+      future = Concurrent.schedule(0.1) { 1 + 1 }.then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       expect(future.value).to eq queue
       expect(queue.pop).to eq 2
-      expect(queue.pop).to be_between(0.1, 0.15)
+      expect(queue.pop).to be_between(0.1, 0.2)
     end
 
     it 'scheduled execution in graph' do
@@ -52,12 +53,12 @@ describe 'Concurrent::Edge futures' do
           future { sleep 0.1; 1 }.
           schedule(0.1).
           then { |v| v + 1 }.
-          then { |v| queue << v << Time.now.to_f - start }
+          then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       future.wait!
       expect(future.value).to eq queue
       expect(queue.pop).to eq 2
-      expect(queue.pop).to be_between(0.2, 0.25)
+      expect(queue.pop).to be_between(0.2, 0.3)
     end
   end
 
@@ -79,7 +80,8 @@ describe 'Concurrent::Edge futures' do
       f1    = Concurrent.future(:io) { queue.pop }
       f2    = Concurrent.future(:io) { queue.pop }
 
-      queue << 1 << 2
+      queue.push(1)
+      queue.push(2)
 
       anys = [Concurrent.any(f1, f2),
               f1 | f2,
@@ -96,12 +98,11 @@ describe 'Concurrent::Edge futures' do
     it 'has sync and async callbacks' do
       queue  = Queue.new
       future = Concurrent.future { :value } # executed on FAST_EXECUTOR pool by default
-      future.on_completion(:io) { queue << :async } # async callback overridden to execute on IO_EXECUTOR pool
-      future.on_completion! { queue << :sync } # sync callback executed right after completion in the same thread-pool
+      future.on_completion(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
+      future.on_completion! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
 
       expect(future.value).to eq :value
-      expect(queue.pop).to eq :sync
-      expect(queue.pop).to eq :async
+      expect([queue.pop, queue.pop].sort).to eq [:async, :sync]
     end
 
     it 'chains' do
@@ -178,7 +179,7 @@ describe 'Concurrent::Edge futures' do
 
     it 'has flat map' do
       f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
-      expect(f.value).to eq 2
+      expect(f.value!).to eq 2
     end
   end
 

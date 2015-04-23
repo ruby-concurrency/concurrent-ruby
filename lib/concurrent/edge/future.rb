@@ -201,7 +201,7 @@ module Concurrent
         @state            = :pending
         @callbacks        = []
         @default_executor = default_executor
-        @touched          = false
+        @touched          = false # TODO use atom to avoid locking
       end
 
       def ns_wait_until_complete(timeout = nil)
@@ -639,7 +639,6 @@ module Concurrent
     end
 
     class CompletableEvent < AbstractPromise
-      # @api private
       public :complete
 
       private
@@ -861,7 +860,7 @@ module Concurrent
       private
 
       def ns_done(future)
-        value = future.value
+        value = future.value # TODO get the value as argument
         if @levels > 0
           case value
           when Future
@@ -885,8 +884,8 @@ module Concurrent
         @levels = levels
       end
 
-      def pr_completable(done_future, _, future)
-        pr_complete future, *done_future.result
+      def pr_completable(_, blocked_by, future)
+        pr_complete future, *blocked_by.last.result
       end
     end
 
