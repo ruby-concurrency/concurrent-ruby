@@ -1,5 +1,6 @@
 require 'concurrent/errors'
 require 'concurrent/logging'
+require 'concurrent/at_exit'
 require 'concurrent/atomic/event'
 
 module Concurrent
@@ -10,6 +11,18 @@ module Concurrent
     # executor has shut down) are handled. Must be one of the values
     # specified in `FALLBACK_POLICIES`.
     attr_reader :fallback_policy
+
+    # def initialize(opts)
+    #   @auto_terminate = opts.fetch(:auto_terminate, true)
+    # end
+
+    def auto_terminate?
+      mutex.synchronize { ns_auto_terminate? }
+    end
+
+    def auto_terminate=(value)
+      mutex.synchronize { self.ns_auto_terminate = value }
+    end
 
     # @!macro [attach] executor_module_method_can_overflow_question
     #
@@ -60,36 +73,28 @@ module Concurrent
       false
     end
 
-    def auto_terminate?
-      !! @auto_terminate
+    private
+
+    def ns_auto_terminate?
+      !!@auto_terminate
     end
 
-    protected
-
-    def enable_at_exit_handler!(opts = {})
-      if opts.fetch(:stop_on_exit, true)
+    def ns_auto_terminate=(value)
+      case value
+      when true
+        AtExit.add(self) { terminate_at_exit }
         @auto_terminate = true
-        if Concurrent.on_cruby?
-          create_mri_at_exit_handler!(self.object_id)
-        else
-          create_at_exit_handler!(self)
-        end
+      when false
+        AtExit.delete(self)
+        @auto_terminate = false
+      else
+        raise ArgumentError
       end
     end
 
-    def create_mri_at_exit_handler!(id)
-      at_exit do
-        if Concurrent.auto_terminate_all_executors?
-          this = ObjectSpace._id2ref(id)
-          this.kill if this
-        end
-      end
-    end
-
-    def create_at_exit_handler!(this)
-      at_exit do
-        this.kill if Concurrent.auto_terminate_all_executors?
-      end
+    def terminate_at_exit
+      kill # TODO be gentle first
+      wait_for_termination(10)
     end
   end
 
@@ -126,7 +131,7 @@ module Concurrent
     include Logging
 
     # The set of possible fallback policies that may be set at thread pool creation.
-    FALLBACK_POLICIES          = [:abort, :discard, :caller_runs]
+    FALLBACK_POLICIES = [:abort, :discard, :caller_runs]
 
     # @!macro [attach] executor_method_post
     #
@@ -168,7 +173,7 @@ module Concurrent
     #
     #   @return [Boolean] `true` when running, `false` when shutting down or shutdown
     def running?
-      ! stop_event.set?
+      !stop_event.set?
     end
 
     # @!macro [attach] executor_method_shuttingdown_question
@@ -177,7 +182,7 @@ module Concurrent
     #
     #   @return [Boolean] `true` when not running and not shutdown, else `false`
     def shuttingdown?
-      ! (running? || shutdown?)
+      !(running? || shutdown?)
     end
 
     # @!macro [attach] executor_method_shutdown_question
@@ -197,6 +202,7 @@ module Concurrent
     def shutdown
       mutex.synchronize do
         break unless running?
+        self.ns_auto_terminate = false
         stop_event.set
         shutdown_execution
       end
@@ -212,6 +218,7 @@ module Concurrent
     def kill
       mutex.synchronize do
         break if shutdown?
+        self.ns_auto_terminate = false
         stop_event.set
         kill_execution
         stopped_event.set
@@ -243,8 +250,8 @@ module Concurrent
     #   Initialize the executor by creating and initializing all the
     #   internal synchronization objects.
     def init_executor
-      @mutex = Mutex.new
-      @stop_event = Event.new
+      @mutex         = Mutex.new
+      @stop_event    = Event.new
       @stopped_event = Event.new
     end
 
@@ -254,7 +261,7 @@ module Concurrent
     end
 
     # @!macro [attach] executor_method_shutdown_execution
-    # 
+    #
     #   Callback method called when an orderly shutdown has completed.
     #   The default behavior is to signal all waiting threads.
     def shutdown_execution
@@ -278,9 +285,9 @@ module Concurrent
 
       # The set of possible fallback policies that may be set at thread pool creation.
       FALLBACK_POLICIES = {
-        abort: java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
-        discard: java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
-        caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
+          abort:       java.util.concurrent.ThreadPoolExecutor::AbortPolicy,
+          discard:     java.util.concurrent.ThreadPoolExecutor::DiscardPolicy,
+          caller_runs: java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
       }.freeze
 
       # @!macro executor_method_post
@@ -302,7 +309,7 @@ module Concurrent
 
       # @!macro executor_method_running_question
       def running?
-        ! (shuttingdown? || shutdown?)
+        !(shuttingdown? || shutdown?)
       end
 
       # @!macro executor_method_shuttingdown_question
@@ -331,14 +338,28 @@ module Concurrent
 
       # @!macro executor_method_shutdown
       def shutdown
+        self.ns_auto_terminate = false
         @executor.shutdown
         nil
       end
 
       # @!macro executor_method_kill
       def kill
+        self.ns_auto_terminate = false
         @executor.shutdownNow
         nil
+      end
+
+      protected
+
+      # FIXME: it's here just for synchronization in auto_terminate methods, should be replaced and solved
+      # by the synchronization layer
+      def mutex
+        self
+      end
+
+      def synchronize
+        JRuby.reference0(self).synchronized { yield }
       end
     end
   end

@@ -27,10 +27,10 @@ module Concurrent
 
       it 'creates new workers when there are none available' do
         pool = described_class.new(5)
-        expect(pool.current_length).to eq 0
+        expect(pool.length).to eq 0
         5.times{ pool << proc{ sleep(1) } }
         sleep(0.1)
-        expect(pool.current_length).to eq 5
+        expect(pool.length).to eq 5
         pool.kill
       end
     end

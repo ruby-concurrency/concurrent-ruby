@@ -22,7 +22,7 @@ if Concurrent.on_jruby?
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor
         @fallback_policy = opts.fetch(:fallback_policy, :discard)
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.keys.include?(@fallback_policy)
-        enable_at_exit_handler!(opts)
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end

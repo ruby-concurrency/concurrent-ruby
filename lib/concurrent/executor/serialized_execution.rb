@@ -98,6 +98,8 @@ module Concurrent
         job = @stash.shift || (@being_executed = false)
       end
 
+      # TODO maybe be able to tell caching pool to just enqueue this job, because the current one end at the end
+      # of this block
       call_job job if job
     end
   end

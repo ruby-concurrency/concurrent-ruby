@@ -19,31 +19,41 @@ module Concurrent
     #
     # @!visibility private
     def get_executor_from(opts = {}) # :nodoc:
-      if (executor = opts[:executor]).is_a? Symbol
+      case
+      when opts.key?(:executor)
         case opts[:executor]
         when :fast
           Concurrent.global_fast_executor
         when :io
           Concurrent.global_io_executor
         when :immediate
-          Concurrent::ImmediateExecutor.new
+          Concurrent.global_immediate_executor
         when :operation
           Kernel.warn '[DEPRECATED] use `executor: :fast` instead'
           Concurrent.global_fast_executor
         when :task
           Kernel.warn '[DEPRECATED] use `executor: :io` instead'
           Concurrent.global_io_executor
+        when Executor
+          opts[:executor]
+        when nil
+          nil
         else
-          raise ArgumentError.new("executor '#{executor}' not recognized")
+          raise ArgumentError.new("executor '#{opts[:executor]}' not recognized")
         end
-      elsif opts[:executor]
-        opts[:executor]
-      elsif opts[:operation] == true || opts[:task] == false
-        Kernel.warn '[DEPRECATED] use `executor: :fast` instead'
-        Concurrent.global_fast_executor
-      elsif opts[:operation] == false || opts[:task] == true
-        Kernel.warn '[DEPRECATED] use `executor: :io` instead'
-        Concurrent.global_io_executor
+
+      when opts.key?(:operation) || opts.key?(:task)
+        if opts[:operation] == true || opts[:task] == false
+          Kernel.warn '[DEPRECATED] use `executor: :fast` instead'
+          return Concurrent.global_fast_executor
+        end
+
+        if opts[:operation] == false || opts[:task] == true
+          Kernel.warn '[DEPRECATED] use `executor: :io` instead'
+          return Concurrent.global_io_executor
+        end
+
+        raise ArgumentError.new("executor '#{opts[:executor]}' not recognized")
       else
         nil
       end

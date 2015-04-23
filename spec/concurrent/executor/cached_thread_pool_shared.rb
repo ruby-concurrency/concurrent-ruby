@@ -95,20 +95,12 @@ shared_examples :cached_thread_pool do
     end
   end
 
-  context '#status' do
-
-    it 'returns an array' do
-      allow(subject).to receive(:warn)
-      expect(subject.status).to be_kind_of(Array)
-    end
-  end
-
   context '#idletime' do
 
     subject{ described_class.new(idletime: 42) }
 
     it 'returns the thread idletime' do
-      expect(subject.idletime).to eq described_class::DEFAULT_THREAD_IDLETIMEOUT
+      expect(subject.idletime).to eq 42
     end
   end
 end

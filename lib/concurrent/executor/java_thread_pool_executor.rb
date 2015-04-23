@@ -76,7 +76,7 @@ if Concurrent.on_jruby?
           idletime, java.util.concurrent.TimeUnit::SECONDS,
           queue, FALLBACK_POLICIES[@fallback_policy].new)
 
-        enable_at_exit_handler!(opts)
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
 
       # @!macro executor_module_method_can_overflow_question
@@ -104,7 +104,6 @@ if Concurrent.on_jruby?
       def length
         @executor.getPoolSize
       end
-      alias_method :current_length, :length
 
       # The largest number of threads that have been created in the pool since construction.
       #
@@ -147,15 +146,6 @@ if Concurrent.on_jruby?
       # @return [Integer] the remaining_capacity
       def remaining_capacity
         @max_queue == 0 ? -1 : @executor.getQueue.remainingCapacity
-      end
-
-      # This method is deprecated and will be removed soon.
-      # This method is supost to return the threads status, but Java API doesn't
-      # provide a way to get the thread status. So we return an empty Array instead.
-      def status
-        warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
-        warn "Calls to `status` return an empty Array. Java ThreadPoolExecutor does not provide thread's status."
-        []
       end
 
       # Is the thread pool running?

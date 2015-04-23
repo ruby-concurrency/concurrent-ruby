@@ -1,6 +1,7 @@
 require 'concurrent/version'
 
 require 'concurrent/synchronization'
+require 'concurrent/at_exit'
 
 require 'concurrent/configuration'
 
