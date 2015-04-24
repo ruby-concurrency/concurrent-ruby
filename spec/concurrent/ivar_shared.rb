@@ -94,22 +94,22 @@ shared_examples :ivar do
     end
   end
 
-  describe '#set?' do
+  describe '#try_set' do
 
     context 'when unset' do
 
       it 'assigns the value' do
-        subject.set?(32)
+        subject.try_set(32)
         expect(subject.value).to eq 32
       end
 
       it 'assigns the block result' do
-        subject.set?{ 32 }
+        subject.try_set{ 32 }
         expect(subject.value).to eq 32
       end
 
       it 'returns true' do
-        expect(subject.set?('hi')).to eq true
+        expect(subject.try_set('hi')).to eq true
       end
     end
 
@@ -118,17 +118,17 @@ shared_examples :ivar do
       before(:each) { subject.set(27) }
 
       it 'does not assign the value' do
-        subject.set?(88)
+        subject.try_set(88)
         expect(subject.value).to eq 27
       end
 
       it 'does not assign the block result' do
-        subject.set?{ 88 }
+        subject.try_set{ 88 }
         expect(subject.value).to eq 27
       end
 
       it 'returns false' do
-        expect(subject.set?('hello')).to eq false
+        expect(subject.try_set('hello')).to eq false
       end
     end
 
@@ -137,12 +137,12 @@ shared_examples :ivar do
       before(:each) { subject.fail }
 
       it 'does not assign the value' do
-        subject.set?(88)
+        subject.try_set(88)
         expect(subject).to be_rejected
       end
 
       it 'does not assign the block result' do
-        subject.set?{ 88 }
+        subject.try_set{ 88 }
         expect(subject).to be_rejected
       end
 
@@ -151,7 +151,7 @@ shared_examples :ivar do
       end
 
       it 'returns false' do
-        expect(subject.set?('hello')).to eq false
+        expect(subject.try_set('hello')).to eq false
       end
     end
   end

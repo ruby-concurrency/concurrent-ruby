@@ -98,16 +98,17 @@ module Concurrent
       observer
     end
 
-    # Set the `IVar` to a value and wake or notify all threads waiting on it.
-    #
-    # @!macro [attach] ivar_set_parameters_and_exceptions
-    #   @param [Object] value the value to store in the `IVar`
-    #   @yield A block operation to use for setting the value
-    #   @raise [ArgumentError] if both a value and a block are given
-    #   @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
-    #     been set or otherwise completed
-    #
-    # @return [IVar] self
+    # @!macro [attach] ivar_set_method
+    #   Set the `IVar` to a value and wake or notify all threads waiting on it.
+    #  
+    #   @!macro [attach] ivar_set_parameters_and_exceptions
+    #     @param [Object] value the value to store in the `IVar`
+    #     @yield A block operation to use for setting the value
+    #     @raise [ArgumentError] if both a value and a block are given
+    #     @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #       been set or otherwise completed
+    #  
+    #   @return [IVar] self
     def set(value = NO_VALUE)
       check_for_block_or_value!(block_given?, value)
       raise MultipleAssignmentError unless compare_and_set_state(:processing, :pending)
@@ -120,12 +121,13 @@ module Concurrent
       end
     end
 
-    # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
-    #
-    # @param [Object] reason for the failure
-    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
-    #   been set or otherwise completed
-    # @return [IVar] self
+    # @!macro [attach] ivar_fail_method
+    #   Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
+    #  
+    #   @param [Object] reason for the failure
+    #   @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #     been set or otherwise completed
+    #   @return [IVar] self
     def fail(reason = StandardError.new)
       complete(false, nil, reason)
     end
@@ -136,7 +138,7 @@ module Concurrent
     # @!macro ivar_set_parameters_and_exceptions
     #
     # @return [Boolean] true if the value was set else false
-    def set?(value = NO_VALUE, &block)
+    def try_set(value = NO_VALUE, &block)
       set(value, &block)
       true
     rescue MultipleAssignmentError

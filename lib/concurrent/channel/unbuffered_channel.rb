@@ -12,7 +12,7 @@ module Concurrent
     end
 
     def push(value)
-      until @probe_set.take.set?([value, self])
+      until @probe_set.take.try_set([value, self])
       end
     end
 
