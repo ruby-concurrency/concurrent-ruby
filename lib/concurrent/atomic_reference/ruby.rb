@@ -1,4 +1,4 @@
-if defined? Concurrent::CAtomic
+if defined? Concurrent::CAtomicReference
   require 'concurrent/native_extensions'
   require 'concurrent/atomic_reference/direct_update'
   require 'concurrent/atomic_reference/numeric_cas_wrapper'
@@ -6,7 +6,7 @@ if defined? Concurrent::CAtomic
   module Concurrent
 
     # @!macro atomic_reference
-    class CAtomic
+    class CAtomicReference
       include Concurrent::AtomicDirectUpdate
       include Concurrent::AtomicNumericCompareAndSetWrapper
 

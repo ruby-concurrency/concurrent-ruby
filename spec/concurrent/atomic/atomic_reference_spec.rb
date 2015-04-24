@@ -1,4 +1,4 @@
-shared_examples :atomic do
+shared_examples :atomic_reference do
 
   specify :test_construct do
     atomic = described_class.new
@@ -127,44 +127,82 @@ end
 
 module Concurrent
 
-  describe Atomic do
-    it_should_behave_like :atomic
+  describe AtomicReference do
+    it_should_behave_like :atomic_reference
   end
 
-  describe MutexAtomic do
-    it_should_behave_like :atomic
+  describe MutexAtomicReference do
+    it_should_behave_like :atomic_reference
   end
 
-  if defined? Concurrent::CAtomic
-    describe CAtomic do
-      it_should_behave_like :atomic
+  if defined? Concurrent::CAtomicReference
+    describe CAtomicReference do
+      it_should_behave_like :atomic_reference
     end
-  elsif defined? Concurrent::JavaAtomic
-    describe JavaAtomic do
-      it_should_behave_like :atomic
+  elsif defined? Concurrent::JavaAtomicReference
+    describe JavaAtomicReference do
+      it_should_behave_like :atomic_reference
     end
-  elsif defined? Concurrent::RbxAtomic
-    describe RbxAtomic do
-      it_should_behave_like :atomic
+  elsif defined? Concurrent::RbxAtomicReference
+    describe RbxAtomicReference do
+      it_should_behave_like :atomic_reference
     end
   end
 
-  describe Atomic do
+  describe AtomicReference do
     if Concurrent.on_jruby?
-      it 'inherits from JavaAtomic' do
-        expect(Atomic.ancestors).to include(Concurrent::JavaAtomic)
+      it 'inherits from JavaAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::JavaAtomicReference)
       end
     elsif Concurrent.allow_c_extensions?
-      it 'inherits from CAtomic' do
-        expect(Atomic.ancestors).to include(Concurrent::CAtomic)
+      it 'inherits from CAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::CAtomicReference)
       end
     elsif Concurrent.on_rbx?
-      it 'inherits from RbxAtomic' do
-        expect(Atomic.ancestors).to include(Concurrent::RbxAtomic)
+      it 'inherits from RbxAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::RbxAtomicReference)
       end
     else
-      it 'inherits from MutexAtomic' do
-        expect(Atomic.ancestors).to include(Concurrent::MutexAtomic)
+      it 'inherits from MutexAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::MutexAtomicReference)
+      end
+    end
+  end
+
+  describe MutexAtomicReference do
+    it_should_behave_like :atomic_reference
+  end
+
+  if defined? Concurrent::CAtomicReference
+    describe CAtomicReference do
+      it_should_behave_like :atomic_reference
+    end
+  elsif defined? Concurrent::JavaAtomicReference
+    describe JavaAtomicReference do
+      it_should_behave_like :atomic_reference
+    end
+  elsif defined? Concurrent::RbxAtomicReference
+    describe RbxAtomicReference do
+      it_should_behave_like :atomic_reference
+    end
+  end
+
+  describe AtomicReference do
+    if Concurrent.on_jruby?
+      it 'inherits from JavaAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::JavaAtomicReference)
+      end
+    elsif Concurrent.allow_c_extensions?
+      it 'inherits from CAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::CAtomicReference)
+      end
+    elsif Concurrent.on_rbx?
+      it 'inherits from RbxAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::RbxAtomicReference)
+      end
+    else
+      it 'inherits from MutexAtomicReference' do
+        expect(AtomicReference.ancestors).to include(Concurrent::MutexAtomicReference)
       end
     end
   end
