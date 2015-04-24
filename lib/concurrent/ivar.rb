@@ -100,9 +100,13 @@ module Concurrent
 
     # Set the `IVar` to a value and wake or notify all threads waiting on it.
     #
-    # @param [Object] value the value to store in the `IVar`
-    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
-    #   been set or otherwise completed
+    # @!macro [attach] ivar_set_parameters_and_exceptions
+    #   @param [Object] value the value to store in the `IVar`
+    #   @yield A block operation to use for setting the value
+    #   @raise [ArgumentError] if both a value and a block are given
+    #   @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #     been set or otherwise completed
+    #
     # @return [IVar] self
     def set(value = NO_VALUE)
       check_for_block_or_value!(block_given?, value)
@@ -123,9 +127,15 @@ module Concurrent
     #   been set or otherwise completed
     # @return [IVar] self
     def fail(reason = StandardError.new)
-      set { raise reason }
+      complete(false, nil, reason)
     end
 
+    # Attempt to set the `IVar` with the given value or block. Return a
+    # boolean indicating the success or failure of the set operation.
+    #
+    # @!macro ivar_set_parameters_and_exceptions
+    #
+    # @return [Boolean] true if the value was set else false
     def set?(value = NO_VALUE, &block)
       set(value, &block)
       true

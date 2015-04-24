@@ -253,6 +253,10 @@ module Concurrent
       execute
     end
 
+    def fail(reason = StandardError.new)
+      set { raise reason }
+    end
+
     # Create a new `Promise` object with the given block, execute it, and return the
     # `:pending` object.
     #

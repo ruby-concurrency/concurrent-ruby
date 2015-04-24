@@ -60,7 +60,7 @@ module Concurrent
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
 
-      super(&nil)
+      super()
       init_obligation(self)
       set_deref_options(opts)
       @task_executor = get_executor_from(opts)

@@ -47,7 +47,7 @@ module Concurrent
 
     # Set the internal value of this object
     #
-    # @param [Object] val the new value
+    # @param [Object] value the new value
     def value=(value)
       mutex.synchronize{ @value = value }
     end
