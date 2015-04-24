@@ -1,4 +1,4 @@
-require 'concurrent/atomic'
+require 'concurrent/atomic/atomic_reference'
 require 'concurrent/delay'
 
 module Concurrent
@@ -7,17 +7,17 @@ module Concurrent
   #
   # @example
   #   register = Concurrent::LazyRegister.new
-  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::Atomic:0x007fd7ecd5e1e0>>
+  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
   #   register[:key]
   #   #=> nil
   #   register.add(:key) { Concurrent::Actor.spawn!(Actor::AdHoc, :ping) { -> message { message } } }
-  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::Atomic:0x007fd7ecd5e1e0>>
+  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
   #   register[:key]
   #   #=> #<Concurrent::Actor::Reference /ping (Concurrent::Actor::AdHoc)>
   class LazyRegister
 
     def initialize
-      @data = Atomic.new Hash.new
+      @data = AtomicReference.new(Hash.new)
     end
 
     # Element reference. Retrieves the value object corresponding to the

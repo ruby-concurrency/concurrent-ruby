@@ -13,7 +13,7 @@ module Concurrent
   private_constant :NULL_LOGGER
 
   # @!visibility private
-  GLOBAL_LOGGER = Atomic.new(NULL_LOGGER)
+  GLOBAL_LOGGER = AtomicReference.new(NULL_LOGGER)
   private_constant :GLOBAL_LOGGER
 
   # @!visibility private
@@ -229,7 +229,7 @@ module Concurrent
   end
 
   # create the default configuration on load
-  CONFIGURATION = Atomic.new(Configuration.new)
+  CONFIGURATION = AtomicReference.new(Configuration.new)
   private_constant :CONFIGURATION
 
   # @return [Configuration]

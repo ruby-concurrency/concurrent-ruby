@@ -7,7 +7,7 @@
 // module and class definitions
 
 static VALUE rb_mConcurrent;
-static VALUE rb_cAtomic;
+static VALUE rb_cAtomicReference;
 static VALUE rb_cAtomicBoolean;
 static VALUE rb_cAtomicFixnum;
 
@@ -17,20 +17,20 @@ void Init_extension() {
 
   // define modules and classes
   rb_mConcurrent = rb_define_module("Concurrent");
-  rb_cAtomic = rb_define_class_under(rb_mConcurrent, "CAtomic", rb_cObject);
+  rb_cAtomicReference = rb_define_class_under(rb_mConcurrent, "CAtomicReference", rb_cObject);
   rb_cAtomicBoolean = rb_define_class_under(rb_mConcurrent, "CAtomicBoolean", rb_cObject);
   rb_cAtomicFixnum = rb_define_class_under(rb_mConcurrent, "CAtomicFixnum", rb_cObject);
 
-  // CAtomic
-  rb_define_alloc_func(rb_cAtomic, ir_alloc);
-  rb_define_method(rb_cAtomic, "initialize", ir_initialize, -1);
-  rb_define_method(rb_cAtomic, "get", ir_get, 0);
-  rb_define_method(rb_cAtomic, "set", ir_set, 1);
-  rb_define_method(rb_cAtomic, "get_and_set", ir_get_and_set, 1);
-  rb_define_method(rb_cAtomic, "_compare_and_set", ir_compare_and_set, 2);
-  rb_define_alias(rb_cAtomic, "value", "get");
-  rb_define_alias(rb_cAtomic, "value=", "set");
-  rb_define_alias(rb_cAtomic, "swap", "get_and_set");
+  // CAtomicReference
+  rb_define_alloc_func(rb_cAtomicReference, ir_alloc);
+  rb_define_method(rb_cAtomicReference, "initialize", ir_initialize, -1);
+  rb_define_method(rb_cAtomicReference, "get", ir_get, 0);
+  rb_define_method(rb_cAtomicReference, "set", ir_set, 1);
+  rb_define_method(rb_cAtomicReference, "get_and_set", ir_get_and_set, 1);
+  rb_define_method(rb_cAtomicReference, "_compare_and_set", ir_compare_and_set, 2);
+  rb_define_alias(rb_cAtomicReference, "value", "get");
+  rb_define_alias(rb_cAtomicReference, "value=", "set");
+  rb_define_alias(rb_cAtomicReference, "swap", "get_and_set");
 
   // CAtomicBoolean
   rb_define_alloc_func(rb_cAtomicBoolean, atomic_boolean_allocate);

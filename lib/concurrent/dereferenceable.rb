@@ -39,24 +39,17 @@ module Concurrent
     #
     # @return [Object] the current value of the object
     def value
-      mutex.lock
-      apply_deref_options(@value)
-    ensure
-      mutex.unlock
+      mutex.synchronize { apply_deref_options(@value) }
     end
-
     alias_method :deref, :value
 
     protected
 
     # Set the internal value of this object
     #
-    # @param [Object] val the new value
-    def value=(val)
-      mutex.lock
-      @value = val
-    ensure
-      mutex.unlock
+    # @param [Object] value the new value
+    def value=(value)
+      mutex.synchronize{ @value = value }
     end
 
     # A mutex lock used for synchronizing thread-safe operations. Methods defined
@@ -74,8 +67,8 @@ module Concurrent
     # @note This method *must* be called from within the constructor of the including class.
     #
     # @see #mutex
-    def init_mutex
-      @mutex = Mutex.new
+    def init_mutex(mutex = Mutex.new)
+      @mutex = mutex
     end
 
     # Set the options which define the operations #value performs before
@@ -91,14 +84,13 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
     def set_deref_options(opts = {})
-      mutex.lock
-      @dup_on_deref = opts[:dup_on_deref] || opts[:dup]
-      @freeze_on_deref = opts[:freeze_on_deref] || opts[:freeze]
-      @copy_on_deref = opts[:copy_on_deref] || opts[:copy]
-      @do_nothing_on_deref = !(@dup_on_deref || @freeze_on_deref || @copy_on_deref)
-      nil
-    ensure
-      mutex.unlock
+      mutex.synchronize do
+        @dup_on_deref = opts[:dup_on_deref] || opts[:dup]
+        @freeze_on_deref = opts[:freeze_on_deref] || opts[:freeze]
+        @copy_on_deref = opts[:copy_on_deref] || opts[:copy]
+        @do_nothing_on_deref = !(@dup_on_deref || @freeze_on_deref || @copy_on_deref)
+        nil
+      end
     end
 
     # @!visibility private

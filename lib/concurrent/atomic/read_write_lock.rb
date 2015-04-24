@@ -1,5 +1,5 @@
 require 'thread'
-require 'concurrent/atomic'
+require 'concurrent/atomic/atomic_reference'
 require 'concurrent/errors'
 
 module Concurrent
@@ -53,11 +53,11 @@ module Concurrent
 
     # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
-      @counter      = Atomic.new(0)         # single integer which represents lock state
-      @reader_q     = ConditionVariable.new # queue for waiting readers
-      @reader_mutex = Mutex.new             # to protect reader queue
-      @writer_q     = ConditionVariable.new # queue for waiting writers
-      @writer_mutex = Mutex.new             # to protect writer queue
+      @counter      = AtomicReference.new(0)  # single integer which represents lock state
+      @reader_q     = ConditionVariable.new   # queue for waiting readers
+      @reader_mutex = Mutex.new               # to protect reader queue
+      @writer_q     = ConditionVariable.new   # queue for waiting writers
+      @writer_mutex = Mutex.new               # to protect writer queue
     end
 
     # Execute a block operation within a read lock.
