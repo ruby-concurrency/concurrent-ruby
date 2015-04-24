@@ -76,6 +76,7 @@ module Concurrent
       Future.new(opts, &block).execute
     end
 
+    # @!macro ivar_set_method
     def set(value = IVar::NO_VALUE, &block)
       check_for_block_or_value!(block_given?, value)
       mutex.synchronize do

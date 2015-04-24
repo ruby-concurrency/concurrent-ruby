@@ -197,6 +197,8 @@ module Concurrent
     #   @option opts [object, Array] :args zero or more arguments to be passed
     #    the task block on execution
     #
+    # @yield The block operation to be performed asynchronously.
+    #
     # @raise [ArgumentError] if no block is given
     #
     # @see http://wiki.commonjs.org/wiki/Promises/A
@@ -217,17 +219,37 @@ module Concurrent
       @children = []
     end
 
-    # @return [Promise]
+    # Create a new `Promise` and fulfill it immediately.
+    #
+    # @!macro executor_and_deref_options
+    #
+    # @!macro promise_init_options
+    #
+    # @raise [ArgumentError] if no block is given
+    #
+    # @return [Promise] the newly created `Promise`
     def self.fulfill(value, opts = {})
       Promise.new(opts).tap { |p| p.send(:synchronized_set_state!, true, value, nil) }
     end
 
-    # @return [Promise]
+    # Create a new `Promise` and reject it immediately.
+    #
+    # @!macro executor_and_deref_options
+    #
+    # @!macro promise_init_options
+    #
+    # @raise [ArgumentError] if no block is given
+    #
+    # @return [Promise] the newly created `Promise`
     def self.reject(reason, opts = {})
       Promise.new(opts).tap { |p| p.send(:synchronized_set_state!, false, nil, reason) }
     end
 
-    # @return [Promise]
+    # Execute an `:unscheduled` `Promise`. Immediately sets the state to `:pending` and
+    # passes the block to a new thread/thread pool for eventual execution.
+    # Does nothing if the `Promise` is in any state other than `:unscheduled`.
+    #
+    # @return [Promise] a reference to `self`
     def execute
       if root?
         if compare_and_set_state(:pending, :unscheduled)
@@ -240,6 +262,9 @@ module Concurrent
       self
     end
 
+    # @!macro ivar_set_method
+    #
+    # @raise [Concurrent::PromiseExecutionError] if not the root promise
     def set(value = IVar::NO_VALUE, &block)
       raise PromiseExecutionError.new('supported only on root promise') unless root?
       check_for_block_or_value!(block_given?, value)
@@ -253,6 +278,9 @@ module Concurrent
       execute
     end
 
+    # @!macro ivar_fail_method
+    #
+    # @raise [Concurrent::PromiseExecutionError] if not the root promise
     def fail(reason = StandardError.new)
       set { raise reason }
     end
@@ -275,6 +303,13 @@ module Concurrent
       new(opts, &block).execute
     end
 
+    # Chain a new promise off the current promise.
+    #
+    # @param [Proc] rescuer An optional rescue block to be executed if the
+    #   promise is rejected.
+    #
+    # @yield The block operation to be performed asynchronously.
+    #
     # @return [Promise] the new promise
     def then(rescuer = nil, &block)
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
@@ -296,13 +331,23 @@ module Concurrent
       child
     end
 
-    # @return [Promise]
+    # Chain onto this promise an action to be undertaken on success
+    # (fulfillment).
+    #
+    # @yield The block to execute
+    #
+    # @return [Promise] self
     def on_success(&block)
       raise ArgumentError.new('no block given') unless block_given?
       self.then(&block)
     end
 
-    # @return [Promise]
+    # Chain onto this promise an action to be undertaken on failure
+    # (rejection).
+    #
+    # @yield The block to execute
+    #
+    # @return [Promise] self
     def rescue(&block)
       self.then(block)
     end
