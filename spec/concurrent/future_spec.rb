@@ -1,6 +1,4 @@
-require_relative 'dereferenceable_shared'
-require_relative 'obligation_shared'
-require_relative 'observable_shared'
+require_relative 'ivar_shared'
 require_relative 'thread_arguments_shared'
 
 module Concurrent
@@ -16,40 +14,23 @@ module Concurrent
       }.execute.tap{ sleep(0.1) }
     end
 
-    context 'behavior' do
+    let!(:fulfilled_value) { 10 }
+    let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
-      # thread_arguments
+    let(:pending_subject) do
+      Future.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
+    end
 
-      def get_ivar_from_no_args
-        Concurrent::Future.execute{|*args| args }
-      end
+    let(:fulfilled_subject) do
+      Future.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
+    end
 
-      def get_ivar_from_args(opts)
-        Concurrent::Future.execute(opts){|*args| args }
-      end
+    let(:rejected_subject) do
+      Future.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
+    end
 
-      it_should_behave_like :thread_arguments
-
-      # obligation
-
-      let!(:fulfilled_value) { 10 }
-      let!(:rejected_reason) { StandardError.new('mojo jojo') }
-
-      let(:pending_subject) do
-        Future.new(executor: executor){ sleep(3); fulfilled_value }.execute
-      end
-
-      let(:fulfilled_subject) do
-        Future.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
-      end
-
-      let(:rejected_subject) do
-        Future.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
-      end
-
-      it_should_behave_like :obligation
-
-      # dereferenceable
+    it_should_behave_like :ivar do
+      subject { Future.new(executor: :immediate){ value } }
 
       def dereferenceable_subject(value, opts = {})
         opts = opts.merge(executor: executor)
@@ -66,34 +47,20 @@ module Concurrent
         sleep(0.1)
       end
 
-      it_should_behave_like :dereferenceable
-
-      # observable
-
-      subject{ Future.new{ nil } }
-
       def trigger_observable(observable)
         observable.execute
         sleep(0.1)
       end
-
-      it_should_behave_like :observable
     end
 
-    context 'subclassing' do
+    it_should_behave_like :thread_arguments do
 
-      subject{ Future.execute(executor: executor){ 42 } }
-
-      it 'protects #set' do
-        expect{ subject.set(100) }.to raise_error
+      def get_ivar_from_no_args
+        Concurrent::Future.execute{|*args| args }
       end
 
-      it 'protects #fail' do
-        expect{ subject.fail }.to raise_error
-      end
-
-      it 'protects #complete' do
-        expect{ subject.complete(true, 100, nil) }.to raise_error
+      def get_ivar_from_args(opts)
+        Concurrent::Future.execute(opts){|*args| args }
       end
     end
 

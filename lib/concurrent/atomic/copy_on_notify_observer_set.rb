@@ -33,11 +33,10 @@ module Concurrent
       begin
         @mutex.lock
         @observers[observer] = func
+        observer
       ensure
         @mutex.unlock
       end
-
-        observer
     end
 
     # @param [Object] observer the observer to remove
@@ -45,9 +44,9 @@ module Concurrent
     def delete_observer(observer)
       @mutex.lock
       @observers.delete(observer)
-      @mutex.unlock
-
       observer
+    ensure
+      @mutex.unlock
     end
 
     # Deletes all observers
@@ -55,18 +54,17 @@ module Concurrent
     def delete_observers
       @mutex.lock
       @observers.clear
-      @mutex.unlock
-
       self
+    ensure
+      @mutex.unlock
     end
 
     # @return [Integer] the observers count
     def count_observers
       @mutex.lock
-      result = @observers.count
+      @observers.count
+    ensure
       @mutex.unlock
-
-      result
     end
 
     # Notifies all registered observers with optional args
@@ -75,7 +73,6 @@ module Concurrent
     def notify_observers(*args, &block)
       observers = duplicate_observers
       notify_to(observers, *args, &block)
-
       self
     end
 
@@ -86,7 +83,6 @@ module Concurrent
     def notify_and_delete_observers(*args, &block)
       observers = duplicate_and_clear_observers
       notify_to(observers, *args, &block)
-
       self
     end
 
@@ -96,17 +92,17 @@ module Concurrent
       @mutex.lock
       observers = @observers.dup
       @observers.clear
-      @mutex.unlock
-
       observers
+    ensure
+      @mutex.unlock
     end
 
     def duplicate_observers
       @mutex.lock
       observers = @observers.dup
-      @mutex.unlock
-
       observers
+    ensure
+      @mutex.unlock
     end
 
     def notify_to(observers, *args)

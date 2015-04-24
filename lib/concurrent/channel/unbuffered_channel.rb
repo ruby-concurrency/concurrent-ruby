@@ -12,8 +12,7 @@ module Concurrent
     end
 
     def push(value)
-      # TODO set_unless_assigned define on IVar as #set_state? or #try_set_state
-      until @probe_set.take.set_unless_assigned(value, self)
+      until @probe_set.take.try_set([value, self])
       end
     end
 

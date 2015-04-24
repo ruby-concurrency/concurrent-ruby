@@ -47,7 +47,7 @@ module Concurrent
         it 'should assign value to a probe if probe set is not empty' do
           channel.select(probe)
           Thread.new { sleep(0.1); channel.push 3 }
-          expect(probe.value).to eq 3
+          expect(probe.value.first).to eq 3
         end
       end
 
@@ -62,14 +62,14 @@ module Concurrent
           channel.push 1
           result = channel.pop
 
-          expect(result).to eq 1
+          expect(result.first).to eq 1
         end
 
         it 'removes the first value from the buffer' do
           channel.push 'a'
           channel.push 'b'
 
-          expect(channel.pop).to eq 'a'
+          expect(channel.pop.first).to eq 'a'
           expect(channel.buffer_queue_size).to eq 1
         end
       end
@@ -91,7 +91,7 @@ module Concurrent
 
         Thread.new { channel.push 82 }
 
-        expect(probe.value).to eq 82
+        expect(probe.value.first).to eq 82
       end
 
     end
@@ -120,7 +120,7 @@ module Concurrent
 
           expect(channel.buffer_queue_size).to eq 1
 
-          expect(channel.pop).to eq 82
+          expect(channel.pop.first).to eq 82
 
         end
       end

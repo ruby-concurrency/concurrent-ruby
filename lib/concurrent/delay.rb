@@ -3,6 +3,7 @@ require 'concurrent/configuration'
 require 'concurrent/obligation'
 require 'concurrent/executor/executor_options'
 require 'concurrent/executor/immediate_executor'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -37,7 +38,7 @@ module Concurrent
   #     execute on the given executor, allowing the call to timeout.
   #
   # @see Concurrent::Dereferenceable
-  class Delay
+  class Delay < Synchronization::Object
     include Obligation
     include ExecutorOptions
 
@@ -51,15 +52,27 @@ module Concurrent
 
     # Create a new `Delay` in the `:pending` state.
     #
-    # @yield the delayed operation to perform
+    # @!macro [attach] executor_and_deref_options
+    #  
+    #   @param [Hash] opts the options used to define the behavior at update and deref
+    #     and to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
+    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
+    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
+    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
+    #     the internal value and returning the value returned from the proc
     #
-    # @!macro executor_and_deref_options
+    # @yield the delayed operation to perform
     #
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
 
-      init_obligation
+      super()
+      init_obligation(self)
       set_deref_options(opts)
       @task_executor = get_executor_from(opts)
 
@@ -145,16 +158,15 @@ module Concurrent
     # @yield the delayed operation to perform
     # @return [true, false] if success
     def reconfigure(&block)
-      mutex.lock
-      raise ArgumentError.new('no block given') unless block_given?
-      unless @computing
-        @task = block
-        true
-      else
-        false
+      mutex.synchronize do
+        raise ArgumentError.new('no block given') unless block_given?
+        unless @computing
+          @task = block
+          true
+        else
+          false
+        end
       end
-    ensure
-      mutex.unlock
     end
 
     private
@@ -163,10 +175,11 @@ module Concurrent
     def execute_task_once # :nodoc:
       # this function has been optimized for performance and
       # should not be modified without running new benchmarks
-      mutex.lock
-      execute = @computing = true unless @computing
-      task    = @task
-      mutex.unlock
+      execute = task = nil
+      mutex.synchronize do
+        execute = @computing = true unless @computing
+        task    = @task
+      end
 
       if execute
         @task_executor.post do
@@ -176,10 +189,10 @@ module Concurrent
           rescue => ex
             reason = ex
           end
-          mutex.lock
-          set_state(success, result, reason)
-          event.set
-          mutex.unlock
+          mutex.synchronize do
+            set_state(success, result, reason)
+            event.set
+          end
         end
       end
     end

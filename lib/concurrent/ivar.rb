@@ -3,6 +3,7 @@ require 'thread'
 require 'concurrent/errors'
 require 'concurrent/obligation'
 require 'concurrent/observable'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -38,8 +39,7 @@ module Concurrent
   #   ivar.set 14
   #   ivar.get #=> 14
   #   ivar.set 2 # would now be an error
-  class IVar
-
+  class IVar < Synchronization::Object
     include Obligation
     include Observable
 
@@ -57,15 +57,13 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
-      init_obligation
+      super(&nil)
+      init_obligation(self)
       self.observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
+      @state = :pending
 
-      if value == NO_VALUE
-        @state = :pending
-      else
-        set(value)
-      end
+      set(value) unless value == NO_VALUE
     end
 
     # Add an observer on this object that will receive notification on update.
@@ -100,28 +98,59 @@ module Concurrent
       observer
     end
 
-    # Set the `IVar` to a value and wake or notify all threads waiting on it.
-    #
-    # @param [Object] value the value to store in the `IVar`
-    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
-    #   been set or otherwise completed
-    def set(value)
-      complete(true, value, nil)
+    # @!macro [attach] ivar_set_method
+    #   Set the `IVar` to a value and wake or notify all threads waiting on it.
+    #  
+    #   @!macro [attach] ivar_set_parameters_and_exceptions
+    #     @param [Object] value the value to store in the `IVar`
+    #     @yield A block operation to use for setting the value
+    #     @raise [ArgumentError] if both a value and a block are given
+    #     @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #       been set or otherwise completed
+    #  
+    #   @return [IVar] self
+    def set(value = NO_VALUE)
+      check_for_block_or_value!(block_given?, value)
+      raise MultipleAssignmentError unless compare_and_set_state(:processing, :pending)
+
+      begin
+        value = yield if block_given?
+        complete(true, value, nil)
+      rescue => ex
+        complete(false, nil, ex)
+      end
     end
 
-    # Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
-    #
-    # @param [Object] reason for the failure
-    # @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
-    #   been set or otherwise completed
+    # @!macro [attach] ivar_fail_method
+    #   Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
+    #  
+    #   @param [Object] reason for the failure
+    #   @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
+    #     been set or otherwise completed
+    #   @return [IVar] self
     def fail(reason = StandardError.new)
       complete(false, nil, reason)
     end
 
+    # Attempt to set the `IVar` with the given value or block. Return a
+    # boolean indicating the success or failure of the set operation.
+    #
+    # @!macro ivar_set_parameters_and_exceptions
+    #
+    # @return [Boolean] true if the value was set else false
+    def try_set(value = NO_VALUE, &block)
+      set(value, &block)
+      true
+    rescue MultipleAssignmentError
+      false
+    end
+
+    protected
+
     # @!visibility private
     def complete(success, value, reason) # :nodoc:
       mutex.synchronize do
-        raise MultipleAssignmentError.new('multiple assignment') if [:fulfilled, :rejected].include? @state
+        raise MultipleAssignmentError if [:fulfilled, :rejected].include? @state
         set_state(success, value, reason)
         event.set
       end
@@ -129,6 +158,13 @@ module Concurrent
       time = Time.now
       observers.notify_and_delete_observers{ [time, self.value, reason] }
       self
+    end
+
+    # @!visibility private
+    def check_for_block_or_value!(block_given, value) # :nodoc:
+      if (block_given && value != NO_VALUE) || (! block_given && value == NO_VALUE)
+        raise ArgumentError.new('must set with either a value or a block')
+      end
     end
   end
 end

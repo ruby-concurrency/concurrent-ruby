@@ -40,7 +40,7 @@ module Concurrent
           @probe_set.put(probe)
           true
         else
-          shift_buffer if probe.set_unless_assigned(peek_buffer, self)
+          shift_buffer if probe.try_set([peek_buffer, self])
         end
 
       end
@@ -76,7 +76,7 @@ module Concurrent
           push_into_buffer(value)
           true
         else
-          @probe_set.take.set_unless_assigned(value, self)
+          @probe_set.take.try_set([value, self])
         end
       end
     end
