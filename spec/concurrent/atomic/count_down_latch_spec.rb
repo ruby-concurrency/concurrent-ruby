@@ -99,8 +99,8 @@ module Concurrent
       before(:each) do
         def subject.simulate_spurious_wake_up
           synchronize do
-            signal
-            broadcast
+            ns_signal
+            ns_broadcast
           end
         end
       end

@@ -29,7 +29,7 @@ module Concurrent
           it 'should block the thread' do
             latch_1 = Concurrent::CountDownLatch.new
             latch_2 = Concurrent::CountDownLatch.new
-            mutex = Mutex.new
+            mutex   = Mutex.new
 
             t = Thread.new do
               mutex.synchronize do
@@ -46,8 +46,8 @@ module Concurrent
           end
 
           it 'should return a woken up result when is woken up by #signal' do
-            result = nil
-            mutex = Mutex.new
+            result  = nil
+            mutex   = Mutex.new
             latch_1 = Concurrent::CountDownLatch.new
             latch_2 = Concurrent::CountDownLatch.new
 
@@ -74,8 +74,8 @@ module Concurrent
           end
 
           it 'should return a woken up result when is woken up by #broadcast' do
-            result = nil
-            mutex = Mutex.new
+            result  = nil
+            mutex   = Mutex.new
             latch_1 = Concurrent::CountDownLatch.new
             latch_2 = Concurrent::CountDownLatch.new
 
@@ -110,7 +110,7 @@ module Concurrent
           it 'should block the thread' do
             latch_1 = Concurrent::CountDownLatch.new
             latch_2 = Concurrent::CountDownLatch.new
-            mutex = Mutex.new
+            mutex   = Mutex.new
 
             t = Thread.new do
               mutex.synchronize do
@@ -127,8 +127,8 @@ module Concurrent
           end
 
           it 'should return remaining time when is woken up by #signal' do
-            result = nil
-            mutex = Mutex.new
+            result  = nil
+            mutex   = Mutex.new
             latch_1 = Concurrent::CountDownLatch.new
             latch_2 = Concurrent::CountDownLatch.new
 
@@ -156,8 +156,8 @@ module Concurrent
           end
 
           it 'should return remaining time when is woken up by #broadcast' do
-            result = nil
-            mutex = Mutex.new
+            result  = nil
+            mutex   = Mutex.new
             latch_1 = Concurrent::CountDownLatch.new
             latch_2 = Concurrent::CountDownLatch.new
 
@@ -186,8 +186,8 @@ module Concurrent
 
           it 'should return 0 or negative number if timed out' do
             result = nil
-            mutex = Mutex.new
-            latch = Concurrent::CountDownLatch.new
+            mutex  = Mutex.new
+            latch  = Concurrent::CountDownLatch.new
 
             t = Thread.new do
               mutex.synchronize do
@@ -214,7 +214,7 @@ module Concurrent
         describe '#wait' do
 
           it 'should block threads' do
-            mutex = Mutex.new
+            mutex   = Mutex.new
             latch_1 = Concurrent::CountDownLatch.new(2)
             latch_2 = Concurrent::CountDownLatch.new(2)
 
@@ -240,7 +240,7 @@ module Concurrent
           it 'wakes up only one thread' do
             latch_1 = Concurrent::CountDownLatch.new(2)
             latch_2 = Concurrent::CountDownLatch.new(2)
-            mutex = Mutex.new
+            mutex   = Mutex.new
 
             t1 = Thread.new do
               mutex.synchronize do
@@ -270,18 +270,22 @@ module Concurrent
 
         describe '#broadcast' do
           it 'wakes up all threads' do
-            latch = CountDownLatch.new(2)
-            mutex = Mutex.new
-
-            t1 = Thread.new { mutex.synchronize { subject.wait(mutex); latch.count_down } }
-            t2 = Thread.new { mutex.synchronize { subject.wait(mutex); latch.count_down } }
-
-            sleep(0.1)
+            mutex   = Mutex.new
+            go      = CountDownLatch.new(2)
+            threads = Array.new(2) do
+              Thread.new do
+                mutex.synchronize do
+                  go.count_down
+                  subject.wait(mutex)
+                end
+              end
+            end
+            go.wait
             mutex.synchronize { subject.broadcast }
-            sleep(0.2)
 
-            expect(latch.count).to eq 0
-            [t1, t2].each { |t| t.kill }
+            threads.each do |t|
+              expect(t.join(0.1)).to eq t
+            end
           end
         end
       end
