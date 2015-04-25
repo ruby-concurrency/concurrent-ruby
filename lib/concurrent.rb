@@ -9,6 +9,7 @@ require 'concurrent/errors'
 require 'concurrent/executors'
 require 'concurrent/utilities'
 
+require 'concurrent/atomic/atomic_markable_reference'
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atom'
 require 'concurrent/async'
