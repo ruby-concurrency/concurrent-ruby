@@ -20,7 +20,7 @@ module Concurrent
 
       # @abstract override to define Actor's behaviour
       # @param [Object] message
-      # @return [Object] a result which will be used to set the IVar supplied to Reference#ask
+      # @return [Object] a result which will be used to set the Future supplied to Reference#ask
       # @note self should not be returned (or sent to other actors), {#reference} should be used
       #   instead
       def on_message(message)
@@ -46,7 +46,7 @@ module Concurrent
       end
 
       # Defines an actor responsible for dead letters. Any rejected message send
-      # with {Reference#tell} is sent there, a message with ivar is considered
+      # with {Reference#tell} is sent there, a message with future is considered
       # already monitored for failures. Default behaviour is to use
       # {AbstractContext#dead_letter_routing} of the parent, so if no
       # {AbstractContext#dead_letter_routing} method is overridden in

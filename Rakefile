@@ -1,23 +1,27 @@
 #!/usr/bin/env rake
 
+require 'concurrent/version'
 require 'concurrent/native_extensions'
 
 ## load the two gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXT_GEMSPEC = Gem::Specification.load('concurrent-ruby-ext.gemspec')
+EDGE_GEMSPEC = Gem::Specification.load('concurrent-ruby-edge.gemspec')
 
 ## constants used for compile/build tasks
 
 GEM_NAME = 'concurrent-ruby'
-EXTENSION_NAME = 'extension'
+EXT_NAME = 'extension'
+EDGE_NAME = 'edge'
 JAVA_EXT_NAME = 'concurrent_ruby_ext'
 
 if Concurrent.on_jruby?
   CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
 else
   CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
-  EXTENSION_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
+  EXT_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
   NATIVE_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
+  EDGE_GEM = "#{GEM_NAME}-edge-#{Concurrent::EDGE_VERSION}.gem"
 end
 
 ## safely load all the rake tasks in the `tasks` directory
@@ -49,7 +53,7 @@ elsif Concurrent.allow_c_extensions?
   ## create the compile tasks for the extension gem
   require 'rake/extensiontask'
 
-  Rake::ExtensionTask.new(EXTENSION_NAME, EXT_GEMSPEC) do |ext|
+  Rake::ExtensionTask.new(EXT_NAME, EXT_GEMSPEC) do |ext|
     ext.ext_dir = 'ext/concurrent'
     ext.lib_dir = 'lib/concurrent'
     ext.source_pattern = '*.{c,h}'
@@ -63,9 +67,9 @@ elsif Concurrent.allow_c_extensions?
       'x64-mingw32' => 'x86_64-w64-mingw32'
     }
     platforms.each do |platform, prefix|
-      task "copy:#{EXTENSION_NAME}:#{platform}:#{ruby_version}" do |t|
+      task "copy:#{EXT_NAME}:#{platform}:#{ruby_version}" do |t|
         %w[lib tmp/#{platform}/stage/lib].each do |dir|
-          so_file = "#{dir}/#{ruby_version[/^\d+\.\d+/]}/#{EXTENSION_NAME}.so"
+          so_file = "#{dir}/#{ruby_version[/^\d+\.\d+/]}/#{EXT_NAME}.so"
           if File.exists?(so_file)
             sh "#{prefix}-strip -S #{so_file}"
           end
@@ -94,7 +98,11 @@ end
 
 namespace :build do
 
-  build_deps = [:clean]
+  task :mkdir_pkg do
+    mkdir_p 'pkg'
+  end
+
+  build_deps = [:clean, 'build:mkdir_pkg']
   build_deps << :compile if Concurrent.on_jruby?
 
   desc "Build #{CORE_GEM} into the pkg directory"
@@ -104,8 +112,15 @@ namespace :build do
   end
 
   unless Concurrent.on_jruby?
-    desc "Build #{EXTENSION_GEM} into the pkg directory"
-    task :ext => [:clean] do
+
+    desc "Build #{EDGE_GEM} into the pkg directory"
+    task :edge => 'build:mkdir_pkg' do
+      sh "gem build #{EDGE_GEMSPEC.name}.gemspec"
+      sh 'mv *.gem pkg/'
+    end
+
+    desc "Build #{EXT_GEM} into the pkg directory"
+    task :ext => build_deps do
       sh "gem build #{EXT_GEMSPEC.name}.gemspec"
       sh 'mv *.gem pkg/'
     end
@@ -113,8 +128,8 @@ namespace :build do
 
   if Concurrent.allow_c_extensions?
     desc "Build #{NATIVE_GEM} into the pkg directory"
-    task :native do
-      sh "gem compile pkg/#{EXTENSION_GEM}"
+    task :native => 'build:mkdir_pkg' do
+      sh "gem compile pkg/#{EXT_GEM}"
       sh 'mv *.gem pkg/'
     end
   end
@@ -124,8 +139,8 @@ if Concurrent.on_jruby?
   desc 'Build JRuby-specific core gem (alias for `build:core`)'
   task :build => ['build:core']
 else
-  desc 'Build core and extension gems'
-  task :build => ['build:core', 'build:ext']
+  desc 'Build core, extension, and edge gems'
+  task :build => ['build:core', 'build:ext', 'build:edge']
 end
 
 ## the RSpec task that compiles extensions when available
@@ -134,9 +149,7 @@ begin
   require 'rspec'
   require 'rspec/core/rake_task'
 
-  RSpec::Core::RakeTask.new(:spec) do |t|
-    t.rspec_opts = '--color --backtrace --format documentation'
-  end
+  RSpec::Core::RakeTask.new(:spec)
 
   task :default => [:clean, :compile, :spec]
 rescue LoadError

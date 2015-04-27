@@ -5,9 +5,7 @@ require 'concurrent/at_exit'
 
 require 'concurrent/configuration'
 
-require 'concurrent/actor'
 require 'concurrent/atomics'
-require 'concurrent/channels'
 require 'concurrent/collections'
 require 'concurrent/errors'
 require 'concurrent/executors'

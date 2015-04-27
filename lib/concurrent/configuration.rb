@@ -105,13 +105,23 @@ module Concurrent
     GLOBAL_TIMER_SET.value
   end
 
+  # General access point to global executors.
+  # @param [Symbol, Executor] maps symbols:
+  #   - :fast - {Concurrent.global_fast_executor}
+  #   - :io - {Concurrent.global_io_executor}
+  #   - :immediate - {Concurrent.global_immediate_executor}
+  # @return [Executor]
+  def self.executor(executor_identifier)
+    Executor.executor(executor_identifier)
+  end
+
   def self.new_fast_executor(opts = {})
     FixedThreadPool.new(
         [2, Concurrent.processor_count].max,
         auto_terminate:  opts.fetch(:auto_terminate, true),
         idletime:        60, # 1 minute
         max_queue:       0, # unlimited
-        fallback_policy: :caller_runs # shouldn't matter -- 0 max queue
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
 
@@ -123,7 +133,7 @@ module Concurrent
         auto_terminate:  opts.fetch(:auto_terminate, true),
         idletime:        60, # 1 minute
         max_queue:       0, # unlimited
-        fallback_policy: :caller_runs # shouldn't matter -- 0 max queue
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
 

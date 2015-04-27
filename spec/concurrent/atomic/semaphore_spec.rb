@@ -20,7 +20,7 @@ shared_examples :semaphore do
     context 'not enough permits available' do
       it 'should block thread until permits are available' do
         semaphore.drain_permits
-        Thread.new { sleep(0.2) && semaphore.release }
+        Thread.new { sleep(0.2); semaphore.release }
 
         result = semaphore.acquire
         expect(result).to be_nil
@@ -64,7 +64,7 @@ shared_examples :semaphore do
 
       it 'acquires when permits are available within timeout' do
         semaphore.drain_permits
-        Thread.new { sleep 0.1 && semaphore.release }
+        Thread.new { sleep 0.1; semaphore.release }
         result = semaphore.try_acquire(1, 1)
         expect(result).to be_truthy
       end
@@ -112,15 +112,16 @@ module Concurrent
             @condition.broadcast
           end
         end
+
         subject.drain_permits
       end
 
       it 'should resist to spurious wake ups without timeout' do
         actual = Concurrent::AtomicBoolean.new(true)
-        latch = Concurrent::CountDownLatch.new
+        latch  = Concurrent::CountDownLatch.new
 
         # would set actual to false
-        t = Thread.new { latch.wait(1); actual.value = subject.acquire }
+        t      = Thread.new { latch.wait(1); actual.value = subject.acquire }
 
         latch.count_down
         subject.simulate_spurious_wake_up
@@ -132,10 +133,10 @@ module Concurrent
 
       it 'should resist to spurious wake ups with timeout' do
         actual = Concurrent::AtomicBoolean.new(true)
-        latch = Concurrent::CountDownLatch.new
+        latch  = Concurrent::CountDownLatch.new
 
         # sets actual to false in another thread
-        t = Thread.new { latch.wait(1); actual.value = subject.try_acquire(1, 0.3) }
+        t      = Thread.new { latch.wait(1); actual.value = subject.try_acquire(1, 0.3) }
 
         latch.count_down
         subject.simulate_spurious_wake_up

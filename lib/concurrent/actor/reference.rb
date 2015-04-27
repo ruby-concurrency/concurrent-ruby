@@ -32,10 +32,13 @@ module Concurrent
       #
       # sends message to the actor and asks for the result of its processing, returns immediately
       # @param [Object] message
-      # @param [Ivar] ivar to be fulfilled be message's processing result
-      # @return [IVar] supplied ivar
-      def ask(message, ivar = IVar.new)
-        message message, ivar
+      # @param [Edge::Future] future to be fulfilled be message's processing result
+      # @return [Edge::Future] supplied future
+      def ask(message, future = Concurrent.future)
+        message message, future
+        # # @return [Future] a future
+        # def ask(message)
+        #   message message, ConcurrentNext.promise
       end
 
       # @note it's a good practice to use tell whenever possible. Ask should be used only for
@@ -45,17 +48,26 @@ module Concurrent
       #
       # sends message to the actor and asks for the result of its processing, blocks
       # @param [Object] message
-      # @param [Ivar] ivar to be fulfilled be message's processing result
+      # @param [Edge::Future] future to be fulfilled be message's processing result
       # @return [Object] message's processing result
-      # @raise [Exception] ivar.reason if ivar is #rejected?
-      def ask!(message, ivar = IVar.new)
-        ask(message, ivar).value!
+      # @raise [Exception] future.reason if future is #rejected?
+      def ask!(message, future = Concurrent.future)
+        ask(message, future).value!
+        # # @param [Object] message
+        # # @return [Object] message's processing result
+        # # @raise [Exception] future.reason if future is #failed?
+        # def ask!(message)
+        #   ask(message).value!
       end
 
-      # behaves as {#tell} when no ivar and as {#ask} when ivar
-      def message(message, ivar = nil)
-        core.on_envelope Envelope.new(message, ivar, Actor.current || Thread.current, self)
-        return ivar || self
+      # behaves as {#tell} when no future and as {#ask} when future
+      def message(message, future = nil)
+        core.on_envelope Envelope.new(message, future, Actor.current || Thread.current, self)
+        return future || self
+        # # behaves as {#tell} when no promise and as {#ask} when promise
+        # def message(message, promise = nil)
+        #   core.on_envelope Envelope.new(message, promise, Actor.current || Thread.current, self)
+        #   return promise ? promise.future : self
       end
 
       # @see AbstractContext#dead_letter_routing

@@ -4,7 +4,6 @@ require 'concurrent/collection/priority_queue'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/single_thread_executor'
 require 'concurrent/utility/monotonic_time'
-require 'concurrent/executor/executor_options'
 
 module Concurrent
 
@@ -15,7 +14,6 @@ module Concurrent
   # @!macro monotonic_clock_warning
   class TimerSet
     include RubyExecutor
-    include ExecutorOptions
 
     # Create a new set of timed tasks.
     #
@@ -28,7 +26,7 @@ module Concurrent
     #     `ImmediateExecutor` object.
     def initialize(opts = {})
       @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = get_executor_from(opts) || Concurrent.global_io_executor
+      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @timer_executor = SingleThreadExecutor.new
       @condition      = Condition.new
       init_executor

@@ -21,6 +21,7 @@ end
 
 $VERBOSE = nil # suppress our deprecation warnings
 require 'concurrent'
+require 'concurrent-edge'
 
 logger                          = Logger.new($stderr)
 logger.level                    = Logger::WARN
