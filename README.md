@@ -199,22 +199,22 @@ any platform. *Documentation is forthcoming...*
 
 ```
 *MRI only*
-rake build:native       # Build concurrent-ruby-ext-<version>-<platform>.gem into the pkg directory
-rake compile:extension  # Compile extension
+bundle exec rake build:native       # Build concurrent-ruby-ext-<version>-<platform>.gem into the pkg dir
+bundle exec rake compile:extension  # Compile extension
 
 *JRuby only*
-rake build              # Build JRuby-specific core gem (alias for `build:core`)
-rake build:core         # Build concurrent-ruby-<version>-java.gem into the pkg directory
+bundle exec rake build              # Build JRuby-specific core gem (alias for `build:core`)
+bundle exec rake build:core         # Build concurrent-ruby-<version>-java.gem into the pkg directory
 
 *All except JRuby*
-rake build              # Build core and extension gems
-rake build:core         # Build concurrent-ruby-<version>.gem into the pkg directory
-rake build:ext          # Build concurrent-ruby-ext-<version>.gem into the pkg directory
+bundle exec rake build              # Build core and extension gems
+bundle exec rake build:core         # Build concurrent-ruby-<version>.gem into the pkg directory
+bundle exec rake build:ext          # Build concurrent-ruby-ext-<version>.gem into the pkg directory
 
 *All*
-rake clean              # Remove any temporary products
-rake clobber            # Remove any generated file
-rake compile            # Compile all the extensions
+bundle exec rake clean              # Remove any temporary products
+bundle exec rake clobber            # Remove any generated file
+bundle exec rake compile            # Compile all the extensions
 ```
 
 ## Maintainers
