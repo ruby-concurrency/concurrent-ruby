@@ -1,9 +1,7 @@
 module Concurrent
-  # TODO rename to Synchronization
-  # TODO add newCondition
   module Synchronization
     # Safe synchronization under any Ruby implementation.
-    # It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
+    # It provides methods like {#synchronize}, {#ns_wait}, {#ns_signal} and {#ns_broadcast}.
     # Provides a single layer which can improve its implementation over time without changes needed to
     # the classes using it. Use {Synchronization::Object} not this abstract class.
     #
@@ -118,6 +116,40 @@ module Concurrent
       def ns_broadcast
         raise NotImplementedError
       end
+
+      # Allows to construct immutable objects where all fields are visible after initialization, not requiring
+      # further synchronization on access.
+      # @example
+      #   class AClass
+      #     attr_reader :val
+      #     def initialize(val)
+      #       @val = val # final value, after assignment it's not changed (just convention, not enforced)
+      #       ensure_ivar_visibility!
+      #       # now it can be shared as Java's final field
+      #     end
+      #   end
+      def ensure_ivar_visibility!
+        raise NotImplementedError
+      end
+
+      # creates methods for reading and writing to a instance variable with volatile (Java semantic) instance variable
+      # return [Array<Symbol>] names of defined method names
+      def self.attr_volatile(*names)
+        names.each do |name|
+          ivar = :"@volatile_#{name}"
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def #{name}
+              #{ivar}
+            end
+
+            def #{name}=(value)
+              #{ivar} = value
+            end
+          RUBY
+        end
+        names.map { |n| [n, :"#{n}="] }.flatten
+      end
+
     end
   end
 end

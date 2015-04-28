@@ -1,6 +1,7 @@
 require 'concurrent/utility/engine'
 require 'concurrent/synchronization/abstract_object'
 require 'concurrent/native_extensions' # JavaObject
+require 'concurrent/synchronization/java_object' # JavaObject
 require 'concurrent/synchronization/mutex_object'
 require 'concurrent/synchronization/monitor_object'
 require 'concurrent/synchronization/rbx_object'
@@ -21,6 +22,7 @@ module Concurrent
                      end
     private_constant :Implementation
 
+    # @see AbstractObject
     class Object < Implementation
     end
   end
