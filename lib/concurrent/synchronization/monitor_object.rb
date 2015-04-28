@@ -7,11 +7,11 @@ module Concurrent
         synchronize { ns_initialize(*args, &block) }
       end
 
+      private
+
       def synchronize
         @__lock__do_not_use_directly.synchronize { yield }
       end
-
-      private
 
       def ns_wait(timeout = nil)
         @__condition__do_not_use_directly.wait timeout

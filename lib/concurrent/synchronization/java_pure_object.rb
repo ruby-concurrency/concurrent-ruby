@@ -9,11 +9,11 @@ module Concurrent
           synchronize { ns_initialize(*args, &block) }
         end
 
+        private
+
         def synchronize
           JRuby.reference0(self).synchronized { yield }
         end
-
-        private
 
         def ns_wait(timeout = nil)
           success = JRuby.reference0(Thread.current).wait_timeout(JRuby.reference0(self), timeout)

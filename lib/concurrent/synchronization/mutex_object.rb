@@ -7,6 +7,8 @@ module Concurrent
         synchronize { ns_initialize(*args, &block) }
       end
 
+      private
+
       def synchronize
         if @__lock__do_not_use_directly.owned?
           yield
@@ -14,8 +16,6 @@ module Concurrent
           @__lock__do_not_use_directly.synchronize { yield }
         end
       end
-
-      private
 
       def ns_signal
         @__condition__do_not_use_directly.signal

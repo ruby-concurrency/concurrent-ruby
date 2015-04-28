@@ -9,11 +9,11 @@ module Concurrent
           end
         end
 
+        private
+
         def synchronize(&block)
           Rubinius.synchronize(self, &block)
         end
-
-        private
 
         def ns_wait(timeout = nil)
           wchan = Rubinius::Channel.new

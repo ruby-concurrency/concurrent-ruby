@@ -34,13 +34,14 @@ module Concurrent
         raise NotImplementedError
       end
 
+      private
+
       # @yield runs the block synchronized against this object,
-      #   equvivalent of java's `synchronize(this) {}`
+      #   equivalent of java's `synchronize(this) {}`
+      # @note can by made public in descendants if required by `public :synchronize`
       def synchronize
         raise NotImplementedError
       end
-
-      private
 
       # initialization of the object called inside synchronize block
       def ns_initialize(*args, &block)
