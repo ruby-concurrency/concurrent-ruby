@@ -163,8 +163,13 @@ module Concurrent
 
     def read(tvar)
       Concurrent::abort_transaction unless valid?
-      @read_log.push(ReadLogEntry.new(tvar, tvar.unsafe_version))
-      tvar.unsafe_value
+
+      if @write_log.has_key? tvar
+        @write_log[tvar]
+      else
+        @read_log.push(ReadLogEntry.new(tvar, tvar.unsafe_version))
+        tvar.unsafe_value
+      end
     end
 
     def write(tvar, value)

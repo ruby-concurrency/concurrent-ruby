@@ -120,11 +120,11 @@ module Concurrent
         end
       end
 
-      a.wait
       Concurrent::atomically do
+        a.wait
         expect(t.value).to eq 0
+        b.count_down
       end
-      b.count_down
     end
 
     it 'provides strong isolation' do
@@ -147,11 +147,37 @@ module Concurrent
     end
 
     it 'nests' do
+      t = TVar.new(0)
+
       Concurrent::atomically do
+        expect(t.value).to eq 0
+        t.value = 1
         Concurrent::atomically do
+          expect(t.value).to eq 1
+          t.value = 2
           Concurrent::atomically do
+            expect(t.value).to eq 2
+            t.value = 3
           end
+          expect(t.value).to eq 3
+          t.value = 4
         end
+        expect(t.value).to eq 4
+        t.value = 5
+      end
+
+      expect(t.value).to eq 5
+    end
+
+    it 'reflects transactional writes from within the same transaction' do
+      t = TVar.new(0)
+
+      Concurrent::atomically do
+        expect(t.value).to eq 0
+        t.value = 14
+        expect(t.value).to eq 14
+        t.value = 2
+        expect(t.value).to eq 2
       end
     end
 
