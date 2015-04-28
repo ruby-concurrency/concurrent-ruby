@@ -27,3 +27,5 @@ module Concurrent
     end
   end
 end
+
+require 'concurrent/synchronization/immutable_struct'

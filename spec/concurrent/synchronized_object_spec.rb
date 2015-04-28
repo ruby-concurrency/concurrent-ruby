@@ -105,5 +105,16 @@ module Concurrent
       end
     end
 
+    describe Synchronization::ImmutableStruct do
+      let(:klass) { described_class.with_fields(:a, :b) }
+      subject { klass[1, 'a'] }
+
+      specify do
+        expect(klass.superclass).to eq described_class
+        expect(subject.a).to eq 1
+        expect(subject.b).to eq 'a'
+      end
+    end
+
   end
 end
