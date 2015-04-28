@@ -2,8 +2,11 @@ module Concurrent
   module Synchronization
     if Concurrent.on_rbx?
       class RbxObject < AbstractObject
-        def initialize
-          @waiters = []
+        def initialize(*args, &block)
+          synchronize do
+            @waiters = []
+            ns_initialize(*args, &block)
+          end
         end
 
         def synchronize(&block)

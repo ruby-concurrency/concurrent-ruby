@@ -47,7 +47,7 @@ module Concurrent
       #   any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
-        super(&nil)
+        super(&nil) # TODO use ns_initialize
         synchronize do
           @mailbox              = Array.new
           @serialized_execution = SerializedExecution.new

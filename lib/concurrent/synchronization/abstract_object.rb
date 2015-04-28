@@ -8,8 +8,8 @@ module Concurrent
     # the classes using it. Use {Synchronization::Object} not this abstract class.
     #
     # @note this object does not support usage together with
-    #   [Thread#wakeup](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
-    #   and [Thread#raise](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
+    #   [`Thread#wakeup`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
+    #   and [`Thread#raise`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
     #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
     #   `Thread#wakeup` will not work on all platforms.
     #
@@ -29,8 +29,8 @@ module Concurrent
     class AbstractObject
 
       # @abstract for helper ivar initialization if needed,
-      #     otherwise it can be left empty.
-      def initialize
+      #   otherwise it can be left empty. It has to call ns_initialize.
+      def initialize(*args, &block)
         raise NotImplementedError
       end
 
@@ -50,6 +50,10 @@ module Concurrent
       def wait(timeout = nil)
         synchronize { ns_wait(timeout) }
         self
+      end
+
+      # initialization of the object called inside synchronize block
+      def ns_initialize(*args, &block)
       end
 
       # Wait until condition is met or timeout passes,

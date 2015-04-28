@@ -5,7 +5,8 @@ module Concurrent
       require 'jruby'
 
       class JavaPureObject < AbstractObject
-        def initialize
+        def initialize(*args, &block)
+          synchronize { ns_initialize(*args, &block) }
         end
 
         def synchronize

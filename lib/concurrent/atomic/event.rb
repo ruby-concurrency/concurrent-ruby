@@ -19,10 +19,6 @@ module Concurrent
     # `Event` will block.
     def initialize
       super
-      synchronize do
-        @set       = false
-        @iteration = 0
-      end
     end
 
     # Is the object in the set state?
@@ -82,6 +78,11 @@ module Concurrent
         ns_broadcast
       end
       true
+    end
+
+    def ns_initialize
+      @set       = false
+      @iteration = 0
     end
   end
 end

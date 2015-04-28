@@ -33,8 +33,8 @@ module Concurrent
 
       alias_method :async, :future
 
-      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation is delays until
-      # requested by {Future#wait} method, {Future#value} and {Future#value!} methods are calling {Future#wait} internally.
+      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation is delayed until
+      # requested by `#wait`, `#value`, `#value!`, etc.
       # @return [Delay]
       def delay(default_executor = :io, &task)
         Delay.new(default_executor).event.chain(&task)
@@ -83,12 +83,6 @@ module Concurrent
 
     class Event < Synchronization::Object
       extend FutureShortcuts
-
-      # @api private
-      def initialize(promise, default_executor = :io)
-        super()
-        synchronize { ns_initialize(promise, default_executor) }
-      end
 
       # Is obligation completion still pending?
       # @return [Boolean]
@@ -624,12 +618,6 @@ module Concurrent
 
     # @abstract
     class AbstractPromise < Synchronization::Object
-      # @api private
-      def initialize(*args, &block)
-        super(&nil)
-        synchronize { ns_initialize(*args, &block) }
-      end
-
       def default_executor
         future.default_executor
       end

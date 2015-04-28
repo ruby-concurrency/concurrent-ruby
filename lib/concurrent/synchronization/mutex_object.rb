@@ -1,9 +1,10 @@
 module Concurrent
   module Synchronization
     class MutexObject < AbstractObject
-      def initialize
+      def initialize(*args, &block)
         @__lock__do_not_use_directly      = ::Mutex.new
         @__condition__do_not_use_directly = ::ConditionVariable.new
+        synchronize { ns_initialize(*args, &block) }
       end
 
       def synchronize

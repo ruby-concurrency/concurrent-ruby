@@ -47,9 +47,11 @@ public class SynchronizationLibrary implements Library {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod
-        public IRubyObject initialize(ThreadContext context) {
-            return context.nil;
+        @JRubyMethod(rest = true)
+        public IRubyObject initialize(ThreadContext context, IRubyObject[] args, Block block) {
+            synchronized (this) {
+                return callMethod(context, "ns_initialize", args, block);
+            }
         }
 
         @JRubyMethod(name = "synchronize")
@@ -59,7 +61,7 @@ public class SynchronizationLibrary implements Library {
             }
         }
 
-        @JRubyMethod(name = "ns_wait", optional = 1)
+        @JRubyMethod(name = "ns_wait", optional = 1, visibility = 'private')
         public IRubyObject nsWait(ThreadContext context, IRubyObject[] args) {
             Ruby runtime = context.runtime;
             if (args.length > 1) {
@@ -91,13 +93,13 @@ public class SynchronizationLibrary implements Library {
             return this;
         }
 
-        @JRubyMethod(name = "ns_signal")
+        @JRubyMethod(name = "ns_signal", visibility = 'private')
         public IRubyObject nsSignal(ThreadContext context) {
             notify();
             return this;
         }
 
-        @JRubyMethod(name = "ns_broadcast")
+        @JRubyMethod(name = "ns_broadcast", visibility = 'private')
         public IRubyObject nsBroadcast(ThreadContext context) {
             notifyAll();
             return this;

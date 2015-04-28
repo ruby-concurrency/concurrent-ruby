@@ -15,15 +15,10 @@ module Concurrent
     #
     # @raise [ArgumentError] if `parties` is not an integer or is less than zero
     def initialize(parties, &block)
-      super(&nil)
       if !parties.is_a?(Fixnum) || parties < 1
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
-      synchronize do
-        @parties = parties
-        @action  = block
-        ns_next_generation
-      end
+      super(parties, &block)
     end
 
     # @return [Fixnum] the number of threads needed to pass the barrier
@@ -101,6 +96,11 @@ module Concurrent
       @number_waiting = 0
     end
 
+    def ns_initialize(parties, &block)
+      @parties = parties
+      @action  = block
+      ns_next_generation
+    end
 
   end
 end
