@@ -106,19 +106,44 @@ module Concurrent
       expect(t2.value).to eq 0
     end
 
-    it 'provides isolation' do
+    it 'provides weak isolation' do
       t = TVar.new(0)
+
+      a = CountDownLatch.new
+      b = CountDownLatch.new
 
       Thread.new do
         Concurrent::atomically do
-          t1.value = 1
-          sleep(1)
+          t.value = 1
+          a.count_down
+          b.wait
         end
       end
 
-      sleep(0.5)
+      a.wait
+      Concurrent::atomically do
+        expect(t.value).to eq 0
+      end
+      b.count_down
+    end
 
+    it 'provides strong isolation' do
+      t = TVar.new(0)
+
+      a = CountDownLatch.new
+      b = CountDownLatch.new
+
+      Thread.new do
+        Concurrent::atomically do
+          t.value = 1
+          a.count_down
+          b.wait
+        end
+      end
+
+      a.wait
       expect(t.value).to eq 0
+      b.count_down
     end
 
     it 'nests' do

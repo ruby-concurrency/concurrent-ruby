@@ -24,7 +24,7 @@ We implement nested transactions by flattening.
 We only support strong isolation if you use the API correctly. In order words,
 we do not support strong isolation.
 
-Our implementation uses a very simple two-phased locking with versioned locks algorithm, as per [1]. In the future we will look at more advanced algorithms, contention management and using existing Java implementations when in JRuby.
+Our implementation uses a very simple two-phased locking with versioned locks algorithm and lazy writes, as per [1]. In the future we will look at more advanced algorithms, contention management and using existing Java implementations when in JRuby.
 
 See:
 
