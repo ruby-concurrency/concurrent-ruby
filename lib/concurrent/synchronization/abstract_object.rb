@@ -42,16 +42,6 @@ module Concurrent
 
       private
 
-      # wait until another thread calls #signal or #broadcast,
-      # spurious wake-ups can happen.
-      # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
-      # @return [self]
-      # @note intended to be made public if required in child classes
-      def wait(timeout = nil)
-        synchronize { ns_wait(timeout) }
-        self
-      end
-
       # initialization of the object called inside synchronize block
       def ns_initialize(*args, &block)
       end
@@ -61,32 +51,14 @@ module Concurrent
       # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
       # @yield condition to be met
       # @yieldreturn [true, false]
-      # @return [true, false]
-      # @note intended to be made public if required in child classes
-      def wait_until(timeout = nil, &condition)
-        synchronize { ns_wait_until(timeout, &condition) }
-      end
-
-      # signal one waiting thread
-      # @return [self]
-      # @note intended to be made public if required in child classes
-      def signal
-        synchronize { ns_signal }
-        self
-      end
-
-      # broadcast to all waiting threads
-      # @return [self]
-      # @note intended to be made public if required in child classes
-      def broadcast
-        synchronize { ns_broadcast }
-        self
-      end
-
+      # @return [true, false] if condition met
       # @note only to be used inside synchronized block
-      # @yield condition
-      # @return [true, false]
-      # see #wait_until
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def wait_until(timeout = nil, &condition)
+      #     synchronize { ns_wait_until(timeout, &condition) }
+      #   end
+      #   ```
       def ns_wait_until(timeout, &condition)
         if timeout
           wait_until = Concurrent.monotonic_time + timeout
@@ -104,23 +76,44 @@ module Concurrent
         end
       end
 
-      # @note only to be used inside synchronized block
+      # Wait until another thread calls #signal or #broadcast,
+      # spurious wake-ups can happen.
+      #
+      # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
       # @return [self]
-      # @see #wait
+      # @note only to be used inside synchronized block
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def wait(timeout = nil)
+      #     synchronize { ns_wait(timeout) }
+      #   end
+      #   ```
       def ns_wait(timeout = nil)
         raise NotImplementedError
       end
 
-      # @note only to be used inside synchronized block
+      # Signal one waiting thread
       # @return [self]
-      # @see #signal
+      # @note only to be used inside synchronized block
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def signal
+      #     synchronize { ns_signal }
+      #   end
+      #   ```
       def ns_signal
         raise NotImplementedError
       end
 
-      # @note only to be used inside synchronized block
+      # Broadcast to all waiting threads
       # @return [self]
-      # @see #broadcast
+      # @note only to be used inside synchronized block
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def broadcast
+      #     synchronize { ns_broadcast }
+      #   end
+      #   ```
       def ns_broadcast
         raise NotImplementedError
       end
