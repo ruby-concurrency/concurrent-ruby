@@ -8,6 +8,7 @@ module Concurrent
     include Executor
     include Logging
 
+    # The set of possible fallback policies that may be set at thread pool creation.
     FALLBACK_POLICIES = [:abort, :discard, :caller_runs].freeze
 
     attr_reader :fallback_policy
@@ -16,28 +17,77 @@ module Concurrent
       super()
     end
 
+    # @!macro [attach] executor_service_method_running_question
+    #
+    #   Is the executor running?
+    #
+    #   @return [Boolean] `true` when running, `false` when shutting down or shutdown
     def running?
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_shuttingdown_question
+    #
+    #   Is the executor shuttingdown?
+    #
+    #   @return [Boolean] `true` when not running and not shutdown, else `false`
     def shuttingdown?
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_shutdown_question
+    #
+    #   Is the executor shutdown?
+    #
+    #   @return [Boolean] `true` when shutdown, `false` when shutting down or running
     def shutdown?
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_shutdown
+    #
+    #   Begin an orderly shutdown. Tasks already in the queue will be executed,
+    #   but no new tasks will be accepted. Has no additional effect if the
+    #   thread pool is not running.
     def shutdown
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_kill
+    #
+    #   Begin an immediate shutdown. In-progress tasks will be allowed to
+    #   complete but enqueued tasks will be dismissed and no new tasks
+    #   will be accepted. Has no additional effect if the thread pool is
+    #   not running.
     def kill
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_wait_for_termination
+    #
+    #   Block until executor shutdown is complete or until `timeout` seconds have
+    #   passed.
+    #
+    #   @note Does not initiate shutdown or termination. Either `shutdown` or `kill`
+    #     must be called before this method (or on another thread).
+    #
+    #   @param [Integer] timeout the maximum number of seconds to wait for shutdown to complete
+    #
+    #   @return [Boolean] `true` if shutdown complete or false on `timeout`
     def wait_for_termination(timeout = nil)
       raise NotImplementedError
+    end
+
+    def running?
+      synchronize { ns_running? }
+    end
+
+    def shuttingdown?
+      synchronize { ns_shuttingdown? }
+    end
+
+    def shutdown?
+      synchronize { ns_shutdown? }
     end
 
     def auto_terminate?
@@ -50,6 +100,12 @@ module Concurrent
 
     protected
 
+    # Handler which executes the `fallback_policy` once the queue size
+    # reaches `max_queue`.
+    #
+    # @param [Array] args the arguments to the task which is being handled.
+    #
+    # @!visibility private
     def handle_fallback(*args)
       case fallback_policy
       when :abort
@@ -73,9 +129,18 @@ module Concurrent
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_shutdown_execution
+    #
+    #   Callback method called when an orderly shutdown has completed.
+    #   The default behavior is to signal all waiting threads.
     def shutdown_execution
+      # do nothing
     end
 
+    # @!macro [attach] executor_service_method_kill_execution
+    #
+    #   Callback method called when the executor has been killed.
+    #   The default behavior is to do nothing.
     def kill_execution
       # do nothing
     end
@@ -109,8 +174,10 @@ module Concurrent
 
     def initialize
       super()
-      @stop_event    = Event.new
-      @stopped_event = Event.new
+      synchronize do
+        @stop_event    = Event.new
+        @stopped_event = Event.new
+      end
     end
 
     def post(*args, &task)
@@ -121,18 +188,6 @@ module Concurrent
         execute(*args, &task)
         true
       end
-    end
-
-    def running?
-      !stop_event.set?
-    end
-
-    def shuttingdown?
-      !(running? || shutdown?)
-    end
-
-    def shutdown?
-      stopped_event.set?
     end
 
     def shutdown
@@ -167,6 +222,18 @@ module Concurrent
     def shutdown_execution
       stopped_event.set
     end
+
+    def ns_running?
+      !stop_event.set?
+    end
+
+    def ns_shuttingdown?
+      !(ns_running? || ns_shutdown?)
+    end
+
+    def ns_shutdown?
+      stopped_event.set?
+    end
   end
 
   if Concurrent.on_jruby?
@@ -196,22 +263,6 @@ module Concurrent
         raise RejectedExecutionError
       end
 
-      def running?
-        !(shuttingdown? || shutdown?)
-      end
-
-      def shuttingdown?
-        if @executor.respond_to? :isTerminating
-          @executor.isTerminating
-        else
-          false
-        end
-      end
-
-      def shutdown?
-        @executor.isShutdown || @executor.isTerminated
-      end
-
       def wait_for_termination(timeout = nil)
         if timeout.nil?
           ok = @executor.awaitTermination(60, java.util.concurrent.TimeUnit::SECONDS) until ok
@@ -222,15 +273,37 @@ module Concurrent
       end
 
       def shutdown
-        self.ns_auto_terminate = false
-        @executor.shutdown
-        nil
+        synchronize do
+          self.ns_auto_terminate = false
+          @executor.shutdown
+          nil
+        end
       end
 
       def kill
-        self.ns_auto_terminate = false
-        @executor.shutdownNow
-        nil
+        synchronize do
+          self.ns_auto_terminate = false
+          @executor.shutdownNow
+          nil
+        end
+      end
+
+      protected
+
+      def ns_running?
+        !(ns_shuttingdown? || ns_shutdown?)
+      end
+
+      def ns_shuttingdown?
+        if @executor.respond_to? :isTerminating
+          @executor.isTerminating
+        else
+          false
+        end
+      end
+
+      def ns_shutdown?
+        @executor.isShutdown || @executor.isTerminated
       end
     end
   end
