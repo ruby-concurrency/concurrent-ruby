@@ -1,7 +1,7 @@
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
 require 'concurrent/atomic/atomic_boolean'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 require 'concurrent/executor/safe_task_executor'
 
 module Concurrent
@@ -147,9 +147,8 @@ module Concurrent
   #
   # @see http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html
-  class TimerTask
+  class TimerTask < RubyExecutorService
     include Dereferenceable
-    include RubyExecutor
     include Observable
 
     # Default `:execution_interval` in seconds.
@@ -189,7 +188,8 @@ module Concurrent
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
 
-      init_executor
+      super(&:nil)
+      init_mutex(self)
       set_deref_options(opts)
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
@@ -222,7 +222,7 @@ module Concurrent
     #   task = Concurrent::TimerTask.new(execution_interval: 10){ print "Hello World\n" }.execute
     #   task.running? #=> true
     def execute
-      mutex.synchronize do
+      synchronize do
         if @running.false?
           @running.make_true
           schedule_next_task(@run_now ? 0 : @execution_interval)
@@ -246,10 +246,7 @@ module Concurrent
     # @return [Fixnum] Number of seconds after the task completes before the
     #   task is performed again.
     def execution_interval
-      mutex.lock
-      @execution_interval
-    ensure
-      mutex.unlock
+      synchronize { @execution_interval }
     end
 
     # @!attribute [rw] execution_interval
@@ -259,12 +256,7 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        begin
-          mutex.lock
-          @execution_interval = value
-        ensure
-          mutex.unlock
-        end
+        synchronize { @execution_interval = value }
       end
     end
 
@@ -272,10 +264,7 @@ module Concurrent
     # @return [Fixnum] Number of seconds the task can run before it is
     #   considered to have failed.
     def timeout_interval
-      mutex.lock
-      @timeout_interval
-    ensure
-      mutex.unlock
+      synchronize { @timeout_interval }
     end
 
     # @!attribute [rw] timeout_interval
@@ -285,12 +274,7 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        begin
-          mutex.lock
-          @timeout_interval = value
-        ensure
-          mutex.unlock
-        end
+        synchronize { @timeout_interval = value }
       end
     end
 

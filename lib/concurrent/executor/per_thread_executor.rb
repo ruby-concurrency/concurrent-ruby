@@ -1,4 +1,5 @@
 require 'concurrent/atomics'
+require 'concurrent/synchronization'
 require 'concurrent/executor/executor'
 
 module Concurrent
@@ -15,7 +16,7 @@ module Concurrent
   # lead to suboptimal performance.
   #
   # @note Intended for use primarily in testing and debugging.
-  class PerThreadExecutor
+  class PerThreadExecutor < Synchronization::Object
     include Executor
 
     # Creates a new executor

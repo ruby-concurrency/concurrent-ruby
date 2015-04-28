@@ -1,15 +1,14 @@
 require 'thread'
 
 require 'concurrent/atomic/event'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
   # @!macro thread_pool_executor
   # @!macro thread_pool_options
-  class RubyThreadPoolExecutor
-    include RubyExecutor
+  class RubyThreadPoolExecutor < RubyExecutorService
 
     # Default maximum number of threads that will be created in the pool.
     DEFAULT_MAX_POOL_SIZE      = 2**15 # 32768
@@ -71,19 +70,20 @@ module Concurrent
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
     def initialize(opts = {})
+      super()
+
       @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
       @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
+      raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
 
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
       raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
-      raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
 
-      init_executor
       self.auto_terminate = opts.fetch(:auto_terminate, true)
 
       @pool                 = [] # all workers
@@ -100,21 +100,21 @@ module Concurrent
 
     # @!macro executor_module_method_can_overflow_question
     def can_overflow?
-      mutex.synchronize { ns_limited_queue? }
+      synchronize { ns_limited_queue? }
     end
 
     # The number of threads currently in the pool.
     #
     # @return [Integer] the length
     def length
-      mutex.synchronize { @pool.length }
+      synchronize { @pool.length }
     end
 
     # The number of tasks in the queue awaiting execution.
     #
     # @return [Integer] the queue_length
     def queue_length
-      mutex.synchronize { @queue.length }
+      synchronize { @queue.length }
     end
 
     # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
@@ -122,7 +122,7 @@ module Concurrent
     #
     # @return [Integer] the remaining_capacity
     def remaining_capacity
-      mutex.synchronize do
+      synchronize do
         if ns_limited_queue?
           @max_queue - @queue.length
         else
@@ -133,22 +133,22 @@ module Concurrent
 
     # @api private
     def remove_busy_worker(worker)
-      mutex.synchronize { ns_remove_busy_worker worker }
+      synchronize { ns_remove_busy_worker worker }
     end
 
     # @api private
     def ready_worker(worker)
-      mutex.synchronize { ns_ready_worker worker }
+      synchronize { ns_ready_worker worker }
     end
 
     # @api private
     def worker_not_old_enough(worker)
-      mutex.synchronize { ns_worker_not_old_enough worker }
+      synchronize { ns_worker_not_old_enough worker }
     end
 
     # @api private
     def worker_died(worker)
-      mutex.synchronize { ns_worker_died worker }
+      synchronize { ns_worker_died worker }
     end
 
     protected

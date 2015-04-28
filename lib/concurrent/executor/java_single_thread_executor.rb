@@ -1,12 +1,11 @@
 if Concurrent.on_jruby?
-  require_relative 'executor'
+  require 'concurrent/executor/executor_service'
 
   module Concurrent
 
     # @!macro single_thread_executor
     # @!macro thread_pool_options
-    class JavaSingleThreadExecutor
-      include JavaExecutor
+    class JavaSingleThreadExecutor < JavaExecutorService
       include SerialExecutor
 
       # Create a new thread pool.
@@ -19,9 +18,10 @@ if Concurrent.on_jruby?
       # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
       def initialize(opts = {})
+        super()
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor
         @fallback_policy = opts.fetch(:fallback_policy, :discard)
-        raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.keys.include?(@fallback_policy)
+        raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.keys.include?(@fallback_policy)
         self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
