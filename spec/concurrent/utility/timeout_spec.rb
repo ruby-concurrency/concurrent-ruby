@@ -27,19 +27,19 @@ module Concurrent
 
     it 'kills the thread on success' do
       result = Concurrent::timeout(1) { 42 }
-      expect(Thread).to receive(:kill).with(any_args())
+      expect(Thread).to receive(:kill).at_least(:once).with(any_args())
       Concurrent::timeout(1){ 42 }
     end
 
     it 'kills the thread on timeout' do
-      expect(Thread).to receive(:kill).with(any_args())
+      expect(Thread).to receive(:kill).at_least(:once).with(any_args())
       expect {
         Concurrent::timeout(1){ sleep }
       }.to raise_error
     end
 
     it 'kills the thread on exception' do
-      expect(Thread).to receive(:kill).with(any_args())
+      expect(Thread).to receive(:kill).at_least(:once).with(any_args())
       expect {
         Concurrent::timeout(1){ raise NotImplementedError }
       }.to raise_error
