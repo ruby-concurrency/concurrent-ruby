@@ -120,7 +120,6 @@ module Concurrent
         expect(subject.size).to eq 2
         expect(subject.members).to eq [:a, :b]
         expect(subject.each.to_a).to eq [[:a, 1], [:b, 'a']]
-        expect(subject.inspect).to match /#<Concurrent::AB:0x[\da-f]+ (@a=1|@b="a"), (@a=1|@b="a")>/
       end
 
       specify 'equality' do

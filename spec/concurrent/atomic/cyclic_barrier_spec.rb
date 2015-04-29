@@ -37,11 +37,8 @@ module Concurrent
 
       context 'with waiting threads' do
         it 'should be equal to the waiting threads count' do
-          Thread.new { barrier.wait }
-          Thread.new { barrier.wait }
-
-          sleep(0.1)
-
+          threads = [Thread.new { barrier.wait }, Thread.new { barrier.wait }]
+          Thread.pass until threads.all? { |t| t.status == 'sleep' }
           expect(barrier.number_waiting).to eq 2
         end
       end
