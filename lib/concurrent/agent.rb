@@ -2,7 +2,6 @@ require 'thread'
 
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
-require 'concurrent/utility/timeout'
 require 'concurrent/logging'
 
 module Concurrent
@@ -64,6 +63,7 @@ module Concurrent
       end
       self
     end
+
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
@@ -87,6 +87,7 @@ module Concurrent
       end
       self
     end
+
     alias_method :validates, :validate
     alias_method :validate_with, :validate
     alias_method :validates_with, :validate
@@ -106,7 +107,7 @@ module Concurrent
     # Update the current value with the result of the given block fast,
     # block can do blocking calls
     #
-    # @param [Fixnum, nil] timeout maximum number of seconds before an update is cancelled
+    # @param [Fixnum, nil] timeout [DEPRECATED] maximum number of seconds before an update is cancelled
     #
     # @yield the fast to be performed with the current value in order to calculate
     #   the new value
@@ -114,12 +115,22 @@ module Concurrent
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
     def post_off(timeout = nil, &block)
-      block = if timeout
-                lambda { |value| Concurrent::timeout(timeout) { block.call(value) } }
+      warn '[DEPRECATED] post_off with timeout options is deprecated and will be removed'
+      task = if timeout
+                lambda do |value|
+                  future = Future.execute do
+                    block.call(value)
+                  end
+                  if future.wait(timeout)
+                    future.value!
+                  else
+                    raise Concurrent::TimeoutError
+                  end
+                end
               else
                 block
               end
-      post_on(@io_executor, &block)
+      post_on(@io_executor, &task)
     end
 
     # Update the current value with the result of the given block fast,
