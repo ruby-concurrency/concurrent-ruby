@@ -5,7 +5,9 @@ module Concurrent
       require 'jruby'
 
       class JavaObject < AbstractObject
-        def ensure_ivar_visibility!
+        private
+
+        def ensure_ivar_visibility! # TODO move to java version
           # relying on undocumented behavior of JRuby, ivar access is volatile
         end
       end

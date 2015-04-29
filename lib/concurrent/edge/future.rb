@@ -113,9 +113,9 @@ module Concurrent
       end
 
       def touch
-        if (promise = promise_to_touch)
-          promise.touch
-        end
+        # distribute touch to promise only once
+        @Promise.touch if @Touched.make_true
+        self
       end
 
       def state
@@ -230,10 +230,6 @@ module Concurrent
 
       def ns_completed?
         ns_state == :completed
-      end
-
-      def promise_to_touch
-        @Promise if @Touched.make_true
       end
 
       def pr_chain(default_executor, executor = nil, &callback)

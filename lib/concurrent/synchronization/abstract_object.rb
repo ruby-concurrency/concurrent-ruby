@@ -91,7 +91,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # Signal one waiting thread
+      # Signal one waiting thread.
       # @return [self]
       # @note only to be used inside synchronized block
       # @note to provide direct access to this method in a descendant add method
@@ -104,7 +104,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # Broadcast to all waiting threads
+      # Broadcast to all waiting threads.
       # @return [self]
       # @note only to be used inside synchronized block
       # @note to provide direct access to this method in a descendant add method

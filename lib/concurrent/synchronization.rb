@@ -7,6 +7,7 @@ require 'concurrent/synchronization/monitor_object'
 require 'concurrent/synchronization/rbx_object'
 
 module Concurrent
+  # {include:file:doc/synchronization.md}
   module Synchronization
     Implementation = case
                      when Concurrent.on_jruby?
