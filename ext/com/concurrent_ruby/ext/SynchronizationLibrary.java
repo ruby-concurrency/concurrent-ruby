@@ -105,5 +105,10 @@ public class SynchronizationLibrary implements Library {
             notifyAll();
             return this;
         }
+
+        @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PRIVATE)
+        public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
+            return context.nil;
+        }
     }
 }
