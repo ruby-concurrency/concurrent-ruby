@@ -11,15 +11,10 @@ module Concurrent
       def self.with_fields(*names, &block)
         Class.new(self) do
           attr_reader(*names)
-
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def initialize(#{names.join(', ')})
               #{names.map { |n| '@' + n.to_s }.join(', ')} = #{names.join(', ')}
               ensure_ivar_visibility!
-            end
-
-            def members
-              #{names.inspect}
             end
 
             def self.members
@@ -44,6 +39,10 @@ module Concurrent
 
       def self.[](*args)
         new *args
+      end
+
+      def members
+        self.class.members
       end
 
       include Enumerable
