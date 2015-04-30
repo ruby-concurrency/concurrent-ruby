@@ -16,18 +16,15 @@ Benchmark.ips(time, warmup) do |x|
   x.compare!
 end
 
-
 Benchmark.ips(time, warmup) do |x|
-  ohead = Concurrent::Promise.execute { 1 }
   x.report('graph-old') do
-    head    = ohead
+    head    = Concurrent::Promise.execute { 1 }
     branch1 = head.then(&:succ)
     branch2 = head.then(&:succ).then(&:succ)
     Concurrent::Promise.zip(branch1, branch2).then { |(a, b)| a + b }.value!
   end
-  nhead = Concurrent.future { 1 }
   x.report('graph-new') do
-    head    = nhead
+    head    = Concurrent.future { 1 }
     branch1 = head.then(&:succ)
     branch2 = head.then(&:succ).then(&:succ)
     (branch1 + branch2).then { |(a, b)| a + b }.value!

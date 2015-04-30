@@ -84,32 +84,39 @@ module Concurrent
     class Event < Synchronization::Object
       extend FutureShortcuts
 
+      attr_volatile :state
+      private :state=
+
       def initialize(promise, default_executor = :io)
         @Promise         = promise
         @DefaultExecutor = default_executor
         @Touched         = AtomicBoolean.new(false)
+        self.state       = :pending
         super()
         ensure_ivar_visibility!
       end
 
-      # Is obligation completion still pending?
+      # Is Future still pending?
       # @return [Boolean]
       def pending?
-        synchronize { ns_pending? }
+        state == :pending
       end
 
       alias_method :incomplete?, :pending?
 
+      # Is Future still completed?
+      # @return [Boolean]
       def completed?
-        synchronize { ns_completed? }
+        state == :completed
       end
 
       # wait until Obligation is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
-      # @return [Obligation] self
+      # @return [Event] self
       def wait(timeout = nil)
         touch
-        synchronize { ns_wait_until_complete(timeout) }
+        wait_until_complete timeout
+        self
       end
 
       def touch
@@ -118,39 +125,40 @@ module Concurrent
         self
       end
 
-      def state
-        synchronize { ns_state }
-      end
-
       def default_executor
         @DefaultExecutor
       end
 
       # @yield [success, value, reason] of the parent
       def chain(executor = nil, &callback)
-        pr_chain(default_executor, executor, &callback)
+        ChainPromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
       end
 
       alias_method :then, :chain
 
+      # TODO take block optionally
+      def join(*futures)
+        AllPromise.new([self, *futures], @DefaultExecutor).future
+      end
+
       def delay
-        pr_delay(default_executor)
+        join(Delay.new(@DefaultExecutor).future)
       end
 
       def schedule(intended_time)
-        pr_schedule(default_executor, intended_time)
+        chain { ScheduledPromise.new(intended_time).future.join(self) }.flat
       end
 
       # @yield [success, value, reason] executed async on `executor` when completed
       # @return self
       def on_completion(executor = nil, &callback)
-        synchronize { ns_on_completion(@DefaultExecutor, executor, &callback) }
+        add_callback :pr_async_callback_on_completion, executor || @DefaultExecutor, callback
       end
 
       # @yield [success, value, reason] executed sync when completed
       # @return self
       def on_completion!(&callback)
-        synchronize { ns_on_completion!(&callback) }
+        add_callback :pr_callback_on_completion, callback
       end
 
       # @return [Array<AbstractPromise>]
@@ -166,17 +174,12 @@ module Concurrent
         synchronize { "#{ns_to_s[0..-2]} blocks:[#{pr_blocks(@callbacks).map(&:to_s).join(', ')}]>" }
       end
 
-      # TODO take block optionally
-      def join(*futures)
-        pr_join(default_executor, *futures)
-      end
-
       alias_method :+, :join
       alias_method :and, :join
 
       # @api private
       def complete(raise = true)
-        callbacks = synchronize { ns_complete(raise) }
+        callbacks = synchronize { ns_complete raise }
         pr_call_callbacks callbacks
         self
       end
@@ -189,7 +192,20 @@ module Concurrent
 
       # @api private
       def add_callback(method, *args)
-        synchronize { ns_add_callback(method, *args) }
+        call = if completed?
+                 true
+               else
+                 synchronize do
+                   if completed?
+                     true
+                   else
+                     @callbacks << [method, *args]
+                     false
+                   end
+                 end
+               end
+        pr_call_callback method, *args if call
+        self
       end
 
       # @api private, only for inspection
@@ -202,58 +218,21 @@ module Concurrent
         @Touched.value
       end
 
-      def with_default_executor(executor = default_executor)
+      def with_default_executor(executor = @DefaultExecutor)
         AllPromise.new([self], executor).future
       end
 
       private
 
       def ns_initialize
-        @state     = :pending
         @callbacks = []
       end
 
-      def ns_wait_until_complete(timeout = nil)
-        ns_wait_until(timeout) { ns_completed? }
+      def wait_until_complete(timeout)
+        unless completed?
+          synchronize { ns_wait_until(timeout) { completed? } }
+        end
         self
-      end
-
-      def ns_state
-        @state
-      end
-
-      def ns_pending?
-        ns_state == :pending
-      end
-
-      alias_method :ns_incomplete?, :ns_pending?
-
-      def ns_completed?
-        ns_state == :completed
-      end
-
-      def pr_chain(default_executor, executor = nil, &callback)
-        ChainPromise.new(self, default_executor, executor || default_executor, &callback).future
-      end
-
-      def pr_delay(default_executor)
-        pr_join(default_executor, Delay.new(default_executor).future)
-      end
-
-      def pr_schedule(default_executor, intended_time)
-        pr_chain(default_executor) { ScheduledPromise.new(intended_time).future.join(self) }.flat
-      end
-
-      def pr_join(default_executor, *futures)
-        AllPromise.new([self, *futures], default_executor).future
-      end
-
-      def ns_on_completion(default_executor, executor = nil, &callback)
-        ns_add_callback :pr_async_callback_on_completion, executor || default_executor, callback
-      end
-
-      def ns_on_completion!(&callback)
-        ns_add_callback :pr_callback_on_completion, callback
       end
 
       def pr_blocks(callbacks)
@@ -263,7 +242,7 @@ module Concurrent
       end
 
       def ns_to_s
-        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{ns_state}>"
+        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>" # TODO check ns status
       end
 
       def ns_complete(raise = true)
@@ -274,21 +253,12 @@ module Concurrent
         callbacks
       end
 
-      def ns_add_callback(method, *args)
-        if ns_completed?
-          pr_call_callback method, *args
-        else
-          @callbacks << [method, *args]
-        end
-        self
-      end
-
       def ns_complete_state
-        @state = :completed
+        self.state = :completed
       end
 
       def ns_check_multiple_assignment(raise, reason = nil)
-        if ns_completed?
+        if completed?
           if raise
             raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment')
           else
@@ -310,7 +280,7 @@ module Concurrent
       end
 
       def pr_notify_blocked(promise)
-        promise.done self
+        promise.on_done self
       end
 
       def pr_call_callback(method, *args)
@@ -325,60 +295,79 @@ module Concurrent
 
     class Future < Event
 
-      # Has the obligation been success?
-      # @return [Boolean]
-      def success?
-        synchronize { ns_success? }
+      private *attr_volatile(:value_field, :reason_field)
+
+      def initialize(promise, default_executor = :io)
+        self.value_field  = nil
+        self.reason_field = nil
+        super promise, default_executor
       end
 
-      # Has the obligation been failed?
+      # Has the Future been success?
+      # @return [Boolean]
+      def success?
+        state == :success
+      end
+
+      # Has the Future been failed?
       # @return [Boolean]
       def failed?
         state == :failed
       end
 
+      # Has the Future been completed?
+      # @return [Boolean]
+      def completed?
+        [:success, :failed].include? state
+      end
+
       # @return [Object] see Dereferenceable#deref
       def value(timeout = nil)
         touch
-        synchronize { ns_value timeout }
+        wait_until_complete timeout
+        value_field
       end
 
       def reason(timeout = nil)
         touch
-        synchronize { ns_reason timeout }
+        wait_until_complete timeout
+        reason_field
       end
 
       def result(timeout = nil)
         touch
-        synchronize { ns_result timeout }
+        wait_until_complete timeout
+        [success?, value_field, reason_field]
       end
 
       # wait until Obligation is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
-      # @return [Obligation] self
+      # @return [Event] self
       # @raise [Exception] when #failed? it raises #reason
       def wait!(timeout = nil)
         touch
-        synchronize { ns_wait_until_complete! timeout }
+        wait_until_complete! timeout
       end
 
       # @raise [Exception] when #failed? it raises #reason
       # @return [Object] see Dereferenceable#deref
       def value!(timeout = nil)
         touch
-        synchronize { ns_value! timeout }
+        wait_until_complete!(timeout)
+        value_field
       end
 
       # @example allows failed Future to be risen
       #   raise Concurrent.future.fail
       def exception(*args)
         touch
-        synchronize { ns_exception(*args) }
+        raise 'obligation is not failed' unless failed?
+        reason_field.exception(*args)
       end
 
       # @yield [value] executed only on parent success
       def then(executor = nil, &callback)
-        pr_then(default_executor, executor, &callback)
+        ThenPromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
       end
 
       # Creates new future where its value is result of asking actor with value of this Future.
@@ -388,15 +377,15 @@ module Concurrent
 
       # @yield [reason] executed only on parent failure
       def rescue(executor = nil, &callback)
-        pr_rescue(default_executor, executor, &callback)
+        RescuePromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
       end
 
       def flat(level = 1)
-        FlattingPromise.new(self, level, default_executor).future
+        FlattingPromise.new(self, level, @DefaultExecutor).future
       end
 
       def or(*futures)
-        AnyPromise.new([self, *futures], default_executor).future
+        AnyPromise.new([self, *futures], @DefaultExecutor).future
       end
 
       alias_method :|, :or
@@ -404,119 +393,60 @@ module Concurrent
       # @yield [value] executed async on `executor` when success
       # @return self
       def on_success(executor = nil, &callback)
-        synchronize { ns_on_success(@DefaultExecutor, executor, &callback) }
+        add_callback :pr_async_callback_on_success, executor || @DefaultExecutor, callback
       end
 
       # @yield [reason] executed async on `executor` when failed?
       # @return self
       def on_failure(executor = nil, &callback)
-        synchronize { ns_on_failure(@DefaultExecutor, executor, &callback) }
+        add_callback :pr_async_callback_on_failure, executor || @DefaultExecutor, callback
       end
 
       # @yield [value] executed sync when success
       # @return self
       def on_success!(&callback)
-        synchronize { ns_on_success!(&callback) }
+        add_callback :pr_callback_on_success, callback
       end
 
       # @yield [reason] executed sync when failed?
       # @return self
       def on_failure!(&callback)
-        synchronize { ns_on_failure!(&callback) }
+        add_callback :pr_callback_on_failure, callback
       end
 
       # @api private
       def complete(success, value, reason, raise = true)
-        callbacks = synchronize { ns_complete(success, value, reason, raise) }
+        callbacks = synchronize { ns_complete success, value, reason, raise }
         pr_call_callbacks callbacks, success, value, reason
         self
       end
 
-      def ns_add_callback(method, *args)
-        if ns_completed?
-          pr_call_callback method, ns_completed?, ns_value, ns_reason, *args
-        else
-          @callbacks << [method, *args]
-        end
+      def add_callback(method, *args)
+        call = if completed?
+                 true
+               else
+                 synchronize do
+                   if completed?
+                     true
+                   else
+                     @callbacks << [method, *args]
+                     false
+                   end
+                 end
+               end
+        pr_call_callback method, success?, value_field, reason_field, *args if call
         self
       end
 
       private
 
-      def ns_initialize
-        super
-        @value  = nil
-        @reason = nil
-      end
-
-      def ns_success?
-        ns_state == :success
-      end
-
-      def ns_failed?
-        ns_state == :failed
-      end
-
-      def ns_completed?
-        [:success, :failed].include? ns_state
-      end
-
-      def ns_value(timeout = nil)
-        ns_wait_until_complete timeout
-        @value
-      end
-
-      def ns_reason(timeout = nil)
-        ns_wait_until_complete timeout
-        @reason
-      end
-
-      def ns_result(timeout = nil)
-        value = ns_value(timeout)
-        [ns_success?, value, ns_reason]
-      end
-
-      def ns_wait_until_complete!(timeout = nil)
-        ns_wait_until_complete(timeout)
-        raise self if ns_failed?
+      def wait_until_complete!(timeout = nil)
+        wait_until_complete(timeout)
+        raise self if failed?
         self
       end
 
-      def ns_value!(timeout = nil)
-        ns_wait_until_complete!(timeout)
-        @value
-      end
-
-      def ns_exception(*args)
-        raise 'obligation is not failed' unless ns_failed?
-        ns_reason.exception(*args)
-      end
-
-      def pr_then(default_executor, executor = nil, &callback)
-        ThenPromise.new(self, default_executor, executor || default_executor, &callback).future
-      end
-
-      def pr_rescue(default_executor, executor = nil, &callback)
-        RescuePromise.new(self, default_executor, executor || default_executor, &callback).future
-      end
-
-      def ns_on_success(default_executor, executor = nil, &callback)
-        ns_add_callback :pr_async_callback_on_success, executor || default_executor, callback
-      end
-
-      def ns_on_failure(default_executor, executor = nil, &callback)
-        ns_add_callback :pr_async_callback_on_failure, executor || default_executor, callback
-      end
-
-      def ns_on_success!(&callback)
-        ns_add_callback :pr_callback_on_success, callback
-      end
-
-      def ns_on_failure!(&callback)
-        ns_add_callback :pr_callback_on_failure, callback
-      end
-
-      def ns_complete(success, value, reason, raise = true)
+      def ns_complete(success, value, reason, raise)
         ns_check_multiple_assignment raise, reason
         ns_complete_state(success, value, reason)
         ns_broadcast
@@ -526,11 +456,11 @@ module Concurrent
 
       def ns_complete_state(success, value, reason)
         if success
-          @value = value
-          @state = :success
+          self.value_field = value
+          self.state       = :success
         else
-          @reason = reason
-          @state  = :failed
+          self.reason_field = reason
+          self.state        = :failed
         end
       end
 
@@ -728,26 +658,41 @@ module Concurrent
         promise
       end
 
+      def initialize(future, blocked_by_futures, *args, &block)
+        @BlockedBy = Array(blocked_by_futures)
+        @Countdown = AtomicFixnum.new @BlockedBy.size
+        super(future, blocked_by_futures, *args, &block)
+      end
+
       # @api private
-      def done(future) # FIXME pass in success/value/reason to avoid locking
+      def on_done(future)
         # futures could be deleted from blocked_by one by one here, but that would be too expensive,
         # it's done once when all are done to free the reference
-        completable, *args = synchronize do
-          completable             = ns_done(future)
-          blocked_by, @blocked_by = @blocked_by, [] if completable
-          [completable, *ns_completable_args(future, blocked_by)]
+
+        countdown   = process_on_done(future, @Countdown.decrement)
+        completable = completable?(countdown)
+
+        if completable
+          pr_on_completable(*pr_on_completable_args(future, blocked_by))
+          clear_blocked_by!
         end
-        pr_completable(*args) if completable
       end
 
       def touch
-        synchronize { ns_blocked_by }.each(&:touch)
+        blocked_by.each(&:touch)
       end
 
       # @api private
       # for inspection only
       def blocked_by
-        synchronize { ns_blocked_by }
+        @BlockedBy
+      end
+
+      def clear_blocked_by!
+        # not synchronized because we do not care when this change propagates
+        blocked_by = @BlockedBy
+        @BlockedBy = []
+        blocked_by
       end
 
       def inspect
@@ -756,26 +701,21 @@ module Concurrent
 
       private
 
-      def ns_initialize(blocked_by_futures)
-        @blocked_by = Array(blocked_by_futures)
-        @countdown  = @blocked_by.size
-      end
-
       # @return [true,false] if completable
-      def ns_done(future)
-        (@countdown -= 1).zero?
+      def completable?(countdown)
+        countdown.zero?
       end
 
-      def ns_completable_args(done_future, blocked_by)
+      def process_on_done(future, countdown)
+        countdown
+      end
+
+      def pr_on_completable_args(done_future, blocked_by)
         [done_future, blocked_by, @Future]
       end
 
-      def pr_completable(_, _, _)
+      def pr_on_completable(_, _, _)
         raise NotImplementedError
-      end
-
-      def ns_blocked_by
-        @blocked_by
       end
     end
 
@@ -798,11 +738,11 @@ module Concurrent
         super [blocked_by_future]
       end
 
-      def ns_completable_args(done_future, blocked_by)
+      def pr_on_completable_args(done_future, blocked_by)
         [done_future, blocked_by, @Future, @Executor, @Task]
       end
 
-      def pr_completable(_, _, _, _, _)
+      def pr_on_completable(_, _, _, _, _)
         raise NotImplementedError
       end
     end
@@ -815,7 +755,7 @@ module Concurrent
         super(blocked_by_future)
       end
 
-      def pr_completable(done_future, _, future, executor, task)
+      def pr_on_completable(done_future, _, future, executor, task)
         if done_future.success?
           Concurrent.post_on(executor, done_future, task) { |done_future, task| evaluate_to done_future.value, &task }
         else
@@ -832,7 +772,7 @@ module Concurrent
         super(blocked_by_future)
       end
 
-      def pr_completable(done_future, _, future, executor, task)
+      def pr_on_completable(done_future, _, future, executor, task)
         if done_future.failed?
           Concurrent.post_on(executor, done_future, task) { |done_future, task| evaluate_to done_future.reason, &task }
         else
@@ -844,7 +784,7 @@ module Concurrent
     class ChainPromise < BlockedTaskPromise
       private
 
-      def pr_completable(done_future, _, _, executor, task)
+      def pr_on_completable(done_future, _, _, executor, task)
         if Future === done_future
           Concurrent.post_on(executor, done_future, task) { |future, task| evaluate_to *future.result, &task }
         else
@@ -861,39 +801,58 @@ module Concurrent
     end
 
     class FlattingPromise < BlockedPromise
+      def blocked_by
+        synchronize { ns_blocked_by }
+      end
+
       private
 
-      def ns_done(future)
-        value = future.value # TODO get the value as argument
-        if @levels > 0
+      def process_on_done(future, countdown)
+        value = future.value
+        if @Levels.value > 0
           case value
           when Future
-            @countdown += 1
-            @blocked_by << value
-            @levels -= 1
+            @Countdown.increment
+            @Levels.decrement
+            synchronize { @blocked_by << value }
             value.add_callback :pr_notify_blocked, self
+            countdown + 1
           when Event
             raise TypeError, 'cannot flatten to Event'
           else
             raise TypeError, "returned value '#{value}' is not a Future"
           end
+        else
+          countdown
         end
-        super future
       end
 
       def initialize(blocked_by_future, levels = 1, default_executor = :io)
-        super Future.new(self, default_executor), blocked_by_future, levels
+        raise ArgumentError, 'levels has to be higher than 0' if levels < 1
+        @Levels = AtomicFixnum.new levels
+        super Future.new(self, default_executor), blocked_by_future
+        @BlockedBy = nil # its not used in FlattingPromise
       end
 
-      def ns_initialize(blocked_by_future, levels = 1)
+      def ns_initialize(blocked_by_future)
         blocked_by_future.is_a? Future or
             raise ArgumentError, 'only Future can be flatten'
-        super([blocked_by_future])
-        @levels = levels
+        @blocked_by = Array(blocked_by_future)
       end
 
-      def pr_completable(_, blocked_by, future)
+      def pr_on_completable(_, blocked_by, future)
         pr_complete future, *blocked_by.last.result
+      end
+
+      def ns_blocked_by
+        @blocked_by
+      end
+
+      def clear_blocked_by!
+        # not synchronized because we do not care when this change propagates
+        blocked_by  = @blocked_by
+        @blocked_by = []
+        blocked_by
       end
     end
 
@@ -907,7 +866,7 @@ module Concurrent
         super(klass.new(self, default_executor), blocked_by_futures)
       end
 
-      def pr_completable(done_future, blocked_by, future)
+      def pr_on_completable(done_future, blocked_by, future)
         results = blocked_by.select { |f| f.is_a?(Future) }.map(&:result)
         if results.empty?
           pr_complete future
@@ -933,11 +892,11 @@ module Concurrent
         super(Future.new(self, default_executor), blocked_by_futures)
       end
 
-      def ns_done(future)
+      def completable?(countdown)
         true
       end
 
-      def pr_completable(done_future, _, future)
+      def pr_on_completable(done_future, _, future)
         pr_complete future, *done_future.result, false
       end
     end
