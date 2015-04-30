@@ -33,11 +33,19 @@ module Concurrent
       end
 
       it 'times out' do
-        ex = nil
-        subject.post_off(0.1) { |v| sleep(0.2); ex = true }
+        ex      = nil
+        timeout = false
+        subject.rescue(Concurrent::TimeoutError) { timeout = true }
+        subject.post_off(0.1) do |v|
+          sleep(0.2)
+          ex = true
+        end
+        sleep 0.1
         subject.await
+        expect(timeout).to eq false
         sleep 0.3
-        expect(ex).to eq nil
+        expect(timeout).to eq false
+        expect(ex).to eq true
       end
     end
 
@@ -410,8 +418,10 @@ module Concurrent
         agent    = Agent.new(0, executor: executor)
         agent.post { |old| old + continue.value }
         sleep 0.1
-        Concurrent.timeout(0.2) { expect(agent.value).to eq 0 }
+        expect(agent.value).to eq 0
         continue.set 1
+        agent.await
+        expect(agent.value).to eq 1
         sleep 0.1
       end
 

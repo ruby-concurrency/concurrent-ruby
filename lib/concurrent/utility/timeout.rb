@@ -5,12 +5,13 @@ require 'concurrent/errors'
 
 module Concurrent
 
-  # Wait the given number of seconds for the block operation to complete.
+  # [DEPRECATED] Wait the given number of seconds for the block operation to complete.
   # Intended to be a simpler and more reliable replacement to the Ruby
-  # standard library `Timeout::timeout` method.
+  # standard library `Timeout::timeout` method. It does not kill the task
+  # so it finishes anyway. Advantage is that it cannot cause any ugly errors by
+  # killing threads.
   #
   # @param [Integer] seconds The number of seconds to wait
-  #
   # @return [Object] The result of the block operation
   #
   # @raise [Concurrent::TimeoutError] when the block operation does not complete
@@ -19,20 +20,16 @@ module Concurrent
   # @see http://ruby-doc.org/stdlib-2.2.0/libdoc/timeout/rdoc/Timeout.html Ruby Timeout::timeout
   #
   # @!macro monotonic_clock_warning
-  def timeout(seconds)
+  def timeout(seconds, &block)
+    warn '[DEPRECATED] timeout is deprecated and will be removed'
 
-    thread = Thread.new do
-      Thread.current[:result] = yield
-    end
-    success = thread.join(seconds)
-
-    if success
-      return thread[:result]
+    future = Future.execute(&block)
+    future.wait(seconds)
+    if future.complete?
+      future.value!
     else
       raise TimeoutError
     end
-  ensure
-    Thread.kill(thread) unless thread.nil?
   end
   module_function :timeout
 end
