@@ -267,8 +267,8 @@ module Concurrent
         end
       end
 
-      def pr_with_async(executor, &block)
-        Concurrent.post_on(executor, &block)
+      def pr_with_async(executor, *args, &block)
+        Concurrent.post_on(executor, *args, &block)
       end
 
       def pr_async_callback_on_completion(executor, callback)
@@ -469,11 +469,15 @@ module Concurrent
       end
 
       def pr_async_callback_on_success(success, value, reason, executor, callback)
-        pr_with_async(executor) { pr_callback_on_success success, value, reason, callback }
+        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
+          pr_callback_on_success success, value, reason, callback
+        end
       end
 
       def pr_async_callback_on_failure(success, value, reason, executor, callback)
-        pr_with_async(executor) { pr_callback_on_failure success, value, reason, callback }
+        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
+          pr_callback_on_failure success, value, reason, callback
+        end
       end
 
       def pr_callback_on_success(success, value, reason, callback)
@@ -493,7 +497,9 @@ module Concurrent
       end
 
       def pr_async_callback_on_completion(success, value, reason, executor, callback)
-        pr_with_async(executor) { pr_callback_on_completion success, value, reason, callback }
+        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
+          pr_callback_on_completion success, value, reason, callback
+        end
       end
     end
 
