@@ -70,32 +70,7 @@ module Concurrent
     #
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
     def initialize(opts = {})
-      super()
-
-      @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
-      @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
-      @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
-      @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
-      @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-      raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
-      warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
-
-      raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
-      raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
-      raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
-
-      self.auto_terminate = opts.fetch(:auto_terminate, true)
-
-      @pool                 = [] # all workers
-      @ready                = [] # used as a stash (most idle worker is at the start)
-      @queue                = [] # used as queue
-      # @ready or @queue is empty at all times
-      @scheduled_task_count = 0
-      @completed_task_count = 0
-      @largest_length       = 0
-
-      @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
-      @next_gc_time = Concurrent.monotonic_time + @gc_interval
+      super(opts)
     end
 
     # @!macro executor_module_method_can_overflow_question
@@ -152,6 +127,33 @@ module Concurrent
     end
 
     protected
+
+    def ns_initialize(opts = {})
+      @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+      @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+      @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
+      @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+      @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
+      raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
+      warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
+
+      raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
+      raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
+      raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
+
+      self.auto_terminate = opts.fetch(:auto_terminate, true)
+
+      @pool                 = [] # all workers
+      @ready                = [] # used as a stash (most idle worker is at the start)
+      @queue                = [] # used as queue
+      # @ready or @queue is empty at all times
+      @scheduled_task_count = 0
+      @completed_task_count = 0
+      @largest_length       = 0
+
+      @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
+      @next_gc_time = Concurrent.monotonic_time + @gc_interval
+    end
 
     def ns_limited_queue?
       @max_queue != 0
