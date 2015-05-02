@@ -18,7 +18,12 @@ if Concurrent.on_jruby?
       # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
       def initialize(opts = {})
-        super()
+        super(opts)
+      end
+
+      protected
+      
+      def ns_initialize(opts)
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor
         @fallback_policy = opts.fetch(:fallback_policy, :discard)
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.keys.include?(@fallback_policy)

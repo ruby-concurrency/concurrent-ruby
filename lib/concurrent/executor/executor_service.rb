@@ -145,7 +145,7 @@ module Concurrent
       # do nothing
     end
 
-    private
+    protected
 
     def ns_auto_terminate?
       !!@auto_terminate

@@ -267,11 +267,16 @@ module Concurrent
       end
     end
 
+    if Concurrent.on_jruby?
+      #FIXME: JRuby seems to handle privacy different here
+      public :synchronize
+    end
+
     private :post, :<<
 
     protected
 
-    def ns_initialize(opts = {}, &task)
+    def ns_initialize(opts, &task)
       init_mutex(self)
       set_deref_options(opts)
 

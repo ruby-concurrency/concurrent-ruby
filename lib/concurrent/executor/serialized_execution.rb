@@ -61,7 +61,7 @@ module Concurrent
       true
     end
 
-    private
+    protected
 
     def ns_initialize
       @being_executed = false

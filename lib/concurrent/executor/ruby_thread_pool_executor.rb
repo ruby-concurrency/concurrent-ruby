@@ -128,7 +128,7 @@ module Concurrent
 
     protected
 
-    def ns_initialize(opts = {})
+    def ns_initialize(opts)
       @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
@@ -345,6 +345,5 @@ module Concurrent
         throw :stop
       end
     end
-
   end
 end

@@ -24,12 +24,7 @@ module Concurrent
     #     `:operation` returns the global operation pool, and `:immediate` returns a new
     #     `ImmediateExecutor` object.
     def initialize(opts = {})
-      super()
-      @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-      @timer_executor = SingleThreadExecutor.new
-      @condition      = Event.new
-      self.auto_terminate = opts.fetch(:auto_terminate, true)
+      super(opts)
     end
 
     # Post a task to be execute run after a given delay (in seconds). If the
@@ -99,7 +94,7 @@ module Concurrent
       end
     end
 
-    private
+    protected
 
     # A struct for encapsulating a task and its intended execution time.
     # It facilitates proper prioritization by overriding the comparison
@@ -116,6 +111,14 @@ module Concurrent
     end
 
     private_constant :Task
+
+    def ns_initialize(opts)
+      @queue          = PriorityQueue.new(order: :min)
+      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @timer_executor = SingleThreadExecutor.new
+      @condition      = Event.new
+      self.auto_terminate = opts.fetch(:auto_terminate, true)
+    end
 
     # @!visibility private
     def shutdown_execution
