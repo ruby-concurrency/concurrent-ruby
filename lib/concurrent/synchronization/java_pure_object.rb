@@ -9,7 +9,7 @@ module Concurrent
           synchronize { ns_initialize(*args, &block) }
         end
 
-        private
+        protected
 
         def synchronize
           JRuby.reference0(self).synchronized { yield }

@@ -13,8 +13,8 @@ module Concurrent
 
     attr_reader :fallback_policy
 
-    def initialize
-      super()
+    def initialize(*args, &block)
+      super
     end
 
     # @!macro [attach] executor_service_method_running_question
@@ -172,12 +172,11 @@ module Concurrent
 
   class RubyExecutorService < AbstractExecutorService
 
-    def initialize
-      super()
-      synchronize do
-        @stop_event    = Event.new
-        @stopped_event = Event.new
-      end
+    def initialize(*args, &block)
+      super
+      @stop_event    = Event.new
+      @stopped_event = Event.new
+      ensure_ivar_visibility!
     end
 
     def post(*args, &task)
@@ -249,8 +248,8 @@ module Concurrent
       }.freeze
       private_constant :FALLBACK_POLICY_CLASSES
 
-      def initialize
-        super()
+      def initialize(*args, &block)
+        super
       end
 
       def post(*args, &task)
