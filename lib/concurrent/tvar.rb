@@ -153,36 +153,35 @@ module Concurrent
     ABORTED = Object.new
 
     ReadLogEntry = Struct.new(:tvar, :version)
-    UndoLogEntry = Struct.new(:tvar, :value)
 
     AbortError = Class.new(StandardError)
 
     def initialize
-      @write_set = Set.new
       @read_log  = []
-      @undo_log  = []
+      @write_log = {}
     end
 
     def read(tvar)
       Concurrent::abort_transaction unless valid?
-      @read_log.push(ReadLogEntry.new(tvar, tvar.unsafe_version))
-      tvar.unsafe_value
+
+      if @write_log.has_key? tvar
+        @write_log[tvar]
+      else
+        @read_log.push(ReadLogEntry.new(tvar, tvar.unsafe_version))
+        tvar.unsafe_value
+      end
     end
 
     def write(tvar, value)
       # Have we already written to this TVar?
 
-      unless @write_set.include? tvar
+      unless @write_log.has_key? tvar
         # Try to lock the TVar
 
         unless tvar.unsafe_lock.try_lock
           # Someone else is writing to this TVar - abort
           Concurrent::abort_transaction
         end
-
-        # We've locked it - add it to the write set
-
-        @write_set.add(tvar)
 
         # If we previously wrote to it, check the version hasn't changed
 
@@ -193,27 +192,20 @@ module Concurrent
         end
       end
 
-      # Record the current value of the TVar so we can undo it later
+      # Record the value written
 
-      @undo_log.push(UndoLogEntry.new(tvar, tvar.unsafe_value))
-
-      # Write the new value to the TVar
-
-      tvar.unsafe_value = value
+      @write_log[tvar] = value
     end
 
     def abort
-      @undo_log.each do |entry|
-        entry.tvar.unsafe_value = entry.value
-      end
-
       unlock
     end
 
     def commit
       return false unless valid?
 
-      @write_set.each do |tvar|
+      @write_log.each_pair do |tvar, value|
+        tvar.unsafe_value = value
         tvar.unsafe_increment_version
       end
 
@@ -224,7 +216,7 @@ module Concurrent
 
     def valid?
       @read_log.each do |log_entry|
-        unless @write_set.include? log_entry.tvar
+        unless @write_log.has_key? log_entry.tvar
           if log_entry.tvar.unsafe_version > log_entry.version
             return false
           end
@@ -235,7 +227,7 @@ module Concurrent
     end
 
     def unlock
-      @write_set.each do |tvar|
+      @write_log.each_key do |tvar|
         tvar.unsafe_lock.unlock
       end
     end
