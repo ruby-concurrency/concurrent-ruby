@@ -158,12 +158,14 @@ module Concurrent
     def initialize(delay, opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
       @delay = TimerSet.calculate_delay!(delay)
+      super(IVar::NO_VALUE, opts.merge(__task_from_block__: block), &nil)
+    end
 
-      super(IVar::NO_VALUE, opts, &nil)
-
+    def ns_initialize(value, opts)
+      super
       self.observers = CopyOnNotifyObserverSet.new
       @state         = :unscheduled
-      @task          = block
+      @task          = opts[:__task_from_block__]
       @executor      = Executor.executor_from_options(opts) || Concurrent.global_io_executor
     end
 
