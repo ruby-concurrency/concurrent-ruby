@@ -24,7 +24,7 @@ module Concurrent
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      super(IVar::NO_VALUE, opts)
+      super(IVar::NO_VALUE, opts, &nil)
       @state = :unscheduled
       @task = block
       @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor

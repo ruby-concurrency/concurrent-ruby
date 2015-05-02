@@ -203,7 +203,7 @@ module Concurrent
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
-      super(IVar::NO_VALUE, opts)
+      super(IVar::NO_VALUE, opts, &nil)
 
       @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @args = get_arguments_from(opts)

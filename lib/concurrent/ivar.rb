@@ -57,17 +57,12 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
-      #FIXME use ns_initialize
-      super(&:nil)
-      init_obligation(self)
-      self.observers = CopyOnWriteObserverSet.new
-      set_deref_options(opts)
-      @state = :pending
-
-      set(value) unless value == NO_VALUE
+      if value != NO_VALUE && block_given?
+        raise ArgumentError.new('provide only a value or a block')
+      end
+      value = yield if block_given?
+      super
     end
-
-    protected :synchronize
 
     # Add an observer on this object that will receive notification on update.
     #
@@ -118,10 +113,13 @@ module Concurrent
 
       begin
         value = yield if block_given?
-        complete(true, value, nil)
+        complete_without_notification(true, value, nil)
       rescue => ex
-        complete(false, nil, ex)
+        complete_without_notification(false, nil, ex)
       end
+
+      notify_observers(self.value, reason)
+      self
     end
 
     # @!macro [attach] ivar_fail_method
@@ -150,17 +148,37 @@ module Concurrent
 
     protected
 
-    # @!visibility private
-    def complete(success, value, reason) # :nodoc:
-      synchronize do
-        raise MultipleAssignmentError if [:fulfilled, :rejected].include? @state
-        set_state(success, value, reason)
-        event.set
-      end
+    def ns_initialize(value, opts)
+      init_obligation(self)
+      self.observers = CopyOnWriteObserverSet.new
+      set_deref_options(opts)
 
-      time = Time.now
-      observers.notify_and_delete_observers{ [time, self.value, reason] }
+      if value == NO_VALUE
+        @state = :pending
+      else
+        ns_complete_without_notification(true, value, nil)
+      end
+    end
+
+    def complete(success, value, reason)
+      complete_without_notification(success, value, reason)
+      notify_observers(self.value, reason)
       self
+    end
+
+    def complete_without_notification(success, value, reason)
+      synchronize { ns_complete_without_notification(success, value, reason) }
+      self
+    end
+
+    def notify_observers(value, reason)
+      observers.notify_and_delete_observers{ [Time.now, value, reason] }
+    end
+
+    def ns_complete_without_notification(success, value, reason)
+      raise MultipleAssignmentError if [:fulfilled, :rejected].include? @state
+      set_state(success, value, reason)
+      event.set
     end
 
     # @!visibility private

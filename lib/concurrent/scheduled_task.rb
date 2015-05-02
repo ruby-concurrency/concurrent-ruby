@@ -159,7 +159,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       @delay = TimerSet.calculate_delay!(delay)
 
-      super(NO_VALUE, opts)
+      super(IVar::NO_VALUE, opts, &nil)
 
       self.observers = CopyOnNotifyObserverSet.new
       @state         = :unscheduled
