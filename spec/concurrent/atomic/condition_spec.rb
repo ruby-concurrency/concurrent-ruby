@@ -284,7 +284,7 @@ module Concurrent
             mutex.synchronize { subject.broadcast }
 
             threads.each do |t|
-              expect(t.join(0.1)).to eq t
+              expect(t.join(5)).to eq t
             end
           end
         end

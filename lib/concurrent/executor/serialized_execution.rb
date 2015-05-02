@@ -15,14 +15,6 @@ module Concurrent
       end
     end
 
-    def initialize
-      super(&nil)
-      synchronize do
-        @being_executed = false
-        @stash          = []
-      end
-    end
-
     # Submit a task to the executor for asynchronous processing.
     #
     # @param [Executor] executor to be used for this job
@@ -70,6 +62,11 @@ module Concurrent
     end
 
     private
+
+    def ns_initialize
+      @being_executed = false
+      @stash          = []
+    end
 
     def call_job(job)
       did_it_run = begin

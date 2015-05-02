@@ -16,6 +16,16 @@ module Concurrent
     def ruby_engine
       defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
     end
+
+    def ruby_version(comparison, major, minor, patch)
+      result      = (RUBY_VERSION.split('.').map(&:to_i) <=> [major, minor, patch])
+      comparisons = { :== => [0],
+                      :>= => [1, 0],
+                      :<= => [-1, 0],
+                      :>  => [1],
+                      :<  => [-1] }
+      comparisons.fetch(comparison).include? result
+    end
   end
 
   extend EngineDetector

@@ -11,7 +11,7 @@ def create_dummy_makefile
   end
 end
 
-if defined?(JRUBY_VERSION) || ! Concurrent.allow_c_extensions? 
+if Concurrent.on_jruby? || ! Concurrent.allow_c_extensions?
   create_dummy_makefile
   warn 'C optimizations are not supported on this version of Ruby.'
 else

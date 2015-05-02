@@ -21,11 +21,10 @@ module Concurrent
     #
     #   @raise [ArgumentError] if `count` is not an integer or is less than zero
     def initialize(count = 1)
-      super()
       unless count.is_a?(Fixnum) && count >= 0
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
-      synchronize { @count = count }
+      super(count)
     end
 
     # @!macro [attach] count_down_latch_method_wait
@@ -57,6 +56,12 @@ module Concurrent
     #   @return [Fixnum] the current value of the counter
     def count
       synchronize { @count }
+    end
+
+    private
+
+    def ns_initialize(count)
+      @count = count
     end
   end
 

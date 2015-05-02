@@ -13,6 +13,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.Visibility;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyNil;
 import org.jruby.runtime.ThreadContext;
@@ -47,19 +48,21 @@ public class SynchronizationLibrary implements Library {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod
-        public IRubyObject initialize(ThreadContext context) {
-            return context.nil;
+        @JRubyMethod(rest = true)
+        public IRubyObject initialize(ThreadContext context, IRubyObject[] args, Block block) {
+            synchronized (this) {
+                return callMethod(context, "ns_initialize", args, block);
+            }
         }
 
-        @JRubyMethod(name = "synchronize")
+        @JRubyMethod(name = "synchronize", visibility = Visibility.PRIVATE)
         public IRubyObject rubySynchronize(ThreadContext context, Block block) {
             synchronized (this) {
                 return block.yield(context, null);
             }
         }
 
-        @JRubyMethod(name = "ns_wait", optional = 1)
+        @JRubyMethod(name = "ns_wait", optional = 1, visibility = Visibility.PRIVATE)
         public IRubyObject nsWait(ThreadContext context, IRubyObject[] args) {
             Ruby runtime = context.runtime;
             if (args.length > 1) {
@@ -91,16 +94,21 @@ public class SynchronizationLibrary implements Library {
             return this;
         }
 
-        @JRubyMethod(name = "ns_signal")
+        @JRubyMethod(name = "ns_signal", visibility = Visibility.PRIVATE)
         public IRubyObject nsSignal(ThreadContext context) {
             notify();
             return this;
         }
 
-        @JRubyMethod(name = "ns_broadcast")
+        @JRubyMethod(name = "ns_broadcast", visibility = Visibility.PRIVATE)
         public IRubyObject nsBroadcast(ThreadContext context) {
             notifyAll();
             return this;
+        }
+
+        @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PRIVATE)
+        public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
+            return context.nil;
         }
     }
 }

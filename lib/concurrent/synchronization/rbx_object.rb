@@ -2,15 +2,18 @@ module Concurrent
   module Synchronization
     if Concurrent.on_rbx?
       class RbxObject < AbstractObject
-        def initialize
-          @waiters = []
+        def initialize(*args, &block)
+          synchronize do
+            @waiters = []
+            ns_initialize(*args, &block)
+          end
         end
+
+        private
 
         def synchronize(&block)
           Rubinius.synchronize(self, &block)
         end
-
-        private
 
         def ns_wait(timeout = nil)
           wchan = Rubinius::Channel.new
@@ -40,6 +43,29 @@ module Concurrent
         def ns_broadcast
           @waiters.shift << true until @waiters.empty?
           self
+        end
+
+        def ensure_ivar_visibility!
+          # Rubinius instance variables are not volatile so we need to insert barrier
+          Rubinius.memory_barrier
+        end
+
+        def self.attr_volatile *names
+          names.each do |name|
+            ivar = :"@volatile_#{name}"
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def #{name}
+              Rubinius.memory_barrier
+              #{ivar}
+            end
+
+            def #{name}=(value)
+              #{ivar} = value
+              Rubinius.memory_barrier
+            end
+            RUBY
+          end
+          names.map { |n| [n, :"#{n}="] }.flatten
         end
       end
     end

@@ -1,15 +1,13 @@
 module Concurrent
-  # TODO rename to Synchronization
-  # TODO add newCondition
   module Synchronization
     # Safe synchronization under any Ruby implementation.
-    # It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
+    # It provides methods like {#synchronize}, {#ns_wait}, {#ns_signal} and {#ns_broadcast}.
     # Provides a single layer which can improve its implementation over time without changes needed to
     # the classes using it. Use {Synchronization::Object} not this abstract class.
     #
     # @note this object does not support usage together with
-    #   [Thread#wakeup](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
-    #   and [Thread#raise](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
+    #   [`Thread#wakeup`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
+    #   and [`Thread#raise`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
     #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
     #   `Thread#wakeup` will not work on all platforms.
     #
@@ -29,27 +27,22 @@ module Concurrent
     class AbstractObject
 
       # @abstract for helper ivar initialization if needed,
-      #     otherwise it can be left empty.
-      def initialize
-        raise NotImplementedError
-      end
-
-      # @yield runs the block synchronized against this object,
-      #   equvivalent of java's `synchronize(this) {}`
-      def synchronize
+      #   otherwise it can be left empty. It has to call ns_initialize.
+      def initialize(*args, &block)
         raise NotImplementedError
       end
 
       private
 
-      # wait until another thread calls #signal or #broadcast,
-      # spurious wake-ups can happen.
-      # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
-      # @return [self]
-      # @note intended to be made public if required in child classes
-      def wait(timeout = nil)
-        synchronize { ns_wait(timeout) }
-        self
+      # @yield runs the block synchronized against this object,
+      #   equivalent of java's `synchronize(this) {}`
+      # @note can by made public in descendants if required by `public :synchronize`
+      def synchronize
+        raise NotImplementedError
+      end
+
+      # initialization of the object called inside synchronize block
+      def ns_initialize(*args, &block)
       end
 
       # Wait until condition is met or timeout passes,
@@ -57,32 +50,14 @@ module Concurrent
       # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
       # @yield condition to be met
       # @yieldreturn [true, false]
-      # @return [true, false]
-      # @note intended to be made public if required in child classes
-      def wait_until(timeout = nil, &condition)
-        synchronize { ns_wait_until(timeout, &condition) }
-      end
-
-      # signal one waiting thread
-      # @return [self]
-      # @note intended to be made public if required in child classes
-      def signal
-        synchronize { ns_signal }
-        self
-      end
-
-      # broadcast to all waiting threads
-      # @return [self]
-      # @note intended to be made public if required in child classes
-      def broadcast
-        synchronize { ns_broadcast }
-        self
-      end
-
+      # @return [true, false] if condition met
       # @note only to be used inside synchronized block
-      # @yield condition
-      # @return [true, false]
-      # see #wait_until
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def wait_until(timeout = nil, &condition)
+      #     synchronize { ns_wait_until(timeout, &condition) }
+      #   end
+      #   ```
       def ns_wait_until(timeout, &condition)
         if timeout
           wait_until = Concurrent.monotonic_time + timeout
@@ -100,26 +75,81 @@ module Concurrent
         end
       end
 
-      # @note only to be used inside synchronized block
+      # Wait until another thread calls #signal or #broadcast,
+      # spurious wake-ups can happen.
+      #
+      # @param [Numeric, nil] timeout in seconds, `nil` means no timeout
       # @return [self]
-      # @see #wait
+      # @note only to be used inside synchronized block
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def wait(timeout = nil)
+      #     synchronize { ns_wait(timeout) }
+      #   end
+      #   ```
       def ns_wait(timeout = nil)
         raise NotImplementedError
       end
 
-      # @note only to be used inside synchronized block
+      # Signal one waiting thread.
       # @return [self]
-      # @see #signal
+      # @note only to be used inside synchronized block
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def signal
+      #     synchronize { ns_signal }
+      #   end
+      #   ```
       def ns_signal
         raise NotImplementedError
       end
 
-      # @note only to be used inside synchronized block
+      # Broadcast to all waiting threads.
       # @return [self]
-      # @see #broadcast
+      # @note only to be used inside synchronized block
+      # @note to provide direct access to this method in a descendant add method
+      #   ```
+      #   def broadcast
+      #     synchronize { ns_broadcast }
+      #   end
+      #   ```
       def ns_broadcast
         raise NotImplementedError
       end
+
+      # Allows to construct immutable objects where all fields are visible after initialization, not requiring
+      # further synchronization on access.
+      # @example
+      #   class AClass
+      #     attr_reader :val
+      #     def initialize(val)
+      #       @val = val # final value, after assignment it's not changed (just convention, not enforced)
+      #       ensure_ivar_visibility!
+      #       # now it can be shared as Java's final field
+      #     end
+      #   end
+      def ensure_ivar_visibility!
+        raise NotImplementedError
+      end
+
+      # creates methods for reading and writing to a instance variable with volatile (Java semantic) instance variable
+      # return [Array<Symbol>] names of defined method names
+      def self.attr_volatile(*names)
+        names.each do |name|
+          ivar = :"@volatile_#{name}"
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def #{name}
+              #{ivar}
+            end
+
+            def #{name}=(value)
+              #{ivar} = value
+            end
+          RUBY
+        end
+        names.map { |n| [n, :"#{n}="] }.flatten
+      end
+
     end
   end
 end

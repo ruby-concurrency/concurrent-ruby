@@ -106,7 +106,7 @@ module Concurrent
   end
 
   # General access point to global executors.
-  # @param [Symbol, Executor] maps symbols:
+  # @param [Symbol, Executor] executor_identifier symbols:
   #   - :fast - {Concurrent.global_fast_executor}
   #   - :io - {Concurrent.global_io_executor}
   #   - :immediate - {Concurrent.global_immediate_executor}

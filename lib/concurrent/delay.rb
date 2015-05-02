@@ -79,6 +79,8 @@ module Concurrent
       @computing = false
     end
 
+    protected :synchronize
+
     # Return the value this object represents after applying the options
     # specified by the `#set_deref_options` method. If the delayed operation
     # raised an exception this method will return nil. The execption object

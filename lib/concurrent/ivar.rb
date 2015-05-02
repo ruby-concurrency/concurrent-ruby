@@ -66,6 +66,8 @@ module Concurrent
       set(value) unless value == NO_VALUE
     end
 
+    protected :synchronize
+
     # Add an observer on this object that will receive notification on update.
     #
     # Upon completion the `IVar` will notify all observers in a thread-safe way.
