@@ -250,13 +250,13 @@ module Concurrent
 
       def initialize(*args, &block)
         super
+        ns_make_executor_runnable
       end
 
       def post(*args, &task)
         raise ArgumentError.new('no block given') unless block_given?
         return handle_fallback(*args, &task) unless running?
-        executor_submit = @executor.java_method(:submit, [Runnable.java_class])
-        executor_submit.call { yield(*args) }
+        @executor.submit_runnable Job.new(args, task)
         true
       rescue Java::JavaUtilConcurrent::RejectedExecutionException
         raise RejectedExecutionError
@@ -304,6 +304,27 @@ module Concurrent
       def ns_shutdown?
         @executor.isShutdown || @executor.isTerminated
       end
+
+      def ns_make_executor_runnable
+        if !defined?(@executor.submit_runnable)
+          @executor.class.class_eval do
+            java_alias :submit_runnable, :submit, [java.lang.Runnable.java_class]
+          end
+        end
+      end
+
+      class Job
+        include Runnable
+        def initialize(args, block)
+          @args = args
+          @block = block
+        end
+
+        def run
+          @block.call(*@args)
+        end
+      end
+      private_constant :Job
     end
   end
 end
