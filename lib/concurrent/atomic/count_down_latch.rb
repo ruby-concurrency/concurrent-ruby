@@ -58,7 +58,7 @@ module Concurrent
       synchronize { @count }
     end
 
-    private
+    protected
 
     def ns_initialize(count)
       @count = count

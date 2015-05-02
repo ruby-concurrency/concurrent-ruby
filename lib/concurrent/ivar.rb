@@ -57,7 +57,8 @@ module Concurrent
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {})
-      super(&nil)
+      #FIXME use ns_initialize
+      super(&:nil)
       init_obligation(self)
       self.observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
@@ -88,7 +89,7 @@ module Concurrent
         func = :call
       end
 
-      mutex.synchronize do
+      synchronize do
         if event.set?
           direct_notification = true
         else
@@ -151,7 +152,7 @@ module Concurrent
 
     # @!visibility private
     def complete(success, value, reason) # :nodoc:
-      mutex.synchronize do
+      synchronize do
         raise MultipleAssignmentError if [:fulfilled, :rejected].include? @state
         set_state(success, value, reason)
         event.set

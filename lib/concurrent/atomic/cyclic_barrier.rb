@@ -62,7 +62,6 @@ module Concurrent
       end
     end
 
-
     # resets the barrier to its initial state
     # If there is at least one waiting thread, it will be woken up, the `wait`
     # method will return false and the barrier will be broken
@@ -83,7 +82,7 @@ module Concurrent
       synchronize { @generation.status != :waiting }
     end
 
-    private
+    protected
 
     def ns_generation_done(generation, status, continue = true)
       generation.status = status
@@ -101,6 +100,5 @@ module Concurrent
       @action  = block
       ns_next_generation
     end
-
   end
 end

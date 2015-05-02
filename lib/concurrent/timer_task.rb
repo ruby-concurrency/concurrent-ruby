@@ -267,11 +267,6 @@ module Concurrent
       end
     end
 
-    if Concurrent.on_jruby?
-      #FIXME: JRuby seems to handle privacy different here
-      public :synchronize
-    end
-
     private :post, :<<
 
     protected

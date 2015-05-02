@@ -70,7 +70,7 @@ module Concurrent
       end
     end
 
-    private
+    protected
 
     def ns_set
       unless @set

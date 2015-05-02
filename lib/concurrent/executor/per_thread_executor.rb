@@ -19,13 +19,6 @@ module Concurrent
   class PerThreadExecutor < Synchronization::Object
     include Executor
 
-    # Creates a new executor
-    def initialize
-      @running = Concurrent::AtomicBoolean.new(true)
-      @stopped = Concurrent::Event.new
-      @count = Concurrent::AtomicFixnum.new(0)
-    end
-
     # @!macro executor_method_post
     def self.post(*args)
       raise ArgumentError.new('no block given') unless block_given?
@@ -96,6 +89,14 @@ module Concurrent
     # @!macro executor_method_wait_for_termination
     def wait_for_termination(timeout = nil)
       @stopped.wait(timeout)
+    end
+
+    protected
+
+    def ns_initialize
+      @running = Concurrent::AtomicBoolean.new(true)
+      @stopped = Concurrent::Event.new
+      @count = Concurrent::AtomicFixnum.new(0)
     end
   end
 end
