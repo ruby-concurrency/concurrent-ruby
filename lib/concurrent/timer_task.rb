@@ -187,18 +187,7 @@ module Concurrent
     #   @see Concurrent::Dereferenceable#  set_deref_options
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
-
-      super(&:nil)
-      init_mutex(self)
-      set_deref_options(opts)
-
-      self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
-      self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
-      @run_now = opts[:now] || opts[:run_now]
-      @executor = Concurrent::SafeTaskExecutor.new(task)
-      @running = Concurrent::AtomicBoolean.new(false)
-
-      self.observers = CopyOnNotifyObserverSet.new
+      super
     end
 
     # Is the executor running?
@@ -281,6 +270,19 @@ module Concurrent
     private :post, :<<
 
     protected
+
+    def ns_initialize(opts = {}, &task)
+      init_mutex(self)
+      set_deref_options(opts)
+
+      self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
+      self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
+      @run_now = opts[:now] || opts[:run_now]
+      @executor = Concurrent::SafeTaskExecutor.new(task)
+      @running = Concurrent::AtomicBoolean.new(false)
+
+      self.observers = CopyOnNotifyObserverSet.new
+    end
 
     # @!visibility private
     def shutdown_execution
