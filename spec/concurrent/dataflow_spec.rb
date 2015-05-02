@@ -3,7 +3,7 @@ module Concurrent
   describe 'dataflow' do
 
     let(:executor) { ImmediateExecutor.new }
-    let(:root_executor) { PerThreadExecutor.new }
+    let(:root_executor) { SimpleExecutorService.new }
 
     it 'raises an exception when no block given' do
       expect { Concurrent::dataflow }.to raise_error(ArgumentError)

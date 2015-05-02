@@ -1,5 +1,6 @@
 require 'concurrent/ivar'
 require 'concurrent/utility/timer'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/safe_task_executor'
 
 module Concurrent

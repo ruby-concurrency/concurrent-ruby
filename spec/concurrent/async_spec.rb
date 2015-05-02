@@ -2,7 +2,7 @@ module Concurrent
 
   describe Async do
 
-    let(:executor) { PerThreadExecutor.new }
+    let(:executor) { SimpleExecutorService.new }
 
     let(:async_class) do
       Class.new do

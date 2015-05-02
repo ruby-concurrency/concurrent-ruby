@@ -1,5 +1,5 @@
 require 'concurrent/atomic/event'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 
 module Concurrent
 
@@ -14,7 +14,7 @@ module Concurrent
   #
   # @note Intended for use primarily in testing and debugging.
   class ImmediateExecutor
-    include SerialExecutor
+    include SerialExecutorService
 
     # Creates a new executor
     def initialize

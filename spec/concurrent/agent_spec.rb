@@ -5,7 +5,7 @@ module Concurrent
 
   describe Agent do
 
-    let(:executor) { PerThreadExecutor.new }
+    let(:executor) { SimpleExecutorService.new }
 
     subject { Agent.new(0, executor: executor) }
 

@@ -6,7 +6,7 @@ module Concurrent
   describe Future do
 
     let!(:value) { 10 }
-    let(:executor) { PerThreadExecutor.new }
+    let(:executor) { SimpleExecutorService.new }
 
     subject do
       Future.new(executor: executor){

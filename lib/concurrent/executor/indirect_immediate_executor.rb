@@ -1,4 +1,5 @@
-require 'concurrent/executor/executor'
+require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/simple_executor_service'
 
 module Concurrent
   # An executor service which runs all operations on a new thread, blocking
@@ -19,7 +20,7 @@ module Concurrent
     # Creates a new executor
     def initialize
       super
-      @internal_executor = PerThreadExecutor.new
+      @internal_executor = SimpleExecutorService.new
     end
 
     # @!macro executor_method_post

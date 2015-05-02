@@ -6,7 +6,7 @@ if Concurrent.on_jruby?
     # @!macro single_thread_executor
     # @!macro thread_pool_options
     class JavaSingleThreadExecutor < JavaExecutorService
-      include SerialExecutor
+      include SerialExecutorService
 
       # Create a new thread pool.
       #

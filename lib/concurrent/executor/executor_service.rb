@@ -1,12 +1,97 @@
+require 'concurrent/errors'
 require 'concurrent/logging'
+require 'concurrent/at_exit'
+require 'concurrent/atomic/event'
 require 'concurrent/synchronization'
-require 'concurrent/executor/executor'
 
 module Concurrent
 
-  class AbstractExecutorService < Synchronization::Object
-    include Executor
+  module ExecutorService
     include Logging
+
+    # @!macro [attach] executor_service_method_post
+    #
+    #   Submit a task to the executor for asynchronous processing.
+    #
+    #   @param [Array] args zero or more arguments to be passed to the task
+    #
+    #   @yield the asynchronous task to perform
+    #
+    #   @return [Boolean] `true` if the task is queued, `false` if the executor
+    #     is not running
+    #
+    #   @raise [ArgumentError] if no task is given
+    def post(*args, &task)
+      raise NotImplementedError
+    end
+
+    # @!macro [attach] executor_service_method_left_shift
+    #
+    #   Submit a task to the executor for asynchronous processing.
+    #
+    #   @param [Proc] task the asynchronous task to perform
+    #
+    #   @return [self] returns itself
+    def <<(task)
+      post(&task)
+      self
+    end
+
+    # @!macro [attach] executor_service_method_can_overflow_question
+    #
+    #   Does the task queue have a maximum size?
+    #
+    #   @return [Boolean] True if the task queue has a maximum size else false.
+    #
+    # @note Always returns `false`
+    def can_overflow?
+      false
+    end
+
+    # @!macro [attach] executor_service_method_serialized_question
+    #
+    #   Does this executor guarantee serialization of its operations?
+    #
+    #   @return [Boolean] True if the executor guarantees that all operations
+    #     will be post in the order they are received and no two operations may
+    #     occur simultaneously. Else false.
+    #
+    # @note Always returns `false`
+    def serialized?
+      false
+    end
+  end
+
+  # Indicates that the including `ExecutorService` guarantees
+  # that all operations will occur in the order they are post and that no
+  # two operations may occur simultaneously. This module provides no
+  # functionality and provides no guarantees. That is the responsibility
+  # of the including class. This module exists solely to allow the including
+  # object to be interrogated for its serialization status.
+  #
+  # @example
+  #   class Foo
+  #     include Concurrent::SerialExecutor
+  #   end
+  #
+  #   foo = Foo.new
+  #
+  #   foo.is_a? Concurrent::ExecutorService #=> true
+  #   foo.is_a? Concurrent::SerialExecutor  #=> true
+  #   foo.serialized?                       #=> true
+  module SerialExecutorService
+    include ExecutorService
+
+    # @!macro executor_module_method_serialized_question
+    #
+    # @note Always returns `true`
+    def serialized?
+      true
+    end
+  end
+
+  class AbstractExecutorService < Synchronization::Object
+    include ExecutorService
 
     # The set of possible fallback policies that may be set at thread pool creation.
     FALLBACK_POLICIES = [:abort, :discard, :caller_runs].freeze
@@ -15,33 +100,6 @@ module Concurrent
 
     def initialize(*args, &block)
       super
-    end
-
-    # @!macro [attach] executor_service_method_running_question
-    #
-    #   Is the executor running?
-    #
-    #   @return [Boolean] `true` when running, `false` when shutting down or shutdown
-    def running?
-      raise NotImplementedError
-    end
-
-    # @!macro [attach] executor_service_method_shuttingdown_question
-    #
-    #   Is the executor shuttingdown?
-    #
-    #   @return [Boolean] `true` when not running and not shutdown, else `false`
-    def shuttingdown?
-      raise NotImplementedError
-    end
-
-    # @!macro [attach] executor_service_method_shutdown_question
-    #
-    #   Is the executor shutdown?
-    #
-    #   @return [Boolean] `true` when shutdown, `false` when shutting down or running
-    def shutdown?
-      raise NotImplementedError
     end
 
     # @!macro [attach] executor_service_method_shutdown
@@ -78,14 +136,29 @@ module Concurrent
       raise NotImplementedError
     end
 
+    # @!macro [attach] executor_service_method_running_question
+    #
+    #   Is the executor running?
+    #
+    #   @return [Boolean] `true` when running, `false` when shutting down or shutdown
     def running?
       synchronize { ns_running? }
     end
 
+    # @!macro [attach] executor_service_method_shuttingdown_question
+    #
+    #   Is the executor shuttingdown?
+    #
+    #   @return [Boolean] `true` when not running and not shutdown, else `false`
     def shuttingdown?
       synchronize { ns_shuttingdown? }
     end
 
+    # @!macro [attach] executor_service_method_shutdown_question
+    #
+    #   Is the executor shutdown?
+    #
+    #   @return [Boolean] `true` when shutdown, `false` when shutting down or running
     def shutdown?
       synchronize { ns_shutdown? }
     end
@@ -238,7 +311,6 @@ module Concurrent
   if Concurrent.on_jruby?
 
     class JavaExecutorService < AbstractExecutorService
-      include Executor
       java_import 'java.lang.Runnable'
 
       FALLBACK_POLICY_CLASSES = {

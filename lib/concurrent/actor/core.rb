@@ -1,3 +1,5 @@
+require 'concurrent/executors'
+
 module Concurrent
   module Actor
 
@@ -158,7 +160,7 @@ module Concurrent
         @context_class = Child! opts.fetch(:class), AbstractContext
         allocate_context
 
-        @executor = Type! opts.fetch(:executor, Concurrent.global_io_executor), Executor
+        @executor = Type! opts.fetch(:executor, Concurrent.global_io_executor), Concurrent::AbstractExecutorService
         raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
 
         @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self

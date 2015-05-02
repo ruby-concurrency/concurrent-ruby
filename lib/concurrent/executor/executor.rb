@@ -1,12 +1,8 @@
-require 'concurrent/errors'
-require 'concurrent/logging'
-require 'concurrent/at_exit'
-require 'concurrent/atomic/event'
+require 'concurrent/executor/executor_service'
 
 module Concurrent
 
   module Executor
-    include Logging
 
     # Get the requested `Executor` based on the values set in the options hash.
     #
@@ -58,91 +54,11 @@ module Concurrent
       when :task
         Kernel.warn '[DEPRECATED] use `executor: :io` instead'
         Concurrent.global_io_executor
-      when Executor
+      when Concurrent::ExecutorService
         executor_identifier
       else
         raise ArgumentError, "executor not recognized by '#{executor_identifier}'"
       end
-    end
-
-    # @!macro [attach] executor_method_post
-    #
-    #   Submit a task to the executor for asynchronous processing.
-    #
-    #   @param [Array] args zero or more arguments to be passed to the task
-    #
-    #   @yield the asynchronous task to perform
-    #
-    #   @return [Boolean] `true` if the task is queued, `false` if the executor
-    #     is not running
-    #
-    #   @raise [ArgumentError] if no task is given
-    def post(*args, &task)
-      raise NotImplementedError
-    end
-
-    # @!macro [attach] executor_method_left_shift
-    #
-    #   Submit a task to the executor for asynchronous processing.
-    #
-    #   @param [Proc] task the asynchronous task to perform
-    #
-    #   @return [self] returns itself
-    def <<(task)
-      post(&task)
-      self
-    end
-
-    # @!macro [attach] executor_module_method_can_overflow_question
-    #
-    #   Does the task queue have a maximum size?
-    #
-    #   @return [Boolean] True if the task queue has a maximum size else false.
-    #
-    # @note Always returns `false`
-    def can_overflow?
-      false
-    end
-
-    # @!macro [attach] executor_module_method_serialized_question
-    #
-    #   Does this executor guarantee serialization of its operations?
-    #
-    #   @return [Boolean] True if the executor guarantees that all operations
-    #     will be post in the order they are received and no two operations may
-    #     occur simultaneously. Else false.
-    #
-    # @note Always returns `false`
-    def serialized?
-      false
-    end
-  end
-
-  # Indicates that the including `Executor` or `ExecutorService` guarantees
-  # that all operations will occur in the order they are post and that no
-  # two operations may occur simultaneously. This module provides no
-  # functionality and provides no guarantees. That is the responsibility
-  # of the including class. This module exists solely to allow the including
-  # object to be interrogated for its serialization status.
-  #
-  # @example
-  #   class Foo
-  #     include Concurrent::SerialExecutor
-  #   end
-  #
-  #   foo = Foo.new
-  #
-  #   foo.is_a? Concurrent::Executor       #=> true
-  #   foo.is_a? Concurrent::SerialExecutor #=> true
-  #   foo.serialized?                      #=> true
-  module SerialExecutor
-    include Executor
-
-    # @!macro executor_module_method_serialized_question
-    #
-    # @note Always returns `true`
-    def serialized?
-      true
     end
   end
 end

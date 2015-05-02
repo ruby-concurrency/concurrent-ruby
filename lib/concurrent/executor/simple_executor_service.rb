@@ -1,6 +1,5 @@
 require 'concurrent/atomics'
-require 'concurrent/synchronization'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 
 module Concurrent
 
@@ -16,8 +15,7 @@ module Concurrent
   # lead to suboptimal performance.
   #
   # @note Intended for use primarily in testing and debugging.
-  class PerThreadExecutor < Synchronization::Object
-    include Executor
+  class SimpleExecutorService < RubyExecutorService
 
     # @!macro executor_method_post
     def self.post(*args)
@@ -97,6 +95,15 @@ module Concurrent
       @running = Concurrent::AtomicBoolean.new(true)
       @stopped = Concurrent::Event.new
       @count = Concurrent::AtomicFixnum.new(0)
+    end
+  end
+
+  # @deprecated
+  class PerThreadExecutor < SimpleExecutorService
+
+    def initialize
+      warn '[DEPRECATED] use SimpleExecutorService instead'
+      super
     end
   end
 end

@@ -8,16 +8,21 @@ require 'concurrent/executors'
 COUNT = 100_000
 
 EXECUTORS = [
-  Concurrent::JavaThreadPoolExecutor
+  [Concurrent::JavaCachedThreadPool],
+  [Concurrent::JavaFixedThreadPool, 10],
+  [Concurrent::JavaSingleThreadExecutor],
+  [Concurrent::JavaThreadPoolExecutor]
 ]
 
-def test_executor(executor_class, count)
-  executor = executor_class.new
-  count.times { executor.post{} }
-end
-
 Benchmark.bmbm do |x|
-  EXECUTORS.each do |executor_class|
-    x.report(executor_class.to_s) { test_executor(executor_class, COUNT) }
+  EXECUTORS.each do |executor_class, *args|
+    x.report(executor_class.to_s) do
+      if args.empty?
+        executor = executor_class.new
+      else
+        executor = executor_class.new(*args)
+      end
+      COUNT.times { executor.post{} }
+    end
   end
 end

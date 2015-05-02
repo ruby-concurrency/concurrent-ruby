@@ -1,6 +1,7 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/obligation'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/synchronization'
 

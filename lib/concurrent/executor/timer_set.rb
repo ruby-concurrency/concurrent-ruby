@@ -1,6 +1,7 @@
 require 'thread'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 require 'concurrent/utility/monotonic_time'

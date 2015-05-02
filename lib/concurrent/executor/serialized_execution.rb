@@ -1,5 +1,5 @@
 require 'delegate'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 require 'concurrent/logging'
 require 'concurrent/synchronization'
 
@@ -101,13 +101,13 @@ module Concurrent
     end
   end
 
-  # A wrapper/delegator for any `Executor` or `ExecutorService` that
+  # A wrapper/delegator for any `ExecutorService` that
   # guarantees serialized execution of tasks.
   #
   # @see [SimpleDelegator](http://www.ruby-doc.org/stdlib-2.1.2/libdoc/delegate/rdoc/SimpleDelegator.html)
   # @see Concurrent::SerializedExecution
   class SerializedExecutionDelegator < SimpleDelegator
-    include SerialExecutor
+    include SerialExecutorService
 
     def initialize(executor)
       @executor   = executor

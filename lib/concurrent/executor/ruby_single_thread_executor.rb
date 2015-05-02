@@ -1,4 +1,3 @@
-require 'concurrent/executor/executor'
 require 'concurrent/executor/executor_service'
 
 module Concurrent
@@ -6,7 +5,7 @@ module Concurrent
   # @!macro single_thread_executor
   # @!macro thread_pool_options
   class RubySingleThreadExecutor < RubyExecutorService
-    include SerialExecutor
+    include SerialExecutorService
 
     # Create a new thread pool.
     #

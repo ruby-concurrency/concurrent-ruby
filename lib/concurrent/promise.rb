@@ -1,7 +1,8 @@
 require 'thread'
-
+require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/obligation'
+require 'concurrent/executor/executor'
 
 module Concurrent
 
