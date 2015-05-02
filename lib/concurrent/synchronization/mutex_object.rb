@@ -2,33 +2,33 @@ module Concurrent
   module Synchronization
     class MutexObject < AbstractObject
       def initialize(*args, &block)
-        @__lock__do_not_use_directly      = ::Mutex.new
-        @__condition__do_not_use_directly = ::ConditionVariable.new
+        @__lock__      = ::Mutex.new
+        @__condition__ = ::ConditionVariable.new
         synchronize { ns_initialize(*args, &block) }
       end
 
       private
 
       def synchronize
-        if @__lock__do_not_use_directly.owned?
+        if @__lock__.owned?
           yield
         else
-          @__lock__do_not_use_directly.synchronize { yield }
+          @__lock__.synchronize { yield }
         end
       end
 
       def ns_signal
-        @__condition__do_not_use_directly.signal
+        @__condition__.signal
         self
       end
 
       def ns_broadcast
-        @__condition__do_not_use_directly.broadcast
+        @__condition__.broadcast
         self
       end
 
       def ns_wait(timeout = nil)
-        @__condition__do_not_use_directly.wait @__lock__do_not_use_directly, timeout
+        @__condition__.wait @__lock__, timeout
         self
       end
 
