@@ -1,15 +1,12 @@
+require 'concurrent/synchronization'
+
 module Concurrent
 
   # A thread safe observer set implemented using copy-on-read approach:
   # observers are added and removed from a thread safe collection; every time
   # a notification is required the internal data structure is copied to
   # prevent concurrency issues
-  class CopyOnNotifyObserverSet
-
-    def initialize
-      @mutex = Mutex.new
-      @observers = {}
-    end
+  class CopyOnNotifyObserverSet < Synchronization::Object
 
     # Adds an observer to this set. If a block is passed, the observer will be
     # created by this method and no other params should be passed
@@ -30,41 +27,33 @@ module Concurrent
         func = :call
       end
 
-      begin
-        @mutex.lock
+      synchronize do
         @observers[observer] = func
         observer
-      ensure
-        @mutex.unlock
       end
     end
 
     # @param [Object] observer the observer to remove
     # @return [Object] the deleted observer
     def delete_observer(observer)
-      @mutex.lock
-      @observers.delete(observer)
-      observer
-    ensure
-      @mutex.unlock
+      synchronize do
+        @observers.delete(observer)
+        observer
+      end
     end
 
     # Deletes all observers
     # @return [CopyOnWriteObserverSet] self
     def delete_observers
-      @mutex.lock
-      @observers.clear
-      self
-    ensure
-      @mutex.unlock
+      synchronize do
+        @observers.clear
+        self
+      end
     end
 
     # @return [Integer] the observers count
     def count_observers
-      @mutex.lock
-      @observers.count
-    ensure
-      @mutex.unlock
+      synchronize { @observers.count }
     end
 
     # Notifies all registered observers with optional args
@@ -86,23 +75,24 @@ module Concurrent
       self
     end
 
+    protected
+
+    def ns_initialize
+      @observers = {}
+    end
+
     private
 
     def duplicate_and_clear_observers
-      @mutex.lock
-      observers = @observers.dup
-      @observers.clear
-      observers
-    ensure
-      @mutex.unlock
+      synchronize do
+        observers = @observers.dup
+        @observers.clear
+        observers
+      end
     end
 
     def duplicate_observers
-      @mutex.lock
-      observers = @observers.dup
-      observers
-    ensure
-      @mutex.unlock
+      synchronize { observers = @observers.dup }
     end
 
     def notify_to(observers, *args)
