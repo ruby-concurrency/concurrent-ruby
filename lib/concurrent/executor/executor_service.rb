@@ -82,7 +82,7 @@ module Concurrent
   module SerialExecutorService
     include ExecutorService
 
-    # @!macro executor_module_method_serialized_question
+    # @!macro executor_service_method_serialized_question
     #
     # @note Always returns `true`
     def serialized?

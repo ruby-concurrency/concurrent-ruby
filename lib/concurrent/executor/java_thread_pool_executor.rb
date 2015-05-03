@@ -55,7 +55,7 @@ if Concurrent.on_jruby?
         super(opts)
       end
 
-      # @!macro executor_module_method_can_overflow_question
+      # @!macro executor_service_method_can_overflow_question
       def can_overflow?
         @max_queue != 0
       end

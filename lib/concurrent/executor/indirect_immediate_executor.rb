@@ -23,7 +23,7 @@ module Concurrent
       @internal_executor = SimpleExecutorService.new
     end
 
-    # @!macro executor_method_post
+    # @!macro executor_service_method_post
     def post(*args, &task)
       raise ArgumentError.new("no block given") unless block_given?
       return false unless running?

@@ -60,13 +60,10 @@ module Concurrent
       true
     end
 
-    # @!visibility private
-    def <<(task)
-      post(0.0, &task)
-      self
-    end
-
-    # @!macro executor_method_shutdown
+    # Begin an immediate shutdown. In-progress tasks will be allowed to
+    # complete but enqueued tasks will be dismissed and no new tasks
+    # will be accepted. Has no additional effect if the thread pool is
+    # not running.
     def kill
       shutdown
     end
@@ -161,6 +158,13 @@ module Concurrent
           @condition.wait([diff, 60].min)
         end
       end
+    end
+
+    private
+
+    def <<(task)
+      post(0.0, &task)
+      self
     end
   end
 end
