@@ -2,6 +2,7 @@ require 'thread'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
 require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 require 'concurrent/utility/monotonic_time'
 
@@ -12,8 +13,7 @@ module Concurrent
   # time. Tasks are run on the global task pool or on the supplied executor.
   #
   # @!macro monotonic_clock_warning
-  class TimerSet
-    include RubyExecutor
+  class TimerSet < RubyExecutorService
 
     # Create a new set of timed tasks.
     #
@@ -25,12 +25,7 @@ module Concurrent
     #     `:operation` returns the global operation pool, and `:immediate` returns a new
     #     `ImmediateExecutor` object.
     def initialize(opts = {})
-      @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-      @timer_executor = SingleThreadExecutor.new
-      @condition      = Condition.new
-      init_executor
-      self.auto_terminate = opts.fetch(:auto_terminate, true)
+      super(opts)
     end
 
     # Post a task to be execute run after a given delay (in seconds). If the
@@ -51,7 +46,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       delay = TimerSet.calculate_delay!(delay) # raises exceptions
 
-      mutex.synchronize do
+      synchronize do
         return false unless running?
 
         if (delay) <= 0.01
@@ -60,19 +55,15 @@ module Concurrent
           @queue.push(Task.new(Concurrent.monotonic_time + delay, args, task))
           @timer_executor.post(&method(:process_tasks))
         end
+        @condition.set
       end
-
-      @condition.signal
       true
     end
 
-    # @!visibility private
-    def <<(task)
-      post(0.0, &task)
-      self
-    end
-
-    # @!macro executor_method_shutdown
+    # Begin an immediate shutdown. In-progress tasks will be allowed to
+    # complete but enqueued tasks will be dismissed and no new tasks
+    # will be accepted. Has no additional effect if the thread pool is
+    # not running.
     def kill
       shutdown
     end
@@ -101,7 +92,7 @@ module Concurrent
       end
     end
 
-    private
+    protected
 
     # A struct for encapsulating a task and its intended execution time.
     # It facilitates proper prioritization by overriding the comparison
@@ -119,6 +110,14 @@ module Concurrent
 
     private_constant :Task
 
+    def ns_initialize(opts)
+      @queue          = PriorityQueue.new(order: :min)
+      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @timer_executor = SingleThreadExecutor.new
+      @condition      = Event.new
+      self.auto_terminate = opts.fetch(:auto_terminate, true)
+    end
+
     # @!visibility private
     def shutdown_execution
       @queue.clear
@@ -134,7 +133,7 @@ module Concurrent
     # @!visibility private
     def process_tasks
       loop do
-        task = mutex.synchronize { @queue.peek }
+        task = synchronize { @condition.reset; @queue.peek }
         break unless task
 
         now = Concurrent.monotonic_time
@@ -153,14 +152,19 @@ module Concurrent
           # the only reader, so whatever timer is at the head of the
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
-          task = mutex.synchronize { @queue.pop }
+          task = synchronize { @queue.pop }
           @task_executor.post(*task.args, &task.op)
         else
-          mutex.synchronize do
-            @condition.wait(mutex, [diff, 60].min)
-          end
+          @condition.wait([diff, 60].min)
         end
       end
+    end
+
+    private
+
+    def <<(task)
+      post(0.0, &task)
+      self
     end
   end
 end

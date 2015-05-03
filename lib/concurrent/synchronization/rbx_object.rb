@@ -9,7 +9,7 @@ module Concurrent
           end
         end
 
-        private
+        protected
 
         def synchronize(&block)
           Rubinius.synchronize(self, &block)

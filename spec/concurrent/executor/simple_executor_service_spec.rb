@@ -2,15 +2,15 @@ require_relative 'executor_service_shared'
 
 module Concurrent
 
-  describe PerThreadExecutor do
+  describe SimpleExecutorService do
 
-    subject { PerThreadExecutor.new }
+    subject { SimpleExecutorService.new }
 
     it_should_behave_like :executor_service
 
     context '#post' do
 
-      subject { PerThreadExecutor.new }
+      subject { SimpleExecutorService.new }
 
       it 'creates a new thread for a call without arguments' do
         thread = Thread.new{ nil }
@@ -52,9 +52,9 @@ module Concurrent
       end
     end
 
-    context 'PerThreadExecutor.post' do
+    context 'SimpleExecutorService.post' do
 
-      subject { PerThreadExecutor }
+      subject { SimpleExecutorService }
 
       it 'creates a new thread for a call without arguments' do
         thread = Thread.new{ nil }

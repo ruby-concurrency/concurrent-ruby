@@ -1,5 +1,5 @@
 require 'delegate'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 require 'concurrent/logging'
 require 'concurrent/synchronization'
 
@@ -61,7 +61,7 @@ module Concurrent
       true
     end
 
-    private
+    protected
 
     def ns_initialize
       @being_executed = false
@@ -101,13 +101,13 @@ module Concurrent
     end
   end
 
-  # A wrapper/delegator for any `Executor` or `ExecutorService` that
+  # A wrapper/delegator for any `ExecutorService` that
   # guarantees serialized execution of tasks.
   #
   # @see [SimpleDelegator](http://www.ruby-doc.org/stdlib-2.1.2/libdoc/delegate/rdoc/SimpleDelegator.html)
   # @see Concurrent::SerializedExecution
   class SerializedExecutionDelegator < SimpleDelegator
-    include SerialExecutor
+    include SerialExecutorService
 
     def initialize(executor)
       @executor   = executor
@@ -115,7 +115,7 @@ module Concurrent
       super(executor)
     end
 
-    # @!macro executor_method_post
+    # @!macro executor_service_method_post
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       return false unless running?

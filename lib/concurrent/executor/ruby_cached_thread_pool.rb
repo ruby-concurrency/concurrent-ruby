@@ -14,7 +14,6 @@ module Concurrent
     # @raise [ArgumentError] if `fallback_policy` is not a known policy
     def initialize(opts = {})
       fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-
       raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(fallback_policy)
 
       defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT }

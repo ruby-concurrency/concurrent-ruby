@@ -55,14 +55,14 @@ public class SynchronizationLibrary implements Library {
             }
         }
 
-        @JRubyMethod(name = "synchronize", visibility = Visibility.PRIVATE)
+        @JRubyMethod(name = "synchronize", visibility = Visibility.PROTECTED)
         public IRubyObject rubySynchronize(ThreadContext context, Block block) {
             synchronized (this) {
                 return block.yield(context, null);
             }
         }
 
-        @JRubyMethod(name = "ns_wait", optional = 1, visibility = Visibility.PRIVATE)
+        @JRubyMethod(name = "ns_wait", optional = 1, visibility = Visibility.PROTECTED)
         public IRubyObject nsWait(ThreadContext context, IRubyObject[] args) {
             Ruby runtime = context.runtime;
             if (args.length > 1) {
@@ -94,19 +94,19 @@ public class SynchronizationLibrary implements Library {
             return this;
         }
 
-        @JRubyMethod(name = "ns_signal", visibility = Visibility.PRIVATE)
+        @JRubyMethod(name = "ns_signal", visibility = Visibility.PROTECTED)
         public IRubyObject nsSignal(ThreadContext context) {
             notify();
             return this;
         }
 
-        @JRubyMethod(name = "ns_broadcast", visibility = Visibility.PRIVATE)
+        @JRubyMethod(name = "ns_broadcast", visibility = Visibility.PROTECTED)
         public IRubyObject nsBroadcast(ThreadContext context) {
             notifyAll();
             return this;
         }
 
-        @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PRIVATE)
+        @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PROTECTED)
         public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
             return context.nil;
         }

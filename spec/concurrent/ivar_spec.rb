@@ -63,6 +63,19 @@ module Concurrent
       it 'can set an initial value' do
         i = IVar.new(14)
         expect(i).to be_complete
+        expect(i.value).to eq 14
+      end
+
+      it 'can set an initial value with a block' do
+        i = IVar.new{ 42 }
+        expect(i).to be_complete
+        expect(i.value).to eq 42
+      end
+
+      it 'raises an exception if given both a value and a block' do
+        expect {
+          IVar.new(42){ 42 }
+        }.to raise_error(ArgumentError)
       end
     end
 

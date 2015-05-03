@@ -6,7 +6,7 @@ module Concurrent
   describe Promise do
 
     let!(:value) { 10 }
-    let(:executor) { PerThreadExecutor.new }
+    let(:executor) { SimpleExecutorService.new }
 
     let(:empty_root) { Promise.new(executor: executor){ nil } }
     let!(:fulfilled_value) { 10 }

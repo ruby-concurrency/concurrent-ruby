@@ -24,8 +24,6 @@ if Concurrent.on_jruby?
             max_threads: num_threads
         }.merge(opts)
         super(opts)
-
-        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end

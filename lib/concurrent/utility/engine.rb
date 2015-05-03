@@ -5,6 +5,10 @@ module Concurrent
       ruby_engine == 'jruby'
     end
 
+    def on_jruby_9000?
+      on_jruby? && 0 == (JRUBY_VERSION =~ /^9\.0\.0\.0/)
+    end
+
     def on_cruby?
       ruby_engine == 'ruby'
     end

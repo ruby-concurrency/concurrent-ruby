@@ -1,3 +1,5 @@
+require 'concurrent/executors'
+
 module Concurrent
   module Actor
 
@@ -47,58 +49,7 @@ module Concurrent
       #   any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
-        super(&nil) # TODO use ns_initialize
-        synchronize do
-          @mailbox              = Array.new
-          @serialized_execution = SerializedExecution.new
-          @children             = Set.new
-
-          @context_class = Child! opts.fetch(:class), AbstractContext
-          allocate_context
-
-          @executor = Type! opts.fetch(:executor, Concurrent.global_io_executor), Executor
-          raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
-
-          @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
-          @name      = (Type! opts.fetch(:name), String, Symbol).to_s
-
-          parent       = opts[:parent]
-          @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
-          if @parent_core.nil? && @name != '/'
-            raise 'only root has no parent'
-          end
-
-          @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
-          @logger = opts[:logger]
-
-          @parent_core.add_child reference if @parent_core
-
-          initialize_behaviours opts
-
-          @args       = opts.fetch(:args, [])
-          @block      = block
-          initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
-
-          messages = []
-          messages << :link if opts[:link]
-          messages << :supervise if opts[:supervise]
-
-          schedule_execution do
-            begin
-              build_context
-
-              messages.each do |message|
-                handle_envelope Envelope.new(message, nil, parent, reference)
-              end
-
-              initialized.success reference if initialized
-            rescue => ex
-              log ERROR, ex
-              @first_behaviour.terminate!
-              initialized.fail ex if initialized
-            end
-          end
-        end
+        super
       end
 
       # @return [Reference, nil] of parent actor
@@ -199,6 +150,60 @@ module Concurrent
         @context.send :initialize, *@args, &@block
       end
 
+      protected
+
+      def ns_initialize(opts, &block)
+        @mailbox              = Array.new
+        @serialized_execution = SerializedExecution.new
+        @children             = Set.new
+
+        @context_class = Child! opts.fetch(:class), AbstractContext
+        allocate_context
+
+        @executor = Type! opts.fetch(:executor, Concurrent.global_io_executor), Concurrent::AbstractExecutorService
+        raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
+
+        @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
+        @name      = (Type! opts.fetch(:name), String, Symbol).to_s
+
+        parent       = opts[:parent]
+        @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
+        if @parent_core.nil? && @name != '/'
+          raise 'only root has no parent'
+        end
+
+        @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
+        @logger = opts[:logger]
+
+        @parent_core.add_child reference if @parent_core
+
+        initialize_behaviours opts
+
+        @args       = opts.fetch(:args, [])
+        @block      = block
+        initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
+
+        messages = []
+        messages << :link if opts[:link]
+        messages << :supervise if opts[:supervise]
+
+        schedule_execution do
+          begin
+            build_context
+
+            messages.each do |message|
+              handle_envelope Envelope.new(message, nil, parent, reference)
+            end
+
+            initialized.success reference if initialized
+          rescue => ex
+            log ERROR, ex
+            @first_behaviour.terminate!
+            initialized.fail ex if initialized
+          end
+        end
+      end
+
       private
 
       def handle_envelope(envelope)
@@ -215,7 +220,7 @@ module Concurrent
         end
         @behaviours           = {}
         @first_behaviour      = @behaviour_definition.reverse.
-            reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, *args) }
+          reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, *args) }
       end
     end
   end

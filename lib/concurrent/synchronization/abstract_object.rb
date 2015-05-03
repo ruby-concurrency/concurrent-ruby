@@ -32,7 +32,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      private
+      protected
 
       # @yield runs the block synchronized against this object,
       #   equivalent of java's `synchronize(this) {}`

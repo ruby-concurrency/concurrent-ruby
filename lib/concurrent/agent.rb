@@ -1,8 +1,8 @@
 require 'thread'
-
 require 'concurrent/dereferenceable'
 require 'concurrent/observable'
 require 'concurrent/logging'
+require 'concurrent/executor/executor'
 
 module Concurrent
 

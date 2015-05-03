@@ -1,6 +1,7 @@
 require 'thread'
-
+require 'concurrent/errors'
 require 'concurrent/ivar'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/safe_task_executor'
 
 module Concurrent
@@ -24,11 +25,7 @@ module Concurrent
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      super(IVar::NO_VALUE, opts)
-      @state = :unscheduled
-      @task = block
-      @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-      @args = get_arguments_from(opts)
+      super(IVar::NO_VALUE, opts.merge(__task_from_block__: block), &nil)
     end
 
     # Execute an `:unscheduled` `Future`. Immediately sets the state to `:pending` and
@@ -77,7 +74,7 @@ module Concurrent
     # @!macro ivar_set_method
     def set(value = IVar::NO_VALUE, &block)
       check_for_block_or_value!(block_given?, value)
-      mutex.synchronize do
+      synchronize do
         if @state != :unscheduled
           raise MultipleAssignmentError
         else
@@ -85,6 +82,16 @@ module Concurrent
         end
       end
       execute
+    end
+
+    protected
+
+    def ns_initialize(value, opts)
+      super
+      @state = :unscheduled
+      @task = opts[:__task_from_block__]
+      @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @args = get_arguments_from(opts)
     end
 
     private

@@ -1,6 +1,7 @@
 require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/obligation'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/synchronization'
 
@@ -68,18 +69,8 @@ module Concurrent
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-
-      super()
-      init_obligation(self)
-      set_deref_options(opts)
-      @task_executor = Executor.executor_from_options(opts)
-
-      @task      = block
-      @state     = :pending
-      @computing = false
+      super(opts, &block)
     end
-
-    protected :synchronize
 
     # Return the value this object represents after applying the options
     # specified by the `#set_deref_options` method. If the delayed operation
@@ -167,6 +158,18 @@ module Concurrent
           false
         end
       end
+    end
+
+    protected
+
+    def ns_initialize(opts, &block)
+      init_obligation(self)
+      set_deref_options(opts)
+      @task_executor = Executor.executor_from_options(opts)
+
+      @task      = block
+      @state     = :pending
+      @computing = false
     end
 
     private

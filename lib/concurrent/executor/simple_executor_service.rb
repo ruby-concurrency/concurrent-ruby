@@ -1,5 +1,5 @@
 require 'concurrent/atomics'
-require 'concurrent/executor/executor'
+require 'concurrent/executor/executor_service'
 
 module Concurrent
 
@@ -15,17 +15,9 @@ module Concurrent
   # lead to suboptimal performance.
   #
   # @note Intended for use primarily in testing and debugging.
-  class PerThreadExecutor
-    include Executor
+  class SimpleExecutorService < RubyExecutorService
 
-    # Creates a new executor
-    def initialize
-      @running = Concurrent::AtomicBoolean.new(true)
-      @stopped = Concurrent::Event.new
-      @count = Concurrent::AtomicFixnum.new(0)
-    end
-
-    # @!macro executor_method_post
+    # @!macro executor_service_method_post
     def self.post(*args)
       raise ArgumentError.new('no block given') unless block_given?
       Thread.new(*args) do
@@ -35,13 +27,13 @@ module Concurrent
       true
     end
 
-    # @!macro executor_method_left_shift
+    # @!macro executor_service_method_left_shift
     def self.<<(task)
       post(&task)
       self
     end
 
-    # @!macro executor_method_post
+    # @!macro executor_service_method_post
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       return false unless running?
@@ -57,44 +49,61 @@ module Concurrent
       end
     end
 
-    # @!macro executor_method_left_shift
+    # @!macro executor_service_method_left_shift
     def <<(task)
       post(&task)
       self
     end
 
-    # @!macro executor_method_running_question
+    # @!macro executor_service_method_running_question
     def running?
       @running.true?
     end
 
-    # @!macro executor_method_shuttingdown_question
+    # @!macro executor_service_method_shuttingdown_question
     def shuttingdown?
       @running.false? && ! @stopped.set?
     end
 
-    # @!macro executor_method_shutdown_question
+    # @!macro executor_service_method_shutdown_question
     def shutdown?
       @stopped.set?
     end
 
-    # @!macro executor_method_shutdown
+    # @!macro executor_service_method_shutdown
     def shutdown
       @running.make_false
       @stopped.set if @count.value == 0
       true
     end
 
-    # @!macro executor_method_kill
+    # @!macro executor_service_method_kill
     def kill
       @running.make_false
       @stopped.set
       true
     end
 
-    # @!macro executor_method_wait_for_termination
+    # @!macro executor_service_method_wait_for_termination
     def wait_for_termination(timeout = nil)
       @stopped.wait(timeout)
+    end
+
+    protected
+
+    def ns_initialize
+      @running = Concurrent::AtomicBoolean.new(true)
+      @stopped = Concurrent::Event.new
+      @count = Concurrent::AtomicFixnum.new(0)
+    end
+  end
+
+  # @deprecated
+  class PerThreadExecutor < SimpleExecutorService
+
+    def initialize
+      warn '[DEPRECATED] use SimpleExecutorService instead'
+      super
     end
   end
 end

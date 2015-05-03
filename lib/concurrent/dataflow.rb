@@ -1,6 +1,5 @@
 require 'concurrent/future'
 require 'concurrent/atomic/atomic_fixnum'
-require 'concurrent/executor/per_thread_executor'
 
 module Concurrent
 
