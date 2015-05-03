@@ -32,9 +32,7 @@ module Concurrent
         end
 
         it 'protectes #execute with a mutex' do
-          mutex = double(:mutex)
-          expect(Mutex).to receive(:new).with(no_args).and_return(mutex)
-          expect(mutex).to receive(:synchronize).with(no_args)
+          expect(subject).to receive(:synchronize).with(no_args)
           subject.execute
         end
       end
