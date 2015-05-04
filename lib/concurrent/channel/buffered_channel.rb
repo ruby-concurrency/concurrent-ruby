@@ -1,6 +1,5 @@
 require 'concurrent/atomic/condition'
-
-require_relative 'waitable_list'
+require 'concurrent/channel/waitable_list'
 
 module Concurrent
   class BufferedChannel
