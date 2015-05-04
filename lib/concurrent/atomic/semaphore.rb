@@ -146,12 +146,6 @@ module Concurrent
 
     def try_acquire_timed(permits, timeout)
       ns_wait_until(timeout) { try_acquire_now(permits) }
-      #remaining = Condition::Result.new(timeout)
-      #while !try_acquire_now(permits) && remaining.can_wait?
-        #@condition.signal
-        #remaining = @condition.wait(@mutex, remaining.remaining_time)
-      #end
-      #remaining.can_wait? ? true : false
     end
   end
 
