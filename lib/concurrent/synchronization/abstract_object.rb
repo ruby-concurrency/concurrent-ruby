@@ -58,7 +58,7 @@ module Concurrent
       #     synchronize { ns_wait_until(timeout, &condition) }
       #   end
       #   ```
-      def ns_wait_until(timeout, &condition)
+      def ns_wait_until(timeout = nil, &condition)
         if timeout
           wait_until = Concurrent.monotonic_time + timeout
           loop do
