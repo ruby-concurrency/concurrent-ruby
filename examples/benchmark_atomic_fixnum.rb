@@ -6,6 +6,9 @@ require 'concurrent/atomics'
 require 'benchmark'
 require 'rbconfig'
 
+THREADS = 1
+TESTS = 10_000_000
+
 def atomic_test(clazz, opts = {})
   threads = opts.fetch(:threads, 5)
   tests = opts.fetch(:tests, 100)
@@ -29,10 +32,10 @@ end
 
 puts "Testing with #{RbConfig::CONFIG['ruby_install_name']} #{RUBY_VERSION}"
 
-atomic_test(Concurrent::MutexAtomicFixnum, threads: 10, tests: 1_000_000)
+atomic_test(Concurrent::MutexAtomicFixnum, threads: THREADS, tests: TESTS)
 
 if defined? Concurrent::CAtomicFixnum
-  atomic_test(Concurrent::CAtomicFixnum, threads: 10, tests: 1_000_000)
+  atomic_test(Concurrent::CAtomicFixnum, threads: THREADS, tests: TESTS)
 elsif RUBY_PLATFORM == 'java'
-  atomic_test(Concurrent::JavaAtomicFixnum, threads: 10, tests: 1_000_000)
+  atomic_test(Concurrent::JavaAtomicFixnum, threads: THREADS, tests: TESTS)
 end
