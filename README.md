@@ -63,6 +63,12 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 * See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
 
+* Thread-safe structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html)
+
+* `ImmutableStruct` Immutable struct where values are set at construction and cannot be changed later.
+* `MutableStruct` Synchronized, mutable struct where values can be safely changed at any time.
+* `SettableStruct` Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
+
 ### Thread synchronization classes and algorithms
 
 * [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)

@@ -7,6 +7,9 @@ module Concurrent
   # sequence or when the object is in an inappropriate state.
   LifecycleError = Class.new(StandardError)
 
+  # Raised when an attempt is made to violate an immutability guarantee.
+  ImmutabilityError = Class.new(StandardError)
+
   # Raised when an object's methods are called when it has not been
   # properly initialized.
   InitializationError = Class.new(StandardError)
