@@ -35,7 +35,6 @@ module Concurrent
     #   @param [Fixnum] init the initial value
     #   @raise [ArgumentError] if the initial value is not a `Fixnum`
     def initialize(initial = 0)
-      raise ArgumentError.new('initial value must be a Fixnum') unless initial.is_a?(Fixnum)
       super(initial)
     end
 
@@ -58,8 +57,7 @@ module Concurrent
     #
     #   @raise [ArgumentError] if the new value is not a `Fixnum`
     def value=(value)
-      raise ArgumentError.new('value must be a Fixnum') unless value.is_a?(Fixnum)
-      synchronize { @value = value }
+      synchronize { ns_set(value) }
     end
 
     # @!macro [attach] atomic_fixnum_method_increment
@@ -68,7 +66,7 @@ module Concurrent
     #
     #   @return [Fixnum] the current value after incrementation
     def increment
-      synchronize { @value += 1 }
+      synchronize { ns_set(@value + 1) }
     end
 
     alias_method :up, :increment
@@ -79,7 +77,7 @@ module Concurrent
     #
     #   @return [Fixnum] the current value after decrementation
     def decrement
-      synchronize { @value -= 1 }
+      synchronize { ns_set(@value -1) }
     end
 
     alias_method :down, :decrement
@@ -107,7 +105,26 @@ module Concurrent
     protected
 
     def ns_initialize(initial)
-      @value = initial
+      ns_set(initial)
+    end
+
+    private
+
+    def ns_set(value)
+      range_check!(value)
+      @value = value
+    end
+
+    def range_check!(value)
+      if !value.is_a?(Fixnum)
+        raise ArgumentError.new('value value must be a Fixnum')
+      elsif value > MAX_VALUE
+        raise RangeError.new("#{value} is greater than the maximum value of #{MAX_VALUE}")
+      elsif value < MIN_VALUE
+        raise RangeError.new("#{value} is less than the maximum value of #{MIN_VALUE}")
+      else
+        value
+      end
     end
   end
 
