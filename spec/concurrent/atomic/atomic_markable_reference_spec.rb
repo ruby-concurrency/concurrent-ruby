@@ -1,8 +1,7 @@
-# Concurrent::AtomicMarkableReference;w
 shared_examples :atomic_markable_reference do
   # use a number outside JRuby's fixnum cache range, to ensure identity is
   # preserved
-  let(:atomic) { Edge::Concurrent::AtomicMarkableReference.new 1000, true }
+  let(:atomic) { Concurrent::Edge::AtomicMarkableReference.new 1000, true }
 
   specify :test_construct do
     expect(atomic.value).to eq 1000
@@ -87,8 +86,8 @@ shared_examples :atomic_markable_reference do
 end
 
 # Specs for platform specific implementations
-module Edge
-  module Concurrent
+module Concurrent
+  module Edge
     describe AtomicMarkableReference do
       it_should_behave_like :atomic_markable_reference
     end

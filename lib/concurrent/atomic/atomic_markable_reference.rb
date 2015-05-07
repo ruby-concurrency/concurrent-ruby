@@ -1,10 +1,7 @@
-module Edge
-  module Concurrent
+module Concurrent
+  module Edge
     # @!macro atomic_markable_reference
     class AtomicMarkableReference < ::Concurrent::Synchronization::Object
-      # TODO: Remove once out of edge module
-      include ::Concurrent
-
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
         super
@@ -85,9 +82,7 @@ module Edge
       #
       #   @return [ImmutableArray] both the new value and the new mark
       def set(new_val, new_mark)
-        ImmutableArray[new_val, new_mark].tap do |pair|
-          @Reference.set pair
-        end
+        @Reference.set ImmutableArray[new_val, new_mark]
       end
 
       # @!macro [attach] atomic_markable_reference_method_update
@@ -104,7 +99,7 @@ module Edge
       # @return [ImmutableArray] the new value and new mark
       def update
         loop do
-          old_val, old_mark = value, marked?
+          old_val, old_mark = @Reference.get
           new_val, new_mark = yield old_val, old_mark
 
           if compare_and_set old_val, new_val, old_mark, new_mark
@@ -128,7 +123,7 @@ module Edge
       #
       # @raise [Concurrent::ConcurrentUpdateError] if the update fails
       def try_update
-        old_val, old_mark = value, marked?
+        old_val, old_mark = @Reference.get
         new_val, new_mark = yield old_val, old_mark
 
         unless compare_and_set old_val, new_val, old_mark, new_mark
