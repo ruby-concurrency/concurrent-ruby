@@ -1,6 +1,5 @@
+require 'concurrent/atomic/condition_variable'
 require 'concurrent/dereferenceable'
-require 'concurrent/atomic/condition'
-require 'concurrent/atomic/event'
 
 module Concurrent
 
@@ -61,8 +60,8 @@ module Concurrent
     def initialize(value = EMPTY, opts = {})
       @value = value
       @mutex = Mutex.new
-      @empty_condition = Condition.new
-      @full_condition = Condition.new
+      @empty_condition = Concurrent::ConditionVariable.new
+      @full_condition = Concurrent::ConditionVariable.new
       set_deref_options(opts)
     end
 
@@ -188,7 +187,7 @@ module Concurrent
 
     # Returns if the `MVar` currently contains a value.
     def full?
-      not empty?
+      !empty?
     end
 
     private
@@ -202,20 +201,11 @@ module Concurrent
     end
 
     def wait_for_full(timeout)
-      wait_while(@full_condition, timeout) { unlocked_empty? }
+      @full_condition.wait_while(@mutex, timeout) { unlocked_empty? }
     end
 
     def wait_for_empty(timeout)
-      wait_while(@empty_condition, timeout) { unlocked_full? }
+      @empty_condition.wait_while(@mutex, timeout) { unlocked_full? }
     end
-
-    def wait_while(condition, timeout)
-      remaining = Condition::Result.new(timeout)
-      while yield && remaining.can_wait?
-        remaining = condition.wait(@mutex, remaining.remaining_time)
-      end
-    end
-
   end
-
 end

@@ -1,7 +1,7 @@
-require 'concurrent/atomic/condition'
+require 'concurrent/synchronization'
 
 module Concurrent
-  class MutexSemaphore
+  class MutexSemaphore < Synchronization::Object
     # @!macro [attach] semaphore_method_initialize
     #
     #   Create a new `Semaphore` with the initial `count`.
@@ -13,9 +13,7 @@ module Concurrent
       unless count.is_a?(Fixnum) && count >= 0
         fail ArgumentError, 'count must be an non-negative integer'
       end
-      @mutex = Mutex.new
-      @condition = Condition.new
-      @free = count
+      super(count)
     end
 
     # @!macro [attach] semaphore_method_acquire
@@ -33,7 +31,7 @@ module Concurrent
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
-      @mutex.synchronize do
+      synchronize do
         try_acquire_timed(permits, nil)
         nil
       end
@@ -45,7 +43,7 @@ module Concurrent
     #
     #   @return [Integer]
     def available_permits
-      @mutex.synchronize { @free }
+      synchronize { @free }
     end
 
     # @!macro [attach] semaphore_method_drain_permits
@@ -54,7 +52,7 @@ module Concurrent
     #
     #   @return [Integer]
     def drain_permits
-      @mutex.synchronize do
+      synchronize do
         @free.tap { |_| @free = 0 }
       end
     end
@@ -79,7 +77,7 @@ module Concurrent
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
-      @mutex.synchronize do
+      synchronize do
         if timeout.nil?
           try_acquire_now(permits)
         else
@@ -101,9 +99,9 @@ module Concurrent
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
-      @mutex.synchronize do
+      synchronize do
         @free += permits
-        permits.times { @condition.signal }
+        permits.times { ns_signal }
       end
       nil
     end
@@ -125,8 +123,14 @@ module Concurrent
       unless reduction.is_a?(Fixnum) && reduction >= 0
         fail ArgumentError, 'reduction must be an non-negative integer'
       end
-      @mutex.synchronize { @free -= reduction }
+      synchronize { @free -= reduction }
       nil
+    end
+
+    protected
+
+    def ns_initialize(count)
+      @free = count
     end
 
     private
@@ -141,12 +145,7 @@ module Concurrent
     end
 
     def try_acquire_timed(permits, timeout)
-      remaining = Condition::Result.new(timeout)
-      while !try_acquire_now(permits) && remaining.can_wait?
-        @condition.signal
-        remaining = @condition.wait(@mutex, remaining.remaining_time)
-      end
-      remaining.can_wait? ? true : false
+      ns_wait_until(timeout) { try_acquire_now(permits) }
     end
   end
 

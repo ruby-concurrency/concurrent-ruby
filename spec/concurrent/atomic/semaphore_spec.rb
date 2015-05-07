@@ -101,52 +101,6 @@ end
 module Concurrent
   describe MutexSemaphore do
     it_should_behave_like :semaphore
-
-    context 'spurious wake ups' do
-      subject { described_class.new(1) }
-
-      before(:each) do
-        def subject.simulate_spurious_wake_up
-          @mutex.synchronize do
-            @condition.signal
-            @condition.broadcast
-          end
-        end
-
-        subject.drain_permits
-      end
-
-      it 'should resist to spurious wake ups without timeout' do
-        actual = Concurrent::AtomicBoolean.new(true)
-        latch  = Concurrent::CountDownLatch.new
-
-        # would set actual to false
-        t      = Thread.new { latch.wait(1); actual.value = subject.acquire }
-
-        latch.count_down
-        subject.simulate_spurious_wake_up
-        t.join(0.1)
-
-        expect(actual.value).to be true
-        t.kill
-      end
-
-      it 'should resist to spurious wake ups with timeout' do
-        actual = Concurrent::AtomicBoolean.new(true)
-        latch  = Concurrent::CountDownLatch.new
-
-        # sets actual to false in another thread
-        t      = Thread.new { latch.wait(1); actual.value = subject.try_acquire(1, 0.3) }
-
-        latch.count_down
-        subject.simulate_spurious_wake_up
-        t.join(0.1)
-
-        expect(actual.value).to be true
-        t.join
-        expect(actual.value).to be false
-      end
-    end
   end
 
   if Concurrent.on_jruby?
