@@ -11,10 +11,13 @@ module Concurrent
   # Every #wait must be guarded by a locked Mutex or a ThreadError will be
   # risen. Although it's not mandatory, it's recommended to call also #signal
   # and #broadcast within the same mutex
+  #
+  # @deprecated
   class Condition
 
     class Result
       def initialize(remaining_time)
+        warn '[DEPRECATED] use Concurrent::ConditionVariable instead.'
         @remaining_time = remaining_time
       end
 
@@ -37,7 +40,8 @@ module Concurrent
     end
 
     def initialize
-      @condition = ConditionVariable.new
+
+      @condition = ::ConditionVariable.new
     end
 
     # @param [Mutex] mutex the locked mutex guarding the wait

@@ -1,3 +1,4 @@
+require 'concurrent/atomic/condition_variable'
 require 'concurrent/dereferenceable'
 
 module Concurrent
@@ -59,8 +60,8 @@ module Concurrent
     def initialize(value = EMPTY, opts = {})
       @value = value
       @mutex = Mutex.new
-      @empty_condition = ConditionVariable.new
-      @full_condition = ConditionVariable.new
+      @empty_condition = Concurrent::ConditionVariable.new
+      @full_condition = Concurrent::ConditionVariable.new
       set_deref_options(opts)
     end
 
@@ -200,25 +201,11 @@ module Concurrent
     end
 
     def wait_for_full(timeout)
-      wait_while(@full_condition, timeout) { unlocked_empty? }
+      @full_condition.wait_while(@mutex, timeout) { unlocked_empty? }
     end
 
     def wait_for_empty(timeout)
-      wait_while(@empty_condition, timeout) { unlocked_full? }
-    end
-
-    def wait_while(condition, timeout)
-      if timeout.nil?
-        while yield
-          condition.wait(@mutex)
-        end
-      else
-        stop = Concurrent.monotonic_time + timeout
-        while yield && timeout > 0.0
-          condition.wait(@mutex, timeout)
-          timeout = stop - Concurrent.monotonic_time
-        end
-      end
+      @empty_condition.wait_while(@mutex, timeout) { unlocked_full? }
     end
   end
 end

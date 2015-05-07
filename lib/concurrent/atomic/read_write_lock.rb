@@ -54,9 +54,9 @@ module Concurrent
     # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
       @counter      = AtomicReference.new(0)  # single integer which represents lock state
-      @reader_q     = ConditionVariable.new   # queue for waiting readers
+      @reader_q     = ::ConditionVariable.new # queue for waiting readers
       @reader_mutex = Mutex.new               # to protect reader queue
-      @writer_q     = ConditionVariable.new   # queue for waiting writers
+      @writer_q     = ::ConditionVariable.new # queue for waiting writers
       @writer_mutex = Mutex.new               # to protect writer queue
     end
 
