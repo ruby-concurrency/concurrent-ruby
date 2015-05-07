@@ -9,7 +9,10 @@ module Concurrent
   class SafeTaskExecutor < Synchronization::Object
 
     def initialize(task, opts = {})
-      super(task, opts)
+      super()
+      @task = task
+      @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
+      ensure_ivar_visibility!
     end
 
     # @return [Array]
@@ -28,13 +31,6 @@ module Concurrent
 
         [success, value, reason]
       end
-    end
-
-    protected
-
-    def ns_initialize(task, opts)
-      @task = task
-      @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
     end
   end
 end
