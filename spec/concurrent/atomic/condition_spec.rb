@@ -272,6 +272,7 @@ module Concurrent
           it 'wakes up all threads' do
             mutex   = Mutex.new
             go      = CountDownLatch.new(2)
+
             threads = Array.new(2) do
               Thread.new do
                 mutex.synchronize do
@@ -280,12 +281,12 @@ module Concurrent
                 end
               end
             end
+
             go.wait
             mutex.synchronize { subject.broadcast }
+            joined = threads.map(&:join)
 
-            threads.each do |t|
-              expect(t.join(5)).to eq t
-            end
+            expect(joined).to eq threads
           end
         end
       end
