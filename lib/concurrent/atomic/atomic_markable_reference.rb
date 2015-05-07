@@ -8,7 +8,7 @@ module Edge
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
         super
-        @reference = AtomicReference.new ImmutableArray[value, mark]
+        @Reference = AtomicReference.new ImmutableArray[value, mark]
         ensure_ivar_visibility!
       end
 
@@ -30,7 +30,7 @@ module Edge
       def compare_and_set(expected_val, new_val, expected_mark, new_mark)
         # Memoize a valid reference to the current AtomicReference for
         # later comparison.
-        current = @reference.get
+        current = @Reference.get
         curr_val, curr_mark = current
 
         # Ensure that that the expected values match.
@@ -44,7 +44,7 @@ module Edge
 
         prospect = ImmutableArray[new_val, new_mark]
 
-        @reference.compare_and_set current, prospect
+        @Reference.compare_and_set current, prospect
       end
 
       # @!macro [attach] atomic_markable_reference_method_get
@@ -53,7 +53,7 @@ module Edge
       #
       #   @return [ImmutableArray] the current reference and marked values
       def get
-        @reference.get
+        @Reference.get
       end
 
       # @!macro [attach] atomic_markable_reference_method_value
@@ -62,7 +62,7 @@ module Edge
       #
       #   @return [Object] the current value of the reference
       def value
-        @reference.get[0]
+        @Reference.get[0]
       end
 
       # @!macro [attach] atomic_markable_reference_method_mark
@@ -71,7 +71,7 @@ module Edge
       #
       #   @return [Boolean] the current marked value
       def mark
-        @reference.get[1]
+        @Reference.get[1]
       end
       alias_method :marked?, :mark
 
@@ -86,7 +86,7 @@ module Edge
       #   @return [ImmutableArray] both the new value and the new mark
       def set(new_val, new_mark)
         ImmutableArray[new_val, new_mark].tap do |pair|
-          @reference.set pair
+          @Reference.set pair
         end
       end
 
