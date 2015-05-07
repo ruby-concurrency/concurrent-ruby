@@ -11,6 +11,8 @@ module Concurrent
   # Every #wait must be guarded by a locked Mutex or a ThreadError will be
   # risen. Although it's not mandatory, it's recommended to call also #signal
   # and #broadcast within the same mutex
+  #
+  # @deprecated
   class Condition
 
     class Result
@@ -37,6 +39,7 @@ module Concurrent
     end
 
     def initialize
+      warn '[DEPRECATED] Will be replaced with Synchronization::Object in v1.0.'
       @condition = ConditionVariable.new
     end
 
