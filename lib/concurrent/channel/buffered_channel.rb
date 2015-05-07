@@ -1,4 +1,3 @@
-require 'concurrent/atomic/condition'
 require 'concurrent/channel/waitable_list'
 
 module Concurrent
@@ -6,8 +5,8 @@ module Concurrent
 
     def initialize(size)
       @mutex = Mutex.new
-      @condition = Condition.new
-      @buffer_condition = Condition.new
+      @condition = ConditionVariable.new
+      @buffer_condition = ConditionVariable.new
 
       @probe_set = WaitableList.new
       @buffer = RingBuffer.new(size)
