@@ -1,14 +1,12 @@
-require 'concurrent/atomic/condition'
-
-require_relative 'waitable_list'
+require 'concurrent/channel/waitable_list'
 
 module Concurrent
   class BufferedChannel
 
     def initialize(size)
       @mutex = Mutex.new
-      @condition = Condition.new
-      @buffer_condition = Condition.new
+      @condition = ConditionVariable.new
+      @buffer_condition = ConditionVariable.new
 
       @probe_set = WaitableList.new
       @buffer = RingBuffer.new(size)

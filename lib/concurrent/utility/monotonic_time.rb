@@ -1,9 +1,11 @@
+require 'concurrent/synchronization'
+
 module Concurrent
 
   # Clock that cannot be set and represents monotonic time since
   # some unspecified starting point.
   # @!visibility private
-  GLOBAL_MONOTONIC_CLOCK = Class.new {
+  GLOBAL_MONOTONIC_CLOCK = Class.new(Synchronization::Object) {
 
     if defined?(Process::CLOCK_MONOTONIC)
       # @!visibility private
@@ -17,17 +19,9 @@ module Concurrent
       end
     else
 
-      require 'thread'
-
-      # @!visibility private
-      def initialize
-        @mutex = Mutex.new
-        @last_time = Time.now.to_f
-      end
-
       # @!visibility private
       def get_time
-        @mutex.synchronize do
+        synchronize do
           now = Time.now.to_f
           if @last_time < now
             @last_time = now 
@@ -35,6 +29,13 @@ module Concurrent
             @last_time +=  0.000_001
           end
         end
+      end
+
+      protected
+
+      # @!visibility private
+      def ns_initialize
+        @last_time = Time.now.to_f
       end
     end
   }.new

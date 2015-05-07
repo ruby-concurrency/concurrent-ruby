@@ -1,40 +1,38 @@
-require 'concurrent/atomic/condition'
+require 'concurrent/synchronization'
 
 module Concurrent
-  class WaitableList
-
-    def initialize
-      @mutex = Mutex.new
-      @condition = Condition.new
-
-      @list = []
-    end
+  class WaitableList < Synchronization::Object
 
     def size
-      @mutex.synchronize { @list.size }
+      synchronize { @list.size }
     end
 
     def empty?
-      @mutex.synchronize { @list.empty? }
+      synchronize { @list.empty? }
     end
 
     def put(value)
-      @mutex.synchronize do
+      synchronize do
         @list << value
-        @condition.signal
+        ns_signal
       end
     end
 
     def delete(value)
-      @mutex.synchronize { @list.delete(value) }
+      synchronize { @list.delete(value) }
     end
 
     def take
-      @mutex.synchronize do
-        @condition.wait(@mutex) while @list.empty?
+      synchronize do
+        ns_wait_until { !@list.empty? }
         @list.shift
       end
     end
 
+    protected
+
+    def ns_initialize
+      @list = []
+    end
   end
 end
