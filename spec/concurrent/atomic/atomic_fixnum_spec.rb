@@ -115,11 +115,26 @@ module Concurrent
   describe MutexAtomicFixnum do
 
     it_should_behave_like :atomic_fixnum
+    
+    context 'construction' do
+
+      it 'raises en exception if the initial value is too big' do
+        expect {
+          described_class.new(described_class::MAX_VALUE + 1)
+        }.to raise_error
+      end
+
+      it 'raises en exception if the initial value is too small' do
+        expect {
+          described_class.new(described_class::MIN_VALUE - 1)
+        }.to raise_error
+      end
+    end
 
     context 'instance methods' do
 
       before(:each) do
-        expect(subject).to receive(:synchronize).with(no_args).and_return(10)
+        expect(subject).to receive(:synchronize).with(no_args).and_call_original
       end
 
       specify 'value is synchronized' do
