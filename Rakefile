@@ -151,6 +151,15 @@ begin
 
   RSpec::Core::RakeTask.new(:spec)
 
+  RSpec::Core::RakeTask.new(:travis) do |t|
+    t.rspec_opts = '--color ' \
+                   '--backtrace ' \
+                   '--tag ~unfinished ' \
+                   '--seed 1 ' \
+                   '--format documentation'
+  end
+
+  task :ci => [:clean, :compile, :travis]
   task :default => [:clean, :compile, :spec]
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
