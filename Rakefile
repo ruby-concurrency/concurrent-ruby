@@ -156,7 +156,8 @@ begin
                    '--backtrace ' \
                    '--tag ~unfinished ' \
                    '--seed 1 ' \
-                   '--format documentation'
+                   '--format documentation ' \
+                   '--tag ~notravis'
   end
 
   task :ci => [:clean, :compile, :travis]

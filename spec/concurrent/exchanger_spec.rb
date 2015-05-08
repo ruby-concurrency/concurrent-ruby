@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Exchanger do
+  describe Exchanger, notravis: true do
 
     describe 'exchange' do
 
