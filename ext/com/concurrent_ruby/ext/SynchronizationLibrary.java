@@ -17,6 +17,7 @@ import org.jruby.runtime.Visibility;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyNil;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.util.unsafe.UnsafeHolder;
 
 public class SynchronizationLibrary implements Library {
 
@@ -43,6 +44,8 @@ public class SynchronizationLibrary implements Library {
 
     @JRubyClass(name = "JavaObject", parent = "AbstractObject")
     public static class JavaObject extends RubyObject {
+
+        private volatile int anVolatileField = 0; // TODO unused on JAVA8
 
         public JavaObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -108,7 +111,31 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PROTECTED)
         public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
+            if (UnsafeHolder.SUPPORTS_FENCES)
+                UnsafeHolder.storeFence();
+            else
+                anVolatileField = 1;
             return context.nil;
+        }
+
+        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
+        public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
+            int tmp;
+            if (UnsafeHolder.SUPPORTS_FENCES)
+                UnsafeHolder.loadFence();
+            else
+                tmp = anVolatileField;
+            return instance_variable_get(context, name);
+        }
+
+        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
+        public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
+            IRubyObject result = instance_variable_set(name, value);
+            if (UnsafeHolder.SUPPORTS_FENCES)
+                UnsafeHolder.storeFence();
+            else
+                anVolatileField = 1;
+            return result;
         }
     }
 }
