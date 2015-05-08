@@ -26,9 +26,9 @@ Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency pat
   if defined?(JRUBY_VERSION)
     s.files    += Dir['lib/**/*.jar']
     s.platform = 'java'
-  else
-    s.add_runtime_dependency 'ref', '~> 1.0', '>= 1.0.5'
   end
+
+  s.add_runtime_dependency 'ref', '~> 1.0', '>= 1.0.5'
 
   s.required_ruby_version = '>= 1.9.3'
 end

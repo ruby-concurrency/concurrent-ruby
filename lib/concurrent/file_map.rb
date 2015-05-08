@@ -1,11 +1,14 @@
 module Concurrent
 
   git_files      = `git ls-files`.split("\n")
-  all_lib_files  = Dir['lib/concurrent/**/*.rb'] & git_files
+  all_lib_files  = (Dir['lib/concurrent/**/*.rb'] & git_files) - ['lib/concurrent/file_map.rb']
   edge_lib_files = Dir['lib/concurrent/actor.rb',
                        'lib/concurrent/actor/**/*.rb',
                        'lib/concurrent/channel.rb',
                        'lib/concurrent/channel/**/*.rb',
+                       'lib/concurrent/agent.rb',
+                       'lib/concurrent/exchanger.rb',
+                       'lib/concurrent/lazy_register.rb',
                        'lib/concurrent/edge/**/*.rb'] & git_files
   core_lib_files = all_lib_files - edge_lib_files
 

@@ -52,7 +52,6 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 ### High-level, general-purpose asynchronous concurrency abstractions
 
-* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
 * [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
   * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
@@ -66,11 +65,9 @@ This library contains a variety of concurrency abstractions at high and low leve
 
 ### Thread synchronization classes and algorithms
 
-* [Condition](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Condition.html)
 * [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)
 * [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
 * [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
-* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
 * [Timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
 * [Timer](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timer-class_method)
@@ -81,7 +78,6 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html)
 * [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html)
 * [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html)
-* [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
 * [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
 * [Thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
@@ -96,10 +92,13 @@ These features are under active development and may change frequently. They are 
 keep backward compatibility (there may also lack tests and documentation). Semantic versions will
 be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to `concurrent-ruby` when final.
 
-*   [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
-    Implements the Actor Model, where concurrent actors exchange messages.
-*   [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
-    Communicating Sequential Processes (CSP).
+* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
+  Implements the Actor Model, where concurrent actors exchange messages.
+* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
+* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
+  Communicating Sequential Processes (CSP).
+* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
+* [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 
 ## Usage
 
