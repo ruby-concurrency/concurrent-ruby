@@ -5,7 +5,6 @@ module Concurrent
 
     def initialize(size)
       @mutex = Mutex.new
-      @condition = ConditionVariable.new
       @buffer_condition = ConditionVariable.new
 
       @probe_set = WaitableList.new
