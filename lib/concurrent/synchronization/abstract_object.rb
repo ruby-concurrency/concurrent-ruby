@@ -149,7 +149,6 @@ module Concurrent
         end
         names.map { |n| [n, :"#{n}="] }.flatten
       end
-
     end
   end
 end
