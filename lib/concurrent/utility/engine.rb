@@ -21,7 +21,7 @@ module Concurrent
       defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
     end
 
-    def ruby_version(comparison, major, minor, patch)
+    def ruby_version(comparison, major, minor = 0, patch = 0)
       result      = (RUBY_VERSION.split('.').map(&:to_i) <=> [major, minor, patch])
       comparisons = { :== => [0],
                       :>= => [1, 0],

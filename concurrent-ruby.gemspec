@@ -28,7 +28,5 @@ Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency pat
     s.platform = 'java'
   end
 
-  s.add_runtime_dependency 'ref', '~> 1.0', '>= 1.0.5'
-
   s.required_ruby_version = '>= 1.9.3'
 end
