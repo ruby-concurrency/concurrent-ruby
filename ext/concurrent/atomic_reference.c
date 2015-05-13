@@ -50,9 +50,13 @@ VALUE ir_set(VALUE self, VALUE new_value) {
 }
 
 VALUE ir_get_and_set(VALUE self, VALUE new_value) {
-  VALUE old_value = ir_get(self);
-  ir_set(self, new_value);
-  return old_value;
+  VALUE old_value;
+  for (;;) {
+    old_value = ir_get(self);
+    if (ir_compare_and_set(self, old_value, new_value) == Qtrue) {
+      return old_value;
+    }
+  }
 }
 
 VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE new_value) {
