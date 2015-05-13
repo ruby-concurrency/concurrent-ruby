@@ -32,7 +32,7 @@ module Concurrent
     #
     #   Creates a new `AtomicFixnum` with the given initial value.
     #
-    #   @param [Fixnum] init the initial value
+    #   @param [Fixnum] initial the initial value
     #   @raise [ArgumentError] if the initial value is not a `Fixnum`
     def initialize(initial = 0)
       super(initial)

@@ -10,6 +10,7 @@ require 'concurrent/collections'
 require 'concurrent/errors'
 require 'concurrent/executors'
 require 'concurrent/utilities'
+require 'concurrent/struct'
 
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/async'

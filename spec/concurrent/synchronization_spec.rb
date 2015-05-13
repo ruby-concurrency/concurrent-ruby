@@ -106,29 +106,5 @@ module Concurrent
         end
       end
     end
-
-    describe Synchronization::ImmutableStruct do
-      AB = described_class.with_fields(:a, :b)
-      subject { AB[1, 'a'] }
-
-      specify do
-        expect(AB.superclass).to eq described_class
-        expect(subject.a).to eq 1
-        expect(subject.b).to eq 'a'
-        expect(subject.values).to eq [1, 'a']
-        expect(subject.to_a).to eq [1, 'a']
-        expect(subject.size).to eq 2
-        expect(subject.members).to eq [:a, :b]
-        expect(subject.each.to_a).to eq [[:a, 1], [:b, 'a']]
-      end
-
-      specify 'equality' do
-        klass = described_class.with_fields(:a, :b)
-        expect(klass[1, 'a']).not_to be == klass[1, 'a']
-        klass.define_equality!
-        expect(klass[1, 'a']).to be == klass[1, 'a']
-      end
-    end
-
   end
 end
