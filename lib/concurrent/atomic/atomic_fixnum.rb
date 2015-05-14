@@ -90,7 +90,7 @@ module Concurrent
     #   @param [Fixnum] expect the expected value
     #   @param [Fixnum] update the new value
     #
-    #   @return [Boolean] true if the value was updated else false
+    #   @return [Fixnum] true if the value was updated else false
     def compare_and_set(expect, update)
       synchronize do
         if @value == expect
@@ -104,17 +104,20 @@ module Concurrent
 
     protected
 
+    # @!visibility private
     def ns_initialize(initial)
       ns_set(initial)
     end
 
     private
 
+    # @!visibility private
     def ns_set(value)
       range_check!(value)
       @value = value
     end
 
+    # @!visibility private
     def range_check!(value)
       if !value.is_a?(Fixnum)
         raise ArgumentError.new('value value must be a Fixnum')
@@ -128,44 +131,38 @@ module Concurrent
     end
   end
 
-  if Concurrent.on_jruby?
+  AtomicFixnumImplementation = case
+                               when Concurrent.on_jruby?
+                                 JavaAtomicFixnum
+                               when defined?(CAtomicFixnum)
+                                 CAtomicFixnum
+                               else
+                                 MutexAtomicFixnum
+                               end
+  private_constant :AtomicFixnumImplementation
 
-    # @!macro atomic_fixnum
-    class AtomicFixnum < JavaAtomicFixnum
-    end
+  # @!macro atomic_fixnum
+  #
+  # @see Concurrent::MutexAtomicFixnum
+  class AtomicFixnum < AtomicFixnumImplementation
+    
+    # @!method initialize(initial = 0)
+    #   @!macro atomic_fixnum_method_initialize
 
-  elsif defined?(CAtomicFixnum)
+    # @!method value
+    #   @!macro atomic_fixnum_method_value_get
 
-    # @!macro atomic_fixnum
-    class CAtomicFixnum
+    # @!method value=(value)
+    #   @!macro atomic_fixnum_method_value_set
 
-      # @!method initialize
-      #   @!macro atomic_fixnum_method_initialize
+    # @!method increment
+    #   @!macro atomic_fixnum_method_increment
 
-      # @!method value
-      #   @!macro atomic_fixnum_method_value_get
+    # @!method decrement
+    #   @!macro atomic_fixnum_method_decrement
 
-      # @!method value=
-      #   @!macro atomic_fixnum_method_value_set
+    # @!method compare_and_set(expect, update)
+    #   @!macro atomic_fixnum_method_compare_and_set
 
-      # @!method increment
-      #   @!macro atomic_fixnum_method_increment
-
-      # @!method decrement
-      #   @!macro atomic_fixnum_method_decrement
-
-      # @!method compare_and_set
-      #   @!macro atomic_fixnum_method_compare_and_set
-    end
-
-    # @!macro atomic_fixnum
-    class AtomicFixnum < CAtomicFixnum
-    end
-
-  else
-
-    # @!macro atomic_fixnum
-    class AtomicFixnum < MutexAtomicFixnum
-    end
   end
 end
