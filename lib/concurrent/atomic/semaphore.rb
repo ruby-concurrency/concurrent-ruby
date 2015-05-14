@@ -1,7 +1,17 @@
 require 'concurrent/synchronization'
 
 module Concurrent
+
+  # @!macro [attach] semaphore
+  #
+  #   A counting semaphore. Conceptually, a semaphore maintains a set of
+  #   permits. Each {#acquire} blocks if necessary until a permit is
+  #   available, and then takes it. Each {#release} adds a permit, potentially
+  #   releasing a blocking acquirer.
+  #   However, no actual permit objects are used; the Semaphore just keeps a
+  #   count of the number available and acts accordingly.
   class MutexSemaphore < Synchronization::Object
+
     # @!macro [attach] semaphore_method_initialize
     #
     #   Create a new `Semaphore` with the initial `count`.
@@ -129,12 +139,14 @@ module Concurrent
 
     protected
 
+    # @!visibility private
     def ns_initialize(count)
       @free = count
     end
 
     private
 
+    # @!visibility private
     def try_acquire_now(permits)
       if @free >= permits
         @free -= permits
@@ -144,28 +156,45 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     def try_acquire_timed(permits, timeout)
       ns_wait_until(timeout) { try_acquire_now(permits) }
     end
   end
 
-  if Concurrent.on_jruby?
+  SemaphoreImplementation = case
+                            when Concurrent.on_jruby?
+                              JavaSemaphore
+                            else
+                              MutexSemaphore
+                            end
+  private_constant :SemaphoreImplementation
 
-    # @!macro semaphore
-    #
-    #   A counting semaphore. Conceptually, a semaphore maintains a set of
-    #   permits. Each {#acquire} blocks if necessary until a permit is
-    #   available, and then takes it. Each {#release} adds a permit, potentially
-    #   releasing a blocking acquirer.
-    #   However, no actual permit objects are used; the Semaphore just keeps a
-    #   count of the number available and acts accordingly.
-    class Semaphore < JavaSemaphore
-    end
+  # @!macro semaphore
+  #
+  # @see Concurrent::MutexSemaphore
+  class Semaphore < SemaphoreImplementation
 
-  else
+    # @!method initialize(count)
+    #   @!macro semaphore_method_initialize
 
-    # @!macro semaphore
-    class Semaphore < MutexSemaphore
-    end
+    # @!method acquire(permits = 1)
+    #   @!macro semaphore_method_acquire
+
+    # @!method available_permits
+    #   @!macro semaphore_method_available_permits
+
+    # @!method drain_permits
+    #   @!macro semaphore_method_drain_permits
+
+    # @!method try_acquire(permits = 1, timeout = nil)
+    #   @!macro semaphore_method_try_acquire
+
+    # @!method release(permits = 1)
+    #   @!macro semaphore_method_release
+
+    # @!method reduce_permits(reduction)
+    #   @!macro semaphore_method_reduce_permits
+
   end
 end
