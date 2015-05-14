@@ -6,8 +6,8 @@ module Concurrent
 
     subject do
       described_class.new(
-          fallback_policy: :discard,
-          gc_interval:     0
+        fallback_policy: :discard,
+        gc_interval:     0
       )
     end
 
@@ -70,16 +70,15 @@ module Concurrent
     end
   end
 
-
-  context 'stress' do
+  context 'stress', notravis: true do
     configurations = [
-        { min_threads:     2,
-          max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-          auto_terminate:  false,
-          idletime:        0.1, # 1 minute
-          max_queue:       0, # unlimited
-          fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
-          gc_interval:     0.1 },
+      { min_threads:     2,
+        max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
+        auto_terminate:  false,
+        idletime:        0.1, # 1 minute
+        max_queue:       0, # unlimited
+        fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
+        gc_interval:     0.1 },
         { min_threads:     2,
           max_threads:     4,
           auto_terminate:  false,
@@ -88,7 +87,6 @@ module Concurrent
           fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
           gc_interval:     0.1 }
     ]
-
 
     configurations.each do |config|
       specify do
@@ -106,9 +104,6 @@ module Concurrent
           end
         end
       end
-
     end
-
-
   end
 end
