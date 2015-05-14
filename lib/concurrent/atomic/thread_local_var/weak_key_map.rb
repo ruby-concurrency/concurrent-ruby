@@ -164,9 +164,9 @@ module Concurrent
             end
           end
         end
-      end
 
-      private_constant :WeakReference
+        private_constant :WeakReference
+      end
 
       # The classes behave similar to Hashes, but the keys in the map are not strong references
       # and can be reclaimed by the garbage collector at any time. When a key is reclaimed, the
