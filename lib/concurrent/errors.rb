@@ -3,6 +3,9 @@ module Concurrent
   # Raised when errors occur during configuration.
   ConfigurationError = Class.new(StandardError)
 
+  # Raised when an asynchronous operation is cancelled before execution.
+  CancelledOperationError = Class.new(StandardError)
+
   # Raised when a lifecycle method (such as `stop`) is called in an improper
   # sequence or when the object is in an inappropriate state.
   LifecycleError = Class.new(StandardError)

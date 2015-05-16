@@ -84,6 +84,38 @@ module Concurrent
       execute
     end
 
+    # Attempt to cancel the operation if it has not already processed.
+    # The operation can only be cancelled while still `pending`. It cannot
+    # be cancelled once it has begun processing or has completed.
+    #
+    # @return [Boolean] was the operation successfully cancelled.
+    def cancel
+      compare_and_set_state(:cancelled, :pending)
+    end
+
+    # Has the operation been successfully cancelled?
+    #
+    # @return [Boolean]
+    def cancelled?
+      state == :cancelled
+    end
+
+    # Wait the given number of seconds for the operation to complete.
+    # On timeout attempt to cancel the operation.
+    #
+    # @param [Numeric] timeout the maximum time in seconds to wait.
+    # @return [Boolean] true if the operation completed before the timeout
+    #   else false
+    def wait_or_cancel(timeout)
+      wait(timeout)
+      if complete?
+        true
+      else
+        cancel
+        false
+      end
+    end
+
     protected
 
     def ns_initialize(value, opts)
@@ -97,9 +129,13 @@ module Concurrent
     private
 
     # @!visibility private
-    def work # :nodoc:
-      success, val, reason = SafeTaskExecutor.new(@task, rescue_exception: true).execute(*@args)
-      complete(success, val, reason)
+    def work
+      if compare_and_set_state(:processing, :pending)
+        success, val, reason = SafeTaskExecutor.new(@task, rescue_exception: true).execute(*@args)
+        complete(success, val, reason)
+      else
+        complete(false, nil, CancelledOperationError.new)
+      end
     end
   end
 end
