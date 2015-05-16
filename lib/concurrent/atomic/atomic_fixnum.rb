@@ -35,7 +35,8 @@ module Concurrent
     #   @param [Fixnum] initial the initial value
     #   @raise [ArgumentError] if the initial value is not a `Fixnum`
     def initialize(initial = 0)
-      super(initial)
+      super()
+      synchronize { ns_initialize(initial) }
     end
 
     # @!macro [attach] atomic_fixnum_method_value_get

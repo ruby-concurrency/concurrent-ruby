@@ -49,11 +49,9 @@ public class SynchronizationLibrary implements Library {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(rest = true)
-        public IRubyObject initialize(ThreadContext context, IRubyObject[] args, Block block) {
-            synchronized (this) {
-                return callMethod(context, "ns_initialize", args, block);
-            }
+        @JRubyMethod
+        public IRubyObject initialize(ThreadContext context) {
+            return this;
         }
 
         @JRubyMethod(name = "synchronize", visibility = Visibility.PROTECTED)

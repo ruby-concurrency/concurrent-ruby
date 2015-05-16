@@ -8,6 +8,11 @@ module Concurrent
   class AtExitImplementation < Synchronization::Object
     include Logging
 
+    def initialize(*args)
+      super()
+      synchronize { ns_initialize *args }
+    end
+
     # Add a handler to be run at `Kernel#at_exit`
     # @param [Object] handler_id optionally provide an id, if allready present, handler is replaced
     # @yield the handler

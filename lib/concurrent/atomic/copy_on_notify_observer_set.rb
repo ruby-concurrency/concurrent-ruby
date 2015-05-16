@@ -8,6 +8,11 @@ module Concurrent
   # prevent concurrency issues
   class CopyOnNotifyObserverSet < Synchronization::Object
 
+    def initialize
+      super()
+      synchronize { ns_initialize }
+    end
+
     # Adds an observer to this set. If a block is passed, the observer will be
     # created by this method and no other params should be passed
     #
@@ -24,7 +29,7 @@ module Concurrent
 
       if block
         observer = block
-        func = :call
+        func     = :call
       end
 
       synchronize do

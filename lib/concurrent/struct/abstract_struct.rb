@@ -3,6 +3,13 @@ module Concurrent
   # @!visibility private
   module AbstractStruct
 
+    # @!visibility private
+    def initialize(*values)
+      super()
+      ns_initialize(*values)
+      ensure_ivar_visibility!
+    end
+
     # @!macro [attach] struct_length
     #
     #   Returns the number of struct members.

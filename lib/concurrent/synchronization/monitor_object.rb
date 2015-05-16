@@ -4,7 +4,6 @@ module Concurrent
       def initialize(*args, &block)
         @__lock__      = ::Monitor.new
         @__condition__ = @__lock__.new_cond
-        synchronize { ns_initialize(*args, &block) }
       end
 
       protected

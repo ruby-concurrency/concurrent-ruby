@@ -93,6 +93,7 @@ module Concurrent
         @Touched         = AtomicBoolean.new(false)
         self.state       = :pending
         super()
+        ns_initialize
         ensure_ivar_visibility!
       end
 
@@ -548,8 +549,9 @@ module Concurrent
     # @abstract
     class AbstractPromise < Synchronization::Object
       def initialize(future, *args, &block)
-        super(*args, &block)
+        super(&nil)
         @Future = future
+        ns_initialize(*args, &block)
         ensure_ivar_visibility!
       end
 

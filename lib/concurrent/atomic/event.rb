@@ -19,6 +19,7 @@ module Concurrent
     # `Event` will block.
     def initialize
       super
+      synchronize { ns_initialize }
     end
 
     # Is the object in the set state?

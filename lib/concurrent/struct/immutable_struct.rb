@@ -9,15 +9,11 @@ module Concurrent
   module ImmutableStruct
     include AbstractStruct
 
-    # @!visibility private
-    def initialize(*values)
-      ns_initialize(*values)
-    end
-
     # @!macro struct_values
     def values
       ns_values
     end
+
     alias_method :to_a, :values
 
     # @!macro struct_values_at
@@ -29,6 +25,7 @@ module Concurrent
     def inspect
       ns_inspect
     end
+
     alias_method :to_s, :inspect
 
     # @!macro struct_merge
@@ -83,7 +80,7 @@ module Concurrent
     FACTORY = Class.new(Synchronization::Object) do
       def define_struct(name, members, &block)
         synchronize do
-          AbstractStruct.define_struct_class(ImmutableStruct, nil, name, members, &block)
+          AbstractStruct.define_struct_class(ImmutableStruct, Synchronization::Object, name, members, &block)
         end
       end
     end.new

@@ -18,7 +18,8 @@ module Concurrent
       if !parties.is_a?(Fixnum) || parties < 1
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
-      super(parties, &block)
+      super(&nil)
+      synchronize { ns_initialize parties, &block }
     end
 
     # @return [Fixnum] the number of threads needed to pass the barrier

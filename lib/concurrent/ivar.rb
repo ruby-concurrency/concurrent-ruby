@@ -56,12 +56,12 @@ module Concurrent
     #   returning the data
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
-    def initialize(value = NO_VALUE, opts = {})
+    def initialize(value = NO_VALUE, opts = {}, &block)
       if value != NO_VALUE && block_given?
         raise ArgumentError.new('provide only a value or a block')
       end
-      value = yield if block_given?
-      super
+      super(&nil)
+      synchronize { ns_initialize(value, opts, &block) }
     end
 
     # Add an observer on this object that will receive notification on update.
@@ -150,6 +150,7 @@ module Concurrent
 
     # @!visibility private
     def ns_initialize(value, opts)
+      value = yield if block_given?
       init_obligation(self)
       self.observers = CopyOnWriteObserverSet.new
       set_deref_options(opts)
