@@ -171,7 +171,7 @@ module Concurrent
                                  else
                                    RubyThreadLocalVar
                                  end
-  private_constant :AtomicBooleanImplementation
+  private_constant :ThreadLocalVarImplementation
 
   # @!macro thread_local_var
   #

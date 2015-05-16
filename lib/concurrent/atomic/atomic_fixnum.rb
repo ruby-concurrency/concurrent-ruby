@@ -145,7 +145,7 @@ module Concurrent
   #
   # @see Concurrent::MutexAtomicFixnum
   class AtomicFixnum < AtomicFixnumImplementation
-    
+
     # @!method initialize(initial = 0)
     #   @!macro atomic_fixnum_method_initialize
 

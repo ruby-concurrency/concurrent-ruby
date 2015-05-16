@@ -118,27 +118,27 @@ module Concurrent
   #
   # @see Concurrent::MutexAtomicBoolean
   class AtomicBoolean < AtomicBooleanImplementation
-    
+
     # @!method initialize(initial = false)
     #   @!macro atomic_boolean_method_initialize
-    
+
     # @!method value
     #   @!macro atomic_boolean_method_value_get
-    
+
     # @!method value=(value)
     #   @!macro atomic_boolean_method_value_set
-    
+
     # @!method true?
     #   @!macro atomic_boolean_method_true_question
-    
+
     # @!method false?
     #   @!macro atomic_boolean_method_false_question
-    
+
     # @!method make_true
     #   @!macro atomic_boolean_method_make_true
-    
+
     # @!method make_false
     #   @!macro atomic_boolean_method_make_false
-    
+
   end
 end

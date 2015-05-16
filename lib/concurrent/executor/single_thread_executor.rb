@@ -7,11 +7,11 @@ module Concurrent
   end
 
   SingleThreadExecutorImplementation = case
-                                     when Concurrent.on_jruby?
-                                       JavaSingleThreadExecutor
-                                     else
-                                       RubySingleThreadExecutor
-                                     end
+                                       when Concurrent.on_jruby?
+                                         JavaSingleThreadExecutor
+                                       else
+                                         RubySingleThreadExecutor
+                                       end
   private_constant :SingleThreadExecutorImplementation
 
   # @!macro [attach] single_thread_executor

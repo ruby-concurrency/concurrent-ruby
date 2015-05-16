@@ -7,11 +7,11 @@ module Concurrent
   end
 
   FixedThreadPoolImplementation = case
-                                     when Concurrent.on_jruby?
-                                       JavaFixedThreadPool
-                                     else
-                                       RubyFixedThreadPool
-                                     end
+                                  when Concurrent.on_jruby?
+                                    JavaFixedThreadPool
+                                  else
+                                    RubyFixedThreadPool
+                                  end
   private_constant :FixedThreadPoolImplementation
 
   # @!macro [attach] fixed_thread_pool
