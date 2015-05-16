@@ -35,6 +35,7 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       def time
         synchronize { @time }
       end
@@ -107,7 +108,9 @@ module Concurrent
           @task_executor.post{ task.execute }
         else
           @queue.push(task)
-          @timer_executor.post(&method(:process_tasks))
+          # `process_tasks` method will run until queue is empty
+          # only post the process method when the queue is empty
+          @timer_executor.post(&method(:process_tasks)) if @queue.size == 1
         end
 
         @condition.set
