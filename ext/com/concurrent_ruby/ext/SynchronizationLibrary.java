@@ -45,8 +45,6 @@ public class SynchronizationLibrary implements Library {
     @JRubyClass(name = "JavaObject", parent = "AbstractObject")
     public static class JavaObject extends RubyObject {
 
-        private volatile int anVolatileField = 0; // TODO unused on JAVA8
-
         public JavaObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -118,24 +116,40 @@ public class SynchronizationLibrary implements Library {
             return context.nil;
         }
 
+        private volatile int anVolatileField = 0; // TODO unused on JAVA8
+        public static final long AN_VOLATILE_FIELD_OFFSET =
+                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
+
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
-            int tmp;
-            if (UnsafeHolder.SUPPORTS_FENCES)
+            if (UnsafeHolder.U == null) {
+                synchronized (this) {
+                    return instance_variable_get(context, name);
+                }
+            } else if (UnsafeHolder.SUPPORTS_FENCES) {
                 UnsafeHolder.loadFence();
-            else
-                tmp = anVolatileField;
-            return instance_variable_get(context, name);
+                return instance_variable_get(context, name);
+            } else {
+                UnsafeHolder.U.getIntVolatile(this, AN_VOLATILE_FIELD_OFFSET);
+                return instance_variable_get(context, name);
+            }
         }
 
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
-            IRubyObject result = instance_variable_set(name, value);
-            if (UnsafeHolder.SUPPORTS_FENCES)
+            if (UnsafeHolder.U == null) {
+                synchronized (this) {
+                    return instance_variable_set(name, value);
+                }
+            } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                IRubyObject result = instance_variable_set(name, value);
                 UnsafeHolder.storeFence();
-            else
-                anVolatileField = 1;
-            return result;
+                return result;
+            } else {
+                UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
+                IRubyObject result = instance_variable_set(name, value);
+                return result;
+            }
         }
     }
 }
