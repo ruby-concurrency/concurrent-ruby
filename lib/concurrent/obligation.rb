@@ -136,23 +136,23 @@ module Concurrent
     protected
 
     # @!visibility private
-    def get_arguments_from(opts = {}) # :nodoc:
+    def get_arguments_from(opts = {})
       [*opts.fetch(:args, [])]
     end
 
     # @!visibility private
-    def init_obligation(*args) # :nodoc:
+    def init_obligation(*args)
       init_mutex(*args)
       @event = Event.new
     end
 
     # @!visibility private
-    def event # :nodoc:
+    def event
       @event
     end
 
     # @!visibility private
-    def set_state(success, value, reason) # :nodoc:
+    def set_state(success, value, reason)
       if success
         @value = value
         @state = :fulfilled
@@ -163,7 +163,7 @@ module Concurrent
     end
 
     # @!visibility private
-    def state=(value) # :nodoc:
+    def state=(value)
       mutex.synchronize { @state = value }
     end
 
@@ -176,7 +176,7 @@ module Concurrent
     # @return [Boolean] true is state is changed, false otherwise
     #
     # @!visibility private
-    def compare_and_set_state(next_state, expected_current) # :nodoc:
+    def compare_and_set_state(next_state, expected_current)
       mutex.synchronize do
         if @state == expected_current
           @state = next_state
@@ -192,7 +192,7 @@ module Concurrent
     # @return block value if executed, false otherwise
     #
     # @!visibility private
-    def if_state(*expected_states) # :nodoc:
+    def if_state(*expected_states)
       mutex.synchronize do
         raise ArgumentError.new('no block given') unless block_given?
 

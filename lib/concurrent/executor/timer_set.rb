@@ -1,4 +1,5 @@
-require 'thread'
+require 'concurrent/errors'
+require 'concurrent/ivar'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
 require 'concurrent/executor/executor'
@@ -14,6 +15,57 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
+
+    # @!visibility private
+    class Job < Concurrent::IVar
+
+      # @!visibility private
+      def initialize(args, task)
+        super()
+        @args = args
+        @task = task
+        ensure_ivar_visibility!
+      end
+
+      # @!visibility private
+      def cancelled?
+        state == :cancelled
+      end
+
+      # @!visibility private
+      def cancel
+        if compare_and_set_state(:cancelled, :pending)
+          complete(false, nil, CancelledOperationError.new)
+          true
+        else
+          false
+        end
+      end
+
+      # @!visibility private
+      def execute
+        if compare_and_set_state(:processing, :pending)
+          success, val, reason = SafeTaskExecutor.new(@task, rescue_exception: true).execute(*@args)
+          complete(success, val, reason)
+        end
+      end
+    end
+    private_constant :Job
+
+    # A struct for encapsulating a task and its intended execution time.
+    # It facilitates proper prioritization by overriding the comparison
+    # (spaceship) operator as a comparison of the intended execution
+    # times.
+    #
+    # @!visibility private
+    Task = Struct.new(:time, :job) do
+      include Comparable
+
+      def <=>(other)
+        self.time <=> other.time
+      end
+    end
+    private_constant :Task
 
     # Create a new set of timed tasks.
     #
@@ -48,16 +100,19 @@ module Concurrent
 
       synchronize do
         return false unless running?
+        
+        job = Job.new(args, task)
 
         if (delay) <= 0.01
-          @task_executor.post(*args, &task)
+          @task_executor.post{ job.execute }
         else
-          @queue.push(Task.new(Concurrent.monotonic_time + delay, args, task))
+          @queue.push(Task.new(Concurrent.monotonic_time + delay, job))
           @timer_executor.post(&method(:process_tasks))
         end
+
         @condition.set
+        job
       end
-      true
     end
 
     # Begin an immediate shutdown. In-progress tasks will be allowed to
@@ -93,22 +148,6 @@ module Concurrent
     end
 
     protected
-
-    # A struct for encapsulating a task and its intended execution time.
-    # It facilitates proper prioritization by overriding the comparison
-    # (spaceship) operator as a comparison of the intended execution
-    # times.
-    #
-    # @!visibility private
-    Task = Struct.new(:time, :args, :op) do
-      include Comparable
-
-      def <=>(other)
-        self.time <=> other.time
-      end
-    end
-
-    private_constant :Task
 
     def ns_initialize(opts)
       @queue          = PriorityQueue.new(order: :min)
@@ -153,7 +192,7 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          @task_executor.post(*task.args, &task.op)
+          @task_executor.post{ task.job.execute }
         else
           @condition.wait([diff, 60].min)
         end
