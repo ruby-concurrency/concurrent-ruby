@@ -6,10 +6,6 @@ module Concurrent
     if Concurrent.on_jruby?
       require 'jruby'
 
-      unless org.jruby.util.unsafe.UnsafeHolder::SUPPORTS_FENCES
-        raise 'java7 is not supported at the moment, please use java8'
-      end
-
       class JavaObject < AbstractObject
 
         def self.attr_volatile(*names)
