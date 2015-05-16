@@ -29,12 +29,12 @@ module Concurrent
       end
 
       if Concurrent.on_jruby?
-        it 'uses ThreadLocalJavaStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::AbstractThreadLocalVar::ThreadLocalJavaStorage)
+        it 'extends JavaThreadLocalVar' do
+          expect(subject.class.ancestors).to include(Concurrent::JavaThreadLocalVar)
         end
       else
-        it 'uses ThreadLocalNewStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::AbstractThreadLocalVar::ThreadLocalRubyStorage)
+        it 'extends ThreadLocalNewStorage' do
+          expect(subject.class.ancestors).to include(Concurrent::RubyThreadLocalVar)
         end
       end
     end
