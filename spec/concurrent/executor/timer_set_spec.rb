@@ -131,6 +131,14 @@ module Concurrent
           expect(delta).to be_within(0.1).of((i * interval) + 0.05)
         end
       end
+
+      it 'continues to execute new tasks even after the queue is emptied' do
+        10.times do |i|
+          task = subject.post(0.1){ i }
+          expect(task.value).to eq i
+          sleep(0.1)
+        end
+      end
     end
 
     context 'resolution' do
