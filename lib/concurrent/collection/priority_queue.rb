@@ -292,14 +292,48 @@ module Concurrent
         queue
       end
     end
+  end
 
-    # @!macro priority_queue
-    class PriorityQueue < JavaPriorityQueue
-    end
-  else
+  PriorityQueueImplementation = case
+                                when Concurrent.on_jruby?
+                                  JavaPriorityQueue
+                                else
+                                  MutexPriorityQueue
+                                end
+  private_constant :PriorityQueueImplementation
 
-    # @!macro priority_queue
-    class PriorityQueue < MutexPriorityQueue
-    end
+  # @!macro priority_queue
+  class PriorityQueue < PriorityQueueImplementation
+
+    # @!method initialize(opts = {})
+    #   @!macro priority_queue_method_initialize
+
+    # @!method clear
+    #   @!macro priority_queue_method_clear
+
+    # @!method delete(item)
+    #   @!macro priority_queue_method_delete
+
+    # @!method empty?
+    #   @!macro priority_queue_method_empty
+
+    # @!method include?(item)
+    #   @!macro priority_queue_method_include
+
+    # @!method length
+    #   @!macro priority_queue_method_length
+
+    # @!method peek
+    #   @!macro priority_queue_method_peek
+
+    # @!method pop
+    #   @!macro priority_queue_method_pop
+
+    # @!method push(item)
+    #   @!macro priority_queue_method_push
+
+    # @!method self.from_list(list, opts = {})
+    #   @!macro priority_queue_method_from_list
+
   end
 end
