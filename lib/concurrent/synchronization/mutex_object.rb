@@ -4,7 +4,6 @@ module Concurrent
       def initialize(*args, &block)
         @__lock__      = ::Mutex.new
         @__condition__ = ::ConditionVariable.new
-        synchronize { ns_initialize(*args, &block) }
       end
 
       protected
