@@ -29,13 +29,13 @@ module Concurrent
   # `ScheduledTask` mixes in the  [Obligation](Obligation) module thus giving it
   # "future" behavior. This includes the expected lifecycle states. `ScheduledTask`
   # has one additional state, however. While the task (block) is being executed the
-  # state of the object will be `:in_progress`. This additional state is necessary
+  # state of the object will be `:processing`. This additional state is necessary
   # because it has implications for task cancellation. 
   # 
   # **Cancellation**
   # 
   # A `:pending` task can be cancelled using the `#cancel` method. A task in any
-  # other state, including `:in_progress`, cannot be cancelled. The `#cancel`
+  # other state, including `:processing`, cannot be cancelled. The `#cancel`
   # method returns a boolean indicating the success of the cancellation attempt.
   # A cancelled `ScheduledTask` cannot be restarted. It is immutable. 
   # 
@@ -220,8 +220,18 @@ module Concurrent
     # In the task execution in progress?
     #
     # @return [Boolean] true if the task is in the given state else false
+    def processing?
+      state == :processing
+    end
+
+    # In the task execution in progress?
+    #
+    # @return [Boolean] true if the task is in the given state else false
+    #
+    # @deprecated
     def in_progress?
-      state == :in_progress
+      warn '[DEPRECATED] use #processing? instead'
+      processing?
     end
 
     # Cancel this task and prevent it from executing. A task can only be
@@ -244,14 +254,8 @@ module Concurrent
 
     # @!visibility private
     def process_task
-      if compare_and_set_state(:in_progress, :pending)
-        success, val, reason = SafeTaskExecutor.new(@task).execute
-
-        mutex.synchronize do
-          set_state(success, val, reason)
-          event.set
-        end
-
+      safe_execute(@task) do |success, val, reason|
+        event.set
         time = Time.now
         observers.notify_and_delete_observers { [time, self.value, reason] }
       end

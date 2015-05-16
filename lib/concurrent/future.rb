@@ -45,7 +45,7 @@ module Concurrent
     #   future.state #=> :pending
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        @executor.post(@args){ work }
+        @executor.post{ safe_execute(@task, @args) }
         self
       end
     end
@@ -90,7 +90,12 @@ module Concurrent
     #
     # @return [Boolean] was the operation successfully cancelled.
     def cancel
-      compare_and_set_state(:cancelled, :pending)
+      if compare_and_set_state(:cancelled, :pending)
+        complete(false, nil, CancelledOperationError.new)
+        true
+      else
+        false
+      end
     end
 
     # Has the operation been successfully cancelled?
@@ -124,18 +129,6 @@ module Concurrent
       @task = opts[:__task_from_block__]
       @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @args = get_arguments_from(opts)
-    end
-
-    private
-
-    # @!visibility private
-    def work
-      if compare_and_set_state(:processing, :pending)
-        success, val, reason = SafeTaskExecutor.new(@task, rescue_exception: true).execute(*@args)
-        complete(success, val, reason)
-      else
-        complete(false, nil, CancelledOperationError.new)
-      end
     end
   end
 end

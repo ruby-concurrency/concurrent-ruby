@@ -16,15 +16,32 @@ module Concurrent
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
 
+    # A class for encapsulating a task and its intended execution time.
+    # It facilitates proper prioritization by overriding the comparison
+    # (spaceship) operator as a comparison of the intended execution
+    # times.
+    #
     # @!visibility private
-    class Job < Concurrent::IVar
+    class Task < Concurrent::IVar
+      include Comparable
 
       # @!visibility private
-      def initialize(args, task)
+      def initialize(time, args, task)
         super()
-        @args = args
-        @task = task
-        ensure_ivar_visibility!
+        synchronize do
+          @time = time
+          @args = args
+          @task = task
+        end
+      end
+
+      def time
+        synchronize { @time }
+      end
+
+      # @!visibility private
+      def <=>(other)
+        self.time <=> other.time
       end
 
       # @!visibility private
@@ -44,25 +61,7 @@ module Concurrent
 
       # @!visibility private
       def execute
-        if compare_and_set_state(:processing, :pending)
-          success, val, reason = SafeTaskExecutor.new(@task, rescue_exception: true).execute(*@args)
-          complete(success, val, reason)
-        end
-      end
-    end
-    private_constant :Job
-
-    # A struct for encapsulating a task and its intended execution time.
-    # It facilitates proper prioritization by overriding the comparison
-    # (spaceship) operator as a comparison of the intended execution
-    # times.
-    #
-    # @!visibility private
-    Task = Struct.new(:time, :job) do
-      include Comparable
-
-      def <=>(other)
-        self.time <=> other.time
+        safe_execute(@task, @args)
       end
     end
     private_constant :Task
@@ -100,18 +99,19 @@ module Concurrent
 
       synchronize do
         return false unless running?
-        
-        job = Job.new(args, task)
+
+        time = Concurrent.monotonic_time + delay
+        task = Task.new(time, args, task)
 
         if (delay) <= 0.01
-          @task_executor.post{ job.execute }
+          @task_executor.post{ task.execute }
         else
-          @queue.push(Task.new(Concurrent.monotonic_time + delay, job))
+          @queue.push(task)
           @timer_executor.post(&method(:process_tasks))
         end
 
         @condition.set
-        job
+        task
       end
     end
 
@@ -192,7 +192,7 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          @task_executor.post{ task.job.execute }
+          @task_executor.post{ task.execute }
         else
           @condition.wait([diff, 60].min)
         end
