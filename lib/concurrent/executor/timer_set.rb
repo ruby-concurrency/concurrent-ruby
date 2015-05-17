@@ -16,19 +16,14 @@ module Concurrent
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
 
-    # A class for encapsulating a task and its intended execution time.
-    # It facilitates proper prioritization by overriding the comparison
-    # (spaceship) operator as a comparison of the intended execution
-    # times.
-    #
-    # @!visibility private
+    # An `IVar` representing a tasked queued for execution in a `TimerSet`.
     class Task < Concurrent::IVar
       include Comparable
 
-      # @!visibility private
-      def initialize(time, args, task)
+      def initialize(parent, time, args, task)
         super()
         synchronize do
+          @parent = parent
           @time = time
           @args = args
           @task = task
@@ -40,20 +35,20 @@ module Concurrent
         synchronize { @time }
       end
 
-      # @!visibility private
       def <=>(other)
         self.time <=> other.time
       end
 
-      # @!visibility private
       def cancelled?
         state == :cancelled
       end
 
-      # @!visibility private
       def cancel
         if compare_and_set_state(:cancelled, :pending)
           complete(false, nil, CancelledOperationError.new)
+          # To avoid deadlocks this call must occur outside of #synchronize
+          # Changing the state above should prevent redundant calls
+          @parent.send(:remove_task, self)
           true
         else
           false
@@ -64,8 +59,9 @@ module Concurrent
       def execute
         safe_execute(@task, @args)
       end
+
+      protected :set, :try_set
     end
-    private_constant :Task
 
     # Create a new set of timed tasks.
     #
@@ -88,7 +84,8 @@ module Concurrent
     #
     # @yield the task to be performed
     #
-    # @return [Boolean] true if the message is post, false after shutdown
+    # @return [Concurrent::TimerSet::Task, false] IVar representing the task if the post
+    #   is successful; false after shutdown
     #
     # @raise [ArgumentError] if the intended execution time is not in the future
     # @raise [ArgumentError] if no block is given
@@ -102,7 +99,7 @@ module Concurrent
         return false unless running?
 
         time = Concurrent.monotonic_time + delay
-        task = Task.new(time, args, task)
+        task = Task.new(self, time, args, task)
 
         if (delay) <= 0.01
           @task_executor.post{ task.execute }
@@ -152,6 +149,18 @@ module Concurrent
 
     protected
 
+    # Remove the given task from the queue.
+    #
+    # @note This is intended as a callback method from Task only.
+    #   It is not intended to be used directly. Cancel a task by
+    #   using the `Task#cancel` method.
+    #
+    # @!visibility private
+    def remove_task(task)
+      synchronize{ @queue.delete(task) }
+    end
+
+    # @!visibility private
     def ns_initialize(opts)
       @queue          = PriorityQueue.new(order: :min)
       @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
@@ -204,9 +213,9 @@ module Concurrent
 
     private
 
+    # @!visibility private
     def <<(task)
-      post(0.0, &task)
-      self
+      raise NotImplementedError.new
     end
   end
 end

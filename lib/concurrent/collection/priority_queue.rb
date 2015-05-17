@@ -21,7 +21,7 @@ module Concurrent
   #   When running under JRuby the class `PriorityQueue` extends `JavaPriorityQueue`.
   #   When running under all other interpreters it extends `MutexPriorityQueue`.
   #
-  #   @note This implementation is *not* thread safe and performs no blocking.
+  #   @note This implementation is *not* thread safe.
   #
   #   @see http://en.wikipedia.org/wiki/Priority_queue
   #   @see http://ruby-doc.org/stdlib-2.0.0/libdoc/thread/rdoc/Queue.html
@@ -305,6 +305,16 @@ module Concurrent
   # @!macro priority_queue
   class PriorityQueue < PriorityQueueImplementation
 
+    alias_method :has_priority?, :include?
+
+    alias_method :size, :length
+
+    alias_method :deq, :pop
+    alias_method :shift, :pop
+
+    alias_method :<<, :push
+    alias_method :enq, :push
+
     # @!method initialize(opts = {})
     #   @!macro priority_queue_method_initialize
 
@@ -334,6 +344,5 @@ module Concurrent
 
     # @!method self.from_list(list, opts = {})
     #   @!macro priority_queue_method_from_list
-
   end
 end

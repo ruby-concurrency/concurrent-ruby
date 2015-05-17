@@ -9,7 +9,7 @@ module Concurrent
   #
   # @yield the task to execute
   #
-  # @return [Boolean] true
+  # @return [Concurrent::TimerSet::Task] IVar representing the task
   #
   # @!macro monotonic_clock_warning
   def timer(seconds, *args, &block)
