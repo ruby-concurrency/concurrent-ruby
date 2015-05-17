@@ -187,7 +187,7 @@ module Concurrent
       end
     end
 
-    # executes the block within mutex if current state is included in expected_states
+    # Executes the block within mutex if current state is included in expected_states
     #
     # @return block value if executed, false otherwise
     #
@@ -202,6 +202,18 @@ module Concurrent
           false
         end
       end
+    end
+
+    protected
+
+    # Am I in the current state?
+    #
+    # @param [Symbol] expected The state to check against
+    # @return [Boolean] true if in the expected state else false
+    #
+    # @!visibility private
+    def ns_check_state?(expected)
+      @state == expected
     end
   end
 end

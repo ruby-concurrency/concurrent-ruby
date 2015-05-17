@@ -4,7 +4,8 @@ module Concurrent
 
   describe TimerSet do
 
-    subject{ TimerSet.new(executor: :immediate) }
+    let(:executor){ Concurrent::SingleThreadExecutor.new }
+    subject{ TimerSet.new(executor: executor) }
 
     after(:each){ subject.kill }
 
@@ -48,7 +49,8 @@ module Concurrent
       end
 
       it 'immediately posts a task when the delay is zero' do
-        expect(Thread).not_to receive(:new).with(any_args)
+        timer = subject.instance_variable_get(:@timer_executor)
+        expect(timer).not_to receive(:post).with(any_args)
         subject.post(0){ true }
       end
     end
@@ -192,7 +194,7 @@ module Concurrent
         start_latch.wait(2)
         success = job.cancel
         continue_latch.count_down
-        
+
         expect(success).to be false
         expect(job.value).to eq 42
         expect(job.reason).to be_nil
@@ -203,7 +205,7 @@ module Concurrent
 
         job.wait(2)
         success = job.cancel
-        
+
         expect(success).to be false
         expect(job.value).to eq 42
         expect(job.reason).to be_nil
@@ -218,6 +220,103 @@ module Concurrent
         expect(success).to be true
         expect(job.value(0)).to be_nil
         expect(job.reason).to be_a CancelledOperationError
+      end
+
+      it 'returns false when not running' do
+        task = subject.post(10){ nil }
+        subject.shutdown
+        subject.wait_for_termination(2)
+        expect(task.cancel).to be false
+      end
+    end
+
+    context 'task rescheduling' do
+
+      let(:queue) { subject.instance_variable_get(:@queue) }
+
+      it 'raises an exception when given an invalid time' do
+        expect(queue).to receive(:push).once.with(any_args).and_call_original
+        task = subject.post(10){ nil }
+        expect{ task.reschedule(-1) }.to raise_error(ArgumentError)
+      end
+
+      it 'does not change the current schedule when given an invalid time' do
+        expect(queue).to receive(:push).once.with(any_args).and_call_original
+        task = subject.post(10){ nil }
+        expected = task.schedule_time
+        begin
+          task.reschedule(-1)
+        rescue
+        end
+        expect(task.schedule_time).to eq expected
+      end
+
+      it 'reschdules a pending and unpost task when given a valid time' do
+        original_delay = 10
+        rescheduled_delay = 20
+        expect(queue).to receive(:push).twice.with(any_args).and_call_original
+        task = subject.post(original_delay){ nil }
+        original_schedule = task.schedule_time
+        success = task.reschedule(rescheduled_delay)
+        expect(success).to be true
+        expect(task.original_delay).to be_within(0.01).of(rescheduled_delay)
+        expect(task.schedule_time).to be > original_schedule
+      end
+
+      it 'returns false once the task has been post to the executor' do
+        expect(queue).to receive(:push).once.with(any_args).and_call_original
+        start_latch = Concurrent::CountDownLatch.new
+        continue_latch = Concurrent::CountDownLatch.new
+
+        task = subject.post(0.1) do
+          start_latch.count_down
+          continue_latch.wait(2)
+        end
+        start_latch.wait(2)
+
+        expected = task.schedule_time
+        success = task.reschedule(10)
+        continue_latch.count_down
+        expect(success).to be false
+        expect(task.schedule_time).to eq expected
+      end
+
+      it 'returns false once the task is processing' do
+        expect(queue).to receive(:push).once.with(any_args).and_call_original
+        start_latch = Concurrent::CountDownLatch.new
+        continue_latch = Concurrent::CountDownLatch.new
+        task = subject.post(0.1) do
+          start_latch.count_down
+          continue_latch.wait(2)
+        end
+        start_latch.wait(2)
+
+        expected = task.schedule_time
+        success = task.reschedule(10)
+        continue_latch.count_down
+        expect(success).to be false
+        expect(task.schedule_time).to eq expected
+      end
+
+      it 'returns false once the task has is complete' do
+        expect(queue).to receive(:push).once.with(any_args).and_call_original
+        task = subject.post(0.1){ nil }
+        task.value(2)
+        expected = task.schedule_time
+        success = task.reschedule(10)
+        expect(success).to be false
+        expect(task.schedule_time).to eq expected
+      end
+
+      it 'returns false when not running' do
+        expect(queue).to receive(:push).once.with(any_args).and_call_original
+        task = subject.post(10){ nil }
+        subject.shutdown
+        subject.wait_for_termination(2)
+        expected = task.schedule_time
+        success = task.reschedule(10)
+        expect(success).to be false
+        expect(task.schedule_time).to be_within(0.01).of(expected)
       end
     end
 

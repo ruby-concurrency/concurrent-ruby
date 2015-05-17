@@ -20,23 +20,26 @@ module Concurrent
     class Task < Concurrent::IVar
       include Comparable
 
-      def initialize(parent, time, args, task)
+      def initialize(parent, delay, args, task)
         super()
         synchronize do
+          ns_set_delay_and_time!(delay)
           @parent = parent
-          @time = time
           @args = args
           @task = task
         end
       end
 
-      # @!visibility private
-      def time
+      def original_delay
+        synchronize { @delay }
+      end
+
+      def schedule_time
         synchronize { @time }
       end
 
       def <=>(other)
-        self.time <=> other.time
+        self.schedule_time <=> other.schedule_time
       end
 
       def cancelled?
@@ -49,9 +52,21 @@ module Concurrent
           # To avoid deadlocks this call must occur outside of #synchronize
           # Changing the state above should prevent redundant calls
           @parent.send(:remove_task, self)
-          true
         else
           false
+        end
+      end
+
+      #def reset
+      #  reschedule(synchronize{ @delay })
+      #end
+
+      def reschedule(delay)
+        synchronize do
+          return false unless ns_check_state?(:pending)
+          ns_set_delay_and_time!(delay)
+          return false unless @parent.send(:remove_task, self)
+          @parent.send(:ns_post_task, self)
         end
       end
 
@@ -61,6 +76,13 @@ module Concurrent
       end
 
       protected :set, :try_set
+
+      protected
+
+      def ns_set_delay_and_time!(delay)
+        @delay = TimerSet.calculate_delay!(delay)
+        @time = Concurrent.monotonic_time + @delay
+      end
     end
 
     # Create a new set of timed tasks.
@@ -93,26 +115,9 @@ module Concurrent
     # @!macro deprecated_scheduling_by_clock_time
     def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      delay = TimerSet.calculate_delay!(delay) # raises exceptions
-
-      synchronize do
-        return false unless running?
-
-        time = Concurrent.monotonic_time + delay
-        task = Task.new(self, time, args, task)
-
-        if (delay) <= 0.01
-          @task_executor.post{ task.execute }
-        else
-          @queue.push(task)
-          # `process_tasks` method will run until queue is empty
-          # only post the process method when the queue is empty
-          @timer_executor.post(&method(:process_tasks)) if @queue.size == 1
-        end
-
-        @condition.set
-        task
-      end
+      task = Task.new(self, delay, args, task) # may raise exception
+      ok = synchronize{ ns_post_task(task) }
+      ok ? task : false
     end
 
     # Begin an immediate shutdown. In-progress tasks will be allowed to
@@ -147,7 +152,32 @@ module Concurrent
       end
     end
 
+    private :<<
+
     protected
+
+    # @!visibility private
+    def ns_initialize(opts)
+      @queue          = PriorityQueue.new(order: :min)
+      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @timer_executor = SingleThreadExecutor.new
+      @condition      = Event.new
+      self.auto_terminate = opts.fetch(:auto_terminate, true)
+    end
+
+    # @!visibility private
+    def ns_post_task(task)
+      return false unless ns_running?
+      if (task.original_delay) <= 0.01
+        @task_executor.post{ task.execute }
+      else
+        @queue.push(task)
+        # only post the process method when the queue is empty
+        @timer_executor.post(&method(:process_tasks)) if @queue.size == 1
+        @condition.set
+      end
+      true
+    end
 
     # Remove the given task from the queue.
     #
@@ -160,13 +190,13 @@ module Concurrent
       synchronize{ @queue.delete(task) }
     end
 
+    # @note This is intended as a callback method from Task only.
+    #   It is not intended to be used directly. Cancel a task by
+    #   using the `Task#cancel` method.
+    #
     # @!visibility private
-    def ns_initialize(opts)
-      @queue          = PriorityQueue.new(order: :min)
-      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-      @timer_executor = SingleThreadExecutor.new
-      @condition      = Event.new
-      self.auto_terminate = opts.fetch(:auto_terminate, true)
+    def reschedule_task(task, delay)
+
     end
 
     # @!visibility private
@@ -188,7 +218,7 @@ module Concurrent
         break unless task
 
         now = Concurrent.monotonic_time
-        diff = task.time - now
+        diff = task.schedule_time - now
 
         if diff <= 0
           # We need to remove the task from the queue before passing
@@ -209,13 +239,6 @@ module Concurrent
           @condition.wait([diff, 60].min)
         end
       end
-    end
-
-    private
-
-    # @!visibility private
-    def <<(task)
-      raise NotImplementedError.new
     end
   end
 end
