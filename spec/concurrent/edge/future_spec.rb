@@ -66,7 +66,7 @@ describe 'Concurrent::Edge futures' do
     specify do
       completable_event = Concurrent.event
       one               = completable_event.chain { 1 }
-      join              = Concurrent.join(completable_event).chain { 1 }
+      join              = Concurrent.zip(completable_event).chain { 1 }
       expect(one.completed?).to be false
       completable_event.complete
       expect(one.value).to eq 1
@@ -78,7 +78,7 @@ describe 'Concurrent::Edge futures' do
     specify do
       completable_future = Concurrent.future
       one                = completable_future.then(&:succ)
-      join               = Concurrent.join(completable_future).then { |v| v }
+      join               = Concurrent.zip(completable_future).then { |v| v }
       expect(one.completed?).to be false
       completable_future.success 0
       expect(one.value).to eq 1
@@ -97,8 +97,7 @@ describe 'Concurrent::Edge futures' do
       queue.push(2)
 
       anys = [Concurrent.any(f1, f2),
-              f1 | f2,
-              f1.or(f2)]
+              f1 | f2]
 
       anys.each do |any|
         expect(any.value.to_s).to match /1|2/
@@ -126,7 +125,7 @@ describe 'Concurrent::Edge futures' do
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
       future5 = future3.with_default_executor(:fast) # connects new future with different executor, the new future is completed when future3 is
       future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
-      future7 = Concurrent.join(future0, future3)
+      future7 = future0 & future3
       future8 = future0.rescue { raise 'never happens' } # future0 succeeds so future8'll have same value as future 0
 
       futures = [future0, future1, future2, future3, future4, future5, future6, future7, future8]
@@ -179,9 +178,9 @@ describe 'Concurrent::Edge futures' do
       branch1 = head.then(&:succ)
       branch2 = head.then(&:succ).delay.then(&:succ)
       results = [
-          Concurrent.join(branch1, branch2).then { |b1, b2| b1 + b2 },
-          branch1.join(branch2).then { |b1, b2| b1 + b2 },
-          (branch1 + branch2).then { |b1, b2| b1 + b2 }]
+          Concurrent.zip(branch1, branch2).then { |b1, b2| b1 + b2 },
+          branch1.zip(branch2).then { |b1, b2| b1 + b2 },
+          (branch1 & branch2).then { |b1, b2| b1 + b2 }]
 
       sleep 0.1
       expect(branch1).to be_completed
