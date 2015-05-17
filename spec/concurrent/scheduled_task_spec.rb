@@ -1,4 +1,5 @@
 require 'timecop'
+require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'
 
@@ -7,8 +8,6 @@ module Concurrent
   describe ScheduledTask do
 
     context 'behavior' do
-
-      # obligation
 
       let!(:fulfilled_value) { 10 }
       let!(:rejected_reason) { StandardError.new('mojo jojo') }
@@ -33,21 +32,30 @@ module Concurrent
         task
       end
 
-      it_should_behave_like :obligation
+      def dereferenceable_subject(value, opts = {})
+        task = ScheduledTask.execute(0, opts){ value }.execute
+        task.value
+        task
+      end
 
-      # dereferenceable
+      def dereferenceable_observable(opts = {})
+        ScheduledTask.new(0, opts){ 'value' }
+      end
 
-      specify{ expect(ScheduledTask.ancestors).to include(Dereferenceable) }
-
-      # observable
-
-      subject{ ScheduledTask.new(0.1){ nil } }
+      def execute_dereferenceable(subject)
+        subject.execute
+        subject.value
+      end
 
       def trigger_observable(observable)
         observable.execute
         sleep(0.2)
       end
 
+      subject{ ScheduledTask.new(0.1){ nil } }
+
+      it_should_behave_like :obligation
+      it_should_behave_like :dereferenceable
       it_should_behave_like :observable
     end
 
@@ -107,10 +115,6 @@ module Concurrent
         task.execute
       end
 
-      it 'allows setting the execution interval to 0' do
-        expect { 1000.times { ScheduledTask.execute(0) { } } }.not_to raise_error
-      end
-
       it 'sets the sate to :pending' do
         task = ScheduledTask.new(1){ nil }
         task.execute
@@ -145,6 +149,50 @@ module Concurrent
       end
     end
 
+    context 'execution' do
+
+      it 'passes :args from the options to the block' do
+        expected = [1, 2, 3]
+        actual = nil
+        latch = Concurrent::CountDownLatch.new
+        task = ScheduledTask.execute(0, args: expected) do |*args|
+          actual = args
+          latch.count_down
+        end
+        latch.wait(2)
+        expect(actual).to eq expected
+      end
+
+      it 'uses the :executor from the options' do
+        latch = Concurrent::CountDownLatch.new
+        executor = Concurrent::ImmediateExecutor.new
+        expect(executor).to receive(:post).once.with(any_args).and_call_original
+        task = ScheduledTask.execute(0.1, executor: executor) do
+          latch.count_down
+        end
+        latch.wait(2)
+      end
+
+      it 'uses the :timer_set from the options' do
+        timer = Concurrent::TimerSet.new
+        expect(timer).to receive(:post_task).once.with(any_args).and_return(false)
+        task = ScheduledTask.execute(1, timer_set: timer){ nil }
+      end
+
+      it 'sets the state to :processing when the task is running' do
+        start_latch = Concurrent::CountDownLatch.new(1)
+        continue_latch = Concurrent::CountDownLatch.new(1)
+        task = ScheduledTask.new(0.1) {
+          start_latch.count_down
+          continue_latch.wait(2)
+        }.execute
+        start_latch.wait(2)
+        state = task.state
+        continue_latch.count_down
+        expect(state).to eq :processing
+      end
+    end
+
     context '#cancel' do
 
       it 'returns false if the task has already been performed' do
@@ -171,7 +219,6 @@ module Concurrent
         expect(latch.wait(0.3)).to be_falsey
       end
 
-
       it 'cancels the task if it has not yet started' do
         latch = Concurrent::CountDownLatch.new(1)
         task = ScheduledTask.new(0.3){ latch.count_down }.execute
@@ -192,19 +239,6 @@ module Concurrent
         task.cancel
         expect(task).to be_rejected
         expect(task.reason).to be_a CancelledOperationError
-      end
-    end
-
-    context 'execution' do
-
-      it 'sets the state to :in_progress when the task is running' do
-        latch = Concurrent::CountDownLatch.new(1)
-        task = ScheduledTask.new(0.1) {
-          latch.count_down
-          sleep(1)
-        }.execute
-        latch.wait(1)
-        expect(task).to be_in_progress
       end
     end
 
@@ -240,7 +274,7 @@ module Concurrent
         expect(task.add_observer(observer)).to be_truthy
       end
 
-      it 'returns true for an observer added while :in_progress' do
+      it 'returns true for an observer added while :processing' do
         task = ScheduledTask.new(0.1){ sleep(1); 42 }.execute
         sleep(0.2)
         expect(task.add_observer(observer)).to be_truthy

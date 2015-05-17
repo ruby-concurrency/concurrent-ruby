@@ -20,6 +20,8 @@ module Concurrent
     class Task < Concurrent::IVar
       include Comparable
 
+      attr_reader :executor
+
       def initialize(parent, delay, args, task, opts = {})
         super(IVar::NO_VALUE, opts, &nil)
         synchronize do
@@ -27,6 +29,7 @@ module Concurrent
           @parent = parent
           @args = args
           @task = task
+          @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
           self.observers = CopyOnNotifyObserverSet.new
         end
       end
@@ -134,7 +137,7 @@ module Concurrent
     # @!macro deprecated_scheduling_by_clock_time
     def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      task = Task.new(self, delay, args, task) # may raise exception
+      task = Task.new(self, delay, args, task, {executor: @task_executor}) # may raise exception
       ok = synchronize{ ns_post_task(task) }
       ok ? task : false
     end
@@ -192,7 +195,7 @@ module Concurrent
     def ns_post_task(task)
       return false unless ns_running?
       if (task.original_delay) <= 0.01
-        @task_executor.post{ task.process_task }
+        task.executor.post{ task.process_task }
       else
         @queue.push(task)
         # only post the process method when the queue is empty
@@ -248,7 +251,7 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          @task_executor.post{ task.process_task }
+          task.executor.post{ task.process_task }
         else
           @condition.wait([diff, 60].min)
         end

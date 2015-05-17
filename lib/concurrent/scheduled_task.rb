@@ -149,7 +149,9 @@ module Concurrent
     #     but will not be supported in the 1.0 release.
     def initialize(delay, opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      super(Concurrent.global_timer_set, delay, [], block, &nil)
+      timer_set = opts.fetch(:timer_set, Concurrent.global_timer_set)
+      args = get_arguments_from(opts)
+      super(timer_set, delay, args, block, opts, &nil)
       synchronize do
         ns_set_state(:unscheduled)
         @__original_delay__ = delay
@@ -182,7 +184,7 @@ module Concurrent
     #
     # @!macro deprecated_scheduling_by_clock_time
     def self.execute(delay, opts = {}, &block)
-      new(delay, &block).execute
+      new(delay, opts, &block).execute
     end
 
     # In the task execution in progress?
