@@ -320,6 +320,16 @@ module Concurrent
       end
     end
 
+    context 'task resetting' do
+
+      it 'calls #reschedule with the original delay' do
+        original_delay = 10
+        task = subject.post(original_delay){ nil }
+        expect(task).to receive(:ns_reschedule).with(original_delay)
+        task.reset
+      end
+    end
+
     context 'termination' do
 
       it 'cancels all pending tasks on #shutdown' do

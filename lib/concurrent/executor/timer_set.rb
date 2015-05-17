@@ -42,8 +42,18 @@ module Concurrent
         self.schedule_time <=> other.schedule_time
       end
 
+      # Has the task been cancelled?
+      #
+      # @return [Boolean] true if the task is in the given state else false
       def cancelled?
-        state == :cancelled
+        synchronize { ns_check_state?(:cancelled) }
+      end
+
+      # In the task execution in progress?
+      #
+      # @return [Boolean] true if the task is in the given state else false
+      def processing?
+        synchronize { ns_check_state?(:processing) }
       end
 
       def cancel
@@ -57,17 +67,12 @@ module Concurrent
         end
       end
 
-      #def reset
-      #  reschedule(synchronize{ @delay })
-      #end
+      def reset
+        synchronize{ ns_reschedule(@delay) }
+      end
 
       def reschedule(delay)
-        synchronize do
-          return false unless ns_check_state?(:pending)
-          ns_set_delay_and_time!(delay)
-          return false unless @parent.send(:remove_task, self)
-          @parent.send(:ns_post_task, self)
-        end
+        synchronize{ ns_reschedule(delay) }
       end
 
       # @!visibility private
@@ -82,6 +87,13 @@ module Concurrent
       def ns_set_delay_and_time!(delay)
         @delay = TimerSet.calculate_delay!(delay)
         @time = Concurrent.monotonic_time + @delay
+      end
+
+      def ns_reschedule(delay)
+        return false unless ns_check_state?(:pending)
+        ns_set_delay_and_time!(delay)
+        return false unless @parent.send(:remove_task, self)
+        @parent.send(:ns_post_task, self)
       end
     end
 
