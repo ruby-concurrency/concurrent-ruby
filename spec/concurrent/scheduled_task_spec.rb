@@ -5,6 +5,7 @@ require_relative 'observable_shared'
 module Concurrent
 
   describe ScheduledTask do
+
     context 'behavior' do
 
       # obligation
@@ -57,7 +58,7 @@ module Concurrent
         Timecop.freeze do
           now = Time.now
           task = ScheduledTask.new(expected){ nil }.execute
-          expect(task.delay).to be_within(0.1).of(expected)
+          expect(task.original_delay).to be_within(0.1).of(expected)
         end
       end
 
@@ -66,7 +67,7 @@ module Concurrent
         expected = 60 * 10
         schedule = Time.now + expected
         task = ScheduledTask.new(schedule){ nil }.execute
-        expect(task.delay).to be_within(0.1).of(expected)
+        expect(task.original_delay).to be_within(0.1).of(expected)
       end
 
       it 'raises an exception when seconds is less than zero' do
@@ -185,11 +186,12 @@ module Concurrent
         expect(task.cancel).to be_truthy
       end
 
-      it 'sets the state to :cancelled when cancelled' do
+      it 'sets the reason to CancelledOperationError when cancelled' do
         task = ScheduledTask.new(10){ 42 }.execute
         sleep(0.1)
         task.cancel
-        expect(task).to be_cancelled
+        expect(task).to be_rejected
+        expect(task.reason).to be_a CancelledOperationError
       end
     end
 

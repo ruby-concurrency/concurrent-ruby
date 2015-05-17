@@ -20,13 +20,14 @@ module Concurrent
     class Task < Concurrent::IVar
       include Comparable
 
-      def initialize(parent, delay, args, task)
-        super()
+      def initialize(parent, delay, args, task, opts = {})
+        super(IVar::NO_VALUE, opts, &nil)
         synchronize do
           ns_set_delay_and_time!(delay)
           @parent = parent
           @args = args
           @task = task
+          self.observers = CopyOnNotifyObserverSet.new
         end
       end
 
@@ -56,8 +57,13 @@ module Concurrent
         synchronize { ns_check_state?(:processing) }
       end
 
+      # Cancel this task and prevent it from executing. A task can only be
+      # cancelled if it is pending or unscheduled.
+      #
+      # @return [Boolean] true if task execution is successfully cancelled
+      #   else false
       def cancel
-        if compare_and_set_state(:cancelled, :pending)
+        if compare_and_set_state(:cancelled, :pending, :unscheduled)
           complete(false, nil, CancelledOperationError.new)
           # To avoid deadlocks this call must occur outside of #synchronize
           # Changing the state above should prevent redundant calls
@@ -76,11 +82,11 @@ module Concurrent
       end
 
       # @!visibility private
-      def execute
+      def process_task
         safe_execute(@task, @args)
       end
 
-      protected :set, :try_set
+      protected :set, :try_set, :fail, :complete
 
       protected
 
@@ -89,11 +95,12 @@ module Concurrent
         @time = Concurrent.monotonic_time + @delay
       end
 
-      def ns_reschedule(delay)
+      def ns_reschedule(delay, fail_if_cannot_remove = true)
         return false unless ns_check_state?(:pending)
         ns_set_delay_and_time!(delay)
-        return false unless @parent.send(:remove_task, self)
-        @parent.send(:ns_post_task, self)
+        removed = @parent.send(:remove_task, self)
+        return false if fail_if_cannot_remove && !removed
+        @parent.send(:post_task, self)
       end
     end
 
@@ -177,15 +184,19 @@ module Concurrent
       self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
 
+    def post_task(task)
+      synchronize{ ns_post_task(task) }
+    end
+
     # @!visibility private
     def ns_post_task(task)
       return false unless ns_running?
       if (task.original_delay) <= 0.01
-        @task_executor.post{ task.execute }
+        @task_executor.post{ task.process_task }
       else
         @queue.push(task)
         # only post the process method when the queue is empty
-        @timer_executor.post(&method(:process_tasks)) if @queue.size == 1
+        @timer_executor.post(&method(:process_tasks)) if @queue.length == 1
         @condition.set
       end
       true
@@ -200,15 +211,6 @@ module Concurrent
     # @!visibility private
     def remove_task(task)
       synchronize{ @queue.delete(task) }
-    end
-
-    # @note This is intended as a callback method from Task only.
-    #   It is not intended to be used directly. Cancel a task by
-    #   using the `Task#cancel` method.
-    #
-    # @!visibility private
-    def reschedule_task(task, delay)
-
     end
 
     # @!visibility private
@@ -246,7 +248,7 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          @task_executor.post{ task.execute }
+          @task_executor.post{ task.process_task }
         else
           @condition.wait([diff, 60].min)
         end

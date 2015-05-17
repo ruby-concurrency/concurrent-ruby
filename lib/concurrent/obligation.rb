@@ -164,7 +164,7 @@ module Concurrent
 
     # @!visibility private
     def state=(value)
-      mutex.synchronize { @state = value }
+      mutex.synchronize { ns_set_state(value) }
     end
 
     # Atomic compare and set operation
@@ -176,9 +176,9 @@ module Concurrent
     # @return [Boolean] true is state is changed, false otherwise
     #
     # @!visibility private
-    def compare_and_set_state(next_state, expected_current)
+    def compare_and_set_state(next_state, *expected_current)
       mutex.synchronize do
-        if @state == expected_current
+        if expected_current.include? @state
           @state = next_state
           true
         else
@@ -214,6 +214,11 @@ module Concurrent
     # @!visibility private
     def ns_check_state?(expected)
       @state == expected
+    end
+
+    # @!visibility private
+    def ns_set_state(value)
+      @state = value
     end
   end
 end

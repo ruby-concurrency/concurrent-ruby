@@ -1,7 +1,5 @@
-require 'concurrent/ivar'
-require 'concurrent/utility/timer'
-require 'concurrent/executor/executor'
-require 'concurrent/executor/safe_task_executor'
+require 'concurrent/configuration'
+require 'concurrent/executor/timer_set'
 
 module Concurrent
 
@@ -133,9 +131,7 @@ module Concurrent
   #   #>> The task completed at 2013-11-07 12:26:09 -0500 with value 'What does the fox say?'
   #
   # @!macro monotonic_clock_warning
-  class ScheduledTask < IVar
-
-    attr_reader :delay
+  class ScheduledTask < TimerSet::Task
 
     # Schedule a task for execution at a specified future time.
     #
@@ -143,12 +139,7 @@ module Concurrent
     #
     # @param [Float] delay the number of seconds to wait for before executing the task
     #
-    # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
+    # @!macro executor_and_deref_options
     #
     # @!macro [attach] deprecated_scheduling_by_clock_time
     #
@@ -158,16 +149,12 @@ module Concurrent
     #     but will not be supported in the 1.0 release.
     def initialize(delay, opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      @delay = TimerSet.calculate_delay!(delay)
-      super(IVar::NO_VALUE, opts.merge(__task_from_block__: block), &nil)
-    end
-
-    def ns_initialize(value, opts)
-      super
-      self.observers = CopyOnNotifyObserverSet.new
-      @state         = :unscheduled
-      @task          = opts[:__task_from_block__]
-      @executor      = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      super(Concurrent.global_timer_set, delay, [], block, &nil)
+      synchronize do
+        ns_set_state(:unscheduled)
+        @__original_delay__ = delay
+        @time = nil
+      end
     end
 
     # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
@@ -177,10 +164,9 @@ module Concurrent
     # @return [ScheduledTask] a reference to `self`
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        @schedule_time = Time.now + @delay
-        Concurrent::timer(@delay) { @executor.post(&method(:process_task)) }
-        self
+        synchronize{ ns_reschedule(@__original_delay__, false) }
       end
+      self
     end
 
     # Create a new `ScheduledTask` object with the given block, execute it, and return the
@@ -188,12 +174,7 @@ module Concurrent
     #
     # @param [Float] delay the number of seconds to wait for before executing the task
     #
-    # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
-    # @option opts [object] :executor when provided will run all operations on
-    #   this executor rather than the global thread pool (overrides :operation)
+    # @!macro executor_and_deref_options
     #
     # @return [ScheduledTask] the newly created `ScheduledTask` in the `:pending` state
     #
@@ -201,27 +182,7 @@ module Concurrent
     #
     # @!macro deprecated_scheduling_by_clock_time
     def self.execute(delay, opts = {}, &block)
-      return ScheduledTask.new(delay, opts, &block).execute
-    end
-
-    # @deprecated
-    def schedule_time
-      warn '[DEPRECATED] time is now based on a monotonic clock'
-      @schedule_time
-    end
-
-    # Has the task been cancelled?
-    #
-    # @return [Boolean] true if the task is in the given state else false
-    def cancelled?
-      state == :cancelled
-    end
-
-    # In the task execution in progress?
-    #
-    # @return [Boolean] true if the task is in the given state else false
-    def processing?
-      state == :processing
+      new(delay, &block).execute
     end
 
     # In the task execution in progress?
@@ -239,26 +200,17 @@ module Concurrent
     #
     # @return [Boolean] true if task execution is successfully cancelled
     #   else false
-    def cancel
-      if_state(:unscheduled, :pending) do
-        @state = :cancelled
-        event.set
-        true
-      end
+    #
+    # @deprecated
+    def stop
+      warn '[DEPRECATED] use #processing? instead'
+      cancel
     end
-    alias_method :stop, :cancel
 
-    protected :set, :fail, :complete
-
-    private
-
-    # @!visibility private
-    def process_task
-      safe_execute(@task) do |success, val, reason|
-        event.set
-        time = Time.now
-        observers.notify_and_delete_observers { [time, self.value, reason] }
-      end
+    # @deprecated
+    def delay
+      warn '[DEPRECATED] use #original_delay instead'
+      original_delay
     end
   end
 end
