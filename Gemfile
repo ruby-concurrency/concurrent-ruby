@@ -18,7 +18,10 @@ end
 
 group :testing do
   gem 'rspec', '~> 3.2.0'
+  gem 'timecop', '~> 0.7.3'
+end
+
+group :coverage do
   gem 'simplecov', '~> 0.10.0', :require => false
   gem 'coveralls', '~> 0.8.1', :require => false
-  gem 'timecop', '~> 0.7.3'
 end
