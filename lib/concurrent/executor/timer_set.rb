@@ -8,7 +8,10 @@ module Concurrent
 
   # Executes a collection of tasks, each after a given delay. A master task
   # monitors the set and schedules each task for execution at the appropriate
-  # time. Tasks are run on the global task pool or on the supplied executor.
+  # time. Tasks are run on the global thread pool or on the supplied executor.
+  # Each task is represented as a `ScheduledTask`.
+  #
+  # @see Concurrent::ScheduledTask
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
@@ -30,15 +33,16 @@ module Concurrent
     # delay is less than 1/100th of a second the task will be immediately post
     # to the executor.
     #
-    # @param [Float] delay the number of seconds to wait for before executing the task
+    # @param [Float] delay the number of seconds to wait for before executing the task.
+    # @param [Array<Object>] args the arguments passed to the task on execution.
     #
-    # @yield the task to be performed
+    # @yield the task to be performed.
     #
-    # @return [Concurrent::TimerSet::Task, false] IVar representing the task if the post
-    #   is successful; false after shutdown
+    # @return [Concurrent::ScheduledTask, false] IVar representing the task if the post
+    #   is successful; false after shutdown.
     #
-    # @raise [ArgumentError] if the intended execution time is not in the future
-    # @raise [ArgumentError] if no block is given
+    # @raise [ArgumentError] if the intended execution time is not in the future.
+    # @raise [ArgumentError] if no block is given.
     #
     # @!macro deprecated_scheduling_by_clock_time
     def post(delay, *args, &task)
@@ -65,6 +69,9 @@ module Concurrent
 
     protected
 
+    # Initialize the object.
+    #
+    # @param [Hash] opts the options to create the object with.
     # @!visibility private
     def ns_initialize(opts)
       @queue          = PriorityQueue.new(order: :min)
@@ -74,6 +81,13 @@ module Concurrent
       self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
 
+    # Post the task to the internal queue.
+    #
+    # @note This is intended as a callback method from ScheduledTask
+    #   only. It is not intended to be used directly. Post a task
+    #   by using the `SchedulesTask#execute` method.
+    #
+    # @!visibility private
     def post_task(task)
       synchronize{ ns_post_task(task) }
     end
@@ -81,7 +95,7 @@ module Concurrent
     # @!visibility private
     def ns_post_task(task)
       return false unless ns_running?
-      if (task.original_delay) <= 0.01
+      if (task.initial_delay) <= 0.01
         task.executor.post{ task.process_task }
       else
         @queue.push(task)
@@ -94,15 +108,17 @@ module Concurrent
 
     # Remove the given task from the queue.
     #
-    # @note This is intended as a callback method from Task only.
-    #   It is not intended to be used directly. Cancel a task by
-    #   using the `Task#cancel` method.
+    # @note This is intended as a callback method from `ScheduledTask`
+    #   only. It is not intended to be used directly. Cancel a task
+    #   by using the `ScheduledTask#cancel` method.
     #
     # @!visibility private
     def remove_task(task)
       synchronize{ @queue.delete(task) }
     end
 
+    # `ExecutorServic` callback called during shutdown.
+    #
     # @!visibility private
     def shutdown_execution
       @queue.clear

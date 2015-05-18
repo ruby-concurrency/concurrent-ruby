@@ -252,14 +252,14 @@ module Concurrent
       end
 
       it 'reschdules a pending and unpost task when given a valid time' do
-        original_delay = 10
+        initial_delay = 10
         rescheduled_delay = 20
         expect(queue).to receive(:push).twice.with(any_args).and_call_original
-        task = subject.post(original_delay){ nil }
+        task = subject.post(initial_delay){ nil }
         original_schedule = task.schedule_time
         success = task.reschedule(rescheduled_delay)
         expect(success).to be true
-        expect(task.original_delay).to be_within(0.01).of(rescheduled_delay)
+        expect(task.initial_delay).to be_within(0.01).of(rescheduled_delay)
         expect(task.schedule_time).to be > original_schedule
       end
 
@@ -323,9 +323,9 @@ module Concurrent
     context 'task resetting' do
 
       it 'calls #reschedule with the original delay' do
-        original_delay = 10
-        task = subject.post(original_delay){ nil }
-        expect(task).to receive(:ns_reschedule).with(original_delay)
+        initial_delay = 10
+        task = subject.post(initial_delay){ nil }
+        expect(task).to receive(:ns_reschedule).with(initial_delay)
         task.reset
       end
     end

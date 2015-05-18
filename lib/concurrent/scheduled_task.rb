@@ -12,6 +12,7 @@ module Concurrent
   # whereas a `ScheduledTask` is set to execute after a specified delay. This
   # implementation is loosely based on Java's
   # [ScheduledExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html). 
+  # It is a more feature-rich variant of {Concurrent.timer}.
   # 
   # The *intended* schedule time of task execution is set on object construction
   # with the `delay` argument. The delay is a numeric (floating point or integer)
@@ -135,18 +136,28 @@ module Concurrent
   #   #>> The task completed at 2013-11-07 12:26:09 -0500 with value 'What does the fox say?'
   #
   # @!macro monotonic_clock_warning
+  #
+  # @see Concurrent.timer
   class ScheduledTask < IVar
     include Comparable
 
+    # The executor on which to execute the task.
+    # @!visibility private
     attr_reader :executor
 
     # Schedule a task for execution at a specified future time.
     #
-    # @yield the task to be performed
-    #
     # @param [Float] delay the number of seconds to wait for before executing the task
     #
+    # @yield the task to be performed
+    #
     # @!macro executor_and_deref_options
+    #
+    # @option opts [object, Array] :args zero or more arguments to be passed the task
+    #   block on execution
+    #
+    # @raise [ArgumentError] When no block is given
+    # @raise [ArgumentError] When given a time that is in the past
     #
     # @!macro [attach] deprecated_scheduling_by_clock_time
     #
@@ -158,8 +169,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       super(IVar::NO_VALUE, opts, &nil)
       synchronize do
-        @original_delay = delay
-        ns_set_delay_and_time!(delay) # may raise exception
+        @delay = calculate_delay!(delay) # may raise exception
         ns_set_state(:unscheduled)
         @parent = opts.fetch(:timer_set, Concurrent.global_timer_set)
         @args = get_arguments_from(opts)
@@ -170,20 +180,33 @@ module Concurrent
       end
     end
 
-    def original_delay
+    # The `delay` value given at instanciation.
+    #
+    # @return [Float] the initial delay.
+    def initial_delay
       synchronize { @delay }
     end
 
-    # @deprecated
+    # The `delay` value given at instanciation.
+    #
+    # @return [Float] the initial delay.
+    #
+    # @deprecated use {#initial_delay} instead
     def delay
-      warn '[DEPRECATED] use #original_delay instead'
-      original_delay
+      warn '[DEPRECATED] use #initial_delay instead'
+      initial_delay
     end
 
+    # The monotonic time at which the the task is scheduled to be executed.
+    # 
+    # @return [Float] the schedule time or nil if `unscheduled`
     def schedule_time
       synchronize { @time }
     end
 
+    # Comparator which orders by schedule time.
+    #
+    # @!visibility private
     def <=>(other)
       self.schedule_time <=> other.schedule_time
     end
@@ -206,7 +229,7 @@ module Concurrent
     #
     # @return [Boolean] true if the task is in the given state else false
     #
-    # @deprecated
+    # @deprecated Use {#processing?} instead.
     def in_progress?
       warn '[DEPRECATED] use #processing? instead'
       processing?
@@ -215,8 +238,7 @@ module Concurrent
     # Cancel this task and prevent it from executing. A task can only be
     # cancelled if it is pending or unscheduled.
     #
-    # @return [Boolean] true if task execution is successfully cancelled
-    #   else false
+    # @return [Boolean] true if successfully cancelled else false
     def cancel
       if compare_and_set_state(:cancelled, :pending, :unscheduled)
         complete(false, nil, CancelledOperationError.new)
@@ -229,23 +251,34 @@ module Concurrent
     end
 
     # Cancel this task and prevent it from executing. A task can only be
-    # cancelled if it is pending or unscheduled.
+    # cancelled if it is `:pending` or `:unscheduled`.
     #
-    # @return [Boolean] true if task execution is successfully cancelled
-    #   else false
+    # @return [Boolean] true if successfully cancelled else false
     #
-    # @deprecated
+    # @deprecated Use {#cancel} instead.
     def stop
       warn '[DEPRECATED] use #cancel instead'
       cancel
     end
 
+    # Reschedule the task using the original delay and the current time.
+    # A task can only be reset while it is `:pending`.
+    #
+    # @return [Boolean] true if successfully rescheduled else false
     def reset
       synchronize{ ns_reschedule(@delay) }
     end
 
+    # Reschedule the task using the given delay and the current time.
+    # A task can only be reset while it is `:pending`.
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @return [Boolean] true if successfully rescheduled else false
+    #
+    # @raise [ArgumentError] When given a time that is in the past
     def reschedule(delay)
-      synchronize{ ns_reschedule(delay) }
+      synchronize{ ns_reschedule(calculate_delay!(delay)) }
     end
 
     # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
@@ -255,7 +288,7 @@ module Concurrent
     # @return [ScheduledTask] a reference to `self`
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        synchronize{ ns_reschedule(@original_delay, false) }
+        synchronize{ ns_schedule(@delay) }
       end
       self
     end
@@ -276,6 +309,8 @@ module Concurrent
       new(delay, opts, &task).execute
     end
 
+    # Execute the task.
+    #
     # @!visibility private
     def process_task
       safe_execute(@task, @args)
@@ -285,20 +320,33 @@ module Concurrent
 
     protected
 
-    def ns_set_delay_and_time!(delay)
-      @delay = calculate_delay!(delay)
+    # Schedule the task using the given delay and the current time.
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @return [Boolean] true if successfully rescheduled else false
+    #
+    # @!visibility private
+    def ns_schedule(delay)
+      @delay = delay
       @time = Concurrent.monotonic_time + @delay
-    end
-
-    def ns_reschedule(delay, fail_if_cannot_remove = true)
-      return false unless ns_check_state?(:pending)
-      ns_set_delay_and_time!(delay)
-      removed = @parent.send(:remove_task, self)
-      return false if fail_if_cannot_remove && !removed
       @parent.send(:post_task, self)
     end
 
-    # Schedule a task to be executed after a given delay (in seconds).
+    # Reschedule the task using the given delay and the current time.
+    # A task can only be reset while it is `:pending`.
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @return [Boolean] true if successfully rescheduled else false
+    #
+    # @!visibility private
+    def ns_reschedule(delay)
+      return false unless ns_check_state?(:pending)
+      @parent.send(:remove_task, self) && ns_schedule(delay)
+    end
+
+    # Calculate the actual delay in seconds based on the given delay.
     #
     # @param [Float] delay the number of seconds to wait for before executing the task
     #

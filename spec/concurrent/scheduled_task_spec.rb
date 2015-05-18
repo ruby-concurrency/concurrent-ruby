@@ -66,7 +66,7 @@ module Concurrent
         Timecop.freeze do
           now = Time.now
           task = ScheduledTask.new(expected){ nil }.execute
-          expect(task.original_delay).to be_within(0.1).of(expected)
+          expect(task.initial_delay).to be_within(0.1).of(expected)
         end
       end
 
@@ -75,7 +75,7 @@ module Concurrent
         expected = 60 * 10
         schedule = Time.now + expected
         task = ScheduledTask.new(schedule){ nil }.execute
-        expect(task.original_delay).to be_within(0.1).of(expected)
+        expect(task.initial_delay).to be_within(0.1).of(expected)
       end
 
       it 'raises an exception when seconds is less than zero' do
@@ -165,7 +165,7 @@ module Concurrent
 
       it 'uses the :executor from the options' do
         latch = Concurrent::CountDownLatch.new
-        executor = Concurrent::ImmediateExecutor.new
+        executor = Concurrent::SingleThreadExecutor.new
         expect(executor).to receive(:post).once.with(any_args).and_call_original
         task = ScheduledTask.execute(0.1, executor: executor) do
           latch.count_down
