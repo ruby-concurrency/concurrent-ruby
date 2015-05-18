@@ -1,5 +1,9 @@
+require 'concurrent/errors'
+require 'concurrent/ivar'
 require 'concurrent/configuration'
+require 'concurrent/executor/executor'
 require 'concurrent/executor/timer_set'
+require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
@@ -131,7 +135,10 @@ module Concurrent
   #   #>> The task completed at 2013-11-07 12:26:09 -0500 with value 'What does the fox say?'
   #
   # @!macro monotonic_clock_warning
-  class ScheduledTask < TimerSet::Task
+  class ScheduledTask < IVar
+    include Comparable
+
+    attr_reader :executor
 
     # Schedule a task for execution at a specified future time.
     #
@@ -147,44 +154,52 @@ module Concurrent
     #     more accurate, but only when scheduling based on a delay interval.
     #     Scheduling a task based on a clock time is deprecated. It will still work
     #     but will not be supported in the 1.0 release.
-    def initialize(delay, opts = {}, &block)
+    def initialize(delay, opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      timer_set = opts.fetch(:timer_set, Concurrent.global_timer_set)
-      args = get_arguments_from(opts)
-      super(timer_set, delay, args, block, opts, &nil)
+      super(IVar::NO_VALUE, opts, &nil)
       synchronize do
+        @original_delay = delay
+        ns_set_delay_and_time!(delay) # may raise exception
         ns_set_state(:unscheduled)
-        @__original_delay__ = delay
+        @parent = opts.fetch(:timer_set, Concurrent.global_timer_set)
+        @args = get_arguments_from(opts)
+        @task = task
         @time = nil
+        @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+        self.observers = CopyOnNotifyObserverSet.new
       end
     end
 
-    # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
-    # and starts counting down toward execution. Does nothing if the `ScheduledTask` is
-    # in any state other than `:unscheduled`.
-    #
-    # @return [ScheduledTask] a reference to `self`
-    def execute
-      if compare_and_set_state(:pending, :unscheduled)
-        synchronize{ ns_reschedule(@__original_delay__, false) }
-      end
-      self
+    def original_delay
+      synchronize { @delay }
     end
 
-    # Create a new `ScheduledTask` object with the given block, execute it, and return the
-    # `:pending` object.
+    # @deprecated
+    def delay
+      warn '[DEPRECATED] use #original_delay instead'
+      original_delay
+    end
+
+    def schedule_time
+      synchronize { @time }
+    end
+
+    def <=>(other)
+      self.schedule_time <=> other.schedule_time
+    end
+
+    # Has the task been cancelled?
     #
-    # @param [Float] delay the number of seconds to wait for before executing the task
+    # @return [Boolean] true if the task is in the given state else false
+    def cancelled?
+      synchronize { ns_check_state?(:cancelled) }
+    end
+
+    # In the task execution in progress?
     #
-    # @!macro executor_and_deref_options
-    #
-    # @return [ScheduledTask] the newly created `ScheduledTask` in the `:pending` state
-    #
-    # @raise [ArgumentError] if no block is given
-    #
-    # @!macro deprecated_scheduling_by_clock_time
-    def self.execute(delay, opts = {}, &block)
-      new(delay, opts, &block).execute
+    # @return [Boolean] true if the task is in the given state else false
+    def processing?
+      synchronize { ns_check_state?(:processing) }
     end
 
     # In the task execution in progress?
@@ -202,17 +217,109 @@ module Concurrent
     #
     # @return [Boolean] true if task execution is successfully cancelled
     #   else false
+    def cancel
+      if compare_and_set_state(:cancelled, :pending, :unscheduled)
+        complete(false, nil, CancelledOperationError.new)
+        # To avoid deadlocks this call must occur outside of #synchronize
+        # Changing the state above should prevent redundant calls
+        @parent.send(:remove_task, self)
+      else
+        false
+      end
+    end
+
+    # Cancel this task and prevent it from executing. A task can only be
+    # cancelled if it is pending or unscheduled.
+    #
+    # @return [Boolean] true if task execution is successfully cancelled
+    #   else false
     #
     # @deprecated
     def stop
-      warn '[DEPRECATED] use #processing? instead'
+      warn '[DEPRECATED] use #cancel instead'
       cancel
     end
 
-    # @deprecated
-    def delay
-      warn '[DEPRECATED] use #original_delay instead'
-      original_delay
+    def reset
+      synchronize{ ns_reschedule(@delay) }
+    end
+
+    def reschedule(delay)
+      synchronize{ ns_reschedule(delay) }
+    end
+
+    # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
+    # and starts counting down toward execution. Does nothing if the `ScheduledTask` is
+    # in any state other than `:unscheduled`.
+    #
+    # @return [ScheduledTask] a reference to `self`
+    def execute
+      if compare_and_set_state(:pending, :unscheduled)
+        synchronize{ ns_reschedule(@original_delay, false) }
+      end
+      self
+    end
+
+    # Create a new `ScheduledTask` object with the given block, execute it, and return the
+    # `:pending` object.
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @!macro executor_and_deref_options
+    #
+    # @return [ScheduledTask] the newly created `ScheduledTask` in the `:pending` state
+    #
+    # @raise [ArgumentError] if no block is given
+    #
+    # @!macro deprecated_scheduling_by_clock_time
+    def self.execute(delay, opts = {}, &task)
+      new(delay, opts, &task).execute
+    end
+
+    # @!visibility private
+    def process_task
+      safe_execute(@task, @args)
+    end
+
+    protected :set, :try_set, :fail, :complete
+
+    protected
+
+    def ns_set_delay_and_time!(delay)
+      @delay = calculate_delay!(delay)
+      @time = Concurrent.monotonic_time + @delay
+    end
+
+    def ns_reschedule(delay, fail_if_cannot_remove = true)
+      return false unless ns_check_state?(:pending)
+      ns_set_delay_and_time!(delay)
+      removed = @parent.send(:remove_task, self)
+      return false if fail_if_cannot_remove && !removed
+      @parent.send(:post_task, self)
+    end
+
+    # Schedule a task to be executed after a given delay (in seconds).
+    #
+    # @param [Float] delay the number of seconds to wait for before executing the task
+    #
+    # @return [Float] the number of seconds to delay
+    #
+    # @raise [ArgumentError] if the intended execution time is not in the future
+    # @raise [ArgumentError] if no block is given
+    #
+    # @!macro deprecated_scheduling_by_clock_time
+    #
+    # @!visibility private
+    def calculate_delay!(delay)
+      if delay.is_a?(Time)
+        warn '[DEPRECATED] Use an interval not a clock time; schedule is now based on a monotonic clock'
+        now = Time.now
+        raise ArgumentError.new('schedule time must be in the future') if delay <= now
+        delay.to_f - now.to_f
+      else
+        raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
+        delay.to_f
+      end
     end
   end
 end
