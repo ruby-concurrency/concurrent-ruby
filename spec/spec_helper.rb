@@ -1,30 +1,33 @@
-require 'simplecov'
-require 'coveralls'
+begin
+  require 'simplecov'
+  require 'coveralls'
 
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-    SimpleCov::Formatter::HTMLFormatter,
-    Coveralls::SimpleCov::Formatter
-]
+  SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+      SimpleCov::Formatter::HTMLFormatter,
+      Coveralls::SimpleCov::Formatter
+  ]
 
-SimpleCov.start do
-  project_name 'concurrent-ruby'
-  add_filter '/build-tests/'
-  add_filter '/coverage/'
-  add_filter '/doc/'
-  add_filter '/examples/'
-  add_filter '/pkg/'
-  add_filter '/spec/'
-  add_filter '/tasks/'
-  add_filter '/yard-template/'
-  add_filter '/yardoc/'
+  SimpleCov.start do
+    project_name 'concurrent-ruby'
+    add_filter '/build-tests/'
+    add_filter '/coverage/'
+    add_filter '/doc/'
+    add_filter '/examples/'
+    add_filter '/pkg/'
+    add_filter '/spec/'
+    add_filter '/tasks/'
+    add_filter '/yard-template/'
+    add_filter '/yardoc/'
+  end
+rescue LoadError
 end
 
 $VERBOSE = nil # suppress our deprecation warnings
 require 'concurrent'
 require 'concurrent-edge'
 
-logger                          = Logger.new($stderr)
-logger.level                    = Logger::WARN
+logger                   = Logger.new($stderr)
+logger.level             = Logger::WARN
 Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
   logger.add level, message, progname, &block
 end
