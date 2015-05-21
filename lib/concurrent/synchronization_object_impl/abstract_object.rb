@@ -1,20 +1,21 @@
 module Concurrent
   module SynchronizationObjectImpl
+
     # Safe synchronization under any Ruby implementation.
     # It provides methods like {#synchronize}, {#ns_wait}, {#ns_signal} and {#ns_broadcast}.
     # Provides a single layer which can improve its implementation over time without changes needed to
-    # the classes using it. Use {Synchronization::Object} not this abstract class.
+    # the classes using it. Use {Concurrent::SynchronizationObject} not this abstract class.
     #
     # @note this object does not support usage together with
     #   [`Thread#wakeup`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
     #   and [`Thread#raise`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
-    #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
+    #   `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Concurrent::SynchronizationObject#wait` and
     #   `Thread#wakeup` will not work on all platforms.
     #
     # @see {Event} implementation as an example of this class use
     #
     # @example simple
-    #   class AnClass < Synchronization::Object
+    #   class AnClass < SynchronizationObject
     #     def initialize
     #       super
     #       synchronize { @value = 'asd' }
