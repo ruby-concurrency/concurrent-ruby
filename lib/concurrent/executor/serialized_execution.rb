@@ -1,13 +1,13 @@
 require 'delegate'
 require 'concurrent/executor/executor_service'
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 require 'concurrent/synchronization_object'
 
 module Concurrent
 
   # Ensures passed jobs in a serialized order never running at the same time.
   class SerializedExecution < SynchronizationObject
-    include Logging
+    include Concern::Logging
 
     Job = Struct.new(:executor, :args, :block) do
       def call

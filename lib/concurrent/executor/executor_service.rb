@@ -1,5 +1,5 @@
 require 'concurrent/errors'
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 require 'concurrent/at_exit'
 require 'concurrent/atomic/event'
 require 'concurrent/synchronization_object'
@@ -7,7 +7,7 @@ require 'concurrent/synchronization_object'
 module Concurrent
 
   module ExecutorService
-    include Logging
+    include Concern::Logging
 
     # @!macro [attach] executor_service_method_post
     #

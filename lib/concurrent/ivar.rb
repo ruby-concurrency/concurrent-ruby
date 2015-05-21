@@ -1,8 +1,8 @@
 require 'thread'
 
 require 'concurrent/errors'
-require 'concurrent/obligation'
-require 'concurrent/observable'
+require 'concurrent/concern/obligation'
+require 'concurrent/concern/observable'
 require 'concurrent/synchronization_object'
 
 module Concurrent
@@ -40,8 +40,8 @@ module Concurrent
   #   ivar.get #=> 14
   #   ivar.set 2 # would now be an error
   class IVar < SynchronizationObject
-    include Obligation
-    include Observable
+    include Concern::Obligation
+    include Concern::Observable
 
     # @!visibility private
     NO_VALUE = Object.new # :nodoc:

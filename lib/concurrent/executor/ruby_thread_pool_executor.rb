@@ -1,6 +1,7 @@
 require 'thread'
 
 require 'concurrent/atomic/event'
+require 'concurrent/concern/logging'
 require 'concurrent/executor/executor_service'
 require 'concurrent/utility/monotonic_time'
 
@@ -298,7 +299,7 @@ module Concurrent
     end
 
     class Worker
-      include Logging
+      include Concern::Logging
 
       def initialize(pool)
         # instance variables accessed only under pool's lock so no need to sync here again

@@ -1,4 +1,4 @@
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 require 'concurrent/synchronization_object'
 
 module Concurrent
@@ -6,7 +6,7 @@ module Concurrent
   # Provides ability to add and remove handlers to be run at `Kernel#at_exit`, order is undefined.
   # Each handler is executed at most once.
   class AtExitImplementation < SynchronizationObject
-    include Logging
+    include Concern::Logging
 
     # Add a handler to be run at `Kernel#at_exit`
     # @param [Object] handler_id optionally provide an id, if allready present, handler is replaced

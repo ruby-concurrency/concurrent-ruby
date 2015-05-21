@@ -1,6 +1,6 @@
 require 'thread'
 require 'concurrent/configuration'
-require 'concurrent/obligation'
+require 'concurrent/concern/obligation'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/synchronization_object'
@@ -39,7 +39,7 @@ module Concurrent
   #
   # @see Concurrent::Dereferenceable
   class Delay < SynchronizationObject
-    include Obligation
+    include Concern::Obligation
 
     # NOTE: Because the global thread pools are lazy-loaded with these objects
     # there is a performance hit every time we post a new task to one of these

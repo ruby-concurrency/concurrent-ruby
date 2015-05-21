@@ -13,7 +13,7 @@ module Concurrent
     #   deadlock
     class Core < SynchronizationObject
       include TypeCheck
-      include Concurrent::Logging
+      include Concurrent::Concern::Logging
 
       # @!attribute [r] reference
       #   @return [Reference] reference to this actor which can be safely passed around

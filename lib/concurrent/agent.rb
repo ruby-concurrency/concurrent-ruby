@@ -1,7 +1,7 @@
 require 'thread'
-require 'concurrent/dereferenceable'
-require 'concurrent/observable'
-require 'concurrent/logging'
+require 'concurrent/concern/dereferenceable'
+require 'concurrent/concern/observable'
+require 'concurrent/concern/logging'
 require 'concurrent/executor/executor'
 
 module Concurrent
@@ -11,9 +11,9 @@ module Concurrent
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   class Agent
-    include Dereferenceable
-    include Observable
-    include Logging
+    include Concern::Dereferenceable
+    include Concern::Observable
+    include Concern::Logging
 
     attr_reader :timeout, :io_executor, :fast_executor
 
