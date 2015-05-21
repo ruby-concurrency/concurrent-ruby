@@ -7,8 +7,6 @@ module Concurrent
                        'lib/concurrent/channel.rb',
                        'lib/concurrent/channel/**/*.rb',
                        'lib/concurrent/agent.rb',
-                       'lib/concurrent/exchanger.rb',
-                       'lib/concurrent/lazy_register.rb',
                        'lib/concurrent/edge/**/*.rb'] & git_files
   core_lib_files = all_lib_files - edge_lib_files
 
