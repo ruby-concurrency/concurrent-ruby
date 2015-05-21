@@ -11,7 +11,7 @@ module Concurrent
     # @note devel: core should not block on anything, e.g. it cannot wait on
     #   children to terminate that would eat up all threads in task pool and
     #   deadlock
-    class Core < Synchronization::Object
+    class Core < SynchronizationObject
       include TypeCheck
       include Concurrent::Logging
 

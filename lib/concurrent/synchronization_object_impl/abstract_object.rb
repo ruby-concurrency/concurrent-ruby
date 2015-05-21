@@ -1,5 +1,5 @@
 module Concurrent
-  module Synchronization
+  module SynchronizationObjectImpl
     # Safe synchronization under any Ruby implementation.
     # It provides methods like {#synchronize}, {#ns_wait}, {#ns_signal} and {#ns_broadcast}.
     # Provides a single layer which can improve its implementation over time without changes needed to

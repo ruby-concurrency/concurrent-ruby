@@ -1,11 +1,11 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
   # Clock that cannot be set and represents monotonic time since
   # some unspecified starting point.
   # @!visibility private
-  GLOBAL_MONOTONIC_CLOCK = Class.new(Synchronization::Object) {
+  GLOBAL_MONOTONIC_CLOCK = Class.new(SynchronizationObject) {
 
     if defined?(Process::CLOCK_MONOTONIC)
       # @!visibility private

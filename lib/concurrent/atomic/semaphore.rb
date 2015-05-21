@@ -1,4 +1,4 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -10,7 +10,7 @@ module Concurrent
   #   releasing a blocking acquirer.
   #   However, no actual permit objects are used; the Semaphore just keeps a
   #   count of the number available and acts accordingly.
-  class MutexSemaphore < Synchronization::Object
+  class MutexSemaphore < SynchronizationObject
 
     # @!macro [attach] semaphore_method_initialize
     #

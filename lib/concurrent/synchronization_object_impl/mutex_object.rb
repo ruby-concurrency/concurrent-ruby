@@ -1,5 +1,5 @@
 module Concurrent
-  module Synchronization
+  module SynchronizationObjectImpl
     class MutexObject < AbstractObject
       def initialize(*args, &block)
         @__lock__      = ::Mutex.new

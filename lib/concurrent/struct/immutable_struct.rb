@@ -1,5 +1,5 @@
 require 'concurrent/struct/abstract_struct'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -80,7 +80,7 @@ module Concurrent
       FACTORY.define_struct(clazz_name, args, &block)
     end
 
-    FACTORY = Class.new(Synchronization::Object) do
+    FACTORY = Class.new(SynchronizationObject) do
       def define_struct(name, members, &block)
         synchronize do
           AbstractStruct.define_struct_class(ImmutableStruct, nil, name, members, &block)

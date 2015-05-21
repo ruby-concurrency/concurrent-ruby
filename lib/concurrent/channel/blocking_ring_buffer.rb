@@ -1,7 +1,7 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
-  class BlockingRingBuffer < Synchronization::Object
+  class BlockingRingBuffer < SynchronizationObject
 
     def initialize(capacity)
       super(capacity)

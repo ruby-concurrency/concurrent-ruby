@@ -1,7 +1,7 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
-  class WaitableList < Synchronization::Object
+  class WaitableList < SynchronizationObject
 
     def size
       synchronize { @list.size }

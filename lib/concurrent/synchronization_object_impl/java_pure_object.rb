@@ -1,5 +1,5 @@
 module Concurrent
-  module Synchronization
+  module SynchronizationObjectImpl
 
     if Concurrent.on_jruby?
       require 'jruby'

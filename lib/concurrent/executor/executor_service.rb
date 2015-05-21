@@ -2,7 +2,7 @@ require 'concurrent/errors'
 require 'concurrent/logging'
 require 'concurrent/at_exit'
 require 'concurrent/atomic/event'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -90,7 +90,7 @@ module Concurrent
     end
   end
 
-  class AbstractExecutorService < Synchronization::Object
+  class AbstractExecutorService < SynchronizationObject
     include ExecutorService
 
     # The set of possible fallback policies that may be set at thread pool creation.

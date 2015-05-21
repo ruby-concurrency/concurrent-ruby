@@ -1,5 +1,5 @@
 require 'concurrent/native_extensions'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -22,7 +22,7 @@ module Concurrent
   #         4.520000   0.030000   4.550000 (  1.187000)
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
-  class MutexAtomicFixnum < Synchronization::Object
+  class MutexAtomicFixnum < SynchronizationObject
 
     # http://stackoverflow.com/questions/535721/ruby-max-integer
     MIN_VALUE = -(2**(0.size * 8 - 2))

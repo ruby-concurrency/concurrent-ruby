@@ -1,6 +1,6 @@
 require 'concurrent/struct/abstract_struct'
 require 'concurrent/errors'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -101,10 +101,10 @@ module Concurrent
       FACTORY.define_struct(clazz_name, args, &block)
     end
 
-    FACTORY = Class.new(Synchronization::Object) do
+    FACTORY = Class.new(SynchronizationObject) do
       def define_struct(name, members, &block)
         synchronize do
-          clazz = AbstractStruct.define_struct_class(SettableStruct, Synchronization::Object, name, members, &block)
+          clazz = AbstractStruct.define_struct_class(SettableStruct, SynchronizationObject, name, members, &block)
           members.each_with_index do |member, index|
             clazz.send(:define_method, member) do
               synchronize { @values[index] }

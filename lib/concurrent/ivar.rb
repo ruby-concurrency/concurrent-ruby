@@ -3,7 +3,7 @@ require 'thread'
 require 'concurrent/errors'
 require 'concurrent/obligation'
 require 'concurrent/observable'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -39,7 +39,7 @@ module Concurrent
   #   ivar.set 14
   #   ivar.get #=> 14
   #   ivar.set 2 # would now be an error
-  class IVar < Synchronization::Object
+  class IVar < SynchronizationObject
     include Obligation
     include Observable
 

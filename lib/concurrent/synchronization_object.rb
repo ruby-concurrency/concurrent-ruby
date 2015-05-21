@@ -1,5 +1,14 @@
+require 'concurrent/utility/engine'
+require 'concurrent/native_extensions' # JavaObject
+require 'concurrent/synchronization_object_impl/abstract_object'
+require 'concurrent/synchronization_object_impl/mutex_object'
+require 'concurrent/synchronization_object_impl/monitor_object'
+require 'concurrent/synchronization_object_impl/rbx_object'
+
 module Concurrent
-  module Synchronization
+
+  # {include:file:doc/synchronization.md}
+  module SynchronizationObjectImpl
     Implementation = case
                      when Concurrent.on_jruby?
                        JavaObject
@@ -13,10 +22,9 @@ module Concurrent
                        warn 'Possibly unsupported Ruby implementation'
                        MutexObject
                      end
-    private_constant :Implementation
+  end
 
-    # @see AbstractObject AbstractObject which defines interface of this class.
-    class Object < Implementation
-    end
+  # @see AbstractObject AbstractObject which defines interface of this class.
+  class SynchronizationObject < SynchronizationObjectImpl::Implementation
   end
 end

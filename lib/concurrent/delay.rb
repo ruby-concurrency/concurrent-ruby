@@ -3,7 +3,7 @@ require 'concurrent/configuration'
 require 'concurrent/obligation'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -38,7 +38,7 @@ module Concurrent
   #     execute on the given executor, allowing the call to timeout.
   #
   # @see Concurrent::Dereferenceable
-  class Delay < Synchronization::Object
+  class Delay < SynchronizationObject
     include Obligation
 
     # NOTE: Because the global thread pools are lazy-loaded with these objects
