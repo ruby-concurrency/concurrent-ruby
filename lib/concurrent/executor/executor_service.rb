@@ -1,6 +1,6 @@
 require 'concurrent/errors'
 require 'concurrent/concern/logging'
-require 'concurrent/at_exit'
+require 'concurrent/utility/at_exit'
 require 'concurrent/atomic/event'
 require 'concurrent/synchronization_object'
 

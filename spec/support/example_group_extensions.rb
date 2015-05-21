@@ -1,5 +1,6 @@
 require 'rbconfig'
 require 'concurrent/native_extensions'
+require 'concurrent/utility/engine'
 
 module Concurrent
   module TestHelpers
@@ -13,7 +14,7 @@ module Concurrent
       return (v1 - v2).abs
     end
 
-    include EngineDetector
+    include Utility::EngineDetector
 
     def use_c_extensions?
       Concurrent.allow_c_extensions? # from extension_helper.rb
@@ -24,9 +25,9 @@ module Concurrent
     end
 
     GLOBAL_EXECUTORS = [
-        [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
-        [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
-        [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
+      [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
+      [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
+      [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
     ]
 
     @@killed = false

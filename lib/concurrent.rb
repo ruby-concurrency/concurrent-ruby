@@ -1,15 +1,10 @@
 require 'concurrent/version'
 
-require 'concurrent/synchronization_object'
-require 'concurrent/at_exit'
-
 require 'concurrent/configuration'
 
 require 'concurrent/atomics'
-require 'concurrent/collections'
 require 'concurrent/errors'
 require 'concurrent/executors'
-require 'concurrent/utilities'
 require 'concurrent/struct'
 
 require 'concurrent/atomic/atomic_reference'
@@ -21,8 +16,13 @@ require 'concurrent/ivar'
 require 'concurrent/mvar'
 require 'concurrent/promise'
 require 'concurrent/scheduled_task'
+require 'concurrent/synchronization_object'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
+
+# deprecated
+require 'concurrent/utility/timeout'
+require 'concurrent/utility/timer'
 
 # @!macro [new] monotonic_clock_warning
 # 
