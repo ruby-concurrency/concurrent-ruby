@@ -1,1 +1,0 @@
-require 'concurrent/synchronization_object_impl/abstract_object'

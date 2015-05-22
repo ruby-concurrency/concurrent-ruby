@@ -1,5 +1,5 @@
-require 'concurrent/native_extensions'
 require 'concurrent/synchronization_object'
+require 'concurrent/utility/native_extension_loader'
 
 module Concurrent
 

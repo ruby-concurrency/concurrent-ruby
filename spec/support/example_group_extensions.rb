@@ -1,6 +1,6 @@
 require 'rbconfig'
-require 'concurrent/native_extensions'
 require 'concurrent/utility/engine'
+require 'concurrent/utility/native_extension_loader'
 
 module Concurrent
   module TestHelpers
@@ -15,6 +15,7 @@ module Concurrent
     end
 
     include Utility::EngineDetector
+    include Utility::NativeExtensionLoader
 
     def use_c_extensions?
       Concurrent.allow_c_extensions? # from extension_helper.rb

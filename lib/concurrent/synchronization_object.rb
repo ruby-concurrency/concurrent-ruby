@@ -1,5 +1,5 @@
 require 'concurrent/utility/engine'
-require 'concurrent/native_extensions' # JavaObject
+require 'concurrent/utility/native_extension_loader'
 require 'concurrent/synchronization_object_impl/abstract_object'
 require 'concurrent/synchronization_object_impl/mutex_object'
 require 'concurrent/synchronization_object_impl/monitor_object'
