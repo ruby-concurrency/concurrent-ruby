@@ -1,4 +1,14 @@
-begin
+$VERBOSE = nil # suppress our deprecation warnings
+require 'concurrent'
+require 'concurrent-edge'
+
+logger                   = Logger.new($stderr)
+logger.level             = Logger::WARN
+Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
+  logger.add level, message, progname, &block
+end
+
+if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
   require 'simplecov'
   require 'coveralls'
 
@@ -19,17 +29,6 @@ begin
     add_filter '/yard-template/'
     add_filter '/yardoc/'
   end
-rescue LoadError
-end
-
-$VERBOSE = nil # suppress our deprecation warnings
-require 'concurrent'
-require 'concurrent-edge'
-
-logger                   = Logger.new($stderr)
-logger.level             = Logger::WARN
-Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
-  logger.add level, message, progname, &block
 end
 
 # import all the support files
