@@ -1,4 +1,4 @@
-require 'concurrent/struct/abstract_struct'
+require 'concurrent/collection/abstract_struct'
 require 'concurrent/errors'
 require 'concurrent/synchronization_object'
 
@@ -12,7 +12,7 @@ module Concurrent
   # @see http://ruby-doc.org/core-2.2.0/Struct.html Ruby standard library `Struct`
   # @see http://en.wikipedia.org/wiki/Final_(Java) Java `final` keyword
   module SettableStruct
-    include AbstractStruct
+    include Collection::AbstractStruct
 
     # @!macro struct_values
     def values
@@ -104,7 +104,7 @@ module Concurrent
     FACTORY = Class.new(SynchronizationObject) do
       def define_struct(name, members, &block)
         synchronize do
-          clazz = AbstractStruct.define_struct_class(SettableStruct, SynchronizationObject, name, members, &block)
+          clazz = Collection::AbstractStruct.define_struct_class(SettableStruct, SynchronizationObject, name, members, &block)
           members.each_with_index do |member, index|
             clazz.send(:define_method, member) do
               synchronize { @values[index] }

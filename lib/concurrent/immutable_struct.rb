@@ -1,4 +1,4 @@
-require 'concurrent/struct/abstract_struct'
+require 'concurrent/collection/abstract_struct'
 require 'concurrent/synchronization_object'
 
 module Concurrent
@@ -7,7 +7,7 @@ module Concurrent
   #
   # @see http://ruby-doc.org/core-2.2.0/Struct.html Ruby standard library `Struct`
   module ImmutableStruct
-    include AbstractStruct
+    include Collection::AbstractStruct
 
     # @!visibility private
     def initialize(*values)
@@ -83,7 +83,7 @@ module Concurrent
     FACTORY = Class.new(SynchronizationObject) do
       def define_struct(name, members, &block)
         synchronize do
-          AbstractStruct.define_struct_class(ImmutableStruct, nil, name, members, &block)
+          Collection::AbstractStruct.define_struct_class(ImmutableStruct, nil, name, members, &block)
         end
       end
     end.new
