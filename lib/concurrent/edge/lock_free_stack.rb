@@ -52,8 +52,11 @@ module Concurrent
       end
 
       def clear
-        @Head.update { |_| EMPTY }
-        self
+        while true
+          head = @Head.get
+          return false if head == EMPTY
+          return true if @Head.compare_and_set head, EMPTY
+        end
       end
 
       include Enumerable

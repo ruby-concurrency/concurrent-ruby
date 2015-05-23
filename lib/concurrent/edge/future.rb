@@ -83,6 +83,7 @@ module Concurrent
         @DefaultExecutor = default_executor
         @Touched         = AtomicBoolean.new(false)
         @Callbacks       = LockFreeStack.new
+        @Waiters         = LockFreeStack.new
         @State           = AtomicReference.new :pending
         super()
         ensure_ivar_visibility!
@@ -174,7 +175,8 @@ module Concurrent
       # @api private
       def complete(raise = true)
         if complete_state
-          synchronize { ns_broadcast }
+          # go to synchronized block only if there were waiting threads
+          synchronize { ns_broadcast } if @Waiters.clear
           call_callbacks
         else
           Concurrent::MultipleAssignmentError.new('multiple assignment') if raise
@@ -222,8 +224,19 @@ module Concurrent
       private
 
       def wait_until_complete(timeout)
-        unless completed?
-          synchronize { ns_wait_until(timeout) { completed? } }
+        lock = Synchronization::Lock.new
+
+        while true
+          last_waiter = @Waiters.peek # waiters' state before completion
+          break if completed?
+
+          # synchronize so it cannot be signaled before it waits
+          synchronize do
+            # ok only if completing thread did not start signaling
+            next unless @Waiters.compare_and_push last_waiter, lock
+            ns_wait_until(timeout) { completed? }
+            break
+          end
         end
         self
       end
@@ -244,12 +257,11 @@ module Concurrent
         callback.call
       end
 
-      def pr_notify_blocked(promise)
+      def pr_callback_notify_blocked(promise)
         promise.on_done self
       end
 
       def call_callback(method, *args)
-        # all methods has to be pure
         self.send method, *args
       end
 
@@ -273,7 +285,7 @@ module Concurrent
         end
       end
 
-      Failed  = ImmutableStruct.new :reason do
+      Failed = ImmutableStruct.new :reason do
         def value
           nil
         end
@@ -396,8 +408,14 @@ module Concurrent
       end
 
       # @api private
+      def apply_value(value, block)
+        block.call value
+      end
+
+      # @api private
       def complete(success, value, reason, raise = true)
         if complete_state success, value, reason
+          @Waiters.clear
           synchronize { ns_broadcast }
           call_callbacks success, value, reason
         else
@@ -414,6 +432,7 @@ module Concurrent
         else
           @Callbacks.push [method, *args]
           state = self.state
+          # take back if it was completed in the meanwhile
           call_callbacks success?(state), state.value, state.reason if completed?(state)
         end
         self
@@ -439,6 +458,10 @@ module Concurrent
         end
       end
 
+      def call_callback(method, success, value, reason, *args)
+        self.send method, success, value, reason, *args
+      end
+
       def pr_async_callback_on_success(success, value, reason, executor, callback)
         pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
           pr_callback_on_success success, value, reason, callback
@@ -452,7 +475,7 @@ module Concurrent
       end
 
       def pr_callback_on_success(success, value, reason, callback)
-        callback.call value if success
+        apply_value value, callback if success
       end
 
       def pr_callback_on_failure(success, value, reason, callback)
@@ -463,7 +486,7 @@ module Concurrent
         callback.call success, value, reason
       end
 
-      def pr_notify_blocked(success, value, reason, promise)
+      def pr_callback_notify_blocked(success, value, reason, promise)
         super(promise)
       end
 
@@ -506,11 +529,11 @@ module Concurrent
       end
 
       def evaluate_to(*args, &block)
-        promise.evaluate_to(*args, &block)
+        promise.evaluate_to(*args, block)
       end
 
       def evaluate_to!(*args, &block)
-        promise.evaluate_to!(*args, &block)
+        promise.evaluate_to!(*args, block)
       end
     end
 
@@ -609,8 +632,8 @@ module Concurrent
       public :evaluate_to
 
       # @return [Future]
-      def evaluate_to!(*args, &block)
-        evaluate_to(*args, &block).wait!
+      def evaluate_to!(*args, block)
+        evaluate_to(*args, block).wait!
       end
     end
 
@@ -625,7 +648,7 @@ module Concurrent
         @Countdown = AtomicFixnum.new countdown
 
         super(future)
-        blocked_by.each { |f| f.add_callback :pr_notify_blocked, self }
+        blocked_by.each { |future| future.add_callback :pr_callback_notify_blocked, self }
       end
 
       # @api private
@@ -705,7 +728,9 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.success?
-          Concurrent.post_on(@Executor, done_future, @Task) { |done_future, task| evaluate_to done_future.value, &task }
+          Concurrent.post_on(@Executor, done_future, @Task) do |done_future, task|
+            evaluate_to { done_future.apply_value done_future.value, task }
+          end
         else
           complete false, nil, done_future.reason
         end
@@ -722,7 +747,7 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.failed?
-          Concurrent.post_on(@Executor, done_future, @Task) { |done_future, task| evaluate_to done_future.reason, &task }
+          Concurrent.post_on(@Executor, done_future.reason, @Task) { |reason, task| evaluate_to reason, &task }
         else
           complete true, done_future.value, nil
         end
@@ -757,12 +782,12 @@ module Concurrent
 
       def process_on_done(future)
         countdown = super(future)
-        value = future.value
+        value     = future.value
         if countdown.nonzero?
           case value
           when Future
             @BlockedBy.push value
-            value.add_callback :pr_notify_blocked, self
+            value.add_callback :pr_callback_notify_blocked, self
             @Countdown.value
           when Event
             raise TypeError, 'cannot flatten to Event'
@@ -797,26 +822,57 @@ module Concurrent
 
     # used internally to support #with_default_executor
     class AllPromise < BlockedPromise
+
+      class ArrayFuture < Future
+        def apply_value(value, block)
+          block.call(*value)
+        end
+      end
+
       private
 
       def initialize(blocked_by_futures, default_executor = :io)
-        klass = blocked_by_futures.any? { |f| f.is_a?(Future) } ? Future : Event
+        klass = Event
+        blocked_by_futures.each do |f|
+          if f.is_a?(Future)
+            if klass == Event
+              klass = Future
+            elsif klass == Future
+              klass = ArrayFuture
+              break
+            end
+          end
+        end
+
         # noinspection RubyArgCount
         super(klass.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
       end
 
       def on_completable(done_future)
-        results = blocked_by.select { |f| f.is_a?(Future) }.map(&:result)
-        if results.empty?
-          complete
-        else
-          if results.all? { |success, _, _| success }
-            params = results.map { |_, value, _| value }
-            complete(true, params.size == 1 ? params.first : params, nil)
-          else
-            # TODO what about other reasons?
-            complete false, nil, results.find { |success, _, _| !success }.last
+        all_success = true
+        reason      = nil
+
+        values = blocked_by.each_with_object([]) do |future, values|
+          next unless future.is_a?(Future)
+          success, value, reason = future.result
+
+          unless success
+            all_success = false
+            reason      = reason
+            break
           end
+          values << value
+        end
+
+        if all_success
+          if values.empty?
+            complete
+          else
+            complete(true, values.size == 1 ? values.first : values, nil)
+          end
+        else
+          # TODO what about other reasons?
+          complete false, nil, reason
         end
       end
     end
