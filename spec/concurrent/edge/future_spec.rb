@@ -106,15 +106,42 @@ describe 'Concurrent::Edge futures' do
     end
   end
 
+  describe '.zip' do
+    it 'continues on first result' do
+      a = Concurrent.future { 1 }
+      b = Concurrent.future { 2 }
+      c = Concurrent.future { 3 }
+
+      z1 = a & b
+      z2 = Concurrent.zip a, b, c
+
+      expect(z1.value).to eq [1, 2]
+      expect(z2.value).to eq [1, 2, 3]
+
+      q = Queue.new
+      z1.then { |*args| q << args }
+      expect(q.pop).to eq [1, 2]
+      z1.then { |a, b, c| q << [a, b, c] }
+      expect(q.pop).to eq [1, 2, nil]
+
+      expect(z1.then { |a, b| a+b }.value).to eq 3
+      expect(z1.then { |a, b| a+b }.value).to eq 3
+      expect(z1.then(&:+).value).to eq 3
+      expect(z2.then { |a, b, c| a+b+c }.value).to eq 6
+    end
+  end
+
   describe 'Future' do
     it 'has sync and async callbacks' do
       queue  = Queue.new
       future = Concurrent.future { :value } # executed on FAST_EXECUTOR pool by default
       future.on_completion(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
       future.on_completion! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
+      future.on_success(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
+      future.on_success! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
 
       expect(future.value).to eq :value
-      expect([queue.pop, queue.pop].sort).to eq [:async, :sync]
+      expect([queue.pop, queue.pop, queue.pop, queue.pop].sort).to eq [:async, :async, :sync, :sync]
     end
 
     it 'chains' do
@@ -187,6 +214,7 @@ describe 'Concurrent::Edge futures' do
       expect(branch2).not_to be_completed
 
       expect(results.map(&:value)).to eq [5, 5, 5]
+      expect(Concurrent.zip(branch1, branch2).value).to eq [2, 3]
     end
 
     it 'has flat map' do
@@ -207,7 +235,32 @@ describe 'Concurrent::Edge futures' do
                value).to eq 6
   end
 
+  specify do
+    expect(Concurrent.future { :v }.value!).to eq :v
+  end
+
 end
+
+# def synchronize
+#   if @__mutex__do_not_use_directly.owned?
+#     yield
+#   else
+#     @__mutex__do_not_use_directly.synchronize { yield }
+#     #   @__mutex__do_not_use_directly.synchronize do
+#     #     locking = (Thread.current[:locking] ||= [])
+#     #     locking.push self
+#     #     puts "locking #{locking.size}" # : #{locking}"
+#     #     begin
+#     #       yield
+#     #     ensure
+#     #       if locking.size > 2
+#     #         # binding.pry
+#     #       end
+#     #       locking.pop
+#     #     end
+#     #   end
+#   end
+# end
 
 __END__
 
