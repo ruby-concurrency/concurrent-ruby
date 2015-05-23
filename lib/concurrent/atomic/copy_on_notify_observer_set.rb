@@ -1,4 +1,4 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -6,7 +6,7 @@ module Concurrent
   # observers are added and removed from a thread safe collection; every time
   # a notification is required the internal data structure is copied to
   # prevent concurrency issues
-  class CopyOnNotifyObserverSet < Synchronization::Object
+  class CopyOnNotifyObserverSet < SynchronizationObject
 
     # Adds an observer to this set. If a block is passed, the observer will be
     # created by this method and no other params should be passed

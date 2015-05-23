@@ -287,28 +287,32 @@ shared_examples :priority_queue do
 end
 
 module Concurrent
+  module Collection
 
-  describe MutexPriorityQueue do
+    module PriorityQueueImpl
+      describe MutexPriorityQueue do
 
-    it_should_behave_like :priority_queue
-  end
-
-  if Concurrent.on_jruby?
-
-    describe JavaPriorityQueue do
-
-      it_should_behave_like :priority_queue
-    end
-  end
-
-  describe PriorityQueue do
-    if Concurrent.on_jruby?
-      it 'inherits from JavaPriorityQueue' do
-        expect(PriorityQueue.ancestors).to include(JavaPriorityQueue)
+        it_should_behave_like :priority_queue
       end
-    else
-      it 'inherits from MutexPriorityQueue' do
-        expect(PriorityQueue.ancestors).to include(MutexPriorityQueue)
+
+      if Concurrent.on_jruby?
+
+        describe JavaPriorityQueue do
+
+          it_should_behave_like :priority_queue
+        end
+      end
+    end
+
+    describe PriorityQueue do
+      if Concurrent.on_jruby?
+        it 'inherits from JavaPriorityQueue' do
+          expect(PriorityQueue.ancestors).to include(Collection::PriorityQueueImpl::JavaPriorityQueue)
+        end
+      else
+        it 'inherits from MutexPriorityQueue' do
+          expect(PriorityQueue.ancestors).to include(Collection::PriorityQueueImpl::MutexPriorityQueue)
+        end
       end
     end
   end

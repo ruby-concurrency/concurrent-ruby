@@ -23,11 +23,11 @@ public class SynchronizationLibrary implements Library {
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule synchronizationModule = runtime.
                 defineModule("Concurrent").
-                defineModuleUnder("Synchronization");
+                defineModuleUnder("SynchronizationObjectImpl");
         RubyClass parentClass = synchronizationModule.getClass("AbstractObject");
 
         if (parentClass == null)
-            throw runtime.newRuntimeError("Concurrent::Synchronization::AbstractObject is missing");
+            throw runtime.newRuntimeError("Concurrent::SynchronizationObjectImpl::AbstractObject is missing");
 
         RubyClass synchronizedObjectJavaClass =
                 synchronizationModule.defineClassUnder("JavaObject", parentClass, JRUBYREFERENCE_ALLOCATOR);

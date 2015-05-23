@@ -1,7 +1,7 @@
 require 'concurrent/configuration'
 require 'concurrent/executor/serialized_execution'
-require 'concurrent/logging'
-require 'concurrent/synchronization'
+require 'concurrent/concern/logging'
+require 'concurrent/synchronization_object'
 require 'concurrent/edge/future'
 
 module Concurrent

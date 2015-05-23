@@ -1,11 +1,11 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
   # A thread safe observer set implemented using copy-on-write approach:
   # every time an observer is added or removed the whole internal data structure is
   # duplicated and replaced with a new one.
-  class CopyOnWriteObserverSet < Synchronization::Object
+  class CopyOnWriteObserverSet < SynchronizationObject
 
     # Adds an observer to this set
     # If a block is passed, the observer will be created by this method and no

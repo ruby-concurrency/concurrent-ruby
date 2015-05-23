@@ -39,7 +39,7 @@ module Concurrent
     end
 
     def initialize
-      warn '[DEPRECATED] Will be replaced with Synchronization::Object in v1.0.'
+      warn '[DEPRECATED] Will be replaced with SynchronizationObject in v1.0.'
       @condition = ConditionVariable.new
     end
 

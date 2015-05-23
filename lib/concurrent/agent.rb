@@ -1,7 +1,7 @@
 require 'thread'
-require 'concurrent/dereferenceable'
-require 'concurrent/observable'
-require 'concurrent/logging'
+require 'concurrent/concern/dereferenceable'
+require 'concurrent/concern/observable'
+require 'concurrent/concern/logging'
 require 'concurrent/executor/executor'
 
 module Concurrent
@@ -11,9 +11,9 @@ module Concurrent
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   class Agent
-    include Dereferenceable
-    include Observable
-    include Logging
+    include Concern::Dereferenceable
+    include Concern::Observable
+    include Concern::Logging
 
     attr_reader :timeout, :io_executor, :fast_executor
 
@@ -21,18 +21,7 @@ module Concurrent
     #
     # @param [Object] initial the initial value
     #
-    # @!macro [attach] executor_and_deref_options
-    #  
-    #   @param [Hash] opts the options used to define the behavior at update and deref
-    #     and to specify the executor on which to perform actions
-    #   @option opts [Executor] :executor when set use the given `Executor` instance.
-    #     Three special values are also supported: `:task` returns the global task pool,
-    #     `:operation` returns the global operation pool, and `:immediate` returns a new
-    #     `ImmediateExecutor` object.
-    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
-    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
-    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
-    #     the internal value and returning the value returned from the proc
+    # @!macro executor_and_deref_options
     def initialize(initial, opts = {})
       @value                = initial
       @rescuers             = []

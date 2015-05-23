@@ -19,7 +19,7 @@ Provides common parent for all objects which need to be synchronized or be using
 Example of a simple counter which can be used by multiple threads:
 
 ```ruby
-class SafeCounter < Concurrent::Synchronization::Object
+class SafeCounter < Concurrent::SynchronizationObject
   def initialize
     super
     synchronize { @count = 0 }
@@ -60,10 +60,10 @@ Sometimes while already inside the synchronized block some condition is not met.
 
 To fulfill these needs there are private methods:
 
--   `ns_wait` {include:Concurrent::Synchronization::AbstractObject#ns_wait}
--   `ns_wait_until` {include:Concurrent::Synchronization::AbstractObject#ns_wait_until}
--   `ns_signal` {include:Concurrent::Synchronization::AbstractObject#ns_signal}
--   `ns_broadcast` {include:Concurrent::Synchronization::AbstractObject#ns_broadcast}
+-   `ns_wait` {include:Concurrent::SynchronizationObjectImpl::AbstractObject#ns_wait}
+-   `ns_wait_until` {include:Concurrent::SynchronizationObjectImpl::AbstractObject#ns_wait_until}
+-   `ns_signal` {include:Concurrent::SynchronizationObjectImpl::AbstractObject#ns_signal}
+-   `ns_broadcast` {include:Concurrent::SynchronizationObjectImpl::AbstractObject#ns_broadcast}
 
 All methods have to be called inside synchronized block.
 

@@ -1,6 +1,6 @@
-require_relative 'dereferenceable_shared'
-require_relative 'obligation_shared'
-require_relative 'observable_shared'
+require_relative 'concern/dereferenceable_shared'
+require_relative 'concern/obligation_shared'
+require_relative 'concern/observable_shared'
 
 shared_examples :ivar do
 

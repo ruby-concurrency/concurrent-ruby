@@ -1,7 +1,8 @@
 $:.push File.join(File.dirname(__FILE__), 'lib')
+$:.push File.join(File.dirname(__FILE__), 'support')
 
 require 'concurrent/version'
-require 'concurrent/file_map'
+require 'file_map'
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
@@ -15,7 +16,7 @@ Gem::Specification.new do |s|
   s.summary          = 'Edge features and additions to the concurrent-ruby gem.'
   s.license          = 'MIT'
   s.date             = Time.now.strftime('%Y-%m-%d')
-  s.files            = Concurrent::FILE_MAP.fetch :edge
+  s.files            = FileMap::MAP.fetch(:edge)
   s.extra_rdoc_files = Dir['README*', 'LICENSE*']
   s.require_paths    = ['lib']
   s.description      = <<-TXT

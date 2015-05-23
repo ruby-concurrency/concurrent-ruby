@@ -121,31 +121,32 @@ require 'concurrent'                # everything
 
 # groups
 
-require 'concurrent/atomics'        # atomic and thread synchronization classes
+require 'concurrent/atomics'        # Atomic and thread synchronization classes
 require 'concurrent/executors'      # Thread pools and other executors
-require 'concurrent/utilities'      # utility methods such as processor count and timers
 
 # individual abstractions
 
-require 'concurrent/agent'          # Concurrent::Agent
-require 'concurrent/async'          # Concurrent::Async
-require 'concurrent/atomic'         # Concurrent::Atomic (formerly the `atomic` gem)
-require 'concurrent/dataflow'       # Concurrent::dataflow
-require 'concurrent/delay'          # Concurrent::Delay
-require 'concurrent/exchanger'      # Concurrent::Exchanger
-require 'concurrent/future'         # Concurrent::Future
-require 'concurrent/ivar'           # Concurrent::IVar
-require 'concurrent/lazy_register'  # Concurrent::LazyRegister
-require 'concurrent/mvar'           # Concurrent::MVar
-require 'concurrent/promise'        # Concurrent::Promise
-require 'concurrent/scheduled_task' # Concurrent::ScheduledTask
-require 'concurrent/timer_task'     # Concurrent::TimerTask
-require 'concurrent/tvar'           # Concurrent::TVar
+require 'concurrent/async'            # Concurrent::Async
+require 'concurrent/dataflow'         # Concurrent::dataflow
+require 'concurrent/delay'            # Concurrent::Delay
+require 'concurrent/future'           # Concurrent::Future
+require 'concurrent/immutable_struct' # Concurrent::ImmutableStruct
+require 'concurrent/ivar'             # Concurrent::IVar
+require 'concurrent/mutable_struct'   # Concurrent::MutableStruct
+require 'concurrent/mvar'             # Concurrent::MVar
+require 'concurrent/promise'          # Concurrent::Promise
+require 'concurrent/scheduled_task'   # Concurrent::ScheduledTask
+require 'concurrent/settable_struct'  # Concurrent::SettableStruct
+require 'concurrent/timer_task'       # Concurrent::TimerTask
+require 'concurrent/tvar'             # Concurrent::TVar
 
 # experimental - available in `concurrent-ruby-edge` companion gem
 
-require 'concurrent/actor'          # Concurrent::Actor and supporting code
-require 'concurrent/channel '       # Concurrent::Channel and supporting code
+require 'concurrent/agent'              # Concurrent::Agent
+require 'concurrent/actor'              # Concurrent::Actor and supporting code
+require 'concurrent/channel '           # Concurrent::Channel and supporting code
+require 'concurrent/edge/exchanger'     # Concurrent::Edge::Exchanger
+require 'concurrent/edge/lazy_register' # Concurrent::Edge::LazyRegister
 ```
 
 ## Installation

@@ -17,7 +17,7 @@ module Concurrent
           end
           nil
         rescue => error
-          log Logging::ERROR, error
+          log ERROR, error
           case error_strategy
           when :terminate!
             terminate!

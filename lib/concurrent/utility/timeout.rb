@@ -20,6 +20,8 @@ module Concurrent
   # @see http://ruby-doc.org/stdlib-2.2.0/libdoc/timeout/rdoc/Timeout.html Ruby Timeout::timeout
   #
   # @!macro monotonic_clock_warning
+  #
+  # @deprecated timeout is deprecated and will be removed
   def timeout(seconds, &block)
     warn '[DEPRECATED] timeout is deprecated and will be removed'
 

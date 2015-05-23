@@ -81,7 +81,7 @@ module Concurrent
     extend FutureShortcuts
     include FutureShortcuts
 
-    class Event < Synchronization::Object
+    class Event < SynchronizationObject
       extend FutureShortcuts
 
       attr_volatile :state
@@ -546,7 +546,7 @@ module Concurrent
     # TODO modularize blocked_by and notify blocked
 
     # @abstract
-    class AbstractPromise < Synchronization::Object
+    class AbstractPromise < SynchronizationObject
       def initialize(future, *args, &block)
         super(*args, &block)
         @Future = future

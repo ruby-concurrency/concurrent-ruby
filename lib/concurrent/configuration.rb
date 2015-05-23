@@ -1,12 +1,13 @@
 require 'thread'
 require 'concurrent/atomics'
 require 'concurrent/errors'
-require 'concurrent/at_exit'
 require 'concurrent/executors'
+require 'concurrent/concern/logging'
+require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_count'
 
 module Concurrent
-  extend Logging
+  extend Concern::Logging
 
   # Suppresses all output when used for logging.
   NULL_LOGGER = lambda { |level, progname, message = nil, &block| }

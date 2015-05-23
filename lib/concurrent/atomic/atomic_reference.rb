@@ -1,5 +1,5 @@
-require 'concurrent/native_extensions'
 require 'concurrent/utility/engine'
+require 'concurrent/utility/native_extension_loader'
 require 'concurrent/atomic_reference/concurrent_update_error'
 require 'concurrent/atomic_reference/mutex_atomic'
 

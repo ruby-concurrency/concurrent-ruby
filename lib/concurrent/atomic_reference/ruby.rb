@@ -1,7 +1,7 @@
 if defined? Concurrent::CAtomicReference
-  require 'concurrent/native_extensions'
   require 'concurrent/atomic_reference/direct_update'
   require 'concurrent/atomic_reference/numeric_cas_wrapper'
+  require 'concurrent/utility/native_extension_loader'
 
   module Concurrent
 

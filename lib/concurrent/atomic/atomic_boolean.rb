@@ -1,5 +1,5 @@
-require 'concurrent/native_extensions'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
+require 'concurrent/utility/native_extension_loader'
 
 module Concurrent
 
@@ -22,7 +22,7 @@ module Concurrent
   #         3.340000   0.010000   3.350000 (  0.855000)
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html java.util.concurrent.atomic.AtomicBoolean
-  class MutexAtomicBoolean < Synchronization::Object
+  class MutexAtomicBoolean < SynchronizationObject
 
     # @!macro [attach] atomic_boolean_method_initialize
     #

@@ -1,9 +1,9 @@
 require 'thread'
 require 'concurrent/configuration'
-require 'concurrent/obligation'
+require 'concurrent/concern/obligation'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization_object'
 
 module Concurrent
 
@@ -38,8 +38,8 @@ module Concurrent
   #     execute on the given executor, allowing the call to timeout.
   #
   # @see Concurrent::Dereferenceable
-  class Delay < Synchronization::Object
-    include Obligation
+  class Delay < SynchronizationObject
+    include Concern::Obligation
 
     # NOTE: Because the global thread pools are lazy-loaded with these objects
     # there is a performance hit every time we post a new task to one of these
@@ -51,7 +51,18 @@ module Concurrent
 
     # Create a new `Delay` in the `:pending` state.
     #
-    # @!macro executor_and_deref_options
+    # @!macro [attach] executor_and_deref_options
+    #  
+    #   @param [Hash] opts the options used to define the behavior at update and deref
+    #     and to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
+    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
+    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
+    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
+    #     the internal value and returning the value returned from the proc
     #
     # @yield the delayed operation to perform
     #
