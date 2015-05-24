@@ -1,16 +1,17 @@
-require 'thread'
+require 'concurrent/scheduled_task'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
-require 'concurrent/executor/executor'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
-require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
   # Executes a collection of tasks, each after a given delay. A master task
   # monitors the set and schedules each task for execution at the appropriate
-  # time. Tasks are run on the global task pool or on the supplied executor.
+  # time. Tasks are run on the global thread pool or on the supplied executor.
+  # Each task is represented as a `ScheduledTask`.
+  #
+  # @see Concurrent::ScheduledTask
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
@@ -32,32 +33,28 @@ module Concurrent
     # delay is less than 1/100th of a second the task will be immediately post
     # to the executor.
     #
-    # @param [Float] delay the number of seconds to wait for before executing the task
+    # @param [Float] delay the number of seconds to wait for before executing the task.
+    # @param [Array<Object>] args the arguments passed to the task on execution.
     #
-    # @yield the task to be performed
+    # @yield the task to be performed.
     #
-    # @return [Boolean] true if the message is post, false after shutdown
+    # @return [Concurrent::ScheduledTask, false] IVar representing the task if the post
+    #   is successful; false after shutdown.
     #
-    # @raise [ArgumentError] if the intended execution time is not in the future
-    # @raise [ArgumentError] if no block is given
+    # @raise [ArgumentError] if the intended execution time is not in the future.
+    # @raise [ArgumentError] if no block is given.
     #
     # @!macro deprecated_scheduling_by_clock_time
     def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      delay = TimerSet.calculate_delay!(delay) # raises exceptions
-
-      synchronize do
-        return false unless running?
-
-        if (delay) <= 0.01
-          @task_executor.post(*args, &task)
-        else
-          @queue.push(Task.new(Concurrent.monotonic_time + delay, args, task))
-          @timer_executor.post(&method(:process_tasks))
-        end
-        @condition.set
-      end
-      true
+      return false unless running?
+      opts = {
+        executor: @task_executor,
+        args: args,
+        timer_set: self
+      }
+      task = ScheduledTask.execute(delay, opts, &task) # may raise exception
+      task.unscheduled? ? false : task
     end
 
     # Begin an immediate shutdown. In-progress tasks will be allowed to
@@ -68,48 +65,14 @@ module Concurrent
       shutdown
     end
 
-    # Schedule a task to be executed after a given delay (in seconds).
-    #
-    # @param [Float] delay the number of seconds to wait for before executing the task
-    #
-    # @return [Float] the number of seconds to delay
-    #
-    # @raise [ArgumentError] if the intended execution time is not in the future
-    # @raise [ArgumentError] if no block is given
-    #
-    # @!macro deprecated_scheduling_by_clock_time
-    #
-    # @!visibility private
-    def self.calculate_delay!(delay)
-      if delay.is_a?(Time)
-        warn '[DEPRECATED] Use an interval not a clock time; schedule is now based on a monotonic clock'
-        now = Time.now
-        raise ArgumentError.new('schedule time must be in the future') if delay <= now
-        delay.to_f - now.to_f
-      else
-        raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
-        delay.to_f
-      end
-    end
+    private :<<
 
     protected
 
-    # A struct for encapsulating a task and its intended execution time.
-    # It facilitates proper prioritization by overriding the comparison
-    # (spaceship) operator as a comparison of the intended execution
-    # times.
+    # Initialize the object.
     #
+    # @param [Hash] opts the options to create the object with.
     # @!visibility private
-    Task = Struct.new(:time, :args, :op) do
-      include Comparable
-
-      def <=>(other)
-        self.time <=> other.time
-      end
-    end
-
-    private_constant :Task
-
     def ns_initialize(opts)
       @queue          = PriorityQueue.new(order: :min)
       @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
@@ -118,6 +81,44 @@ module Concurrent
       self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
 
+    # Post the task to the internal queue.
+    #
+    # @note This is intended as a callback method from ScheduledTask
+    #   only. It is not intended to be used directly. Post a task
+    #   by using the `SchedulesTask#execute` method.
+    #
+    # @!visibility private
+    def post_task(task)
+      synchronize{ ns_post_task(task) }
+    end
+
+    # @!visibility private
+    def ns_post_task(task)
+      return false unless ns_running?
+      if (task.initial_delay) <= 0.01
+        task.executor.post{ task.process_task }
+      else
+        @queue.push(task)
+        # only post the process method when the queue is empty
+        @timer_executor.post(&method(:process_tasks)) if @queue.length == 1
+        @condition.set
+      end
+      true
+    end
+
+    # Remove the given task from the queue.
+    #
+    # @note This is intended as a callback method from `ScheduledTask`
+    #   only. It is not intended to be used directly. Cancel a task
+    #   by using the `ScheduledTask#cancel` method.
+    #
+    # @!visibility private
+    def remove_task(task)
+      synchronize{ @queue.delete(task) }
+    end
+
+    # `ExecutorServic` callback called during shutdown.
+    #
     # @!visibility private
     def shutdown_execution
       @queue.clear
@@ -137,7 +138,7 @@ module Concurrent
         break unless task
 
         now = Concurrent.monotonic_time
-        diff = task.time - now
+        diff = task.schedule_time - now
 
         if diff <= 0
           # We need to remove the task from the queue before passing
@@ -153,18 +154,11 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          @task_executor.post(*task.args, &task.op)
+          task.executor.post{ task.process_task }
         else
           @condition.wait([diff, 60].min)
         end
       end
-    end
-
-    private
-
-    def <<(task)
-      post(0.0, &task)
-      self
     end
   end
 end

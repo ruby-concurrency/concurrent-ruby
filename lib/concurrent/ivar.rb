@@ -148,6 +148,7 @@ module Concurrent
 
     protected
 
+    # @!visibility private
     def ns_initialize(value, opts)
       value = yield if block_given?
       init_obligation(self)
@@ -161,21 +162,34 @@ module Concurrent
       end
     end
 
+    # @!visibility private
+    def safe_execute(task, args = [])
+      if compare_and_set_state(:processing, :pending)
+        success, val, reason = SafeTaskExecutor.new(task, rescue_exception: true).execute(*@args)
+        complete(success, val, reason)
+        yield(success, val, reason) if block_given?
+      end
+    end
+
+    # @!visibility private
     def complete(success, value, reason)
       complete_without_notification(success, value, reason)
       notify_observers(self.value, reason)
       self
     end
 
+    # @!visibility private
     def complete_without_notification(success, value, reason)
       synchronize { ns_complete_without_notification(success, value, reason) }
       self
     end
 
+    # @!visibility private
     def notify_observers(value, reason)
       observers.notify_and_delete_observers{ [Time.now, value, reason] }
     end
 
+    # @!visibility private
     def ns_complete_without_notification(success, value, reason)
       raise MultipleAssignmentError if [:fulfilled, :rejected].include? @state
       set_state(success, value, reason)
