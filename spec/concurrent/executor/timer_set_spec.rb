@@ -235,13 +235,11 @@ module Concurrent
       let(:queue) { subject.instance_variable_get(:@queue) }
 
       it 'raises an exception when given an invalid time' do
-        expect(queue).to receive(:push).once.with(any_args).and_call_original
         task = subject.post(10){ nil }
         expect{ task.reschedule(-1) }.to raise_error(ArgumentError)
       end
 
       it 'does not change the current schedule when given an invalid time' do
-        expect(queue).to receive(:push).once.with(any_args).and_call_original
         task = subject.post(10){ nil }
         expected = task.schedule_time
         begin
@@ -254,7 +252,6 @@ module Concurrent
       it 'reschdules a pending and unpost task when given a valid time' do
         initial_delay = 10
         rescheduled_delay = 20
-        expect(queue).to receive(:push).twice.with(any_args).and_call_original
         task = subject.post(initial_delay){ nil }
         original_schedule = task.schedule_time
         success = task.reschedule(rescheduled_delay)
@@ -264,7 +261,6 @@ module Concurrent
       end
 
       it 'returns false once the task has been post to the executor' do
-        expect(queue).to receive(:push).once.with(any_args).and_call_original
         start_latch = Concurrent::CountDownLatch.new
         continue_latch = Concurrent::CountDownLatch.new
 
@@ -282,7 +278,6 @@ module Concurrent
       end
 
       it 'returns false once the task is processing' do
-        expect(queue).to receive(:push).once.with(any_args).and_call_original
         start_latch = Concurrent::CountDownLatch.new
         continue_latch = Concurrent::CountDownLatch.new
         task = subject.post(0.1) do
@@ -299,7 +294,6 @@ module Concurrent
       end
 
       it 'returns false once the task has is complete' do
-        expect(queue).to receive(:push).once.with(any_args).and_call_original
         task = subject.post(0.1){ nil }
         task.value(2)
         expected = task.schedule_time
@@ -309,7 +303,6 @@ module Concurrent
       end
 
       it 'returns false when not running' do
-        expect(queue).to receive(:push).once.with(any_args).and_call_original
         task = subject.post(10){ nil }
         subject.shutdown
         subject.wait_for_termination(2)
