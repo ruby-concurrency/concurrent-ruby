@@ -1,19 +1,13 @@
-require 'concurrent'                               # => true
-
-logger                          = Logger.new($stderr) 
-Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
-  logger.add level, message, progname, &block
-end 
-
 
 class Master < Concurrent::Actor::RestartingContext
   def initialize
     # for listener to be child of master
-    @listener = Listener.spawn(name: 'listener1', supervise: true, args: [self])
+    @listener = Listener.spawn(name: 'listener1', supervise: true)
   end
 
   def on_message(msg)
-    case msg
+    command, *args = msg
+    case command
     when :listener
       @listener
     when :reset, :terminated, :resumed, :paused
@@ -25,7 +19,8 @@ class Master < Concurrent::Actor::RestartingContext
 
   # TODO turn this into Behaviour and make it default part of RestartingContext
   def on_event(event)
-    case event
+    event_name, _ = event
+    case event_name
     when :resetting, :restarting
       @listener << :terminate!
     when Exception, :paused
@@ -37,7 +32,7 @@ class Master < Concurrent::Actor::RestartingContext
 end 
 
 class Listener < Concurrent::Actor::RestartingContext
-  def initialize(master)
+  def initialize
     @number = (rand() * 100).to_i
   end
 
@@ -53,21 +48,21 @@ class Listener < Concurrent::Actor::RestartingContext
 end 
 
 master   = Master.spawn(name: 'master', supervise: true)
-    # => #<Concurrent::Actor::Reference:0x7fbe491a71b0 /master (Master)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fca9caa8 /master (Master)>
 listener = master.ask!(:listener)
-    # => #<Concurrent::Actor::Reference:0x7fbe4919ceb8 /master/listener1 (Listener)>
-listener.ask!(:number)                             # => 92
+    # => #<Concurrent::Actor::Reference:0x7fb6fcabd9b0 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 53
 
 master << :crash
-    # => #<Concurrent::Actor::Reference:0x7fbe491a71b0 /master (Master)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fca9caa8 /master (Master)>
 
 sleep 0.1                                          # => 0
 
 # ask for listener again, old one is terminated
 listener.ask!(:terminated?)                        # => true
 listener = master.ask!(:listener)
-    # => #<Concurrent::Actor::Reference:0x7fbe49175bd8 /master/listener1 (Listener)>
-listener.ask!(:number)                             # => 99
+    # => #<Concurrent::Actor::Reference:0x7fb6fcb04ef0 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 71
 
 master.ask!(:terminate!)                           # => true
 

@@ -83,7 +83,7 @@ module Concurrent
       # override to se different default executor, e.g. to change it to global_operation_pool
       # @return [Executor]
       def default_executor
-        Concurrent.configuration.global_task_pool
+        Concurrent.global_io_executor
       end
 
       # tell self a message
@@ -111,12 +111,12 @@ module Concurrent
       #   inc2.ask!(2) # => 4
       # @see Concurrent::Actor.spawn
       def self.spawn(name_or_opts, *args, &block)
-        Actor.spawn spawn_optionify(name_or_opts, *args), &block
+        Actor.spawn to_spawn_options(name_or_opts, *args), &block
       end
 
       # behaves as {Concurrent::Actor.spawn!} but :class is auto-inserted based on receiver so it can be omitted.
       def self.spawn!(name_or_opts, *args, &block)
-        Actor.spawn! spawn_optionify(name_or_opts, *args), &block
+        Actor.spawn! to_spawn_options(name_or_opts, *args), &block
       end
 
       private
@@ -125,7 +125,7 @@ module Concurrent
         @core = Type! core, Core
       end
 
-      def self.spawn_optionify(name_or_opts, *args)
+      def self.to_spawn_options(name_or_opts, *args)
         if name_or_opts.is_a? Hash
           if name_or_opts.key?(:class) && name_or_opts[:class] != self
             raise ArgumentError,

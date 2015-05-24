@@ -111,7 +111,7 @@ module Concurrent
       # @see '' its source code
       def self.base(on_error)
         [[SetResults, on_error],
-         # has to be before Termination to be able to remove children form terminated actor
+         # has to be before Termination to be able to remove children from terminated actor
          RemovesChild,
          Termination,
          TerminatesChildren]

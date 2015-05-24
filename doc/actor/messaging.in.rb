@@ -1,4 +1,3 @@
-require 'concurrent'
 require 'algebrick'
 
 # Actor message protocol definition with Algebrick
@@ -17,7 +16,7 @@ class Calculator < Concurrent::Actor::RestartingContext
           (on Add.(~any, ~any) do |a, b|
             a + b
           end),
-          # or use multi-assignment
+          # or using multi-assignment
           (on ~Subtract do |(a, b)|
             a - b
           end)
@@ -25,6 +24,9 @@ class Calculator < Concurrent::Actor::RestartingContext
 end #
 
 calculator = Calculator.spawn('calculator')
-calculator.ask! Add[1, 2]
-calculator.ask! Subtract[1, 0.5]
-calculator << :terminate!
+addition = calculator.ask Add[1, 2]
+substraction = calculator.ask Subtract[1, 0.5]
+results = (addition & substraction)
+results.value!
+
+calculator.ask! :terminate!

@@ -161,6 +161,10 @@ Any existing behavior can be subclassed
 By subclassing {Behaviour::Pausing} and overriding {Behaviour::Pausing#restart!}. Implementing 
 {AbstractContext#on_event} could be also considered.
 
+_We'll be happy to answer any other questions, 
+just [open an Issue](https://github.com/ruby-concurrency/concurrent-ruby/issues/new) or find us on 
+https://gitter.im/ruby-concurrency/concurrent-ruby._
+
 ## Speed
 
 Simple benchmark Actor vs Celluloid, the numbers are looking good

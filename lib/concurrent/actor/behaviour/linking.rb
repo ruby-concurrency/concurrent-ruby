@@ -72,8 +72,9 @@ module Concurrent
         end
 
         def on_event(public, event)
+          event_name, _ = event
           @linked.each { |a| a << event } if public
-          @linked.clear if event == :terminated
+          @linked.clear if event_name == :terminated
           super public, event
         end
       end

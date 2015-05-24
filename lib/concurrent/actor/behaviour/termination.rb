@@ -9,11 +9,15 @@ module Concurrent
 
         # @!attribute [r] terminated
         #   @return [Edge::Event] event which will become set when actor is terminated.
-        attr_reader :terminated
+        # @!attribute [r] reason
+        attr_reader :terminated, :reason
 
-        def initialize(core, subsequent, core_options)
+        def initialize(core, subsequent, core_options, trapping = false)
           super core, subsequent, core_options
-          @terminated = Concurrent.event
+          @terminated        = Concurrent.event
+          @public_terminated = @terminated.hide_completable
+          @reason            = nil
+          @trapping          = trapping
         end
 
         # @note Actor rejects envelopes when terminated.
@@ -22,14 +26,27 @@ module Concurrent
           @terminated.completed?
         end
 
+        def trapping?
+          @trapping
+        end
+
+        def trapping=(val)
+          @trapping = !!val
+        end
+
         def on_envelope(envelope)
-          case envelope.message
+          command, reason = envelope.message
+          case command
           when :terminated?
             terminated?
           when :terminate!
-            terminate!
-          when :terminated_event # TODO rename to :termination_event
-            terminated
+            if trapping? && reason != :kill
+              pass envelope
+            else
+              terminate! reason
+            end
+          when :termination_event
+            @public_terminated
           else
             if terminated?
               reject_envelope envelope
@@ -42,10 +59,12 @@ module Concurrent
 
         # Terminates the actor. Any Envelope received after termination is rejected.
         # Terminates all its children, does not wait until they are terminated.
-        def terminate!
+        def terminate!(reason = :normal)
+          # TODO return after all children are terminated
           return true if terminated?
+          @reason = reason
           terminated.complete
-          broadcast(true, :terminated) # TODO do not end up in Dead Letter Router
+          broadcast(true, [:terminated, reason]) # TODO do not end up in Dead Letter Router
           parent << :remove_child if parent
           true
         end

@@ -17,13 +17,13 @@ end
 # `link: true` makes the actor linked to root actor and supervised
 # which is default behavior
 adder = Adder.spawn(name: :adder, link: true, args: [1])
-    # => #<Concurrent::Actor::Reference:0x7fb94bb30040 /adder (Adder)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fc88ff58 /adder (Adder)>
 adder.parent
-    # => #<Concurrent::Actor::Reference:0x7fd644229008 / (Concurrent::Actor::Root)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fe0f5db8 / (Concurrent::Actor::Root)>
 
 # tell and forget
 adder.tell(:add).tell(:add)
-    # => #<Concurrent::Actor::Reference:0x7fb94bb30040 /adder (Adder)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fc88ff58 /adder (Adder)>
 # ask to get result
 adder.ask!(:add)                                   # => 4
 # fail the actor

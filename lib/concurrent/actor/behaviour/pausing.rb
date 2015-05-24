@@ -10,14 +10,20 @@ module Concurrent
       class Pausing < Abstract
         def initialize(core, subsequent, core_options)
           super core, subsequent, core_options
-          @paused = false
-          @buffer = []
+          @paused   = false
+          @deferred = []
+        end
+
+        def paused?
+          @paused
         end
 
         def on_envelope(envelope)
           case envelope.message
           when :pause!
             pause!
+          when :paused?
+            paused?
           when :resume!
             resume!
           when :reset!
@@ -25,8 +31,8 @@ module Concurrent
           when :restart!
             restart!
           else
-            if @paused
-              @buffer << envelope
+            if paused?
+              @deferred << envelope
               MESSAGE_PROCESSED
             else
               pass envelope
@@ -41,12 +47,14 @@ module Concurrent
         end
 
         def resume!
+          return false unless paused?
           do_resume
           broadcast(true, :resumed)
           true
         end
 
         def reset!
+          return false unless paused?
           broadcast(false, :resetting)
           do_reset
           broadcast(true, :reset)
@@ -54,6 +62,7 @@ module Concurrent
         end
 
         def restart!
+          return false unless paused?
           broadcast(false, :restarting)
           do_restart
           broadcast(true, :restarted)
@@ -61,7 +70,8 @@ module Concurrent
         end
 
         def on_event(public, event)
-          reject_buffer if event == :terminated
+          event_name, _ = event
+          reject_deferred if event_name == :terminated
           super public, event
         end
 
@@ -74,20 +84,20 @@ module Concurrent
 
         def do_resume
           @paused = false
-          reschedule_buffer
+          reschedule_deferred
           nil
         end
 
         def do_reset
           rebuild_context
           do_resume
-          reschedule_buffer
+          reschedule_deferred
           nil
         end
 
         def do_restart
           rebuild_context
-          reject_buffer
+          reject_deferred
           do_resume
           nil
         end
@@ -98,14 +108,14 @@ module Concurrent
           nil
         end
 
-        def reschedule_buffer
-          @buffer.each { |envelope| core.schedule_execution { core.process_envelope envelope } }
-          @buffer.clear
+        def reschedule_deferred
+          @deferred.each { |envelope| core.schedule_execution { core.process_envelope envelope } }
+          @deferred.clear
         end
 
-        def reject_buffer
-          @buffer.each { |envelope| reject_envelope envelope }
-          @buffer.clear
+        def reject_deferred
+          @deferred.each { |envelope| reject_envelope envelope }
+          @deferred.clear
         end
       end
     end

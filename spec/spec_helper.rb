@@ -27,11 +27,20 @@ logger       = Logger.new($stderr)
 logger.level = Logger::WARN
 
 logger.formatter = lambda do |severity, datetime, progname, msg|
+  formatted_message = case msg
+                      when String
+                        msg
+                      when Exception
+                        format "%s (%s)\n%s",
+                               msg.message, msg.class, (msg.backtrace || []).join("\n")
+                      else
+                        msg.inspect
+                      end
   format "[%s] %5s -- %s: %s\n",
          datetime.strftime('%Y-%m-%d %H:%M:%S.%L'),
          severity,
          progname,
-         msg
+         formatted_message
 end
 
 Concurrent.global_logger = lambda do |level, progname, message = nil, &block|

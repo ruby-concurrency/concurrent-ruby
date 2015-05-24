@@ -1,5 +1,3 @@
-require 'concurrent'
-
 Message = Struct.new :action, :value #
 
 class AnActor < Concurrent::Actor::RestartingContext

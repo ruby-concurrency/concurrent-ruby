@@ -23,8 +23,8 @@ actor_doing_io.executor == Concurrent.configuration.global_operation_pool
 class IOWorker < Concurrent::Actor::Utils::AbstractWorker
   def work(io_job)
     # do IO work
-    sleep 1
-    puts "#{path} second:#{Time.now.to_i} message:#{io_job}"
+    sleep 0.1
+    puts "#{path} second:#{(Time.now.to_f*100).floor} message:#{io_job}"
   end
 
   def default_executor
@@ -46,4 +46,4 @@ pool << 1 << 2 << 3 << 4 << 5 << 6
 # /pool/worker-0 second:1414677668 message:5
 # /pool/worker-1 second:1414677668 message:6
 
-sleep 4
+sleep 1

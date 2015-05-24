@@ -1,4 +1,4 @@
-require 'concurrent'                               # => true
+require 'concurrent'                               # => false
 
 # logger = Logger.new(STDOUT)
 # Concurrent.configuration.logger = logger.method(:add)
@@ -16,7 +16,7 @@ class ActorDoingIO < Concurrent::Actor::RestartingContext
 end 
 
 actor_doing_io = ActorDoingIO.spawn :actor_doing_io
-    # => #<Concurrent::Actor::Reference:0x7fd6451fff40 /actor_doing_io (ActorDoingIO)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fc906068 /actor_doing_io (ActorDoingIO)>
 actor_doing_io.executor == Concurrent.configuration.global_operation_pool
     # => true
 
@@ -25,8 +25,8 @@ actor_doing_io.executor == Concurrent.configuration.global_operation_pool
 class IOWorker < Concurrent::Actor::Utils::AbstractWorker
   def work(io_job)
     # do IO work
-    sleep 1
-    puts "#{path} second:#{Time.now.to_i} message:#{io_job}"
+    sleep 0.1
+    puts "#{path} second:#{(Time.now.to_f*100).floor} message:#{io_job}"
   end
 
   def default_executor
@@ -37,10 +37,10 @@ end
 pool = Concurrent::Actor::Utils::Pool.spawn('pool', 2) do |balancer, index|
   IOWorker.spawn(name: "worker-#{index}", args: [balancer])
 end
-    # => #<Concurrent::Actor::Reference:0x7fd6451ecaf8 /pool (Concurrent::Actor::Utils::Pool)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fc964190 /pool (Concurrent::Actor::Utils::Pool)>
 
 pool << 1 << 2 << 3 << 4 << 5 << 6
-    # => #<Concurrent::Actor::Reference:0x7fd6451ecaf8 /pool (Concurrent::Actor::Utils::Pool)>
+    # => #<Concurrent::Actor::Reference:0x7fb6fc964190 /pool (Concurrent::Actor::Utils::Pool)>
 
 # prints two lines each second
 # /pool/worker-0 second:1414677666 message:1
@@ -50,4 +50,4 @@ pool << 1 << 2 << 3 << 4 << 5 << 6
 # /pool/worker-0 second:1414677668 message:5
 # /pool/worker-1 second:1414677668 message:6
 
-sleep 4                                            # => 4
+sleep 1                                            # => 1

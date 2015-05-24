@@ -42,12 +42,13 @@ module Concurrent
         end
 
         def on_event(public, event)
-          case event
+          event_name, _ = event
+          case event_name
           when :terminated, :restarted
             @buffer.each { |envelope| reject_envelope envelope }
             @buffer.clear
           end
-          super public, event
+          super public, event_name
         end
       end
     end

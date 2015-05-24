@@ -6,14 +6,6 @@ module Concurrent
 
     # FIXME better tests!
 
-    # class Reference
-    #   def backdoor(&block)
-    #     core.send :schedule_execution do
-    #       core.instance_eval &block
-    #     end
-    #   end
-    # end
-
     describe 'Concurrent::Actor' do
       prepend_before do
         do_no_reset!
@@ -164,7 +156,7 @@ module Concurrent
           expect(subject.ask!(:terminated?)).to be_falsey
           subject.ask(:terminate!).wait
           expect(subject.ask!(:terminated?)).to be_truthy
-          child.ask!(:terminated_event).wait
+          child.ask!(:termination_event).wait
           expect(child.ask!(:terminated?)).to be_truthy
 
           terminate_actors subject, child
@@ -212,7 +204,7 @@ module Concurrent
         end
         failure << :hehe
         failure << :terminate!
-        expect(queue.pop).to eq [:terminated, failure]
+        expect(queue.pop).to eq [[:terminated, nil], failure]
 
         terminate_actors monitor
       end
@@ -227,7 +219,7 @@ module Concurrent
 
         failure << :hehe
         failure << :terminate!
-        expect(queue.pop).to eq [:terminated, failure]
+        expect(queue.pop).to eq [[:terminated, nil], failure]
 
         terminate_actors monitor
       end

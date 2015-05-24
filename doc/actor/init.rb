@@ -1,1 +1,2 @@
-require 'concurrent/actor'
+require 'concurrent'
+require 'concurrent-edge'

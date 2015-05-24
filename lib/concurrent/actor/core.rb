@@ -197,6 +197,7 @@ module Concurrent
           begin
             build_context
             initialized.success reference if initialized
+            log DEBUG, 'spawned'
           rescue => ex
             log ERROR, ex
             @first_behaviour.terminate!

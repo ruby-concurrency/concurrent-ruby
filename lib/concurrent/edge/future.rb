@@ -497,11 +497,21 @@ module Concurrent
       end
     end
 
+    class ArrayFuture < Future
+      def apply_value(value, block)
+        block.call(*value)
+      end
+    end
+
     class CompletableEvent < Event
       # Complete the event
       # @api public
       def complete(raise = true)
         super raise
+      end
+
+      def hide_completable
+        Concurrent.zip(self)
       end
     end
 
@@ -534,6 +544,10 @@ module Concurrent
 
       def evaluate_to!(*args, &block)
         promise.evaluate_to!(*args, block)
+      end
+
+      def hide_completable
+        Concurrent.zip(self)
       end
     end
 
@@ -822,12 +836,6 @@ module Concurrent
 
     # used internally to support #with_default_executor
     class AllPromise < BlockedPromise
-
-      class ArrayFuture < Future
-        def apply_value(value, block)
-          block.call(*value)
-        end
-      end
 
       private
 

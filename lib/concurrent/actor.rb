@@ -61,29 +61,29 @@ module Concurrent
     #   inc2.ask!(2) # => 4
     #
     # @param block for context_class instantiation
-    # @param args see {.spawn_optionify}
+    # @param args see {.to_spawn_options}
     # @return [Reference] never the actual actor
     def self.spawn(*args, &block)
       if Actor.current
-        Core.new(spawn_optionify(*args).merge(parent: Actor.current), &block).reference
+        Core.new(to_spawn_options(*args).merge(parent: Actor.current), &block).reference
       else
-        root.ask([:spawn, spawn_optionify(*args), block]).value!
+        root.ask([:spawn, to_spawn_options(*args), block]).value!
       end
     end
 
     # as {.spawn} but it'll block until actor is initialized or it'll raise exception on error
     def self.spawn!(*args, &block)
-      spawn(spawn_optionify(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
+      spawn(to_spawn_options(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
     end
 
-    # @overload spawn_optionify(context_class, name, *args)
+    # @overload to_spawn_options(context_class, name, *args)
     #   @param [AbstractContext] context_class to be spawned
     #   @param [String, Symbol] name of the instance, it's used to generate the
     #     {Core#path} of the actor
     #   @param args for context_class instantiation
-    # @overload spawn_optionify(opts)
+    # @overload to_spawn_options(opts)
     #   see {Core#initialize} opts
-    def self.spawn_optionify(*args)
+    def self.to_spawn_options(*args)
       if args.size == 1 && args.first.is_a?(Hash)
         args.first
       else
@@ -93,9 +93,5 @@ module Concurrent
       end
     end
 
-    # call this to disable experimental warning
-    def self.i_know_it_is_experimental!
-      warn 'Method Actor.i_know_it_is_experimental! is deprecated. The Actors are no longer experimental.'
-    end
   end
 end
