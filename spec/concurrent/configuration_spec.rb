@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Configuration do
+  describe Configuration, notravis: true do
 
     before(:each) do
       # redundant - done in spec_helper.rb

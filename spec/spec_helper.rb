@@ -37,9 +37,4 @@ Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require Fil
 RSpec.configure do |config|
   #config.raise_errors_for_deprecations!
   config.order = 'random'
-
-  config.before(:each) do
-    #TODO: Better configuration management in individual test suites
-    reset_gem_configuration
-  end
 end
