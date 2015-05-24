@@ -1,8 +1,10 @@
 require 'concurrent/executor/executor_service'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
   module Executor
+    extend Deprecation
 
     # Get the requested `Executor` based on the values set in the options hash.
     #
@@ -25,12 +27,12 @@ module Concurrent
         end
       when opts.key?(:operation) || opts.key?(:task)
         if opts[:operation] == true || opts[:task] == false
-          Kernel.warn '[DEPRECATED] use `executor: :fast` instead'
+          deprecated 'use `executor: :fast` instead'
           return Concurrent.global_fast_executor
         end
 
         if opts[:operation] == false || opts[:task] == true
-          Kernel.warn '[DEPRECATED] use `executor: :io` instead'
+          deprecated 'use `executor: :io` instead'
           return Concurrent.global_io_executor
         end
 
@@ -49,10 +51,10 @@ module Concurrent
       when :immediate
         Concurrent.global_immediate_executor
       when :operation
-        Kernel.warn '[DEPRECATED] use `executor: :fast` instead'
+        deprecated 'use `executor: :fast` instead'
         Concurrent.global_fast_executor
       when :task
-        Kernel.warn '[DEPRECATED] use `executor: :io` instead'
+        deprecated 'use `executor: :io` instead'
         Concurrent.global_io_executor
       when Concurrent::ExecutorService
         executor_identifier

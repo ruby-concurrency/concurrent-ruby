@@ -80,19 +80,19 @@ module Concurrent
         end
 
         it 'terminates on failed initialization' do
-          a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { raise }
+          a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { raise }
           expect(a.ask(nil).wait.failed?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
 
         it 'terminates on failed initialization and raises with spawn!' do
           expect do
-            AdHoc.spawn!(name: :fail, logger: Concurrent.configuration.no_logger) { raise 'm' }
+            AdHoc.spawn!(name: :fail, logger: Concurrent::NULL_LOGGER) { raise 'm' }
           end.to raise_error(StandardError, 'm')
         end
 
         it 'terminates on failed message processing' do
-          a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { -> _ { raise } }
+          a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { -> _ { raise } }
           expect(a.ask(nil).wait.failed?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end

@@ -24,7 +24,7 @@ if Concurrent.on_jruby?
 
       def ns_initialize(opts)
         @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-        warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
+        deprecated ':overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
         @max_queue = 0
 
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.keys.include?(@fallback_policy)

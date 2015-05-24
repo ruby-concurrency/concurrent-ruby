@@ -5,6 +5,7 @@ require 'concurrent/executor/executor'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
@@ -14,6 +15,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
+    extend Deprecation
 
     # Create a new set of timed tasks.
     #
@@ -82,7 +84,7 @@ module Concurrent
     # @!visibility private
     def self.calculate_delay!(delay)
       if delay.is_a?(Time)
-        warn '[DEPRECATED] Use an interval not a clock time; schedule is now based on a monotonic clock'
+        deprecated 'Use an interval not a clock time; schedule is now based on a monotonic clock'
         now = Time.now
         raise ArgumentError.new('schedule time must be in the future') if delay <= now
         delay.to_f - now.to_f

@@ -102,7 +102,7 @@ module Concurrent
   class PerThreadExecutor < SimpleExecutorService
 
     def initialize
-      warn '[DEPRECATED] use SimpleExecutorService instead'
+      deprecated 'use SimpleExecutorService instead'
       super
     end
   end

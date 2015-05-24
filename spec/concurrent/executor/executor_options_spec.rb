@@ -31,32 +31,24 @@ module Concurrent
     end
 
     it 'returns the global fast executor when :operation is true' do
-      warn 'deprecated syntax'
-      expect(Kernel).to receive(:warn).with(anything)
       expect(Concurrent).to receive(:global_fast_executor).
                                 and_return(:fast_executor)
       Executor.executor_from_options(operation: true)
     end
 
     it 'returns the global io executor when :operation is false' do
-      warn 'deprecated syntax'
-      expect(Kernel).to receive(:warn).with(anything)
       expect(Concurrent).to receive(:global_io_executor).
                                 and_return(:io_executor)
       Executor.executor_from_options(operation: false)
     end
 
     it 'returns the global fast executor when :task is false' do
-      warn 'deprecated syntax'
-      expect(Kernel).to receive(:warn).with(anything)
       expect(Concurrent).to receive(:global_fast_executor).
                                 and_return(:fast_executor)
       Executor.executor_from_options(task: false)
     end
 
     it 'returns the global io executor when :task is true' do
-      warn 'deprecated syntax'
-      expect(Kernel).to receive(:warn).with(anything)
       expect(Concurrent).to receive(:global_io_executor).
                                 and_return(:io_executor)
       Executor.executor_from_options(task: true)
@@ -71,20 +63,16 @@ module Concurrent
     end
 
     specify ':executor overrides :operation' do
-      warn 'deprecated syntax'
       expect(Executor.executor_from_options(executor: executor, operation: true)).
           to eq executor
     end
 
     specify ':executor overrides :task' do
-      warn 'deprecated syntax'
       expect(Executor.executor_from_options(executor: executor, task: true)).
           to eq executor
     end
 
     specify ':operation overrides :task' do
-      warn 'deprecated syntax'
-      expect(Kernel).to receive(:warn).with(anything)
       expect(Concurrent).to receive(:global_fast_executor).
                                 and_return(:fast_executor)
       Executor.executor_from_options(operation: true, task: true)

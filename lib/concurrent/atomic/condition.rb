@@ -1,4 +1,5 @@
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
@@ -14,6 +15,7 @@ module Concurrent
   #
   # @deprecated
   class Condition
+    include Deprecation
 
     class Result
       def initialize(remaining_time)
@@ -39,7 +41,7 @@ module Concurrent
     end
 
     def initialize
-      warn '[DEPRECATED] Will be replaced with Synchronization::Object in v1.0.'
+      deprecated 'Will be replaced with Synchronization::Object in v1.0.'
       @condition = ConditionVariable.new
     end
 

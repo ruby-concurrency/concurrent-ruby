@@ -2,6 +2,7 @@ require 'rbconfig'
 require 'thread'
 
 require 'concurrent/errors'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
@@ -21,7 +22,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   def timeout(seconds, &block)
-    warn '[DEPRECATED] timeout is deprecated and will be removed'
+    deprecated 'timeout is deprecated and will be removed'
 
     future = Future.execute(&block)
     future.wait(seconds)

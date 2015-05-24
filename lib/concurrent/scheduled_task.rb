@@ -1,5 +1,6 @@
 require 'concurrent/ivar'
 require 'concurrent/utility/timer'
+require 'concurrent/utility/deprecation'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/safe_task_executor'
 
@@ -134,6 +135,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class ScheduledTask < IVar
+    include Deprecation
 
     attr_reader :delay
 
@@ -206,7 +208,7 @@ module Concurrent
 
     # @deprecated
     def schedule_time
-      warn '[DEPRECATED] time is now based on a monotonic clock'
+      Deprecation.deprecated 'schedule_time is now based on a monotonic clock'
       @schedule_time
     end
 
