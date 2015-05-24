@@ -16,40 +16,23 @@ module Concurrent
     include EngineDetector
 
     def use_c_extensions?
-      Concurrent.allow_c_extensions? # from extension_helper.rb
-    end
-
-    def do_no_reset!
-      @do_not_reset = true
+      Concurrent.allow_c_extensions?
     end
 
     GLOBAL_EXECUTORS = [
-        [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
-        [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
-        [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
+      [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
+      [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
+      [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
     ]
 
-    @@killed = false
-
     def reset_gem_configuration
-      if @@killed
-        GLOBAL_EXECUTORS.each do |var, factory|
-          executor = Concurrent.const_get(var).value!
-          executor.shutdown
-          executor.kill
-          Concurrent.const_set(var, factory.call)
-        end
-        @@killed = false
+      GLOBAL_EXECUTORS.each do |var, factory|
+        executor = Concurrent.const_get(var).value!
+        executor.shutdown
+        executor.wait_for_termination(0.2)
+        executor.kill
+        Concurrent.const_set(var, factory.call)
       end
-    end
-
-    def kill_rogue_threads(warning = true)
-      return if @do_not_reset
-      warn('[DEPRECATED] brute force thread control being used -- tests need updated') if warning
-      Thread.list.each do |thread|
-        thread.kill unless thread == Thread.current
-      end
-      @@killed = true
     end
 
     def monotonic_interval
