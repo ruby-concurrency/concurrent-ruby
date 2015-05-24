@@ -6,6 +6,17 @@ require 'concurrent/edge/lock_free_stack'
 
 # @note different name just not to collide for now
 module Concurrent
+
+  # Provides edge features, which will be added to or replace features in main gem.
+  #
+  # Contains new unified implementation of Futures and Promises which combines Features of previous `Future`,
+  # `Promise`, `IVar`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+  # new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
+  # It offers better performance and does not block threads (exception being #wait and similar methods where it's
+  # intended).
+  #
+  # ## Examples
+  # {include:file:examples/edge_futures.out.rb}.
   module Edge
 
     module FutureShortcuts
@@ -116,6 +127,7 @@ module Concurrent
         self
       end
 
+      # @!visibility private
       def touch
         # distribute touch to promise only once
         @Promise.touch if @Touched.make_true
@@ -172,7 +184,7 @@ module Concurrent
         "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
       end
 
-      # @api private
+      # @!visibility private
       def complete(raise = true)
         if complete_state
           # go to synchronized block only if there were waiting threads
@@ -185,7 +197,7 @@ module Concurrent
         self
       end
 
-      # @api private
+      # @!visibility private
       # just for inspection
       # @return [Array<AbstractPromise>]
       def blocks
@@ -194,13 +206,13 @@ module Concurrent
         end
       end
 
-      # @api private
+      # @!visibility private
       # just for inspection
       def callbacks
         @Callbacks.each.to_a
       end
 
-      # @api private
+      # @!visibility private
       def add_callback(method, *args)
         if completed?
           call_callback method, *args
@@ -211,12 +223,14 @@ module Concurrent
         self
       end
 
-      # @api private, only for inspection
+      # @!visibility private
+      # only for inspection
       def promise
         @Promise
       end
 
-      # @api private, only for inspection
+      # @!visibility private
+      # only for inspection
       def touched
         @Touched.value
       end
@@ -407,12 +421,12 @@ module Concurrent
         add_callback :pr_callback_on_failure, callback
       end
 
-      # @api private
+      # @!visibility private
       def apply_value(value, block)
         block.call value
       end
 
-      # @api private
+      # @!visibility private
       def complete(success, value, reason, raise = true)
         if complete_state success, value, reason
           @Waiters.clear
@@ -499,7 +513,6 @@ module Concurrent
 
     class CompletableEvent < Event
       # Complete the event
-      # @api public
       def complete(raise = true)
         super raise
       end
@@ -507,7 +520,6 @@ module Concurrent
 
     class CompletableFuture < Future
       # Complete the future
-      # @api public
       def complete(success, value, reason, raise = true)
         super success, value, reason, raise
       end
