@@ -8,6 +8,8 @@ module Concurrent
       Class.new do
         include Concurrent::Async
         attr_accessor :accessor
+        def initialize(*args)
+        end
         def echo(msg)
           msg
         end
@@ -34,8 +36,16 @@ module Concurrent
 
     context 'object creation' do
 
-      it 'makes #new private' do
-        expect{ async_class.new }.to raise_error(NoMethodError)
+      # Will be added in 1.0 once deprecated methods are removed
+      #it 'makes #new private' do
+      #  expect{ async_class.new }.to raise_error(NoMethodError)
+      #end
+
+      # Will be removed in 1.0 once deprecated methods are removed
+      it '#new delegates to #create' do
+        args = [:foo, 'bar', 42]
+        expect(async_class).to receive(:create).once.with(*args)
+        async_class.new(*args)
       end
 
       it 'uses #create to instanciate new objects' do
@@ -45,7 +55,7 @@ module Concurrent
 
       specify '#create initializes synchronization' do
         mock = async_class.create
-        allow(async_class).to receive(:new).and_return(mock)
+        allow(async_class).to receive(:original_new).and_return(mock)
         expect(mock).to receive(:init_synchronization).once.with(no_args)
         async_class.create
       end
