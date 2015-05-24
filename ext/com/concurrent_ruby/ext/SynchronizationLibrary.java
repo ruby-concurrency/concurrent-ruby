@@ -17,6 +17,7 @@ import org.jruby.runtime.Visibility;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyNil;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.util.unsafe.UnsafeHolder;
 
 public class SynchronizationLibrary implements Library {
 
@@ -48,11 +49,9 @@ public class SynchronizationLibrary implements Library {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(rest = true)
-        public IRubyObject initialize(ThreadContext context, IRubyObject[] args, Block block) {
-            synchronized (this) {
-                return callMethod(context, "ns_initialize", args, block);
-            }
+        @JRubyMethod
+        public IRubyObject initialize(ThreadContext context) {
+            return this;
         }
 
         @JRubyMethod(name = "synchronize", visibility = Visibility.PROTECTED)
@@ -108,7 +107,47 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PROTECTED)
         public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
+            if (UnsafeHolder.SUPPORTS_FENCES)
+                UnsafeHolder.storeFence();
+            else
+                anVolatileField = 1;
             return context.nil;
+        }
+
+        private volatile int anVolatileField = 0; // TODO unused on JAVA8
+        public static final long AN_VOLATILE_FIELD_OFFSET =
+                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
+
+        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
+        public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
+            if (UnsafeHolder.U == null) {
+                synchronized (this) {
+                    return instance_variable_get(context, name);
+                }
+            } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                UnsafeHolder.loadFence();
+                return instance_variable_get(context, name);
+            } else {
+                UnsafeHolder.U.getIntVolatile(this, AN_VOLATILE_FIELD_OFFSET);
+                return instance_variable_get(context, name);
+            }
+        }
+
+        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
+        public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
+            if (UnsafeHolder.U == null) {
+                synchronized (this) {
+                    return instance_variable_set(name, value);
+                }
+            } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                IRubyObject result = instance_variable_set(name, value);
+                UnsafeHolder.storeFence();
+                return result;
+            } else {
+                UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
+                IRubyObject result = instance_variable_set(name, value);
+                return result;
+            }
         }
     }
 }

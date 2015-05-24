@@ -49,7 +49,8 @@ module Concurrent
       #   any logging system
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
-        super
+        super(&nil)
+        synchronize { ns_initialize(opts, &block) }
       end
 
       # @return [Reference, nil] of parent actor

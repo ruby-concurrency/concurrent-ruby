@@ -58,7 +58,8 @@ module Concurrent
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      super(opts, &block)
+      super(&nil)
+      synchronize { ns_initialize(opts, &block) }
     end
 
     # Return the value this object represents after applying the options

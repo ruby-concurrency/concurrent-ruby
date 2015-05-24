@@ -88,7 +88,7 @@ end
 
 ###  Naming conventions
 
-Instance variables with camel case names are final and never reassigned.
+Instance variables with camel case names are final and never reassigned, e.g. `@FinalVariable`.
 
 ## Fields with CAS operations
 
@@ -115,7 +115,61 @@ class Event < Synchronization::Object
 end  
 ```
 
-## Memory model (sort of)
+Operations on `@Touched` field have volatile semantic. 
 
-// TODO
+## Memory model
+
+*Intended for further revision, and extension.*
+
+When writing libraries in `concurrent-ruby` we are reasoning based on following memory model which is further extended by features provided in `Synchronization::Object` (described above).
+
+The memory model is constructed based on our best effort and knowledge of the 3 main Ruby implementations (CRuby, JRuby, Rubinius). When considering certain aspect we always choose the weakest guarantee (e.g. local variable updates are always visible in CRuby but not in JRuby, so in this case JRuby behavior is picked). If some Ruby behavior is omitted here it is considered unsafe for use in parallel environment (Reasons may be lack of information, or difficulty of verification).
+
+This takes in account following implementations: 
+
+-   CRuby 1.9 - 2.2 (no differences found)
+-   JRuby 1.7
+-   JRuby 9 *not examined yet, same behavior as in 1.7 assumed*
+-   Rubinius 2.5
+
+We are interested in following behaviors:
+
+-   **volatility** - in Java's sense. Any written value is immediately visible to any subsequent reads including all writes leading to this value.
+-   **atomicity** - operation is either done or not as a whole.
+
+### Variables
+
+-   **Local variables** - atomic assignment, non-volatile. 
+    -   Consequence: a lambda defined on `thread1` executing on `thread2` may not see updated values in local variables captured in its closure.
+    -   Reason: local variables are non-volatile on Jruby and Rubinius.
+-   **Instance variables** - atomic assignment, non-volatile. 
+    -   Consequence: Different thread may see old values; different thread may see not fully-initialized object.
+    -   Reason: local variables are non-volatile on Jruby and Rubinius.
+-   **Constants** - atomic assignment, volatile.
+
+Other:
+
+-   **Global variables** - we don't use them, omitted (atomic and volatile on JRuby and CRuby, Rubinius unknown)
+-   **Class variables** - we don't use them, omitted (atomic and volatile on JRuby and CRuby, Rubinius unknown)
+
+### Assumptions
+
+Following operations are **assumed** thread-safe, volatile and atomic on all implementations:
+
+-   Class definition
+-   Method definition
+-   Library requirement
+
+It's best practice though to eager load before going into parallel part of an application.
+
+### Issues to be aware of
+
+-   **Initialization** - Since instance variables are not volatile and a particular implementation may preinitialize values with nils, based on shapes it already saw, a second thread obtaining reference to newly constructed may still see old preinitialized values instead of values set in `initialize` method. To fix this `ensure_ivar_visibility!` can be used or the object can be safely published in a volatile field.
+-   **`||=`, `+=` and similar** - are not atomic.
+
+### Notes/Sources on implementations
+
+-   [JRuby wiki page on concurrency](https://github.com/jruby/jruby/wiki/Concurrency-in-jruby)
+-   [Rubinius page on concurrency](http://rubini.us/doc/en/systems/concurrency/)
+-   CRuby has GVL. Any GVL release and acquire uses lock which means that all writes done by a releasing thread will be visible to the second acquiring thread. See: <https://github.com/ruby/ruby/blob/ruby_2_2/thread_pthread.c#L101-L107>
 

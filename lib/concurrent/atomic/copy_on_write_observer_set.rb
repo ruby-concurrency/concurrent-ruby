@@ -7,6 +7,11 @@ module Concurrent
   # duplicated and replaced with a new one.
   class CopyOnWriteObserverSet < Synchronization::Object
 
+    def initialize
+      super()
+      synchronize { ns_initialize }
+    end
+
     # Adds an observer to this set
     # If a block is passed, the observer will be created by this method and no
     #   other params should be passed

@@ -5,7 +5,7 @@ require 'concurrent-edge'
 logger                   = Logger.new($stderr)
 logger.level             = Logger::WARN
 Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
-  logger.add level, message, progname, &block
+logger.add level, message, progname, &block
 end
 
 if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
@@ -13,8 +13,8 @@ if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
   require 'coveralls'
 
   SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-      SimpleCov::Formatter::HTMLFormatter,
-      Coveralls::SimpleCov::Formatter
+    SimpleCov::Formatter::HTMLFormatter,
+    Coveralls::SimpleCov::Formatter
   ]
 
   SimpleCov.start do
@@ -41,10 +41,5 @@ RSpec.configure do |config|
   config.before(:each) do
     #TODO: Better configuration management in individual test suites
     reset_gem_configuration
-  end
-
-  config.after(:each) do
-    #TODO: Better thread management in individual test suites
-    kill_rogue_threads(false)
   end
 end

@@ -10,6 +10,7 @@ module Concurrent
         def initialize(value = nil)
           super()
           @Final = value
+          ns_initialize
           ensure_ivar_visibility!
         end
 

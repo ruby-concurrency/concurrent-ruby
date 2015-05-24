@@ -3,10 +3,8 @@ module Concurrent
   describe Configuration do
 
     before(:each) do
-      reset_gem_configuration
-    end
-
-    after(:each) do
+      # redundant - done in spec_helper.rb
+      # done here again for explicitness
       reset_gem_configuration
     end
 
@@ -28,9 +26,9 @@ module Concurrent
       end
 
       specify '#terminate_pools! acts on all executors with auto_terminate: true' do
-        expect(Concurrent.global_fast_executor).to receive(:kill).with(no_args).and_call_original
-        expect(Concurrent.global_io_executor).to receive(:kill).with(no_args).and_call_original
-        expect(Concurrent.global_timer_set).to receive(:kill).with(no_args).and_call_original
+        expect(Concurrent.global_fast_executor).to receive(:kill).once.with(no_args).and_call_original
+        expect(Concurrent.global_io_executor).to receive(:kill).once.with(no_args).and_call_original
+        expect(Concurrent.global_timer_set).to receive(:kill).once.with(no_args).and_call_original
         Concurrent.terminate_pools!
       end
     end
