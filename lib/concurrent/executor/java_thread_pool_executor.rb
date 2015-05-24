@@ -1,11 +1,11 @@
-if RUBY_PLATFORM == 'java'
-  require_relative 'executor'
+if Concurrent.on_jruby?
+  require 'concurrent/executor/executor_service'
 
   module Concurrent
 
     # @!macro thread_pool_executor
-    class JavaThreadPoolExecutor
-      include JavaExecutor
+    # @!macro thread_pool_options
+    class JavaThreadPoolExecutor < JavaExecutorService
 
       # Default maximum number of threads that will be created in the pool.
       DEFAULT_MAX_POOL_SIZE = java.lang.Integer::MAX_VALUE # 2147483647
@@ -52,33 +52,10 @@ if RUBY_PLATFORM == 'java'
       #
       # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
       def initialize(opts = {})
-        min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
-        max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
-        idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
-        @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
-        @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-        warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
-
-        raise ArgumentError.new('max_threads must be greater than zero') if max_length <= 0
-        raise ArgumentError.new('min_threads cannot be less than zero') if min_length < 0
-        raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
-        raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
-
-        if @max_queue == 0
-          queue = java.util.concurrent.LinkedBlockingQueue.new
-        else
-          queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)
-        end
-
-        @executor = java.util.concurrent.ThreadPoolExecutor.new(
-          min_length, max_length,
-          idletime, java.util.concurrent.TimeUnit::SECONDS,
-          queue, FALLBACK_POLICIES[@fallback_policy].new)
-
-        set_shutdown_hook
+        super(opts)
       end
 
-      # @!macro executor_module_method_can_overflow_question
+      # @!macro executor_service_method_can_overflow_question
       def can_overflow?
         @max_queue != 0
       end
@@ -103,7 +80,6 @@ if RUBY_PLATFORM == 'java'
       def length
         @executor.getPoolSize
       end
-      alias_method :current_length, :length
 
       # The largest number of threads that have been created in the pool since construction.
       #
@@ -148,20 +124,40 @@ if RUBY_PLATFORM == 'java'
         @max_queue == 0 ? -1 : @executor.getQueue.remainingCapacity
       end
 
-      # This method is deprecated and will be removed soon.
-      # This method is supost to return the threads status, but Java API doesn't
-      # provide a way to get the thread status. So we return an empty Array instead.
-      def status
-        warn '[DEPRECATED] `status` is deprecated and will be removed soon.'
-        warn "Calls to `status` return an empty Array. Java ThreadPoolExecutor does not provide thread's status."
-        []
-      end
-
       # Is the thread pool running?
       #
       # @return [Boolean] `true` when running, `false` when shutting down or shutdown
       def running?
         super && !@executor.isTerminating
+      end
+
+      protected
+
+      def ns_initialize(opts)
+        min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+        max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+        idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
+        @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+        @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
+        warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
+
+        raise ArgumentError.new('max_threads must be greater than zero') if max_length <= 0
+        raise ArgumentError.new('min_threads cannot be less than zero') if min_length < 0
+        raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
+        raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.include?(@fallback_policy)
+
+        if @max_queue == 0
+          queue = java.util.concurrent.LinkedBlockingQueue.new
+        else
+          queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)
+        end
+
+        @executor = java.util.concurrent.ThreadPoolExecutor.new(
+          min_length, max_length,
+          idletime, java.util.concurrent.TimeUnit::SECONDS,
+          queue, FALLBACK_POLICY_CLASSES[@fallback_policy].new)
+
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end

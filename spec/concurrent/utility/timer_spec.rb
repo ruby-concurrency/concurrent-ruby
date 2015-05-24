@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe '#timer' do
@@ -17,18 +15,14 @@ module Concurrent
     end
 
     it 'executes the block after the given number of seconds' do
-      start = Time.now.to_f
-      latch = CountDownLatch.new(1)
-      Concurrent::timer(0.1){ latch.count_down }
-      latch.wait(1)
-      diff = Time.now.to_f - start
-      expect(diff).to be > 0.1
-      expect(diff).to be < 0.5
+      expect(Concurrent.configuration.global_timer_set).to receive(:post).with(0.1)
+      Concurrent::timer(0.1){ nil }
     end
 
     it 'suppresses exceptions thrown by the block' do
       expect {
-        Concurrent::timer(0.5){ raise Exception }
+        Concurrent::timer(0.1){ raise Exception }
+        sleep(0.2)
       }.to_not raise_error
     end
 
@@ -39,7 +33,7 @@ module Concurrent
         expected = args
         latch.count_down
       end
-      latch.wait(0.2)
+      latch.wait(1)
       expect(expected).to eq [1, 2, 3]
     end
 

@@ -1,8 +1,8 @@
 require 'concurrent/configuration'
 require 'concurrent/executor/serialized_execution'
-require 'concurrent/ivar'
 require 'concurrent/logging'
-require 'concurrent/atomic/synchronization'
+require 'concurrent/synchronization'
+require 'concurrent/edge/future'
 
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?
@@ -33,9 +33,9 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    @root = Delay.new do
-      Core.new(parent: nil, name: '/', class: Root, initialized: ivar = IVar.new).reference.tap do
-        ivar.no_error!
+    @root = Concurrent.delay do
+      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent.future).reference.tap do
+        future.wait!
       end
     end
 
@@ -55,7 +55,7 @@ module Concurrent
     #   inc2 = Actor.spawn(class:    AdHoc,
     #                      name:     'increment by 2',
     #                      args:     [2],
-    #                      executor: Concurrent.configuration.global_task_pool) do |increment_by|
+    #                      executor: Concurrent.global_io_executor) do |increment_by|
     #     lambda { |number| number + increment_by }
     #   end
     #   inc2.ask!(2) # => 4
@@ -73,12 +73,13 @@ module Concurrent
 
     # as {.spawn} but it'll block until actor is initialized or it'll raise exception on error
     def self.spawn!(*args, &block)
-      spawn(spawn_optionify(*args).merge(initialized: ivar = IVar.new), &block).tap { ivar.no_error! }
+      spawn(spawn_optionify(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
     end
 
     # @overload spawn_optionify(context_class, name, *args)
     #   @param [AbstractContext] context_class to be spawned
-    #   @param [String, Symbol] name of the instance, it's used to generate the {Core#path} of the actor
+    #   @param [String, Symbol] name of the instance, it's used to generate the
+    #     {Core#path} of the actor
     #   @param args for context_class instantiation
     # @overload spawn_optionify(opts)
     #   see {Core#initialize} opts

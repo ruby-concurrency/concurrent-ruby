@@ -1,17 +1,21 @@
 require 'thread'
+require 'concurrent/configuration'
 require 'concurrent/obligation'
-require 'concurrent/options_parser'
+require 'concurrent/executor/executor'
+require 'concurrent/executor/immediate_executor'
+require 'concurrent/synchronization'
 
 module Concurrent
 
-  # Lazy evaluation of a block yielding an immutable result. Useful for expensive
-  # operations that may never be needed.
+  # Lazy evaluation of a block yielding an immutable result. Useful for
+  # expensive operations that may never be needed. It may be non-blocking,
+  # supports the `Obligation` interface, and accepts the injection of
+  # custom executor upon which to execute the block. Processing of
+  # block will be deferred until the first time `#value` is called.
+  # At that time the caller can choose to return immediately and let
+  # the block execute asynchronously, block indefinitely, or block
+  # with a timeout.
   #
-  # A `Delay` is similar to `Future` but solves a different problem.
-  # Where a `Future` schedules an operation for immediate execution and
-  # performs the operation asynchronously, a `Delay` (as the name implies)
-  # delays execution of the operation until the result is actually needed.
-  # 
   # When a `Delay` is created its state is set to `pending`. The value and
   # reason are both `nil`. The first time the `#value` method is called the
   # enclosed opration will be run and the calling thread will block. Other
@@ -25,65 +29,161 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
-  # @since 0.6.0
+  # @!macro [attach] delay_note_regarding_blocking
+  #   @note The default behavior of `Delay` is to block indefinitely when
+  #     calling either `value` or `wait`, executing the delayed operation on
+  #     the current thread. This makes the `timeout` value completely
+  #     irrelevant. To enable non-blocking behavior, use the `executor`
+  #     constructor option. This will cause the delayed operation to be
+  #     execute on the given executor, allowing the call to timeout.
   #
   # @see Concurrent::Dereferenceable
-  #
-  # @see http://clojuredocs.org/clojure_core/clojure.core/delay
-  # @see http://aphyr.com/posts/306-clojure-from-the-ground-up-state
-  class Delay
+  class Delay < Synchronization::Object
     include Obligation
+
+    # NOTE: Because the global thread pools are lazy-loaded with these objects
+    # there is a performance hit every time we post a new task to one of these
+    # thread pools. Subsequently it is critical that `Delay` perform as fast
+    # as possible post-completion. This class has been highly optimized using
+    # the benchmark script `examples/lazy_and_delay.rb`. Do NOT attempt to
+    # DRY-up this class or perform other refactoring with running the
+    # benchmarks and ensuring that performance is not negatively impacted.
 
     # Create a new `Delay` in the `:pending` state.
     #
-    # @yield the delayed operation to perform
+    # @!macro [attach] executor_and_deref_options
+    #  
+    #   @param [Hash] opts the options used to define the behavior at update and deref
+    #     and to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
+    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
+    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
+    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
+    #     the internal value and returning the value returned from the proc
     #
-    # @param [Hash] opts the options to create a message with
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @yield the delayed operation to perform
     #
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-
-      init_obligation
-      @state = :pending
-      @task  = block
-      set_deref_options(opts)
-      @task_executor = OptionsParser.get_task_executor_from(opts)
-      @computing     = false
+      super(&nil)
+      synchronize { ns_initialize(opts, &block) }
     end
 
-    def wait(timeout)
-      execute_task_once
-      super timeout
+    # Return the value this object represents after applying the options
+    # specified by the `#set_deref_options` method. If the delayed operation
+    # raised an exception this method will return nil. The execption object
+    # can be accessed via the `#reason` method.
+    #
+    # @param [Numeric] timeout the maximum number of seconds to wait
+    # @return [Object] the current value of the object
+    #
+    # @!macro delay_note_regarding_blocking
+    def value(timeout = nil)
+      if @task_executor
+        super
+      else
+        # this function has been optimized for performance and
+        # should not be modified without running new benchmarks
+        mutex.synchronize do
+          execute = @computing = true unless @computing
+          if execute
+            begin
+              set_state(true, @task.call, nil)
+            rescue => ex
+              set_state(false, nil, ex)
+            end
+          end
+        end
+        if @do_nothing_on_deref
+          @value
+        else
+          apply_deref_options(@value)
+        end
+      end
     end
 
-    # reconfigures the block returning the value if still #incomplete?
+    # Return the value this object represents after applying the options
+    # specified by the `#set_deref_options` method. If the delayed operation
+    # raised an exception, this method will raise that exception (even when)
+    # the operation has already been executed).
+    #
+    # @param [Numeric] timeout the maximum number of seconds to wait
+    # @return [Object] the current value of the object
+    # @raise [Exception] when `#rejected?` raises `#reason`
+    #
+    # @!macro delay_note_regarding_blocking
+    def value!(timeout = nil)
+      if @task_executor
+        super
+      else
+        result = value
+        raise @reason if @reason
+        result
+      end
+    end
+
+    # Return the value this object represents after applying the options
+    # specified by the `#set_deref_options` method.
+    #
+    # @param [Integer] timeout (nil) the maximum number of seconds to wait for
+    #   the value to be computed. When `nil` the caller will block indefinitely.
+    #
+    # @return [Object] self
+    #
+    # @!macro delay_note_regarding_blocking
+    def wait(timeout = nil)
+      if @task_executor
+        execute_task_once
+        super(timeout)
+      else
+        value
+      end
+      self
+    end
+
+    # Reconfigures the block returning the value if still `#incomplete?`
+    #
     # @yield the delayed operation to perform
     # @return [true, false] if success
     def reconfigure(&block)
-      mutex.lock
-      raise ArgumentError.new('no block given') unless block_given?
-      unless @computing
-        @task = block
-        true
-      else
-        false
+      mutex.synchronize do
+        raise ArgumentError.new('no block given') unless block_given?
+        unless @computing
+          @task = block
+          true
+        else
+          false
+        end
       end
-    ensure
-      mutex.unlock
+    end
+
+    protected
+
+    def ns_initialize(opts, &block)
+      init_obligation(self)
+      set_deref_options(opts)
+      @task_executor = Executor.executor_from_options(opts)
+
+      @task      = block
+      @state     = :pending
+      @computing = false
     end
 
     private
 
-    def execute_task_once
-      mutex.lock
-      execute = @computing = true unless @computing
-      task    = @task
-      mutex.unlock
+    # @!visibility private
+    def execute_task_once # :nodoc:
+      # this function has been optimized for performance and
+      # should not be modified without running new benchmarks
+      execute = task = nil
+      mutex.synchronize do
+        execute = @computing = true unless @computing
+        task    = @task
+      end
 
       if execute
         @task_executor.post do
@@ -93,10 +193,10 @@ module Concurrent
           rescue => ex
             reason = ex
           end
-          mutex.lock
-          set_state success, result, reason
-          event.set
-          mutex.unlock
+          mutex.synchronize do
+            set_state(success, result, reason)
+            event.set
+          end
         end
       end
     end

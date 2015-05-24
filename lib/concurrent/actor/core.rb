@@ -1,3 +1,5 @@
+require 'concurrent/executors'
+
 module Concurrent
   module Actor
 
@@ -7,10 +9,9 @@ module Concurrent
     # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
     # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
     #   that would eat up all threads in task pool and deadlock
-    class Core
+    class Core < Synchronization::Object
       include TypeCheck
       include Concurrent::Logging
-      include Synchronization
 
       # @!attribute [r] reference
       #   Reference to this actor which can be safely passed around.
@@ -35,59 +36,19 @@ module Concurrent
       # @option opts [String] name
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
-      # @option opts [Executor] executor, default is `Concurrent.configuration.global_task_pool`
+      # @option opts [Executor] executor, default is `global_io_executor`
       # @option opts [true, false] link, atomically link the actor to its parent (default: true)
       # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
       #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
-      # @option opts [IVar, nil] initialized, if present it'll be set or failed after {Context} initialization
+      # @option opts [CompletableFuture, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Reference, nil] parent **private api** parent of the actor (the one spawning )
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
       #   can be used to hook actor instance to any logging system, see {Concurrent::Logging}
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
-        synchronize do
-          @mailbox              = Array.new
-          @serialized_execution = SerializedExecution.new
-          @children             = Set.new
-
-          @context_class = Child! opts.fetch(:class), AbstractContext
-          allocate_context
-
-          @executor = Type! opts.fetch(:executor, @context.default_executor), Executor
-          raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
-
-          @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
-          @name      = (Type! opts.fetch(:name), String, Symbol).to_s
-
-          parent       = opts[:parent]
-          @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
-          if @parent_core.nil? && @name != '/'
-            raise 'only root has no parent'
-          end
-
-          @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
-          @logger = opts[:logger]
-
-          @parent_core.add_child reference if @parent_core
-
-          initialize_behaviours opts
-
-          @args       = opts.fetch(:args, [])
-          @block      = block
-          initialized = Type! opts[:initialized], IVar, NilClass
-
-          schedule_execution do
-            begin
-              build_context
-              initialized.set reference if initialized
-            rescue => ex
-              log ERROR, ex
-              @first_behaviour.terminate!
-              initialized.fail ex if initialized
-            end
-          end
-        end
+        super(&nil)
+        synchronize { ns_initialize(opts, &block) }
       end
 
       # A parent Actor. When actor is spawned the {Actor.current} becomes its parent.
@@ -200,6 +161,49 @@ module Concurrent
       end
 
       private
+
+      def ns_initialize(opts, &block)
+        @mailbox              = Array.new
+        @serialized_execution = SerializedExecution.new
+        @children             = Set.new
+
+        @context_class = Child! opts.fetch(:class), AbstractContext
+        allocate_context
+
+        @executor = Type! opts.fetch(:executor, @context.default_executor), Concurrent::AbstractExecutorService
+        raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
+
+        @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
+        @name      = (Type! opts.fetch(:name), String, Symbol).to_s
+
+        parent       = opts[:parent]
+        @parent_core = (Type! parent, Reference, NilClass) && parent.send(:core)
+        if @parent_core.nil? && @name != '/'
+          raise 'only root has no parent'
+        end
+
+        @path   = @parent_core ? File.join(@parent_core.path, @name) : @name
+        @logger = opts[:logger]
+
+        @parent_core.add_child reference if @parent_core
+
+        initialize_behaviours opts
+
+        @args       = opts.fetch(:args, [])
+        @block      = block
+        initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
+
+        schedule_execution do
+          begin
+            build_context
+            initialized.success reference if initialized
+          rescue => ex
+            log ERROR, ex
+            @first_behaviour.terminate!
+            initialized.fail ex if initialized
+          end
+        end
+      end
 
       def initialize_behaviours(opts)
         @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |(behaviour, *args)|

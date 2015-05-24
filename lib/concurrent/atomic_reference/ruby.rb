@@ -1,37 +1,29 @@
-require_relative '../../extension_helper'
+if defined? Concurrent::CAtomicReference
+  require 'concurrent/native_extensions'
+  require 'concurrent/atomic_reference/direct_update'
+  require 'concurrent/atomic_reference/numeric_cas_wrapper'
 
-if Concurrent.allow_c_extensions?
-  begin
-    require 'concurrent_ruby_ext'
-  rescue LoadError
-    # may be a Windows cross-compiled native gem
-    require "#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
-  end
-end
+  module Concurrent
 
-require 'concurrent/atomic_reference/direct_update'
-require 'concurrent/atomic_reference/numeric_cas_wrapper'
+    # @!macro atomic_reference
+    class CAtomicReference
+      include Concurrent::AtomicDirectUpdate
+      include Concurrent::AtomicNumericCompareAndSetWrapper
 
-module Concurrent
+      # @!method initialize
+      #   @!macro atomic_reference_method_initialize
 
-  # @!macro atomic_reference
-  class CAtomic
-    include Concurrent::AtomicDirectUpdate
-    include Concurrent::AtomicNumericCompareAndSetWrapper
+      # @!method get
+      #   @!macro atomic_reference_method_get
 
-    # @!method initialize
-    #   @!macro atomic_reference_method_initialize
+      # @!method set
+      #   @!macro atomic_reference_method_set
 
-    # @!method get
-    #   @!macro atomic_reference_method_get
+      # @!method get_and_set
+      #   @!macro atomic_reference_method_get_and_set
 
-    # @!method set
-    #   @!macro atomic_reference_method_set
-
-    # @!method get_and_set
-    #   @!macro atomic_reference_method_get_and_set
-
-    # @!method _compare_and_set
-    #   @!macro atomic_reference_method_compare_and_set
+      # @!method _compare_and_set
+      #   @!macro atomic_reference_method_compare_and_set
+    end
   end
 end

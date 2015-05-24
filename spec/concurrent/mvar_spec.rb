@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'dereferenceable_shared'
 
 module Concurrent
@@ -159,7 +158,7 @@ module Concurrent
 
         putter = Thread.new {
           sleep(0.1)
-          m.put 14 
+          m.put 14
         }
 
         expect(m.modify{ |v| v + 2 }).to eq 14

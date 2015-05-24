@@ -1,10 +1,10 @@
-`TVar` and `atomically` implement a software transactional memory. A `TVar` is a single
-item container that always contains exactly one value. The `atomically` method
-allows you to modify a set of `TVar` objects with the guarantee that all of the
-updates are collectively atomic - they either all happen or none of them do -
-consistent - a `TVar` will never enter an illegal state - and isolated - atomic
-blocks never interfere with each other when they are running. You may recognise
-these properties from database transactions.
+`TVar` and `atomically` implement a software transactional memory. A `TVar` is a
+single item container that always contains exactly one value. The `atomically`
+method allows you to modify a set of `TVar` objects with the guarantee that all
+of the updates are collectively atomic - they either all happen or none of them
+do - consistent - a `TVar` will never enter an illegal state - and isolated -
+atomic blocks never interfere with each other when they are running. You may
+recognise these properties from database transactions.
 
 There are some very important and unusual semantics that you must be aware of:
 
@@ -24,7 +24,10 @@ We implement nested transactions by flattening.
 We only support strong isolation if you use the API correctly. In order words,
 we do not support strong isolation.
 
-Our implementation uses a very simple two-phased locking with versioned locks algorithm, as per [1]. In the future we will look at more advanced algorithms, contention management and using existing Java implementations when in JRuby.
+Our implementation uses a very simple two-phased locking with versioned locks
+algorithm and lazy writes, as per [1]. In the future we will look at more
+advanced algorithms, contention management and using existing Java
+implementations when in JRuby.
 
 See:
 
@@ -150,46 +153,94 @@ repeated execution.
 
 ## Evaluation
 
-We evaluated the performance of our `TVar` implementation using a bank account simulation with a range of synchronisation implementations. The simulation maintains a set of bank account totals, and runs transactions that either get a summary statement of multiple accounts (a read-only operation) or transfers a sum from one account to another (a read-write operation).
+We evaluated the performance of our `TVar` implementation using a bank account
+simulation with a range of synchronisation implementations. The simulation
+maintains a set of bank account totals, and runs transactions that either get a
+summary statement of multiple accounts (a read-only operation) or transfers a
+sum from one account to another (a read-write operation).
 
-We implemented a bank that does not use any synchronisation (and so creates inconsistent totals in accounts), one that uses a single global (or 'coarse') lock (and so won't scale at all), one that uses one lock per account (and so has a complicated system for locking in the correct order) and one using our `TVar` and `atomically`.
+We implemented a bank that does not use any synchronisation (and so creates
+inconsistent totals in accounts), one that uses a single global (or 'coarse')
+lock (and so won't scale at all), one that uses one lock per account (and so has
+a complicated system for locking in the correct order) and one using our `TVar`
+and `atomically`.
 
-We ran 1 million transactions divided equally between a varying number of threads on a system that has at least that many physical cores. The transactions are made up of a varying mixture of read-only and read-write transactions. We ran each set of transactions thirty times, discarding the first ten and then taking an algebraic mean. These graphs show only the simple mean. Our `tvars-experiments` branch includes the benchmark used, full details of the test system, and all the raw data.
+We ran 1 million transactions divided equally between a varying number of
+threads on a system that has at least that many physical cores. The transactions
+are made up of a varying mixture of read-only and read-write transactions. We
+ran each set of transactions thirty times, discarding the first ten and then
+taking an algebraic mean. These graphs show only the simple mean. Our `tvars-
+experiments` branch includes the benchmark used, full details of the test
+system, and all the raw data.
 
-Using JRuby using 75% read-write transactions, we can compare how the different implementations of bank accounts scales to more cores. That is, how much faster it runs if you use more cores.
+Using JRuby using 75% read-write transactions, we can compare how the different
+implementations of bank accounts scales to more cores. That is, how much faster
+it runs if you use more cores.
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-scalability.png)
 
-We see that the coarse lock implementation does not scale at all, and in fact with more cores only wastes more time in contention for the single global lock. We see that the unsynchronised implementation doesn't seem to scale well - which is strange as there should be no overhead, but we'll explain that in a second. We see that the fine lock implementation seems to scale better, and that the `TVar` implementation scales the best.
+We see that the coarse lock implementation does not scale at all, and in fact
+with more cores only wastes more time in contention for the single global lock.
+We see that the unsynchronised implementation doesn't seem to scale well - which
+is strange as there should be no overhead, but we'll explain that in a second.
+We see that the fine lock implementation seems to scale better, and that the
+`TVar` implementation scales the best.
 
 So the `TVar` implementation *scales* very well, but how absolutely fast is it?
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-absolute.png)
 
-Well, that's the downside. The unsynchronised implementation doesn't scale well because it's so fast in the first place, and probably because we're bound on access to the memory - the threads don't have much work to do, so no matter how many threads we have the system is almost always reaching out to the L3 cache or main memory. However remember that the unsynchronised implementation isn't correct - the totals are wrong at the end. The coarse lock implementation has an overhead of locking and unlocking. The fine lock implementation has a greater overhead as as the locking scheme is complicated to avoid deadlock. It scales better, however, actually allowing transactions to be processed in parallel. The `TVar` implementation has a greater overhead still - and it's pretty huge. That overhead is the cost for the simple programming model of an atomic block.
+Well, that's the downside. The unsynchronised implementation doesn't scale well
+because it's so fast in the first place, and probably because we're bound on
+access to the memory - the threads don't have much work to do, so no matter how
+many threads we have the system is almost always reaching out to the L3 cache or
+main memory. However remember that the unsynchronised implementation isn't
+correct - the totals are wrong at the end. The coarse lock implementation has an
+overhead of locking and unlocking. The fine lock implementation has a greater
+overhead as as the locking scheme is complicated to avoid deadlock. It scales
+better, however, actually allowing transactions to be processed in parallel. The
+`TVar` implementation has a greater overhead still - and it's pretty huge. That
+overhead is the cost for the simple programming model of an atomic block.
 
-So that's what `TVar` gives you at the moment - great scalability, but it has a high overhead. That's pretty much the state of software transactional memory in general. Perhaps hardware transactional memory will help us, or perhaps we're happy anyway with the simpler and safer programming model that the `TVar` gives us.
+So that's what `TVar` gives you at the moment - great scalability, but it has a
+high overhead. That's pretty much the state of software transactional memory in
+general. Perhaps hardware transactional memory will help us, or perhaps we're
+happy anyway with the simpler and safer programming model that the `TVar` gives
+us.
 
-We can also use this experiment to compare different implementations of Ruby. We looked at just the `TVar` implementation and compared MRI 2.1.1, Rubinius 2.2.6, and JRuby 1.7.11, again at 75% write transactions.
+We can also use this experiment to compare different implementations of Ruby. We
+looked at just the `TVar` implementation and compared MRI 2.1.1, Rubinius 2.2.6,
+and JRuby 1.7.11, again at 75% write transactions.
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/ruby-scalability.png)
 
-We see that MRI provides no scalability, due to the global interpreter lock (GIL). JRuby seems to scale better than Rubinius for this workload (there are of course other workloads).
+We see that MRI provides no scalability, due to the global interpreter lock
+(GIL). JRuby seems to scale better than Rubinius for this workload (there are of
+course other workloads).
 
-As before we should also look at the absolute performance, not just the scalability.
+As before we should also look at the absolute performance, not just the
+scalability.
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/ruby-absolute.png)
 
-Again, JRuby seems to be faster than Rubinius for this experiment. Interestingly, Rubinius looks slower than MRI for 1 core, but we can get around that by using more cores.
+Again, JRuby seems to be faster than Rubinius for this experiment.
+Interestingly, Rubinius looks slower than MRI for 1 core, but we can get around
+that by using more cores.
 
-We've used 75% read-write transactions throughout. We'll just take a quick look at how the scalability varies for different workloads, for scaling between 1 and 2 threads. We'll admit that we used 75% read-write just because it emphasised the differences.
+We've used 75% read-write transactions throughout. We'll just take a quick look
+at how the scalability varies for different workloads, for scaling between 1 and
+2 threads. We'll admit that we used 75% read-write just because it emphasised
+the differences.
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-write-proportion-scalability.png)
 
-Finally, we can also run on a larger machine. We repeated the experiment using a machine with 64 physical cores and JRuby.
+Finally, we can also run on a larger machine. We repeated the experiment using a
+machine with 64 physical cores and JRuby.
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-scalability.png)
 
 ![](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-absolute.png)
 
-Here you can see that `TVar` does become absolutely faster than using a global lock, at the slightly ridiculously thread-count of 50. It's probably not statistically significant anyway.
+Here you can see that `TVar` does become absolutely faster than using a global
+lock, at the slightly ridiculously thread-count of 50. It's probably not
+statistically significant anyway.

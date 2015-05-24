@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :atomic_boolean do
 
   describe 'construction' do
@@ -110,43 +108,34 @@ module Concurrent
 
     it_should_behave_like :atomic_boolean
 
-    specify 'construction is synchronized' do
-      mutex = double('mutex')
-      expect(Mutex).to receive(:new).once.with(no_args).and_return(mutex)
-      described_class.new
-    end
-
     context 'instance methods' do
 
       before(:each) do
-        mutex = double('mutex')
-        allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
-        expect(mutex).to receive(:lock)
-        expect(mutex).to receive(:unlock)
+        expect(subject).to receive(:synchronize).with(no_args).and_return(true)
       end
 
       specify 'value is synchronized' do
-        described_class.new.value
+        subject.value
       end
 
       specify 'value= is synchronized' do
-        described_class.new.value = 10
+        subject.value = 10
       end
 
       specify 'true? is synchronized' do
-        described_class.new.true?
+        subject.true?
       end
 
       specify 'false? is synchronized' do
-        described_class.new.false?
+        subject.false?
       end
 
       specify 'make_true is synchronized' do
-        described_class.new.make_true
+        subject.make_true
       end
 
       specify 'make_false is synchronized' do
-        described_class.new.make_false
+        subject.make_false
       end
     end
   end
@@ -158,7 +147,7 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
 
     describe JavaAtomicBoolean do
       it_should_behave_like :atomic_boolean
@@ -172,7 +161,7 @@ module Concurrent
       end
     end
 
-    if TestHelpers.jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaAtomicBoolean' do
         expect(AtomicBoolean.ancestors).to include(JavaAtomicBoolean)
       end

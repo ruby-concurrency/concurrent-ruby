@@ -7,6 +7,9 @@ module Concurrent
   # sequence or when the object is in an inappropriate state.
   LifecycleError = Class.new(StandardError)
 
+  # Raised when an attempt is made to violate an immutability guarantee.
+  ImmutabilityError = Class.new(StandardError)
+
   # Raised when an object's methods are called when it has not been
   # properly initialized.
   InitializationError = Class.new(StandardError)
@@ -23,6 +26,10 @@ module Concurrent
   # Raised by an `Executor` when it is unable to process a given task,
   # possibly because of a reject policy or other internal error.
   RejectedExecutionError = Class.new(StandardError)
+
+  # Raised when any finite resource, such as a lock counter, exceeds its
+  # maximum limit/threshold.
+  ResourceLimitError = Class.new(StandardError)
 
   # Raised when an operation times out.
   TimeoutError = Class.new(StandardError)

@@ -1,7 +1,7 @@
 module Concurrent
   module Actor
     module Behaviour
-      # Collects returning value and sets the IVar in the {Envelope} or error on failure.
+      # Collects returning value and sets the CompletableFuture in the {Envelope} or error on failure.
       class SetResults < Abstract
         attr_reader :error_strategy
 
@@ -12,8 +12,8 @@ module Concurrent
 
         def on_envelope(envelope)
           result = pass envelope
-          if result != MESSAGE_PROCESSED && !envelope.ivar.nil?
-            envelope.ivar.set result
+          if result != MESSAGE_PROCESSED && !envelope.future.nil?
+            envelope.future.success result
             log Logging::DEBUG, "finished processing of #{envelope.message.inspect}"
           end
           nil
@@ -29,7 +29,7 @@ module Concurrent
           else
             raise
           end
-          envelope.ivar.fail error unless envelope.ivar.nil?
+          envelope.future.fail error unless envelope.future.nil?
         end
       end
     end

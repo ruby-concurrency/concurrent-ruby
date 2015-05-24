@@ -1,13 +1,12 @@
-require_relative '../../extension_helper'
-Concurrent.safe_require_java_extensions
+require 'concurrent/native_extensions'
 
-if defined?(Concurrent::JavaAtomic)
+if defined?(Concurrent::JavaAtomicReference)
   require 'concurrent/atomic_reference/direct_update'
 
   module Concurrent
 
     # @!macro atomic_reference
-    class JavaAtomic
+    class JavaAtomicReference
       include Concurrent::AtomicDirectUpdate
     end
   end

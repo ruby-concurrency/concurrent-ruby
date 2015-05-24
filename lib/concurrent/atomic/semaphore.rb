@@ -1,7 +1,7 @@
-require 'concurrent/atomic/condition'
+require 'concurrent/synchronization'
 
 module Concurrent
-  class MutexSemaphore
+  class MutexSemaphore < Synchronization::Object
     # @!macro [attach] semaphore_method_initialize
     #
     #   Create a new `Semaphore` with the initial `count`.
@@ -13,9 +13,8 @@ module Concurrent
       unless count.is_a?(Fixnum) && count >= 0
         fail ArgumentError, 'count must be an non-negative integer'
       end
-      @mutex = Mutex.new
-      @condition = Condition.new
-      @free = count
+      super()
+      synchronize { ns_initialize count }
     end
 
     # @!macro [attach] semaphore_method_acquire
@@ -33,7 +32,7 @@ module Concurrent
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
-      @mutex.synchronize do
+      synchronize do
         try_acquire_timed(permits, nil)
         nil
       end
@@ -45,7 +44,7 @@ module Concurrent
     #
     #   @return [Integer]
     def available_permits
-      @mutex.synchronize { @free }
+      synchronize { @free }
     end
 
     # @!macro [attach] semaphore_method_drain_permits
@@ -54,7 +53,7 @@ module Concurrent
     #
     #   @return [Integer]
     def drain_permits
-      @mutex.synchronize do
+      synchronize do
         @free.tap { |_| @free = 0 }
       end
     end
@@ -79,7 +78,7 @@ module Concurrent
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
-      @mutex.synchronize do
+      synchronize do
         if timeout.nil?
           try_acquire_now(permits)
         else
@@ -101,15 +100,15 @@ module Concurrent
       unless permits.is_a?(Fixnum) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
-      @mutex.synchronize do
+      synchronize do
         @free += permits
-        permits.times { @condition.signal }
+        permits.times { ns_signal }
       end
       nil
     end
 
     # @!macro [attach] semaphore_method_reduce_permits
-    # 
+    #
     #   @api private
     #
     #   Shrinks the number of available permits by the indicated reduction.
@@ -125,8 +124,14 @@ module Concurrent
       unless reduction.is_a?(Fixnum) && reduction >= 0
         fail ArgumentError, 'reduction must be an non-negative integer'
       end
-      @mutex.synchronize { @free -= reduction }
-      nil 
+      synchronize { @free -= reduction }
+      nil
+    end
+
+    protected
+
+    def ns_initialize(count)
+      @free = count
     end
 
     private
@@ -141,85 +146,20 @@ module Concurrent
     end
 
     def try_acquire_timed(permits, timeout)
-      remaining = Condition::Result.new(timeout)
-      while !try_acquire_now(permits) && remaining.can_wait?
-        @condition.signal
-        remaining = @condition.wait(@mutex, remaining.remaining_time)
-      end
-      remaining.can_wait? ? true : false
+      ns_wait_until(timeout) { try_acquire_now(permits) }
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
     # @!macro semaphore
-    #     
-    #   A counting semaphore. Conceptually, a semaphore maintains a set of permits. Each {#acquire} blocks if necessary
-    #   until a permit is available, and then takes it. Each {#release} adds a permit,
-    #   potentially releasing a blocking acquirer.
-    #   However, no actual permit objects are used; the Semaphore just keeps a count of the number available and
-    #   acts accordingly.
-    class JavaSemaphore
-      # @!macro semaphore_method_initialize
-      def initialize(count)
-        unless count.is_a?(Fixnum) && count >= 0
-          fail(ArgumentError,
-               'count must be in integer greater than or equal zero')
-        end
-        @semaphore = java.util.concurrent.Semaphore.new(count)
-      end
-
-      # @!macro semaphore_method_acquire
-      def acquire(permits = 1)
-        unless permits.is_a?(Fixnum) && permits > 0
-          fail ArgumentError, 'permits must be an integer greater than zero'
-        end
-        @semaphore.acquire(permits)
-      end
-
-      # @!macro semaphore_method_available_permits
-      def available_permits
-        @semaphore.availablePermits
-      end
-
-      # @!macro semaphore_method_drain_permits
-      def drain_permits
-        @semaphore.drainPermits
-      end
-
-      # @!macro semaphore_method_try_acquire
-      def try_acquire(permits = 1, timeout = nil)
-        unless permits.is_a?(Fixnum) && permits > 0
-          fail ArgumentError, 'permits must be an integer greater than zero'
-        end
-        if timeout.nil?
-          @semaphore.tryAcquire(permits)
-        else
-          @semaphore.tryAcquire(permits,
-                                 timeout,
-                                 java.util.concurrent.TimeUnit::SECONDS)
-        end
-      end
-
-      # @!macro semaphore_method_release
-      def release(permits = 1)
-        unless permits.is_a?(Fixnum) && permits > 0
-          fail ArgumentError, 'permits must be an integer greater than zero'
-        end
-        @semaphore.release(permits)
-        true
-      end
-
-      # @!macro semaphore_method_reduce_permits
-      def reduce_permits(reduction)
-        unless reduction.is_a?(Fixnum) && reduction >= 0
-          fail ArgumentError, 'reduction must be an non-negative integer'
-        end
-        @semaphore.reducePermits(reduction)
-      end
-    end
-
-    # @!macro semaphore
+    #
+    #   A counting semaphore. Conceptually, a semaphore maintains a set of
+    #   permits. Each {#acquire} blocks if necessary until a permit is
+    #   available, and then takes it. Each {#release} adds a permit, potentially
+    #   releasing a blocking acquirer.
+    #   However, no actual permit objects are used; the Semaphore just keeps a
+    #   count of the number available and acts accordingly.
     class Semaphore < JavaSemaphore
     end
 

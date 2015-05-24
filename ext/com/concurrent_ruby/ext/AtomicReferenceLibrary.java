@@ -25,7 +25,7 @@ import org.jruby.runtime.load.Library;
 public class AtomicReferenceLibrary implements Library {
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule concurrentMod = runtime.defineModule("Concurrent");
-        RubyClass atomicCls = concurrentMod.defineClassUnder("JavaAtomic", runtime.getObject(), JRUBYREFERENCE_ALLOCATOR);
+        RubyClass atomicCls = concurrentMod.defineClassUnder("JavaAtomicReference", runtime.getObject(), JRUBYREFERENCE_ALLOCATOR);
         try {
             sun.misc.Unsafe.class.getMethod("getAndSetObject", Object.class);
             atomicCls.setAllocator(JRUBYREFERENCE8_ALLOCATOR);

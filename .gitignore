@@ -1,4 +1,5 @@
 Gemfile.lock
+.rspec-local
 *.gem
 lib/1.8
 lib/1.9
@@ -7,8 +8,8 @@ lib/2.0
 .ruby-version
 .ruby-gemset
 .bundle/*
-.yardoc/*
-yardoc/*
+.yardoc
+yardoc
 tmp/*
 man/*
 *.tmproj
@@ -27,11 +28,10 @@ tmtags
 *.sw?
 .idea
 .rbx/*
-lib/*.bundle
-lib/*.so
-lib/*.jar
-ext/*.bundle
-ext/*.so
-ext/*.jar
+lib/**/*.bundle
+lib/**/*.so
+lib/**/*.jar
+ext/**/*.bundle
+ext/**/*.so
+ext/**/*.jar
 pkg
-*.gem

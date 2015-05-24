@@ -1,36 +1,36 @@
 require 'concurrent/dereferenceable'
-require 'concurrent/atomic/condition'
-require 'concurrent/atomic/event'
 
 module Concurrent
 
-  # An `MVar` is a synchronized single element container. They are empty or contain one item.
-  # Taking a value from an empty `MVar` blocks, as does putting a value into a full one.
-  # You can either think of them as blocking queue of length one, or a special kind of
-  # mutable variable. 
-  # 
-  # On top of the fundamental `#put` and `#take` operations, we also provide a `#mutate`
-  # that is atomic with respect to operations on the same instance. These operations all
-  # support timeouts. 
-  # 
-  # We also support non-blocking operations `#try_put!` and `#try_take!`, a `#set!` that
-  # ignores existing values, a `#value` that returns the value without removing it or
-  # returns `MVar::EMPTY`, and a `#modify!` that yields `MVar::EMPTY` if the `MVar` is
-  # empty and can be used to set `MVar::EMPTY`. You shouldn't use these operations in the
-  # first instance. 
-  # 
+  # An `MVar` is a synchronized single element container. They are empty or
+  # contain one item. Taking a value from an empty `MVar` blocks, as does
+  # putting a value into a full one. You can either think of them as blocking
+  # queue of length one, or a special kind of mutable variable.
+  #
+  # On top of the fundamental `#put` and `#take` operations, we also provide a
+  # `#mutate` that is atomic with respect to operations on the same instance.
+  # These operations all support timeouts.
+  #
+  # We also support non-blocking operations `#try_put!` and `#try_take!`, a
+  # `#set!` that ignores existing values, a `#value` that returns the value
+  # without removing it or returns `MVar::EMPTY`, and a `#modify!` that yields
+  # `MVar::EMPTY` if the `MVar` is empty and can be used to set `MVar::EMPTY`.
+  # You shouldn't use these operations in the first instance.
+  #
   # `MVar` is a [Dereferenceable](Dereferenceable).
-  # 
+  #
   # `MVar` is related to M-structures in Id, `MVar` in Haskell and `SyncVar` in Scala.
   #
   # Note that unlike the original Haskell paper, our `#take` is blocking. This is how
   # Haskell and Scala do it today.
-  # 
+  #
   # **See Also:**
-  # 
-  # 1. P. Barth, R. Nikhil, and Arvind. [M-Structures: Extending a parallel, non-
-  # strict, functional language with state](http://dl.acm.org/citation.cfm?id=652538). In Proceedings of the 5th ACM Conference on Functional Programming Languages and Computer Architecture (FPCA), 1991.
-  # 2. S. Peyton Jones, A. Gordon, and S. Finne. [Concurrent Haskell](http://dl.acm.org/citation.cfm?id=237794). In Proceedings of the 23rd Symposium on Principles of Programming Languages (PoPL), 1996.
+  #
+  # 1. P. Barth, R. Nikhil, and Arvind. [M-Structures: Extending a parallel, non- strict, functional language with state](http://dl.acm.org/citation.cfm?id=652538). In Proceedings of the 5th
+  # ACM Conference on Functional Programming Languages and Computer Architecture (FPCA), 1991.
+  # 2. S. Peyton Jones, A. Gordon, and S. Finne. [Concurrent Haskell](http://dl.acm.org/citation.cfm?id=237794).
+  # In Proceedings of the 23rd Symposium on Principles of Programming Languages
+  # (PoPL), 1996.
   class MVar
 
     include Dereferenceable
@@ -45,20 +45,22 @@ module Concurrent
     # Create a new `MVar`, either empty or with an initial value.
     #
     # @param [Hash] opts the options controlling how the future will be processed
-    # @option opts [Boolean] :operation (false) when `true` will execute the future on the global
-    #   operation pool (for long-running operations), when `false` will execute the future on the
-    #   global task pool (for short-running tasks)
+    # @option opts [Boolean] :operation (false) when `true` will execute the
+    #   future on the global operation pool (for long-running operations), when
+    #   `false` will execute the future on the global task pool (for
+    #   short-running tasks)
     # @option opts [object] :executor when provided will run all operations on
     #   this executor rather than the global thread pool (overrides :operation)
     # @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing the internal value and
-    #   returning the value returned from the proc
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before
+    #   returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     def initialize(value = EMPTY, opts = {})
       @value = value
       @mutex = Mutex.new
-      @empty_condition = Condition.new
-      @full_condition = Condition.new
+      @empty_condition = ConditionVariable.new
+      @full_condition = ConditionVariable.new
       set_deref_options(opts)
     end
 
@@ -184,7 +186,7 @@ module Concurrent
 
     # Returns if the `MVar` currently contains a value.
     def full?
-      not empty?
+      !empty?
     end
 
     private
@@ -206,12 +208,17 @@ module Concurrent
     end
 
     def wait_while(condition, timeout)
-      remaining = Condition::Result.new(timeout)
-      while yield && remaining.can_wait?
-        remaining = condition.wait(@mutex, remaining.remaining_time)
+      if timeout.nil?
+        while yield
+          condition.wait(@mutex)
+        end
+      else
+        stop = Concurrent.monotonic_time + timeout
+        while yield && timeout > 0.0
+          condition.wait(@mutex, timeout)
+          timeout = stop - Concurrent.monotonic_time
+        end
       end
     end
-
   end
-
 end

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :atomic_fixnum do
 
   context 'construction' do
@@ -117,51 +115,47 @@ module Concurrent
   describe MutexAtomicFixnum do
 
     it_should_behave_like :atomic_fixnum
+    
+    context 'construction' do
 
-    specify 'construction is synchronized' do
-      mutex = double('mutex')
-      expect(Mutex).to receive(:new).once.with(no_args).and_return(mutex)
-      described_class.new
+      it 'raises en exception if the initial value is too big' do
+        expect {
+          described_class.new(described_class::MAX_VALUE + 1)
+        }.to raise_error
+      end
+
+      it 'raises en exception if the initial value is too small' do
+        expect {
+          described_class.new(described_class::MIN_VALUE - 1)
+        }.to raise_error
+      end
     end
 
-    specify 'value is synchronized' do
-      mutex = double('mutex')
-      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
-      expect(mutex).to receive(:lock)
-      expect(mutex).to receive(:unlock)
-      described_class.new.value
-    end
+    context 'instance methods' do
 
-    specify 'value= is synchronized' do
-      mutex = double('mutex')
-      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
-      expect(mutex).to receive(:lock)
-      expect(mutex).to receive(:unlock)
-      described_class.new.value = 10
-    end
+      before(:each) do
+        expect(subject).to receive(:synchronize).with(no_args).and_call_original
+      end
 
-    specify 'increment is synchronized' do
-      mutex = double('mutex')
-      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
-      expect(mutex).to receive(:lock)
-      expect(mutex).to receive(:unlock)
-      described_class.new.increment
-    end
+      specify 'value is synchronized' do
+        subject.value
+      end
 
-    specify 'decrement is synchronized' do
-      mutex = double('mutex')
-      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
-      expect(mutex).to receive(:lock)
-      expect(mutex).to receive(:unlock)
-      described_class.new.decrement
-    end
+      specify 'value= is synchronized' do
+        subject.value = 10
+      end
 
-    specify 'compare_and_set is synchronized' do
-      mutex = double('mutex')
-      allow(Mutex).to receive(:new).with(no_args).and_return(mutex)
-      expect(mutex).to receive(:lock)
-      expect(mutex).to receive(:unlock)
-      described_class.new(14).compare_and_set(14, 2)
+      specify 'increment is synchronized' do
+        subject.increment
+      end
+
+      specify 'decrement is synchronized' do
+        subject.decrement
+      end
+
+      specify 'compare_and_set is synchronized' do
+        subject.compare_and_set(14, 2)
+      end
     end
   end
 
@@ -172,7 +166,7 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
 
     describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
@@ -186,7 +180,7 @@ module Concurrent
       end
     end
 
-    if TestHelpers.jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end

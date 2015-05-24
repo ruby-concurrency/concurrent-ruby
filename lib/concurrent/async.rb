@@ -10,8 +10,6 @@ module Concurrent
 
   # {include:file:doc/async.md}
   #
-  # @since 0.6.0
-  #
   # @see Concurrent::Obligation
   module Async
 
@@ -84,14 +82,11 @@ module Concurrent
         self.define_singleton_method(method) do |*args2|
           Async::validate_argc(@delegate, method, *args2)
           ivar = Concurrent::IVar.new
-          value, reason = nil, nil
           @serializer.post(@executor.value) do
             begin
-              value = @delegate.send(method, *args2, &block)
+              ivar.set(@delegate.send(method, *args2, &block))
             rescue => reason
-              # caught
-            ensure
-              ivar.complete(reason.nil?, value, reason)
+              ivar.fail(reason)
             end
           end
           ivar.value if @blocking
@@ -194,13 +189,21 @@ module Concurrent
     # @raise [Concurrent::InitializationError] when called more than once
     def init_mutex
       raise InitializationError.new('#init_mutex was already called') if @__async_initialized__
+
       @__async_initialized__ = true
       serializer = Concurrent::SerializedExecution.new
-      @__async_executor__ = Delay.new{ Concurrent.configuration.global_operation_pool }
-      @__await_delegator__ = Delay.new{ AsyncDelegator.new(
-        self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true) }
-      @__async_delegator__ = Delay.new{ AsyncDelegator.new(
-        self, @__async_executor__, serializer, false) }
+
+      @__async_executor__ = Delay.new {
+        Concurrent.global_io_executor
+      }
+
+      @__await_delegator__ = Delay.new {
+        AsyncDelegator.new(self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true)
+      }
+
+      @__async_delegator__ = Delay.new {
+        AsyncDelegator.new(self, @__async_executor__, serializer, false)
+      }
     end
   end
 end

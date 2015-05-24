@@ -1,8 +1,6 @@
-require 'spec_helper'
 require_relative 'thread_pool_shared'
 
 shared_examples :thread_pool_executor do
-
 
   after(:each) do
     subject.kill
@@ -174,7 +172,7 @@ shared_examples :thread_pool_executor do
       expect(subject.remaining_capacity).to eq expected_max
     end
   end
-  
+
   context '#fallback_policy' do
 
     let!(:min_threads){ 1 }
@@ -230,7 +228,7 @@ shared_examples :thread_pool_executor do
         all_tasks_posted = Concurrent::Event.new
 
         latch = Concurrent::CountDownLatch.new(max_threads)
-        
+
         initial_executed = Concurrent::AtomicFixnum.new(0)
         subsequent_executed = Concurrent::AtomicFixnum.new(0)
 
@@ -243,7 +241,7 @@ shared_examples :thread_pool_executor do
         # Wait for all those tasks to be taken off the queue onto a
         # worker thread and start executing
         latch.wait
-        
+
         # Fill up the queue (with a task that won't complete until
         # all tasks are posted)
         max_queue.times do
@@ -277,7 +275,7 @@ shared_examples :thread_pool_executor do
         all_tasks_posted = Concurrent::Event.new
 
         latch = Concurrent::CountDownLatch.new(max_threads)
-        
+
         initial_executed = Concurrent::AtomicFixnum.new(0)
         subsequent_executed = Concurrent::AtomicFixnum.new(0)
 
@@ -290,7 +288,7 @@ shared_examples :thread_pool_executor do
         # Wait for all those tasks to be taken off the queue onto a
         # worker thread and start executing
         latch.wait
-        
+
         # Fill up the queue (with a task that won't complete until
         # all tasks are posted)
         max_queue.times do
@@ -320,7 +318,7 @@ shared_examples :thread_pool_executor do
         expect(subsequent_executed.value).to be 0
       end
     end
-    
+
     context ':discard' do
 
       subject do
@@ -337,7 +335,7 @@ shared_examples :thread_pool_executor do
         all_tasks_posted = Concurrent::Event.new
 
         latch = Concurrent::CountDownLatch.new(max_threads)
-        
+
         initial_executed = Concurrent::AtomicFixnum.new(0)
         subsequent_executed = Concurrent::AtomicFixnum.new(0)
 
@@ -350,7 +348,7 @@ shared_examples :thread_pool_executor do
         # Wait for all those tasks to be taken off the queue onto a
         # worker thread and start executing
         latch.wait
-        
+
         # Fill up the queue (with a task that won't complete until
         # all tasks are posted)
         max_queue.times do
@@ -382,7 +380,7 @@ shared_examples :thread_pool_executor do
         all_tasks_posted = Concurrent::Event.new
 
         latch = Concurrent::CountDownLatch.new(max_threads)
-        
+
         initial_executed = Concurrent::AtomicFixnum.new(0)
         subsequent_executed = Concurrent::AtomicFixnum.new(0)
 
@@ -395,7 +393,7 @@ shared_examples :thread_pool_executor do
         # Wait for all those tasks to be taken off the queue onto a
         # worker thread and start executing
         latch.wait
-        
+
         # Fill up the queue (with a task that won't complete until
         # all tasks are posted)
         max_queue.times do
@@ -475,7 +473,7 @@ shared_examples :thread_pool_executor do
         Thread.new do
           5.times{ subject.post{ trigger.wait } }
         end
-        
+
         expect(Thread.list.length).to be < initial + 1 + 5
 
         # Let the executor tasks complete.

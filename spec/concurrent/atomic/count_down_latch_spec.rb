@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :count_down_latch do
 
   let(:latch) { described_class.new(3) }
@@ -17,6 +15,11 @@ shared_examples :count_down_latch do
       expect {
         described_class.new('foo')
       }.to raise_error(ArgumentError)
+    end
+
+    it 'defaults the count to 1' do
+      latch = described_class.new
+      expect(latch.count).to eq 1
     end
   end
 
@@ -85,7 +88,7 @@ end
 
 module Concurrent
 
-  describe MutexCountDownLatch do
+  describe PureCountDownLatch do
 
     it_should_behave_like :count_down_latch
 
@@ -95,9 +98,9 @@ module Concurrent
 
       before(:each) do
         def subject.simulate_spurious_wake_up
-          @mutex.synchronize do
-            @condition.signal
-            @condition.broadcast
+          synchronize do
+            ns_signal
+            ns_broadcast
           end
         end
       end
@@ -129,7 +132,7 @@ module Concurrent
     end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
 
     describe JavaCountDownLatch do
 
@@ -138,13 +141,13 @@ module Concurrent
   end
 
   describe CountDownLatch do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaCountDownLatch' do
         expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
       end
     else
       it 'inherits from MutexCountDownLatch' do
-        expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
+        expect(CountDownLatch.ancestors).to include(PureCountDownLatch)
       end
     end
   end

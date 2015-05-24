@@ -3,6 +3,7 @@ require 'concurrent/executor/ruby_thread_pool_executor'
 module Concurrent
 
   # @!macro fixed_thread_pool
+  # @!macro thread_pool_options
   class RubyFixedThreadPool < RubyThreadPoolExecutor
 
     # Create a new thread pool.
@@ -15,9 +16,9 @@ module Concurrent
     # @raise [ArgumentError] if `fallback_policy` is not a known policy
     def initialize(num_threads, opts = {})
       fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
+      raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(fallback_policy)
 
       raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
-      raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(fallback_policy)
 
       opts = {
         min_threads: num_threads,

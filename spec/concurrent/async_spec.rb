@@ -1,10 +1,8 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe Async do
 
-    let(:executor) { PerThreadExecutor.new }
+    let(:executor) { SimpleExecutorService.new }
 
     let(:async_class) do
       Class.new do
@@ -106,7 +104,7 @@ module Concurrent
     context 'executor' do
 
       it 'returns the default executor when #executor= has never been called' do
-        expect(Concurrent.configuration).to receive(:global_operation_pool).
+        expect(Concurrent).to receive(:global_io_executor).
           and_return(ImmediateExecutor.new)
         subject = async_class.new
         subject.async.echo(:foo)

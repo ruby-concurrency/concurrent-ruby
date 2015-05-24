@@ -1,128 +1,240 @@
 require 'thread'
-require 'concurrent/delay'
+require 'concurrent/atomics'
 require 'concurrent/errors'
-require 'concurrent/atomic'
-require 'concurrent/executor/immediate_executor'
-require 'concurrent/executor/thread_pool_executor'
-require 'concurrent/executor/timer_set'
+require 'concurrent/at_exit'
+require 'concurrent/executors'
 require 'concurrent/utility/processor_count'
 
 module Concurrent
   extend Logging
 
+  # Suppresses all output when used for logging.
+  NULL_LOGGER = lambda { |level, progname, message = nil, &block| }
+  private_constant :NULL_LOGGER
+
+  # @!visibility private
+  GLOBAL_LOGGER = AtomicReference.new(NULL_LOGGER)
+  private_constant :GLOBAL_LOGGER
+
+  # @!visibility private
+  GLOBAL_FAST_EXECUTOR = Delay.new { Concurrent.new_fast_executor(auto_terminate: true) }
+  private_constant :GLOBAL_FAST_EXECUTOR
+
+  # @!visibility private
+  GLOBAL_IO_EXECUTOR = Delay.new { Concurrent.new_io_executor(auto_terminate: true) }
+  private_constant :GLOBAL_IO_EXECUTOR
+
+  # @!visibility private
+  GLOBAL_TIMER_SET = Delay.new { TimerSet.new(auto_terminate: true) }
+  private_constant :GLOBAL_TIMER_SET
+
+  # @!visibility private
+  GLOBAL_IMMEDIATE_EXECUTOR = ImmediateExecutor.new
+  private_constant :GLOBAL_IMMEDIATE_EXECUTOR
+
+  def self.global_logger
+    GLOBAL_LOGGER.value
+  end
+
+  def self.global_logger=(value)
+    GLOBAL_LOGGER.value = value
+  end
+
+  # Disables AtExit hooks including pool auto-termination hooks.
+  # When disabled it will be the application
+  # programmer's responsibility to ensure that the hooks
+  # are shutdown properly prior to application exit
+  # by calling {AtExit.run} method.
+  #
+  # @note this option should be needed only because of `at_exit` ordering
+  #   issues which may arise when running some of the testing frameworks.
+  #   E.g. Minitest's test-suite runs itself in `at_exit` callback which
+  #   executes after the pools are already terminated. Then auto termination
+  #   needs to be disabled and called manually after test-suite ends.
+  # @note This method should *never* be called
+  #   from within a gem. It should *only* be used from within the main
+  #   application and even then it should be used only when necessary.
+  # @see AtExit
+  def self.disable_at_exit_hooks!
+    AtExit.enabled = false
+  end
+
+  def self.disable_executor_auto_termination!
+    warn '[DEPRECATED] Use Concurrent.disable_at_exit_hooks! instead'
+    disable_at_exit_hooks!
+  end
+
+  # @return [true,false]
+  # @see .disable_executor_auto_termination!
+  def self.disable_executor_auto_termination?
+    warn '[DEPRECATED] Use Concurrent::AtExit.enabled? instead'
+    AtExit.enabled?
+  end
+
+  # terminates all pools and blocks until they are terminated
+  # @see .disable_executor_auto_termination!
+  def self.terminate_pools!
+    warn '[DEPRECATED] Use Concurrent::AtExit.run instead'
+    AtExit.run
+  end
+
+  # Global thread pool optimized for short, fast *operations*.
+  #
+  # @return [ThreadPoolExecutor] the thread pool
+  def self.global_fast_executor
+    GLOBAL_FAST_EXECUTOR.value
+  end
+
+  # Global thread pool optimized for long, blocking (IO) *tasks*.
+  #
+  # @return [ThreadPoolExecutor] the thread pool
+  def self.global_io_executor
+    GLOBAL_IO_EXECUTOR.value
+  end
+
+  def self.global_immediate_executor
+    GLOBAL_IMMEDIATE_EXECUTOR
+  end
+
+  # Global thread pool user for global *timers*.
+  #
+  # @return [Concurrent::TimerSet] the thread pool
+  #
+  # @see Concurrent::timer
+  def self.global_timer_set
+    GLOBAL_TIMER_SET.value
+  end
+
+  # General access point to global executors.
+  # @param [Symbol, Executor] executor_identifier symbols:
+  #   - :fast - {Concurrent.global_fast_executor}
+  #   - :io - {Concurrent.global_io_executor}
+  #   - :immediate - {Concurrent.global_immediate_executor}
+  # @return [Executor]
+  def self.executor(executor_identifier)
+    Executor.executor(executor_identifier)
+  end
+
+  def self.new_fast_executor(opts = {})
+    FixedThreadPool.new(
+        [2, Concurrent.processor_count].max,
+        auto_terminate:  opts.fetch(:auto_terminate, true),
+        idletime:        60, # 1 minute
+        max_queue:       0, # unlimited
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
+    )
+  end
+
+  def self.new_io_executor(opts = {})
+    ThreadPoolExecutor.new(
+        min_threads:     [2, Concurrent.processor_count].max,
+        max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
+        # max_threads:     1000,
+        auto_terminate:  opts.fetch(:auto_terminate, true),
+        idletime:        60, # 1 minute
+        max_queue:       0, # unlimited
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
+    )
+  end
+
   # A gem-level configuration object.
   class Configuration
 
-    # a proc defining how to log messages, its interface has to be:
-    #   lambda { |level, progname, message = nil, &block| _ }
-    attr_accessor :logger
-
-    # defines if executors should be auto-terminated in at_exit callback
-    attr_accessor :auto_terminate
-
     # Create a new configuration object.
     def initialize
-      immediate_executor     = ImmediateExecutor.new
-      @global_task_pool      = Delay.new(executor: immediate_executor) { new_task_pool }
-      @global_operation_pool = Delay.new(executor: immediate_executor) { new_operation_pool }
-      @global_timer_set      = Delay.new(executor: immediate_executor) { Concurrent::TimerSet.new }
-      @logger                = no_logger
-      @auto_terminate        = true
     end
 
     # if assigned to {#logger}, it will log nothing.
+    # @deprecated Use Concurrent::NULL_LOGGER instead
     def no_logger
-      lambda { |level, progname, message = nil, &block| }
+      warn '[DEPRECATED] Use Concurrent::NULL_LOGGER instead'
+      NULL_LOGGER
     end
 
-    # Global thread pool optimized for short *tasks*.
+    # a proc defining how to log messages, its interface has to be:
+    #   lambda { |level, progname, message = nil, &block| _ }
     #
-    # @return [ThreadPoolExecutor] the thread pool
+    # @deprecated Use Concurrent.global_logger instead
+    def logger
+      warn '[DEPRECATED] Use Concurrent.global_logger instead'
+      Concurrent.global_logger.value
+    end
+
+    # a proc defining how to log messages, its interface has to be:
+    #   lambda { |level, progname, message = nil, &block| _ }
+    #
+    # @deprecated Use Concurrent.global_logger instead
+    def logger=(value)
+      warn '[DEPRECATED] Use Concurrent.global_logger instead'
+      Concurrent.global_logger = value
+    end
+
+    # @deprecated Use Concurrent.global_io_executor instead
     def global_task_pool
-      @global_task_pool.value
+      warn '[DEPRECATED] Use Concurrent.global_io_executor instead'
+      Concurrent.global_io_executor
     end
 
-    # Global thread pool optimized for long *operations*.
-    #
-    # @return [ThreadPoolExecutor] the thread pool
+    # @deprecated Use Concurrent.global_fast_executor instead
     def global_operation_pool
-      @global_operation_pool.value
+      warn '[DEPRECATED] Use Concurrent.global_fast_executor instead'
+      Concurrent.global_fast_executor
     end
 
-    # Global thread pool optimized for *timers*
-    #
-    # @return [ThreadPoolExecutor] the thread pool
-    #
-    # @see Concurrent::timer
+    # @deprecated Use Concurrent.global_timer_set instead
     def global_timer_set
-      @global_timer_set.value
+      warn '[DEPRECATED] Use Concurrent.global_timer_set instead'
+      Concurrent.global_timer_set
     end
 
-    # Global thread pool optimized for short *tasks*.
-    #
-    # A global thread pool must be set as soon as the gem is loaded. Setting a new
-    # thread pool once tasks and operations have been post can lead to unpredictable
-    # results. The first time a task/operation is post a new thread pool will be
-    # created using the default configuration. Once set the thread pool cannot be
-    # changed. Thus, explicitly setting the thread pool must occur *before* any
-    # tasks/operations are post else an exception will be raised.
-    #
-    # @param [Executor] executor the executor to be used for this thread pool
-    #
-    # @return [ThreadPoolExecutor] the new thread pool
-    #
-    # @raise [Concurrent::ConfigurationError] if this thread pool has already been set
+    # @deprecated Replacing global thread pools is deprecated.
+    #   Use the :executor constructor option instead.
     def global_task_pool=(executor)
-      @global_task_pool.reconfigure { executor } or
+      warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
+      GLOBAL_IO_EXECUTOR.reconfigure { executor } or
           raise ConfigurationError.new('global task pool was already set')
     end
 
-    # Global thread pool optimized for long *operations*.
-    #
-    # A global thread pool must be set as soon as the gem is loaded. Setting a new
-    # thread pool once tasks and operations have been post can lead to unpredictable
-    # results. The first time a task/operation is post a new thread pool will be
-    # created using the default configuration. Once set the thread pool cannot be
-    # changed. Thus, explicitly setting the thread pool must occur *before* any
-    # tasks/operations are post else an exception will be raised.
-    #
-    # @param [Executor] executor the executor to be used for this thread pool
-    #
-    # @return [ThreadPoolExecutor] the new thread pool
-    #
-    # @raise [Concurrent::ConfigurationError] if this thread pool has already been set
+    # @deprecated Replacing global thread pools is deprecated.
+    #   Use the :executor constructor option instead.
     def global_operation_pool=(executor)
-      @global_operation_pool.reconfigure { executor } or
+      warn '[DEPRECATED] Replacing global thread pools is deprecated. Use the :executor constructor option instead.'
+      GLOBAL_FAST_EXECUTOR.reconfigure { executor } or
           raise ConfigurationError.new('global operation pool was already set')
     end
 
+    # @deprecated Use Concurrent.new_io_executor instead
     def new_task_pool
-      Concurrent::ThreadPoolExecutor.new(
-          min_threads:     [2, Concurrent.processor_count].max,
-          max_threads:     [20, Concurrent.processor_count * 15].max,
-          idletime:        2 * 60, # 2 minutes
-          max_queue:       0, # unlimited
-          fallback_policy: :abort # raise an exception
-      )
+      warn '[DEPRECATED] Use Concurrent.new_io_executor instead'
+      Concurrent.new_io_executor
     end
 
+    # @deprecated Use Concurrent.new_fast_executor instead
     def new_operation_pool
-      Concurrent::ThreadPoolExecutor.new(
-          min_threads:     [2, Concurrent.processor_count].max,
-          max_threads:     [2, Concurrent.processor_count].max,
-          idletime:        10 * 60, # 10 minutes
-          max_queue:       [20, Concurrent.processor_count * 15].max,
-          fallback_policy: :abort # raise an exception
-      )
+      warn '[DEPRECATED] Use Concurrent.new_fast_executor instead'
+      Concurrent.new_fast_executor
+    end
+
+    # @deprecated Use Concurrent.disable_auto_termination_of_global_executors! instead
+    def auto_terminate=(value)
+      warn '[DEPRECATED] Use Concurrent.disable_auto_termination_of_global_executors! instead'
+      Concurrent.disable_auto_termination_of_global_executors! if !value
+    end
+
+    # @deprecated Use Concurrent.auto_terminate_global_executors? instead
+    def auto_terminate
+      warn '[DEPRECATED] Use Concurrent.auto_terminate_global_executors? instead'
+      Concurrent.auto_terminate_global_executors?
     end
   end
 
   # create the default configuration on load
-  @configuration = Atomic.new Configuration.new
+  CONFIGURATION = AtomicReference.new(Configuration.new)
+  private_constant :CONFIGURATION
 
   # @return [Configuration]
   def self.configuration
-    @configuration.value
+    CONFIGURATION.value
   end
 
   # Perform gem-level configuration.
@@ -131,37 +243,5 @@ module Concurrent
   # @yieldparam [Configuration] the current configuration object
   def self.configure
     yield(configuration)
-  end
-
-  def self.finalize_global_executors
-    self.finalize_executor(self.configuration.global_timer_set)
-    self.finalize_executor(self.configuration.global_task_pool)
-    self.finalize_executor(self.configuration.global_operation_pool)
-  end
-
-  private
-
-  # Attempt to properly shutdown the given executor using the `shutdown` or
-  # `kill` method when available.
-  #
-  # @param [Executor] executor the executor to shutdown
-  #
-  # @return [Boolean] `true` if the executor is successfully shut down or `nil`, else `false`
-  def self.finalize_executor(executor)
-    return true if executor.nil?
-    if executor.respond_to?(:shutdown)
-      executor.shutdown
-    elsif executor.respond_to?(:kill)
-      executor.kill
-    end
-    true
-  rescue => ex
-    log DEBUG, ex
-    false
-  end
-
-  # set exit hook to shutdown global thread pools
-  at_exit do
-    finalize_global_executors if configuration.auto_terminate
   end
 end

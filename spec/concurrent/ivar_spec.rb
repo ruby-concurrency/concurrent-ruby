@@ -1,7 +1,4 @@
-require 'spec_helper'
-require_relative 'dereferenceable_shared'
-require_relative 'obligation_shared'
-require_relative 'observable_shared'
+require_relative 'ivar_shared'
 
 module Concurrent
 
@@ -9,43 +6,30 @@ module Concurrent
 
     let!(:value) { 10 }
 
-    subject do
-      i = IVar.new
-      i.set(14)
-      i
+    let!(:fulfilled_value) { 10 }
+    let(:rejected_reason) { StandardError.new('Boom!') }
+
+    subject { IVar.new(value) }
+
+    let(:pending_subject) do
+      ivar = IVar.new
+      Thread.new do
+        sleep(0.1)
+        ivar.set(fulfilled_value)
+      end
+      ivar
     end
 
-    context 'behavior' do
+    let(:fulfilled_subject) do
+      IVar.new.set(fulfilled_value)
+    end
 
-      # obligation
+    let(:rejected_subject) do
+      IVar.new.fail(rejected_reason)
+    end
 
-      let!(:fulfilled_value) { 10 }
-      let(:rejected_reason) { StandardError.new('Boom!') }
-
-      let(:pending_subject) do
-        @i = IVar.new
-        Thread.new do
-          sleep(3)
-          @i.set(fulfilled_value)
-        end
-        @i
-      end
-
-      let(:fulfilled_subject) do
-        i = IVar.new
-        i.set(fulfilled_value)
-        i
-      end
-
-      let(:rejected_subject) do
-        i = IVar.new
-        i.fail(rejected_reason)
-        i
-      end
-
-      it_should_behave_like :obligation
-
-      # dereferenceable
+    it_should_behave_like :ivar do
+      subject{ IVar.new }
 
       def dereferenceable_subject(value, opts = {})
         IVar.new(value, opts)
@@ -59,17 +43,9 @@ module Concurrent
         subject.set('value')
       end
 
-      it_should_behave_like :dereferenceable
-
-      # observable
-      
-      subject{ IVar.new }
-      
       def trigger_observable(observable)
         observable.set('value')
       end
-
-      it_should_behave_like :observable
     end
 
     context '#initialize' do
@@ -86,68 +62,20 @@ module Concurrent
 
       it 'can set an initial value' do
         i = IVar.new(14)
-        expect(i).to be_completed
-      end
-
-    end
-
-    context '#set' do
-
-      it 'sets the state to be fulfilled' do
-        i = IVar.new
-        i.set(14)
-        expect(i).to be_fulfilled
-      end
-
-      it 'sets the value' do
-        i = IVar.new
-        i.set(14)
+        expect(i).to be_complete
         expect(i.value).to eq 14
       end
 
-      it 'raises an exception if set more than once' do
-        i = IVar.new
-        i.set(14)
-        expect {i.set(2)}.to raise_error(Concurrent::MultipleAssignmentError)
-        expect(i.value).to eq 14
+      it 'can set an initial value with a block' do
+        i = IVar.new{ 42 }
+        expect(i).to be_complete
+        expect(i.value).to eq 42
       end
 
-      it 'returns self' do
-        i = IVar.new
-        expect(i.set(42)).to eq i
-      end
-    end
-
-    context '#fail' do
-
-      it 'sets the state to be rejected' do
-        i = IVar.new
-        i.fail
-        expect(i).to be_rejected
-      end
-
-      it 'sets the value to be nil' do
-        i = IVar.new
-        i.fail
-        expect(i.value).to be_nil
-      end
-
-      it 'raises an exception if set more than once' do
-        i = IVar.new
-        i.fail
-        expect {i.fail}.to raise_error(Concurrent::MultipleAssignmentError)
-        expect(i.value).to be_nil
-      end
-
-      it 'defaults the reason to a StandardError' do
-        i = IVar.new
-        i.fail
-        expect(i.reason).to be_a StandardError
-      end
-
-      it 'returns self' do
-        i = IVar.new
-        expect(i.fail).to eq i
+      it 'raises an exception if given both a value and a block' do
+        expect {
+          IVar.new(42){ 42 }
+        }.to raise_error(ArgumentError)
       end
     end
 
@@ -209,7 +137,6 @@ module Concurrent
           expect(obs.value).to eq 42
         end
       end
-
     end
   end
 end

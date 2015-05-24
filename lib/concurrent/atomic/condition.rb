@@ -1,13 +1,18 @@
+require 'concurrent/utility/monotonic_time'
+
 module Concurrent
 
-  # Condition is a better implementation of standard Ruby ConditionVariable.
-  # The biggest difference is the wait return value: Condition#wait returns
-  # Condition::Result which make possible to know if waiting thread has been woken up
-  # by an another thread (using #signal or #broadcast) or due to timeout.
+  # Condition is a better implementation of standard Ruby ConditionVariable. The
+  # biggest difference is the wait return value: Condition#wait returns
+  # Condition::Result which make possible to know if waiting thread has been
+  # woken up by an another thread (using #signal or #broadcast) or due to
+  # timeout.
   #
-  # Every #wait must be guarded by a locked Mutex or a ThreadError will be risen.
-  # Although it's not mandatory, it's recommended to call also #signal and #broadcast within
-  # the same mutex
+  # Every #wait must be guarded by a locked Mutex or a ThreadError will be
+  # risen. Although it's not mandatory, it's recommended to call also #signal
+  # and #broadcast within the same mutex
+  #
+  # @deprecated
   class Condition
 
     class Result
@@ -17,12 +22,14 @@ module Concurrent
 
       attr_reader :remaining_time
 
-      # @return [Boolean] true if current thread has been waken up by a #signal or a #broadcast call, otherwise false
+      # @return [Boolean] true if current thread has been waken up by a #signal
+      #  or a #broadcast call , otherwise false
       def woken_up?
         @remaining_time.nil? || @remaining_time > 0
       end
 
-      # @return [Boolean] true if current thread has been waken up due to a timeout, otherwise false
+      # @return [Boolean] true if current thread has been waken up due to a
+      #   timeout, otherwise false
       def timed_out?
         @remaining_time != nil && @remaining_time <= 0
       end
@@ -32,20 +39,23 @@ module Concurrent
     end
 
     def initialize
+      warn '[DEPRECATED] Will be replaced with Synchronization::Object in v1.0.'
       @condition = ConditionVariable.new
     end
 
     # @param [Mutex] mutex the locked mutex guarding the wait
     # @param [Object] timeout nil means no timeout
     # @return [Result]
+    #
+    # @!macro monotonic_clock_warning
     def wait(mutex, timeout = nil)
-      start_time = Time.now.to_f
+      start_time = Concurrent.monotonic_time
       @condition.wait(mutex, timeout)
 
       if timeout.nil?
         Result.new(nil)
       else
-        Result.new(start_time + timeout - Time.now.to_f)
+        Result.new(start_time + timeout - Concurrent.monotonic_time)
       end
     end
 
@@ -62,6 +72,5 @@ module Concurrent
       @condition.broadcast
       true
     end
-
   end
 end

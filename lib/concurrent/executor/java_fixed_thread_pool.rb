@@ -1,10 +1,11 @@
-if RUBY_PLATFORM == 'java'
+if Concurrent.on_jruby?
 
   require 'concurrent/executor/java_thread_pool_executor'
 
   module Concurrent
 
     # @!macro fixed_thread_pool
+    # @!macro thread_pool_options
     class JavaFixedThreadPool < JavaThreadPoolExecutor
 
       # Create a new thread pool.
@@ -23,8 +24,6 @@ if RUBY_PLATFORM == 'java'
             max_threads: num_threads
         }.merge(opts)
         super(opts)
-
-        set_shutdown_hook
       end
     end
   end

@@ -1,14 +1,11 @@
-require 'concurrent/atomic/condition'
-
-require_relative 'waitable_list'
+require 'concurrent/channel/waitable_list'
 
 module Concurrent
   class BufferedChannel
 
     def initialize(size)
       @mutex = Mutex.new
-      @condition = Condition.new
-      @buffer_condition = Condition.new
+      @buffer_condition = ConditionVariable.new
 
       @probe_set = WaitableList.new
       @buffer = RingBuffer.new(size)
@@ -40,7 +37,7 @@ module Concurrent
           @probe_set.put(probe)
           true
         else
-          shift_buffer if probe.set_unless_assigned(peek_buffer, self)
+          shift_buffer if probe.try_set([peek_buffer, self])
         end
 
       end
@@ -76,7 +73,7 @@ module Concurrent
           push_into_buffer(value)
           true
         else
-          @probe_set.take.set_unless_assigned(value, self)
+          @probe_set.take.try_set([value, self])
         end
       end
     end

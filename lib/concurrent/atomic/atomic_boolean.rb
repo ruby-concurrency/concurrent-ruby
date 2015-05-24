@@ -1,5 +1,5 @@
-require_relative '../../extension_helper'
-Concurrent.safe_require_c_extensions
+require 'concurrent/native_extensions'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -22,7 +22,7 @@ module Concurrent
   #         3.340000   0.010000   3.350000 (  0.855000)
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html java.util.concurrent.atomic.AtomicBoolean
-  class MutexAtomicBoolean
+  class MutexAtomicBoolean < Synchronization::Object
 
     # @!macro [attach] atomic_boolean_method_initialize
     #
@@ -30,8 +30,8 @@ module Concurrent
     #
     #   @param [Boolean] initial the initial value
     def initialize(initial = false)
-      @value = !!initial
-      @mutex = Mutex.new
+      super()
+      synchronize { ns_initialize(initial) }
     end
 
     # @!macro [attach] atomic_boolean_method_value_get
@@ -40,10 +40,7 @@ module Concurrent
     #
     #   @return [Boolean] the current value
     def value
-      @mutex.lock
-      @value
-    ensure
-      @mutex.unlock
+      synchronize { @value }
     end
 
     # @!macro [attach] atomic_boolean_method_value_set
@@ -54,11 +51,7 @@ module Concurrent
     #
     #   @return [Boolean] the current value
     def value=(value)
-      @mutex.lock
-      @value = !!value
-      @value
-    ensure
-      @mutex.unlock
+      synchronize { @value = !!value }
     end
 
     # @!macro [attach] atomic_boolean_method_true_question
@@ -67,10 +60,7 @@ module Concurrent
     #
     #   @return [Boolean] true if the current value is `true`, else false
     def true?
-      @mutex.lock
-      @value
-    ensure
-      @mutex.unlock
+      synchronize { @value }
     end
 
     # @!macro atomic_boolean_method_false_question
@@ -79,10 +69,7 @@ module Concurrent
     #
     #   @return [Boolean] true if the current value is `false`, else false
     def false?
-      @mutex.lock
-      !@value
-    ensure
-      @mutex.unlock
+      synchronize { !@value }
     end
 
     # @!macro [attach] atomic_boolean_method_make_true
@@ -91,12 +78,7 @@ module Concurrent
     #
     #   @return [Boolean] true is value has changed, otherwise false
     def make_true
-      @mutex.lock
-      old = @value
-      @value = true
-      !old
-    ensure
-      @mutex.unlock
+      synchronize { ns_make_value(true) }
     end
 
     # @!macro [attach] atomic_boolean_method_make_false
@@ -105,64 +87,28 @@ module Concurrent
     #
     #   @return [Boolean] true is value has changed, otherwise false
     def make_false
-      @mutex.lock
+      synchronize { ns_make_value(false) }
+    end
+
+    protected
+
+    def ns_initialize(initial)
+      @value = !!initial
+    end
+
+    def ns_make_value(value)
       old = @value
-      @value = false
-      old
-    ensure
-      @mutex.unlock
+      @value = value
+      old != @value
     end
   end
 
-  if RUBY_PLATFORM == 'java'
+  if Concurrent.on_jruby?
 
-    # @!macro atomic_boolean
-    class JavaAtomicBoolean
-
-      # @!macro atomic_boolean_method_initialize
-      #
-      def initialize(initial = false)
-        @atomic = java.util.concurrent.atomic.AtomicBoolean.new(!!initial)
-      end
-
-      # @!macro atomic_boolean_method_value_get
-      #
-      def value
-        @atomic.get
-      end
-
-      # @!macro atomic_boolean_method_value_set
-      #
-      def value=(value)
-        @atomic.set(!!value)
-      end
-
-      # @!macro atomic_boolean_method_true_question
-      def true?
-        @atomic.get
-      end
-
-      # @!macro atomic_boolean_method_false_question
-      def false?
-        !@atomic.get
-      end
-
-      # @!macro atomic_boolean_method_make_true
-      def make_true
-        @atomic.compareAndSet(false, true)
-      end
-
-      # @!macro atomic_boolean_method_make_false
-      def make_false
-        @atomic.compareAndSet(true, false)
-      end
-    end
-
-    # @!macro atomic_boolean
     class AtomicBoolean < JavaAtomicBoolean
     end
 
-  elsif Concurrent.allow_c_native_class?('CAtomicBoolean')
+  elsif defined?(CAtomicBoolean)
 
     # @!macro atomic_boolean
     class CAtomicBoolean

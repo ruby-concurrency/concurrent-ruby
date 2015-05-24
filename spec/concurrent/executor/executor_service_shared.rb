@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'global_thread_pool_shared'
 
 shared_examples :executor_service do
@@ -175,7 +174,7 @@ shared_examples :executor_service do
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
-      unless subject.is_a?(Concurrent::SerialExecutor)
+      unless subject.serialized?
         100.times{ subject.post{ sleep(1) } }
         sleep(0.1)
         subject.shutdown

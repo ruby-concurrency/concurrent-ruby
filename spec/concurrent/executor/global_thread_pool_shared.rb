@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :global_thread_pool do
 
   context '#post' do
@@ -28,8 +26,7 @@ shared_examples :global_thread_pool do
     it 'aliases #<<' do
       latch = Concurrent::CountDownLatch.new(1)
       subject << proc { latch.count_down }
-      latch.wait(0.2)
-      expect(latch.count).to eq 0
+      expect(latch.wait(0.2)).to eq true
     end
   end
 end

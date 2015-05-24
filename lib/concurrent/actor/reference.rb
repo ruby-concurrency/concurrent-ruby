@@ -35,22 +35,24 @@ module Concurrent
 
       alias_method :<<, :tell
 
-      # Sends the message asynchronously to the actor and immediately returns {Concurrent::IVar}
-      # which will become completed when message is processed.
+      # @note it's a good practice to use tell whenever possible. Ask should be used only for
+      # testing and when it returns very shortly. It can lead to deadlock if all threads in
+      # global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      # global_io_executor.
       #
       # @note it's a good practice to use {#tell} whenever possible. Results can be send back with other messages.
       #   Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
-      #   global_task_pool will block on while asking. It's fine to use it form outside of actors and
-      #   global_task_pool.
+      #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      #   global_io_executor.
       # @param [Object] message
-      # @param [Ivar] ivar to be fulfilled be message's processing result
-      # @return [IVar] supplied ivar
+      # @param [Edge::Future] future to be fulfilled be message's processing result
+      # @return [Edge::Future] supplied future
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask(1).value # => 2
       #   adder.ask(nil).wait.reason # => #<NoMethodError: undefined method `+' for nil:NilClass>
-      def ask(message, ivar = IVar.new)
-        message message, ivar
+      def ask(message, future = Concurrent.future)
+        message message, future
       end
 
       # Sends the message synchronously and blocks until the message
@@ -58,27 +60,27 @@ module Concurrent
       #
       # @note it's a good practice to use {#tell} whenever possible. Results can be send back with other messages.
       #   Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
-      #   global_task_pool will block on while asking. It's fine to use it form outside of actors and
-      #   global_task_pool.
+      #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      #   global_io_executor.
       # @param [Object] message
-      # @param [Ivar] ivar to be fulfilled be message's processing result
+      # @param [Edge::Future] future to be fulfilled be message's processing result
       # @return [Object] message's processing result
-      # @raise [Exception] ivar.reason if ivar is #rejected?
+      # @raise [Exception] future.reason if future is #failed?
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask!(1) # => 2
-      def ask!(message, ivar = IVar.new)
-        ask(message, ivar).value!
+      def ask!(message, future = Concurrent.future)
+        ask(message, future).value!
       end
 
       def map(messages)
         messages.map { |m| self.ask(m) }
       end
 
-      # behaves as {#tell} when no ivar and as {#ask} when ivar
-      def message(message, ivar = nil)
-        core.on_envelope Envelope.new(message, ivar, Actor.current || Thread.current, self)
-        return ivar || self
+      # behaves as {#tell} when no future and as {#ask} when future
+      def message(message, future = nil)
+        core.on_envelope Envelope.new(message, future, Actor.current || Thread.current, self)
+        return future || self
       end
 
       # @see AbstractContext#dead_letter_routing

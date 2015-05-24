@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :obligation do
 
   context '#state' do

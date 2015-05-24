@@ -1,28 +1,29 @@
 require 'rbconfig'
 require 'concurrent/delay'
-require 'concurrent/executor/immediate_executor'
 
 module Concurrent
 
   class ProcessorCounter
     def initialize
-      immediate_executor        = ImmediateExecutor.new
-      @processor_count          = Delay.new(executor: immediate_executor) { compute_processor_count }
-      @physical_processor_count = Delay.new(executor: immediate_executor) { compute_physical_processor_count }
+      @processor_count          = Delay.new { compute_processor_count }
+      @physical_processor_count = Delay.new { compute_physical_processor_count }
     end
 
-    # Number of processors seen by the OS and used for process scheduling. For performance
-    # reasons the calculated value will be memoized on the first call.
+    # Number of processors seen by the OS and used for process scheduling. For
+    # performance reasons the calculated value will be memoized on the first
+    # call.
     #
-    # When running under JRuby the Java runtime call `java.lang.Runtime.getRuntime.availableProcessors`
-    # will be used. According to the Java documentation this "value may change
-    # during a particular invocation of the virtual machine... [applications]
-    # should therefore occasionally poll this property." Subsequently the result
-    # will NOT be memoized under JRuby.
+    # When running under JRuby the Java runtime call
+    # `java.lang.Runtime.getRuntime.availableProcessors` will be used. According
+    # to the Java documentation this "value may change during a particular
+    # invocation of the virtual machine... [applications] should therefore
+    # occasionally poll this property." Subsequently the result will NOT be
+    # memoized under JRuby.
     #
-    # On Windows the Win32 API will be queried for the `NumberOfLogicalProcessors from Win32_Processor`.
-    # This will return the total number "logical processors for the current instance of the processor",
-    # which taked into account hyperthreading.
+    # On Windows the Win32 API will be queried for the
+    # `NumberOfLogicalProcessors from Win32_Processor`. This will return the
+    # total number "logical processors for the current instance of the
+    # processor", which taked into account hyperthreading.
     #
     # * AIX: /usr/sbin/pmcycles (AIX 5+), /usr/sbin/lsdev
     # * BSD: /sbin/sysctl
@@ -46,14 +47,15 @@ module Concurrent
       @processor_count.value
     end
 
-    # Number of physical processor cores on the current system. For performance reasons
-    # the calculated value will be memoized on the first call.
+    # Number of physical processor cores on the current system. For performance
+    # reasons the calculated value will be memoized on the first call.
     #
-    # On Windows the Win32 API will be queried for the `NumberOfCores from Win32_Processor`.
-    # This will return the total number "of cores for the current instance of the processor."
-    # On Unix-like operating systems either the `hwprefs` or `sysctl` utility will be called
-    # in a subshell and the returned value will be used. In the rare case where none of these
-    # methods work or an exception is raised the function will simply return 1.
+    # On Windows the Win32 API will be queried for the `NumberOfCores from
+    # Win32_Processor`. This will return the total number "of cores for the
+    # current instance of the processor." On Unix-like operating systems either
+    # the `hwprefs` or `sysctl` utility will be called in a subshell and the
+    # returned value will be used. In the rare case where none of these methods
+    # work or an exception is raised the function will simply return 1.
     #
     # @return [Integer] number physical processor cores on the current system
     #
@@ -69,14 +71,14 @@ module Concurrent
     private
 
     def compute_processor_count
-      if RUBY_PLATFORM == 'java'
+      if Concurrent.on_jruby?
         java.lang.Runtime.getRuntime.availableProcessors
       else
         os_name = RbConfig::CONFIG["target_os"]
         if os_name =~ /mingw|mswin/
           require 'win32ole'
           result = WIN32OLE.connect("winmgmts://").ExecQuery(
-              "select NumberOfLogicalProcessors from Win32_Processor")
+            "select NumberOfLogicalProcessors from Win32_Processor")
           result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
         elsif File.readable?("/proc/cpuinfo")
           IO.read("/proc/cpuinfo").scan(/^processor/).size
@@ -125,7 +127,7 @@ module Concurrent
             when /mswin|mingw/
               require 'win32ole'
               result_set = WIN32OLE.connect("winmgmts://").ExecQuery(
-                  "select NumberOfCores from Win32_Processor")
+                "select NumberOfCores from Win32_Processor")
               result_set.to_enum.collect(&:NumberOfCores).reduce(:+)
             else
               processor_count

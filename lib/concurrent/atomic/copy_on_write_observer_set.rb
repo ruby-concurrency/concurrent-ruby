@@ -1,19 +1,23 @@
+require 'concurrent/synchronization'
+
 module Concurrent
 
   # A thread safe observer set implemented using copy-on-write approach:
   # every time an observer is added or removed the whole internal data structure is
   # duplicated and replaced with a new one.
-  class CopyOnWriteObserverSet
+  class CopyOnWriteObserverSet < Synchronization::Object
 
     def initialize
-      @mutex = Mutex.new
-      @observers = {}
+      super()
+      synchronize { ns_initialize }
     end
 
     # Adds an observer to this set
-    # If a block is passed, the observer will be created by this method and no other params should be passed
+    # If a block is passed, the observer will be created by this method and no
+    #   other params should be passed
     # @param [Object] observer the observer to add
-    # @param [Symbol] func the function to call on the observer during notification. Default is :update
+    # @param [Symbol] func the function to call on the observer during notification.
+    #   Default is :update
     # @return [Object] the added observer
     def add_observer(observer=nil, func=:update, &block)
       if observer.nil? && block.nil?
@@ -27,27 +31,23 @@ module Concurrent
         func = :call
       end
 
-      begin
-        @mutex.lock
+      synchronize do
         new_observers = @observers.dup
         new_observers[observer] = func
         @observers = new_observers
         observer
-      ensure
-        @mutex.unlock
       end
     end
 
     # @param [Object] observer the observer to remove
     # @return [Object] the deleted observer
     def delete_observer(observer)
-      @mutex.lock
-      new_observers = @observers.dup
-      new_observers.delete(observer)
-      @observers = new_observers
-      observer
-    ensure
-      @mutex.unlock
+      synchronize do
+        new_observers = @observers.dup
+        new_observers.delete(observer)
+        @observers = new_observers
+        observer
+      end
     end
 
     # Deletes all observers
@@ -56,7 +56,6 @@ module Concurrent
       self.observers = {}
       self
     end
-
 
     # @return [Integer] the observers count
     def count_observers
@@ -81,6 +80,12 @@ module Concurrent
       self
     end
 
+    protected
+
+    def ns_initialize
+      @observers = {}
+    end
+
     private
 
     def notify_to(observers, *args)
@@ -92,26 +97,19 @@ module Concurrent
     end
 
     def observers
-      @mutex.lock
-      @observers
-    ensure
-      @mutex.unlock
+      synchronize { @observers }
     end
 
     def observers=(new_set)
-      @mutex.lock
-      @observers = new_set
-    ensure
-      @mutex.unlock
+      synchronize { @observers = new_set }
     end
 
     def clear_observers_and_return_old
-      @mutex.lock
-      old_observers = @observers
-      @observers = {}
-      old_observers
-    ensure
-      @mutex.unlock
+      synchronize do
+        old_observers = @observers
+        @observers = {}
+        old_observers
+      end
     end
   end
 end

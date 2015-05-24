@@ -27,7 +27,7 @@ module Concurrent
 
       # @abstract override to define Actor's behaviour
       # @param [Object] message
-      # @return [Object] a result which will be used to set the IVar supplied to Reference#ask
+      # @return [Object] a result which will be used to set the Future supplied to Reference#ask
       # @note self should not be returned (or sent to other actors), {#reference} should be used
       #   instead
       def on_message(message)
@@ -46,16 +46,19 @@ module Concurrent
         @envelope = nil
       end
 
-      # if you want to pass the message to next behaviour, usually {Behaviour::ErrorsOnUnknownMessage}
+      # if you want to pass the message to next behaviour, usually
+      # {Behaviour::ErrorsOnUnknownMessage}
       def pass
         core.behaviour!(Behaviour::ExecutesContext).pass envelope
       end
 
-      # Defines an actor responsible for dead letters. Any rejected message send with
-      # {Reference#tell} is sent there, a message with ivar is considered already monitored for
-      # failures. Default behaviour is to use {AbstractContext#dead_letter_routing} of the parent,
-      # so if no {AbstractContext#dead_letter_routing} method is overridden in parent-chain the message ends up in
-      # `Actor.root.dead_letter_routing` agent which will log warning.
+      # Defines an actor responsible for dead letters. Any rejected message send
+      # with {Reference#tell} is sent there, a message with future is considered
+      # already monitored for failures. Default behaviour is to use
+      # {AbstractContext#dead_letter_routing} of the parent, so if no
+      # {AbstractContext#dead_letter_routing} method is overridden in
+      # parent-chain the message ends up in `Actor.root.dead_letter_routing`
+      # agent which will log warning.
       # @return [Reference]
       def dead_letter_routing
         parent.dead_letter_routing

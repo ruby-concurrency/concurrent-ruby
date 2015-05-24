@@ -1,5 +1,5 @@
 require 'thread'
-require 'concurrent/atomic/condition'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -13,24 +13,20 @@ module Concurrent
   # `#reset` at any time once it has been set.
   #
   # @see http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx
-  class Event
+  class Event < Synchronization::Object
 
     # Creates a new `Event` in the unset state. Threads calling `#wait` on the
     # `Event` will block.
     def initialize
-      @set       = false
-      @mutex     = Mutex.new
-      @condition = Condition.new
+      super
+      synchronize { ns_initialize }
     end
 
     # Is the object in the set state?
     #
     # @return [Boolean] indicating whether or not the `Event` has been set
     def set?
-      @mutex.lock
-      @set
-    ensure
-      @mutex.unlock
+      synchronize { @set }
     end
 
     # Trigger the event, setting the state to `set` and releasing all threads
@@ -38,29 +34,11 @@ module Concurrent
     #
     # @return [Boolean] should always return `true`
     def set
-      @mutex.lock
-      unless @set
-        @set = true
-        @condition.broadcast
-      end
-      true
-    ensure
-      @mutex.unlock
+      synchronize { ns_set }
     end
 
     def try?
-      @mutex.lock
-
-      if @set
-        false
-      else
-        @set = true
-        @condition.broadcast
-        true
-      end
-
-    ensure
-      @mutex.unlock
+      synchronize { @set ? false : ns_set }
     end
 
     # Reset a previously set event back to the `unset` state.
@@ -68,11 +46,13 @@ module Concurrent
     #
     # @return [Boolean] should always return `true`
     def reset
-      @mutex.lock
-      @set = false
-      true
-    ensure
-      @mutex.unlock
+      synchronize do
+        if @set
+          @set       = false
+          @iteration +=1
+        end
+        true
+      end
     end
 
     # Wait a given number of seconds for the `Event` to be set by another
@@ -81,18 +61,29 @@ module Concurrent
     #
     # @return [Boolean] true if the `Event` was set before timeout else false
     def wait(timeout = nil)
-      @mutex.lock
-
-      unless @set
-        remaining = Condition::Result.new(timeout)
-        while !@set && remaining.can_wait?
-          remaining = @condition.wait(@mutex, remaining.remaining_time)
+      synchronize do
+        unless @set
+          iteration = @iteration
+          ns_wait_until(timeout) { iteration < @iteration || @set }
+        else
+          true
         end
       end
+    end
 
-      @set
-    ensure
-      @mutex.unlock
+    protected
+
+    def ns_set
+      unless @set
+        @set = true
+        ns_broadcast
+      end
+      true
+    end
+
+    def ns_initialize
+      @set       = false
+      @iteration = 0
     end
   end
 end

@@ -1,9 +1,7 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe SingleThreadExecutor do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaSingleThreadExecutor' do
         expect(SingleThreadExecutor.ancestors).to include(JavaSingleThreadExecutor)
       end
@@ -15,7 +13,7 @@ module Concurrent
   end
 
   describe ThreadPoolExecutor do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaThreadPoolExecutor' do
         expect(ThreadPoolExecutor.ancestors).to include(JavaThreadPoolExecutor)
       end
@@ -27,7 +25,7 @@ module Concurrent
   end
 
   describe CachedThreadPool do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaCachedThreadPool' do
         expect(CachedThreadPool.ancestors).to include(JavaCachedThreadPool)
       end
@@ -39,7 +37,7 @@ module Concurrent
   end
 
   describe FixedThreadPool do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaFixedThreadPool' do
         expect(FixedThreadPool.ancestors).to include(JavaFixedThreadPool)
       end

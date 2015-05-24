@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'dereferenceable_shared'
 require_relative 'obligation_shared'
 
@@ -23,16 +22,16 @@ module Concurrent
       let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
       let(:pending_subject) do
-        Delay.new{ sleep 0.05; fulfilled_value }
+        Delay.new(executor: :fast){ sleep 0.05; fulfilled_value }
       end
 
       let(:fulfilled_subject) do
-        delay = Delay.new{ fulfilled_value }
+        delay = Delay.new(executor: :fast){ fulfilled_value }
         delay.tap{ delay.value }
       end
 
       let(:rejected_subject) do
-        delay = Delay.new{ raise rejected_reason }
+        delay = Delay.new(executor: :fast){ raise rejected_reason }
         delay.tap{ delay.value }
       end
 

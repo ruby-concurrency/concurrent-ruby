@@ -1,4 +1,8 @@
-require 'concurrent'
+#!/usr/bin/env ruby
+
+$: << File.expand_path('../../lib', __FILE__)
+
+require 'concurrent/atomic'
 
 my_atomic = Concurrent::Atomic.new(0)
 my_atomic.update {|v| v + 1}

@@ -1,8 +1,10 @@
 require 'rbconfig'
-require_relative '../../lib/extension_helper.rb'
+require 'concurrent/native_extensions'
 
 module Concurrent
   module TestHelpers
+    extend self
+
     def delta(v1, v2)
       if block_given?
         v1 = yield(v1)
@@ -11,17 +13,7 @@ module Concurrent
       return (v1 - v2).abs
     end
 
-    def mri?
-      RUBY_ENGINE == 'ruby'
-    end
-
-    def jruby?
-      RUBY_ENGINE == 'jruby'
-    end
-
-    def rbx?
-      RUBY_ENGINE == 'rbx'
-    end
+    include EngineDetector
 
     def use_c_extensions?
       Concurrent.allow_c_extensions? # from extension_helper.rb
@@ -31,11 +23,24 @@ module Concurrent
       @do_not_reset = true
     end
 
+    GLOBAL_EXECUTORS = [
+        [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
+        [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
+        [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
+    ]
+
     @@killed = false
 
     def reset_gem_configuration
-      Concurrent.instance_variable_get(:@configuration).value = Concurrent::Configuration.new if @@killed
-      @@killed = false
+      if @@killed
+        GLOBAL_EXECUTORS.each do |var, factory|
+          executor = Concurrent.const_get(var).value!
+          executor.shutdown
+          executor.kill
+          Concurrent.const_set(var, factory.call)
+        end
+        @@killed = false
+      end
     end
 
     def kill_rogue_threads(warning = true)
@@ -47,7 +52,12 @@ module Concurrent
       @@killed = true
     end
 
-    extend self
+    def monotonic_interval
+      raise ArgumentError.new('no block given') unless block_given?
+      start_time = GLOBAL_MONOTONIC_CLOCK.get_time
+      yield
+      GLOBAL_MONOTONIC_CLOCK.get_time - start_time
+    end
   end
 end
 

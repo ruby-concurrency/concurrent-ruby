@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'observer_set_shared'
 
 module Concurrent

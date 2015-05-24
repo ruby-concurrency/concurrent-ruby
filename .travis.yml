@@ -1,11 +1,13 @@
 language: ruby
 
 rvm:
-  - 2.1.2
+  - 2.2.0
+  - 2.1.5
+  - 2.1.4
   - 2.0.0
   - 1.9.3
   - ruby-head
-  - jruby-19mode
+  - jruby-1.7.19
   - jruby-head
   - rbx-2
 
@@ -24,4 +26,4 @@ matrix:
     - rvm: jruby-head
     - rvm: 1.9.3
 
-script: "bundle exec rake compile && bundle exec rspec --color --backtrace --tag ~unfinished --seed 1 --format documentation ./spec"
+script: bundle exec rake ci

@@ -1,11 +1,11 @@
-require_relative 'executor'
+require 'concurrent/executor/executor_service'
 
 module Concurrent
 
   # @!macro single_thread_executor
-  class RubySingleThreadExecutor
-    include RubyExecutor
-    include SerialExecutor
+  # @!macro thread_pool_options
+  class RubySingleThreadExecutor < RubyExecutorService
+    include SerialExecutorService
 
     # Create a new thread pool.
     #
@@ -17,14 +17,18 @@ module Concurrent
     # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
     # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
     def initialize(opts = {})
+      super
+    end
+
+    protected
+
+    def ns_initialize(opts)
       @queue = Queue.new
       @thread = nil
       @fallback_policy = opts.fetch(:fallback_policy, :discard)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
-      init_executor
+      self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
-
-    protected
 
     # @!visibility private
     def execute(*args, &task)

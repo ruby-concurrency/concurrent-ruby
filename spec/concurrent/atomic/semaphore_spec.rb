@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :semaphore do
   let(:semaphore) { described_class.new(3) }
 
@@ -22,7 +20,7 @@ shared_examples :semaphore do
     context 'not enough permits available' do
       it 'should block thread until permits are available' do
         semaphore.drain_permits
-        Thread.new { sleep(0.2) && semaphore.release }
+        Thread.new { sleep(0.2); semaphore.release }
 
         result = semaphore.acquire
         expect(result).to be_nil
@@ -66,7 +64,7 @@ shared_examples :semaphore do
 
       it 'acquires when permits are available within timeout' do
         semaphore.drain_permits
-        Thread.new { sleep 0.1 && semaphore.release }
+        Thread.new { sleep 0.1; semaphore.release }
         result = semaphore.try_acquire(1, 1)
         expect(result).to be_truthy
       end
@@ -103,57 +101,16 @@ end
 module Concurrent
   describe MutexSemaphore do
     it_should_behave_like :semaphore
-
-    context 'spurious wake ups' do
-      subject { described_class.new(1) }
-
-      before(:each) do
-        def subject.simulate_spurious_wake_up
-          @mutex.synchronize do
-            @condition.signal
-            @condition.broadcast
-          end
-        end
-        subject.drain_permits
-      end
-
-      it 'should resist to spurious wake ups without timeout' do
-        @expected = true
-        # would set @expected to false
-        Thread.new { @expected = subject.acquire }
-
-        sleep(0.1)
-        subject.simulate_spurious_wake_up
-
-        sleep(0.1)
-        expect(@expected).to be_truthy
-      end
-
-      it 'should resist to spurious wake ups with timeout' do
-        @expected = true
-        # sets @expected to false in another thread
-        t = Thread.new { @expected = subject.try_acquire(1, 0.3) }
-
-        sleep(0.1)
-        subject.simulate_spurious_wake_up
-
-        sleep(0.1)
-        expect(@expected).to be_truthy
-
-        t.join
-        expect(@expected).to be_falsey
-      end
-    end
   end
 
-  if TestHelpers.jruby?
+  if Concurrent.on_jruby?
     describe JavaSemaphore do
       it_should_behave_like :semaphore
     end
   end
 
   describe Semaphore do
-    if jruby?
+    if Concurrent.on_jruby?
       it 'inherits from JavaSemaphore' do
         expect(Semaphore.ancestors).to include(JavaSemaphore)
       end

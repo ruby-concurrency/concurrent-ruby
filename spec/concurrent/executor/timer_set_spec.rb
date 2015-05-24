@@ -1,29 +1,28 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe TimerSet do
 
-    subject{ TimerSet.new(executor: ImmediateExecutor.new) }
+    subject{ TimerSet.new(executor: :immediate) }
 
     after(:each){ subject.kill }
 
     it 'uses the executor given at construction' do
-      executor = double(:executor)
+      executor = Concurrent.global_immediate_executor
       expect(executor).to receive(:post).with(no_args)
       subject = TimerSet.new(executor: executor)
       subject.post(0){ nil }
       sleep(0.1)
     end
 
-    it 'uses the global task pool be default' do
-      expect(Concurrent.configuration.global_task_pool).to receive(:post).with(no_args)
+    it 'uses the global io executor be default' do
+      expect(Concurrent.global_io_executor).to receive(:post).with(no_args)
       subject = TimerSet.new
       subject.post(0){ nil }
       sleep(0.1)
     end
 
     it 'executes a given task when given a Time' do
+      warn 'deprecated syntax'
       latch = CountDownLatch.new(1)
       subject.post(Time.now + 0.1){ latch.count_down }
       expect(latch.wait(0.2)).to be_truthy
@@ -72,6 +71,7 @@ module Concurrent
     end
 
     it 'raises an exception when given a task with a past Time value' do
+      warn 'deprecated syntax'
       expect {
         subject.post(Time.now - 10){ nil }
       }.to raise_error(ArgumentError)
@@ -114,7 +114,7 @@ module Concurrent
         subject.post(interval * i) { expected << Time.now - start; latch.count_down }
       end
 
-      expect(latch.wait((tests * interval) + 1)).to be true 
+      expect(latch.wait((tests * interval) + 1)).to be true
 
       (1..tests).each do |i|
         delta = expected.pop

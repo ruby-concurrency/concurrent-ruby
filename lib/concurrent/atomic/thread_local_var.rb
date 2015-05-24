@@ -1,4 +1,4 @@
-require 'concurrent/atomic'
+require 'concurrent/atomic/thread_local_var/weak_key_map'
 
 module Concurrent
 
@@ -35,12 +35,8 @@ module Concurrent
 
       protected
 
-      unless RUBY_PLATFORM == 'java'
-        require 'ref'
-      end
-
       def allocate_storage
-        @storage = Ref::WeakKeyMap.new
+        @storage = WeakKeyMap.new
       end
 
       def get
@@ -119,11 +115,10 @@ module Concurrent
 
   # @!macro abstract_thread_local_var
   class ThreadLocalVar < AbstractThreadLocalVar
-    if RUBY_PLATFORM == 'java'
+    if Concurrent.on_jruby?
       include ThreadLocalJavaStorage
     else
       include ThreadLocalRubyStorage
     end
   end
-
 end

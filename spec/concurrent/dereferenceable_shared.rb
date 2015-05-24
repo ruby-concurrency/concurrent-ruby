@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 shared_examples :dereferenceable do
 
   it 'defaults :dup_on_deref to false' do

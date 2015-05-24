@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'thread_pool_shared'
 require 'thread'
 
@@ -146,21 +145,15 @@ shared_examples :fixed_thread_pool do
     end
   end
 
-  context '#status' do
-
-    it 'returns an array' do
-      allow(subject).to receive(:warn)
-      expect(subject.status).to be_kind_of(Array)
-    end
-  end
-
-
   context '#kill' do
 
     it 'attempts to kill all in-progress tasks' do
       thread_count = [subject.length, 5].max
       @expected = false
-      thread_count.times{ subject.post{ sleep(1) } }
+      thread_count.times do
+        # kill tries to shutdown first with 1sec timeout, so wait 2sec here
+        subject.post { sleep(2) }
+      end
       subject.post{ @expected = true }
       sleep(0.1)
       subject.kill
@@ -175,7 +168,7 @@ shared_examples :fixed_thread_pool do
       pool = described_class.new(5)
       100.times{ pool << proc{ sleep(1) } }
       sleep(0.1)
-      expect(pool.current_length).to eq 5
+      expect(pool.length).to eq 5
       pool.kill
     end
   end

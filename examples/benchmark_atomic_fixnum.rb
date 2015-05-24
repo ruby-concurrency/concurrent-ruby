@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
 
-$:.push File.join(File.dirname(__FILE__), '../lib')
+$: << File.expand_path('../../lib', __FILE__)
 
-require 'concurrent'
+require 'concurrent/atomics'
 require 'benchmark'
 require 'rbconfig'
+
+THREADS = 1
+TESTS = 10_000_000
 
 def atomic_test(clazz, opts = {})
   threads = opts.fetch(:threads, 5)
@@ -14,24 +17,25 @@ def atomic_test(clazz, opts = {})
   latch = Concurrent::CountDownLatch.new(threads)
 
   print "Testing with #{clazz}...\n"
-  stats = Benchmark.measure do
-    threads.times do |i|
-      Thread.new do
-        tests.times{ num.up }
-        latch.count_down
+  Benchmark.bmbm do |bm|
+    bm.report do
+      threads.times do |i|
+        Thread.new do
+          tests.times{ num.up }
+          latch.count_down
+        end
       end
+      latch.wait
     end
-    latch.wait
   end
-  print stats
 end
 
 puts "Testing with #{RbConfig::CONFIG['ruby_install_name']} #{RUBY_VERSION}"
 
-atomic_test(Concurrent::MutexAtomicFixnum, threads: 10, tests: 1_000_000)
+atomic_test(Concurrent::MutexAtomicFixnum, threads: THREADS, tests: TESTS)
 
 if defined? Concurrent::CAtomicFixnum
-  atomic_test(Concurrent::CAtomicFixnum, threads: 10, tests: 1_000_000)
+  atomic_test(Concurrent::CAtomicFixnum, threads: THREADS, tests: TESTS)
 elsif RUBY_PLATFORM == 'java'
-  atomic_test(Concurrent::JavaAtomicFixnum, threads: 10, tests: 1_000_000)
+  atomic_test(Concurrent::JavaAtomicFixnum, threads: THREADS, tests: TESTS)
 end

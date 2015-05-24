@@ -1,4 +1,57 @@
-### Next Release v0.7.2 (TBD)
+### Next Release v0.9.0 (Target Date: 5 April 2015)
+
+* Pure Java implementations of
+  - `AtomicBoolean`
+  - `AtomicFixnum`
+  - `Semaphore`
+* Fixed bug when pruning Ruby thread pools
+* Fixed bug in time calculations within `ScheduledTask`
+* Default `count` in `CountDownLatch` to 1
+* Use monotonic clock for all timers via `Concurrent.monotonic_time`
+  - Use `Process.clock_gettime(Process::CLOCK_MONOTONIC)` when available
+  - Fallback to `java.lang.System.nanoTime()` on unsupported JRuby versions
+  - Pure Ruby implementation for everything else
+  - Effects `Concurrent.timer`, `Concurrent.timeout`, `TimerSet`, `TimerTask`, and `ScheduledTask`
+* Deprecated all clock-time based timer scheduling
+  - Only support scheduling by delay
+  - Effects `Concurrent.timer`, `TimerSet`, and `ScheduledTask`
+* Added new `ReadWriteLock` class
+* Consistent `at_exit` behavior for Java and Ruby thread pools.
+* Added `at_exit` handler to Ruby thread pools (already in Java thread pools)
+  - Ruby handler stores the object id and retrieves from `ObjectSpace`
+  - JRuby disables `ObjectSpace` by default so that handler stores the object reference
+*	Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
+* Updated thread pool docs to better explain shutting down thread pools
+* Simpler `:executor` option syntax for all abstractions which support this option
+* Added `Executor#auto_terminate?` predicate method (for thread pools)
+* Added `at_exit` handler to `TimerSet`
+* Simplified auto-termination of the global executors
+  - Can now disable auto-termination of global executors
+  - Added shutdown/kill/wait_for_termination variants for global executors
+* Can now disable auto-termination for *all* executors (the nuclear option)
+* Simplified auto-termination of the global executors
+* Deprecated terms "task pool" and "operation pool"
+  - New terms are "io executor" and "fast executor"
+  - New functions added with new names
+  - Deprecation warnings added to functions referencing old names
+* Moved all thread pool related functions from `Concurrent::Configuration` to `Concurrent`
+  - Old functions still exist with deprecation warnings
+  - New functions have updated names as appropriate
+* All high-level abstractions default to the "io executor"
+* Fixed bug in `Actor` causing it to prematurely warm global thread pools on gem load
+  - This also fixed a `RejectedExecutionError` bug when running with minitest/autorun via JRuby
+* Moved global logger up to the `Concurrent` namespace and refactored the code
+* Optimized the performance of `Delay`
+  - Fixed a bug in which no executor option on construction caused block execution on a global thread pool
+
+## Current Release v0.8.0 (25 January 2015)
+
+* C extension for MRI have been extracted into the `concurrent-ruby-ext` companion gem.
+  Please see the README for more detail.
+* Better variable isolation in `Promise` and `Future` via an `:args` option
+* Continued to update intermittently failing tests
+
+### Release v0.7.2 (24 January 2015)
 
 * New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
 * New `Promise.all?` and `Promise.any?` class methods
@@ -6,11 +59,16 @@
 * Thread pools still accept the `:overflow_policy` option but display a warning
 * Thread pools now implement `fallback_policy` behavior when not running (rather than universally rejecting tasks)
 * Fixed minor `set_deref_options` constructor bug in `Promise` class
+* Fixed minor `require` bug in `ThreadLocalVar` class
+* Fixed race condition bug in `TimerSet` class
+* Fixed race condition bug in `TimerSet` class
+* Fixed signal bug in `TimerSet#post` method
 * Numerous non-functional updates to clear warning when running in debug mode
 * Fixed more intermittently failing tests
 * Tests now run on new Travis build environment
+* Multiple documentation updates
 
-## Current Release v0.7.1 (4 December 2014)
+### Release v0.7.1 (4 December 2014)
 
 Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/issues/142) for more information on the next planned release.
 

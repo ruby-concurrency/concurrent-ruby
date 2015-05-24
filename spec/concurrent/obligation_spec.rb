@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe Obligation do
@@ -24,7 +22,7 @@ module Concurrent
     shared_examples :incomplete do
 
       it 'should be not completed' do
-        expect(obligation).not_to be_completed
+        expect(obligation).not_to be_complete
       end
 
       it 'should be incomplete' do
@@ -81,7 +79,7 @@ module Concurrent
       end
 
       it 'should be completed' do
-        expect(obligation).to be_completed
+        expect(obligation).to be_complete
       end
 
       it 'should be not incomplete' do
@@ -158,7 +156,7 @@ module Concurrent
       end
 
       it 'should be completed' do
-        expect(obligation).to be_completed
+        expect(obligation).to be_complete
       end
 
       it 'should be not incomplete' do
@@ -281,8 +279,50 @@ module Concurrent
       it 'should execute the block within the mutex' do
         obligation.if_state(:unscheduled) { expect(obligation.mutex).to be_locked }
       end
-
     end
 
+    context '#get_arguments_from' do
+
+      it 'returns an empty array when opts is not given' do
+        args = obligation.send(:get_arguments_from)
+        expect(args).to be_a Array
+        expect(args).to be_empty
+      end
+
+      it 'returns an empty array when opts is an empty hash' do
+        args = obligation.send(:get_arguments_from, {})
+        expect(args).to be_a Array
+        expect(args).to be_empty
+      end
+
+      it 'returns an empty array when there is no :args key' do
+        args = obligation.send(:get_arguments_from, foo: 'bar')
+        expect(args).to be_a Array
+        expect(args).to be_empty
+      end
+
+      it 'returns an empty array when the :args key has a nil value' do
+        args = obligation.send(:get_arguments_from, args: nil)
+        expect(args).to be_a Array
+        expect(args).to be_empty
+      end
+
+      it 'returns a one-element array when the :args key has a non-array value' do
+        args = obligation.send(:get_arguments_from, args: 'foo')
+        expect(args).to eq ['foo']
+      end
+
+      it 'returns an array when when the :args key has an array value' do
+        expected = [1, 2, 3, 4]
+        args = obligation.send(:get_arguments_from, args: expected)
+        expect(args).to eq expected
+      end
+
+      it 'returns the given array when the :args key has a complex array value' do
+        expected = [(1..10).to_a, (20..30).to_a, (100..110).to_a]
+        args = obligation.send(:get_arguments_from, args: expected)
+        expect(args).to eq expected
+      end
+    end
   end
 end

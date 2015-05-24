@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-if Concurrent::TestHelpers.jruby?
+if Concurrent.on_jruby?
 
   require_relative 'thread_pool_executor_shared'
 
@@ -22,6 +20,8 @@ if Concurrent::TestHelpers.jruby?
           fallback_policy: :discard
         )
       end
+
+      it_should_behave_like :thread_pool
 
       it_should_behave_like :thread_pool_executor
 

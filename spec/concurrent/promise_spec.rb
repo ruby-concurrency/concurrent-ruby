@@ -1,18 +1,19 @@
-require 'spec_helper'
-require_relative 'obligation_shared'
+require_relative 'ivar_shared'
+require_relative 'thread_arguments_shared'
 
 module Concurrent
 
   describe Promise do
 
-    let(:executor) { PerThreadExecutor.new }
+    let!(:value) { 10 }
+    let(:executor) { SimpleExecutorService.new }
 
     let(:empty_root) { Promise.new(executor: executor){ nil } }
     let!(:fulfilled_value) { 10 }
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Promise.new(executor: executor){ sleep(0.3); fulfilled_value }.execute
+      Promise.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
     end
 
     let(:fulfilled_subject) do
@@ -23,11 +24,39 @@ module Concurrent
       Promise.reject(rejected_reason, executor: executor)
     end
 
-    it_should_behave_like :obligation
+    it_should_behave_like :ivar do
+      subject{ Promise.new(executor: :immediate){ value } }
 
-    it 'includes Dereferenceable' do
-      promise = Promise.new{ nil }
-      expect(promise).to be_a(Dereferenceable)
+      def dereferenceable_subject(value, opts = {})
+        opts = opts.merge(executor: executor)
+        Promise.new(opts){ value }.execute.tap{ sleep(0.1) }
+      end
+
+      def dereferenceable_observable(opts = {})
+        opts = opts.merge(executor: executor)
+        Promise.new(opts){ 'value' }
+      end
+
+      def execute_dereferenceable(subject)
+        subject.execute
+        sleep(0.1)
+      end
+
+      def trigger_observable(observable)
+        observable.execute
+        sleep(0.1)
+      end
+    end
+
+    it_should_behave_like :thread_arguments do
+
+      def get_ivar_from_no_args
+        Concurrent::Promise.execute{|*args| args }
+      end
+
+      def get_ivar_from_args(opts)
+        Concurrent::Promise.execute(opts){|*args| args }
+      end
     end
 
     context 'initializers' do
@@ -338,119 +367,169 @@ module Concurrent
       let(:promise1) { Promise.new(executor: executor) { 1 } }
       let(:promise2) { Promise.new(executor: executor) { 2 } }
       let(:promise3) { Promise.new(executor: executor) { [3] } }
-  
+
       describe '.all?' do
-  
+
         it 'returns a new Promise' do
           composite = Promise.all?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
-  
+
         it 'does not execute the returned Promise' do
           composite = Promise.all?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
-  
+
         it 'executes the #then condition when all components succeed' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.all?(promise1, promise2, promise3).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
-  
+        rescue { counter.down; latch.count_down }.
+          execute
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
-        end
-  
+          end
+
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.all?.
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
-  
+        rescue { counter.down; latch.count_down }.
+          execute
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
-        end
-  
+          end
+
         it 'executes the #rescue handler if even one component fails' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.all?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
-  
+        rescue { counter.down; latch.count_down }.
+          execute
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq -1
-        end
+          end
       end
-  
+
       describe '.any?' do
-  
+
         it 'returns a new Promise' do
           composite = Promise.any?(promise1, promise2, promise3).execute
           expect(composite).to be_a Concurrent::Promise
         end
-  
+
         it 'does not execute the returned Promise' do
           composite = Promise.any?(promise1, promise2, promise3)
           expect(composite).to be_unscheduled
         end
-  
+
         it 'executes the #then condition when any components succeed' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.any?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
-  
+        rescue { counter.down; latch.count_down }.
+          execute
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
-        end
-  
+          end
+
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.any?.
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
-  
+        rescue { counter.down; latch.count_down }.
+          execute
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq 1
-        end
-  
+          end
+
         it 'executes the #rescue handler if all componenst fail' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
-  
+
           composite = Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
-            rescue { counter.down; latch.count_down }.
-            execute
-  
+        rescue { counter.down; latch.count_down }.
+          execute
+
           latch.wait(1)
-  
+
           expect(counter.value).to eq -1
-        end
+          end
       end
     end
 
     context 'fulfillment' do
+
+      context '#set' do
+
+        it '#can only be called on the root promise' do
+          root = Promise.new{ :foo }
+          child = root.then{ :bar }
+
+          expect { child.set('foo') }.to raise_error PromiseExecutionError
+          expect { root.set('foo') }.not_to raise_error
+        end
+
+        it 'triggers children' do
+          expected = nil
+          root = Promise.new(executor: :immediate){ nil }
+          root.then{ |result| expected = result }
+          root.set(20)
+          expect(expected).to eq 20
+        end
+
+        it 'can be called with a block' do
+          p = Promise.new(executor: executor)
+          ch = p.then(&:to_s)
+          p.set { :value }
+
+          expect(p.value).to eq :value
+          expect(p.state).to eq :fulfilled
+
+          expect(ch.value).to eq 'value'
+          expect(ch.state).to eq :fulfilled
+        end
+      end
+
+      context '#fail' do
+
+        it 'can only be called on the root promise' do
+          root = Promise.new{ :foo }
+          child = root.then{ :bar }
+
+          expect { child.fail }.to raise_error PromiseExecutionError
+          expect { root.fail }.not_to raise_error
+        end
+
+        it 'rejects children' do
+          expected = nil
+          root = Promise.new(executor: :immediate)
+          root.then(Proc.new{ |reason| expected = reason })
+          root.fail(ArgumentError.new('simulated error'))
+          expect(expected).to be_a ArgumentError
+        end
+      end
 
       it 'passes the result of each block to all its children' do
         expected = nil

@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'concurrent/actor'
 
 module Concurrent
@@ -44,55 +43,8 @@ module Concurrent
         end
       end
 
-      # def trace!
-      #   set_trace_func proc { |event, file, line, id, binding, classname|
-      #     # thread = eval('Thread.current', binding).object_id.to_s(16)
-      #     printf "%8s %20s %20s %s %s:%-2d\n", event, id, classname, nil, file, line
-      #   }
-      #   yield
-      # ensure
-      #   set_trace_func nil
-      # end
-
       it 'forbids Immediate executor' do
         expect { Utils::AdHoc.spawn name: 'test', executor: ImmediateExecutor.new }.to raise_error
-      end
-
-      describe 'stress test' do
-        1.times do |i|
-          it format('run %3d', i) do
-            # puts format('run %3d', i)
-            Array.new(10).map do
-              Thread.new do
-                10.times do
-                  # trace! do
-                  queue = Queue.new
-                  actor = Ping.spawn :ping, queue
-
-                  # when spawn returns children are set
-                  expect(Concurrent::Actor.root.send(:core).instance_variable_get(:@children)).to include(actor)
-
-                  actor << 'a' << 1
-                  expect(queue.pop).to eq 'a'
-                  expect(actor.ask(2).value).to eq 2
-
-                  expect(actor.parent).to eq Concurrent::Actor.root
-                  expect(Concurrent::Actor.root.path).to eq '/'
-                  expect(actor.path).to eq '/ping'
-                  child = actor.ask(:child).value
-                  expect(child.path).to eq '/ping/pong'
-                  queue.clear
-                  child.ask(3)
-                  expect(queue.pop).to eq 3
-
-                  actor << :terminate!
-                  expect(actor.ask(:blow_up).wait).to be_rejected
-                  terminate_actors actor, child
-                end
-              end
-            end.each(&:join)
-          end
-        end
       end
 
       describe 'spawning' do
@@ -122,7 +74,7 @@ module Concurrent
                 subject { super().name }
                 it { is_expected.to eq 'ping' }
               end
-              it('executor should be global') { expect(subject.executor).to eq Concurrent.configuration.global_task_pool }
+              it('executor should be global') { expect(subject.executor).to eq Concurrent.global_io_executor }
 
               describe '#reference' do
                 subject { super().reference }
@@ -137,7 +89,7 @@ module Concurrent
 
         it 'terminates on failed initialization' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { raise }
-          expect(a.ask(nil).wait.rejected?).to be_truthy
+          expect(a.ask(nil).wait.failed?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
 
@@ -149,7 +101,7 @@ module Concurrent
 
         it 'terminates on failed message processing' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { -> _ { raise } }
-          expect(a.ask(nil).wait.rejected?).to be_truthy
+          expect(a.ask(nil).wait.failed?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
       end
@@ -192,8 +144,8 @@ module Concurrent
           envelope = subject.ask!('a')
           expect(envelope).to be_a_kind_of Envelope
           expect(envelope.message).to eq 'a'
-          expect(envelope.ivar).to be_completed
-          expect(envelope.ivar.value).to eq envelope
+          expect(envelope.future).to be_completed
+          expect(envelope.future.value).to eq envelope
           expect(envelope.sender).to eq Thread.current
           terminate_actors subject
         end
@@ -251,7 +203,8 @@ module Concurrent
       it 'links' do
         queue   = Queue.new
         failure = nil
-        # failure = AdHoc.spawn(:failure) { -> m { terminate! } } # FIXME this leads to weird message processing ordering
+        # FIXME this leads to weird message processing ordering
+        # failure = AdHoc.spawn(:failure) { -> m { terminate! } }
         monitor = AdHoc.spawn!(:monitor) do
           failure = AdHoc.spawn(:failure) { -> m { m } }
           failure << :link
@@ -285,8 +238,7 @@ module Concurrent
           resuming_behaviour = Behaviour.restarting_behaviour_definition(:resume!)
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
-            actor = AdHoc.spawn name:                 :pausing,
-                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+            actor = AdHoc.spawn name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
@@ -307,9 +259,9 @@ module Concurrent
         end
 
         it 'pauses on error and resets' do
-          queue              = Queue.new
-          test = AdHoc.spawn name:                 :tester,
-                             behaviour_definition: Behaviour.restarting_behaviour_definition do
+          queue = Queue.new
+          test  = AdHoc.spawn name:                 :tester,
+                              behaviour_definition: Behaviour.restarting_behaviour_definition do
             actor = AdHoc.spawn name:                 :pausing,
                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init

@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative 'executor_service_shared'
 
 shared_examples :thread_pool do
@@ -9,6 +8,31 @@ shared_examples :thread_pool do
   end
 
   it_should_behave_like :executor_service
+
+  context '#auto_terminate?' do
+
+    it 'returns true by default' do
+      expect(subject.auto_terminate?).to be true
+    end
+
+    it 'returns true when :enable_at_exit_handler is true' do
+      if described_class.to_s =~ /FixedThreadPool$/
+        subject = described_class.new(1, auto_terminate: true)
+      else
+        subject = described_class.new(auto_terminate: true)
+      end
+      expect(subject.auto_terminate?).to be true
+    end
+
+    it 'returns false when :enable_at_exit_handler is false' do
+      if described_class.to_s =~ /FixedThreadPool$/
+        subject = described_class.new(1, auto_terminate: false)
+      else
+        subject = described_class.new(auto_terminate: false)
+      end
+      expect(subject.auto_terminate?).to be false
+    end
+  end
 
   context '#length' do
 
@@ -22,12 +46,6 @@ shared_examples :thread_pool do
       subject.shutdown
       subject.wait_for_termination(1)
       expect(subject.length).to eq 0
-    end
-
-    it 'aliased as #current_length' do
-      5.times{ subject.post{ sleep(0.1) } }
-      sleep(0.1)
-      expect(subject.current_length).to eq subject.length
     end
   end
 

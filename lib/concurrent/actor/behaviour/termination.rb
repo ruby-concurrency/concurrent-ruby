@@ -8,18 +8,18 @@ module Concurrent
       class Termination < Abstract
 
         # @!attribute [r] terminated
-        #   @return [Event] event which will become set when actor is terminated.
+        #   @return [Edge::Event] event which will become set when actor is terminated.
         attr_reader :terminated
 
         def initialize(core, subsequent, core_options)
           super core, subsequent, core_options
-          @terminated = Concurrent::Event.new
+          @terminated = Concurrent.event
         end
 
         # @note Actor rejects envelopes when terminated.
         # @return [true, false] if actor is terminated
         def terminated?
-          @terminated.set?
+          @terminated.completed?
         end
 
         def on_envelope(envelope)
@@ -44,7 +44,7 @@ module Concurrent
         # Terminates all its children, does not wait until they are terminated.
         def terminate!
           return true if terminated?
-          terminated.set
+          terminated.complete
           broadcast(true, :terminated) # TODO do not end up in Dead Letter Router
           parent << :remove_child if parent
           true

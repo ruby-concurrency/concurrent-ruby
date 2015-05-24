@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'rbconfig'
 
 module Concurrent
@@ -29,7 +28,7 @@ module Concurrent
         expect(t2.value).to eq 14
       end
 
-      if jruby?
+      if Concurrent.on_jruby?
         it 'uses ThreadLocalJavaStorage' do
           expect(subject.class.ancestors).to include(Concurrent::AbstractThreadLocalVar::ThreadLocalJavaStorage)
         end
@@ -40,7 +39,7 @@ module Concurrent
       end
     end
 
-    unless jruby?
+    unless Concurrent.on_jruby?
       context 'GC' do
         it 'does not leave values behind when bind is used' do
           var = ThreadLocalVar.new(0)
@@ -52,19 +51,21 @@ module Concurrent
         end
 
         it 'does not leave values behind when bind is not used' do
-          if rbx?
-            pending('fails on Rbx, possibly due to test dependency on GC')
-          end
-          tries = Array.new(10) do
+          skip 'GC.run works reliably only on MRI' unless Concurrent.on_cruby? # TODO
+
+          result = 7.times.any? do |i|
             var = ThreadLocalVar.new(0)
-            10.times.map do |i|
-              Thread.new { var.value = i; var.value }
-            end.each(&:join)
+            5.times.map { |i| Thread.new { var.value = i; var.value } }.each(&:join)
             var.value = 0
+            # TODO: find out why long sleep is necessary, does it take longer for
+            #   threads to be collected?
+            sleep 0.1 * 2**i
             GC.start
+
             var.instance_variable_get(:@storage).keys.size == 1
           end
-          expect(tries.any?).to be_truthy
+
+          expect(result).to be_truthy
         end
       end
     end

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+$: << File.expand_path('../../lib', __FILE__)
+
 require 'optparse'
 
 conf = {
@@ -35,7 +37,7 @@ if conf[:vary] == "threads"
 
     ret = []
     10.times do
-      ret << `ruby ./bench_atomic_1.rb -l #{conf[:lock]} -t #{i}`.to_f
+      ret << `ruby #{File.dirname(__FILE__)}/bench_atomic_1.rb -l #{conf[:lock]} -t #{i}`.to_f
     end
 
     line = ([i] + ret).join(', ')
@@ -58,7 +60,7 @@ elsif conf[:vary] == "speed"
 
     ret = []
     10.times do
-      ret << `ruby ./bench_atomic_1.rb -l #{conf[:lock]} -s #{i}`.to_f
+      ret << `ruby #{File.dirname(__FILE__)}/bench_atomic_1.rb -l #{conf[:lock]} -s #{i}`.to_f
     end
 
     line = ([i] + ret).join(', ')

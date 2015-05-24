@@ -1,21 +1,19 @@
-require 'spec_helper'
-
 module Concurrent
 
   describe 'dataflow' do
 
     let(:executor) { ImmediateExecutor.new }
-    let(:root_executor) { PerThreadExecutor.new }
+    let(:root_executor) { SimpleExecutorService.new }
 
     it 'raises an exception when no block given' do
       expect { Concurrent::dataflow }.to raise_error(ArgumentError)
       expect { Concurrent::dataflow_with(root_executor) }.to raise_error(ArgumentError)
     end
 
-    specify '#dataflow uses the global operation pool' do
+    specify '#dataflow uses the global fast executor' do
       input = Future.execute{0}
       expect(Concurrent).to receive(:dataflow_with).once.
-        with(Concurrent.configuration.global_operation_pool, input)
+        with(Concurrent.global_io_executor, input)
       Concurrent::dataflow(input){0}
     end
 
@@ -233,7 +231,7 @@ module Concurrent
         sleep(0.1)
         expect(expected.value).to eq 13
       end
-      
+
     end
   end
 end
