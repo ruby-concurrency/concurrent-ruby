@@ -49,6 +49,8 @@ module Concurrent
   # interval is exceeded the observer will receive a `Concurrent::TimeoutError`
   # object as the third argument.
   #
+  # @!macro copy_options
+  #
   # @example Basic usage
   #   task = Concurrent::TimerTask.new{ puts 'Boom!' }
   #   task.execute
@@ -169,6 +171,8 @@ module Concurrent
     #     upon instantiation or to wait until the first #  execution_interval
     #     has passed (default: false)
     #
+    #   @!macro deref_options
+    #
     #   @raise ArgumentError when no block is given.
     #
     #   @yield to the block after :execution_interval seconds have passed since
@@ -178,13 +182,7 @@ module Concurrent
     #     refer to the execution context of the block rather than the running
     #     `TimerTask`.
     #
-    #   @note Calls Concurrent::Dereferenceable#  set_deref_options passing `opts`.
-    #     All options supported by Concurrent::Dereferenceable can be set
-    #     during object initialization.
-    #
     #   @return [TimerTask] the new `TimerTask`
-    #
-    #   @see Concurrent::Dereferenceable#  set_deref_options
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
       super

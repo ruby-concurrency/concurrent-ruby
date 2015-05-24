@@ -13,6 +13,7 @@ require 'concurrent/utilities'
 require 'concurrent/struct'
 
 require 'concurrent/atomic/atomic_reference'
+require 'concurrent/atom'
 require 'concurrent/async'
 require 'concurrent/dataflow'
 require 'concurrent/delay'

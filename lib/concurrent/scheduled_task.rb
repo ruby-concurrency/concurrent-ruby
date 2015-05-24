@@ -51,6 +51,8 @@ module Concurrent
   # module from the Ruby standard library. With one exception `ScheduledTask`
   # behaves identically to [Future](Observable) with regard to these modules. 
   #
+  # @!macro copy_options
+  #
   # @example Basic usage
   #
   #   require 'concurrent'
