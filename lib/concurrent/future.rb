@@ -8,6 +8,8 @@ module Concurrent
 
   # {include:file:doc/future.md}
   #
+  # @!macro copy_options
+  #
   # @see http://ruby-doc.org/stdlib-2.1.1/libdoc/observer/rdoc/Observable.html Ruby Observable module
   # @see http://clojuredocs.org/clojure_core/clojure.core/future Clojure's future function
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html java.util.concurrent.Future

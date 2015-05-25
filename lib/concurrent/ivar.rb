@@ -26,19 +26,59 @@ module Concurrent
   # when the values they depend on are ready you want `dataflow`. `IVar` is
   # generally a low-level primitive.
   #
-  # **See Also:**
+  # @!macro [attach] copy_options
+  #   ## Copy Options
   #
-  # * For the theory: Arvind, R. Nikhil, and K. Pingali.
-  #     [I-Structures: Data structures for parallel computing](http://dl.acm.org/citation.cfm?id=69562).
-  #     In Proceedings of Workshop on Graph Reduction, 1986.
-  # * For recent application:
-  #     [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
+  #   Object references in Ruby are mutable. This can lead to serious
+  #   problems when the {#value} of an object is a mutable reference. Which
+  #   is always the case unless the value is a `Fixnum`, `Symbol`, or similar
+  #   "primative" data type. Each instance can be configured with a few
+  #   options that can help protect the program from potentially dangerous
+  #   operations. Each of these options can be optionally set when the oject
+  #   instance is created: 
   #
-  # @example Create, set and get an `IVar`
-  #   ivar = Concurrent::IVar.new
-  #   ivar.set 14
-  #   ivar.get #=> 14
-  #   ivar.set 2 # would now be an error
+  #   * `:dup_on_deref` When true the object will call the `#dup` method on
+  #     the `value` object every time the `#value` methid is called
+  #     (default: false)
+  #   * `:freeze_on_deref` When true the object will call the `#freeze`
+  #     method on the `value` object every time the `#value` method is called
+  #     (default: false)
+  #   * `:copy_on_deref` When given a `Proc` object the `Proc` will be run
+  #     every time   the `#value` method is called. The `Proc` will be given
+  #     the current `value` as its only argument and the result returned by
+  #     the block will be the return   value of the `#value` call. When `nil`
+  #     this option will be ignored (default: nil)
+  #  
+  #   When multiple deref options are set the order of operations is strictly defined.
+  #   The order of deref operations is:
+  #   * `:copy_on_deref`
+  #   * `:dup_on_deref`
+  #   * `:freeze_on_deref`
+  #  
+  #   Because of this ordering there is no need to `#freeze` an object created by a
+  #   provided `:copy_on_deref` block. Simply set `:freeze_on_deref` to `true`.
+  #   Setting both `:dup_on_deref` to `true` and `:freeze_on_deref` to `true` is
+  #   as close to the behavior of a "pure" functional language (like Erlang, Clojure,
+  #   or Haskell) as we are likely to get in Ruby.
+  #
+  # ## Examples
+  #
+  # Create, set and get an `IVar`
+  #
+  # ```ruby
+  # ivar = Concurrent::IVar.new
+  # ivar.set 14
+  # ivar.get #=> 14
+  # ivar.set 2 # would now be an error
+  # ```
+  #
+  # ## See Also
+  #
+  # 1. For the theory: Arvind, R. Nikhil, and K. Pingali.
+  #    [I-Structures: Data structures for parallel computing](http://dl.acm.org/citation.cfm?id=69562).
+  #    In Proceedings of Workshop on Graph Reduction, 1986.
+  # 2. For recent application:
+  #    [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
   class IVar < Synchronization::Object
     include Obligation
     include Observable
@@ -50,12 +90,15 @@ module Concurrent
     #
     # @param [Object] value the initial value
     # @param [Hash] opts the options to create a message with
-    # @option opts [String] :dup_on_deref (false) call `#dup` before returning
-    #   the data
-    # @option opts [String] :freeze_on_deref (false) call `#freeze` before
-    #   returning the data
-    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
-    #   the internal value and returning the value returned from the proc
+    #
+    # @!macro [attach] deref_options
+    #   @option opts [Boolean] :dup_on_deref (false) Call `#dup` before
+    #     returning the data from {#value}
+    #   @option opts [Boolean] :freeze_on_deref (false) Call `#freeze` before
+    #     returning the data from {#value}
+    #   @option opts [Proc] :copy_on_deref (nil) When calling the {#value}
+    #     method, call the given proc passing the internal value as the sole
+    #     argument then return the new value returned from the proc.
     def initialize(value = NO_VALUE, opts = {}, &block)
       if value != NO_VALUE && block_given?
         raise ArgumentError.new('provide only a value or a block')

@@ -56,6 +56,8 @@ module Concurrent
   #
   # Promises run on the global thread pool.
   #
+  # @!macro copy_options
+  #
   # ### Examples
   #
   # Start by requiring promises
