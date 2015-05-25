@@ -30,7 +30,8 @@ module Concurrent
     #
     #   @param [Boolean] initial the initial value
     def initialize(initial = false)
-      super(initial)
+      super()
+      synchronize { ns_initialize(initial) }
     end
 
     # @!macro [attach] atomic_boolean_method_value_get

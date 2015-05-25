@@ -99,7 +99,8 @@ module Concurrent
     attr_reader :fallback_policy
 
     def initialize(*args, &block)
-      super
+      super(&nil)
+      synchronize { ns_initialize(*args, &block) }
     end
 
     # @!macro [attach] executor_service_method_shutdown

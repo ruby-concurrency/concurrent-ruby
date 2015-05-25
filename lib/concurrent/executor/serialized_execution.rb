@@ -9,6 +9,11 @@ module Concurrent
   class SerializedExecution < Synchronization::Object
     include Logging
 
+    def initialize()
+      super()
+      synchronize { ns_initialize }
+    end
+
     Job = Struct.new(:executor, :args, :block) do
       def call
         block.call(*args)

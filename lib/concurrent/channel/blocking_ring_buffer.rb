@@ -4,7 +4,8 @@ module Concurrent
   class BlockingRingBuffer < Synchronization::Object
 
     def initialize(capacity)
-      super(capacity)
+      super()
+      synchronize { ns_initialize capacity}
     end
 
     # @return [Integer] the capacity of the buffer

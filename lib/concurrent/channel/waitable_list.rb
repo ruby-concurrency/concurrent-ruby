@@ -3,6 +3,11 @@ require 'concurrent/synchronization'
 module Concurrent
   class WaitableList < Synchronization::Object
 
+    def initialize
+      super()
+      synchronize { ns_initialize }
+    end
+
     def size
       synchronize { @list.size }
     end

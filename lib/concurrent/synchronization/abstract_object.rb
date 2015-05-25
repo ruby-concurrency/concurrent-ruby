@@ -42,6 +42,18 @@ module Concurrent
       end
 
       # initialization of the object called inside synchronize block
+      # @note has to be called manually when required in children of this class
+      # @example
+      #   class Child < Concurrent::Synchornization::Object
+      #     def initialize(*args, &block)
+      #       super(&nil)
+      #       synchronize { ns_initialize(*args, &block) }
+      #     end
+      #   
+      #     def ns_initialize(*args, &block)
+      #       @args = args          
+      #     end
+      #   end
       def ns_initialize(*args, &block)
       end
 
@@ -149,7 +161,6 @@ module Concurrent
         end
         names.map { |n| [n, :"#{n}="] }.flatten
       end
-
     end
   end
 end

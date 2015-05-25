@@ -23,7 +23,8 @@ module Concurrent
       unless count.is_a?(Fixnum) && count >= 0
         fail ArgumentError, 'count must be an non-negative integer'
       end
-      super(count)
+      super()
+      synchronize { ns_initialize count }
     end
 
     # @!macro [attach] semaphore_method_acquire

@@ -66,7 +66,7 @@ describe 'Concurrent::Edge futures' do
     specify do
       completable_event = Concurrent.event
       one               = completable_event.chain { 1 }
-      join              = Concurrent.join(completable_event).chain { 1 }
+      join              = Concurrent.zip(completable_event).chain { 1 }
       expect(one.completed?).to be false
       completable_event.complete
       expect(one.value).to eq 1
@@ -78,7 +78,7 @@ describe 'Concurrent::Edge futures' do
     specify do
       completable_future = Concurrent.future
       one                = completable_future.then(&:succ)
-      join               = Concurrent.join(completable_future).then { |v| v }
+      join               = Concurrent.zip(completable_future).then { |v| v }
       expect(one.completed?).to be false
       completable_future.success 0
       expect(one.value).to eq 1
@@ -97,13 +97,37 @@ describe 'Concurrent::Edge futures' do
       queue.push(2)
 
       anys = [Concurrent.any(f1, f2),
-              f1 | f2,
-              f1.or(f2)]
+              f1 | f2]
 
       anys.each do |any|
         expect(any.value.to_s).to match /1|2/
       end
 
+    end
+  end
+
+  describe '.zip' do
+    it 'continues on first result' do
+      a = Concurrent.future { 1 }
+      b = Concurrent.future { 2 }
+      c = Concurrent.future { 3 }
+
+      z1 = a & b
+      z2 = Concurrent.zip a, b, c
+
+      expect(z1.value).to eq [1, 2]
+      expect(z2.value).to eq [1, 2, 3]
+
+      q = Queue.new
+      z1.then { |*args| q << args }
+      expect(q.pop).to eq [1, 2]
+      z1.then { |a, b, c| q << [a, b, c] }
+      expect(q.pop).to eq [1, 2, nil]
+
+      expect(z1.then { |a, b| a+b }.value).to eq 3
+      expect(z1.then { |a, b| a+b }.value).to eq 3
+      expect(z1.then(&:+).value).to eq 3
+      expect(z2.then { |a, b, c| a+b+c }.value).to eq 6
     end
   end
 
@@ -113,9 +137,11 @@ describe 'Concurrent::Edge futures' do
       future = Concurrent.future { :value } # executed on FAST_EXECUTOR pool by default
       future.on_completion(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
       future.on_completion! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
+      future.on_success(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
+      future.on_success! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
 
       expect(future.value).to eq :value
-      expect([queue.pop, queue.pop].sort).to eq [:async, :sync]
+      expect([queue.pop, queue.pop, queue.pop, queue.pop].sort).to eq [:async, :async, :sync, :sync]
     end
 
     it 'chains' do
@@ -126,7 +152,7 @@ describe 'Concurrent::Edge futures' do
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
       future5 = future3.with_default_executor(:fast) # connects new future with different executor, the new future is completed when future3 is
       future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
-      future7 = Concurrent.join(future0, future3)
+      future7 = future0 & future3
       future8 = future0.rescue { raise 'never happens' } # future0 succeeds so future8'll have same value as future 0
 
       futures = [future0, future1, future2, future3, future4, future5, future6, future7, future8]
@@ -179,15 +205,16 @@ describe 'Concurrent::Edge futures' do
       branch1 = head.then(&:succ)
       branch2 = head.then(&:succ).delay.then(&:succ)
       results = [
-          Concurrent.join(branch1, branch2).then { |b1, b2| b1 + b2 },
-          branch1.join(branch2).then { |b1, b2| b1 + b2 },
-          (branch1 + branch2).then { |b1, b2| b1 + b2 }]
+          Concurrent.zip(branch1, branch2).then { |b1, b2| b1 + b2 },
+          branch1.zip(branch2).then { |b1, b2| b1 + b2 },
+          (branch1 & branch2).then { |b1, b2| b1 + b2 }]
 
       sleep 0.1
       expect(branch1).to be_completed
       expect(branch2).not_to be_completed
 
       expect(results.map(&:value)).to eq [5, 5, 5]
+      expect(Concurrent.zip(branch1, branch2).value).to eq [2, 3]
     end
 
     it 'has flat map' do
@@ -208,7 +235,32 @@ describe 'Concurrent::Edge futures' do
                value).to eq 6
   end
 
+  specify do
+    expect(Concurrent.future { :v }.value!).to eq :v
+  end
+
 end
+
+# def synchronize
+#   if @__mutex__do_not_use_directly.owned?
+#     yield
+#   else
+#     @__mutex__do_not_use_directly.synchronize { yield }
+#     #   @__mutex__do_not_use_directly.synchronize do
+#     #     locking = (Thread.current[:locking] ||= [])
+#     #     locking.push self
+#     #     puts "locking #{locking.size}" # : #{locking}"
+#     #     begin
+#     #       yield
+#     #     ensure
+#     #       if locking.size > 2
+#     #         # binding.pry
+#     #       end
+#     #       locking.pop
+#     #     end
+#     #   end
+#   end
+# end
 
 __END__
 

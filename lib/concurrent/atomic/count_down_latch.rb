@@ -24,7 +24,8 @@ module Concurrent
       unless count.is_a?(Fixnum) && count >= 0
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
-      super(count)
+      super()
+      synchronize { ns_initialize count }
     end
 
     # @!macro [attach] count_down_latch_method_wait
