@@ -152,7 +152,7 @@ module Concurrent
     raise Transaction::LeaveError.new
   end
 
-  module_function :atomically, :abort_transaction
+  module_function :atomically, :abort_transaction, :leave_transaction
 
   private
 
