@@ -208,7 +208,7 @@ module Concurrent
     #
     # @!visibility private
     def <=>(other)
-      self.schedule_time <=> other.schedule_time
+      schedule_time <=> other.schedule_time
     end
 
     # Has the task been cancelled?

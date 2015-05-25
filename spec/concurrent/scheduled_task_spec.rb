@@ -175,8 +175,10 @@ module Concurrent
 
       it 'uses the :timer_set from the options' do
         timer = Concurrent::TimerSet.new
-        expect(timer).to receive(:post_task).once.with(any_args).and_return(false)
+        queue = timer.instance_variable_get(:@queue)
         task = ScheduledTask.execute(1, timer_set: timer){ nil }
+        expect(queue.size).to eq 1
+        task.cancel
       end
 
       it 'sets the state to :processing when the task is running' do
