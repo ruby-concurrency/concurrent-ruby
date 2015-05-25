@@ -127,7 +127,7 @@ module Concurrent
       end
     end
 
-    it 'provides strong isolation' do
+    it 'is implemented with lazy writes' do
       t = TVar.new(0)
 
       a = CountDownLatch.new
