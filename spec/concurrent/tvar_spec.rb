@@ -117,6 +117,7 @@ module Concurrent
           t.value = 1
           a.count_down
           b.wait
+          Concurrent.leave_transaction
         end
       end
 
@@ -124,6 +125,7 @@ module Concurrent
         a.wait
         expect(t.value).to eq 0
         b.count_down
+        Concurrent.leave_transaction
       end
     end
 
@@ -187,6 +189,26 @@ module Concurrent
 
     it 'raises an exception outside an #atomically block' do
       expect { Concurrent::abort_transaction }.to raise_error(Concurrent::Transaction::AbortError)
+    end
+
+  end
+
+  describe '#leave_transaction' do
+
+    it 'raises an exception outside an #atomically block' do
+      expect { Concurrent::leave_transaction }.to raise_error(Concurrent::Transaction::LeaveError)
+    end
+
+    it 'neither commits nor aborts a transaction' do
+      t = TVar.new(0)
+
+      Concurrent::atomically do
+        expect(t.value).to eq 0
+        t.value = 14
+        Concurrent::leave_transaction
+      end
+
+      expect(t.value).to eq 0
     end
 
   end
