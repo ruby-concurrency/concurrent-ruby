@@ -128,22 +128,23 @@ module Concurrent
 
     # @!visibility private
     def self.included(base)
+      base.singleton_class.send(:alias_method, :original_new, :new)
+      base.send(:private_class_method, :original_new)
       base.extend(ClassMethods)
-      base.send(:private_class_method, :new)
-      super(base)
-    end
-
-    # @!visibility private
-    def self.extended(base)
-      base.extend(ClassMethods)
-      base.send(:private_class_method, :new)
       super(base)
     end
 
     # @!visibility private
     module ClassMethods
+
+      # @deprecated
+      def new(*args, &block)
+        warn '[DEPRECATED] use the `create` method instead'
+        create(*args, &block)
+      end
+
       def create(*args, &block)
-        obj = self.send(:new, *args, &block)
+        obj = original_new(*args, &block)
         obj.send(:init_synchronization)
         obj
       end
@@ -267,6 +268,22 @@ module Concurrent
     def executor=(executor)
       @__async_executor__.reconfigure { executor } or
         raise ArgumentError.new('executor has already been set')
+    end
+
+    # Initialize the internal serializer and other stnchronization mechanisms.
+    #
+    # @note This method *must* be called immediately upon object construction.
+    #   This is the only way thread-safe initialization can be guaranteed.
+    #
+    # @raise [Concurrent::InitializationError] when called more than once
+    #
+    # @!visibility private
+    # @deprecated
+    def init_mutex
+      warn '[DEPRECATED] use the `create` method instead'
+      init_synchronization
+    rescue InitializationError
+      # suppress
     end
 
     private
