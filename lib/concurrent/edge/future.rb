@@ -591,7 +591,7 @@ module Concurrent
       end
 
       # @return [Future]
-      def evaluate_to(*args, &block)
+      def evaluate_to(*args, block)
         complete true, block.call(*args), nil
       rescue => error
         complete false, nil, error
@@ -741,7 +741,7 @@ module Concurrent
       def on_completable(done_future)
         if done_future.success?
           Concurrent.post_on(@Executor, done_future, @Task) do |done_future, task|
-            evaluate_to { done_future.apply_value done_future.value, task }
+            evaluate_to lambda { done_future.apply_value done_future.value, task }
           end
         else
           complete false, nil, done_future.reason
@@ -759,7 +759,7 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.failed?
-          Concurrent.post_on(@Executor, done_future.reason, @Task) { |reason, task| evaluate_to reason, &task }
+          Concurrent.post_on(@Executor, done_future.reason, @Task) { |reason, task| evaluate_to reason, task }
         else
           complete true, done_future.value, nil
         end
@@ -771,9 +771,9 @@ module Concurrent
 
       def on_completable(done_future)
         if Future === done_future
-          Concurrent.post_on(@Executor, done_future, @Task) { |future, task| evaluate_to *future.result, &task }
+          Concurrent.post_on(@Executor, done_future, @Task) { |future, task| evaluate_to *future.result, task }
         else
-          Concurrent.post_on(@Executor, @Task) { |task| evaluate_to &task }
+          Concurrent.post_on(@Executor, @Task) { |task| evaluate_to task }
         end
       end
     end
