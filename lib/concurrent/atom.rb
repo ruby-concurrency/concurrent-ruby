@@ -24,23 +24,27 @@ module Concurrent
   class Atom < Synchronization::Object
     include Dereferenceable
 
-    # @!macro [attach] atom_initialize
+    # Create a new atom with the given initial value.
     #
-    #   Create a new atom with the given initial value.
+    # @param [Object] value The initial value
+    # @param [Hash] opts The options used to configure the atom
+    # @option opts [Proc] :validator (nil) Optional proc used to validate new
+    #   values. It must accept one and only one argument which will be the
+    #   intended new value. The validator will return true if the new value
+    #   is acceptable else return false (preferrably) or raise an exception.
     #
-    #   @param [Object] value The initial value
-    #   @param [Hash] opts The options used to configure the atom
-    #   @option opts [Proc] :validator (nil) Optional proc used to validate new
-    #     values. It must accept one and only one argument which will be the
-    #     intended new value. The validator will return true if the new value
-    #     is acceptable else return false (preferrably) or raise an exception.
-    #
-    #   @!macro deref_options
+    # @!macro deref_options
     # 
-    #   @raise [ArgumentError] if the validator is not a `Proc` (when given)
+    # @raise [ArgumentError] if the validator is not a `Proc` (when given)
     def initialize(value, opts = {})
       super()
-      synchronize{ ns_initialize(value, opts) }
+
+      @validator = opts.fetch(:validator, ->(v){ true })
+      raise ArgumentError.new('validator must be a proc') unless @validator.is_a? Proc
+
+      @value = Concurrent::AtomicReference.new(value)
+      ns_set_deref_options(opts)
+      ensure_ivar_visibility!
     end
 
     # The current value of the atom.
@@ -112,15 +116,6 @@ module Concurrent
     end
 
     private
-
-    # @!macro atom_initialize
-    # @!visibility private
-    def ns_initialize(value, opts)
-      @validator = opts.fetch(:validator, ->(v){ true })
-      raise ArgumentError.new('validator must be a proc') unless @validator.is_a? Proc
-      @value = Concurrent::AtomicReference.new(value)
-      ns_set_deref_options(opts)
-    end
 
     # @!macro atom_compare_and_set
     # @raise [Exception] if the validator proc raises an exception
