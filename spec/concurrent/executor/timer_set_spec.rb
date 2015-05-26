@@ -11,6 +11,14 @@ module Concurrent
 
     context 'construction' do
 
+      before(:all) do
+        reset_gem_configuration
+      end
+
+      after(:each) do
+        reset_gem_configuration
+      end
+
       it 'uses the executor given at construction' do
         executor = Concurrent.global_immediate_executor
         expect(executor).to receive(:post).with(no_args)
