@@ -51,9 +51,9 @@ module Concurrent
   # ```ruby
   # result = MyFileUtils.consult("data.dat") # returns a Maybe
   # if result.just?
-  #   do_something_useful(result.just)       # or result.value
+  #   do_something_useful(result.value)      # or result.just
   # else
-  #   logger.error(result.nothing)           # or result.reason
+  #   logger.error(result.reason)            # or result.nothing
   # end
   # ```
   #
@@ -72,12 +72,12 @@ module Concurrent
   #   maybe = MyFileUtils.consult('bogus.file')
   #   maybe.just?    #=> false
   #   maybe.nothing? #=> true
-  #   maybe.nothing  #=> #<Errno::ENOENT: No such file or directory @ rb_sysopen - bogus.file>
+  #   maybe.reason   #=> #<Errno::ENOENT: No such file or directory @ rb_sysopen - bogus.file>
   #
   #   maybe = MyFileUtils.consult('README.md')
   #   maybe.just?    #=> true
   #   maybe.nothing? #=> false
-  #   maybe.just     #=> "# Concurrent Ruby\n[![Gem Version..."
+  #   maybe.value    #=> "# Concurrent Ruby\n[![Gem Version..."
   #
   # @example Using Maybe with a Block
   #   result = Concurrent::Maybe.from do
@@ -86,11 +86,11 @@ module Concurrent
   #
   #   # -- if the record was found
   #   result.just? #=> true
-  #   result.just  #=> #<Client id: 10, first_name: "Ryan">
+  #   result.value #=> #<Client id: 10, first_name: "Ryan">
   #
   #   # -- if the record was not found
-  #   result.just?   #=> false
-  #   result.nothing #=> ActiveRecord::RecordNotFound
+  #   result.just?  #=> false
+  #   result.reason #=> ActiveRecord::RecordNotFound
   #
   # @example Using Maybe with the Null Object Pattern
   #   # In a Rails controller...
