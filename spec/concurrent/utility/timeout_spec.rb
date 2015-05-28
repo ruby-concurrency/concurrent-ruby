@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe '#timeout' do
+  describe '#timeout', notravis: true do
 
     it 'raises an exception if no block is given' do
       expect { Concurrent::timeout(0.1) }.to raise_error
