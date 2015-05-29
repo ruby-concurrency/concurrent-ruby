@@ -1,103 +1,132 @@
 describe Concurrent::Edge::AtomicMarkableReference do
-  # use a number outside JRuby's fixnum cache range, to ensure identity is
-  # preserved
   subject { described_class.new 1000, true }
 
-  specify :test_construct do
-    expect(subject.value).to eq 1000
-    expect(subject.marked?).to eq true
+  describe '.initialize' do
+    it 'constructs the object' do
+      expect(subject.value).to eq 1000
+      expect(subject.marked?).to eq true
+    end
+
+    it 'has sane defaults' do
+      amr = described_class.new
+
+      expect(amr.value).to eq nil
+      expect(amr.marked?).to eq false
+    end
   end
 
-  specify :test_set do
-    val, mark = subject.set 1001, true
+  describe '#set' do
+    it 'sets the value and mark' do
+      val, mark = subject.set 1001, true
 
-    expect(subject.value).to eq 1001
-    expect(subject.marked?).to eq true
-
-    expect(val).to eq 1001
-    expect(mark).to eq true
+      expect(subject.value).to eq 1001
+      expect(subject.marked?).to eq true
+      expect(val).to eq 1001
+      expect(mark).to eq true
+    end
   end
 
-  specify :test_update do
-    val, mark = subject.update { |v, m| [v + 1, !m] }
+  describe '#try_update' do
+    it 'updates the value and mark' do
+      val, mark = subject.try_update { |v, m| [v + 1, !m] }
 
-    expect(subject.value).to eq 1001
-    expect(subject.marked?).to eq false
+      expect(subject.value).to eq 1001
+      expect(val).to eq 1001
+      expect(mark).to eq false
+    end
 
-    expect(val).to eq 1001
-    expect(mark).to eq false
+    it 'raises ConcurrentUpdateError when attempting to set inside of block' do
+      expect do
+        subject.try_update do |v, m|
+          subject.set(1001, false)
+          [v + 1, !m]
+        end
+      end.to raise_error Concurrent::ConcurrentUpdateError
+    end
   end
 
-  specify :test_try_update do
-    val, mark = subject.try_update { |v, m| [v + 1, !m] }
+  describe '#update' do
+    it 'updates the value and mark' do
+      val, mark = subject.update { |v, m| [v + 1, !m] }
 
-    expect(subject.value).to eq 1001
+      expect(subject.value).to eq 1001
+      expect(subject.marked?).to eq false
 
-    expect(val).to eq 1001
-    expect(mark).to eq false
-  end
+      expect(val).to eq 1001
+      expect(mark).to eq false
+    end
 
-  specify :test_try_update_fails do
-    expect do
-      # assigning within block exploits implementation detail for test
-      subject.try_update do |v, m|
+    it 'retries until update succeeds' do
+      tries = 0
+
+      subject.update do |v, m|
+        tries += 1
         subject.set(1001, false)
         [v + 1, !m]
       end
-    end.to raise_error Concurrent::ConcurrentUpdateError
-  end
 
-  specify :test_update_retries do
-    tries = 0
-
-    # assigning within block exploits implementation detail for test
-    subject.update do |v, m|
-      tries += 1
-      subject.set(1001, false)
-      [v + 1, !m]
+      expect(tries).to eq 2
     end
-
-    expect(tries).to eq 2
-  end
-
-  specify :test_numeric_cas do
-    # non-idempotent Float (JRuby, Rubinius, MRI < 2.0.0 or 32-bit)
-    subject.set(1.0 + 0.1, true)
-    expect(subject.compare_and_set(1.0 + 0.1, 1.2, true, false))
-      .to be_truthy, "CAS failed for (#{1.0 + 0.1}, true) => (1.2, false)"
-
-    # Bignum
-    subject.set(2**100, false)
-    expect(subject.compare_and_set(2**100, 2**99, false, true))
-      .to be_truthy, "CAS failed for (#{2**100}, false) => (0, true)"
-
-    # Rational
-    require 'rational' unless ''.respond_to? :to_r
-    subject.set(Rational(1, 3), true)
-    expect(subject.compare_and_set(Rational(1, 3), Rational(3, 1), true, false))
-      .to be_truthy, "CAS failed for (#{Rational(1, 3)}, true) => (0, false)"
-
-    # Complex
-    require 'complex' unless ''.respond_to? :to_c
-    subject.set(Complex(1, 2), false)
-    expect(subject.compare_and_set(Complex(1, 2), Complex(1, 3), false, true))
-      .to be_truthy, "CAS failed for (#{Complex(1, 2)}, false) => (0, false)"
   end
 
   describe '#compare_and_set' do
-    context 'objects have the same identity' do
-      it 'is successful' do
+    context 'when objects have the same identity' do
+      it 'sets the value and mark' do
         arr = [1, 2, 3]
         subject.set(arr, true)
         expect(subject.compare_and_set(arr, 1.2, true, false)).to be_truthy
       end
     end
 
-    context 'objects have the different identity' do
-      it 'is not successful' do
+    context 'when objects have the different identity' do
+      it 'it does not set the value or mark' do
         subject.set([1, 2, 3], true)
         expect(subject.compare_and_set([1, 2, 3], 1.2, true, false))
           .to be_falsey
+      end
+
+      context 'when comparing Numeric objects' do
+        context 'Non-idepotent Float' do
+          it 'sets the value and mark' do
+            subject.set(1.0 + 0.1, true)
+            expect(subject.compare_and_set(1.0 + 0.1, 1.2, true, false))
+              .to be_truthy
+          end
+        end
+
+        context 'BigNum' do
+          it 'sets the value and mark' do
+            subject.set(2**100, false)
+            expect(subject.compare_and_set(2**100, 2**99, false, true))
+              .to be_truthy
+          end
+        end
+
+        context 'Rational' do
+          it 'sets the value and mark' do
+            require 'rational' unless ''.respond_to? :to_r
+            subject.set(Rational(1, 3), true)
+            comp = subject.compare_and_set(Rational(1, 3),
+                                           Rational(3, 1),
+                                           true,
+                                           false)
+            expect(comp).to be_truthy
+          end
+        end
+      end
+
+      context 'Rational' do
+        it 'is successful' do
+          # Complex
+          require 'complex' unless ''.respond_to? :to_c
+          subject.set(Complex(1, 2), false)
+          comp = subject.compare_and_set(Complex(1, 2),
+                                         Complex(1, 3),
+                                         false,
+                                         true)
+          expect(comp)
+            .to be_truthy
+        end
       end
     end
   end
