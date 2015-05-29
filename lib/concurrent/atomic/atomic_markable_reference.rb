@@ -30,19 +30,30 @@ module Concurrent
         current = @Reference.get
         curr_val, curr_mark = current
 
-        # Ensure that that the expected values match.
-        return false unless (expected_val == curr_val) &&
-                            (expected_mark == curr_mark)
+        # Ensure that that the expected marks match.
+        return false unless expected_mark == curr_mark
 
-        # In this case, it would be redundant to set the fields. Just
-        # shortcircuit without wasting CPU time on CAS.
-        return true if (new_val == curr_val) &&
-                       (new_mark == curr_mark)
+        if expected_val.is_a? Numeric
+          # If the object is a numeric, we need to ensure we are comparing
+          # the numerical values
+          return false unless expected_val == curr_val
+        else
+          # Otherwise, we need to ensure we are comparing the object identity.
+          # Theoretically, this could be incorrect if a user monkey-patched
+          # `Object#equal?`, but they should know that they are playing with
+          # fire at that point.
+          return false unless expected_val.equal? curr_val
+        end
 
         prospect = ImmutableArray[new_val, new_mark]
 
-        @Reference.compare_and_set current, prospect
+        # If we guarantee internally that `current` will never be a Numeric, we
+        # can skip a type check in `compare_and_set` and directly call
+        # `_compare_and_set`. This is possible since we always internally wrap
+        # the users `value` and `mark` in an ImmutableArray.
+        @Reference._compare_and_set current, prospect
       end
+      alias_method :compare_and_swap, :compare_and_set
 
       # @!macro [attach] atomic_markable_reference_method_get
       #

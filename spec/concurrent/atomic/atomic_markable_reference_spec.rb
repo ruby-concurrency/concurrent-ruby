@@ -83,4 +83,22 @@ describe Concurrent::Edge::AtomicMarkableReference do
     expect(subject.compare_and_set(Complex(1, 2), Complex(1, 3), false, true))
       .to be_truthy, "CAS failed for (#{Complex(1, 2)}, false) => (0, false)"
   end
+
+  describe '#compare_and_set' do
+    context 'objects have the same identity' do
+      it 'is successful' do
+        arr = [1, 2, 3]
+        subject.set(arr, true)
+        expect(subject.compare_and_set(arr, 1.2, true, false)).to be_truthy
+      end
+    end
+
+    context 'objects have the different identity' do
+      it 'is not successful' do
+        subject.set([1, 2, 3], true)
+        expect(subject.compare_and_set([1, 2, 3], 1.2, true, false))
+          .to be_falsey
+      end
+    end
+  end
 end
