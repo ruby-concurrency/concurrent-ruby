@@ -92,12 +92,13 @@ module Concurrent
       specify do
         pool = RubyThreadPoolExecutor.new(config)
 
-        100.times do
+        10.times do
           count = Concurrent::CountDownLatch.new(100)
           100.times do
             pool.post { count.count_down }
           end
           count.wait
+          sleep 0.01 # let the tasks end after count_down
           expect(pool.length).to be <= [200, config[:max_threads]].min
           if pool.length > [110, config[:max_threads]].min
             puts "ERRORSIZE #{pool.length} max #{config[:max_threads]}"
