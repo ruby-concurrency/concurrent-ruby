@@ -1,12 +1,6 @@
 require 'concurrent'
 require 'thread'
 
-logger                          = Logger.new($stderr)
-logger.level                    = Logger::DEBUG
-Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
-  logger.add level, message, progname, &block
-end
-
 describe 'Concurrent::Edge futures' do
 
   describe '.post' do
