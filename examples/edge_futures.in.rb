@@ -23,7 +23,9 @@ head    = Concurrent.future { 1 } #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
 branch1.zip(branch2).value
-(branch1 & branch2).then { |(a, b)| a + b }.value
+(branch1 & branch2).then { |a, b| a + b }.value!
+(branch1 & branch2).then(&:+).value!
+Concurrent.zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # pick only first completed
 (branch1 | branch2).value
 
@@ -170,7 +172,7 @@ Concurrent.zip(*jobs).value
 
 def schedule_job
   Concurrent.schedule(1) { do_stuff }.
-      rescue { |e| report_error e }.
+      rescue { |e| StandardError === e ? report_error(e) : raise(e) }.
       then { schedule_job unless @end }
 end
 
@@ -214,7 +216,7 @@ class DBConnection < Concurrent::Actor::Utils::AbstractWorker
   end
 end
 
-data = Array.new(10) { |i| '*' * i }
+data      = Array.new(10) { |i| '*' * i }
 pool_size = 5
 
 DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |balancer, index|
