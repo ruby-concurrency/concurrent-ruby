@@ -38,7 +38,7 @@ Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value
 ### Delay
 
 # will not evaluate until asked by #value or other method requiring completion
-scheduledfuture = Concurrent.delay { 'lazy' }
+future = Concurrent.delay { 'lazy' }
 sleep 0.1 #
 future.completed?
 future.value
@@ -136,6 +136,25 @@ Concurrent.
 actor.ask(2).then(&:succ).value
 
 
+### Interoperability with channels
+
+ch1 = Concurrent::Edge::Channel.new
+ch2 = Concurrent::Edge::Channel.new
+
+result = Concurrent.select(ch1, ch2)
+ch1.push 1
+result.value!
+
+Concurrent.
+    future { 1+1 }.
+    then_push(ch1)
+result = Concurrent.
+    future { '%02d' }.
+    then_select(ch1, ch2).
+    then { |format, (value, channel)| format format, value }
+result.value!
+
+
 ### Common use-cases Examples
 
 # simple background processing
@@ -147,12 +166,68 @@ Concurrent.zip(*jobs).value
 
 
 # periodic task
+@end = false
+
 def schedule_job
   Concurrent.schedule(1) { do_stuff }.
       rescue { |e| report_error e }.
-      then { schedule_job }
+      then { schedule_job unless @end }
 end
 
 schedule_job
+@end = true
 
 
+# How to limit processing where there are limited resources?
+# By creating an actor managing the resource
+DB   = Concurrent::Actor::Utils::AdHoc.spawn :db do
+  data = Array.new(10) { |i| '*' * i }
+  lambda do |message|
+    # pretending that this queries a DB
+    data[message]
+  end
+end
+
+concurrent_jobs = 11.times.map do |v|
+  Concurrent.
+      future { v }.
+      # ask the DB with the `v`, only one at the time, rest is parallel
+      then_ask(DB).
+      # get size of the string, fails for 11
+      then(&:size).
+      rescue { |reason| reason.message } # translate error to value (exception, message)
+end #
+
+Concurrent.zip(*concurrent_jobs).value!
+
+
+# In reality there is often a pool though:
+class DBConnection < Concurrent::Actor::Utils::AbstractWorker
+  def initialize(balancer, data)
+    super balancer
+    @data = data
+  end
+
+  def work(message)
+    # pretending that this queries a DB
+    @data[message]
+  end
+end
+
+data = Array.new(10) { |i| '*' * i }
+pool_size = 5
+
+DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |balancer, index|
+  DBConnection.spawn(name: "worker-#{index}", args: [balancer, data])
+end
+
+concurrent_jobs = 11.times.map do |v|
+  Concurrent.
+      future { v }.
+      # ask the DB_POOL with the `v`, only 5 at the time, rest is parallel
+      then_ask(DB_POOL).
+      then(&:size).
+      rescue { |reason| reason.message }
+end #
+
+Concurrent.zip(*concurrent_jobs).value!

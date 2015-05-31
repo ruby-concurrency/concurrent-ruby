@@ -82,6 +82,12 @@ module Concurrent
         AnyPromise.new(futures, :io).future
       end
 
+      def select(*channels)
+        probe = future
+        channels.each { |ch| ch.select probe }
+        probe
+      end
+
       def post!(*args, &job)
         post_on(:fast, *args, &job)
       end
@@ -173,6 +179,10 @@ module Concurrent
 
       def schedule(intended_time)
         chain { ScheduledPromise.new(@DefaultExecutor, intended_time).event.zip(self) }.flat
+      end
+
+      def then_select(*channels)
+        self.zip(Concurrent.select(*channels))
       end
 
       # @yield [success, value, reason] executed async on `executor` when completed
@@ -408,6 +418,10 @@ module Concurrent
 
       def any(*futures)
         AnyPromise.new([self, *futures], @DefaultExecutor).future
+      end
+
+      def then_push(channel)
+        on_success { |value| channel.push value } # FIXME it's blocking for now
       end
 
       alias_method :|, :any
@@ -1010,7 +1024,37 @@ module Concurrent
             @Future.complete(true, args, nil)
           end
         end
+      end
+    end
 
+    class Channel < Synchronization::Object
+      # TODO make lock free
+      def initialize
+        super
+        @ProbeSet = WaitableList.new
+        ensure_ivar_visibility!
+      end
+
+      def probe_set_size
+        @ProbeSet.size
+      end
+
+      def push(value)
+        until @ProbeSet.take.try_success([value, self])
+        end
+      end
+
+      def pop
+        select(Concurrent.future)
+      end
+
+      def select(probe)
+        @ProbeSet.put(probe)
+        probe
+      end
+
+      def inspect
+        to_s
       end
     end
   end
