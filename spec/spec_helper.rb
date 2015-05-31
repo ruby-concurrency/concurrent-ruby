@@ -3,7 +3,7 @@ require 'concurrent'
 require 'concurrent-edge'
 
 logger       = Logger.new($stderr)
-logger.level = Logger::WARN
+logger.level = Logger::FATAL
 
 logger.formatter = lambda do |severity, datetime, progname, msg|
   formatted_message = case msg
@@ -22,9 +22,9 @@ logger.formatter = lambda do |severity, datetime, progname, msg|
          formatted_message
 end
 
-#Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
-  #logger.add level, message, progname, &block
-#end
+Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
+  logger.add level, message, progname, &block
+end
 
 if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
   require 'simplecov'
