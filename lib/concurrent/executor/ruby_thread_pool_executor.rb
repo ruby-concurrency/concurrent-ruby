@@ -128,6 +128,7 @@ module Concurrent
 
     protected
 
+    # @!visibility private
     def ns_initialize(opts)
       @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
@@ -155,10 +156,12 @@ module Concurrent
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
     end
 
+    # @!visibility private
     def ns_limited_queue?
       @max_queue != 0
     end
 
+    # @!visibility private
     def ns_execute(*args, &task)
       if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
         @scheduled_task_count += 1
@@ -172,6 +175,7 @@ module Concurrent
 
     alias_method :execute, :ns_execute
 
+    # @!visibility private
     def ns_shutdown_execution
       if @pool.empty?
         # nothing to do
@@ -187,7 +191,7 @@ module Concurrent
 
     alias_method :shutdown_execution, :ns_shutdown_execution
 
-    # @api private
+    # @!visibility private
     def ns_kill_execution
       # TODO log out unprocessed tasks in queue
       # TODO try to shutdown first?
@@ -200,6 +204,8 @@ module Concurrent
 
     # tries to assign task to a worker, tries to get one from @ready or to create new one
     # @return [true, false] if task is assigned to a worker
+    #
+    # @!visibility private
     def ns_assign_worker(*args, &task)
       # keep growing if the pool is not at the minimum yet
       worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
@@ -213,6 +219,8 @@ module Concurrent
 
     # tries to enqueue task
     # @return [true, false] if enqueued
+    #
+    # @!visibility private
     def ns_enqueue(*args, &task)
       if !ns_limited_queue? || @queue.size < @max_queue
         @queue << [task, args]
@@ -222,6 +230,7 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     def ns_worker_died(worker)
       ns_remove_busy_worker worker
       replacement_worker = ns_add_busy_worker
@@ -230,6 +239,8 @@ module Concurrent
 
     # creates new worker which has to receive work to do after it's added
     # @return [nil, Worker] nil of max capacity is reached
+    #
+    # @!visibility private
     def ns_add_busy_worker
       return if @pool.size >= @max_length
 
@@ -239,6 +250,8 @@ module Concurrent
     end
 
     # handle ready worker, giving it new job or assigning back to @ready
+    #
+    # @!visibility private
     def ns_ready_worker(worker, success = true)
       @completed_task_count += 1 if success
       task_and_args         = @queue.shift
@@ -255,6 +268,8 @@ module Concurrent
     end
 
     # returns back worker to @ready which was not idle for enough time
+    #
+    # @!visibility private
     def ns_worker_not_old_enough(worker)
       # let's put workers coming from idle_test back to the start (as the oldest worker)
       @ready.unshift(worker)
@@ -262,6 +277,8 @@ module Concurrent
     end
 
     # removes a worker which is not in not tracked in @ready
+    #
+    # @!visibility private
     def ns_remove_busy_worker(worker)
       @pool.delete(worker)
       stopped_event.set if @pool.empty? && !running?
@@ -269,6 +286,8 @@ module Concurrent
     end
 
     # try oldest worker if it is idle for enough time, it's returned back at the start
+    #
+    # @!visibility private
     def ns_prune_pool
       return if @pool.size <= @min_length
 
@@ -345,5 +364,7 @@ module Concurrent
         throw :stop
       end
     end
+
+    private_constant :Worker
   end
 end

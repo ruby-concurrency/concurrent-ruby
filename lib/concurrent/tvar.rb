@@ -115,6 +115,9 @@ module Concurrent
           rescue Transaction::AbortError => e
             transaction.abort
             result = Transaction::ABORTED
+          rescue Transaction::LeaveError => e
+            transaction.abort
+            break result
           rescue => e
             transaction.abort
             raise e
@@ -144,7 +147,12 @@ module Concurrent
     raise Transaction::AbortError.new
   end
 
-  module_function :atomically, :abort_transaction
+  # Leave a transaction without commiting or aborting - see `Concurrent::atomically`.
+  def leave_transaction
+    raise Transaction::LeaveError.new
+  end
+
+  module_function :atomically, :abort_transaction, :leave_transaction
 
   private
 
@@ -155,6 +163,7 @@ module Concurrent
     ReadLogEntry = Struct.new(:tvar, :version)
 
     AbortError = Class.new(StandardError)
+    LeaveError = Class.new(StandardError)
 
     def initialize
       @read_log  = []

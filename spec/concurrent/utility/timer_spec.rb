@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe '#timer' do
+  describe '#timer', notravis: true do
 
     it 'raises an exception when no block given' do
       expect {

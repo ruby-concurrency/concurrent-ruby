@@ -119,18 +119,27 @@ shared_examples :dereferenceable do
 
     if dereferenceable_subject(0).respond_to?(:add_observer)
 
+      latch = Concurrent::CountDownLatch.new
+      observer = Class.new do
+        def initialize(latch)
+          @latch = latch
+        end
+        def update(*args)
+          @latch.count_down
+        end
+      end.new(latch)
+
       result = 'result'
+      copier = proc { result }
       expect(result).to receive(:dup).at_least(:once).and_return(result)
       expect(result).to receive(:freeze).at_least(:once).and_return(result)
-      copier = proc { result }
-
-      observer = double('observer')
-      expect(observer).to receive(:update).at_least(:once).with(any_args)
+      expect(copier).to receive(:call).at_least(:once).and_return(result)
 
       subject = dereferenceable_observable(dup_on_deref: true, freeze_on_deref: true, copy_on_deref: copier)
 
       subject.add_observer(observer)
       execute_dereferenceable(subject)
+      latch.wait(1)
     end
   end
 end

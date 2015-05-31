@@ -7,9 +7,6 @@ module Concurrent
     # FIXME better tests!
 
     describe 'Concurrent::Actor' do
-      prepend_before do
-        do_no_reset!
-      end
 
       def terminate_actors(*actors)
         actors.each do |actor|

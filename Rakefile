@@ -1,5 +1,7 @@
 #!/usr/bin/env rake
 
+$:.push File.join(File.dirname(__FILE__), 'lib')
+
 require 'concurrent/version'
 require 'concurrent/native_extensions'
 

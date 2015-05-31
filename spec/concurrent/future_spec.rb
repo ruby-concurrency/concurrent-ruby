@@ -18,7 +18,9 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Future.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
+      executor = Concurrent::SingleThreadExecutor.new
+      executor.post{ sleep(5) }
+      Future.execute(executor: executor){ fulfilled_value }
     end
 
     let(:fulfilled_subject) do
@@ -110,8 +112,11 @@ module Concurrent
       end
 
       it 'sets the state to :pending' do
-        latch = Concurrent::CountDownLatch.new(1)
-        future = Future.new(executor: executor){ latch.wait(10) }
+        latch = Concurrent::CountDownLatch.new
+        executor = Concurrent::SingleThreadExecutor.new
+        executor.post{ latch.wait(2) }
+
+        future = Future.new(executor: executor){ 42 }
         future.execute
         expect(future).to be_pending
         latch.count_down
@@ -150,10 +155,29 @@ module Concurrent
 
       let(:executor) { ImmediateExecutor.new }
 
+      it 'sets the state to :processing while the task is executing' do
+        start_latch = Concurrent::CountDownLatch.new
+        continue_latch = Concurrent::CountDownLatch.new
+        executor = Concurrent::SingleThreadExecutor.new
+
+        future = Future.execute(executor: executor) do
+          start_latch.count_down
+          continue_latch.wait(2)
+          42
+        end
+
+        start_latch.wait(2)
+        state = future.state
+        continue_latch.count_down
+        future.value
+
+        expect(state).to eq :processing
+      end
+
       it 'passes all arguments to handler' do
-        @expected = false
-        Future.new(executor: executor){ @expected = true }.execute
-        expect(@expected).to be_truthy
+        expected = false
+        Future.new(executor: executor){ expected = true }.execute
+        expect(expected).to be_truthy
       end
 
       it 'sets the value to the result of the handler' do
@@ -194,6 +218,82 @@ module Concurrent
 
         it 'aliases #deref for #value' do
           expect(subject.deref).to eq value
+        end
+      end
+    end
+
+    context 'cancellation' do
+
+      context '#cancel' do
+
+        it 'fails to cancel the task once processing has begun' do
+          start_latch = Concurrent::CountDownLatch.new
+          continue_latch = Concurrent::CountDownLatch.new
+          f = Future.execute do
+            start_latch.count_down
+            continue_latch.wait(2)
+            42
+          end
+
+          start_latch.wait(2)
+          cancelled = f.cancel
+          continue_latch.count_down
+
+          expect(cancelled).to be false
+          expect(f.value).to eq 42
+          expect(f).to be_fulfilled
+        end
+
+        it 'fails to cancel the task once processing is complete' do
+          f = Future.execute{ 42 }
+          f.wait
+          cancelled = f.cancel
+
+          expect(cancelled).to be false
+          expect(f.value).to eq 42
+          expect(f).to be_fulfilled
+        end
+
+        it 'cancels a pending task' do
+          executor = Concurrent::SingleThreadExecutor.new
+          latch = Concurrent::CountDownLatch.new
+          executor.post{ latch.wait(2) }
+
+          f = Future.execute(executor: executor){ 42 }
+          cancelled = f.cancel
+          latch.count_down
+
+          expect(cancelled).to be true
+          expect(f.value).to be_nil
+          expect(f).to be_rejected
+          expect(f.reason).to be_a Concurrent::CancelledOperationError
+        end
+      end
+
+      context '#wait_or_cancel' do
+
+        it 'returns true if the operation completes before timeout' do
+          f = Future.execute{ 42 }
+          success = f.wait_or_cancel(1)
+
+          expect(success).to be true
+          expect(f.value).to eq 42
+          expect(f).to be_fulfilled
+        end
+
+        it 'cancels the task on timeout' do
+          latch = Concurrent::CountDownLatch.new
+          executor = Concurrent::SingleThreadExecutor.new
+          executor.post{ latch.wait(2) }
+
+          f = Future.execute(executor: executor){ 42 }
+          success = f.wait_or_cancel(0.1)
+          latch.count_down
+
+          expect(success).to be false
+          expect(f.value).to be_nil
+          expect(f).to be_rejected
+          expect(f.reason).to be_a Concurrent::CancelledOperationError
         end
       end
     end

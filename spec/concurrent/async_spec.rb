@@ -8,8 +8,7 @@ module Concurrent
       Class.new do
         include Concurrent::Async
         attr_accessor :accessor
-        def initialize
-          init_mutex
+        def initialize(*args)
         end
         def echo(msg)
           msg
@@ -30,9 +29,62 @@ module Concurrent
     end
 
     subject do
-      obj = async_class.new
+      obj = async_class.create
       obj.executor = executor
       obj
+    end
+
+    context 'object creation' do
+
+      # Will be added in 1.0 once deprecated methods are removed
+      #it 'makes #new private' do
+      #  expect{ async_class.new }.to raise_error(NoMethodError)
+      #end
+
+      # Will be removed in 1.0 once deprecated methods are removed
+      it '#new delegates to #create' do
+        args = [:foo, 'bar', 42]
+        expect(async_class).to receive(:create).once.with(*args)
+        async_class.new(*args)
+      end
+
+      it 'uses #create to instanciate new objects' do
+        object = async_class.create
+        expect(object).to be_a async_class
+      end
+
+      specify '#create initializes synchronization' do
+        mock = async_class.create
+        allow(async_class).to receive(:original_new).and_return(mock)
+        expect(mock).to receive(:init_synchronization).once.with(no_args)
+        async_class.create
+      end
+
+      specify '#create passes all args to the constructor' do
+        clazz = Class.new do
+          include Concurrent::Async
+          attr_reader :args
+          def initialize(*args)
+            @args = args
+          end
+        end
+
+        object = clazz.create(:foo, :bar)
+        expect(object.args).to eq [:foo, :bar]
+      end
+
+      specify '#create passes all args to the constructor' do
+        clazz = Class.new do
+          include Concurrent::Async
+          attr_reader :block
+          def initialize(&block)
+            @block = yield
+          end
+        end
+
+        object = clazz.create{ 42 }
+        expect(object.block).to eq 42
+      end
     end
 
     context '#validate_argc' do
@@ -106,21 +158,21 @@ module Concurrent
       it 'returns the default executor when #executor= has never been called' do
         expect(Concurrent).to receive(:global_io_executor).
           and_return(ImmediateExecutor.new)
-        subject = async_class.new
+        subject = async_class.create
         subject.async.echo(:foo)
       end
 
       it 'returns the memo after #executor= has been called' do
         executor = ImmediateExecutor.new
         expect(executor).to receive(:post)
-        subject = async_class.new
+        subject = async_class.create
         subject.executor = executor
         subject.async.echo(:foo)
       end
 
       it 'raises an exception if #executor= is called after initialization complete' do
         executor = ImmediateExecutor.new
-        subject = async_class.new
+        subject = async_class.create
         subject.async.echo(:foo)
         expect {
           subject.executor = executor
@@ -157,7 +209,7 @@ module Concurrent
       it 'runs the future on the memoized executor' do
         executor = ImmediateExecutor.new
         expect(executor).to receive(:post).with(any_args)
-        subject = async_class.new
+        subject = async_class.create
         subject.executor = executor
         subject.async.echo(:foo)
       end
@@ -196,11 +248,6 @@ module Concurrent
         val = subject.async.with_block{ :foo }
         sleep(0.1)
         expect(val.value).to eq :foo
-      end
-
-      it 'is aliased as #future' do
-        val = subject.future.wait(5)
-        expect(val).to be_a Concurrent::IVar
       end
 
       context '#method_missing' do
@@ -277,11 +324,6 @@ module Concurrent
         expect(val.value).to eq :foo
       end
 
-      it 'is aliased as #delay' do
-        val = subject.delay.echo(5)
-        expect(val).to be_a Concurrent::IVar
-      end
-
       context '#method_missing' do
 
         it 'defines the method after the first call' do
@@ -304,45 +346,16 @@ module Concurrent
         object = Class.new {
           include Concurrent::Async
           attr_reader :bucket
-          def initialize() init_mutex; end
           def gather(seconds, first, *rest)
             sleep(seconds)
             (@bucket ||= []).concat([first])
             @bucket.concat(rest)
           end
-        }.new
+        }.create
 
         object.async.gather(0.5, :a, :b)
         object.await.gather(0, :c, :d)
         expect(object.bucket).to eq [:a, :b, :c, :d]
-      end
-
-      context 'raises an InitializationError' do
-
-        let(:async_class) do
-          Class.new do
-            include Concurrent::Async
-            def echo(msg) msg; end
-          end
-        end
-
-        it 'when #async is called before #init_mutex' do
-          expect {
-            async_class.new.async.echo(:foo)
-          }.to raise_error(Concurrent::InitializationError)
-        end
-
-        it 'when #await is called before #init_mutex' do
-          expect {
-            async_class.new.async.echo(:foo)
-          }.to raise_error(Concurrent::InitializationError)
-        end
-
-        it 'when #executor= is called before #init_mutex' do
-          expect {
-            async_class.new.executor = Concurrent::ImmediateExecutor.new
-          }.to raise_error(Concurrent::InitializationError)
-        end
       end
     end
   end

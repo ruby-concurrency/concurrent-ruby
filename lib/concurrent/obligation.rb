@@ -138,23 +138,23 @@ module Concurrent
     protected
 
     # @!visibility private
-    def get_arguments_from(opts = {}) # :nodoc:
+    def get_arguments_from(opts = {})
       [*opts.fetch(:args, [])]
     end
 
     # @!visibility private
-    def init_obligation(*args) # :nodoc:
+    def init_obligation(*args)
       init_mutex(*args)
       @event = Event.new
     end
 
     # @!visibility private
-    def event # :nodoc:
+    def event
       @event
     end
 
     # @!visibility private
-    def set_state(success, value, reason) # :nodoc:
+    def set_state(success, value, reason)
       if success
         @value = value
         @state = :fulfilled
@@ -165,8 +165,8 @@ module Concurrent
     end
 
     # @!visibility private
-    def state=(value) # :nodoc:
-      mutex.synchronize { @state = value }
+    def state=(value)
+      mutex.synchronize { ns_set_state(value) }
     end
 
     # Atomic compare and set operation
@@ -178,9 +178,9 @@ module Concurrent
     # @return [Boolean] true is state is changed, false otherwise
     #
     # @!visibility private
-    def compare_and_set_state(next_state, expected_current) # :nodoc:
+    def compare_and_set_state(next_state, *expected_current)
       mutex.synchronize do
-        if @state == expected_current
+        if expected_current.include? @state
           @state = next_state
           true
         else
@@ -189,12 +189,12 @@ module Concurrent
       end
     end
 
-    # executes the block within mutex if current state is included in expected_states
+    # Executes the block within mutex if current state is included in expected_states
     #
     # @return block value if executed, false otherwise
     #
     # @!visibility private
-    def if_state(*expected_states) # :nodoc:
+    def if_state(*expected_states)
       mutex.synchronize do
         raise ArgumentError.new('no block given') unless block_given?
 
@@ -204,6 +204,23 @@ module Concurrent
           false
         end
       end
+    end
+
+    protected
+
+    # Am I in the current state?
+    #
+    # @param [Symbol] expected The state to check against
+    # @return [Boolean] true if in the expected state else false
+    #
+    # @!visibility private
+    def ns_check_state?(expected)
+      @state == expected
+    end
+
+    # @!visibility private
+    def ns_set_state(value)
+      @state = value
     end
   end
 end

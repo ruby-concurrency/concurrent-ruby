@@ -29,6 +29,8 @@ module Concurrent
   # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
+  # @!macro copy_options
+  #
   # @!macro [attach] delay_note_regarding_blocking
   #   @note The default behavior of `Delay` is to block indefinitely when
   #     calling either `value` or `wait`, executing the delayed operation on
@@ -59,10 +61,7 @@ module Concurrent
     #     Three special values are also supported: `:task` returns the global task pool,
     #     `:operation` returns the global operation pool, and `:immediate` returns a new
     #     `ImmediateExecutor` object.
-    #   @option opts [Boolean] :dup_on_deref (false) call `#dup` before returning the data
-    #   @option opts [Boolean] :freeze_on_deref (false) call `#freeze` before returning the data
-    #   @option opts [Proc] :copy_on_deref (nil) call the given `Proc` passing
-    #     the internal value and returning the value returned from the proc
+    #   @!macro deref_options
     #
     # @yield the delayed operation to perform
     #

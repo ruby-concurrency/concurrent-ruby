@@ -8,10 +8,91 @@ require 'concurrent/executor/serialized_execution'
 
 module Concurrent
 
-  # {include:file:doc/async.md}
+  # A mixin module that provides simple asynchronous behavior to any standard
+  # class/object or object. 
+  # 
+  # ```cucumber
+  # Feature:
+  #   As a stateful, plain old Ruby class/object
+  #   I want safe, asynchronous behavior
+  #   So my long-running methods don't block the main thread
+  # ```
+  # 
+  # Stateful, mutable objects must be managed carefully when used asynchronously.
+  # But Ruby is an object-oriented language so designing with objects and classes
+  # plays to Ruby's strengths and is often more natural to many Ruby programmers.
+  # The `Async` module is a way to mix simple yet powerful asynchronous capabilities
+  # into any plain old Ruby object or class. These capabilities provide a reasonable
+  # level of thread safe guarantees when used correctly.
+  # 
+  # When this module is mixed into a class or object it provides to new methods:
+  # `async` and `await`. These methods are thread safe with respect to the enclosing
+  # object. The former method allows methods to be called asynchronously by posting
+  # to the global thread pool. The latter allows a method to be called synchronously
+  # on the current thread but does so safely with respect to any pending asynchronous
+  # method calls. Both methods return an `Obligation` which can be inspected for
+  # the result of the method call. Calling a method with `async` will return a
+  # `:pending` `Obligation` whereas `await` will return a `:complete` `Obligation`.
+  # 
+  # Very loosely based on the `async` and `await` keywords in C#.
+  # 
+  # ### An Important Note About Initialization
+  # 
+  # > This module depends on several internal stnchronization mechanisms that
+  # > must be initialized prior to calling any of the async/await/executor methods.
+  # > To ensure thread-safe initialization the class `new` method will be made
+  # > private when the `Concurrent::Async` module is included. A factory method
+  # > called `create` will be defined in its place. The `create`factory will
+  # > create a new object instance, passing all arguments to the constructor,
+  # > and will initialize all stnchronization mechanisms. This is the only way
+  # > thread-safe initialization can be guaranteed. 
+  # 
+  # ### An Important Note About Thread Safe Guarantees
+  # 
+  # > Thread safe guarantees can only be made when asynchronous method calls
+  # > are not mixed with synchronous method calls. Use only synchronous calls
+  # > when the object is used exclusively on a single thread. Use only
+  # > `async` and `await` when the object is shared between threads. Once you
+  # > call a method using `async`, you should no longer call any methods
+  # > directly on the object. Use `async` and `await` exclusively from then on.
+  # > With careful programming it is possible to switch back and forth but it's
+  # > also very easy to create race conditions and break your application.
+  # > Basically, it's "async all the way down."
+  # 
+  # @example
+  # 
+  #   class Echo
+  #     include Concurrent::Async
+  #   
+  #     def echo(msg)
+  #       sleep(rand)
+  #       print "#{msg}\n"
+  #       nil
+  #     end
+  #   end
+  #
+  #   horn = Echo.new #=> NoMethodError: private method `new' called for Echo:Class
+  #   
+  #   horn = Echo.create
+  #   horn.echo('zero')      # synchronous, not thread-safe
+  #   
+  #   horn.async.echo('one') # asynchronous, non-blocking, thread-safe
+  #   horn.await.echo('two') # synchronous, blocking, thread-safe
   #
   # @see Concurrent::Obligation
+  # @see Concurrent::IVar
   module Async
+
+    # @!method self.create(*args, &block)
+    #
+    #   The factory method used to create new instances of the asynchronous
+    #   class. Used instead of `new` to ensure proper initialization of the
+    #   synchronization mechanisms.
+    #
+    #   @param [Array<Object>] args Zero or more arguments to be passed to the
+    #     object's initializer.
+    #   @param [Proc] bloc Optional block to pass to the object's initializer.
+    #   @return [Object] A properly initialized object of the asynchronous class.
 
     # Check for the presence of a method on an object and determine if a given
     # set of arguments matches the required arity.
@@ -32,7 +113,9 @@ module Concurrent
     # @see http://www.ruby-doc.org/core-2.1.1/Method.html#method-i-arity Method#arity
     # @see http://ruby-doc.org/core-2.1.0/Object.html#method-i-respond_to-3F Object#respond_to?
     # @see http://www.ruby-doc.org/core-2.1.0/BasicObject.html#method-i-method_missing BasicObject#method_missing
-    def validate_argc(obj, method, *args)
+    #
+    # @!visibility private
+    def self.validate_argc(obj, method, *args)
       argc = args.length
       arity = obj.method(method).arity
 
@@ -42,12 +125,36 @@ module Concurrent
         raise ArgumentError.new("wrong number of arguments (#{argc} for #{arity}..*)")
       end
     end
-    module_function :validate_argc
+
+    # @!visibility private
+    def self.included(base)
+      base.singleton_class.send(:alias_method, :original_new, :new)
+      base.send(:private_class_method, :original_new)
+      base.extend(ClassMethods)
+      super(base)
+    end
+
+    # @!visibility private
+    module ClassMethods
+
+      # @deprecated
+      def new(*args, &block)
+        warn '[DEPRECATED] use the `create` method instead'
+        create(*args, &block)
+      end
+
+      def create(*args, &block)
+        obj = original_new(*args, &block)
+        obj.send(:init_synchronization)
+        obj
+      end
+    end
+    private_constant :ClassMethods
 
     # Delegates asynchronous, thread-safe method calls to the wrapped object.
     #
     # @!visibility private
-    class AsyncDelegator # :nodoc:
+    class AsyncDelegator
 
       # Create a new delegator object wrapping the given delegate,
       # protecting it with the given serializer, and executing it on the
@@ -96,6 +203,7 @@ module Concurrent
         self.send(method, *args)
       end
     end
+    private_constant :AsyncDelegator
 
     # Causes the chained method call to be performed asynchronously on the
     # global thread pool. The method called by this method will return a
@@ -110,26 +218,24 @@ module Concurrent
     # library, some edge cases will be missed. For more information see
     # the documentation for the `validate_argc` method.
     #
-    # @note The method call is guaranteed to be thread safe  with respect to
-    #   all other method calls against the same object that are called with
-    #   either `async` or `await`. The mutable nature of Ruby references
-    #   (and object orientation in general) prevent any other thread safety
-    #   guarantees. Do NOT mix non-protected method calls with protected
-    #   method call. Use *only* protected method calls when sharing the object
-    #   between threads.
+    # @!macro [attach] async_thread_safety_warning
+    #   @note The method call is guaranteed to be thread safe with respect to
+    #     all other method calls against the same object that are called with
+    #     either `async` or `await`. The mutable nature of Ruby references
+    #     (and object orientation in general) prevent any other thread safety
+    #     guarantees. Do NOT mix non-protected method calls with protected
+    #     method call. Use *only* protected method calls when sharing the object
+    #     between threads.
     #
     # @return [Concurrent::IVar] the pending result of the asynchronous operation
     #
-    # @raise [Concurrent::InitializationError] `#init_mutex` has not been called
     # @raise [NameError] the object does not respond to `method` method
     # @raise [ArgumentError] the given `args` do not match the arity of `method`
     #
     # @see Concurrent::IVar
     def async
-      raise InitializationError.new('#init_mutex was never called') unless @__async_initialized__
       @__async_delegator__.value
     end
-    alias_method :future, :async
 
     # Causes the chained method call to be performed synchronously on the
     # current thread. The method called by this method will return an
@@ -144,51 +250,54 @@ module Concurrent
     # library, some edge cases will be missed. For more information see
     # the documentation for the `validate_argc` method.
     #
-    # @note The method call is guaranteed to be thread safe  with respect to
-    #   all other method calls against the same object that are called with
-    #   either `async` or `await`. The mutable nature of Ruby references
-    #   (and object orientation in general) prevent any other thread safety
-    #   guarantees. Do NOT mix non-protected method calls with protected
-    #   method call. Use *only* protected method calls when sharing the object
-    #   between threads.
+    # @!macro async_thread_safety_warning
     #
     # @return [Concurrent::IVar] the completed result of the synchronous operation
     #
-    # @raise [Concurrent::InitializationError] `#init_mutex` has not been called
     # @raise [NameError] the object does not respond to `method` method
     # @raise [ArgumentError] the given `args` do not match the arity of `method`
     #
     # @see Concurrent::IVar
     def await
-      raise InitializationError.new('#init_mutex was never called') unless @__async_initialized__
       @__await_delegator__.value
     end
-    alias_method :delay, :await
 
-    # Set a new executor
+    # Set a new executor.
     #
-    # @raise [Concurrent::InitializationError] `#init_mutex` has not been called
-    # @raise [ArgumentError] executor has already been set
+    # @raise [ArgumentError] executor has already been set.
     def executor=(executor)
-      raise InitializationError.new('#init_mutex was never called') unless @__async_initialized__
       @__async_executor__.reconfigure { executor } or
         raise ArgumentError.new('executor has already been set')
     end
 
-    # Initialize the internal serializer and other synchronization objects. This method
-    # *must* be called from the constructor of the including class or explicitly
-    # by the caller prior to calling any other methods. If `init_mutex` is *not*
-    # called explicitly the async/await/executor methods will raize a
-    # `Concurrent::InitializationError`. This is the only way thread-safe
-    # initialization can be guaranteed.
+    # Initialize the internal serializer and other stnchronization mechanisms.
     #
-    # @note This method *must* be called from the constructor of the including
-    #       class or explicitly by the caller prior to calling any other methods.
-    #       This is the only way thread-safe initialization can be guaranteed.
+    # @note This method *must* be called immediately upon object construction.
+    #   This is the only way thread-safe initialization can be guaranteed.
     #
     # @raise [Concurrent::InitializationError] when called more than once
+    #
+    # @!visibility private
+    # @deprecated
     def init_mutex
-      raise InitializationError.new('#init_mutex was already called') if @__async_initialized__
+      warn '[DEPRECATED] use the `create` method instead'
+      init_synchronization
+    rescue InitializationError
+      # suppress
+    end
+
+    private
+
+    # Initialize the internal serializer and other stnchronization mechanisms.
+    #
+    # @note This method *must* be called immediately upon object construction.
+    #   This is the only way thread-safe initialization can be guaranteed.
+    #
+    # @raise [Concurrent::InitializationError] when called more than once
+    #
+    # @!visibility private
+    def init_synchronization
+      raise InitializationError.new('#init_synchronization was already called') if @__async_initialized__
 
       @__async_initialized__ = true
       serializer = Concurrent::SerializedExecution.new
@@ -204,6 +313,8 @@ module Concurrent
       @__async_delegator__ = Delay.new {
         AsyncDelegator.new(self, @__async_executor__, serializer, false)
       }
+
+      self
     end
   end
 end

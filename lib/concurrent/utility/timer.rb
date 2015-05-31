@@ -1,23 +1,26 @@
 require 'concurrent/configuration'
-require 'thread'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
+  include Deprecation
 
-  # Perform the given operation asynchronously after the given number of seconds.
+  # [DEPRECATED] Perform the given operation asynchronously after
+  # the given number of seconds.
   #
   # @param [Fixnum] seconds the interval in seconds to wait before executing the task
   #
   # @yield the task to execute
   #
-  # @return [Boolean] true
+  # @return [Concurrent::ScheduledTask] IVar representing the task
   #
-  # @!macro monotonic_clock_warning
+  # @see Concurrent::ScheduledTask
+  #
+  # @deprecated use `ScheduledTask` instead
   def timer(seconds, *args, &block)
+    deprecated_method 'Concurrent.timer', 'ScheduledTask'
     raise ArgumentError.new('no block given') unless block_given?
     raise ArgumentError.new('interval must be greater than or equal to zero') if seconds < 0
-
     Concurrent.global_timer_set.post(seconds, *args, &block)
-    true
   end
   module_function :timer
 end
