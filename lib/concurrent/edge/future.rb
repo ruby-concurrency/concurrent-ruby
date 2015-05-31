@@ -20,7 +20,7 @@ module Concurrent
   module Edge
 
     module FutureShortcuts
-      # User is responsible for completing the event once.
+      # User is responsible for completing the event once by {CompletableEvent#complete}
       # @return [CompletableEvent]
       def event(default_executor = :io)
         CompletableEventPromise.new(default_executor).future
@@ -29,13 +29,16 @@ module Concurrent
       # @overload future(default_executor = :io, &task)
       #   Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       #   @return [Future]
-      #   @note FIXME allow to pass in variables as Thread.new(args) {|args| _ } does
       # @overload future(default_executor = :io)
-      #   User is responsible for completing the future once.
+      #   User is responsible for completing the future once by {CompletableFuture#success} or {CompletableFuture#fail}
       #   @return [CompletableFuture]
-      def future(default_executor = :io, &task)
+      def future(*args, &task)
+        future_on :io, *args, &task
+      end
+
+      def future_on(default_executor, *args, &task)
         if task
-          ImmediatePromise.new(default_executor).event.chain(&task)
+          ImmediatePromise.new(default_executor, *args).future.then(&task)
         else
           CompletableFuturePromise.new(default_executor).future
         end
@@ -43,28 +46,40 @@ module Concurrent
 
       alias_method :async, :future
 
-      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation is delayed until
-      # requested by `#wait`, `#value`, `#value!`, etc.
+      # Constructs new Future which will evaluate to the block after
+      # requested by calling `#wait`, `#value`, `#value!`, etc. on it or on any of the chained futures.
       # @return [Delay]
-      def delay(default_executor = :io, &task)
-        Delay.new(default_executor).event.chain(&task)
+      def delay(*args, &task)
+        delay_on :io, *args, &task
+      end
+
+      def delay_on(default_executor, *args, &task)
+        Delay.new(default_executor, *args).future.then(&task)
       end
 
       # Schedules the block to be executed on executor in given intended_time.
       # @return [Future]
-      def schedule(intended_time, default_executor = :io, &task)
-        ScheduledPromise.new(intended_time, default_executor).future.chain(&task)
+      def schedule(intended_time, *args, &task)
+        schedule_on :io, intended_time, *args, &task
       end
 
-      # fails on first error
-      # does not block a thread
+      def schedule_on(default_executor, intended_time, *args, &task)
+        ScheduledPromise.new(default_executor, intended_time, *args).future.then(&task)
+      end
+
+      # Constructs new {Future} which is completed after all futures are complete. Its value is array
+      # of dependent future values. If there is an error it fails with the first one.
+      # @param [Event] futures
       # @return [Future]
       def zip(*futures)
-        AllPromise.new(futures).future
+        AllPromise.new(futures, :io).future
       end
 
+      # Constructs new {Future} which is completed after first of the futures is complete.
+      # @param [Event] futures
+      # @return [Future]
       def any(*futures)
-        AnyPromise.new(futures).future
+        AnyPromise.new(futures, :io).future
       end
 
       def post!(*args, &job)
@@ -89,7 +104,7 @@ module Concurrent
     class Event < Synchronization::Object
       extend FutureShortcuts
 
-      def initialize(promise, default_executor = :io)
+      def initialize(promise, default_executor)
         @Promise         = promise
         @DefaultExecutor = default_executor
         @Touched         = AtomicBoolean.new(false)
@@ -157,7 +172,7 @@ module Concurrent
       end
 
       def schedule(intended_time)
-        chain { ScheduledPromise.new(intended_time).future.zip(self) }.flat
+        chain { ScheduledPromise.new(@DefaultExecutor, intended_time).event.zip(self) }.flat
       end
 
       # @yield [success, value, reason] executed async on `executor` when completed
@@ -172,7 +187,7 @@ module Concurrent
         add_callback :pr_callback_on_completion, callback
       end
 
-      def with_default_executor(executor = @DefaultExecutor)
+      def with_default_executor(executor)
         AllPromise.new([self], executor).future
       end
 
@@ -615,7 +630,7 @@ module Concurrent
     class CompletableEventPromise < AbstractPromise
       public :complete
 
-      def initialize(default_executor = :io)
+      def initialize(default_executor)
         super CompletableEvent.new(self, default_executor)
       end
     end
@@ -624,7 +639,7 @@ module Concurrent
     class CompletableFuturePromise < AbstractPromise
       # TODO consider to allow being blocked_by
 
-      def initialize(default_executor = :io)
+      def initialize(default_executor)
         super CompletableFuture.new(self, default_executor)
       end
 
@@ -732,7 +747,7 @@ module Concurrent
 
     # @abstract
     class BlockedTaskPromise < BlockedPromise
-      def initialize(blocked_by_future, default_executor = :io, executor = default_executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'no block given' unless block_given?
         @Executor = executor
         @Task     = task
@@ -747,7 +762,7 @@ module Concurrent
     class ThenPromise < BlockedTaskPromise
       private
 
-      def initialize(blocked_by_future, default_executor = :io, executor = default_executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'only Future can be appended with then' unless blocked_by_future.is_a? Future
         super blocked_by_future, default_executor, executor, &task
       end
@@ -766,7 +781,7 @@ module Concurrent
     class RescuePromise < BlockedTaskPromise
       private
 
-      def initialize(blocked_by_future, default_executor = :io, executor = default_executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'only Future can be rescued' unless blocked_by_future.is_a? Future
         super blocked_by_future, default_executor, executor, &task
       end
@@ -794,8 +809,16 @@ module Concurrent
 
     # will be immediately completed
     class ImmediatePromise < InnerPromise
-      def initialize(default_executor = :io)
-        super Event.new(self, default_executor).complete
+      def initialize(default_executor, *args)
+        # TODO optimize, create completed futures directly
+        super case args.size
+              when 0
+                Event.new(self, default_executor).complete
+              when 1
+                Future.new(self, default_executor).complete(true, args[0], nil)
+              else
+                ArrayFuture.new(self, default_executor).complete(true, args, nil)
+              end
       end
     end
 
@@ -808,7 +831,7 @@ module Concurrent
 
       def process_on_done(future)
         countdown = super(future)
-        value     = future.value
+        value     = future.value!
         if countdown.nonzero?
           case value
           when Future
@@ -824,7 +847,7 @@ module Concurrent
         countdown
       end
 
-      def initialize(blocked_by_future, levels = 1, default_executor = :io)
+      def initialize(blocked_by_future, levels, default_executor)
         raise ArgumentError, 'levels has to be higher than 0' if levels < 1
         blocked_by_future.is_a? Future or
             raise ArgumentError, 'only Future can be flatten'
@@ -851,7 +874,7 @@ module Concurrent
 
       private
 
-      def initialize(blocked_by_futures, default_executor = :io)
+      def initialize(blocked_by_futures, default_executor)
         klass = Event
         blocked_by_futures.each do |f|
           if f.is_a?(Future)
@@ -901,7 +924,7 @@ module Concurrent
 
       private
 
-      def initialize(blocked_by_futures, default_executor = :io)
+      def initialize(blocked_by_futures, default_executor)
         blocked_by_futures.all? { |f| f.is_a? Future } or
             raise ArgumentError, 'accepts only Futures not Events'
         super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
@@ -918,13 +941,28 @@ module Concurrent
 
     class Delay < InnerPromise
       def touch
-        complete
+        case @Args.size
+        when 0
+          @Future.complete
+        when 1
+          @Future.complete(true, @Args[0], nil)
+        else
+          @Future.complete(true, @Args, nil)
+        end
       end
 
       private
 
-      def initialize(default_executor = :io)
-        super Event.new(self, default_executor)
+      def initialize(default_executor, *args)
+        @Args = args
+        super case args.size
+              when 0
+                Event.new(self, default_executor)
+              when 1
+                Future.new(self, default_executor)
+              else
+                ArrayFuture.new(self, default_executor)
+              end
       end
     end
 
@@ -940,7 +978,7 @@ module Concurrent
 
       private
 
-      def initialize(intended_time, default_executor = :io)
+      def initialize(default_executor, intended_time, *args)
         @IntendedTime = intended_time
 
         in_seconds = begin
@@ -953,9 +991,26 @@ module Concurrent
           [0, schedule_time.to_f - now.to_f].max
         end
 
-        super Event.new(self, default_executor)
+        super case args.size
+              when 0
+                Event.new(self, default_executor)
+              when 1
+                Future.new(self, default_executor)
+              else
+                ArrayFuture.new(self, default_executor)
+              end
 
-        Concurrent.global_timer_set.post(in_seconds) { complete }
+        Concurrent.global_timer_set.post(in_seconds, *args) do |*args|
+          case args.size
+          when 0
+            @Future.complete
+          when 1
+            @Future.complete(true, args[0], nil)
+          else
+            @Future.complete(true, args, nil)
+          end
+        end
+
       end
     end
   end

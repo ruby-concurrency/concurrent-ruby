@@ -1,4 +1,4 @@
-require 'concurrent'
+require 'concurrent-edge'
 require 'thread'
 
 describe 'Concurrent::Edge futures' do
@@ -16,8 +16,14 @@ describe 'Concurrent::Edge futures' do
 
   describe '.future' do
     it 'executes' do
-      future = Concurrent.future(:immediate) { 1 + 1 }
-      expect(future.value).to eq 2
+      future = Concurrent.future { 1 + 1 }
+      expect(future.value!).to eq 2
+
+      future = Concurrent.future(1) { |v| v + 1 }
+      expect(future.value!).to eq 2
+
+      future = Concurrent.future(1, 1, &:+)
+      expect(future.value!).to eq 2
     end
   end
 
@@ -25,7 +31,15 @@ describe 'Concurrent::Edge futures' do
     it 'delays execution' do
       delay = Concurrent.delay { 1 + 1 }
       expect(delay.completed?).to eq false
-      expect(delay.value).to eq 2
+      expect(delay.value!).to eq 2
+
+      delay = Concurrent.delay(1) { |v| v + 1 }
+      expect(delay.completed?).to eq false
+      expect(delay.value!).to eq 2
+
+      delay = Concurrent.delay(1, 1, &:+)
+      expect(delay.completed?).to eq false
+      expect(delay.value!).to eq 2
     end
   end
 
@@ -34,6 +48,14 @@ describe 'Concurrent::Edge futures' do
       start  = Time.now.to_f
       queue  = Queue.new
       future = Concurrent.schedule(0.1) { 1 + 1 }.then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
+
+      expect(future.value).to eq queue
+      expect(queue.pop).to eq 2
+      expect(queue.pop).to be_between(0.1, 0.2)
+
+      start  = Time.now.to_f
+      queue  = Queue.new
+      future = Concurrent.schedule(0.1, 1, 1, &:+).then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       expect(future.value).to eq queue
       expect(queue.pop).to eq 2
