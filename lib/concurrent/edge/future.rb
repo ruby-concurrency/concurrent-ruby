@@ -57,6 +57,7 @@ module Concurrent
       end
 
       # Schedules the block to be executed on executor in given intended_time.
+      # @param [Numeric, Time] intended_time Numeric => run in `intended_time` seconds. Time => eun on time.
       # @return [Future]
       def schedule(intended_time, *args, &task)
         schedule_on :io, intended_time, *args, &task
@@ -228,13 +229,13 @@ module Concurrent
       end
 
       # @!visibility private
-      def complete(raise = true)
+      def complete(raise_on_reassign = true)
         if complete_state
           # go to synchronized block only if there were waiting threads
           synchronize { ns_broadcast } if @Waiters.clear
           call_callbacks
         else
-          Concurrent::MultipleAssignmentError.new('multiple assignment') if raise
+          Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
           return false
         end
         self
@@ -498,13 +499,13 @@ module Concurrent
       end
 
       # @!visibility private
-      def complete(success, value, reason, raise = true)
+      def complete(success, value, reason, raise_on_reassign = true)
         if complete_state success, value, reason
           @Waiters.clear
           synchronize { ns_broadcast }
           call_callbacks success, value, reason
         else
-          raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment') if raise
+          raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
           return false
         end
         self
@@ -594,8 +595,8 @@ module Concurrent
     # A Event which can be completed by user.
     class CompletableEvent < Event
       # Complete the Event, `raise` if already completed
-      def complete(raise = true)
-        super raise
+      def complete(raise_on_reassign = true)
+        super raise_on_reassign
       end
 
       def hide_completable
@@ -608,8 +609,8 @@ module Concurrent
       # Complete the future with triplet od `success`, `value`, `reason`
       # `raise` if already completed
       # return [self]
-      def complete(success, value, reason, raise = true)
-        super success, value, reason, raise
+      def complete(success, value, reason, raise_on_reassign = true)
+        super success, value, reason, raise_on_reassign
       end
 
       # Complete the future with value

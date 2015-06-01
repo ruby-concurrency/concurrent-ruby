@@ -204,23 +204,17 @@ Concurrent.zip(*concurrent_jobs).value!
 
 
 # In reality there is often a pool though:
-class DBConnection < Concurrent::Actor::Utils::AbstractWorker
-  def initialize(balancer, data)
-    super balancer
-    @data = data
-  end
-
-  def work(message)
-    # pretending that this queries a DB
-    @data[message]
-  end
-end
-
 data      = Array.new(10) { |i| '*' * i }
 pool_size = 5
 
-DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |balancer, index|
-  DBConnection.spawn(name: "worker-#{index}", args: [balancer, data])
+DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |index|
+  # DB connection constructor
+  Concurrent::Actor::Utils::AdHoc.spawn(name: "worker-#{index}", args: [data]) do
+    lambda do |message|
+      # pretending that this queries a DB
+      data[message]
+    end
+  end
 end
 
 concurrent_jobs = 11.times.map do |v|

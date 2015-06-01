@@ -14,16 +14,17 @@ module Concurrent
         end
 
         def on_message(message)
-          case message
+          command, who = message
+          case command
           when :subscribe
-            @receivers << envelope.sender
+            @receivers << (who || envelope.sender)
             distribute
             true
           when :unsubscribe
-            @receivers.delete envelope.sender
+            @receivers.delete(who || envelope.sender)
             true
           when :subscribed?
-            @receivers.include? envelope.sender
+            @receivers.include?(who || envelope.sender)
           else
             @buffer << envelope
             distribute

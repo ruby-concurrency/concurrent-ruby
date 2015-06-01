@@ -249,10 +249,8 @@ module Concurrent
 
         it 'pauses on error and resets' do
           queue = Queue.new
-          test  = AdHoc.spawn name:                 :tester,
-                              behaviour_definition: Behaviour.restarting_behaviour_definition do
-            actor = AdHoc.spawn name:                 :pausing,
-                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+          test  = AdHoc.spawn name: :tester, behaviour_definition: Behaviour.restarting_behaviour_definition do
+            actor = AdHoc.spawn name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :object_id ? self.object_id : pass }
             end
@@ -288,6 +286,7 @@ module Concurrent
           end
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
+
             actor = AdHoc.spawn name:                 :pausing,
                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
@@ -316,14 +315,10 @@ module Concurrent
 
       describe 'pool' do
         it 'supports asks' do
-          worker = Class.new Concurrent::Actor::Utils::AbstractWorker do
-            def work(message)
-              5 + message
+          pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
+            Concurrent::Actor::Utils::AdHoc.spawn name: "worker-#{index}", supervised: true do
+              lambda { |message| 5 + message }
             end
-          end
-
-          pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |balancer, index|
-            worker.spawn name: "worker-#{index}", args: [balancer]
           end
 
           expect(pool.ask!(5)).to eq 10
