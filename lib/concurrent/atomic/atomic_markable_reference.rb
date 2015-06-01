@@ -147,6 +147,27 @@ module Concurrent
         ImmutableArray[new_val, new_mark]
       end
 
+      # @!macro [attach] atomic_markable_reference_method_try_update_no_exception
+      #
+      # Pass the current value to the given block, replacing it with the
+      # block's result. Simply return nil if update fails.
+      #
+      # @yield [Object] Calculate a new value and marked state for the atomic
+      #   reference using given (old) value and (old) marked
+      # @yieldparam [Object] old_val the starting value of the atomic reference
+      # @yieldparam [Boolean] old_mark the starting state of marked
+      #
+      # @return [ImmutableArray] the new value and marked state, or nil if
+      # the update failed
+      def try_update_no_exception
+        old_val, old_mark = @Reference.get
+        new_val, new_mark = yield old_val, old_mark
+
+        return unless compare_and_set old_val, new_val, old_mark, new_mark
+
+        ImmutableArray[new_val, new_mark]
+      end
+
       # Internal/private ImmutableArray for representing pairs
       class ImmutableArray < Array
         def self.new(*args)
