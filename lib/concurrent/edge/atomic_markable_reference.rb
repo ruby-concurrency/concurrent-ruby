@@ -4,7 +4,7 @@ module Concurrent
     class AtomicMarkableReference < ::Concurrent::Synchronization::Object
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
-        super
+        super()
         @Reference = AtomicReference.new ImmutableArray[value, mark]
         ensure_ivar_visibility!
       end
