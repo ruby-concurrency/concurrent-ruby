@@ -1,7 +1,7 @@
 module Concurrent
   module Synchronization
     class MonitorObject < MutexObject
-      def initialize(*args, &block)
+      def initialize
         @__lock__      = ::Monitor.new
         @__condition__ = @__lock__.new_cond
       end
