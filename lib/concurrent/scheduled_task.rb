@@ -1,6 +1,7 @@
 require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/configuration'
+require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/monotonic_time'
@@ -178,7 +179,7 @@ module Concurrent
         @task = task
         @time = nil
         @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-        self.observers = CopyOnNotifyObserverSet.new
+        self.observers = Collection::CopyOnNotifyObserverSet.new
       end
     end
 

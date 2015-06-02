@@ -1,3 +1,4 @@
+require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/concern/dereferenceable'
 require 'concurrent/concern/observable'
 require 'concurrent/atomic/atomic_boolean'
@@ -279,7 +280,7 @@ module Concurrent
       @executor = Concurrent::SafeTaskExecutor.new(task)
       @running = Concurrent::AtomicBoolean.new(false)
 
-      self.observers = CopyOnNotifyObserverSet.new
+      self.observers = Collection::CopyOnNotifyObserverSet.new
     end
 
     # @!visibility private
