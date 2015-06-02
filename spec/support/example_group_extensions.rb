@@ -13,7 +13,7 @@ module Concurrent
       return (v1 - v2).abs
     end
 
-    include EngineDetector
+    include Utility::EngineDetector
 
     def use_c_extensions?
       Concurrent.allow_c_extensions?
