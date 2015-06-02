@@ -1,5 +1,5 @@
 require 'concurrent/concern/dereferenceable'
-require 'concurrent/observable'
+require 'concurrent/concern/observable'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/safe_task_executor'
@@ -151,7 +151,7 @@ module Concurrent
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html
   class TimerTask < RubyExecutorService
     include Concern::Dereferenceable
-    include Observable
+    include Concern::Observable
 
     # Default `:execution_interval` in seconds.
     EXECUTION_INTERVAL = 60

@@ -1,4 +1,4 @@
-require_relative '../observable_shared'
+require_relative '../concern/observable_shared'
 
 module Concurrent
 
