@@ -8,6 +8,8 @@ module Concurrent
     # `Dereferenceable` mixin module.
     #
     # @!macro copy_options
+    #
+    # @api private
     module Dereferenceable
 
       # Return the value this object represents after applying the options specified

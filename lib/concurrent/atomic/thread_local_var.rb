@@ -34,6 +34,7 @@ module Concurrent
   #   @see https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html Java ThreadLocal
   class AbstractThreadLocalVar
 
+    # @api private
     NIL_SENTINEL = Object.new
     private_constant :NIL_SENTINEL
 

@@ -1,5 +1,7 @@
 module Concurrent
   module Synchronization
+
+    # @api private
     Implementation = case
                      when Concurrent.on_jruby?
                        JavaObject

@@ -6,6 +6,7 @@ module Concurrent
     if Concurrent.on_jruby?
       require 'jruby'
 
+      # @api private
       class JavaObject < AbstractObject
 
         def self.attr_volatile(*names)

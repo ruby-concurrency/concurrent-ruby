@@ -5,6 +5,7 @@ if Concurrent.on_jruby?
 
     # @!macro single_thread_executor
     # @!macro thread_pool_options
+    # @api private
     class JavaSingleThreadExecutor < JavaExecutorService
       include SerialExecutorService
 

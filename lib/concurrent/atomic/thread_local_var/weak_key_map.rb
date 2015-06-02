@@ -21,6 +21,7 @@
 
 module Concurrent
 
+  # @api private
   class AbstractThreadLocalVar
 
     begin

@@ -8,6 +8,7 @@ require 'concurrent/concern/deprecation'
 module Concurrent
   module Concern
 
+    # @api private
     module Obligation
       include Concern::Dereferenceable
       include Concern::Deprecation

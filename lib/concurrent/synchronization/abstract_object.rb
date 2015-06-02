@@ -1,5 +1,6 @@
 module Concurrent
   module Synchronization
+
     # Safe synchronization under any Ruby implementation.
     # It provides methods like {#synchronize}, {#ns_wait}, {#ns_signal} and {#ns_broadcast}.
     # Provides a single layer which can improve its implementation over time without changes needed to
@@ -24,6 +25,8 @@ module Concurrent
     #       synchronize { @value }
     #     end
     #   end
+    #
+    # @api private
     class AbstractObject
 
       # @abstract for helper ivar initialization if needed,

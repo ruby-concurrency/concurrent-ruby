@@ -7,6 +7,8 @@ module Concurrent
     # observers are added and removed from a thread safe collection; every time
     # a notification is required the internal data structure is copied to
     # prevent concurrency issues
+    # 
+    # @api private
     class CopyOnNotifyObserverSet < Synchronization::Object
 
       def initialize

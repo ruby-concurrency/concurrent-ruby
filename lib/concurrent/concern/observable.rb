@@ -47,6 +47,8 @@ module Concurrent
     # `obs` is wrong because the variable `@count` can be accessed by different
     # threads at the same time, so it should be synchronized (using either a Mutex
     # or an AtomicFixum)
+    #
+    # @api private
     module Observable
 
       # @return [Object] the added observer

@@ -4,6 +4,7 @@ module Concurrent
 
   # @!macro single_thread_executor
   # @!macro thread_pool_options
+  # @api private
   class RubySingleThreadExecutor < RubyExecutorService
     include SerialExecutorService
 

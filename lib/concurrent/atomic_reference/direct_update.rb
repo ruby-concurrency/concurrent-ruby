@@ -3,6 +3,7 @@ require 'concurrent/atomic_reference/concurrent_update_error'
 module Concurrent
 
   # Define update methods that use direct paths
+  # @api private
   module AtomicDirectUpdate
 
     # @!macro [attach] atomic_reference_method_update

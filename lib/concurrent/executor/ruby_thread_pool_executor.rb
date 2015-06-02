@@ -9,6 +9,7 @@ module Concurrent
 
   # @!macro thread_pool_executor
   # @!macro thread_pool_options
+  # @api private
   class RubyThreadPoolExecutor < RubyExecutorService
 
     # Default maximum number of threads that will be created in the pool.

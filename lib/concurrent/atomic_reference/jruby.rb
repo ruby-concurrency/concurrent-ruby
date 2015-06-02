@@ -6,6 +6,7 @@ if defined?(Concurrent::JavaAtomicReference)
   module Concurrent
 
     # @!macro atomic_reference
+    # @api private
     class JavaAtomicReference
       include Concurrent::AtomicDirectUpdate
     end

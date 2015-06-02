@@ -22,6 +22,8 @@ module Concurrent
   #         4.520000   0.030000   4.550000 (  1.187000)
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicLong.html java.util.concurrent.atomic.AtomicLong
+  #
+  # @api private
   class MutexAtomicFixnum < Synchronization::Object
 
     # http://stackoverflow.com/questions/535721/ruby-max-integer
@@ -132,6 +134,7 @@ module Concurrent
     end
   end
 
+  # @api private
   AtomicFixnumImplementation = case
                                when Concurrent.on_jruby?
                                  JavaAtomicFixnum

@@ -7,6 +7,7 @@ require 'concurrent/utility/at_exit'
 
 module Concurrent
 
+  # @api private
   module ExecutorService
     include Concern::Logging
     include Concern::Deprecation
@@ -81,6 +82,8 @@ module Concurrent
   #   foo.is_a? Concurrent::ExecutorService #=> true
   #   foo.is_a? Concurrent::SerialExecutor  #=> true
   #   foo.serialized?                       #=> true
+  #
+  # @api private
   module SerialExecutorService
     include ExecutorService
 
@@ -92,6 +95,7 @@ module Concurrent
     end
   end
 
+  # @api private
   class AbstractExecutorService < Synchronization::Object
     include ExecutorService
 
@@ -246,6 +250,7 @@ module Concurrent
     end
   end
 
+  # @api private
   class RubyExecutorService < AbstractExecutorService
 
     def initialize(*args, &block)
@@ -313,6 +318,7 @@ module Concurrent
 
   if Concurrent.on_jruby?
 
+    # @api private
     class JavaExecutorService < AbstractExecutorService
       java_import 'java.lang.Runnable'
 

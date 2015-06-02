@@ -6,6 +6,7 @@ if defined? Concurrent::CAtomicReference
   module Concurrent
 
     # @!macro atomic_reference
+    # @api private
     class CAtomicReference
       include Concurrent::AtomicDirectUpdate
       include Concurrent::AtomicNumericCompareAndSetWrapper

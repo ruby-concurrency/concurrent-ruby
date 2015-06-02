@@ -31,6 +31,8 @@ module Concurrent
     #   @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
     #
     #   @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
+    # 
+    # @api private
     class MutexPriorityQueue
 
       # @!macro [attach] priority_queue_method_initialize
@@ -223,6 +225,8 @@ module Concurrent
     if Concurrent.on_jruby?
 
       # @!macro priority_queue
+      # 
+      # @api private
       class JavaPriorityQueue
 
         # @!macro priority_queue_method_initialize
@@ -304,6 +308,8 @@ module Concurrent
     private_constant :PriorityQueueImplementation
 
     # @!macro priority_queue
+    # 
+    # @api private
     class PriorityQueue < PriorityQueueImplementation
 
       alias_method :has_priority?, :include?

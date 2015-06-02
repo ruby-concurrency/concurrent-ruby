@@ -2,6 +2,7 @@ module Concurrent
   module Synchronization
 
     # @!visibility private
+    # @api private
     module AbstractStruct
 
       # @!visibility private

@@ -4,6 +4,7 @@ require 'concurrent/utility/engine'
 module Concurrent
   module Utility
 
+    # @api private
     module NativeExtensionLoader
 
       @c_ext_loaded    ||= false
@@ -50,5 +51,6 @@ module Concurrent
     end
   end
 
+  # @api private
   extend Utility::NativeExtensionLoader
 end

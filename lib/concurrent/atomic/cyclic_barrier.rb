@@ -4,6 +4,7 @@ module Concurrent
 
   class CyclicBarrier < Synchronization::Object
 
+    # @api private
     Generation = Struct.new(:status)
     private_constant :Generation
 

@@ -1,6 +1,9 @@
 module Concurrent
   module Synchronization
+
     if Concurrent.on_rbx?
+      
+      # @api private
       class RbxObject < AbstractObject
         def initialize
           @Waiters = []

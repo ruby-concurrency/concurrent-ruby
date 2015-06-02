@@ -4,6 +4,7 @@ module Concurrent
 
   # @!macro cached_thread_pool
   # @!macro thread_pool_options
+  # @api private
   class RubyCachedThreadPool < RubyThreadPoolExecutor
 
     # Create a new thread pool.

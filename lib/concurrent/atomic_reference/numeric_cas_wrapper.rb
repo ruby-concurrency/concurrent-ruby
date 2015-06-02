@@ -1,6 +1,7 @@
 module Concurrent
 
   # Special "compare and set" handling of numeric values.
+  # @api private
   module AtomicNumericCompareAndSetWrapper
 
     # @!macro atomic_reference_method_compare_and_set

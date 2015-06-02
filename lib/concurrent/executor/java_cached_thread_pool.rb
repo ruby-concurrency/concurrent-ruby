@@ -6,6 +6,7 @@ if Concurrent.on_jruby?
 
     # @!macro cached_thread_pool
     # @!macro thread_pool_options
+    # @api private
     class JavaCachedThreadPool < JavaThreadPoolExecutor
 
       # Create a new thread pool.

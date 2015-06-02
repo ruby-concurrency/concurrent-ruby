@@ -5,6 +5,7 @@ if Concurrent.on_jruby?
 
     # @!macro thread_pool_executor
     # @!macro thread_pool_options
+    # @api private
     class JavaThreadPoolExecutor < JavaExecutorService
 
       # Default maximum number of threads that will be created in the pool.

@@ -1,5 +1,7 @@
 module Concurrent
   module Synchronization
+
+    # @api private
     class MonitorObject < MutexObject
       def initialize
         @__lock__      = ::Monitor.new
