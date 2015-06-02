@@ -1,6 +1,6 @@
 require 'thread'
 require 'concurrent/configuration'
-require 'concurrent/obligation'
+require 'concurrent/concern/obligation'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/synchronization'
@@ -9,7 +9,7 @@ module Concurrent
 
   # Lazy evaluation of a block yielding an immutable result. Useful for
   # expensive operations that may never be needed. It may be non-blocking,
-  # supports the `Obligation` interface, and accepts the injection of
+  # supports the `Concern::Obligation` interface, and accepts the injection of
   # custom executor upon which to execute the block. Processing of
   # block will be deferred until the first time `#value` is called.
   # At that time the caller can choose to return immediately and let
@@ -26,7 +26,7 @@ module Concurrent
   # return the cached value. The operation will only be run once. This means that
   # any side effects created by the operation will only happen once as well.
   #
-  # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
+  # `Delay` includes the `Concurrent::Concern::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
   # @!macro copy_options
@@ -39,9 +39,9 @@ module Concurrent
   #     constructor option. This will cause the delayed operation to be
   #     execute on the given executor, allowing the call to timeout.
   #
-  # @see Concurrent::Dereferenceable
+  # @see Concurrent::Concern::Dereferenceable
   class Delay < Synchronization::Object
-    include Obligation
+    include Concern::Obligation
 
     # NOTE: Because the global thread pools are lazy-loaded with these objects
     # there is a performance hit every time we post a new task to one of these

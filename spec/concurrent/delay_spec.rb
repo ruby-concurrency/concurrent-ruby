@@ -1,5 +1,5 @@
-require_relative 'dereferenceable_shared'
-require_relative 'obligation_shared'
+require_relative 'concern/dereferenceable_shared'
+require_relative 'concern/obligation_shared'
 
 module Concurrent
 

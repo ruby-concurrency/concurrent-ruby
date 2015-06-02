@@ -2,9 +2,10 @@ require 'rbconfig'
 require 'thread'
 
 require 'concurrent/errors'
-require 'concurrent/utility/deprecation'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
+  extend Concern::Deprecation
 
   # [DEPRECATED] Wait the given number of seconds for the block operation to complete.
   # Intended to be a simpler and more reliable replacement to the Ruby

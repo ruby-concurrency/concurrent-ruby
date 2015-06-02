@@ -1,4 +1,4 @@
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 require 'concurrent/synchronization'
 
 module Concurrent
@@ -6,7 +6,7 @@ module Concurrent
   # Provides ability to add and remove handlers to be run at `Kernel#at_exit`, order is undefined.
   # Each handler is executed at most once.
   class AtExitImplementation < Synchronization::Object
-    include Logging
+    include Concern::Logging
 
     def initialize(*args)
       super()

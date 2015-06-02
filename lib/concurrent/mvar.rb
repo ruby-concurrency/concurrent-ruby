@@ -1,4 +1,4 @@
-require 'concurrent/dereferenceable'
+require 'concurrent/concern/dereferenceable'
 
 module Concurrent
 
@@ -69,7 +69,7 @@ module Concurrent
   #    (PoPL), 1996.
   class MVar
 
-    include Dereferenceable
+    include Concern::Dereferenceable
 
     # Unique value that represents that an `MVar` was empty
     EMPTY = Object.new

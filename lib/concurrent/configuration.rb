@@ -2,13 +2,14 @@ require 'thread'
 require 'concurrent/atomics'
 require 'concurrent/errors'
 require 'concurrent/executors'
+require 'concurrent/concern/deprecation'
+require 'concurrent/concern/logging'
 require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_counter'
-require 'concurrent/utility/deprecation'
 
 module Concurrent
-  extend Logging
-  extend Deprecation
+  extend Concern::Logging
+  extend Concern::Deprecation
 
   # Suppresses all output when used for logging.
   NULL_LOGGER = lambda { |level, progname, message = nil, &block| }
@@ -140,7 +141,7 @@ module Concurrent
 
   # A gem-level configuration object.
   class Configuration
-    include Deprecation
+    include Concern::Deprecation
 
     # Create a new configuration object.
     def initialize
@@ -149,7 +150,6 @@ module Concurrent
     # if assigned to {#logger}, it will log nothing.
     # @deprecated Use Concurrent::NULL_LOGGER instead
     def no_logger
-      warn '[DEPRECATED] Use Concurrent::NULL_LOGGER instead'
       deprecated_method 'Concurrent.configuration.no_logger', 'Concurrent::NULL_LOGGER'
       NULL_LOGGER
     end

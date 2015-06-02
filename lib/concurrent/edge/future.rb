@@ -118,7 +118,7 @@ module Concurrent
         state == :completed
       end
 
-      # wait until Obligation is #complete?
+      # wait until Concern::Obligation is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
       # @return [Event] self
       def wait(timeout = nil)
@@ -347,7 +347,7 @@ module Concurrent
         [success?(state), state.value, state.reason]
       end
 
-      # wait until Obligation is #complete?
+      # wait until Concern::Obligation is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
       # @return [Event] self
       # @raise [Exception] when #failed? it raises #reason

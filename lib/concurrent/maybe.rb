@@ -7,7 +7,7 @@ module Concurrent
   #
   # `Maybe` is a replacement for the use of `nil` with better type checking.
   #
-  # For compatibility with {Concurrent::Obligation} the predicate and
+  # For compatibility with {Concurrent::Concern::Obligation} the predicate and
   # accessor methods are aliased as `fulfilled?`, `rejected?`, `value`, and
   # `reason`.
   #

@@ -10,7 +10,7 @@ module Concurrent
   # the `MVar` constructors.
   # 
   # @see Concurrent::MVar
-  # @see Concurrent::Dereferenceable
+  # @see Concurrent::Concern::Dereferenceable
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Exchanger.html java.util.concurrent.Exchanger
   class Exchanger
 

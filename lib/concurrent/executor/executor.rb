@@ -1,10 +1,10 @@
 require 'concurrent/executor/executor_service'
-require 'concurrent/utility/deprecation'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
 
   module Executor
-    extend Deprecation
+    extend Concern::Deprecation
 
     # Get the requested `Executor` based on the values set in the options hash.
     #

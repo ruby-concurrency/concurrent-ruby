@@ -1,8 +1,8 @@
 require 'thread'
 
 require 'concurrent/errors'
-require 'concurrent/obligation'
-require 'concurrent/observable'
+require 'concurrent/concern/obligation'
+require 'concurrent/concern/observable'
 require 'concurrent/synchronization'
 
 module Concurrent
@@ -47,8 +47,8 @@ module Concurrent
   # 2. For recent application:
   #    [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
   class IVar < Synchronization::Object
-    include Obligation
-    include Observable
+    include Concern::Obligation
+    include Concern::Observable
 
     # @!visibility private
     NO_VALUE = Object.new # :nodoc:

@@ -1,6 +1,7 @@
 require 'concurrent/scheduled_task'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
+require 'concurrent/concern/deprecation'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 
@@ -15,7 +16,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
-    extend Deprecation
+    extend Concern::Deprecation
 
     # Create a new set of timed tasks.
     #

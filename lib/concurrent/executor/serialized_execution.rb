@@ -1,13 +1,13 @@
 require 'delegate'
 require 'concurrent/executor/executor_service'
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 require 'concurrent/synchronization'
 
 module Concurrent
 
   # Ensures passed jobs in a serialized order never running at the same time.
   class SerializedExecution < Synchronization::Object
-    include Logging
+    include Concern::Logging
 
     def initialize()
       super()

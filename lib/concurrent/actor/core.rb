@@ -1,3 +1,4 @@
+require 'concurrent/concern/logging'
 require 'concurrent/executors'
 
 module Concurrent
@@ -11,7 +12,7 @@ module Concurrent
     #   that would eat up all threads in task pool and deadlock
     class Core < Synchronization::Object
       include TypeCheck
-      include Concurrent::Logging
+      include Concern::Logging
 
       # @!attribute [r] reference
       #   Reference to this actor which can be safely passed around.
@@ -44,7 +45,7 @@ module Concurrent
       # @option opts [CompletableFuture, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Reference, nil] parent **private api** parent of the actor (the one spawning )
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
-      #   can be used to hook actor instance to any logging system, see {Concurrent::Logging}
+      #   can be used to hook actor instance to any logging system, see {Concurrent::Concern::Logging}
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
         super(&nil)
@@ -127,7 +128,7 @@ module Concurrent
       end
 
       def broadcast(public, event)
-        log Logging::DEBUG, "event: #{event.inspect} (#{public ? 'public' : 'private'})"
+        log DEBUG, "event: #{event.inspect} (#{public ? 'public' : 'private'})"
         @first_behaviour.on_event(public, event)
       end
 
