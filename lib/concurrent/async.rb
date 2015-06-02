@@ -79,7 +79,7 @@ module Concurrent
   #   horn.async.echo('one') # asynchronous, non-blocking, thread-safe
   #   horn.await.echo('two') # synchronous, blocking, thread-safe
   #
-  # @see Concurrent::Obligation
+  # @see Concurrent::Concern::Obligation
   # @see Concurrent::IVar
   module Async
 
