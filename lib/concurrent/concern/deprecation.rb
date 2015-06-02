@@ -1,11 +1,11 @@
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 
 module Concurrent
   module Concern
 
     module Deprecation
       # TODO require additional parameter: a version. Display when it'll be removed based on that. Error if not removed.
-      include Logging
+      include Concern::Logging
 
       def deprecated(message, strip = 2)
         caller_line = caller(strip).first

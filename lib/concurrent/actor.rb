@@ -1,6 +1,5 @@
 require 'concurrent/configuration'
 require 'concurrent/executor/serialized_execution'
-require 'concurrent/logging'
 require 'concurrent/synchronization'
 require 'concurrent/edge/future'
 

@@ -2,12 +2,13 @@ require 'thread'
 require 'concurrent/atomics'
 require 'concurrent/errors'
 require 'concurrent/executors'
+require 'concurrent/concern/deprecation'
+require 'concurrent/concern/logging'
 require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_counter'
-require 'concurrent/concern/deprecation'
 
 module Concurrent
-  extend Logging
+  extend Concern::Logging
   extend Concern::Deprecation
 
   # Suppresses all output when used for logging.

@@ -1,7 +1,7 @@
 require 'thread'
 require 'concurrent/concern/dereferenceable'
 require 'concurrent/concern/observable'
-require 'concurrent/logging'
+require 'concurrent/concern/logging'
 require 'concurrent/executor/executor'
 require 'concurrent/concern/deprecation'
 
@@ -81,7 +81,7 @@ module Concurrent
   class Agent
     include Concern::Dereferenceable
     include Concern::Observable
-    include Logging
+    include Concern::Logging
     include Concern::Deprecation
 
     attr_reader :timeout, :io_executor, :fast_executor

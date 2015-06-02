@@ -1,14 +1,14 @@
 require 'concurrent/errors'
-require 'concurrent/logging'
+require 'concurrent/concern/deprecation'
+require 'concurrent/concern/logging'
 require 'concurrent/atomic/event'
 require 'concurrent/synchronization'
 require 'concurrent/utility/at_exit'
-require 'concurrent/concern/deprecation'
 
 module Concurrent
 
   module ExecutorService
-    include Logging
+    include Concern::Logging
     include Concern::Deprecation
 
     # @!macro [attach] executor_service_method_post
