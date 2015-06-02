@@ -22,9 +22,9 @@ logger.formatter = lambda do |severity, datetime, progname, msg|
          formatted_message
 end
 
-Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
-  logger.add level, message, progname, &block
-end
+#Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
+  #logger.add level, message, progname, &block
+#end
 
 if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
   require 'simplecov'

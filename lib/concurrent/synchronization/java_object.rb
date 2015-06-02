@@ -1,4 +1,4 @@
-require 'concurrent/native_extensions' # load native part first
+require 'concurrent/utility/native_extension_loader' # load native part first
 
 module Concurrent
   module Synchronization

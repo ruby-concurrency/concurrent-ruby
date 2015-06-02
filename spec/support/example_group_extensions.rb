@@ -1,5 +1,5 @@
 require 'rbconfig'
-require 'concurrent/native_extensions'
+require 'concurrent/utility/native_extension_loader'
 
 module Concurrent
   module TestHelpers
@@ -13,7 +13,7 @@ module Concurrent
       return (v1 - v2).abs
     end
 
-    include EngineDetector
+    include Utility::EngineDetector
 
     def use_c_extensions?
       Concurrent.allow_c_extensions?

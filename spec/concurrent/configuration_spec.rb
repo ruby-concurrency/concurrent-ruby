@@ -2,9 +2,11 @@ module Concurrent
 
   describe Configuration, notravis: true do
 
-    before(:each) do
-      # redundant - done in spec_helper.rb
-      # done here again for explicitness
+    before(:all) do
+      reset_gem_configuration
+    end
+
+    after(:each) do
       reset_gem_configuration
     end
 
@@ -26,9 +28,10 @@ module Concurrent
       end
 
       specify '#terminate_pools! acts on all executors with auto_terminate: true' do
-        expect(Concurrent.global_fast_executor).to receive(:kill).once.with(no_args).and_call_original
-        expect(Concurrent.global_io_executor).to receive(:kill).once.with(no_args).and_call_original
-        expect(Concurrent.global_timer_set).to receive(:kill).once.with(no_args).and_call_original
+        # The 'at_least(:once)' clauses account for global config reset
+        expect(Concurrent.global_fast_executor).to receive(:kill).at_least(:once).with(no_args).and_call_original
+        expect(Concurrent.global_io_executor).to receive(:kill).at_least(:once).with(no_args).and_call_original
+        expect(Concurrent.global_timer_set).to receive(:kill).at_least(:once).with(no_args).and_call_original
         Concurrent.terminate_pools!
       end
     end

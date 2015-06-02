@@ -1,8 +1,8 @@
 require 'concurrent/errors'
 require 'concurrent/logging'
-require 'concurrent/at_exit'
 require 'concurrent/atomic/event'
 require 'concurrent/synchronization'
+require 'concurrent/utility/at_exit'
 require 'concurrent/utility/deprecation'
 
 module Concurrent

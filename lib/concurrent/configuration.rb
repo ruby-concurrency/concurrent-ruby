@@ -1,9 +1,9 @@
 require 'thread'
 require 'concurrent/atomics'
 require 'concurrent/errors'
-require 'concurrent/at_exit'
 require 'concurrent/executors'
-require 'concurrent/utility/processor_count'
+require 'concurrent/utility/at_exit'
+require 'concurrent/utility/processor_counter'
 require 'concurrent/utility/deprecation'
 
 module Concurrent
