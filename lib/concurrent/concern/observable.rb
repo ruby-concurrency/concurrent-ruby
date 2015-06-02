@@ -1,5 +1,5 @@
-require 'concurrent/atomic/copy_on_notify_observer_set'
-require 'concurrent/atomic/copy_on_write_observer_set'
+require 'concurrent/collection/copy_on_notify_observer_set'
+require 'concurrent/collection/copy_on_write_observer_set'
 
 module Concurrent
   module Concern

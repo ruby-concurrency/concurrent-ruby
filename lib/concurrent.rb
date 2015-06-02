@@ -5,7 +5,6 @@ require 'concurrent/synchronization'
 require 'concurrent/configuration'
 
 require 'concurrent/atomics'
-require 'concurrent/collections'
 require 'concurrent/errors'
 require 'concurrent/executors'
 require 'concurrent/utilities'

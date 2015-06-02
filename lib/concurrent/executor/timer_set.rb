@@ -76,7 +76,7 @@ module Concurrent
     # @param [Hash] opts the options to create the object with.
     # @!visibility private
     def ns_initialize(opts)
-      @queue          = PriorityQueue.new(order: :min)
+      @queue          = Collection::PriorityQueue.new(order: :min)
       @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @timer_executor = SingleThreadExecutor.new
       @condition      = Event.new

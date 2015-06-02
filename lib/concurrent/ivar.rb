@@ -1,6 +1,7 @@
 require 'thread'
 
 require 'concurrent/errors'
+require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/obligation'
 require 'concurrent/concern/observable'
 require 'concurrent/synchronization'
@@ -155,7 +156,7 @@ module Concurrent
     def ns_initialize(value, opts)
       value = yield if block_given?
       init_obligation(self)
-      self.observers = CopyOnWriteObserverSet.new
+      self.observers = Collection::CopyOnWriteObserverSet.new
       set_deref_options(opts)
 
       if value == NO_VALUE

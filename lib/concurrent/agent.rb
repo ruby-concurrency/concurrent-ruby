@@ -1,4 +1,5 @@
 require 'thread'
+require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/dereferenceable'
 require 'concurrent/concern/observable'
 require 'concurrent/concern/logging'
@@ -95,7 +96,7 @@ module Concurrent
       @value                = initial
       @rescuers             = []
       @validator            = Proc.new { |result| true }
-      self.observers        = CopyOnWriteObserverSet.new
+      self.observers        = Collection::CopyOnWriteObserverSet.new
       @serialized_execution = SerializedExecution.new
       @io_executor          = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @fast_executor        = Executor.executor_from_options(opts) || Concurrent.global_fast_executor

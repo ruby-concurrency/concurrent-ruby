@@ -22,7 +22,7 @@ module Concurrent
       end
 
       it 'uses the given observer set' do
-        expected          = CopyOnWriteObserverSet.new
+        expected          = Collection::CopyOnWriteObserverSet.new
         subject.observers = expected
         expect(subject.observers).to eql expected
       end
