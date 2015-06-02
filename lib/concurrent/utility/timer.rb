@@ -1,8 +1,8 @@
 require 'concurrent/configuration'
-require 'concurrent/utility/deprecation'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
-  include Deprecation
+  extend Concern::Deprecation
 
   # [DEPRECATED] Perform the given operation asynchronously after
   # the given number of seconds.

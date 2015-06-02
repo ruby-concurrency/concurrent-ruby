@@ -3,13 +3,13 @@ require 'timeout'
 
 require 'concurrent/concern/dereferenceable'
 require 'concurrent/atomic/event'
-require 'concurrent/utility/deprecation'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
 
   module Obligation
     include Concern::Dereferenceable
-    include Deprecation
+    include Concern::Deprecation
 
     # Has the obligation been fulfilled?
     #

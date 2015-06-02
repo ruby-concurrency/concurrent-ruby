@@ -3,7 +3,7 @@ require 'concurrent/concern/dereferenceable'
 require 'concurrent/observable'
 require 'concurrent/logging'
 require 'concurrent/executor/executor'
-require 'concurrent/utility/deprecation'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
 
@@ -82,7 +82,7 @@ module Concurrent
     include Concern::Dereferenceable
     include Observable
     include Logging
-    include Deprecation
+    include Concern::Deprecation
 
     attr_reader :timeout, :io_executor, :fast_executor
 

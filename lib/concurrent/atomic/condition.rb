@@ -1,5 +1,5 @@
 require 'concurrent/utility/monotonic_time'
-require 'concurrent/utility/deprecation'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
 
@@ -15,7 +15,7 @@ module Concurrent
   #
   # @deprecated
   class Condition
-    include Deprecation
+    include Concern::Deprecation
 
     class Result
       def initialize(remaining_time)
