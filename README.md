@@ -1,5 +1,5 @@
 # Concurrent Ruby
-[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby) [![Coverage Status](https://img.shields.io/coveralls/ruby-concurrency/concurrent-ruby/master.svg)](https://coveralls.io/r/ruby-concurrency/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.svg)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby) [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg)](https://gemnasium.com/ruby-concurrency/concurrent-ruby) [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT) [![Gitter chat](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
+[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.svg)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby) [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg)](https://gemnasium.com/ruby-concurrency/concurrent-ruby) [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT) [![Gitter chat](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
 <table>
   <tr>
@@ -50,7 +50,7 @@ We also have a [mailing list](http://groups.google.com/group/concurrent-ruby).
 
 This library contains a variety of concurrency abstractions at high and low levels. One of the high-level abstractions is likely to meet most common needs. 
 
-### High-level, general-purpose asynchronous concurrency abstractions
+#### General-purpose Concurrency Abstractions
 
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
 * [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, synchronous, independent state.
@@ -60,40 +60,46 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
 
-### Java-inspired ThreadPools and other executors
+#### Thread-safe Value Objects
 
-* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
+* `Maybe` A thread-safe, immutable object representing an optional value, based on
+  [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
+* `Delay` Lazy evaluation of a block yielding an immutable result. Based on Clojure's
+   [delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html).
 
-* Thread-safe structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html)
+#### Thread-safe Structures
+
+Derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 
 * `ImmutableStruct` Immutable struct where values are set at construction and cannot be changed later.
 * `MutableStruct` Synchronized, mutable struct where values can be safely changed at any time.
 * `SettableStruct` Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
 
-### Thread synchronization classes and algorithms
+#### Java-inspired ThreadPools and Other Executors
+
+* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
+
+#### Thread Synchronization Classes and Algorithms
 
 * [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)
 * [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
 * [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
 * [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
-* [Timeout](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timeout-class_method)
-* [Timer](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#timer-class_method)
 
-### Thread-safe variables
+#### Thread-safe Variables
 
 * [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html)
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html)
 * [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html)
-* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html)
 * [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
 * [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
 * [Thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
 * [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html)
 
-### Edge features
+### Edge Features
 
-They are available in the `concurrent-ruby-edge` companion gem, install with `gem install concurrent-ruby-edge`.
+These are available in the `concurrent-ruby-edge` companion gem, installed with `gem install concurrent-ruby-edge`.
 
 These features are under active development and may change frequently. They are expected not to
 keep backward compatibility (there may also lack tests and documentation). Semantic versions will
@@ -131,29 +137,32 @@ require 'concurrent'                # everything
 
 require 'concurrent/atomics'        # atomic and thread synchronization classes
 require 'concurrent/executors'      # Thread pools and other executors
-require 'concurrent/utilities'      # utility methods such as processor count and timers
 
 # individual abstractions
 
-require 'concurrent/agent'          # Concurrent::Agent
-require 'concurrent/async'          # Concurrent::Async
-require 'concurrent/atomic'         # Concurrent::Atomic (formerly the `atomic` gem)
-require 'concurrent/dataflow'       # Concurrent::dataflow
-require 'concurrent/delay'          # Concurrent::Delay
-require 'concurrent/exchanger'      # Concurrent::Exchanger
-require 'concurrent/future'         # Concurrent::Future
-require 'concurrent/ivar'           # Concurrent::IVar
-require 'concurrent/lazy_register'  # Concurrent::LazyRegister
-require 'concurrent/mvar'           # Concurrent::MVar
-require 'concurrent/promise'        # Concurrent::Promise
-require 'concurrent/scheduled_task' # Concurrent::ScheduledTask
-require 'concurrent/timer_task'     # Concurrent::TimerTask
-require 'concurrent/tvar'           # Concurrent::TVar
+require 'concurrent/async'            # Concurrent::Async
+require 'concurrent/atom'             # Concurrent::Atom
+require 'concurrent/dataflow'         # Concurrent::dataflow
+require 'concurrent/delay'            # Concurrent::Delay
+require 'concurrent/future'           # Concurrent::Future
+require 'concurrent/immutable_struct' # Concurrent::ImmutableStruct
+require 'concurrent/ivar'             # Concurrent::IVar
+require 'concurrent/maybe'            # Concurrent::Maybe
+require 'concurrent/mutable_struct'   # Concurrent::MutableStruct
+require 'concurrent/mvar'             # Concurrent::MVar
+require 'concurrent/promise'          # Concurrent::Promise
+require 'concurrent/scheduled_task'   # Concurrent::ScheduledTask
+require 'concurrent/settable_struct'  # Concurrent::SettableStruct
+require 'concurrent/timer_task'       # Concurrent::TimerTask
+require 'concurrent/tvar'             # Concurrent::TVar
 
 # experimental - available in `concurrent-ruby-edge` companion gem
 
 require 'concurrent/actor'          # Concurrent::Actor and supporting code
+require 'concurrent/agent'          # Concurrent::Agent
 require 'concurrent/channel '       # Concurrent::Channel and supporting code
+require 'concurrent/exchanger'      # Concurrent::Exchanger
+require 'concurrent/lazy_register'  # Concurrent::LazyRegister
 ```
 
 If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to revel the problem.
@@ -241,7 +250,7 @@ bundle exec rake compile            # Compile all the extensions
 * [Petr Chalupa](https://github.com/pitr-ch)
 * [Paweł Obrok](https://github.com/obrok)
 
-### Contributing
+## Contributing
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)

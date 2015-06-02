@@ -1,4 +1,4 @@
-### Next Release v0.9.0 (Target Date: 5 April 2015)
+### Next Release v0.9.0 (Target Date: 7 June 2015)
 
 * Pure Java implementations of
   - `AtomicBoolean`
@@ -43,6 +43,31 @@
 * Moved global logger up to the `Concurrent` namespace and refactored the code
 * Optimized the performance of `Delay`
   - Fixed a bug in which no executor option on construction caused block execution on a global thread pool
+* Numerous improvements and bug fixes to `TimerSet`
+* Fixed deadlock of `Future` when the handler raises Exception
+* Added shared specs for more classes
+* New concurrency abstractions including:
+  - `Atom`
+  - `Maybe`
+  - `ImmutableStruct`
+  - `MutableStruct`
+  - `SettableStruct`
+* Created an Edge gem for unstable abstractions including
+  - `Actor`
+  - `Agent`
+  - `Channel`
+  - `Exchanger`
+  - `LazyRegister`
+* Refactored `Channel` to use newer synchronization objects
+* Added `#reset` and `#cancel` methods to `TimerSet`
+* Added `#cancel` method to `Future` and `ScheduledTask`
+* Refactored `TimerSet` to use `ScheduledTask`
+* Updated `Async` with a factory that initializes the object
+* Deprecated `Concurrent.timer` and `Concurrent.timeout`
+* Reduced max threads on pure-Ruby thread pools (abends around 14751 threads)
+* Moved many private/internal classes/modules into "namespace" modules
+* Removed brute-force killing of threads in tests
+* Fixed a thread pool bug when the operating system cannot allocate more threads
 
 ## Current Release v0.8.0 (25 January 2015)
 
