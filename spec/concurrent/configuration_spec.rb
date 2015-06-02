@@ -2,9 +2,11 @@ module Concurrent
 
   describe Configuration, notravis: true do
 
-    before(:each) do
-      # redundant - done in spec_helper.rb
-      # done here again for explicitness
+    before(:all) do
+      reset_gem_configuration
+    end
+
+    after(:each) do
       reset_gem_configuration
     end
 
