@@ -27,8 +27,6 @@ module Concurrent
   # when the values they depend on are ready you want `dataflow`. `IVar` is
   # generally a low-level primitive.
   #
-  # @!macro copy_options
-  #
   # ## Examples
   #
   # Create, set and get an `IVar`
@@ -58,8 +56,12 @@ module Concurrent
     #
     # @param [Object] value the initial value
     # @param [Hash] opts the options to create a message with
-    #
-    # @!macro deref_options
+    # @option opts [String] :dup_on_deref (false) call `#dup` before returning
+    #   the data
+    # @option opts [String] :freeze_on_deref (false) call `#freeze` before
+    #   returning the data
+    # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
+    #   the internal value and returning the value returned from the proc
     def initialize(value = NO_VALUE, opts = {}, &block)
       if value != NO_VALUE && block_given?
         raise ArgumentError.new('provide only a value or a block')

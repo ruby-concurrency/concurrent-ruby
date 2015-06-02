@@ -17,9 +17,9 @@ module Concurrent
     #
     #     > {include:Actor::Behaviour::Pausing}
     #
-    # -   {Behaviour::Supervised}:
+    # -   {Behaviour::Supervising}:
     #
-    #     > {include:Actor::Behaviour::Supervised}
+    #     > {include:Actor::Behaviour::Supervising}
     #
     # -   {Behaviour::Supervising}:
     #
