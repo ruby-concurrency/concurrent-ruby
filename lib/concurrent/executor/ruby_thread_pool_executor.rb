@@ -136,7 +136,7 @@ module Concurrent
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
       @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
-      warn '[DEPRECATED] :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
+      deprecated ':overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
 
       raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
       raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0

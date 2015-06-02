@@ -8,9 +8,19 @@ module Concurrent
         core.children
       end
 
-      # @see Core#terminate!
-      def terminate!
-        behaviour!(Behaviour::Termination).terminate!
+      # @see Termination#terminate!
+      def terminate!(reason = nil)
+        behaviour!(Behaviour::Termination).terminate!(reason)
+      end
+
+      # @see Termination#terminated?
+      def terminated?
+        behaviour!(Behaviour::Termination).terminated?
+      end
+
+      # @see Termination#reason
+      def reason
+        behaviour!(Behaviour::Termination).reason
       end
 
       # delegates to core.log

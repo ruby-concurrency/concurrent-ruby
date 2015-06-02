@@ -3,9 +3,10 @@ module Concurrent
     module Behaviour
       # Terminates all children when the actor terminates.
       class TerminatesChildren < Abstract
-        def on_event(event)
-          children.map { |ch| ch.ask :terminate! }.each(&:wait) if event == :terminated
-          super event
+        def on_event(public, event)
+          event_name, _ = event
+          children.map { |ch| ch << :terminate! } if event_name == :terminated
+          super public, event
         end
       end
     end

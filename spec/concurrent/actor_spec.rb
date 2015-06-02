@@ -6,14 +6,6 @@ module Concurrent
 
     # FIXME better tests!
 
-    # class Reference
-    #   def backdoor(&block)
-    #     core.send :schedule_execution do
-    #       core.instance_eval &block
-    #     end
-    #   end
-    # end
-
     describe 'Concurrent::Actor' do
 
       def terminate_actors(*actors)
@@ -85,19 +77,19 @@ module Concurrent
         end
 
         it 'terminates on failed initialization' do
-          a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { raise }
+          a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { raise }
           expect(a.ask(nil).wait.failed?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
 
         it 'terminates on failed initialization and raises with spawn!' do
           expect do
-            AdHoc.spawn!(name: :fail, logger: Concurrent.configuration.no_logger) { raise 'm' }
+            AdHoc.spawn!(name: :fail, logger: Concurrent::NULL_LOGGER) { raise 'm' }
           end.to raise_error(StandardError, 'm')
         end
 
         it 'terminates on failed message processing' do
-          a = AdHoc.spawn(name: :fail, logger: Concurrent.configuration.no_logger) { -> _ { raise } }
+          a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { -> _ { raise } }
           expect(a.ask(nil).wait.failed?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
@@ -161,7 +153,7 @@ module Concurrent
           expect(subject.ask!(:terminated?)).to be_falsey
           subject.ask(:terminate!).wait
           expect(subject.ask!(:terminated?)).to be_truthy
-          child.ask!(:terminated_event).wait
+          child.ask!(:termination_event).wait
           expect(child.ask!(:terminated?)).to be_truthy
 
           terminate_actors subject, child
@@ -209,7 +201,7 @@ module Concurrent
         end
         failure << :hehe
         failure << :terminate!
-        expect(queue.pop).to eq [:terminated, failure]
+        expect(queue.pop).to eq [[:terminated, nil], failure]
 
         terminate_actors monitor
       end
@@ -224,33 +216,51 @@ module Concurrent
 
         failure << :hehe
         failure << :terminate!
-        expect(queue.pop).to eq [:terminated, failure]
+        expect(queue.pop).to eq [[:terminated, nil], failure]
 
         terminate_actors monitor
       end
 
       describe 'pausing' do
-        it 'pauses on error' do
+        it 'pauses on error and resumes' do
           queue              = Queue.new
-          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
-            if Behaviour::Supervising == c
-              [c, [:resume!, :one_for_one]]
-            else
-              [c, args]
-            end
-          end
+          resuming_behaviour = Behaviour.restarting_behaviour_definition(:resume!)
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
-            actor = AdHoc.spawn name:                 :pausing,
-              behaviour_definition: Behaviour.restarting_behaviour_definition do
+            actor = AdHoc.spawn name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
 
-            actor << :supervise
-            queue << actor.ask!(:supervisor)
+            actor << :link
+            queue << actor.ask!(:linked)
             actor << nil
             queue << actor.ask(:add)
+
+            -> m { queue << m }
+          end
+
+          expect(queue.pop).to eq :init
+          expect(queue.pop).to include(test)
+          expect(queue.pop.value).to eq 1
+          expect(queue.pop).to eq :resumed
+          terminate_actors test
+        end
+
+        it 'pauses on error and resets' do
+          queue = Queue.new
+          test  = AdHoc.spawn name:                 :tester,
+                              behaviour_definition: Behaviour.restarting_behaviour_definition do
+            actor = AdHoc.spawn name:                 :pausing,
+                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+              queue << :init
+              -> m { m == :object_id ? self.object_id : pass }
+            end
+
+            queue << actor.ask!(:linked)
+            queue << actor.ask!(:object_id)
+            actor << nil
+            queue << actor.ask(:object_id)
 
             -> m do
               queue << m
@@ -258,57 +268,34 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq test
-          expect(queue.pop.value).to eq 1
-          expect(queue.pop).to eq :resumed
-          terminate_actors test
-
-          test = AdHoc.spawn name:                 :tester,
-            behaviour_definition: Behaviour.restarting_behaviour_definition do
-            actor = AdHoc.spawn name:                 :pausing,
-              supervise:            true,
-              behaviour_definition: Behaviour.restarting_behaviour_definition do
-                queue << :init
-                -> m { m == :object_id ? self.object_id : pass }
-              end
-
-              queue << actor.ask!(:supervisor)
-              queue << actor.ask!(:object_id)
-              actor << nil
-              queue << actor.ask(:object_id)
-
-              -> m do
-                queue << m
-              end
-          end
-
-          expect(queue.pop).to eq :init
-          expect(queue.pop).to eq test
+          expect(queue.pop).to include(test)
           first_id  = queue.pop
           second_id = queue.pop.value
           expect(first_id).not_to eq second_id # context already reset
           expect(queue.pop).to eq :init # rebuilds context
           expect(queue.pop).to eq :reset
           terminate_actors test
+        end
 
+        it 'pauses on error and restarts' do
           queue              = Queue.new
-          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, args|
+          resuming_behaviour = Behaviour.restarting_behaviour_definition.map do |c, *args|
             if Behaviour::Supervising == c
-              [c, [:restart!, :one_for_one]]
+              [c, *[:restart!, :one_for_one]]
             else
-              [c, args]
+              [c, *args]
             end
           end
 
           test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
             actor = AdHoc.spawn name:                 :pausing,
-              behaviour_definition: Behaviour.restarting_behaviour_definition do
+                                behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
 
-            actor << :supervise
-            queue << actor.ask!(:supervisor)
+            actor << :link
+            queue << actor.ask!(:linked)
             actor << nil
             queue << actor.ask(:add)
 
@@ -318,7 +305,7 @@ module Concurrent
           end
 
           expect(queue.pop).to eq :init
-          expect(queue.pop).to eq test
+          expect(queue.pop).to include(test)
           expect(queue.pop.wait.reason).to be_a_kind_of(ActorTerminated)
           expect(queue.pop).to eq :init
           expect(queue.pop).to eq :restarted
@@ -336,7 +323,7 @@ module Concurrent
           end
 
           pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |balancer, index|
-            worker.spawn name: "worker-#{index}", supervise: true, args: [balancer]
+            worker.spawn name: "worker-#{index}", args: [balancer]
           end
 
           expect(pool.ask!(5)).to eq 10

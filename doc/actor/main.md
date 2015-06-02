@@ -1,28 +1,33 @@
 # Actor model
 
--  Light-weighted.
+-  Light-weighted running on thread-pool.
 -  Inspired by Akka and Erlang.
 -  Modular.
 
-Actors are sharing a thread-pool by default which makes them very cheap to create and discard.
-Thousands of actors can be created, allowing you to break the program into small maintainable pieces,
-without violating the single responsibility principle.
+This Actor model implementation makes makes actors very cheap to create and discard.
+Thousands of actors can be created, allowing you to break the program into smaller 
+maintainable pieces, without violating the single responsibility principle.
 
 ## What is an actor model?
 
-[Wiki](http://en.wikipedia.org/wiki/Actor_model) says:
-The actor model in computer science is a mathematical model of concurrent computation
-that treats _actors_ as the universal primitives of concurrent digital computation:
+Actor-based concurrency is all the rage in some circles. Originally described in 1973, the actor model is a paradigm 
+for creating asynchronous, concurrent objects  that is becoming increasingly popular. Much has changed since actors 
+were first  written about four decades ago, which has led to a serious fragmentation within  the actor community. 
+There is *no* universally accepted, strict definition of "actor" and actor implementations differ widely between 
+languages and libraries.  
+
+[Wiki](http://en.wikipedia.org/wiki/Actor_model) definition is pretty good:
+_The actor model in computer science is a mathematical model of concurrent computation
+that treats **actors** as the universal primitives of concurrent digital computation:
 in response to a message that it receives, an actor can make local decisions,
 create more actors, send more messages, and determine how to respond to the next
-message received.
+message received._
 
 ## Why?
 
-Concurrency is hard this is one of many ways how to simplify the problem.
-It is simpler to reason about actors than about locks (and all their possible states).
+Concurrency is hard to get right, actors are one of many ways how to simplify the problem.
 
-## How to use it
+## Quick example
 
 An example:
 
@@ -60,26 +65,62 @@ counter.ask(0).value
 
 {include:file:doc/actor/quick.out.rb}
 
-## Messaging
+## Spawning actors
+
+-   {Concurrent::Actor.spawn} and {Concurrent::Actor.spawn!}
+-   {Concurrent::Actor::AbstractContext.spawn} and {Concurrent::Actor::AbstractContext.spawn!} 
+
+## Sending messages
+
+-   {Concurrent::Actor::Reference#tell} 
+    {include:Concurrent::Actor::Reference#tell}
+-   {Concurrent::Actor::Reference#ask}
+    {include:Concurrent::Actor::Reference#ask}
+-   {Concurrent::Actor::Reference#ask!}
+    {include:Concurrent::Actor::Reference#ask!}
 
 Messages are processed in same order as they are sent by a sender. It may interleaved with
-messages form other senders though. There is also a contract in actor model that
-messages sent between actors should be immutable. Gems like
+messages from other senders though.
+
+### Immutability
+
+Messages sent between actors should be **immutable**. Gems like
 
 - [Algebrick](https://github.com/pitr-ch/algebrick) - Typed struct on steroids based on
   algebraic types and pattern matching
 - [Hamster](https://github.com/hamstergem/hamster) - Efficient, Immutable, Thread-Safe
   Collection classes for Ruby
 
-are very useful.
+are very helpful.
 
-### Dead letter routing
+{include:file:doc/actor/messaging.out.rb}
 
-see {AbstractContext#dead_letter_routing} description:
+## Actor definition
 
-> {include:Actor::AbstractContext#dead_letter_routing}
+{include:Concurrent::Actor::AbstractContext}
 
-## Architecture
+## Reference
+
+{include:Actor::Reference}
+
+## Garbage collection
+
+Spawned actor cannot be garbage-collected until it's terminated. There is a reference held in the parent actor.
+
+## Parent-child relationship, name, and path
+
+-   {Core#name} 
+    {include:Actor::Core#name}
+-   {Core#path}
+    {include:Actor::Core#path}
+-   {Core#parent}
+    {include:Actor::Core#parent} 
+
+## Behaviour
+
+{include:Actor::Behaviour}
+
+## IO cooperation
 
 Actors are running on shared thread poll which allows user to create many actors cheaply.
 Downside is that these actors cannot be directly used to do IO or other blocking operations.
@@ -89,20 +130,40 @@ Blocking operations could starve the `default_task_pool`. However there are two 
   (which is intended for blocking operations) sending results back to self in messages.
 - Create an actor using `global_operation_pool` instead of `global_task_pool`, e.g.
   `AnIOActor.spawn name: :blocking, executor: Concurrent.configuration.global_operation_pool`.
+  
+### Example
+  
+{include:file:doc/actor/io.out.rb}
 
-Each actor is composed from 4 parts:
+## Dead letter routing
 
-### {Reference}
-{include:Actor::Reference}
+see {AbstractContext#dead_letter_routing} description:
 
-### {Core}
-{include:Actor::Core}
+> {include:Actor::AbstractContext#dead_letter_routing}
 
-### {AbstractContext}
-{include:Actor::AbstractContext}
+## FAQ
 
-### {Behaviour}
-{include:Actor::Behaviour}
+###   What happens if I try to supervise using a normal Context?
+
+Alleged supervisor will receive errors from its supervised actors. They'll have to be handled manually.
+
+### How to change supervision strategy?
+
+Use option `behaviour_definition: Behaviour.restarting_behaviour_definition(:resume!)` or 
+`behaviour_definition: Behaviour.restarting_behaviour_definition(:reset!, :one_for_all)`
+
+### How to change behaviors?
+
+Any existing behavior can be subclassed 
+
+### How to implement custom restarting?
+
+By subclassing {Behaviour::Pausing} and overriding {Behaviour::Pausing#restart!}. Implementing 
+{AbstractContext#on_event} could be also considered.
+
+_We'll be happy to answer any other questions, 
+just [open an Issue](https://github.com/ruby-concurrency/concurrent-ruby/issues/new) or find us on 
+https://gitter.im/ruby-concurrency/concurrent-ruby._
 
 ## Speed
 
@@ -119,49 +180,49 @@ Benchmark legend:
 
 ### JRUBY
 
-    Rehearsal --------------------------------------------------------
-    50000    2 concurrent 24.110000   0.800000  24.910000 (  7.728000)
-    50000    2 celluloid  28.510000   4.780000  33.290000 ( 14.782000)
-    50000  500 concurrent 13.700000   0.280000  13.980000 (  4.307000)
-    50000  500 celluloid  14.520000  11.740000  26.260000 ( 12.258000)
-    50000 1000 concurrent 10.890000   0.220000  11.110000 (  3.760000)
-    50000 1000 celluloid  15.600000  21.690000  37.290000 ( 18.512000)
-    50000 1500 concurrent 10.580000   0.270000  10.850000 (  3.646000)
-    50000 1500 celluloid  14.490000  29.790000  44.280000 ( 26.043000)
-    --------------------------------------------- total: 201.970000sec
+    Rehearsal ---------------------------------------------------------
+    50000    2 concurrent  26.140000   0.610000  26.750000 (  7.761000)
+    50000    2 celluloid   41.440000   5.270000  46.710000 ( 17.535000)
+    50000  500 concurrent  11.340000   0.180000  11.520000 (  3.498000)
+    50000  500 celluloid   19.310000  10.680000  29.990000 ( 14.619000)
+    50000 1000 concurrent  10.640000   0.180000  10.820000 (  3.563000)
+    50000 1000 celluloid   17.840000  19.850000  37.690000 ( 18.892000)
+    50000 1500 concurrent  14.120000   0.290000  14.410000 (  4.618000)
+    50000 1500 celluloid   19.060000  28.920000  47.980000 ( 25.185000)
+    ---------------------------------------------- total: 225.870000sec
     
-     mes. act.      impl.      user     system      total        real
-    50000    2 concurrent  9.820000   0.510000  10.330000 (  5.735000)
-    50000    2 celluloid  10.390000   4.030000  14.420000 (  7.494000)
-    50000  500 concurrent  9.880000   0.200000  10.080000 (  3.310000)
-    50000  500 celluloid  12.430000  11.310000  23.740000 ( 11.727000)
-    50000 1000 concurrent 10.590000   0.190000  10.780000 (  4.029000)
-    50000 1000 celluloid  14.950000  23.260000  38.210000 ( 20.841000)
-    50000 1500 concurrent 10.710000   0.250000  10.960000 (  3.892000)
-    50000 1500 celluloid  13.280000  30.030000  43.310000 ( 24.620000) (1)
+     mes. act.      impl.       user     system      total        real
+    50000    2 concurrent   7.320000   0.530000   7.850000 (  3.637000)
+    50000    2 celluloid   13.780000   4.730000  18.510000 ( 10.756000)
+    50000  500 concurrent   9.270000   0.140000   9.410000 (  3.020000)
+    50000  500 celluloid   16.540000  10.920000  27.460000 ( 14.308000)
+    50000 1000 concurrent   9.970000   0.160000  10.130000 (  3.445000)
+    50000 1000 celluloid   15.930000  20.840000  36.770000 ( 18.272000)
+    50000 1500 concurrent  11.580000   0.240000  11.820000 (  3.723000)
+    50000 1500 celluloid   19.440000  29.060000  48.500000 ( 25.227000) (1)
 
 ### MRI 2.1.0
 
-    Rehearsal --------------------------------------------------------
-    50000    2 concurrent  4.640000   0.080000   4.720000 (  4.852390)
-    50000    2 celluloid   6.110000   2.300000   8.410000 (  7.898069)
-    50000  500 concurrent  6.260000   2.210000   8.470000 (  7.400573)
-    50000  500 celluloid  10.250000   4.930000  15.180000 ( 14.174329)
-    50000 1000 concurrent  6.300000   1.860000   8.160000 (  7.303162)
-    50000 1000 celluloid  12.300000   7.090000  19.390000 ( 17.962621)
-    50000 1500 concurrent  7.410000   2.610000  10.020000 (  8.887396)
-    50000 1500 celluloid  14.850000  10.690000  25.540000 ( 24.489796)
-    ---------------------------------------------- total: 99.890000sec
+    Rehearsal ---------------------------------------------------------
+    50000    2 concurrent   4.180000   0.080000   4.260000 (  4.269435)
+    50000    2 celluloid    7.740000   3.100000  10.840000 ( 10.043875)
+    50000  500 concurrent   5.900000   1.310000   7.210000 (  6.565067)
+    50000  500 celluloid   12.820000   5.810000  18.630000 ( 17.320765)
+    50000 1000 concurrent   6.080000   1.640000   7.720000 (  6.931294)
+    50000 1000 celluloid   17.130000   8.320000  25.450000 ( 23.786146)
+    50000 1500 concurrent   6.940000   2.030000   8.970000 (  7.927330)
+    50000 1500 celluloid   20.980000  12.040000  33.020000 ( 30.849578)
+    ---------------------------------------------- total: 116.100000sec
     
-     mes. act.      impl.      user     system      total        real
-    50000    2 concurrent  4.190000   0.070000   4.260000 (  4.306386)
-    50000    2 celluloid   6.490000   2.210000   8.700000 (  8.280051)
-    50000  500 concurrent  7.060000   2.520000   9.580000 (  8.518707)
-    50000  500 celluloid  10.550000   4.980000  15.530000 ( 14.699962)
-    50000 1000 concurrent  6.440000   1.870000   8.310000 (  7.571059)
-    50000 1000 celluloid  12.340000   7.510000  19.850000 ( 18.793591)
-    50000 1500 concurrent  6.720000   2.160000   8.880000 (  7.929630)
-    50000 1500 celluloid  14.140000  10.130000  24.270000 ( 22.775288) (1)
+     mes. act.      impl.       user     system      total        real
+    50000    2 concurrent   3.730000   0.100000   3.830000 (  3.822688)
+    50000    2 celluloid    7.900000   2.910000  10.810000 (  9.924014)
+    50000  500 concurrent   5.420000   1.230000   6.650000 (  6.025579)
+    50000  500 celluloid   12.720000   5.540000  18.260000 ( 16.889517)
+    50000 1000 concurrent   5.420000   0.910000   6.330000 (  5.896689)
+    50000 1000 celluloid   16.090000   8.040000  24.130000 ( 22.347102)
+    50000 1500 concurrent   5.580000   0.760000   6.340000 (  6.038535)
+    50000 1500 celluloid   20.000000  11.680000  31.680000 ( 29.590774) (1)
 
 *Note (1):* Celluloid is using thread per actor so this bench is creating about 1500
 native threads. Actor is using constant number of threads.

@@ -1,6 +1,5 @@
 require 'benchmark'
 require 'concurrent/actor'
-Concurrent::Actor.i_know_it_is_experimental!
 
 require 'celluloid'
 require 'celluloid/autostart'

@@ -1,9 +1,13 @@
 module Concurrent
   module Actor
 
-    # Reference is public interface of Actor instances. It is used for sending messages and can
-    # be freely passed around the program. It also provides some basic information about the actor,
+    # {Reference} is public interface of Actor instances. It is used for sending messages and can
+    # be freely passed around the application. It also provides some basic information about the actor,
     # see {PublicDelegations}.
+    #
+    #     AdHoc.spawn('printer') { -> message { puts message } }
+    #     # => #<Concurrent::Actor::Reference:0x7fd0d2883218 /printer (Concurrent::Actor::Utils::AdHoc)>
+    #     #                                   ^object_id     ^path     ^context class
     class Reference
       include TypeCheck
       include PublicDelegations
@@ -16,9 +20,15 @@ module Concurrent
         @core = Type! core, Core
       end
 
-      # tells message to the actor, returns immediately
+      # Sends the message asynchronously to the actor and immediately returns
+      # `self` (the reference) allowing to chain message telling.
       # @param [Object] message
       # @return [Reference] self
+      # @example
+      #   printer = AdHoc.spawn('printer') { -> message { puts message } }
+      #   printer.tell('ping').tell('pong')
+      #   printer << 'ping' << 'pong'
+      #   # => 'ping'\n'pong'\n'ping'\n'pong'\n
       def tell(message)
         message message, nil
       end
@@ -30,44 +40,47 @@ module Concurrent
       # global_io_executor will block on while asking. It's fine to use it form outside of actors and
       # global_io_executor.
       #
-      # sends message to the actor and asks for the result of its processing, returns immediately
+      # @note it's a good practice to use {#tell} whenever possible. Results can be send back with other messages.
+      #   Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
+      #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      #   global_io_executor.
       # @param [Object] message
       # @param [Edge::Future] future to be fulfilled be message's processing result
       # @return [Edge::Future] supplied future
+      # @example
+      #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
+      #   adder.ask(1).value # => 2
+      #   adder.ask(nil).wait.reason # => #<NoMethodError: undefined method `+' for nil:NilClass>
       def ask(message, future = Concurrent.future)
         message message, future
-        # # @return [Future] a future
-        # def ask(message)
-        #   message message, ConcurrentNext.promise
       end
 
-      # @note it's a good practice to use tell whenever possible. Ask should be used only for
-      # testing and when it returns very shortly. It can lead to deadlock if all threads in
-      # global_io_executor will block on while asking. It's fine to use it form outside of actors and
-      # global_io_executor.
+      # Sends the message synchronously and blocks until the message
+      # is processed. Raises on error.
       #
-      # sends message to the actor and asks for the result of its processing, blocks
+      # @note it's a good practice to use {#tell} whenever possible. Results can be send back with other messages.
+      #   Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
+      #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
+      #   global_io_executor.
       # @param [Object] message
       # @param [Edge::Future] future to be fulfilled be message's processing result
       # @return [Object] message's processing result
-      # @raise [Exception] future.reason if future is #rejected?
+      # @raise [Exception] future.reason if future is #failed?
+      # @example
+      #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
+      #   adder.ask!(1) # => 2
       def ask!(message, future = Concurrent.future)
         ask(message, future).value!
-        # # @param [Object] message
-        # # @return [Object] message's processing result
-        # # @raise [Exception] future.reason if future is #failed?
-        # def ask!(message)
-        #   ask(message).value!
+      end
+
+      def map(messages)
+        messages.map { |m| self.ask(m) }
       end
 
       # behaves as {#tell} when no future and as {#ask} when future
       def message(message, future = nil)
         core.on_envelope Envelope.new(message, future, Actor.current || Thread.current, self)
-        return future || self
-        # # behaves as {#tell} when no promise and as {#ask} when promise
-        # def message(message, promise = nil)
-        #   core.on_envelope Envelope.new(message, promise, Actor.current || Thread.current, self)
-        #   return promise ? promise.future : self
+        return future ? future.hide_completable : self
       end
 
       # @see AbstractContext#dead_letter_routing
@@ -76,7 +89,7 @@ module Concurrent
       end
 
       def to_s
-        "#<#{self.class} #{path} (#{actor_class})>"
+        "#<#{self.class}:0x#{'%x' % (object_id << 1)} #{path} (#{actor_class})>"
       end
 
       alias_method :inspect, :to_s

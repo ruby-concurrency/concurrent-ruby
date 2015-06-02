@@ -5,8 +5,8 @@ module Concurrent
       class SetResults < Abstract
         attr_reader :error_strategy
 
-        def initialize(core, subsequent, error_strategy)
-          super core, subsequent
+        def initialize(core, subsequent, core_options, error_strategy)
+          super core, subsequent, core_options
           @error_strategy = Match! error_strategy, :just_log, :terminate!, :pause!
         end
 
@@ -14,6 +14,7 @@ module Concurrent
           result = pass envelope
           if result != MESSAGE_PROCESSED && !envelope.future.nil?
             envelope.future.success result
+            log Logging::DEBUG, "finished processing of #{envelope.message.inspect}"
           end
           nil
         rescue => error

@@ -7,15 +7,9 @@ require 'concurrent/edge/future'
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?
   # TODO Remote actors using DRb
-  # TODO IO interoperation
   # TODO un/become
-
-  # TODO doc
-  # - what happens if I try to supervise using a normal Context?
-  # - how to change behaviours
-  # - how to implement custom restarting?
-  # - pool for io operations using different executor
-  # - document guaranteed ordering
+  # TODO supervision tree, pause children on error in parent, pause may need higher priority
+  # TODO more effective executor
 
   # {include:file:doc/actor/main.md}
   module Actor
@@ -50,43 +44,46 @@ module Concurrent
       @root.value!
     end
 
-    # Spawns a new actor.
-    #
-    # @example simple
+    # Spawns a new actor. {Concurrent::Actor::AbstractContext.spawn} allows to omit class parameter.
+    # To see the list of avaliable options see {Core#initialize}
+    # @see Concurrent::Actor::AbstractContext.spawn
+    # @see Core#initialize
+    # @example by class and name
     #   Actor.spawn(AdHoc, :ping1) { -> message { message } }
     #
-    # @example complex
-    #   Actor.spawn name:     :ping3,
-    #                 class:    AdHoc,
-    #                 args:     [1]
-    #                 executor: Concurrent.global_io_executor do |add|
-    #     lambda { |number| number + add }
+    # @example by option hash
+    #   inc2 = Actor.spawn(class:    AdHoc,
+    #                      name:     'increment by 2',
+    #                      args:     [2],
+    #                      executor: Concurrent.global_io_executor) do |increment_by|
+    #     lambda { |number| number + increment_by }
     #   end
+    #   inc2.ask!(2) # => 4
     #
     # @param block for context_class instantiation
-    # @param args see {.spawn_optionify}
+    # @param args see {.to_spawn_options}
     # @return [Reference] never the actual actor
     def self.spawn(*args, &block)
       if Actor.current
-        Core.new(spawn_optionify(*args).merge(parent: Actor.current), &block).reference
+        Core.new(to_spawn_options(*args).merge(parent: Actor.current), &block).reference
       else
-        root.ask([:spawn, spawn_optionify(*args), block]).value!
+        root.ask([:spawn, to_spawn_options(*args), block]).value!
       end
     end
 
-    # as {.spawn} but it'll raise when Actor not initialized properly
+    # as {.spawn} but it'll block until actor is initialized or it'll raise exception on error
     def self.spawn!(*args, &block)
-      spawn(spawn_optionify(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
+      spawn(to_spawn_options(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
     end
 
-    # @overload spawn_optionify(context_class, name, *args)
+    # @overload to_spawn_options(context_class, name, *args)
     #   @param [AbstractContext] context_class to be spawned
     #   @param [String, Symbol] name of the instance, it's used to generate the
     #     {Core#path} of the actor
     #   @param args for context_class instantiation
-    # @overload spawn_optionify(opts)
+    # @overload to_spawn_options(opts)
     #   see {Core#initialize} opts
-    def self.spawn_optionify(*args)
+    def self.to_spawn_options(*args)
       if args.size == 1 && args.first.is_a?(Hash)
         args.first
       else
@@ -96,9 +93,5 @@ module Concurrent
       end
     end
 
-    # call this to disable experimental warning
-    def self.i_know_it_is_experimental!
-      warn 'Method Actor.i_know_it_is_experimental! is deprecated. The Actors are no longer experimental.'
-    end
   end
 end

@@ -5,55 +5,55 @@ module Concurrent
 
     require 'set'
 
-    # Core of the actor
-    # @note Whole class should be considered private. An user should use
-    #   {Context}s and {Reference}s only.
-    # @note devel: core should not block on anything, e.g. it cannot wait on
-    #   children to terminate that would eat up all threads in task pool and
-    #   deadlock
+    # Core of the actor.
+    # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
+    # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
+    #   that would eat up all threads in task pool and deadlock
     class Core < Synchronization::Object
       include TypeCheck
       include Concurrent::Logging
 
       # @!attribute [r] reference
-      #   @return [Reference] reference to this actor which can be safely passed around
+      #   Reference to this actor which can be safely passed around.
+      #   @return [Reference]
       # @!attribute [r] name
-      #   @return [String] the name of this instance, it should be uniq (not enforced right now)
+      #   The name of actor instance, it should be uniq (not enforced). Allows easier orientation
+      #   between actor instances.
+      #   @return [String]
       # @!attribute [r] path
-      #   @return [String] a path of this actor. It is used for easier orientation and logging.
-      #     Path is constructed recursively with: `parent.path + self.name` up to a {Actor.root},
-      #     e.g. `/an_actor/its_child`.
-      #     (It will also probably form a supervision path (failures will be reported up to parents)
-      #     in future versions.)
+      #   Path of this actor. It is used for easier orientation and logging.
+      #   Path is constructed recursively with: `parent.path + self.name` up to a {Actor.root},
+      #   e.g. `/an_actor/its_child`.
+      #   @return [String]
       # @!attribute [r] executor
-      #   @return [Executor] which is used to process messages
+      #   Executor which is used to process messages.
+      #   @return [Executor]
       # @!attribute [r] actor_class
-      #   @return [Context] a class including {Context} representing Actor's behaviour
+      #   A subclass of {AbstractContext} representing Actor's behaviour.
+      #   @return [Context]
       attr_reader :reference, :name, :path, :executor, :context_class, :context, :behaviour_definition
 
       # @option opts [String] name
-      # @option opts [Reference, nil] parent of an actor spawning this one
-      # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Context] actor_class a class to be instantiated defining Actor's behaviour
       # @option opts [Array<Object>] args arguments for actor_class instantiation
-      # @option opts [Executor] executor, default is `Concurrent.global_io_executor`
-      # @option opts [true, false] link, atomically link the actor to its parent
-      # @option opts [true, false] supervise, atomically supervise the actor by its parent
-      # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>]
-      #   behaviour_definition, array of pairs where each pair is behaviour
-      #   class and its args, see {Behaviour.basic_behaviour_definition}
-      # @option opts [CompletableFuture, nil] initialized, if present it'll be set or failed
-      #   after {Context} initialization
-      # @option opts [Proc, nil] logger a proc accepting (level, progname,
-      #   message = nil, &block) params, can be used to hook actor instance to
-      #   any logging system
+      # @option opts [Executor] executor, default is `global_io_executor`
+      # @option opts [true, false] link, atomically link the actor to its parent (default: true)
+      # @option opts [Class] reference a custom descendant of {Reference} to use
+      # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
+      #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
+      # @option opts [CompletableFuture, nil] initialized, if present it'll be set or failed after {Context} initialization
+      # @option opts [Reference, nil] parent **private api** parent of the actor (the one spawning )
+      # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
+      #   can be used to hook actor instance to any logging system, see {Concurrent::Logging}
       # @param [Proc] block for class instantiation
       def initialize(opts = {}, &block)
         super(&nil)
         synchronize { ns_initialize(opts, &block) }
       end
 
-      # @return [Reference, nil] of parent actor
+      # A parent Actor. When actor is spawned the {Actor.current} becomes its parent.
+      # When actor is spawned from a thread outside of an actor ({Actor.current} is nil) {Actor.root} is assigned.
+      # @return [Reference, nil]
       def parent
         @parent_core && @parent_core.reference
       end
@@ -89,7 +89,10 @@ module Concurrent
       # can be called from other alternative Reference implementations
       # @param [Envelope] envelope
       def on_envelope(envelope)
-        schedule_execution { handle_envelope envelope }
+        schedule_execution do
+          log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
+          process_envelope envelope
+        end
         nil
       end
 
@@ -123,8 +126,9 @@ module Concurrent
         nil
       end
 
-      def broadcast(event)
-        @first_behaviour.on_event(event)
+      def broadcast(public, event)
+        log Logging::DEBUG, "event: #{event.inspect} (#{public ? 'public' : 'private'})"
+        @first_behaviour.on_event(public, event)
       end
 
       # @param [Class] behaviour_class
@@ -151,7 +155,12 @@ module Concurrent
         @context.send :initialize, *@args, &@block
       end
 
-      protected
+      # @api private
+      def process_envelope(envelope)
+        @first_behaviour.on_envelope envelope
+      end
+
+      private
 
       def ns_initialize(opts, &block)
         @mailbox              = Array.new
@@ -161,7 +170,7 @@ module Concurrent
         @context_class = Child! opts.fetch(:class), AbstractContext
         allocate_context
 
-        @executor = Type! opts.fetch(:executor, Concurrent.global_io_executor), Concurrent::AbstractExecutorService
+        @executor = Type! opts.fetch(:executor, @context.default_executor), Concurrent::AbstractExecutorService
         raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
 
         @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
@@ -184,19 +193,11 @@ module Concurrent
         @block      = block
         initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
 
-        messages = []
-        messages << :link if opts[:link]
-        messages << :supervise if opts[:supervise]
-
         schedule_execution do
           begin
             build_context
-
-            messages.each do |message|
-              handle_envelope Envelope.new(message, nil, parent, reference)
-            end
-
             initialized.success reference if initialized
+            log DEBUG, 'spawned'
           rescue => ex
             log ERROR, ex
             @first_behaviour.terminate!
@@ -205,23 +206,13 @@ module Concurrent
         end
       end
 
-      private
-
-      def handle_envelope(envelope)
-        log DEBUG, "received #{envelope.message.inspect} from #{envelope.sender}"
-        @first_behaviour.on_envelope envelope
-      end
-
       def initialize_behaviours(opts)
-        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |v|
-          Type! v, Array
-          Match! v.size, 2
-          Child! v[0], Behaviour::Abstract
-          Type! v[1], Array
+        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |(behaviour, *args)|
+          Child! behaviour, Behaviour::Abstract
         end
         @behaviours           = {}
         @first_behaviour      = @behaviour_definition.reverse.
-          reduce(nil) { |last, (behaviour, args)| @behaviours[behaviour] = behaviour.new(self, last, *args) }
+            reduce(nil) { |last, (behaviour, *args)| @behaviours[behaviour] = behaviour.new(self, last, opts, *args) }
       end
     end
   end

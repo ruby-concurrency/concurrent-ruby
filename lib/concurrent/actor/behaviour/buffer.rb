@@ -9,8 +9,8 @@ module Concurrent
       # before messages arriving into buffer. This allows for the processing of
       # internal actor messages like (`:link`, `:supervise`) first.
       class Buffer < Abstract
-        def initialize(core, subsequent)
-          super core, subsequent
+        def initialize(core, subsequent, core_options)
+          super core, subsequent, core_options
           @buffer                     = []
           @receive_envelope_scheduled = false
         end
@@ -41,13 +41,14 @@ module Concurrent
           core.schedule_execution { process_envelopes? }
         end
 
-        def on_event(event)
-          case event
+        def on_event(public, event)
+          event_name, _ = event
+          case event_name
           when :terminated, :restarted
             @buffer.each { |envelope| reject_envelope envelope }
             @buffer.clear
           end
-          super event
+          super public, event_name
         end
       end
     end

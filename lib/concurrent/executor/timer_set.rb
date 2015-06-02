@@ -15,6 +15,7 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
+    extend Deprecation
 
     # Create a new set of timed tasks.
     #

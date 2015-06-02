@@ -3,8 +3,9 @@ require 'bundler/setup'
 require 'pry'
 require 'pp'
 
+root        = File.dirname(File.expand_path(Process.argv0))
 input_paths = if ARGV.empty?
-                Dir.glob("#{File.dirname(__FILE__)}/*.in.rb")
+                Dir.glob("#{root}/*.in.rb")
               else
                 ARGV
               end.map { |p| File.expand_path p }
@@ -12,7 +13,7 @@ input_paths = if ARGV.empty?
 input_paths.each_with_index do |input_path, i|
 
   pid = fork do
-    require_relative 'init.rb'
+    require File.join(root, 'init.rb')
 
     begin
       output_path = input_path.gsub /\.in\.rb$/, '.out.rb'

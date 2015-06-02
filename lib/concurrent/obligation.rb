@@ -3,11 +3,13 @@ require 'timeout'
 
 require 'concurrent/dereferenceable'
 require 'concurrent/atomic/event'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
   module Obligation
     include Dereferenceable
+    include Deprecation
 
     # Has the obligation been fulfilled?
     #
@@ -51,7 +53,7 @@ module Concurrent
     #
     # @deprecated
     def completed?
-      warn '[DEPRECATED] Use #complete? instead'
+      deprecated_method 'completed?', 'complete?'
       complete?
     end
 

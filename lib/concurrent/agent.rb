@@ -3,6 +3,7 @@ require 'concurrent/dereferenceable'
 require 'concurrent/observable'
 require 'concurrent/logging'
 require 'concurrent/executor/executor'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
@@ -81,6 +82,7 @@ module Concurrent
     include Dereferenceable
     include Observable
     include Logging
+    include Deprecation
 
     attr_reader :timeout, :io_executor, :fast_executor
 
@@ -182,8 +184,8 @@ module Concurrent
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
     def post_off(timeout = nil, &block)
-      warn '[DEPRECATED] post_off with timeout options is deprecated and will be removed'
       task = if timeout
+               deprecated 'post_off with option timeout options is deprecated and will be removed'
                lambda do |value|
                  future = Future.execute do
                    block.call(value)

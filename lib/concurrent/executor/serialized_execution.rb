@@ -122,7 +122,7 @@ module Concurrent
 
     # @!macro executor_service_method_post
     def post(*args, &task)
-      raise ArgumentError.new('no block given') unless block_given?
+      Kernel.raise ArgumentError.new('no block given') unless block_given?
       return false unless running?
       @serializer.post(@executor, *args, &task)
     end

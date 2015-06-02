@@ -3,11 +3,13 @@ require 'concurrent/logging'
 require 'concurrent/at_exit'
 require 'concurrent/atomic/event'
 require 'concurrent/synchronization'
+require 'concurrent/utility/deprecation'
 
 module Concurrent
 
   module ExecutorService
     include Logging
+    include Deprecation
 
     # @!macro [attach] executor_service_method_post
     #
