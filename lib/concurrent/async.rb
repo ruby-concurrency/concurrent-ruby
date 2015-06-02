@@ -297,7 +297,7 @@ module Concurrent
     #
     # @!visibility private
     def init_synchronization
-      raise InitializationError.new('#init_synchronization was already called') if @__async_initialized__
+      return self if @__async_initialized__
 
       @__async_initialized__ = true
       serializer = Concurrent::SerializedExecution.new

@@ -11,7 +11,7 @@ module Concurrent
   class RubyThreadPoolExecutor < RubyExecutorService
 
     # Default maximum number of threads that will be created in the pool.
-    DEFAULT_MAX_POOL_SIZE      = 2**15 # 32768
+    DEFAULT_MAX_POOL_SIZE      = 2**13 # 8192
 
     # Default minimum number of threads that will be retained in the pool.
     DEFAULT_MIN_POOL_SIZE      = 0
