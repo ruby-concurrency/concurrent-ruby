@@ -1,4 +1,4 @@
-require 'concurrent/native_extensions'
+require 'concurrent/utility/native_extension_loader'
 require 'concurrent/synchronization'
 
 module Concurrent

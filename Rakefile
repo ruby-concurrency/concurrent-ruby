@@ -3,7 +3,7 @@
 $:.push File.join(File.dirname(__FILE__), 'lib')
 
 require 'concurrent/version'
-require 'concurrent/native_extensions'
+require 'concurrent/utility/native_extension_loader'
 
 ## load the two gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
