@@ -26,7 +26,7 @@ module Concurrent
   # return the cached value. The operation will only be run once. This means that
   # any side effects created by the operation will only happen once as well.
   #
-  # `Delay` includes the `Concurrent::Dereferenceable` mixin to support thread
+  # `Delay` includes the `Concurrent::Concern::Dereferenceable` mixin to support thread
   # safety of the reference returned by `#value`.
   #
   # @!macro copy_options
@@ -39,7 +39,7 @@ module Concurrent
   #     constructor option. This will cause the delayed operation to be
   #     execute on the given executor, allowing the call to timeout.
   #
-  # @see Concurrent::Dereferenceable
+  # @see Concurrent::Concern::Dereferenceable
   class Delay < Synchronization::Object
     include Obligation
 

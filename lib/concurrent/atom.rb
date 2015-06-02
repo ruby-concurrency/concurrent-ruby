@@ -1,4 +1,4 @@
-require 'concurrent/dereferenceable'
+require 'concurrent/concern/dereferenceable'
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/synchronization/object'
 
@@ -22,7 +22,7 @@ module Concurrent
   #
   # @see http://clojure.org/atoms Clojure Atoms
   class Atom < Synchronization::Object
-    include Dereferenceable
+    include Concern::Dereferenceable
 
     # Create a new atom with the given initial value.
     #

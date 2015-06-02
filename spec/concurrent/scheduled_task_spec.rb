@@ -1,5 +1,5 @@
 require 'timecop'
-require_relative 'dereferenceable_shared'
+require_relative 'concern/dereferenceable_shared'
 require_relative 'obligation_shared'
 require_relative 'observable_shared'
 

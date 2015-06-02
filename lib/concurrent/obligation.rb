@@ -1,14 +1,14 @@
 require 'thread'
 require 'timeout'
 
-require 'concurrent/dereferenceable'
+require 'concurrent/concern/dereferenceable'
 require 'concurrent/atomic/event'
 require 'concurrent/utility/deprecation'
 
 module Concurrent
 
   module Obligation
-    include Dereferenceable
+    include Concern::Dereferenceable
     include Deprecation
 
     # Has the obligation been fulfilled?

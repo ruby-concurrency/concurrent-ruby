@@ -1,4 +1,4 @@
-require_relative 'dereferenceable_shared'
+require_relative 'concern/dereferenceable_shared'
 require_relative 'observable_shared'
 
 module Concurrent
