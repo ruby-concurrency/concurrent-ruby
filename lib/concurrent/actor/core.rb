@@ -91,7 +91,7 @@ module Concurrent
       # @param [Envelope] envelope
       def on_envelope(envelope)
         schedule_execution do
-          log DEBUG, "#{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} from #{envelope.sender}"
+          log DEBUG, "was #{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} by #{envelope.sender}"
           process_envelope envelope
         end
         nil
