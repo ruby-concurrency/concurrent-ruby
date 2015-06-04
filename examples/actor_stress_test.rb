@@ -84,7 +84,8 @@ class ActorStressTester
           expect(queue.pop).to eq 3
 
           actor << :terminate!
-          expect(actor.ask(:blow_up).wait).to be_rejected
+          #expect(actor.ask(:blow_up).wait).to be_rejected
+          expect(actor.ask(:blow_up).wait).to be_failed
           terminate_actors(actor, child)
         end
       end

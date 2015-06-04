@@ -6,9 +6,9 @@ require 'benchmark'
 require 'rbconfig'
 require 'thread'
 
-require 'concurrent/atomic'
+require 'concurrent/atomics'
 
-if RUBY_PLATFORM != 'java' && ! defined? Concurrent::CAtomic
+if RUBY_PLATFORM != 'java' && ! defined? Concurrent::CAtomicReference
   warn "[WARN] C extensions not loaded!"
 end
 
@@ -24,10 +24,10 @@ M = ARGV[0] ? ARGV[0].to_i : 10
 
 # list of platform-specific implementations
 ATOMICS = [
-  'MutexAtomic',
-  'CAtomic',
-  'JavaAtomic',
-  'RbxAtomic',
+  'MutexAtomicReference',
+  'CAtomicReference',
+  'JavaAtomicReference',
+  'RbxAtomicReference',
 ]
 
 puts "Testing with #{RbConfig::CONFIG['ruby_install_name']} #{RUBY_VERSION}"
