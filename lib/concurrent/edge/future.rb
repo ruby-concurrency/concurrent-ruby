@@ -1134,7 +1134,7 @@ module Concurrent
       # TODO make lock free
       def initialize
         super
-        @ProbeSet = WaitableList.new
+        @ProbeSet = Concurrent::Channel::WaitableList.new
         ensure_ivar_visibility!
       end
 
