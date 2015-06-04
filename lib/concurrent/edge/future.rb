@@ -154,6 +154,8 @@ module Concurrent
         state == :completed
       end
 
+      alias_method :complete?, :completed?
+
       # Wait until Event is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
       # @return [Event] self
@@ -400,14 +402,11 @@ module Concurrent
 
       # Has the Future been completed?
       # @return [Boolean]
-      def complete?(state = @State.get)
+      def completed?(state = @State.get)
         success? state or failed? state
       end
 
-      def completed?(state = @State.get)
-        deprecated_method 'completed?', 'complete?'
-        complete? state
-      end
+      alias_method :complete?, :completed?
 
       # @return [Object] the value of the Future when success
       def value(timeout = nil)
