@@ -12,7 +12,7 @@ module Concurrent
   class RubyThreadPoolExecutor < RubyExecutorService
 
     # Default maximum number of threads that will be created in the pool.
-    DEFAULT_MAX_POOL_SIZE      = 2**13 # 8192
+    DEFAULT_MAX_POOL_SIZE      = 2_147_483_647 # java.lang.Integer::MAX_VALUE
 
     # Default minimum number of threads that will be retained in the pool.
     DEFAULT_MIN_POOL_SIZE      = 0
@@ -139,9 +139,10 @@ module Concurrent
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       deprecated ':overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
 
-      raise ArgumentError.new('max_threads must be greater than zero') if @max_length <= 0
-      raise ArgumentError.new('min_threads cannot be less than zero') if @min_length < 0
-      raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
+      raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @max_length < DEFAULT_MIN_POOL_SIZE
+      raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if @max_length > DEFAULT_MAX_POOL_SIZE
+      raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @min_length < DEFAULT_MIN_POOL_SIZE
+      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if min_length > max_length
 
       self.auto_terminate = opts.fetch(:auto_terminate, true)
 
@@ -216,6 +217,9 @@ module Concurrent
       else
         false
       end
+    rescue ThreadError
+      # Raised when the operating system refuses to create the new thread
+      return false
     end
 
     # tries to enqueue task
