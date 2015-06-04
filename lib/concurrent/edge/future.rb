@@ -118,6 +118,8 @@ module Concurrent
 
     # Represents an event which will happen in future (will be completed). It has to always happen.
     class Event < Synchronization::Object
+      include Concern::Deprecation
+
       def initialize(promise, default_executor)
         @Promise         = promise
         @DefaultExecutor = default_executor
@@ -138,6 +140,10 @@ module Concurrent
       # @return [Boolean]
       def pending?(state = @State.get)
         state == :pending
+      end
+
+      def unscheduled?
+        raise 'unsupported'
       end
 
       alias_method :incomplete?, :pending?
@@ -226,6 +232,11 @@ module Concurrent
 
       def inspect
         "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
+      end
+
+      def set(*args, &block)
+        raise 'Use CompletableEvent#complete or CompletableFuture#complete instead, ' +
+                  'constructed by Concurrent.event or Concurrent.future respectively.'
       end
 
       # @!visibility private
@@ -371,16 +382,31 @@ module Concurrent
         Success === state
       end
 
+      def fulfilled?
+        deprecated_method 'fulfilled?', 'success?'
+        success?
+      end
+
       # Has Future been failed?
       # @return [Boolean]
       def failed?(state = @State.get)
         Failed === state
       end
 
+      def rejected?
+        deprecated_method 'rejected?', 'failed?'
+        failed?
+      end
+
       # Has the Future been completed?
       # @return [Boolean]
-      def completed?(state = @State.get)
+      def complete?(state = @State.get)
         success? state or failed? state
+      end
+
+      def completed?(state = @State.get)
+        deprecated_method 'completed?', 'complete?'
+        complete? state
       end
 
       # @return [Object] the value of the Future when success
