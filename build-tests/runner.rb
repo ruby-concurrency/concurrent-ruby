@@ -69,13 +69,13 @@ def run_test_suite(files, ext, platform = '')
 
   test_platform = if ext
                     'EXT'
-                  elsif jruby?(platform)
+                  elsif jruby?
                     'JRUBY'
                   else
                     'RUBY'
                   end
 
-  cmd = if jruby?(platform)
+  cmd = if jruby?
           install_java_gem_command
         else
           install_gems_command(ext, platform)
@@ -102,10 +102,7 @@ puts RUBY_PLATFORM
 puts SUITE_BREAK
 
 run_test_suite(TEST_FILES, false)
-if jruby?
-  puts SUITE_BREAK
-  run_test_suite(TEST_FILES, false, 'jruby')
-elsif mri?
+if mri?
   if ! windows?
     puts SUITE_BREAK
     run_test_suite(TEST_FILES, true)

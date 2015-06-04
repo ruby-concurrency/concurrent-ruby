@@ -2,9 +2,9 @@
 
 $: << File.expand_path('../../lib', __FILE__)
 
-require 'concurrent/atomic'
+require 'concurrent/atomics'
 
-my_atomic = Concurrent::Atomic.new(0)
+my_atomic = Concurrent::AtomicReference.new(0)
 my_atomic.update {|v| v + 1}
 puts "new value: #{my_atomic.value}"
 

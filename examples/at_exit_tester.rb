@@ -5,7 +5,7 @@ $: << File.expand_path('../../lib', __FILE__)
 require 'concurrent'
 
 # with this, a JRuby process will never exit
-Concurrent.disable_auto_termination_of_all_executors!
+Concurrent.disable_executor_auto_termination!
 
 SIZE = 5
 

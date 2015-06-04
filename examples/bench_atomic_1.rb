@@ -6,9 +6,9 @@ require 'optparse'
 require 'thread'
 require 'benchmark'
 
-require 'concurrent/atomic'
+require 'concurrent/atomics'
 
-unless defined? Concurrent::CAtomic
+unless defined? Concurrent::CAtomicReference
   warn "[ERROR] C extensions not loaded!"
   exit(1)
 end
