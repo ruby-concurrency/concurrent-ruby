@@ -42,7 +42,7 @@ module Concurrent
                                  else
                                    Envelope.new(envelope.message, Concurrent.future, envelope.sender, envelope.sender)
                                  end
-          envelope.future.on_completion! { @balancer << :subscribe }
+          envelope.future.on_completion! &lambda { |balancer, success, value, reason| balancer << :subscribe }.curry[@balancer]
           redirect @balancer, envelope_to_redirect
         end
       end
