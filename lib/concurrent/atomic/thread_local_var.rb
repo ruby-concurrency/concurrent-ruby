@@ -36,7 +36,7 @@ module Concurrent
   # @!visibility private
   class AbstractThreadLocalVar
 
-    # @api private
+    # @!visibility private
     NIL_SENTINEL = Object.new
     private_constant :NIL_SENTINEL
 

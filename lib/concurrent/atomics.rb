@@ -58,7 +58,7 @@
 #       @param [Object] new_value the new value
 #       @return [Object] the old value
 #   
-#   @!method _compare_and_set
+#   @!method compare_and_set
 #     @!macro [new] atomic_reference_method_compare_and_set
 #
 #       Atomically sets the value to the given updated value if
@@ -69,8 +69,6 @@
 #
 #       @return [Boolean] `true` if successful. A `false` return indicates
 #       that the actual value was not equal to the expected value.
-#
-#       @api private
 
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atomic/atomic_boolean'
