@@ -1,6 +1,9 @@
 require 'concurrent/ivar'
 
 module Concurrent
+  
+  # @api Channel
+  # @!macro edge_warning
   module Channel
 
     Probe = IVar

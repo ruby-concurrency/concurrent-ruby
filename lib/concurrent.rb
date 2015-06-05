@@ -26,6 +26,11 @@ require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
 
+# @!macro [new] internal_implementation_note
+#
+#   @note **Private Implementation:** This abstraction is a private, internal
+#     implementation detail. It should never be used directly.
+
 # @!macro [new] monotonic_clock_warning
 #
 #   @note Time calculations one all platforms and languages are sensitive to

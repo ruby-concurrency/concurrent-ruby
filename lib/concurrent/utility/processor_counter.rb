@@ -4,7 +4,7 @@ require 'concurrent/delay'
 module Concurrent
   module Utility
 
-    # @api private
+    # @!visibility private
     class ProcessorCounter
       def initialize
         @processor_count          = Delay.new { compute_processor_count }

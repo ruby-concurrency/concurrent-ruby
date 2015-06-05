@@ -32,7 +32,8 @@ module Concurrent
     #
     #   @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
     # 
-    # @api private
+    # @!visibility private
+    # @!macro internal_implementation_note
     class MutexPriorityQueue
 
       # @!macro [attach] priority_queue_method_initialize
@@ -226,7 +227,8 @@ module Concurrent
 
       # @!macro priority_queue
       # 
-      # @api private
+      # @!visibility private
+      # @!macro internal_implementation_note
       class JavaPriorityQueue
 
         # @!macro priority_queue_method_initialize
@@ -299,6 +301,8 @@ module Concurrent
       end
     end
 
+    # @!visibility private
+    # @!macro internal_implementation_note
     PriorityQueueImplementation = case
                                   when Concurrent.on_jruby?
                                     JavaPriorityQueue
@@ -309,7 +313,7 @@ module Concurrent
 
     # @!macro priority_queue
     # 
-    # @api private
+    # @!visibility private
     class PriorityQueue < PriorityQueueImplementation
 
       alias_method :has_priority?, :include?

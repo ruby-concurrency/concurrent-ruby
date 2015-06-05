@@ -4,19 +4,20 @@ require 'concurrent/edge/lock_free_stack'
 
 # @note different name just not to collide for now
 module Concurrent
-
-  # Provides edge features, which will be added to or replace features in main gem.
-  #
-  # Contains new unified implementation of Futures and Promises which combines Features of previous `Future`,
-  # `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
-  # new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
-  # It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
-  # intended).
-  #
-  # ## Examples
-  # {include:file:examples/edge_futures.out.rb}.
   module Edge
 
+    # Provides edge features, which will be added to or replace features in main gem.
+    #
+    # Contains new unified implementation of Futures and Promises which combines Features of previous `Future`,
+    # `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+    # new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
+    # It offers better performance and does not block threads (exception being #wait and similar methods where it's
+    # intended).
+    #
+    # ## Examples
+    # {include:file:examples/edge_futures.out.rb}
+    #
+    # @!macro edge_warning
     module FutureShortcuts
       # User is responsible for completing the event once by {Edge::CompletableEvent#complete}
       # @return [CompletableEvent]

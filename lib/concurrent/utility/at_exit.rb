@@ -6,7 +6,7 @@ module Concurrent
   # Provides ability to add and remove handlers to be run at `Kernel#at_exit`, order is undefined.
   # Each handler is executed at most once.
   #
-  # @api private
+  # @!visibility private
   class AtExitImplementation < Synchronization::Object
     include Concern::Logging
 
@@ -92,6 +92,6 @@ module Concurrent
   private_constant :AtExitImplementation
 
   # @see AtExitImplementation
-  # @api private
+  # @!visibility private
   AtExit = AtExitImplementation.new.install
 end

@@ -18,6 +18,12 @@ module Concurrent
   # This file should *never* be used as a global `require` for all files within
   # the edge gem. Because these features are experimental users should always
   # explicitly require only what they need.
+  #
+  # @!macro [attach] edge_warning
+  #   @api Edge
+  #   @note **Edge Feature:** Edge features are under active development and may
+  #     change frequently. They are not expected to keep backward compatibility.
+  #     They may also lack tests and documentation. Use with caution.
   module Edge
 
   end

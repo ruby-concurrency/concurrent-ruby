@@ -40,8 +40,6 @@ module Concurrent
   # some unspecified starting point.
   #
   # @!visibility private
-  #
-  # @api private
   GLOBAL_MONOTONIC_CLOCK = class_definition.new
   private_constant :GLOBAL_MONOTONIC_CLOCK
 

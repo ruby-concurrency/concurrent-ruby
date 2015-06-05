@@ -79,6 +79,8 @@ module Concurrent
   #
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
+  #
+  # @!macro edge_warning
   class Agent
     include Concern::Dereferenceable
     include Concern::Observable

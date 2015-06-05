@@ -14,6 +14,8 @@ module Concurrent
   #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
   #   register[:key]
   #   #=> #<Concurrent::Actor::Reference /ping (Concurrent::Actor::AdHoc)>
+  #
+  # @!macro edge_warning
   class LazyRegister
 
     def initialize

@@ -12,7 +12,8 @@ module Concurrent
   #   When the latch counter reaches zero the waiting thread is unblocked and continues
   #   with its work. A `CountDownLatch` can be used only once. Its value cannot be reset.
   #
-  # @api private
+  # @!visibility private
+  # @!macro internal_implementation_note
   class PureCountDownLatch < Synchronization::Object
 
     # @!macro [attach] count_down_latch_method_initialize
@@ -71,7 +72,8 @@ module Concurrent
   if Concurrent.on_jruby?
 
     # @!macro count_down_latch
-    # @api private
+    # @!visibility private
+    # @!macro internal_implementation_note
     class JavaCountDownLatch
 
       # @!macro count_down_latch_method_initialize

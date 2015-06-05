@@ -21,7 +21,7 @@
 
 module Concurrent
 
-  # @api private
+  # @!visibility private
   class AbstractThreadLocalVar
 
     begin
