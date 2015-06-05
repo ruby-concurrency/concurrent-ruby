@@ -26,9 +26,9 @@ describe Concurrent::Edge::AtomicMarkableReference do
     end
   end
 
-  describe '#try_update' do
+  describe '#try_update!' do
     it 'updates the value and mark' do
-      val, mark = subject.try_update { |v, m| [v + 1, !m] }
+      val, mark = subject.try_update! { |v, m| [v + 1, !m] }
 
       expect(subject.value).to eq 1001
       expect(val).to eq 1001
@@ -37,7 +37,7 @@ describe Concurrent::Edge::AtomicMarkableReference do
 
     it 'raises ConcurrentUpdateError when attempting to set inside of block' do
       expect do
-        subject.try_update do |v, m|
+        subject.try_update! do |v, m|
           subject.set(1001, false)
           [v + 1, !m]
         end
@@ -45,7 +45,7 @@ describe Concurrent::Edge::AtomicMarkableReference do
     end
   end
 
-  describe '#try_update_no_exception' do
+  describe '#try_update' do
     it 'updates the value and mark' do
       val, mark = subject.try_update { |v, m| [v + 1, !m] }
 

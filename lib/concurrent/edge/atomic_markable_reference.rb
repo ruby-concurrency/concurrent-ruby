@@ -47,11 +47,7 @@ module Concurrent
 
         prospect = ImmutableArray[new_val, new_mark]
 
-        # If we guarantee internally that `current` will never be a Numeric, we
-        # can skip a type check in `compare_and_set` and directly call
-        # `_compare_and_set`. This is possible since we always internally wrap
-        # the users `value` and `mark` in an ImmutableArray.
-        @Reference._compare_and_set current, prospect
+        @Reference.compare_and_set current, prospect
       end
       alias_method :compare_and_swap, :compare_and_set
 
@@ -119,7 +115,7 @@ module Concurrent
         end
       end
 
-      # @!macro [attach] atomic_markable_reference_method_try_update
+      # @!macro [attach] atomic_markable_reference_method_try_update!
       #
       # Pass the current value to the given block, replacing it
       # with the block's result. Raise an exception if the update
@@ -133,7 +129,7 @@ module Concurrent
       # @return [ImmutableArray] the new value and marked state
       #
       # @raise [Concurrent::ConcurrentUpdateError] if the update fails
-      def try_update
+      def try_update!
         old_val, old_mark = @Reference.get
         new_val, new_mark = yield old_val, old_mark
 
@@ -147,7 +143,7 @@ module Concurrent
         ImmutableArray[new_val, new_mark]
       end
 
-      # @!macro [attach] atomic_markable_reference_method_try_update_no_exception
+      # @!macro [attach] atomic_markable_reference_method_try_update
       #
       # Pass the current value to the given block, replacing it with the
       # block's result. Simply return nil if update fails.
@@ -159,7 +155,7 @@ module Concurrent
       #
       # @return [ImmutableArray] the new value and marked state, or nil if
       # the update failed
-      def try_update_no_exception
+      def try_update
         old_val, old_mark = @Reference.get
         new_val, new_mark = yield old_val, old_mark
 
