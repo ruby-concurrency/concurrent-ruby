@@ -1,7 +1,8 @@
 module Concurrent
   module Synchronization
 
-    # @api private
+    # @!visibility private
+    # @!macro internal_implementation_note
     class MutexObject < AbstractObject
       def initialize
         @__lock__      = ::Mutex.new
