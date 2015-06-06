@@ -141,9 +141,10 @@ if Concurrent.on_jruby?
         @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
         deprecated ' :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
 
-        raise ArgumentError.new('max_threads must be greater than zero') if max_length <= 0
-        raise ArgumentError.new('min_threads cannot be less than zero') if min_length < 0
-        raise ArgumentError.new('min_threads cannot be more than max_threads') if min_length > max_length
+        raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if max_length < DEFAULT_MIN_POOL_SIZE
+        raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if max_length > DEFAULT_MAX_POOL_SIZE
+        raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if min_length < DEFAULT_MIN_POOL_SIZE
+        raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if min_length > max_length
         raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.include?(@fallback_policy)
 
         if @max_queue == 0

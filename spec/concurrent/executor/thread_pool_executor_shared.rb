@@ -60,6 +60,11 @@ shared_examples :thread_pool_executor do
       end
     end
 
+    it 'raises an exception if :max_threads is less than zero' do
+      expect {
+        described_class.new(max_threads: -1)
+      }.to raise_error(ArgumentError)
+    end
 
     it 'raises an exception if :min_threads is less than zero' do
       expect {
@@ -67,9 +72,15 @@ shared_examples :thread_pool_executor do
       }.to raise_error(ArgumentError)
     end
 
-    it 'raises an exception if :max_threads is not greater than zero' do
+    it 'raises an exception if :max_threads greater than the max allowable' do
       expect {
-        described_class.new(max_threads: 0)
+        described_class.new(max_threads: described_class::DEFAULT_MAX_POOL_SIZE+1)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises an exception if :max_threads is less than :min_threads' do
+      expect {
+        described_class.new(max_threads: 1, min_threads: 100)
       }.to raise_error(ArgumentError)
     end
 

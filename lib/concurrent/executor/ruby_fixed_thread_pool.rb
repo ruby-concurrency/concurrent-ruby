@@ -15,19 +15,12 @@ module Concurrent
     # @raise [ArgumentError] if `num_threads` is less than or equal to zero
     # @raise [ArgumentError] if `fallback_policy` is not a known policy
     def initialize(num_threads, opts = {})
-      fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-      raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(fallback_policy)
-
-      raise ArgumentError.new('number of threads must be greater than zero') if num_threads < 1
-
-      opts = {
-        min_threads: num_threads,
-        max_threads: num_threads,
-        fallback_policy: fallback_policy,
-        max_queue: DEFAULT_MAX_QUEUE_SIZE,
-        idletime: DEFAULT_THREAD_IDLETIMEOUT,
-      }.merge(opts)
-      super(opts)
+      raise ArgumentError.new('number of threads must be greater than zero') if num_threads.to_i < 1
+      defaults  = { max_queue:   DEFAULT_MAX_QUEUE_SIZE,
+                    idletime:    DEFAULT_THREAD_IDLETIMEOUT }
+      overrides = { min_threads: num_threads,
+                    max_threads: num_threads }
+      super(defaults.merge(opts).merge(overrides))
     end
   end
 end
