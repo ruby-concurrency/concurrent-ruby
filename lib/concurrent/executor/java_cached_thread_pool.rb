@@ -17,22 +17,21 @@ if Concurrent.on_jruby?
       #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool--
       def initialize(opts = {})
-        super(opts)
+        defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT }
+        overrides = { min_threads:     0,
+                      max_threads:     DEFAULT_MAX_POOL_SIZE,
+                      max_queue:       0 }
+        super(defaults.merge(opts).merge(overrides))
       end
 
       protected
 
       def ns_initialize(opts)
-        @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-        deprecated ':overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
+        super(opts)
         @max_queue = 0
-
-        raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.keys.include?(@fallback_policy)
-
         @executor = java.util.concurrent.Executors.newCachedThreadPool
         @executor.setRejectedExecutionHandler(FALLBACK_POLICY_CLASSES[@fallback_policy].new)
         @executor.setKeepAliveTime(opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT), java.util.concurrent.TimeUnit::SECONDS)
-
         self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end

@@ -18,12 +18,12 @@ if Concurrent.on_jruby?
       #
       # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
       def initialize(num_threads, opts = {})
-
-        opts = {
-            min_threads: num_threads,
-            max_threads: num_threads
-        }.merge(opts)
-        super(opts)
+        raise ArgumentError.new('number of threads must be greater than zero') if num_threads.to_i < 1
+        defaults  = { max_queue:   DEFAULT_MAX_QUEUE_SIZE,
+                      idletime:    DEFAULT_THREAD_IDLETIMEOUT }
+        overrides = { min_threads: num_threads,
+                      max_threads: num_threads }
+        super(defaults.merge(opts).merge(overrides))
       end
     end
   end
