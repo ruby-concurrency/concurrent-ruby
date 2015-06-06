@@ -5,7 +5,7 @@ module Concurrent
 
     # Include where logging is needed
     #
-    # @api private
+    # @!visibility private
     module Logging
       include Logger::Severity
 
