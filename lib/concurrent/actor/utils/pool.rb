@@ -37,12 +37,17 @@ module Concurrent
         end
 
         def on_message(message)
+          command, *rest = message
+          return if [:restarted, :reset, :resumed, :terminated].include? command # ignore events from supervised actors
+
           envelope_to_redirect = if envelope.future
                                    envelope
                                  else
-                                   Envelope.new(envelope.message, Concurrent.future, envelope.sender, envelope.sender)
+                                   Envelope.new(envelope.message, Concurrent.future, envelope.sender, envelope.address)
                                  end
-          envelope.future.on_completion! &lambda { |balancer, success, value, reason| balancer << :subscribe }.curry[@balancer]
+          envelope_to_redirect.future.on_completion!(&lambda do |balancer, success, value, reason|
+                                                       balancer << :subscribe
+                                                     end.curry[@balancer])
           redirect @balancer, envelope_to_redirect
         end
       end

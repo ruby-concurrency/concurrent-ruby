@@ -317,10 +317,15 @@ module Concurrent
         it 'supports asks' do
           pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
             Concurrent::Actor::Utils::AdHoc.spawn name: "worker-#{index}", supervised: true do
-              lambda { |message| 5 + message }
+              lambda do |message|
+                fail if message == :fail
+                5 + message
+              end
             end
           end
 
+          expect(pool.ask!(5)).to eq 10
+          expect(pool.ask(:fail).reason).to be_kind_of RuntimeError
           expect(pool.ask!(5)).to eq 10
           terminate_actors pool
         end
