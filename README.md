@@ -156,6 +156,8 @@ require 'concurrent/actor'          # Concurrent::Actor and supporting code
 require 'concurrent/channel '       # Concurrent::Channel and supporting code
 ```
 
+If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to revel the problem.
+
 ## Installation
 
 ```shell

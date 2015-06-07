@@ -42,6 +42,37 @@ module Concurrent
     GLOBAL_LOGGER.value = value
   end
 
+  # @return [Logger] Logger with provided level and output.
+  def self.create_stdlib_logger(level = Logger::FATAL, output = $stderr)
+    logger           = Logger.new(output)
+    logger.level     = level
+    logger.formatter = lambda do |severity, datetime, progname, msg|
+      formatted_message = case msg
+                          when String
+                            msg
+                          when Exception
+                            format "%s (%s)\n%s",
+                                   msg.message, msg.class, (msg.backtrace || []).join("\n")
+                          else
+                            msg.inspect
+                          end
+      format "[%s] %5s -- %s: %s\n",
+             datetime.strftime('%Y-%m-%d %H:%M:%S.%L'),
+             severity,
+             progname,
+             formatted_message
+    end
+    logger
+  end
+
+  # Use logger created by #create_stdlib_logger to log concurrent-ruby messages.
+  def self.use_stdlib_logger(level = Logger::FATAL, output = $stderr)
+    logger = create_stdlib_logger level, output
+    Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
+      logger.add level, message, progname, &block
+    end
+  end
+
   # Disables AtExit hooks including pool auto-termination hooks.
   # When disabled it will be the application
   # programmer's responsibility to ensure that the hooks
