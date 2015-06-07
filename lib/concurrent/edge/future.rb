@@ -8,7 +8,7 @@ module Concurrent
   # Provides edge features, which will be added to or replace features in main gem.
   #
   # Contains new unified implementation of Futures and Promises which combines Features of previous `Future`,
-  # `Promise`, `IVar`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+  # `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
   # new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
   # It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
   # intended).

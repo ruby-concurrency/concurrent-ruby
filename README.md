@@ -107,6 +107,11 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
+* [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new 
+  unified implementation of Futures and Promises which combines Features of previous `Future`,
+  `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+  new synchronization layer to make all the paths **lock-free** with exception of blocking threads on `#wait`.
+  It offers better performance and does not block threads when not required.
 * [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
   Communicating Sequential Processes (CSP).
@@ -119,6 +124,17 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
   intended).
 
+
+#### Statuses:
+
+*Why is not in core?*
+
+- **Actor** - partial documentation and tests, stability good. 
+- **Future/Promise Framework** - partial documentation and tests, stability good.
+- **Agent** - incomplete behaviour compared to Clojure's model, stability good.
+- **Channel** - missing documentation, stability good.
+- **Exchanger** - known race issue.
+- **LazyRegister** - missing documentation and tests.   
 
 ## Usage
 
@@ -159,13 +175,14 @@ require 'concurrent/tvar'             # Concurrent::TVar
 # experimental - available in `concurrent-ruby-edge` companion gem
 
 require 'concurrent/actor'          # Concurrent::Actor and supporting code
+require 'concurrent/edge/future'    # new Future Framework
 require 'concurrent/agent'          # Concurrent::Agent
 require 'concurrent/channel '       # Concurrent::Channel and supporting code
 require 'concurrent/exchanger'      # Concurrent::Exchanger
 require 'concurrent/lazy_register'  # Concurrent::LazyRegister
 ```
 
-If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to revel the problem.
+If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to reveal the problem.
 
 ## Installation
 

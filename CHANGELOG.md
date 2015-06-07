@@ -20,7 +20,7 @@
 * Added `at_exit` handler to Ruby thread pools (already in Java thread pools)
   - Ruby handler stores the object id and retrieves from `ObjectSpace`
   - JRuby disables `ObjectSpace` by default so that handler stores the object reference
-*	Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
+* Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
 * Updated thread pool docs to better explain shutting down thread pools
 * Simpler `:executor` option syntax for all abstractions which support this option
 * Added `Executor#auto_terminate?` predicate method (for thread pools)
@@ -58,6 +58,30 @@
   - `Channel`
   - `Exchanger`
   - `LazyRegister`
+  - **new Future Framework** <http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html> - unified 
+    implementation of Futures and Promises which combines Features of previous `Future`,
+    `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+    new synchronization layer to make all the paths **lock-free** with exception of blocking threads on `#wait`.
+    It offers better performance and does not block threads when not required.
+* Actor framework changes:
+  - fixed reset loop in Pool
+  - Pool can use any actor as a worker, abstract worker class is no longer needed.
+  - Actor events not have format `[:event_name, *payload]` instead of just the Symbol.
+  - Actor now uses new Future/Promise Framework instead of `IVar` for better interoperability
+  - Behaviour definition array was simplified to `[BehaviourClass1, [BehaviourClass2, *initialization_args]]`
+  - Linking behavior responds to :linked message by returning array of linked actors
+  - Supervised behavior is removed in favour of just Linking
+  - RestartingContext is supervised by default now, `supervise: true` is not required any more
+  - Events can be private and public, so far only difference is that Linking will
+    pass to linked actors only public messages. Adding private :restarting and
+    :resetting events which are send before the actor restarts or resets allowing
+    to add callbacks to cleanup current child actors.
+  - Print also object_id in Reference to_s
+  - Add AbstractContext#default_executor to be able to override executor class wide
+  - Add basic IO example
+  - Documentation somewhat improved
+  - All messages should have same priority. It's now possible to send `actor << job1 << job2 << :terminate!` and 
+    be sure that both jobs are processed first.
 * Refactored `Channel` to use newer synchronization objects
 * Added `#reset` and `#cancel` methods to `TimerSet`
 * Added `#cancel` method to `Future` and `ScheduledTask`
