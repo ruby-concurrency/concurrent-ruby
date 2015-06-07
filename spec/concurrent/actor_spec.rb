@@ -324,7 +324,7 @@ module Concurrent
             end
           end
 
-          expect(pool.ask!(5)).to eq 10
+          10.times { expect(pool.ask!(5)).to eq 10 }
           expect(pool.ask(:fail).reason).to be_kind_of RuntimeError
           expect(pool.ask!(5)).to eq 10
           terminate_actors pool
