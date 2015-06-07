@@ -27,7 +27,7 @@ require 'concurrent/timer_task'
 require 'concurrent/tvar'
 
 # @!macro [new] monotonic_clock_warning
-# 
+#
 #   @note Time calculations one all platforms and languages are sensitive to
 #     changes to the system clock. To alleviate the potential problems
 #     associated with changing the system clock while an application is running,
@@ -46,9 +46,9 @@ require 'concurrent/tvar'
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
 # F#, C#, Java, and classic concurrency patterns.
-# 
+#
 # The design goals of this gem are:
-# 
+#
 # * Stay true to the spirit of the languages providing inspiration
 # * But implement in a way that makes sense for Ruby
 # * Keep the semantics as idiomatic Ruby as possible
