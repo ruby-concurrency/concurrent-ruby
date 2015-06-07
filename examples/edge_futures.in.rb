@@ -22,12 +22,15 @@ raise future rescue $!
 head    = Concurrent.future { 1 } #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
-branch1.zip(branch2).value
+branch1.zip(branch2).value!
 (branch1 & branch2).then { |a, b| a + b }.value!
 (branch1 & branch2).then(&:+).value!
 Concurrent.zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # pick only first completed
-(branch1 | branch2).value
+(branch1 | branch2).value!
+
+# auto splat arrays for blocks
+Concurrent.future { [1, 2] }.then(&:+).value!
 
 
 ### Error handling
@@ -209,7 +212,7 @@ pool_size = 5
 
 DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |index|
   # DB connection constructor
-  Concurrent::Actor::Utils::AdHoc.spawn(name: "worker-#{index}", args: [data]) do
+  Concurrent::Actor::Utils::AdHoc.spawn(name: "worker-#{index}", args: [data]) do |data|
     lambda do |message|
       # pretending that this queries a DB
       data[message]

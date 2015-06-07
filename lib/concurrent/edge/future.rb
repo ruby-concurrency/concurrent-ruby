@@ -120,13 +120,50 @@ module Concurrent
     class Event < Synchronization::Object
       include Concern::Deprecation
 
+      class State < Synchronization::Object
+        def initialize
+          ensure_ivar_visibility!
+        end
+
+        def completed?
+          raise NotImplementedError
+        end
+
+        def to_sym
+          raise NotImplementedError
+        end
+      end
+
+      class Pending < State
+        def completed?
+          false
+        end
+
+        def to_sym
+          :pending
+        end
+      end
+
+      class Completed < State
+        def completed?
+          true
+        end
+
+        def to_sym
+          :completed
+        end
+      end
+
+      PENDING   = Pending.new
+      COMPLETED = Completed.new
+
       def initialize(promise, default_executor)
         @Promise         = promise
         @DefaultExecutor = default_executor
         @Touched         = AtomicBoolean.new(false)
         @Callbacks       = LockFreeStack.new
         @Waiters         = LockFreeStack.new
-        @State           = AtomicReference.new :pending
+        @State           = AtomicReference.new PENDING
         super()
         ensure_ivar_visibility!
       end
@@ -139,7 +176,7 @@ module Concurrent
       # Is Event/Future pending?
       # @return [Boolean]
       def pending?(state = @State.get)
-        state == :pending
+        !state.completed?
       end
 
       def unscheduled?
@@ -151,7 +188,7 @@ module Concurrent
       # Has the Event been completed?
       # @return [Boolean]
       def completed?(state = @State.get)
-        state == :completed
+        state.completed?
       end
 
       alias_method :complete?, :completed?
@@ -172,6 +209,8 @@ module Concurrent
         self
       end
 
+      # @return [Executor] current default executor
+      # @see #with_default_executor
       def default_executor
         @DefaultExecutor
       end
@@ -229,7 +268,7 @@ module Concurrent
       end
 
       def to_s
-        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>"
+        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state.to_sym}>"
       end
 
       def inspect
@@ -313,7 +352,7 @@ module Concurrent
       end
 
       def complete_state
-        @State.compare_and_set :pending, :completed
+        COMPLETED if @State.compare_and_set(PENDING, COMPLETED)
       end
 
       def pr_with_async(executor, *args, &block)
@@ -347,13 +386,44 @@ module Concurrent
 
     # Represents a value which will become available in future. May fail with a reason instead.
     class Future < Event
-      Success = ImmutableStruct.new :value do
-        def reason
-          nil
+      class CompletedWithResult < Completed
+        def result
+          [success?, value, reason]
         end
 
-        def to_s
-          'success'
+        def success?
+          raise NotImplementedError
+        end
+
+        def value
+          raise NotImplementedError
+        end
+
+        def reason
+          raise NotImplementedError
+        end
+      end
+
+      class Success < CompletedWithResult
+        def initialize(value)
+          @Value = value
+          super()
+        end
+
+        def success?
+          true
+        end
+
+        def apply(block)
+          block.call value
+        end
+
+        def value
+          @Value
+        end
+
+        def reason
+          nil
         end
 
         def to_sym
@@ -361,13 +431,28 @@ module Concurrent
         end
       end
 
-      Failed = ImmutableStruct.new :reason do
+      class SuccessArray < Success
+        def apply(block)
+          block.call *value
+        end
+      end
+
+      class Failed < CompletedWithResult
+        def initialize(reason)
+          @Reason = reason
+          super()
+        end
+
+        def success?
+          false
+        end
+
         def value
           nil
         end
 
-        def to_s
-          'failed'
+        def reason
+          @Reason
         end
 
         def to_sym
@@ -381,7 +466,7 @@ module Concurrent
       # Has Future been success?
       # @return [Boolean]
       def success?(state = @State.get)
-        Success === state
+        state.success?
       end
 
       def fulfilled?
@@ -392,21 +477,13 @@ module Concurrent
       # Has Future been failed?
       # @return [Boolean]
       def failed?(state = @State.get)
-        Failed === state
+        !success?(state)
       end
 
       def rejected?
         deprecated_method 'rejected?', 'failed?'
         failed?
       end
-
-      # Has the Future been completed?
-      # @return [Boolean]
-      def completed?(state = @State.get)
-        success? state or failed? state
-      end
-
-      alias_method :complete?, :completed?
 
       # @return [Object] the value of the Future when success
       def value(timeout = nil)
@@ -426,8 +503,7 @@ module Concurrent
       def result(timeout = nil)
         touch
         wait_until_complete timeout
-        state = @State.get
-        [success?(state), state.value, state.reason]
+        @State.get.result
       end
 
       # Wait until Future is #complete?
@@ -519,16 +595,11 @@ module Concurrent
       end
 
       # @!visibility private
-      def apply_value(value, block)
-        block.call value
-      end
-
-      # @!visibility private
       def complete(success, value, reason, raise_on_reassign = true)
-        if complete_state success, value, reason
+        if (new_state = complete_state success, value, reason)
           @Waiters.clear
           synchronize { ns_broadcast }
-          call_callbacks success, value, reason
+          call_callbacks new_state
         else
           raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
           return false
@@ -540,14 +611,19 @@ module Concurrent
       def add_callback(method, *args)
         state = @State.get
         if completed?(state)
-          call_callback method, success?(state), state.value, state.reason, *args
+          call_callback method, state, *args
         else
           @Callbacks.push [method, *args]
           state = @State.get
           # take back if it was completed in the meanwhile
-          call_callbacks success?(state), state.value, state.reason if completed?(state)
+          call_callbacks state if completed?(state)
         end
         self
+      end
+
+      # @!visibility private
+      def apply(block)
+        @State.get.apply block
       end
 
       private
@@ -559,62 +635,64 @@ module Concurrent
       end
 
       def complete_state(success, value, reason)
-        @State.compare_and_set :pending, success ? Success.new(value) : Failed.new(reason)
+        new_state = if success
+                      if value.is_a?(Array)
+                        SuccessArray.new(value)
+                      else
+                        Success.new(value)
+                      end
+                    else
+                      Failed.new(reason)
+                    end
+        new_state if @State.compare_and_set(PENDING, new_state)
       end
 
-      def call_callbacks(success, value, reason)
+      def call_callbacks(state)
         method, *args = @Callbacks.pop
         while method
-          call_callback method, success, value, reason, *args
+          call_callback method, state, *args
           method, *args = @Callbacks.pop
         end
       end
 
-      def call_callback(method, success, value, reason, *args)
-        self.send method, success, value, reason, *args
+      def call_callback(method, state, *args)
+        self.send method, state, *args
       end
 
-      def pr_async_callback_on_success(success, value, reason, executor, callback)
-        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
-          pr_callback_on_success success, value, reason, callback
+      def pr_async_callback_on_success(state, executor, callback)
+        pr_with_async(executor, state, callback) do |state, callback|
+          pr_callback_on_success state, callback
         end
       end
 
-      def pr_async_callback_on_failure(success, value, reason, executor, callback)
-        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
-          pr_callback_on_failure success, value, reason, callback
+      def pr_async_callback_on_failure(state, executor, callback)
+        pr_with_async(executor, state, callback) do |state, callback|
+          pr_callback_on_failure state, callback
         end
       end
 
-      def pr_callback_on_success(success, value, reason, callback)
-        apply_value value, callback if success
+      def pr_callback_on_success(state, callback)
+        state.apply callback if state.success?
       end
 
-      def pr_callback_on_failure(success, value, reason, callback)
-        callback.call reason unless success
+      def pr_callback_on_failure(state, callback)
+        state.apply callback unless state.success?
       end
 
-      def pr_callback_on_completion(success, value, reason, callback)
-        callback.call success, value, reason
+      def pr_callback_on_completion(state, callback)
+        callback.call state.result
       end
 
-      def pr_callback_notify_blocked(success, value, reason, promise)
+      def pr_callback_notify_blocked(state, promise)
         super(promise)
       end
 
-      def pr_async_callback_on_completion(success, value, reason, executor, callback)
-        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
-          pr_callback_on_completion success, value, reason, callback
+      def pr_async_callback_on_completion(state, executor, callback)
+        pr_with_async(executor, state, callback) do |state, callback|
+          pr_callback_on_completion state, callback
         end
       end
-    end
 
-    # As Future but applies its Array value correctly to blocks.
-    class ArrayFuture < Future
-      # @!visibility private
-      def apply_value(value, block)
-        block.call(*value)
-      end
     end
 
     # A Event which can be completed by user.
@@ -878,7 +956,7 @@ module Concurrent
       def on_completable(done_future)
         if done_future.success?
           Concurrent.post_on(@Executor, done_future, @Task) do |done_future, task|
-            evaluate_to lambda { done_future.apply_value done_future.value, task }
+            evaluate_to lambda { done_future.apply task }
           end
         else
           complete false, nil, done_future.reason
@@ -921,15 +999,13 @@ module Concurrent
     # @!visibility private
     class ImmediatePromise < InnerPromise
       def initialize(default_executor, *args)
-        # TODO optimize, create completed futures directly
-        super case args.size
-              when 0
+        # FIXME optimize, create completed futures directly, with/without args
+
+        super(if args.empty?
                 Event.new(self, default_executor).complete
-              when 1
-                Future.new(self, default_executor).complete(true, args[0], nil)
               else
-                ArrayFuture.new(self, default_executor).complete(true, args, nil)
-              end
+                Future.new(self, default_executor).complete(true, args, nil)
+              end)
       end
     end
 
@@ -992,8 +1068,6 @@ module Concurrent
           if f.is_a?(Future)
             if klass == Event
               klass = Future
-            elsif klass == Future
-              klass = ArrayFuture
               break
             end
           end
@@ -1005,18 +1079,19 @@ module Concurrent
 
       def on_completable(done_future)
         all_success = true
-        reason      = nil
+        values      = []
+        reasons     = []
 
-        values = blocked_by.each_with_object([]) do |future, values|
+        blocked_by.each do |future|
           next unless future.is_a?(Future)
           success, value, reason = future.result
 
           unless success
             all_success = false
-            reason      = reason
-            break
           end
+
           values << value
+          reasons << reason
         end
 
         if all_success
@@ -1027,7 +1102,7 @@ module Concurrent
           end
         else
           # TODO what about other reasons?
-          complete false, nil, reason
+          complete(false, nil, reasons.compact.first)
         end
       end
     end
@@ -1055,11 +1130,8 @@ module Concurrent
     # @!visibility private
     class Delay < InnerPromise
       def touch
-        case @Args.size
-        when 0
+        if @Args.empty?
           @Future.complete
-        when 1
-          @Future.complete(true, @Args[0], nil)
         else
           @Future.complete(true, @Args, nil)
         end
@@ -1069,14 +1141,11 @@ module Concurrent
 
       def initialize(default_executor, *args)
         @Args = args
-        super case args.size
-              when 0
+        super(if args.empty?
                 Event.new(self, default_executor)
-              when 1
-                Future.new(self, default_executor)
               else
-                ArrayFuture.new(self, default_executor)
-              end
+                Future.new(self, default_executor)
+              end)
       end
     end
 
@@ -1106,21 +1175,16 @@ module Concurrent
           [0, schedule_time.to_f - now.to_f].max
         end
 
-        super case args.size
-              when 0
+        use_event = args.empty?
+        super(if use_event
                 Event.new(self, default_executor)
-              when 1
-                Future.new(self, default_executor)
               else
-                ArrayFuture.new(self, default_executor)
-              end
+                Future.new(self, default_executor)
+              end)
 
         Concurrent.global_timer_set.post(in_seconds, *args) do |*args|
-          case args.size
-          when 0
+          if use_event
             @Future.complete
-          when 1
-            @Future.complete(true, args[0], nil)
           else
             @Future.complete(true, args, nil)
           end
