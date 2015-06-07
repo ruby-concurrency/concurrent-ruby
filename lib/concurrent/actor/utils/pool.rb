@@ -29,29 +29,24 @@ module Concurrent
       class Pool < RestartingContext
         def initialize(size, &worker_initializer)
           @balancer = Balancer.spawn name: :balancer, supervise: true
-          @workers  = Array.new(size, &worker_initializer.curry[@balancer])
-          @workers.each { |w| Type! w, Reference }
+          @workers  = Array.new(size, &worker_initializer)
+          @workers.each do |worker|
+            Type! worker, Reference
+            @balancer << [:subscribe, worker]
+          end
         end
 
         def on_message(message)
-          redirect @balancer
-        end
-      end
+          command, *rest = message
+          return if [:restarted, :reset, :resumed, :terminated].include? command # ignore events from supervised actors
 
-      class AbstractWorker < RestartingContext
-        def initialize(balancer)
-          @balancer = balancer
-          @balancer << :subscribe
-        end
-
-        def on_message(message)
-          work message
-        ensure
-          @balancer << :subscribe
-        end
-
-        def work(message)
-          raise NotImplementedError
+          envelope_to_redirect = if envelope.future
+                                   envelope
+                                 else
+                                   Envelope.new(envelope.message, Concurrent.future, envelope.sender, envelope.address)
+                                 end
+          envelope_to_redirect.future.on_completion! { @balancer << :subscribe } # TODO check safety of @balancer reading
+          redirect @balancer, envelope_to_redirect
         end
       end
     end

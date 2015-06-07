@@ -28,7 +28,7 @@ module Concurrent
 
       # @abstract for helper ivar initialization if needed,
       #   otherwise it can be left empty. It has to call ns_initialize.
-      def initialize(*args, &block)
+      def initialize
         raise NotImplementedError
       end
 

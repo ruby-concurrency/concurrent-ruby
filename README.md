@@ -106,6 +106,13 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   Communicating Sequential Processes (CSP).
 * [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
+* [New Future Promise Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new 
+  unified implementation of Futures and Promises which combines Features of previous `Future`,
+  `Promise`, `IVar`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+  new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
+  It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
+  intended).
+
 
 ## Usage
 
@@ -148,6 +155,8 @@ require 'concurrent/tvar'           # Concurrent::TVar
 require 'concurrent/actor'          # Concurrent::Actor and supporting code
 require 'concurrent/channel '       # Concurrent::Channel and supporting code
 ```
+
+If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to revel the problem.
 
 ## Installation
 

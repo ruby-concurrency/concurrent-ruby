@@ -1,8 +1,6 @@
 require 'concurrent' # TODO do not require whole concurrent gem
 require 'concurrent/edge/lock_free_stack'
 
-# TODO support Dereferencable ?
-# TODO behaviour with Interrupt exceptions is undefined, use Signal.trap to avoid issues
 
 # @note different name just not to collide for now
 module Concurrent
@@ -12,7 +10,7 @@ module Concurrent
   # Contains new unified implementation of Futures and Promises which combines Features of previous `Future`,
   # `Promise`, `IVar`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
   # new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
-  # It offers better performance and does not block threads (exception being #wait and similar methods where it's
+  # It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
   # intended).
   #
   # ## Examples
@@ -20,7 +18,7 @@ module Concurrent
   module Edge
 
     module FutureShortcuts
-      # User is responsible for completing the event once.
+      # User is responsible for completing the event once by {Edge::CompletableEvent#complete}
       # @return [CompletableEvent]
       def event(default_executor = :io)
         CompletableEventPromise.new(default_executor).future
@@ -29,13 +27,16 @@ module Concurrent
       # @overload future(default_executor = :io, &task)
       #   Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       #   @return [Future]
-      #   @note FIXME allow to pass in variables as Thread.new(args) {|args| _ } does
       # @overload future(default_executor = :io)
-      #   User is responsible for completing the future once.
+      #   User is responsible for completing the future once by {Edge::CompletableFuture#success} or {Edge::CompletableFuture#fail}
       #   @return [CompletableFuture]
-      def future(default_executor = :io, &task)
+      def future(*args, &task)
+        future_on :io, *args, &task
+      end
+
+      def future_on(default_executor, *args, &task)
         if task
-          ImmediatePromise.new(default_executor).event.chain(&task)
+          ImmediatePromise.new(default_executor, *args).future.then(&task)
         else
           CompletableFuturePromise.new(default_executor).future
         end
@@ -43,38 +44,67 @@ module Concurrent
 
       alias_method :async, :future
 
-      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation is delayed until
-      # requested by `#wait`, `#value`, `#value!`, etc.
-      # @return [Delay]
-      def delay(default_executor = :io, &task)
-        Delay.new(default_executor).event.chain(&task)
+      # Constructs new Future which will evaluate to the block after
+      # requested by calling `#wait`, `#value`, `#value!`, etc. on it or on any of the chained futures.
+      # @return [Future]
+      def delay(*args, &task)
+        delay_on :io, *args, &task
+      end
+
+      # @return [Future]
+      def delay_on(default_executor, *args, &task)
+        Delay.new(default_executor, *args).future.then(&task)
       end
 
       # Schedules the block to be executed on executor in given intended_time.
+      # @param [Numeric, Time] intended_time Numeric => run in `intended_time` seconds. Time => eun on time.
       # @return [Future]
-      def schedule(intended_time, default_executor = :io, &task)
-        ScheduledPromise.new(intended_time, default_executor).future.chain(&task)
+      def schedule(intended_time, *args, &task)
+        schedule_on :io, intended_time, *args, &task
       end
 
-      # fails on first error
-      # does not block a thread
+      # @return [Future]
+      def schedule_on(default_executor, intended_time, *args, &task)
+        ScheduledPromise.new(default_executor, intended_time, *args).future.then(&task)
+      end
+
+      # Constructs new {Future} which is completed after all futures are complete. Its value is array
+      # of dependent future values. If there is an error it fails with the first one.
+      # @param [Event] futures
       # @return [Future]
       def zip(*futures)
-        AllPromise.new(futures).future
+        AllPromise.new(futures, :io).future
       end
 
+      # Constructs new {Future} which is completed after first of the futures is complete.
+      # @param [Event] futures
+      # @return [Future]
       def any(*futures)
-        AnyPromise.new(futures).future
+        AnyPromise.new(futures, :io).future
       end
 
+      # only proof of concept
+      # @return [Future]
+      def select(*channels)
+        probe = future
+        channels.each { |ch| ch.select probe }
+        probe
+      end
+
+      # post job on :fast executor
+      # @return [true, false]
       def post!(*args, &job)
         post_on(:fast, *args, &job)
       end
 
+      # post job on :io executor
+      # @return [true, false]
       def post(*args, &job)
         post_on(:io, *args, &job)
       end
 
+      # post job on executor
+      # @return [true, false]
       def post_on(executor, *args, &job)
         Concurrent.executor(executor).post *args, &job
       end
@@ -86,39 +116,84 @@ module Concurrent
     extend FutureShortcuts
     include FutureShortcuts
 
+    # Represents an event which will happen in future (will be completed). It has to always happen.
     class Event < Synchronization::Object
-      extend FutureShortcuts
+      include Concern::Deprecation
 
-      def initialize(promise, default_executor = :io)
+      class State < Synchronization::Object
+        def initialize
+          ensure_ivar_visibility!
+        end
+
+        def completed?
+          raise NotImplementedError
+        end
+
+        def to_sym
+          raise NotImplementedError
+        end
+      end
+
+      class Pending < State
+        def completed?
+          false
+        end
+
+        def to_sym
+          :pending
+        end
+      end
+
+      class Completed < State
+        def completed?
+          true
+        end
+
+        def to_sym
+          :completed
+        end
+      end
+
+      PENDING   = Pending.new
+      COMPLETED = Completed.new
+
+      def initialize(promise, default_executor)
         @Promise         = promise
         @DefaultExecutor = default_executor
         @Touched         = AtomicBoolean.new(false)
         @Callbacks       = LockFreeStack.new
         @Waiters         = LockFreeStack.new
-        @State           = AtomicReference.new :pending
+        @State           = AtomicReference.new PENDING
         super()
         ensure_ivar_visibility!
       end
 
+      # @return [:pending, :completed]
       def state
-        @State.get
+        @State.get.to_sym
       end
 
-      # Is Future still pending?
+      # Is Event/Future pending?
       # @return [Boolean]
-      def pending?(state = self.state)
-        state == :pending
+      def pending?(state = @State.get)
+        !state.completed?
+      end
+
+      def unscheduled?
+        raise 'unsupported'
       end
 
       alias_method :incomplete?, :pending?
 
-      # Is Future still completed?
+      # Has the Event been completed?
       # @return [Boolean]
-      def completed?(state = self.state)
-        state == :completed
+      def completed?(state = @State.get)
+        state.completed?
       end
 
-      # wait until Concern::Obligation is #complete?
+      alias_method :complete?, :completed?
+
+      # Wait until Event is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
       # @return [Event] self
       def wait(timeout = nil)
@@ -134,6 +209,8 @@ module Concurrent
         self
       end
 
+      # @return [Executor] current default executor
+      # @see #with_default_executor
       def default_executor
         @DefaultExecutor
       end
@@ -146,18 +223,30 @@ module Concurrent
       alias_method :then, :chain
 
       # TODO take block optionally
+      # Zip with futures producing new Future
+      # @return [Future]
       def zip(*futures)
         AllPromise.new([self, *futures], @DefaultExecutor).future
       end
 
       alias_method :&, :zip
 
+      # Inserts delay into the chain of Futures making rest of it lazy evaluated.
+      # @return [Future]
       def delay
         zip(Delay.new(@DefaultExecutor).future)
       end
 
+      # Schedules rest of the chain for execution with specified time or on specified time
+      # @return [Future]
       def schedule(intended_time)
-        chain { ScheduledPromise.new(intended_time).future.zip(self) }.flat
+        chain { ScheduledPromise.new(@DefaultExecutor, intended_time).event.zip(self) }.flat
+      end
+
+      # Zips with selected value form the suplied channels
+      # @return [Future]
+      def then_select(*channels)
+        self.zip(Concurrent.select(*channels))
       end
 
       # @yield [success, value, reason] executed async on `executor` when completed
@@ -172,26 +261,33 @@ module Concurrent
         add_callback :pr_callback_on_completion, callback
       end
 
-      def with_default_executor(executor = @DefaultExecutor)
+      # Changes default executor for rest of the chain
+      # @return [Future]
+      def with_default_executor(executor)
         AllPromise.new([self], executor).future
       end
 
       def to_s
-        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>"
+        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state.to_sym}>"
       end
 
       def inspect
         "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
       end
 
+      def set(*args, &block)
+        raise 'Use CompletableEvent#complete or CompletableFuture#complete instead, ' +
+                  'constructed by Concurrent.event or Concurrent.future respectively.'
+      end
+
       # @!visibility private
-      def complete(raise = true)
+      def complete(raise_on_reassign = true)
         if complete_state
           # go to synchronized block only if there were waiting threads
           synchronize { ns_broadcast } if @Waiters.clear
           call_callbacks
         else
-          Concurrent::MultipleAssignmentError.new('multiple assignment') if raise
+          Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
           return false
         end
         self
@@ -256,7 +352,7 @@ module Concurrent
       end
 
       def complete_state
-        @State.compare_and_set :pending, :completed
+        COMPLETED if @State.compare_and_set(PENDING, COMPLETED)
       end
 
       def pr_with_async(executor, *args, &block)
@@ -288,80 +384,145 @@ module Concurrent
       end
     end
 
+    # Represents a value which will become available in future. May fail with a reason instead.
     class Future < Event
-      Success = ImmutableStruct.new :value do
+      class CompletedWithResult < Completed
+        def result
+          [success?, value, reason]
+        end
+
+        def success?
+          raise NotImplementedError
+        end
+
+        def value
+          raise NotImplementedError
+        end
+
+        def reason
+          raise NotImplementedError
+        end
+      end
+
+      class Success < CompletedWithResult
+        def initialize(value)
+          @Value = value
+          super()
+        end
+
+        def success?
+          true
+        end
+
+        def apply(block)
+          block.call value
+        end
+
+        def value
+          @Value
+        end
+
         def reason
           nil
         end
 
-        def to_s
-          'success'
+        def to_sym
+          :success
         end
       end
 
-      Failed = ImmutableStruct.new :reason do
+      class SuccessArray < Success
+        def apply(block)
+          block.call *value
+        end
+      end
+
+      class Failed < CompletedWithResult
+        def initialize(reason)
+          @Reason = reason
+          super()
+        end
+
+        def success?
+          false
+        end
+
         def value
           nil
         end
 
-        def to_s
-          'failed'
+        def reason
+          @Reason
+        end
+
+        def to_sym
+          :failed
         end
       end
 
-      # Has the Future been success?
+      # @!method state
+      #   @return [:pending, :success, :failed]
+
+      # Has Future been success?
       # @return [Boolean]
-      def success?(state = self.state)
-        Success === state
+      def success?(state = @State.get)
+        state.success?
       end
 
-      # Has the Future been failed?
-      # @return [Boolean]
-      def failed?(state = self.state)
-        Failed === state
+      def fulfilled?
+        deprecated_method 'fulfilled?', 'success?'
+        success?
       end
 
-      # Has the Future been completed?
+      # Has Future been failed?
       # @return [Boolean]
-      def completed?(state = self.state)
-        success? state or failed? state
+      def failed?(state = @State.get)
+        !success?(state)
       end
 
-      # @return [Object] see Dereferenceable#deref
+      def rejected?
+        deprecated_method 'rejected?', 'failed?'
+        failed?
+      end
+
+      # @return [Object] the value of the Future when success
       def value(timeout = nil)
         touch
         wait_until_complete timeout
-        state.value
+        @State.get.value
       end
 
+      # @return [Exception] the reason of the Future's failure
       def reason(timeout = nil)
         touch
         wait_until_complete timeout
-        state.reason
+        @State.get.reason
       end
 
+      # @return [Array(Boolean, Object, Exception)] triplet of success, value, reason
       def result(timeout = nil)
         touch
         wait_until_complete timeout
-        state = self.state
-        [success?(state), state.value, state.reason]
+        @State.get.result
       end
 
-      # wait until Concern::Obligation is #complete?
+      # Wait until Future is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
+      # @raise reason on failure
       # @return [Event] self
-      # @raise [Exception] when #failed? it raises #reason
       def wait!(timeout = nil)
         touch
         wait_until_complete! timeout
       end
 
-      # @raise [Exception] when #failed? it raises #reason
-      # @return [Object] see Dereferenceable#deref
+      # Wait until Future is #complete?
+      # @param [Numeric] timeout the maximum time in second to wait.
+      # @raise reason on failure
+      # @return [Object]
       def value!(timeout = nil)
         touch
         wait_until_complete!(timeout)
-        state.value
+        @State.get.value
       end
 
       # @example allows failed Future to be risen
@@ -369,33 +530,45 @@ module Concurrent
       def exception(*args)
         touch
         raise 'obligation is not failed' unless failed?
-        state.reason.exception(*args)
+        @State.get.reason.exception(*args)
       end
 
       # @yield [value] executed only on parent success
+      # @return [Future]
       def then(executor = nil, &callback)
         ThenPromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
       end
 
-      # Creates new future where its value is result of asking actor with value of this Future.
+      # Asks the actor with its value.
+      # @return [Future] new future with the response form the actor
       def then_ask(actor)
         self.then { |v| actor.ask(v) }.flat
       end
 
       # @yield [reason] executed only on parent failure
+      # @return [Future]
       def rescue(executor = nil, &callback)
         RescuePromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
       end
 
+      # zips with the Future in the value
+      # @example
+      #   Concurrent.future { Concurrent.future { 1 } }.flat.vale # => 1
       def flat(level = 1)
         FlattingPromise.new(self, level, @DefaultExecutor).future
       end
 
+      # @return [Future] which has first completed value from futures
       def any(*futures)
         AnyPromise.new([self, *futures], @DefaultExecutor).future
       end
 
       alias_method :|, :any
+
+      # only proof of concept
+      def then_push(channel)
+        on_success { |value| channel.push value } # FIXME it's blocking for now
+      end
 
       # @yield [value] executed async on `executor` when success
       # @return self
@@ -422,34 +595,35 @@ module Concurrent
       end
 
       # @!visibility private
-      def apply_value(value, block)
-        block.call value
-      end
-
-      # @!visibility private
-      def complete(success, value, reason, raise = true)
-        if complete_state success, value, reason
+      def complete(success, value, reason, raise_on_reassign = true)
+        if (new_state = complete_state success, value, reason)
           @Waiters.clear
           synchronize { ns_broadcast }
-          call_callbacks success, value, reason
+          call_callbacks new_state
         else
-          raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment') if raise
+          raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
           return false
         end
         self
       end
 
+      # @!visibility private
       def add_callback(method, *args)
-        state = self.state
+        state = @State.get
         if completed?(state)
-          call_callback method, success?(state), state.value, state.reason, *args
+          call_callback method, state, *args
         else
           @Callbacks.push [method, *args]
-          state = self.state
+          state = @State.get
           # take back if it was completed in the meanwhile
-          call_callbacks success?(state), state.value, state.reason if completed?(state)
+          call_callbacks state if completed?(state)
         end
         self
+      end
+
+      # @!visibility private
+      def apply(block)
+        @State.get.apply block
       end
 
       private
@@ -461,66 +635,71 @@ module Concurrent
       end
 
       def complete_state(success, value, reason)
-        @State.compare_and_set :pending, success ? Success.new(value) : Failed.new(reason)
+        new_state = if success
+                      if value.is_a?(Array)
+                        SuccessArray.new(value)
+                      else
+                        Success.new(value)
+                      end
+                    else
+                      Failed.new(reason)
+                    end
+        new_state if @State.compare_and_set(PENDING, new_state)
       end
 
-      def call_callbacks(success, value, reason)
+      def call_callbacks(state)
         method, *args = @Callbacks.pop
         while method
-          call_callback method, success, value, reason, *args
+          call_callback method, state, *args
           method, *args = @Callbacks.pop
         end
       end
 
-      def call_callback(method, success, value, reason, *args)
-        self.send method, success, value, reason, *args
+      def call_callback(method, state, *args)
+        self.send method, state, *args
       end
 
-      def pr_async_callback_on_success(success, value, reason, executor, callback)
-        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
-          pr_callback_on_success success, value, reason, callback
+      def pr_async_callback_on_success(state, executor, callback)
+        pr_with_async(executor, state, callback) do |state, callback|
+          pr_callback_on_success state, callback
         end
       end
 
-      def pr_async_callback_on_failure(success, value, reason, executor, callback)
-        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
-          pr_callback_on_failure success, value, reason, callback
+      def pr_async_callback_on_failure(state, executor, callback)
+        pr_with_async(executor, state, callback) do |state, callback|
+          pr_callback_on_failure state, callback
         end
       end
 
-      def pr_callback_on_success(success, value, reason, callback)
-        apply_value value, callback if success
+      def pr_callback_on_success(state, callback)
+        state.apply callback if state.success?
       end
 
-      def pr_callback_on_failure(success, value, reason, callback)
-        callback.call reason unless success
+      def pr_callback_on_failure(state, callback)
+        state.apply callback unless state.success?
       end
 
-      def pr_callback_on_completion(success, value, reason, callback)
-        callback.call success, value, reason
+      def pr_callback_on_completion(state, callback)
+        callback.call state.result
       end
 
-      def pr_callback_notify_blocked(success, value, reason, promise)
+      def pr_callback_notify_blocked(state, promise)
         super(promise)
       end
 
-      def pr_async_callback_on_completion(success, value, reason, executor, callback)
-        pr_with_async(executor, success, value, reason, callback) do |success, value, reason, callback|
-          pr_callback_on_completion success, value, reason, callback
+      def pr_async_callback_on_completion(state, executor, callback)
+        pr_with_async(executor, state, callback) do |state, callback|
+          pr_callback_on_completion state, callback
         end
       end
+
     end
 
-    class ArrayFuture < Future
-      def apply_value(value, block)
-        block.call(*value)
-      end
-    end
-
+    # A Event which can be completed by user.
     class CompletableEvent < Event
-      # Complete the event
-      def complete(raise = true)
-        super raise
+      # Complete the Event, `raise` if already completed
+      def complete(raise_on_reassign = true)
+        super raise_on_reassign
       end
 
       def hide_completable
@@ -528,32 +707,48 @@ module Concurrent
       end
     end
 
+    # A Future which can be completed by user.
     class CompletableFuture < Future
-      # Complete the future
-      def complete(success, value, reason, raise = true)
-        super success, value, reason, raise
+      # Complete the future with triplet od `success`, `value`, `reason`
+      # `raise` if already completed
+      # return [self]
+      def complete(success, value, reason, raise_on_reassign = true)
+        super success, value, reason, raise_on_reassign
       end
 
+      # Complete the future with value
+      # return [self]
       def success(value)
         promise.success(value)
       end
 
+      # Try to complete the future with value
+      # return [self]
       def try_success(value)
         promise.try_success(value)
       end
 
+      # Fail the future with reason
+      # return [self]
       def fail(reason = StandardError.new)
         promise.fail(reason)
       end
 
+      # Try to fail the future with reason
+      # return [self]
       def try_fail(reason = StandardError.new)
         promise.try_fail(reason)
       end
 
+      # Evaluate the future to value if there is an exception the future fails with it
+      # return [self]
       def evaluate_to(*args, &block)
         promise.evaluate_to(*args, block)
       end
 
+      # Evaluate the future to value if there is an exception the future fails with it
+      # @raise the exception
+      # return [self]
       def evaluate_to!(*args, &block)
         promise.evaluate_to!(*args, block)
       end
@@ -566,6 +761,7 @@ module Concurrent
     # TODO modularize blocked_by and notify blocked
 
     # @abstract
+    # @!visibility private
     class AbstractPromise < Synchronization::Object
       def initialize(future)
         super(&nil)
@@ -612,19 +808,20 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     class CompletableEventPromise < AbstractPromise
       public :complete
 
-      def initialize(default_executor = :io)
+      def initialize(default_executor)
         super CompletableEvent.new(self, default_executor)
       end
     end
 
-    # @note Be careful not to fullfill the promise twice
+    # @!visibility private
     class CompletableFuturePromise < AbstractPromise
       # TODO consider to allow being blocked_by
 
-      def initialize(default_executor = :io)
+      def initialize(default_executor)
         super CompletableFuture.new(self, default_executor)
       end
 
@@ -664,10 +861,12 @@ module Concurrent
     end
 
     # @abstract
+    # @!visibility private
     class InnerPromise < AbstractPromise
     end
 
     # @abstract
+    # @!visibility private
     class BlockedPromise < InnerPromise
       def initialize(future, blocked_by_futures, countdown, &block)
         initialize_blocked_by(blocked_by_futures)
@@ -731,8 +930,9 @@ module Concurrent
     end
 
     # @abstract
+    # @!visibility private
     class BlockedTaskPromise < BlockedPromise
-      def initialize(blocked_by_future, default_executor = :io, executor = default_executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'no block given' unless block_given?
         @Executor = executor
         @Task     = task
@@ -744,10 +944,11 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     class ThenPromise < BlockedTaskPromise
       private
 
-      def initialize(blocked_by_future, default_executor = :io, executor = default_executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'only Future can be appended with then' unless blocked_by_future.is_a? Future
         super blocked_by_future, default_executor, executor, &task
       end
@@ -755,7 +956,7 @@ module Concurrent
       def on_completable(done_future)
         if done_future.success?
           Concurrent.post_on(@Executor, done_future, @Task) do |done_future, task|
-            evaluate_to lambda { done_future.apply_value done_future.value, task }
+            evaluate_to lambda { done_future.apply task }
           end
         else
           complete false, nil, done_future.reason
@@ -763,10 +964,11 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     class RescuePromise < BlockedTaskPromise
       private
 
-      def initialize(blocked_by_future, default_executor = :io, executor = default_executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'only Future can be rescued' unless blocked_by_future.is_a? Future
         super blocked_by_future, default_executor, executor, &task
       end
@@ -780,6 +982,7 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     class ChainPromise < BlockedTaskPromise
       private
 
@@ -793,12 +996,20 @@ module Concurrent
     end
 
     # will be immediately completed
+    # @!visibility private
     class ImmediatePromise < InnerPromise
-      def initialize(default_executor = :io)
-        super Event.new(self, default_executor).complete
+      def initialize(default_executor, *args)
+        # FIXME optimize, create completed futures directly, with/without args
+
+        super(if args.empty?
+                Event.new(self, default_executor).complete
+              else
+                Future.new(self, default_executor).complete(true, args, nil)
+              end)
       end
     end
 
+    # @!visibility private
     class FlattingPromise < BlockedPromise
       def blocked_by
         @BlockedBy.each.to_a
@@ -808,7 +1019,7 @@ module Concurrent
 
       def process_on_done(future)
         countdown = super(future)
-        value     = future.value
+        value     = future.value!
         if countdown.nonzero?
           case value
           when Future
@@ -824,7 +1035,7 @@ module Concurrent
         countdown
       end
 
-      def initialize(blocked_by_future, levels = 1, default_executor = :io)
+      def initialize(blocked_by_future, levels, default_executor)
         raise ArgumentError, 'levels has to be higher than 0' if levels < 1
         blocked_by_future.is_a? Future or
             raise ArgumentError, 'only Future can be flatten'
@@ -846,19 +1057,17 @@ module Concurrent
       end
     end
 
-    # used internally to support #with_default_executor
+    # @!visibility private
     class AllPromise < BlockedPromise
 
       private
 
-      def initialize(blocked_by_futures, default_executor = :io)
+      def initialize(blocked_by_futures, default_executor)
         klass = Event
         blocked_by_futures.each do |f|
           if f.is_a?(Future)
             if klass == Event
               klass = Future
-            elsif klass == Future
-              klass = ArrayFuture
               break
             end
           end
@@ -870,18 +1079,19 @@ module Concurrent
 
       def on_completable(done_future)
         all_success = true
-        reason      = nil
+        values      = []
+        reasons     = []
 
-        values = blocked_by.each_with_object([]) do |future, values|
+        blocked_by.each do |future|
           next unless future.is_a?(Future)
           success, value, reason = future.result
 
           unless success
             all_success = false
-            reason      = reason
-            break
           end
+
           values << value
+          reasons << reason
         end
 
         if all_success
@@ -892,16 +1102,17 @@ module Concurrent
           end
         else
           # TODO what about other reasons?
-          complete false, nil, reason
+          complete(false, nil, reasons.compact.first)
         end
       end
     end
 
+    # @!visibility private
     class AnyPromise < BlockedPromise
 
       private
 
-      def initialize(blocked_by_futures, default_executor = :io)
+      def initialize(blocked_by_futures, default_executor)
         blocked_by_futures.all? { |f| f.is_a? Future } or
             raise ArgumentError, 'accepts only Futures not Events'
         super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
@@ -916,19 +1127,30 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     class Delay < InnerPromise
       def touch
-        complete
+        if @Args.empty?
+          @Future.complete
+        else
+          @Future.complete(true, @Args, nil)
+        end
       end
 
       private
 
-      def initialize(default_executor = :io)
-        super Event.new(self, default_executor)
+      def initialize(default_executor, *args)
+        @Args = args
+        super(if args.empty?
+                Event.new(self, default_executor)
+              else
+                Future.new(self, default_executor)
+              end)
       end
     end
 
     # will be evaluated to task in intended_time
+    # @!visibility private
     class ScheduledPromise < InnerPromise
       def intended_time
         @IntendedTime
@@ -940,7 +1162,7 @@ module Concurrent
 
       private
 
-      def initialize(intended_time, default_executor = :io)
+      def initialize(default_executor, intended_time, *args)
         @IntendedTime = intended_time
 
         in_seconds = begin
@@ -953,9 +1175,52 @@ module Concurrent
           [0, schedule_time.to_f - now.to_f].max
         end
 
-        super Event.new(self, default_executor)
+        use_event = args.empty?
+        super(if use_event
+                Event.new(self, default_executor)
+              else
+                Future.new(self, default_executor)
+              end)
 
-        Concurrent.global_timer_set.post(in_seconds) { complete }
+        Concurrent.global_timer_set.post(in_seconds, *args) do |*args|
+          if use_event
+            @Future.complete
+          else
+            @Future.complete(true, args, nil)
+          end
+        end
+      end
+    end
+
+    # proof of concept
+    class Channel < Synchronization::Object
+      # TODO make lock free
+      def initialize
+        super
+        @ProbeSet = Concurrent::Channel::WaitableList.new
+        ensure_ivar_visibility!
+      end
+
+      def probe_set_size
+        @ProbeSet.size
+      end
+
+      def push(value)
+        until @ProbeSet.take.try_success([value, self])
+        end
+      end
+
+      def pop
+        select(Concurrent.future)
+      end
+
+      def select(probe)
+        @ProbeSet.put(probe)
+        probe
+      end
+
+      def inspect
+        to_s
       end
     end
   end

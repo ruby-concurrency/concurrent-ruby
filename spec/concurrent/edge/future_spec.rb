@@ -1,4 +1,4 @@
-require 'concurrent'
+require 'concurrent-edge'
 require 'thread'
 
 describe 'Concurrent::Edge futures' do
@@ -16,8 +16,14 @@ describe 'Concurrent::Edge futures' do
 
   describe '.future' do
     it 'executes' do
-      future = Concurrent.future(:immediate) { 1 + 1 }
-      expect(future.value).to eq 2
+      future = Concurrent.future { 1 + 1 }
+      expect(future.value!).to eq 2
+
+      future = Concurrent.future(1) { |v| v + 1 }
+      expect(future.value!).to eq 2
+
+      future = Concurrent.future(1, 1, &:+)
+      expect(future.value!).to eq 2
     end
   end
 
@@ -25,7 +31,15 @@ describe 'Concurrent::Edge futures' do
     it 'delays execution' do
       delay = Concurrent.delay { 1 + 1 }
       expect(delay.completed?).to eq false
-      expect(delay.value).to eq 2
+      expect(delay.value!).to eq 2
+
+      delay = Concurrent.delay(1) { |v| v + 1 }
+      expect(delay.completed?).to eq false
+      expect(delay.value!).to eq 2
+
+      delay = Concurrent.delay(1, 1, &:+)
+      expect(delay.completed?).to eq false
+      expect(delay.value!).to eq 2
     end
   end
 
@@ -35,7 +49,15 @@ describe 'Concurrent::Edge futures' do
       queue  = Queue.new
       future = Concurrent.schedule(0.1) { 1 + 1 }.then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
-      expect(future.value).to eq queue
+      expect(future.value!).to eq queue
+      expect(queue.pop).to eq 2
+      expect(queue.pop).to be_between(0.1, 0.2)
+
+      start  = Time.now.to_f
+      queue  = Queue.new
+      future = Concurrent.schedule(0.1, 1, 1, &:+).then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
+
+      expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be_between(0.1, 0.2)
     end
@@ -50,7 +72,7 @@ describe 'Concurrent::Edge futures' do
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       future.wait!
-      expect(future.value).to eq queue
+      expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be_between(0.2, 0.3)
     end
@@ -63,7 +85,7 @@ describe 'Concurrent::Edge futures' do
       join              = Concurrent.zip(completable_event).chain { 1 }
       expect(one.completed?).to be false
       completable_event.complete
-      expect(one.value).to eq 1
+      expect(one.value!).to eq 1
       expect(join.wait.completed?).to be true
     end
   end
@@ -75,7 +97,7 @@ describe 'Concurrent::Edge futures' do
       join               = Concurrent.zip(completable_future).then { |v| v }
       expect(one.completed?).to be false
       completable_future.success 0
-      expect(one.value).to eq 1
+      expect(one.value!).to eq 1
       expect(join.wait!.completed?).to be true
       expect(join.value!).to eq 0
     end
@@ -94,7 +116,7 @@ describe 'Concurrent::Edge futures' do
               f1 | f2]
 
       anys.each do |any|
-        expect(any.value.to_s).to match /1|2/
+        expect(any.value!.to_s).to match /1|2/
       end
 
     end
@@ -109,8 +131,8 @@ describe 'Concurrent::Edge futures' do
       z1 = a & b
       z2 = Concurrent.zip a, b, c
 
-      expect(z1.value).to eq [1, 2]
-      expect(z2.value).to eq [1, 2, 3]
+      expect(z1.value!).to eq [1, 2]
+      expect(z2.value!).to eq [1, 2, 3]
 
       q = Queue.new
       z1.then { |*args| q << args }
@@ -118,11 +140,22 @@ describe 'Concurrent::Edge futures' do
       z1.then { |a, b, c| q << [a, b, c] }
       expect(q.pop).to eq [1, 2, nil]
 
-      expect(z1.then { |a, b| a+b }.value).to eq 3
-      expect(z1.then { |a, b| a+b }.value).to eq 3
-      expect(z1.then(&:+).value).to eq 3
-      expect(z2.then { |a, b, c| a+b+c }.value).to eq 6
+      expect(z1.then { |a, b| a+b }.value!).to eq 3
+      expect(z1.then { |a, b| a+b }.value!).to eq 3
+      expect(z1.then(&:+).value!).to eq 3
+      expect(z2.then { |a, b, c| a+b+c }.value!).to eq 6
     end
+  end
+
+  it 'auto explodes arrays' do
+    f = Concurrent.future { [1, 2] }
+    q = Queue.new
+    f.then { |*args| q << args }
+    expect(q.pop).to eq [1, 2]
+    f.then { |a, b| q << [a, b] }
+    expect(q.pop).to eq [1, 2]
+    expect(Concurrent.future { [1, 2] }.then(&:+).value!).to eq 3
+    expect(Concurrent.future { [1, 2] }.then { |a, b| a+b }.value!).to eq 3
   end
 
   describe 'Future' do
@@ -134,7 +167,7 @@ describe 'Concurrent::Edge futures' do
       future.on_success(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
       future.on_success! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
 
-      expect(future.value).to eq :value
+      expect(future.value!).to eq :value
       expect([queue.pop, queue.pop, queue.pop, queue.pop].sort).to eq [:async, :async, :sync, :sync]
     end
 
@@ -184,14 +217,14 @@ describe 'Concurrent::Edge futures' do
           match(/<#Concurrent::Edge::Future:0x[\da-f]+ pending blocks:\[<#Concurrent::Edge::ThenPromise:0x[\da-f]+ pending>\]>/))
 
       # evaluates only up to three, four is left unevaluated
-      expect(three.value).to eq 3
+      expect(three.value!).to eq 3
       expect(four).not_to be_completed
 
-      expect(four.value).to eq 4
+      expect(four.value!).to eq 4
 
       # futures hidden behind two delays trigger evaluation of both
       double_delay = Concurrent.delay { 1 }.delay.then(&:succ)
-      expect(double_delay.value).to eq 2
+      expect(double_delay.value!).to eq 2
     end
 
     it 'allows graphs' do
@@ -208,7 +241,7 @@ describe 'Concurrent::Edge futures' do
       expect(branch2).not_to be_completed
 
       expect(results.map(&:value)).to eq [5, 5, 5]
-      expect(Concurrent.zip(branch1, branch2).value).to eq [2, 3]
+      expect(Concurrent.zip(branch1, branch2).value!).to eq [2, 3]
     end
 
     it 'has flat map' do
@@ -217,16 +250,36 @@ describe 'Concurrent::Edge futures' do
     end
   end
 
-  it 'interoperability' do
-    actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
-      -> v { v * 2 }
+  describe 'interoperability' do
+    it 'with actor' do
+      actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
+        -> v { v * 2 }
+      end
+
+      expect(Concurrent.
+                 future { 2 }.
+                 then_ask(actor).
+                 then { |v| v + 2 }.
+                 value!).to eq 6
     end
 
-    expect(Concurrent.
-               future { 2 }.
-               then_ask(actor).
-               then { |v| v + 2 }.
-               value).to eq 6
+    it 'with channel' do
+      ch1 = Concurrent::Edge::Channel.new
+      ch2 = Concurrent::Edge::Channel.new
+
+      result = Concurrent.select(ch1, ch2)
+      ch1.push 1
+      expect(result.value!).to eq [1, ch1]
+
+      Concurrent.
+          future { 1+1 }.
+          then_push(ch1)
+      result = Concurrent.
+          future { '%02d' }.
+          then_select(ch1, ch2).
+          then { |format, (value, channel)| format format, value }
+      expect(result.value!).to eq '02'
+    end
   end
 
   specify do
