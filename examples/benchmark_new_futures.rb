@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-$: << File.expand_path('../../lib', __FILE__)
-
 require 'benchmark/ips'
 require 'concurrent'
 require 'concurrent-edge'
@@ -33,7 +31,7 @@ warmup *= 10 if Concurrent.on_jruby?
 
 Benchmark.ips(time, warmup) do |x|
   x.report('flat-old') { Concurrent::Promise.execute { 1 }.flat_map { |v| Concurrent::Promise.execute { v + 2 } }.value! }
-  x.report('flat-new') { Concurrent.future(:fast) { 1 }.then { |v| Concurrent.future(:fast) { v+ 1 } }.flat.value! }
+  x.report('flat-new') { Concurrent.future(:fast) { 1 }.then { |v| Concurrent.future(:fast) { v + 2 } }.flat.value! }
   x.compare!
 end
 

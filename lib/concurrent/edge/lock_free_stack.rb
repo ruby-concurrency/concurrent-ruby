@@ -2,12 +2,19 @@ module Concurrent
   module Edge
     class LockFreeStack < Synchronization::Object
 
-      Node = ImmutableStruct.new(:value, :next) do
+      class Node
+        attr_reader :value, :next_node
+
+        def initialize(value, next_node)
+          @value     = value
+          @next_node = next_node
+        end
+
         singleton_class.send :alias_method, :[], :new
       end
 
       class Empty < Node
-        def next
+        def next_node
           self
         end
       end
@@ -15,7 +22,6 @@ module Concurrent
       EMPTY = Empty[nil, nil]
 
       def initialize
-        super()
         @Head = AtomicReference.new EMPTY
         ensure_ivar_visibility!
       end
@@ -29,8 +35,10 @@ module Concurrent
       end
 
       def push(value)
-        @Head.update { |head| Node[value, head] }
-        self
+        while true
+          head = @Head.get
+          return self if @Head.compare_and_set head, Node[value, head]
+        end
       end
 
       def peek
@@ -38,13 +46,14 @@ module Concurrent
       end
 
       def compare_and_pop(head)
-        @Head.compare_and_set head, head.next
+        @Head.compare_and_set head, head.next_node
       end
 
       def pop
-        popped = nil
-        @Head.update { |head| (popped = head).next }
-        popped.value
+        while true
+          head = @Head.get
+          return head.value if @Head.compare_and_set head, head.next_node
+        end
       end
 
       def compare_and_clear(head)
@@ -66,7 +75,7 @@ module Concurrent
         it = peek
         until it.equal?(EMPTY)
           yield it.value
-          it = it.next
+          it = it.next_node
         end
         self
       end

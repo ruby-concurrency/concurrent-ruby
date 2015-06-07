@@ -120,11 +120,7 @@ module Concurrent
     class Event < Synchronization::Object
       include Concern::Deprecation
 
-      class State < Synchronization::Object
-        def initialize
-          ensure_ivar_visibility!
-        end
-
+      class State
         def completed?
           raise NotImplementedError
         end
@@ -331,11 +327,14 @@ module Concurrent
         @Touched.value
       end
 
+      # only for debugging inspection
+      def waiting_threads
+        @Waiters.each.to_a
+      end
+
       private
 
       def wait_until_complete(timeout)
-        lock = Synchronization::Lock.new
-
         while true
           last_waiter = @Waiters.peek # waiters' state before completion
           break if completed?
@@ -343,7 +342,7 @@ module Concurrent
           # synchronize so it cannot be signaled before it waits
           synchronize do
             # ok only if completing thread did not start signaling
-            next unless @Waiters.compare_and_push last_waiter, lock
+            next unless @Waiters.compare_and_push last_waiter, Thread.current
             ns_wait_until(timeout) { completed? }
             break
           end
@@ -407,7 +406,6 @@ module Concurrent
       class Success < CompletedWithResult
         def initialize(value)
           @Value = value
-          super()
         end
 
         def success?
@@ -440,7 +438,6 @@ module Concurrent
       class Failed < CompletedWithResult
         def initialize(reason)
           @Reason = reason
-          super()
         end
 
         def success?
@@ -764,7 +761,6 @@ module Concurrent
     # @!visibility private
     class AbstractPromise < Synchronization::Object
       def initialize(future)
-        super(&nil)
         @Future = future
         ensure_ivar_visibility!
       end
@@ -873,7 +869,7 @@ module Concurrent
         @Countdown = AtomicFixnum.new countdown
 
         super(future)
-        blocked_by.each { |future| future.add_callback :pr_callback_notify_blocked, self }
+        @BlockedBy.each { |future| future.add_callback :pr_callback_notify_blocked, self }
       end
 
       # @api private
@@ -893,7 +889,7 @@ module Concurrent
         blocked_by.each(&:touch)
       end
 
-      # @api private
+      # !visibility private
       # for inspection only
       def blocked_by
         @BlockedBy
@@ -906,7 +902,7 @@ module Concurrent
       private
 
       def initialize_blocked_by(blocked_by_futures)
-        (@BlockedBy = Array(blocked_by_futures).freeze).size
+        @BlockedBy = Array(blocked_by_futures)
       end
 
       def clear_blocked_by!
@@ -999,8 +995,6 @@ module Concurrent
     # @!visibility private
     class ImmediatePromise < InnerPromise
       def initialize(default_executor, *args)
-        # FIXME optimize, create completed futures directly, with/without args
-
         super(if args.empty?
                 Event.new(self, default_executor).complete
               else
@@ -1011,6 +1005,8 @@ module Concurrent
 
     # @!visibility private
     class FlattingPromise < BlockedPromise
+
+      # !visibility private
       def blocked_by
         @BlockedBy.each.to_a
       end
@@ -1044,7 +1040,6 @@ module Concurrent
 
       def initialize_blocked_by(blocked_by_future)
         @BlockedBy = LockFreeStack.new.push(blocked_by_future)
-        1
       end
 
       def on_completable(done_future)
