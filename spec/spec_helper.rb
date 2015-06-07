@@ -2,7 +2,7 @@ $VERBOSE = nil # suppress our deprecation warnings
 require 'concurrent'
 require 'concurrent-edge'
 
-Concurrent.use_stdlib_logger Logger::DEBUG
+Concurrent.use_stdlib_logger Logger::FATAL
 
 if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
   require 'simplecov'
