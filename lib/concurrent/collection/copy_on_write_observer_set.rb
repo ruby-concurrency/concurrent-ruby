@@ -6,6 +6,8 @@ module Concurrent
     # A thread safe observer set implemented using copy-on-write approach:
     # every time an observer is added or removed the whole internal data structure is
     # duplicated and replaced with a new one.
+    # 
+    # @api private
     class CopyOnWriteObserverSet < Synchronization::Object
 
       def initialize

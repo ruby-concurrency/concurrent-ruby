@@ -3,6 +3,8 @@ require 'concurrent/synchronization'
 module Concurrent
   module Channel
 
+    # @api Channel
+    # @!macro edge_warning
     class WaitableList < Synchronization::Object
 
       def initialize

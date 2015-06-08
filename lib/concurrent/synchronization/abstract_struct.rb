@@ -2,6 +2,7 @@ module Concurrent
   module Synchronization
 
     # @!visibility private
+    # @!macro internal_implementation_note
     module AbstractStruct
 
       # @!visibility private

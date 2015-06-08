@@ -11,6 +11,8 @@ module Concurrent
   # TODO more effective executor
 
   # {include:file:doc/actor/main.md}
+  # @api Actor
+  # @!macro edge_warning
   module Actor
 
     require 'concurrent/actor/type_check'

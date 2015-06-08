@@ -1,6 +1,7 @@
 module Concurrent
   module Utility
 
+    # @!visibility private
     module EngineDetector
       def on_jruby?
         ruby_engine == 'jruby'
@@ -34,5 +35,6 @@ module Concurrent
     end
   end
 
+  # @!visibility private
   extend Utility::EngineDetector
 end

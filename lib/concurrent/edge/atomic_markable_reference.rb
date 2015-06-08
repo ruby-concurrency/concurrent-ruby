@@ -1,7 +1,16 @@
 module Concurrent
   module Edge
-    # @!macro atomic_markable_reference
+
+    # @!macro [attach] atomic_markable_reference
+    #
+    #   An atomic reference which maintains an object reference along with a mark bit
+    #   that can be updated atomically.
+    #
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicMarkableReference.html java.util.concurrent.atomic.AtomicMarkableReference
+    #
+    #   @api Edge
     class AtomicMarkableReference < ::Concurrent::Synchronization::Object
+
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
         super()
@@ -16,9 +25,9 @@ module Concurrent
       #     - the current value == the expected value &&
       #     - the current mark == the expected mark
       #
-      #   @param [Object] old_val the expected value
+      #   @param [Object] expected_val the expected value
       #   @param [Object] new_val the new value
-      #   @param [Boolean] old_mark the expected mark
+      #   @param [Boolean] expected_mark the expected mark
       #   @param [Boolean] new_mark the new mark
       #
       #   @return [Boolean] `true` if successful. A `false` return indicates

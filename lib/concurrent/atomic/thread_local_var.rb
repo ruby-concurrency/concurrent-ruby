@@ -32,8 +32,11 @@ module Concurrent
   #     v.value #=> 14
   #
   #   @see https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html Java ThreadLocal
+  #
+  # @!visibility private
   class AbstractThreadLocalVar
 
+    # @!visibility private
     NIL_SENTINEL = Object.new
     private_constant :NIL_SENTINEL
 
@@ -112,6 +115,8 @@ module Concurrent
     end
   end
 
+  # @!visibility private
+  # @!macro internal_implementation_note
   class RubyThreadLocalVar < AbstractThreadLocalVar
 
     protected
@@ -144,6 +149,8 @@ module Concurrent
 
   if Concurrent.on_jruby?
 
+    # @!visibility private
+    # @!macro internal_implementation_note
     class JavaThreadLocalVar < AbstractThreadLocalVar
 
       protected
@@ -165,6 +172,8 @@ module Concurrent
     end
   end
 
+  # @!visibility private
+  # @!macro internal_implementation_note
   ThreadLocalVarImplementation = case
                                  when Concurrent.on_jruby?
                                    JavaThreadLocalVar
@@ -174,9 +183,6 @@ module Concurrent
   private_constant :ThreadLocalVarImplementation
 
   # @!macro thread_local_var
-  #
-  # @see Concurrent::AbstractThreadLocalVar
-  # @see Concurrent::RubyThreadLocalVar
   class ThreadLocalVar < ThreadLocalVarImplementation
 
     # @!method initialize(default = nil)

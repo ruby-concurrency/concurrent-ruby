@@ -3,6 +3,8 @@ require 'concurrent/concern/logging'
 module Concurrent
   module Concern
 
+    # @!visibility private
+    # @!macro internal_implementation_note
     module Deprecation
       # TODO require additional parameter: a version. Display when it'll be removed based on that. Error if not removed.
       include Concern::Logging

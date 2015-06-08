@@ -44,6 +44,37 @@ module Concurrent
   #   > scenarios.
   #
   # @!macro thread_pool_options
+  #
+  # @!macro thread_pool_executor_public_api
   class ThreadPoolExecutor < ThreadPoolExecutorImplementation
+
+    # @!macro [new] thread_pool_executor_method_initialize
+    #
+    #   Create a new thread pool.
+    #  
+    #   @param [Hash] opts the options which configure the thread pool.
+    #  
+    #   @option opts [Integer] :max_threads (DEFAULT_MAX_POOL_SIZE) the maximum
+    #     number of threads to be created
+    #   @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) the minimum
+    #     number of threads to be retained
+    #   @option opts [Integer] :idletime (DEFAULT_THREAD_IDLETIMEOUT) the maximum
+    #     number of seconds a thread may be idle before being reclaimed
+    #   @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
+    #     number of tasks allowed in the work queue at any one time; a value of
+    #     zero means the queue may grow without bound
+    #   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
+    #     tasks that are received when the queue size has reached
+    #     `max_queue` or the executor has shut down
+    #  
+    #   @raise [ArgumentError] if `:max_threads` is less than one
+    #   @raise [ArgumentError] if `:min_threads` is less than zero
+    #   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
+    #     in `FALLBACK_POLICIES`
+    #  
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
+
+    # @!method initialize(opts = {})
+    #   @!macro thread_pool_executor_method_initialize
   end
 end

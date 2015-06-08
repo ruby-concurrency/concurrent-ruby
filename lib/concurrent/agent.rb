@@ -79,6 +79,8 @@ module Concurrent
   #
   # @!attribute [r] timeout
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
+  #
+  # @!macro edge_warning
   class Agent
     include Concern::Dereferenceable
     include Concern::Observable
@@ -91,7 +93,15 @@ module Concurrent
     #
     # @param [Object] initial the initial value
     #
-    # @!macro executor_and_deref_options
+    # @!macro [attach] executor_and_deref_options
+    #  
+    #   @param [Hash] opts the options used to define the behavior at update and deref
+    #     and to specify the executor on which to perform actions
+    #   @option opts [Executor] :executor when set use the given `Executor` instance.
+    #     Three special values are also supported: `:task` returns the global task pool,
+    #     `:operation` returns the global operation pool, and `:immediate` returns a new
+    #     `ImmediateExecutor` object.
+    #   @!macro deref_options
     def initialize(initial, opts = {})
       @value                = initial
       @rescuers             = []

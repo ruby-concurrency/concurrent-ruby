@@ -7,6 +7,9 @@ module Concurrent
   #
   # @note Extends `Rubinius::AtomicReference` version adding aliases
   #   and numeric logic.
+  #
+  # @!visibility private
+  # @!macro internal_implementation_note
   class RbxAtomicReference < Rubinius::AtomicReference
     alias _compare_and_set compare_and_set
     include Concurrent::AtomicDirectUpdate

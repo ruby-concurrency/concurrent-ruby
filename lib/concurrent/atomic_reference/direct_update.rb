@@ -3,6 +3,9 @@ require 'concurrent/atomic_reference/concurrent_update_error'
 module Concurrent
 
   # Define update methods that use direct paths
+  #
+  # @!visibility private
+  # @!macro internal_implementation_note
   module AtomicDirectUpdate
 
     # @!macro [attach] atomic_reference_method_update

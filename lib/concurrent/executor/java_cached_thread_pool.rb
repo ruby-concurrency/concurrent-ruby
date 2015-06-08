@@ -6,16 +6,11 @@ if Concurrent.on_jruby?
 
     # @!macro cached_thread_pool
     # @!macro thread_pool_options
+    # @!macro thread_pool_executor_public_api
+    # @!visibility private
     class JavaCachedThreadPool < JavaThreadPoolExecutor
 
-      # Create a new thread pool.
-      #
-      # @param [Hash] opts the options defining pool behavior.
-      # @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
-      #
-      # @raise [ArgumentError] if `fallback_policy` is not a known policy
-      #
-      # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool--
+      # @!macro cached_thread_pool_method_initialize
       def initialize(opts = {})
         defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT }
         overrides = { min_threads:     0,

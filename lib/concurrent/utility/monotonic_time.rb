@@ -38,6 +38,7 @@ module Concurrent
 
   # Clock that cannot be set and represents monotonic time since
   # some unspecified starting point.
+  #
   # @!visibility private
   GLOBAL_MONOTONIC_CLOCK = class_definition.new
   private_constant :GLOBAL_MONOTONIC_CLOCK

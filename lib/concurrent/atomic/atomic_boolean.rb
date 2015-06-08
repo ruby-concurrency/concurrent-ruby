@@ -22,6 +22,10 @@ module Concurrent
   #         3.340000   0.010000   3.350000 (  0.855000)
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html java.util.concurrent.atomic.AtomicBoolean
+  #
+  # @!visibility private
+  #
+  # @!macro internal_implementation_note
   class MutexAtomicBoolean < Synchronization::Object
 
     # @!macro [attach] atomic_boolean_method_initialize
@@ -105,6 +109,8 @@ module Concurrent
     end
   end
 
+  # @!visibility private
+  # @!macro internal_implementation_note
   AtomicBooleanImplementation = case
                                 when Concurrent.on_jruby?
                                   JavaAtomicBoolean

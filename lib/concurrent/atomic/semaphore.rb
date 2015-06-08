@@ -10,6 +10,10 @@ module Concurrent
   #   releasing a blocking acquirer.
   #   However, no actual permit objects are used; the Semaphore just keeps a
   #   count of the number available and acts accordingly.
+  #
+  # @!visibility private
+  #
+  # @!macro internal_implementation_note
   class MutexSemaphore < Synchronization::Object
 
     # @!macro [attach] semaphore_method_initialize
@@ -163,6 +167,8 @@ module Concurrent
     end
   end
 
+  # @!visibility private
+  # @!macro internal_implementation_note
   SemaphoreImplementation = case
                             when Concurrent.on_jruby?
                               JavaSemaphore

@@ -4,6 +4,8 @@ module Concurrent
   module Concern
 
     # Include where logging is needed
+    #
+    # @!visibility private
     module Logging
       include Logger::Severity
 

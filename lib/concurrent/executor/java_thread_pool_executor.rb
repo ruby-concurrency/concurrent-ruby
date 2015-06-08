@@ -1,56 +1,33 @@
 if Concurrent.on_jruby?
+
   require 'concurrent/executor/executor_service'
 
   module Concurrent
 
     # @!macro thread_pool_executor
     # @!macro thread_pool_options
+    # @!visibility private
     class JavaThreadPoolExecutor < JavaExecutorService
 
-      # Default maximum number of threads that will be created in the pool.
+      # @!macro thread_pool_executor_constant_default_max_pool_size
       DEFAULT_MAX_POOL_SIZE = java.lang.Integer::MAX_VALUE # 2147483647
 
-      # Default minimum number of threads that will be retained in the pool.
+      # @!macro thread_pool_executor_constant_default_min_pool_size
       DEFAULT_MIN_POOL_SIZE = 0
 
-      # Default maximum number of tasks that may be added to the task queue.
+      # @!macro thread_pool_executor_constant_default_max_queue_size
       DEFAULT_MAX_QUEUE_SIZE = 0
 
-      # Default maximum number of seconds a thread in the pool may remain idle
-      # before being reclaimed.
+      # @!macro thread_pool_executor_constant_default_thread_timeout
       DEFAULT_THREAD_IDLETIMEOUT = 60
 
-      # The maximum number of threads that may be created in the pool.
+      # @!macro thread_pool_executor_attr_reader_max_length
       attr_reader :max_length
 
-      # The maximum number of tasks that may be waiting in the work queue at any one time.
-      # When the queue size reaches `max_queue` subsequent tasks will be rejected in
-      # accordance with the configured `fallback_policy`.
+      # @!macro thread_pool_executor_attr_reader_max_queue
       attr_reader :max_queue
 
-      # Create a new thread pool.
-      #
-      # @param [Hash] opts the options which configure the thread pool
-      #
-      # @option opts [Integer] :max_threads (DEFAULT_MAX_POOL_SIZE) the maximum
-      #   number of threads to be created
-      # @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) the minimum
-      #   number of threads to be retained
-      # @option opts [Integer] :idletime (DEFAULT_THREAD_IDLETIMEOUT) the maximum
-      #   number of seconds a thread may be idle before being reclaimed
-      # @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
-      #   number of tasks allowed in the work queue at any one time; a value of
-      #   zero means the queue may grow without bound
-      # @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
-      #   tasks that are received when the queue size has reached
-      #   `max_queue` or the executir has shut down
-      #
-      # @raise [ArgumentError] if `:max_threads` is less than one
-      # @raise [ArgumentError] if `:min_threads` is less than zero
-      # @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
-      #   in `FALLBACK_POLICIES`
-      #
-      # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
+      # @!macro thread_pool_executor_method_initialize
       def initialize(opts = {})
         super(opts)
       end
@@ -60,73 +37,52 @@ if Concurrent.on_jruby?
         @max_queue != 0
       end
 
-      # The minimum number of threads that may be retained in the pool.
-      #
-      # @return [Integer] the min_length
+      # @!macro thread_pool_executor_attr_reader_min_length
       def min_length
         @executor.getCorePoolSize
       end
 
-      # The maximum number of threads that may be created in the pool.
-      #
-      # @return [Integer] the max_length
+      # @!macro thread_pool_executor_attr_reader_max_length
       def max_length
         @executor.getMaximumPoolSize
       end
 
-      # The number of threads currently in the pool.
-      #
-      # @return [Integer] the length
+      # @!macro thread_pool_executor_attr_reader_length
       def length
         @executor.getPoolSize
       end
 
-      # The largest number of threads that have been created in the pool since construction.
-      #
-      # @return [Integer] the largest_length
+      # @!macro thread_pool_executor_attr_reader_largest_length
       def largest_length
         @executor.getLargestPoolSize
       end
 
-      # The number of tasks that have been scheduled for execution on the pool since construction.
-      #
-      # @return [Integer] the scheduled_task_count
+      # @!macro thread_pool_executor_attr_reader_scheduled_task_count
       def scheduled_task_count
         @executor.getTaskCount
       end
 
-      # The number of tasks that have been completed by the pool since construction.
-      #
-      # @return [Integer] the completed_task_count
+      # @!macro thread_pool_executor_attr_reader_completed_task_count
       def completed_task_count
         @executor.getCompletedTaskCount
       end
 
-      # The number of seconds that a thread may be idle before being reclaimed.
-      #
-      # @return [Integer] the idletime
+      # @!macro thread_pool_executor_attr_reader_idletime
       def idletime
         @executor.getKeepAliveTime(java.util.concurrent.TimeUnit::SECONDS)
       end
 
-      # The number of tasks in the queue awaiting execution.
-      #
-      # @return [Integer] the queue_length
+      # @!macro thread_pool_executor_attr_reader_queue_length
       def queue_length
         @executor.getQueue.size
       end
 
-      # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
-      # new tasks. A value of -1 indicates that the queue may grow without bound.
-      #
-      # @return [Integer] the remaining_capacity
+      # @!macro thread_pool_executor_attr_reader_remaining_capacity
       def remaining_capacity
         @max_queue == 0 ? -1 : @executor.getQueue.remainingCapacity
       end
 
-      # Is the thread pool running?
-      #
-      # @return [Boolean] `true` when running, `false` when shutting down or shutdown
+      # @!macro executor_service_method_running_question
       def running?
         super && !@executor.isTerminating
       end

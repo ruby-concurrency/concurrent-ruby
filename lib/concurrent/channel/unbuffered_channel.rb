@@ -3,6 +3,8 @@ require 'concurrent/channel/waitable_list'
 module Concurrent
   module Channel
 
+    # @api Channel
+    # @!macro edge_warning
     class UnbufferedChannel
 
       def initialize

@@ -2,6 +2,9 @@ module Concurrent
   module Channel
 
     # non-thread safe buffer
+    #
+    # @api Channel
+    # @!macro edge_warning
     class RingBuffer
 
       def initialize(capacity)
