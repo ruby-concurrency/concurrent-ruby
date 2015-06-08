@@ -44,6 +44,11 @@ describe Concurrent::Edge::LockFreeLinkedSet do
     it 'appends to the linked set and returns self' do
       expect(subject << 'test string1').to be_a described_class
     end
+
+    it 'returns self regardless of whether it was logically added' do
+      subject << 'test string'
+      expect(subject << 'test string').to be_a described_class
+    end
   end
 
   describe '#contains?' do

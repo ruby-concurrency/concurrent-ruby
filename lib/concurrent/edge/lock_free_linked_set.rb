@@ -55,7 +55,8 @@ module Concurrent
       #
       #   @return [Oject] the set on which the :<< method was invoked
       def <<(item)
-        self if add item
+        add item
+        self
       end
 
       # @!macro [attach] lock_free_linked_list_method_contains
