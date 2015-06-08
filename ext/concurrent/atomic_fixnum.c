@@ -24,13 +24,12 @@ VALUE method_atomic_fixnum_initialize(int argc, VALUE* argv, VALUE self) {
 }
 
 VALUE method_atomic_fixnum_value(VALUE self) {
-  return (VALUE) DATA_PTR(self);
+  return ir_get(self);
 }
 
 VALUE method_atomic_fixnum_value_set(VALUE self, VALUE value) {
   Check_Type(value, T_FIXNUM);
-  DATA_PTR(self) = (void *) value;
-  return(value);
+  return ir_set(self, value);
 }
 
 VALUE method_atomic_fixnum_increment(VALUE self) {
