@@ -23,16 +23,4 @@ module Concurrent
       end
     end
   end
-
-  describe FixedThreadPool do
-    if Concurrent.on_jruby?
-      it 'inherits from JavaFixedThreadPool' do
-        expect(FixedThreadPool.ancestors).to include(JavaFixedThreadPool)
-      end
-    else
-      it 'inherits from RubyFixedThreadPool' do
-        expect(FixedThreadPool.ancestors).to include(RubyFixedThreadPool)
-      end
-    end
-  end
 end
