@@ -1,4 +1,4 @@
-### Next Release v0.9.0 (Target Date: 5 April 2015)
+### Next Release v0.9.0 (Target Date: 7 June 2015)
 
 * Pure Java implementations of
   - `AtomicBoolean`
@@ -20,7 +20,7 @@
 * Added `at_exit` handler to Ruby thread pools (already in Java thread pools)
   - Ruby handler stores the object id and retrieves from `ObjectSpace`
   - JRuby disables `ObjectSpace` by default so that handler stores the object reference
-*	Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
+* Added a `:stop_on_exit` option to thread pools to enable/disable `at_exit` handler
 * Updated thread pool docs to better explain shutting down thread pools
 * Simpler `:executor` option syntax for all abstractions which support this option
 * Added `Executor#auto_terminate?` predicate method (for thread pools)
@@ -43,6 +43,55 @@
 * Moved global logger up to the `Concurrent` namespace and refactored the code
 * Optimized the performance of `Delay`
   - Fixed a bug in which no executor option on construction caused block execution on a global thread pool
+* Numerous improvements and bug fixes to `TimerSet`
+* Fixed deadlock of `Future` when the handler raises Exception
+* Added shared specs for more classes
+* New concurrency abstractions including:
+  - `Atom`
+  - `Maybe`
+  - `ImmutableStruct`
+  - `MutableStruct`
+  - `SettableStruct`
+* Created an Edge gem for unstable abstractions including
+  - `Actor`
+  - `Agent`
+  - `Channel`
+  - `Exchanger`
+  - `LazyRegister`
+  - **new Future Framework** <http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html> - unified 
+    implementation of Futures and Promises which combines Features of previous `Future`,
+    `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
+    new synchronization layer to make all the paths **lock-free** with exception of blocking threads on `#wait`.
+    It offers better performance and does not block threads when not required.
+* Actor framework changes:
+  - fixed reset loop in Pool
+  - Pool can use any actor as a worker, abstract worker class is no longer needed.
+  - Actor events not have format `[:event_name, *payload]` instead of just the Symbol.
+  - Actor now uses new Future/Promise Framework instead of `IVar` for better interoperability
+  - Behaviour definition array was simplified to `[BehaviourClass1, [BehaviourClass2, *initialization_args]]`
+  - Linking behavior responds to :linked message by returning array of linked actors
+  - Supervised behavior is removed in favour of just Linking
+  - RestartingContext is supervised by default now, `supervise: true` is not required any more
+  - Events can be private and public, so far only difference is that Linking will
+    pass to linked actors only public messages. Adding private :restarting and
+    :resetting events which are send before the actor restarts or resets allowing
+    to add callbacks to cleanup current child actors.
+  - Print also object_id in Reference to_s
+  - Add AbstractContext#default_executor to be able to override executor class wide
+  - Add basic IO example
+  - Documentation somewhat improved
+  - All messages should have same priority. It's now possible to send `actor << job1 << job2 << :terminate!` and 
+    be sure that both jobs are processed first.
+* Refactored `Channel` to use newer synchronization objects
+* Added `#reset` and `#cancel` methods to `TimerSet`
+* Added `#cancel` method to `Future` and `ScheduledTask`
+* Refactored `TimerSet` to use `ScheduledTask`
+* Updated `Async` with a factory that initializes the object
+* Deprecated `Concurrent.timer` and `Concurrent.timeout`
+* Reduced max threads on pure-Ruby thread pools (abends around 14751 threads)
+* Moved many private/internal classes/modules into "namespace" modules
+* Removed brute-force killing of threads in tests
+* Fixed a thread pool bug when the operating system cannot allocate more threads
 
 ## Current Release v0.8.0 (25 January 2015)
 
