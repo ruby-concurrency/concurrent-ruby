@@ -39,6 +39,22 @@ module Concurrent
   #   @see Concurrent::JavaCachedThreadPool
   #
   # @!macro thread_pool_options
+  #
+  # @!macro thread_pool_executor_public_api
   class CachedThreadPool < CachedThreadPoolImplementation
+
+    # @!macro [new] cached_thread_pool_method_initialize
+    #
+    #   Create a new thread pool.
+    #
+    #   @param [Hash] opts the options defining pool behavior.
+    #   @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
+    #
+    #   @raise [ArgumentError] if `fallback_policy` is not a known policy
+    #
+    #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool--
+
+    # @!method initialize(opts = {})
+    #   @!macro cached_thread_pool_method_initialize
   end
 end

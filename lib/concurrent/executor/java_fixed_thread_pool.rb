@@ -6,18 +6,11 @@ if Concurrent.on_jruby?
 
     # @!macro fixed_thread_pool
     # @!macro thread_pool_options
-    # @api private
+    # @!macro thread_pool_executor_public_api
+    # @!visibility private
     class JavaFixedThreadPool < JavaThreadPoolExecutor
 
-      # Create a new thread pool.
-      #
-      # @param [Hash] opts the options defining pool behavior.
-      # @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
-      #
-      # @raise [ArgumentError] if `num_threads` is less than or equal to zero
-      # @raise [ArgumentError] if `fallback_policy` is not a known policy
-      #
-      # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
+      # @!macro fixed_thread_pool_method_initialize
       def initialize(num_threads, opts = {})
         raise ArgumentError.new('number of threads must be greater than zero') if num_threads.to_i < 1
         defaults  = { max_queue:   DEFAULT_MAX_QUEUE_SIZE,

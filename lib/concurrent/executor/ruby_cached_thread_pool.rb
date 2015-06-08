@@ -4,15 +4,11 @@ module Concurrent
 
   # @!macro cached_thread_pool
   # @!macro thread_pool_options
-  # @api private
+  # @!macro thread_pool_executor_public_api
+  # @!visibility private
   class RubyCachedThreadPool < RubyThreadPoolExecutor
 
-    # Create a new thread pool.
-    #
-    # @param [Hash] opts the options defining pool behavior.
-    # @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
-    #
-    # @raise [ArgumentError] if `fallback_policy` is not a known policy
+    # @!macro cached_thread_pool_method_initialize
     def initialize(opts = {})
       defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT }
       overrides = { min_threads:     0,
