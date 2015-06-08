@@ -15,6 +15,7 @@ module Concurrent
   private_constant :CachedThreadPoolImplementation
 
   # @!macro [attach] cached_thread_pool
+  #
   #   A thread pool that dynamically grows and shrinks to fit the current workload.
   #   New threads are created as needed, existing threads are reused, and threads
   #   that remain idle for too long are killed and removed from the pool. These
@@ -35,11 +36,7 @@ module Concurrent
   #
   #   The API and behavior of this class are based on Java's `CachedThreadPool`
   #
-  #   @see Concurrent::RubyCachedThreadPool
-  #   @see Concurrent::JavaCachedThreadPool
-  #
   # @!macro thread_pool_options
-  #
   # @!macro thread_pool_executor_public_api
   class CachedThreadPool < CachedThreadPoolImplementation
 

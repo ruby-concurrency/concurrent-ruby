@@ -3,7 +3,7 @@ require 'concurrent/concern/deprecation'
 
 module Concurrent
 
-  # @api private
+  # @!visibility private
   module Executor
     extend Concern::Deprecation
 

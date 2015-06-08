@@ -81,8 +81,7 @@ module Concurrent
 
   # @!macro [new] thread_pool_executor_public_api
   #
-  #   @!attribute [r] fallback_policy
-  #     @!macro executor_service_attr_reader_fallback_policy
+  #   @!macro abstract_executor_service_public_api
   #
   #   @!attribute [r] max_length
   #     @!macro thread_pool_executor_attr_reader_max_length
@@ -116,30 +115,6 @@ module Concurrent
   #
   #   @!method can_overflow?
   #     @!macro executor_service_method_can_overflow_question
-  #
-  #   @!method shutdown
-  #     @!macro executor_service_method_shutdown
-  #
-  #   @!method kill
-  #     @!macro executor_service_method_kill
-  #
-  #   @!method wait_for_termination(timeout = nil)
-  #     @!macro executor_service_method_wait_for_termination
-  #
-  #   @!method running?
-  #     @!macro executor_service_method_running_question
-  #
-  #   @!method shuttingdown?
-  #     @!macro executor_service_method_shuttingdown_question
-  #
-  #   @!method shutdown?
-  #     @!macro executor_service_method_shutdown_question
-  #
-  #   @!method auto_terminate?
-  #     @!macro executor_service_method_auto_terminate_question
-  #
-  #   @!method auto_terminate=(value)
-  #     @!macro executor_service_method_auto_terminate_setter
 
 
 
