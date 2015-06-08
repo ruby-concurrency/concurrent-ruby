@@ -95,15 +95,18 @@ module Concurrent
     end
   end
 
-  # @api private
+  # @!visibility private
   class AbstractExecutorService < Synchronization::Object
     include ExecutorService
 
     # The set of possible fallback policies that may be set at thread pool creation.
     FALLBACK_POLICIES = [:abort, :discard, :caller_runs].freeze
 
+    # @!macro [attach] executor_service_attr_reader_fallback_policy
+    #   @return [Symbol] The fallback policy in effect. Either `:abort`, `:discard`, or `:caller_runs`.
     attr_reader :fallback_policy
 
+    # Create a new thread pool.
     def initialize(*args, &block)
       super(&nil)
       synchronize { ns_initialize(*args, &block) }
@@ -170,10 +173,22 @@ module Concurrent
       synchronize { ns_shutdown? }
     end
 
+    # @!macro [attach] executor_service_method_auto_terminate_question
+    #
+    #   Is the executor auto-terminate when the application exits?
+    #
+    #   @return [Boolean] `true` when auto-termination is enabled else `false`.
     def auto_terminate?
       synchronize { ns_auto_terminate? }
     end
 
+    # @!macro [attach] executor_service_method_auto_terminate_setter
+    #
+    #   Set the auto-terminate behavior for this executor.
+    #
+    #   @param [Boolean] value The new auto-terminate value to set for this executor.
+    #
+    #   @return [Boolean] `true` when auto-termination is enabled else `false`.
     def auto_terminate=(value)
       synchronize { self.ns_auto_terminate = value }
     end

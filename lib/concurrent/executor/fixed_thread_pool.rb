@@ -24,9 +24,6 @@ module Concurrent
   #
   #   The API and behavior of this class are based on Java's `FixedThreadPool`
   #
-  #   @see Concurrent::RubyFixedThreadPool
-  #   @see Concurrent::JavaFixedThreadPool
-  #
   # @!macro [attach] thread_pool_options
   #
   #   Thread pools support several configuration options:
@@ -76,12 +73,6 @@ module Concurrent
   #
   #   @note Failure to properly shutdown a thread pool can lead to unpredictable results.
   #     Please read *Shutting Down Thread Pools* for more information.
-  #
-  #   @note When running on the JVM (JRuby) this class will inherit from `JavaFixedThreadPool`.
-  #     On all other platforms it will inherit from `RubyFixedThreadPool`.
-  #
-  #   @see Concurrent::RubyFixedThreadPool
-  #   @see Concurrent::JavaFixedThreadPool
   #
   #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html Java Executors class

@@ -9,68 +9,43 @@ module Concurrent
 
   # @!macro thread_pool_executor
   # @!macro thread_pool_options
-  # @api private
+  # @!visibility private
   class RubyThreadPoolExecutor < RubyExecutorService
 
-    # Default maximum number of threads that will be created in the pool.
+    # @!macro thread_pool_executor_constant_default_max_pool_size
     DEFAULT_MAX_POOL_SIZE      = 2_147_483_647 # java.lang.Integer::MAX_VALUE
 
-    # Default minimum number of threads that will be retained in the pool.
+    # @!macro thread_pool_executor_constant_default_min_pool_size
     DEFAULT_MIN_POOL_SIZE      = 0
 
-    # Default maximum number of tasks that may be added to the task queue.
+    # @!macro thread_pool_executor_constant_default_max_queue_size
     DEFAULT_MAX_QUEUE_SIZE     = 0
 
-    # Default maximum number of seconds a thread in the pool may remain idle
-    # before being reclaimed.
+    # @!macro thread_pool_executor_constant_default_thread_timeout
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
-    # The maximum number of threads that may be created in the pool.
+    # @!macro thread_pool_executor_attr_reader_max_length
     attr_reader :max_length
 
-    # The minimum number of threads that may be retained in the pool.
+    # @!macro thread_pool_executor_attr_reader_min_length
     attr_reader :min_length
 
-    # The largest number of threads that have been created in the pool since construction.
+    # @!macro thread_pool_executor_attr_reader_largest_length
     attr_reader :largest_length
 
-    # The number of tasks that have been scheduled for execution on the pool since construction.
+    # @!macro thread_pool_executor_attr_reader_scheduled_task_count
     attr_reader :scheduled_task_count
 
-    # The number of tasks that have been completed by the pool since construction.
+    # @!macro thread_pool_executor_attr_reader_completed_task_count
     attr_reader :completed_task_count
 
-    # The number of seconds that a thread may be idle before being reclaimed.
+    # @!macro thread_pool_executor_attr_reader_idletime
     attr_reader :idletime
 
-    # The maximum number of tasks that may be waiting in the work queue at any one time.
-    # When the queue size reaches `max_queue` subsequent tasks will be rejected in
-    # accordance with the configured `fallback_policy`.
+    # @!macro thread_pool_executor_attr_reader_max_queue
     attr_reader :max_queue
 
-    # Create a new thread pool.
-    #
-    # @param [Hash] opts the options which configure the thread pool
-    #
-    # @option opts [Integer] :max_threads (DEFAULT_MAX_POOL_SIZE) the maximum
-    #   number of threads to be created
-    # @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) the minimum
-    #   number of threads to be retained
-    # @option opts [Integer] :idletime (DEFAULT_THREAD_IDLETIMEOUT) the maximum
-    #   number of seconds a thread may be idle before being reclaimed
-    # @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
-    #   number of tasks allowed in the work queue at any one time; a value of
-    #   zero means the queue may grow without bound
-    # @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
-    #   tasks that are received when the queue size has reached
-    #   `max_queue` or the executor has shut down
-    #
-    # @raise [ArgumentError] if `:max_threads` is less than one
-    # @raise [ArgumentError] if `:min_threads` is less than zero
-    # @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
-    #   in `FALLBACK_POLICIES`
-    #
-    # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
+    # @!macro thread_pool_executor_method_initialize
     def initialize(opts = {})
       super(opts)
     end
@@ -80,24 +55,17 @@ module Concurrent
       synchronize { ns_limited_queue? }
     end
 
-    # The number of threads currently in the pool.
-    #
-    # @return [Integer] the length
+    # @!macro thread_pool_executor_attr_reader_length
     def length
       synchronize { @pool.length }
     end
 
-    # The number of tasks in the queue awaiting execution.
-    #
-    # @return [Integer] the queue_length
+    # @!macro thread_pool_executor_attr_reader_queue_length
     def queue_length
       synchronize { @queue.length }
     end
 
-    # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
-    # new tasks. A value of -1 indicates that the queue may grow without bound.
-    #
-    # @return [Integer] the remaining_capacity
+    # @!macro thread_pool_executor_attr_reader_remaining_capacity
     def remaining_capacity
       synchronize do
         if ns_limited_queue?
@@ -108,22 +76,22 @@ module Concurrent
       end
     end
 
-    # @api private
+    # @!visibility private
     def remove_busy_worker(worker)
       synchronize { ns_remove_busy_worker worker }
     end
 
-    # @api private
+    # @!visibility private
     def ready_worker(worker)
       synchronize { ns_ready_worker worker }
     end
 
-    # @api private
+    # @!visibility private
     def worker_not_old_enough(worker)
       synchronize { ns_worker_not_old_enough worker }
     end
 
-    # @api private
+    # @!visibility private
     def worker_died(worker)
       synchronize { ns_worker_died worker }
     end
@@ -303,6 +271,7 @@ module Concurrent
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
     end
 
+    # @!visibility private
     class Worker
       include Concern::Logging
 
