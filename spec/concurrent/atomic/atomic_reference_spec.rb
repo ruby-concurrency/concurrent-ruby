@@ -33,6 +33,15 @@ shared_examples :atomic_reference do
     expect(res).to eq 1001
   end
 
+  specify :test_try_update_bang do
+    # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
+    atomic = described_class.new(1000)
+    res = atomic.try_update! {|v| v + 1}
+
+    expect(atomic.value).to eq 1001
+    expect(res).to eq 1001
+  end
+
   specify :test_swap do
     atomic = described_class.new(1000)
     res = atomic.swap(1001)
@@ -44,10 +53,19 @@ shared_examples :atomic_reference do
   specify :test_try_update_fails do
     # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
     atomic = described_class.new(1000)
+    expect(
+      # assigning within block exploits implementation detail for test
+      atomic.try_update {|v| atomic.value = 1001 ; v + 1}
+    ).to be_falsey
+  end
+
+  specify :test_try_update_bang_fails do
+    # use a number outside JRuby's fixnum cache range, to ensure identity is preserved
+    atomic = described_class.new(1000)
     expect {
       # assigning within block exploits implementation detail for test
-      atomic.try_update{|v| atomic.value = 1001 ; v + 1}
-    }.to raise_error(Concurrent::ConcurrentUpdateError)
+      atomic.try_update! {|v| atomic.value = 1001 ; v + 1}
+    }.to raise_error Concurrent::ConcurrentUpdateError
   end
 
   specify :test_update_retries do
