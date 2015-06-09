@@ -14,8 +14,7 @@ module Concurrent
 
         initial_size.times do
           val = block_given? ? yield : val
-
-          self.add val
+          add val
         end
       end
 
@@ -37,12 +36,12 @@ module Concurrent
           pred, curr = window.pred, window.curr
 
           # Item already in set
-          if curr == item
-            return false
-          else
-            node = Node.new item, curr
+          return false if curr == item
 
-            return true if pred.succ.compare_and_set curr, node, false, false
+          node = Node.new item, curr
+
+          if pred.SuccessorReference.compare_and_set curr, node, false, false
+            return true
           end
         end
       end
@@ -73,8 +72,8 @@ module Concurrent
         curr = @head
 
         while curr < item
-          curr = curr.next
-          marked = curr.succ.marked?
+          curr = curr.next_node
+          marked = curr.SuccessorReference.marked?
         end
 
         curr == item && !marked
@@ -92,18 +91,16 @@ module Concurrent
           window = Window.find @head, item
           pred, curr = window.pred, window.curr
 
-          if curr != item
-            return false
-          else
-            succ = curr.next
-            snip = curr.succ.compare_and_set succ, succ, false, true
+          return false if curr != item
 
-            next unless snip
+          succ = curr.next_node
+          removed = curr.SuccessorReference.compare_and_set succ, succ, false, true
 
-            pred.succ.compare_and_set curr, succ, false, false
+          next_node unless removed
 
-            return true
-          end
+          pred.SuccessorReference.compare_and_set curr, succ, false, false
+
+          return true
         end
       end
 
@@ -121,10 +118,10 @@ module Concurrent
         curr = @head
 
         until curr.last?
-          curr = curr.next
-          marked = curr.succ.marked?
+          curr = curr.next_node
+          marked = curr.SuccessorReference.marked?
 
-          yield curr.data if !marked
+          yield curr.Data unless marked
         end
 
         self

@@ -3,26 +3,30 @@ require 'concurrent/edge/atomic_markable_reference'
 module Concurrent
   module Edge
     class LockFreeLinkedSet
-      class Node
+      class Node < Synchronization::Object
         include Comparable
 
-        attr_reader :data, :succ, :key
+        attr_reader :Data, :SuccessorReference, :Key
 
-        def initialize(data = nil, succ = nil)
-          @succ = AtomicMarkableReference.new(succ || Tail.new)
-          @data = data
-          @key = key_for data
+        def initialize(data = nil, successor = nil)
+          super()
+
+          @SuccessorReference = AtomicMarkableReference.new(successor || Tail.new)
+          @Data = data
+          @Key = key_for data
+
+          ensure_ivar_visibility!
         end
 
         # Check to see if the node is the last in the list.
         def last?
-          @succ.value.is_a? Tail
+          @SuccessorReference.value.is_a? Tail
         end
 
         # Next node in the list. Note: this is not the AtomicMarkableReference
         # of the next node, this is the actual Node itself.
-        def next
-          @succ.value
+        def next_node
+          @SuccessorReference.value
         end
 
         # This method provides a unqiue key for the data which will be used for
@@ -36,7 +40,7 @@ module Concurrent
         # can be configurable in the future; for example, you could enforce a
         # split-ordering on the nodes in the set.
         def <=>(other)
-          @key <=> other.hash
+          @Key <=> other.hash
         end
       end
 
@@ -44,8 +48,8 @@ module Concurrent
       # other nodes, and  it is self-referential; meaning its successor is
       # a self-loop.
       class Tail < Node
-        def initialize(data = nil, _succ = nil)
-          @succ = AtomicMarkableReference.new self
+        def initialize(_data = nil, _succ = nil)
+          @SuccessorReference = AtomicMarkableReference.new self
         end
 
         # Always greater than other nodes. This means that traversal will end

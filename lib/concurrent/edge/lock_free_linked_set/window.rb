@@ -16,20 +16,20 @@ module Concurrent
         loop do
           break_inner_loops = false
           pred = head
-          curr = pred.next
+          curr = pred.next_node
 
           loop do
-            succ, marked = curr.succ.get
+            succ, marked = curr.SuccessorReference.get
 
             # Remove sequence of marked nodes
             while marked
-              removed = pred.succ.compare_and_set curr, succ, false, false
+              removed = pred.SuccessorReference.compare_and_set curr, succ, false, false
 
               # If could not remove node, try again
               break_inner_loops = true && break unless removed
 
               curr = succ
-              succ, marked = curr.succ.get
+              succ, marked = curr.SuccessorReference.get
             end
 
             break if break_inner_loops
