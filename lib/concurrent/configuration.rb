@@ -249,10 +249,10 @@ module Concurrent
       Concurrent.new_fast_executor
     end
 
-    # @deprecated Use Concurrent.disable_auto_termination_of_global_executors! instead
+    # @deprecated Use Concurrent.disable_executor_auto_termination! instead
     def auto_terminate=(value)
-      deprecated_method 'Concurrent.configuration.auto_terminate=', 'Concurrent.disable_auto_termination_of_global_executors!'
-      Concurrent.disable_auto_termination_of_global_executors! if !value
+      deprecated_method 'Concurrent.configuration.auto_terminate=', 'Concurrent.disable_executor_auto_termination!'
+      Concurrent.disable_executor_auto_termination! if !value
     end
 
     # @deprecated Use Concurrent.auto_terminate_global_executors? instead
