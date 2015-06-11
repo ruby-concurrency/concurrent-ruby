@@ -34,7 +34,7 @@ module Concurrent
   # ```ruby
   # ivar = Concurrent::IVar.new
   # ivar.set 14
-  # ivar.get #=> 14
+  # ivar.value #=> 14
   # ivar.set 2 # would now be an error
   # ```
   #
