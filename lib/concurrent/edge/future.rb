@@ -345,8 +345,8 @@ module Concurrent
             # ok only if completing thread did not start signaling
             next unless @Waiters.compare_and_push last_waiter, Thread.current
             ns_wait_until(timeout) { completed? }
-            break
           end
+          break
         end
         self
       end
