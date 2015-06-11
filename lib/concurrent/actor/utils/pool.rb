@@ -12,14 +12,14 @@ module Concurrent
       # @yieldparam [Integer] index of the worker, usually used in its name
       # @yieldreturn [Reference] the reference of newly created worker
       # @example
-      #     class Worker < Concurrent::Actor::Utils::AbstractWorker
-      #       def work(message)
+      #     class Worker < Concurrent::Actor::RestartingContext
+      #       def on_message(message)
       #         p message * 5
       #       end
       #     end
       #
-      #     pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |balancer, index|
-      #       Worker.spawn name: "worker-#{index}", supervise: true, args: [balancer]
+      #     pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
+      #       Worker.spawn name: "worker-#{index}", supervise: true, args: []
       #     end
       #
       #     pool << 'asd' << 2
