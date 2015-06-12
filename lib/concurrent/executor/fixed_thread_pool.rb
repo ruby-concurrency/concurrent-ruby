@@ -1,18 +1,7 @@
-require 'concurrent/executor/ruby_fixed_thread_pool'
+require 'concurrent/utility/engine'
+require 'concurrent/executor/thread_pool_executor'
 
 module Concurrent
-
-  if Concurrent.on_jruby?
-    require 'concurrent/executor/java_fixed_thread_pool'
-  end
-
-  FixedThreadPoolImplementation = case
-                                  when Concurrent.on_jruby?
-                                    JavaFixedThreadPool
-                                  else
-                                    RubyFixedThreadPool
-                                  end
-  private_constant :FixedThreadPoolImplementation
 
   # @!macro [new] thread_pool_executor_constant_default_max_pool_size
   #   Default maximum number of threads that will be created in the pool.
@@ -119,35 +108,7 @@ module Concurrent
 
 
 
-
-  # @!macro [new] fixed_thread_pool_method_initialize
-  #
-  #   Create a new thread pool.
-  #
-  #   @param [Integer] num_threads the number of threads to allocate
-  #   @param [Hash] opts the options defining pool behavior.
-  #   @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
-  #
-  #   @raise [ArgumentError] if `num_threads` is less than or equal to zero
-  #   @raise [ArgumentError] if `fallback_policy` is not a known policy
-  #
-  #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
-
-
-
-
-
-  # @!macro [attach] fixed_thread_pool
-  #
-  #   A thread pool with a set number of threads. The number of threads in the pool
-  #   is set on construction and remains constant. When all threads are busy new
-  #   tasks `#post` to the thread pool are enqueued until a thread becomes available.
-  #   Should a thread crash for any reason the thread will immediately be removed
-  #   from the pool and replaced.
-  #
-  #   The API and behavior of this class are based on Java's `FixedThreadPool`
-  #
-  # @!macro [attach] thread_pool_options
+  # @!macro [new] thread_pool_options
   #
   #   **Thread Pool Options**
   #
@@ -203,11 +164,43 @@ module Concurrent
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html Java Executors class
   #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html Java ExecutorService interface
   #   @see http://ruby-doc.org//core-2.2.0/Kernel.html#method-i-at_exit Kernel#at_exit
-  #
-  # @!macro thread_pool_executor_public_api
-  class FixedThreadPool < FixedThreadPoolImplementation
 
-    # @!method initialize(num_threads, opts = {})
-    #   @!macro fixed_thread_pool_method_initialize
+
+
+
+
+  # @!macro [attach] fixed_thread_pool
+  #
+  #   A thread pool with a set number of threads. The number of threads in the pool
+  #   is set on construction and remains constant. When all threads are busy new
+  #   tasks `#post` to the thread pool are enqueued until a thread becomes available.
+  #   Should a thread crash for any reason the thread will immediately be removed
+  #   from the pool and replaced.
+  #
+  #   The API and behavior of this class are based on Java's `FixedThreadPool`
+  #
+  # @!macro thread_pool_options
+  class FixedThreadPool < ThreadPoolExecutor
+
+    # @!macro [attach] fixed_thread_pool_method_initialize
+    #
+    #   Create a new thread pool.
+    #
+    #   @param [Integer] num_threads the number of threads to allocate
+    #   @param [Hash] opts the options defining pool behavior.
+    #   @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
+    #
+    #   @raise [ArgumentError] if `num_threads` is less than or equal to zero
+    #   @raise [ArgumentError] if `fallback_policy` is not a known policy
+    #
+    #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
+    def initialize(num_threads, opts = {})
+      raise ArgumentError.new('number of threads must be greater than zero') if num_threads.to_i < 1
+      defaults  = { max_queue:   DEFAULT_MAX_QUEUE_SIZE,
+                    idletime:    DEFAULT_THREAD_IDLETIMEOUT }
+      overrides = { min_threads: num_threads,
+                    max_threads: num_threads }
+      super(defaults.merge(opts).merge(overrides))
+    end
   end
 end
