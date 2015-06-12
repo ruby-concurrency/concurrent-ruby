@@ -17,19 +17,11 @@ module Concurrent
       end
 
       let(:fulfilled_subject) do
-        latch = Concurrent::CountDownLatch.new(1)
-        task = ScheduledTask.new(0.1){ latch.count_down; fulfilled_value }.execute
-        latch.wait(1)
-        sleep(0.1)
-        task
+        ScheduledTask.new(0, executor: :immediate){ fulfilled_value }.execute
       end
 
       let(:rejected_subject) do
-        latch = Concurrent::CountDownLatch.new(1)
-        task = ScheduledTask.new(0.1){ latch.count_down; raise rejected_reason }.execute
-        latch.wait(1)
-        sleep(0.1)
-        task
+        ScheduledTask.new(0, executor: :immediate){ raise rejected_reason }.execute
       end
 
       def dereferenceable_subject(value, opts = {})

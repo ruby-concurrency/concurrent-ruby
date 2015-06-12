@@ -24,11 +24,11 @@ module Concurrent
     end
 
     let(:fulfilled_subject) do
-      Future.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
+      Future.new(executor: :immediate){ fulfilled_value }.execute
     end
 
     let(:rejected_subject) do
-      Future.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
+      Future.new(executor: :immediate){ raise rejected_reason }.execute
     end
 
     it_should_behave_like :ivar do

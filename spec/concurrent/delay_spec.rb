@@ -26,12 +26,12 @@ module Concurrent
       end
 
       let(:fulfilled_subject) do
-        delay = Delay.new(executor: :fast){ fulfilled_value }
+        delay = Delay.new{ fulfilled_value }
         delay.tap{ delay.value }
       end
 
       let(:rejected_subject) do
-        delay = Delay.new(executor: :fast){ raise rejected_reason }
+        delay = Delay.new{ raise rejected_reason }
         delay.tap{ delay.value }
       end
 
