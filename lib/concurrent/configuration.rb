@@ -131,8 +131,6 @@ module Concurrent
   # Global thread pool user for global *timers*.
   #
   # @return [Concurrent::TimerSet] the thread pool
-  #
-  # @see Concurrent::timer
   def self.global_timer_set
     GLOBAL_TIMER_SET.value
   end
