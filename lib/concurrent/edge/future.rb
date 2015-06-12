@@ -335,11 +335,11 @@ module Concurrent
 
       private
 
-      def wait_until_complete(timeout)
+      def wait_until_complete(timeout, &block)
         while true
-          last_waiter = @Waiters.peek # waiters' state before completion
           break if completed?
 
+          last_waiter = @Waiters.peek # waiters' state before completion
           # synchronize so it cannot be signaled before it waits
           synchronize do
             # ok only if completing thread did not start signaling
@@ -348,7 +348,9 @@ module Concurrent
           end
           break
         end
-        self
+        if completed?
+          return block ? block.call : self
+        end
       end
 
       def complete_state
@@ -486,22 +488,25 @@ module Concurrent
       # @return [Object] the value of the Future when success
       def value(timeout = nil)
         touch
-        wait_until_complete timeout
-        @State.get.value
+        wait_until_complete timeout do
+          @State.get.value
+        end
       end
 
       # @return [Exception] the reason of the Future's failure
       def reason(timeout = nil)
         touch
-        wait_until_complete timeout
-        @State.get.reason
+        wait_until_complete timeout do
+          @State.get.reason
+        end
       end
 
       # @return [Array(Boolean, Object, Exception)] triplet of success, value, reason
       def result(timeout = nil)
         touch
-        wait_until_complete timeout
-        @State.get.result
+        wait_until_complete timeout do
+          @State.get.result
+        end
       end
 
       # Wait until Future is #complete?
@@ -519,8 +524,9 @@ module Concurrent
       # @return [Object]
       def value!(timeout = nil)
         touch
-        wait_until_complete!(timeout)
-        @State.get.value
+        wait_until_complete!(timeout) do
+          @State.get.value
+        end
       end
 
       # @example allows failed Future to be risen
@@ -626,10 +632,11 @@ module Concurrent
 
       private
 
-      def wait_until_complete!(timeout = nil)
-        wait_until_complete(timeout)
-        raise self if failed?
-        self
+      def wait_until_complete!(timeout = nil, &block)
+        wait_until_complete(timeout) do
+          raise self if failed?
+          block ? block.call : self
+        end
       end
 
       def complete_state(success, value, reason)

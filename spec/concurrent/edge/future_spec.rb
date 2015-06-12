@@ -171,21 +171,24 @@ describe 'Concurrent::Edge futures' do
       expect([queue.pop, queue.pop, queue.pop, queue.pop].sort).to eq [:async, :async, :sync, :sync]
     end
 
-    it 'supports setting timeout while waiting' do
-      start_latch = Concurrent::CountDownLatch.new
-      end_latch = Concurrent::CountDownLatch.new
+    [:wait, :wait!, :value, :value!, :reason, :result].each do |method_with_timeout|
+      it "#{ method_with_timeout } supports setting timeout" do
+        start_latch = Concurrent::CountDownLatch.new
+        end_latch = Concurrent::CountDownLatch.new
 
-      future = Concurrent.future do
-        start_latch.count_down
-        end_latch.wait(1)
+        future = Concurrent.future do
+          start_latch.count_down
+          end_latch.wait(1)
+        end
+
+        start_latch.wait(1)
+        future.send(method_with_timeout, 0.1)
+        expect(future).not_to be_completed
+        end_latch.count_down
+        future.wait
       end
-
-      start_latch.wait(1)
-      future.wait(0.1)
-      expect(future).not_to be_completed
-      end_latch.count_down
-      future.wait
     end
+
 
     it 'chains' do
       future0 = Concurrent.future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
