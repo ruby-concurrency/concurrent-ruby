@@ -297,13 +297,14 @@ module Concurrent
 
     # @!visibility private
     def schedule_next_task(interval = execution_interval)
-      Concurrent::timer(interval, Concurrent::Event.new, &method(:execute_task))
+      ScheduledTask.execute(interval, args: [Concurrent::Event.new], &method(:execute_task))
+      nil
     end
 
     # @!visibility private
     def execute_task(completion)
-      return unless @running.true?
-      Concurrent::timer(execution_interval, completion, &method(:timeout_task))
+      return nil unless @running.true?
+      ScheduledTask.execute(execution_interval, args: [completion], &method(:timeout_task))
       _success, value, reason = @executor.execute(self)
       if completion.try?
         self.value = value
@@ -313,6 +314,7 @@ module Concurrent
           [time, self.value, reason]
         end
       end
+      nil
     end
 
     # @!visibility private
