@@ -5,13 +5,13 @@ shared_examples :dereferenceable do
     expect(value).not_to receive(:dup).with(any_args)
 
     subject = dereferenceable_subject(value)
-    expect(subject.value).to eq 'value'
+    subject.value
 
     subject = dereferenceable_subject(value, dup_on_deref: false)
-    expect(subject.value).to eq 'value'
+    subject.value
 
     subject = dereferenceable_subject(value, dup: false)
-    expect(subject.value).to eq 'value'
+    subject.value
   end
 
   it 'calls #dup when the :dup_on_deref option is true' do
@@ -19,11 +19,9 @@ shared_examples :dereferenceable do
 
     subject = dereferenceable_subject(value, dup_on_deref: true)
     expect(subject.value.object_id).not_to eq value.object_id
-    expect(subject.value).to eq 'value'
 
     subject = dereferenceable_subject(value, dup: true)
     expect(subject.value.object_id).not_to eq value.object_id
-    expect(subject.value).to eq 'value'
   end
 
   it 'defaults :freeze_on_deref to false' do
@@ -31,13 +29,13 @@ shared_examples :dereferenceable do
     expect(value).not_to receive(:freeze).with(any_args)
 
     subject = dereferenceable_subject(value)
-    expect(subject.value).to eq 'value'
+    subject.value
 
     subject = dereferenceable_subject(value, freeze_on_deref: false)
-    expect(subject.value).to eq 'value'
+    subject.value
 
     subject = dereferenceable_subject(value, freeze: false)
-    expect(subject.value).to eq 'value'
+    subject.value
   end
 
   it 'calls #freeze when the :freeze_on_deref option is true' do
@@ -45,11 +43,9 @@ shared_examples :dereferenceable do
 
     subject = dereferenceable_subject(value, freeze_on_deref: true)
     expect(subject.value).to be_frozen
-    expect(subject.value).to eq 'value'
 
     subject = dereferenceable_subject(value, freeze: true)
     expect(subject.value).to be_frozen
-    expect(subject.value).to eq 'value'
   end
 
   it 'defaults :copy_on_deref to nil' do
@@ -57,15 +53,12 @@ shared_examples :dereferenceable do
 
     subject = dereferenceable_subject(value)
     expect(subject.value.object_id).to eq(value.object_id)
-    expect(subject.value).to eq 'value'
 
     subject = dereferenceable_subject(value, copy_on_deref: nil)
     expect(subject.value.object_id).to eq(value.object_id)
-    expect(subject.value).to eq 'value'
 
     subject = dereferenceable_subject(value, copy: nil)
     expect(subject.value.object_id).to eq(value.object_id)
-    expect(subject.value).to eq 'value'
   end
 
   it 'calls the block when the :copy_on_deref option is passed a proc' do
