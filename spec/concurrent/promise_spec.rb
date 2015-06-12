@@ -13,15 +13,17 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Promise.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
+      executor = Concurrent::SingleThreadExecutor.new
+      executor.post{ sleep(5) }
+      Promise.execute(executor: executor){ fulfilled_value }
     end
 
     let(:fulfilled_subject) do
-      Promise.fulfill(fulfilled_value, executor: executor)
+      Promise.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
     end
 
     let(:rejected_subject) do
-      Promise.reject(rejected_reason, executor: executor)
+      Promise.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
     end
 
     it_should_behave_like :ivar do
@@ -149,13 +151,21 @@ module Concurrent
       context 'pending' do
 
         it 'sets the promise to :pending' do
-          p = pending_subject.execute
+          latch = CountDownLatch.new
+          p = Promise.new{ latch.wait(1) }.execute
           expect(p).to be_pending
+          latch.count_down
         end
 
-        it 'does not posts again' do
+        it 'does not post again' do
+          executor = SimpleExecutorService.new
           expect(executor).to receive(:post).with(any_args).once
-          pending_subject.execute
+
+          latch = CountDownLatch.new
+          p = Promise.new(executor: executor){ latch.wait(1) }.execute
+
+          10.times { p.execute }
+          latch.count_down
         end
       end
 
