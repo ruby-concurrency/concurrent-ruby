@@ -13,15 +13,17 @@ module Concurrent
     let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
     let(:pending_subject) do
-      Promise.new(executor: executor){ sleep(0.1); fulfilled_value }.execute
+      executor = Concurrent::SingleThreadExecutor.new
+      executor.post{ sleep(5) }
+      Promise.execute(executor: executor){ fulfilled_value }
     end
 
     let(:fulfilled_subject) do
-      Promise.fulfill(fulfilled_value, executor: executor)
+      Promise.new(executor: executor){ fulfilled_value }.execute.tap{ sleep(0.1) }
     end
 
     let(:rejected_subject) do
-      Promise.reject(rejected_reason, executor: executor)
+      Promise.new(executor: executor){ raise rejected_reason }.execute.tap{ sleep(0.1) }
     end
 
     it_should_behave_like :ivar do
@@ -97,28 +99,27 @@ module Concurrent
 
       describe '.new' do
         it 'should return an unscheduled Promise' do
-          p = Promise.new(executor: executor){ nil }
+          p = Promise.new(executor: :immediate){ nil }
           expect(p).to be_unscheduled
         end
       end
 
       describe '.execute' do
         it 'creates a new Promise' do
-          p = Promise.execute(executor: executor){ nil }
+          p = Promise.execute(executor: :immediate){ nil }
           expect(p).to be_a(Promise)
         end
 
         it 'passes the block to the new Promise' do
-          p = Promise.execute(executor: executor){ 20 }
-          sleep(0.1)
+          p = Promise.execute(executor: :immediate){ 20 }
           expect(p.value).to eq 20
         end
 
         it 'calls #execute on the new Promise' do
           p = double('promise')
-          allow(Promise).to receive(:new).with({executor: executor}).and_return(p)
+          allow(Promise).to receive(:new).with(any_args).and_return(p)
           expect(p).to receive(:execute).with(no_args)
-          Promise.execute(executor: executor){ nil }
+          Promise.execute(executor: :immediate){ nil }
         end
       end
     end
@@ -128,12 +129,21 @@ module Concurrent
       context 'unscheduled' do
 
         it 'sets the promise to :pending' do
-          p = Promise.new(executor: executor){ sleep(0.1) }.execute
+          start_latch = CountDownLatch.new
+          end_latch = CountDownLatch.new
+          p = Promise.new(executor: executor) do
+            start_latch.count_down
+            end_latch.wait(1)
+          end
+          start_latch.wait(1)
+          p.execute
           expect(p).to be_pending
+          end_latch.count_down
         end
 
         it 'posts the block given in construction' do
-          expect(executor).to receive(:post).with(any_args)
+          executor = ImmediateExecutor.new
+          expect(executor).to receive(:post).with(any_args).and_call_original
           Promise.new(executor: executor){ nil }.execute
         end
       end
@@ -141,39 +151,48 @@ module Concurrent
       context 'pending' do
 
         it 'sets the promise to :pending' do
-          p = pending_subject.execute
+          latch = CountDownLatch.new
+          p = Promise.new{ latch.wait(1) }.execute
           expect(p).to be_pending
+          latch.count_down
         end
 
-        it 'does not posts again' do
+        it 'does not post again' do
+          executor = SimpleExecutorService.new
           expect(executor).to receive(:post).with(any_args).once
-          pending_subject.execute
+
+          latch = CountDownLatch.new
+          p = Promise.new(executor: executor){ latch.wait(1) }.execute
+
+          10.times { p.execute }
+          latch.count_down
         end
       end
 
       describe 'with children' do
 
-        let(:root) { Promise.new(executor: executor){ sleep(0.1); nil } }
-        let(:c1) { root.then { sleep(0.1); nil } }
-        let(:c2) { root.then { sleep(0.1); nil } }
-        let(:c2_1) { c2.then { sleep(0.1); nil } }
+        let(:start_latch) { CountDownLatch.new(4) }
+        let(:end_latch) { CountDownLatch.new(1) }
+        let(:root) { Promise.new(executor: executor){ start_latch.count_down; end_latch.wait(5) } }
+        let(:c1) { root.then { start_latch.count_down; end_latch.wait(5) } }
+        let(:c2) { root.then { start_latch.count_down; end_latch.wait(5) } }
+        let(:c2_1) { c2.then { start_latch.count_down; end_latch.wait(5) } }
 
         context 'when called on the root' do
           it 'should set all promises to :pending' do
             root.execute
-
-            expect(c1).to be_pending
-            expect(c2).to be_pending
-            expect(c2_1).to be_pending
+            start_latch.wait(1)
             [root, c1, c2, c2_1].each { |p| expect(p).to be_pending }
+            end_latch.count_down
           end
         end
 
         context 'when called on a child' do
           it 'should set all promises to :pending' do
             c2_1.execute
-
+            start_latch.wait(1)
             [root, c1, c2, c2_1].each { |p| expect(p).to be_pending }
+            end_latch.count_down
           end
         end
       end
@@ -298,28 +317,28 @@ module Concurrent
       end
 
       it 'succeeds if both promises succeed' do
-        child = Promise.new(executor: executor) { 1 }.
-          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute.wait
+        child = Promise.new(executor: :immediate) { 1 }.
+          flat_map { |v| Promise.new(executor: :immediate) { v + 10 } }.execute.wait
 
         expect(child.value!).to eq(11)
       end
 
       it 'fails if the left promise fails' do
-        child = Promise.new(executor: executor) { fail }.
-          flat_map { |v| Promise.new(executor: executor) { v + 10 } }.execute.wait
+        child = Promise.new(executor: :immediate) { fail }.
+          flat_map { |v| Promise.new(executor: :immediate) { v + 10 } }.execute.wait
 
         expect(child).to be_rejected
       end
 
       it 'fails if the right promise fails' do
-        child = Promise.new(executor: executor) { 1 }.
-          flat_map { |v| Promise.new(executor: executor) { fail } }.execute.wait
+        child = Promise.new(executor: :immediate) { 1 }.
+          flat_map { |v| Promise.new(executor: :immediate) { fail } }.execute.wait
 
         expect(child).to be_rejected
       end
 
       it 'fails if the generating block fails' do
-        child = Promise.new(executor: executor) { }.flat_map { fail }.execute.wait
+        child = Promise.new(executor: :immediate) { }.flat_map { fail }.execute.wait
 
         expect(child).to be_rejected
       end
@@ -327,9 +346,9 @@ module Concurrent
     end
 
     describe '#zip' do
-      let(:promise1) { Promise.new(executor: executor) { 1 } }
-      let(:promise2) { Promise.new(executor: executor) { 2 } }
-      let(:promise3) { Promise.new(executor: executor) { [3] } }
+      let(:promise1) { Promise.new(executor: :immediate) { 1 } }
+      let(:promise2) { Promise.new(executor: :immediate) { 2 } }
+      let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
       it 'yields the results as an array' do
         composite = promise1.zip(promise2, promise3).execute.wait
@@ -345,9 +364,9 @@ module Concurrent
     end
 
     describe '.zip' do
-      let(:promise1) { Promise.new(executor: executor) { 1 } }
-      let(:promise2) { Promise.new(executor: executor) { 2 } }
-      let(:promise3) { Promise.new(executor: executor) { [3] } }
+      let(:promise1) { Promise.new(executor: :immediate) { 1 } }
+      let(:promise2) { Promise.new(executor: :immediate) { 2 } }
+      let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
       it 'yields the results as an array' do
         composite = Promise.zip(promise1, promise2, promise3).execute.wait
@@ -364,9 +383,9 @@ module Concurrent
 
     describe 'aggregators' do
 
-      let(:promise1) { Promise.new(executor: executor) { 1 } }
-      let(:promise2) { Promise.new(executor: executor) { 2 } }
-      let(:promise3) { Promise.new(executor: executor) { [3] } }
+      let(:promise1) { Promise.new(executor: :immediate) { 1 } }
+      let(:promise2) { Promise.new(executor: :immediate) { 2 } }
+      let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
       describe '.all?' do
 
@@ -386,7 +405,7 @@ module Concurrent
 
           composite = Promise.all?(promise1, promise2, promise3).
             then { counter.up; latch.count_down }.
-        rescue { counter.down; latch.count_down }.
+            rescue { counter.down; latch.count_down }.
           execute
 
           latch.wait(1)
@@ -400,7 +419,7 @@ module Concurrent
 
           composite = Promise.all?.
             then { counter.up; latch.count_down }.
-        rescue { counter.down; latch.count_down }.
+            rescue { counter.down; latch.count_down }.
           execute
 
           latch.wait(1)
@@ -414,7 +433,7 @@ module Concurrent
 
           composite = Promise.all?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
-        rescue { counter.down; latch.count_down }.
+            rescue { counter.down; latch.count_down }.
           execute
 
           latch.wait(1)
@@ -441,7 +460,7 @@ module Concurrent
 
           composite = Promise.any?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
-        rescue { counter.down; latch.count_down }.
+            rescue { counter.down; latch.count_down }.
           execute
 
           latch.wait(1)
@@ -455,7 +474,7 @@ module Concurrent
 
           composite = Promise.any?.
             then { counter.up; latch.count_down }.
-        rescue { counter.down; latch.count_down }.
+            rescue { counter.down; latch.count_down }.
           execute
 
           latch.wait(1)
@@ -469,7 +488,7 @@ module Concurrent
 
           composite = Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
-        rescue { counter.down; latch.count_down }.
+            rescue { counter.down; latch.count_down }.
           execute
 
           latch.wait(1)
@@ -500,7 +519,7 @@ module Concurrent
         end
 
         it 'can be called with a block' do
-          p = Promise.new(executor: executor)
+          p = Promise.new(executor: :immediate)
           ch = p.then(&:to_s)
           p.set { :value }
 
@@ -533,46 +552,40 @@ module Concurrent
 
       it 'passes the result of each block to all its children' do
         expected = nil
-        Promise.new(executor: executor){ 20 }.then{ |result| expected = result }.execute
-        sleep(0.1)
+        Promise.new(executor: :immediate){ 20 }.then{ |result| expected = result }.execute
         expect(expected).to eq 20
       end
 
       it 'sets the promise value to the result if its block' do
-        root = Promise.new(executor: executor){ 20 }
+        root = Promise.new(executor: :immediate){ 20 }
         p = root.then{ |result| result * 2}.execute
-        sleep(0.1)
         expect(root.value).to eq 20
         expect(p.value).to eq 40
       end
 
       it 'sets the promise state to :fulfilled if the block completes' do
-        p = Promise.new(executor: executor){ 10 * 2 }.then{|result| result * 2}.execute
-        sleep(0.1)
+        p = Promise.new(executor: :immediate){ 10 * 2 }.then{|result| result * 2}.execute
         expect(p).to be_fulfilled
       end
 
       it 'passes the last result through when a promise has no block' do
         expected = nil
-        Promise.new(executor: executor){ 20 }.then(Proc.new{}).then{|result| expected = result}.execute
-        sleep(0.1)
+        Promise.new(executor: :immediate){ 20 }.then(Proc.new{}).then{|result| expected = result}.execute
         expect(expected).to eq 20
       end
 
       it 'uses result as fulfillment value when a promise has no block' do
-        p = Promise.new(executor: executor){ 20 }.then(Proc.new{}).execute
-        sleep(0.1)
+        p = Promise.new(executor: :immediate){ 20 }.then(Proc.new{}).execute
         expect(p.value).to eq 20
       end
 
       it 'can manage long chain' do
-        root = Promise.new(executor: executor){ 20 }
+        root = Promise.new(executor: :immediate){ 20 }
         p1 = root.then { |b| b * 3 }
         p2 = root.then { |c| c + 2 }
         p3 = p1.then { |d| d + 7 }
 
         root.execute
-        sleep(0.1)
 
         expect(root.value).to eq 20
         expect(p1.value).to eq 60
@@ -585,27 +598,24 @@ module Concurrent
 
       it 'passes the reason to all its children' do
         expected = nil
-        Promise.new(executor: executor){ raise ArgumentError }.then(Proc.new{ |reason| expected = reason }).execute
-        sleep(0.1)
+        handler = proc { |reason| expected = reason }
+        Promise.new(executor: :immediate){ raise ArgumentError }.then(handler).execute
         expect(expected).to be_a ArgumentError
       end
 
       it 'sets the promise value to the result if its block' do
-        root = Promise.new(executor: executor){ raise ArgumentError }
+        root = Promise.new(executor: :immediate){ raise ArgumentError }
         p = root.then(Proc.new{ |reason| 42 }).execute
-        sleep(0.1)
         expect(p.value).to eq 42
       end
 
       it 'sets the promise state to :rejected if the block completes' do
-        p = Promise.new(executor: executor){ raise ArgumentError }.execute
-        sleep(0.1)
+        p = Promise.new(executor: :immediate){ raise ArgumentError }.execute
         expect(p).to be_rejected
       end
 
       it 'uses reason as rejection reason when a promise has no rescue callable' do
-        p = Promise.new(executor: ImmediateExecutor.new){ raise ArgumentError }.then{ |val| val }.execute
-        sleep(0.1)
+        p = Promise.new(executor: :immediate){ raise ArgumentError }.then{ |val| val }.execute
         expect(p).to be_rejected
         expect(p.reason).to be_a ArgumentError
       end
