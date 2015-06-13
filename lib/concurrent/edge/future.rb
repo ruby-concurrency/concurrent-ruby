@@ -121,6 +121,7 @@ module Concurrent
     class Event < Synchronization::Object
       include Concern::Deprecation
 
+      # @!visibility private
       class State
         def completed?
           raise NotImplementedError
@@ -131,6 +132,7 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       class Pending < State
         def completed?
           false
@@ -141,6 +143,7 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       class Completed < State
         def completed?
           true
@@ -151,7 +154,9 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       PENDING   = Pending.new
+      # @!visibility private
       COMPLETED = Completed.new
 
       def initialize(promise, default_executor)
@@ -192,11 +197,14 @@ module Concurrent
 
       # Wait until Event is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
-      # @return [Event] self
+      # @return [Event, true, false] self or true/false if timeout is used
+      # @!macro [attach] edge.periodical_wait
+      #   @note a thread should wait only once! For repeated checking use faster `completed?` check.
+      #     If thread waits periodically it will dangerously grow the waiters stack.
       def wait(timeout = nil)
         touch
-        wait_until_complete timeout
-        self
+        result = wait_until_complete(timeout)
+        timeout ? result : self
       end
 
       # @!visibility private
@@ -335,20 +343,19 @@ module Concurrent
 
       private
 
+      # @return [true, false]
       def wait_until_complete(timeout)
         while true
           last_waiter = @Waiters.peek # waiters' state before completion
-          break if completed?
+          return true if completed?
 
           # synchronize so it cannot be signaled before it waits
           synchronize do
             # ok only if completing thread did not start signaling
             next unless @Waiters.compare_and_push last_waiter, Thread.current
-            ns_wait_until(timeout) { completed? }
+            return ns_wait_until(timeout) { completed? }
           end
-          break
         end
-        self
       end
 
       def complete_state
@@ -386,6 +393,7 @@ module Concurrent
 
     # Represents a value which will become available in future. May fail with a reason instead.
     class Future < Event
+      # @!visibility private
       class CompletedWithResult < Completed
         def result
           [success?, value, reason]
@@ -404,6 +412,7 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       class Success < CompletedWithResult
         def initialize(value)
           @Value = value
@@ -430,12 +439,14 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       class SuccessArray < Success
         def apply(block)
           block.call *value
         end
       end
 
+      # @!visibility private
       class Failed < CompletedWithResult
         def initialize(reason)
           @Reason = reason
@@ -468,7 +479,7 @@ module Concurrent
       # Has Future been success?
       # @return [Boolean]
       def success?(state = @State.get)
-        state.success?
+        state.completed? && state.success?
       end
 
       def fulfilled?
@@ -479,7 +490,7 @@ module Concurrent
       # Has Future been failed?
       # @return [Boolean]
       def failed?(state = @State.get)
-        !success?(state)
+        state.completed? && !state.success?
       end
 
       def rejected?
@@ -487,44 +498,52 @@ module Concurrent
         failed?
       end
 
-      # @return [Object] the value of the Future when success
+      # @return [Object, nil] the value of the Future when success, nil on timeout
+      # @!macro [attach] edge.timeout_nil
+      #   @note If the Future can have value `nil` then it cannot be distinquished from `nil` returned on timeout.
+      #     In this case is better to use first `wait` then `value` (or similar).
+      # @!macro edge.periodical_wait
       def value(timeout = nil)
         touch
-        wait_until_complete timeout
-        @State.get.value
+        @State.get.value if wait_until_complete timeout
       end
 
-      # @return [Exception] the reason of the Future's failure
+      # @return [Exception, nil] the reason of the Future's failure
+      # @!macro edge.timeout_nil
+      # @!macro edge.periodical_wait
       def reason(timeout = nil)
         touch
-        wait_until_complete timeout
-        @State.get.reason
+        @State.get.reason if wait_until_complete timeout
       end
 
-      # @return [Array(Boolean, Object, Exception)] triplet of success, value, reason
+      # @return [Array(Boolean, Object, Exception), nil] triplet of success, value, reason
+      # @!macro edge.timeout_nil
+      # @!macro edge.periodical_wait
       def result(timeout = nil)
         touch
-        wait_until_complete timeout
-        @State.get.result
+        @State.get.result if wait_until_complete timeout
       end
 
       # Wait until Future is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
       # @raise reason on failure
-      # @return [Event] self
+      # @return [Event, true, false] self or true/false if timeout is used
+      # @!macro edge.periodical_wait
       def wait!(timeout = nil)
         touch
-        wait_until_complete! timeout
+        result = wait_until_complete!(timeout)
+        timeout ? result : self
       end
 
       # Wait until Future is #complete?
       # @param [Numeric] timeout the maximum time in second to wait.
       # @raise reason on failure
-      # @return [Object]
+      # @return [Object, nil]
+      # @!macro edge.timeout_nil
+      # @!macro edge.periodical_wait
       def value!(timeout = nil)
         touch
-        wait_until_complete!(timeout)
-        @State.get.value
+        @State.get.value if wait_until_complete! timeout
       end
 
       # @example allows failed Future to be risen
@@ -631,9 +650,9 @@ module Concurrent
       private
 
       def wait_until_complete!(timeout = nil)
-        wait_until_complete(timeout)
+        result = wait_until_complete(timeout)
         raise self if failed?
-        self
+        result
       end
 
       def complete_state(success, value, reason)
