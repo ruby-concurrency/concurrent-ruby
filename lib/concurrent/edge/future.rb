@@ -292,7 +292,7 @@ module Concurrent
           synchronize { ns_broadcast } if @Waiters.clear
           call_callbacks
         else
-          Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
+          Concurrent::MultipleAssignmentError.new('Event can be completed only once') if raise_on_reassign
           return false
         end
         self
@@ -622,7 +622,12 @@ module Concurrent
           synchronize { ns_broadcast }
           call_callbacks new_state
         else
-          raise reason || Concurrent::MultipleAssignmentError.new('multiple assignment') if raise_on_reassign
+          if raise_on_reassign
+            log ERROR, 'Edge::Future', reason if reason # print otherwise hidden error
+            raise(Concurrent::MultipleAssignmentError.new(
+                      "Future can be completed only once. Current result is #{result}, " +
+                          "trying to set #{[success, value, reason]}"))
+          end
           return false
         end
         self
