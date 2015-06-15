@@ -1,5 +1,6 @@
 require 'fileutils'
 
+$:.unshift(File.expand_path('../../../lib', __FILE__))
 require 'concurrent/utility/native_extension_loader'
 
 EXTENSION_NAME = 'extension'
