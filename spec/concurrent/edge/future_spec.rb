@@ -19,10 +19,7 @@ describe 'Concurrent::Edge futures' do
       future = Concurrent.future { 1 + 1 }
       expect(future.value!).to eq 2
 
-      future = Concurrent.future(1) { |v| v + 1 }
-      expect(future.value!).to eq 2
-
-      future = Concurrent.future(1, 1, &:+)
+      future = Concurrent.completed_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
   end
@@ -33,11 +30,7 @@ describe 'Concurrent::Edge futures' do
       expect(delay.completed?).to eq false
       expect(delay.value!).to eq 2
 
-      delay = Concurrent.delay(1) { |v| v + 1 }
-      expect(delay.completed?).to eq false
-      expect(delay.value!).to eq 2
-
-      delay = Concurrent.delay(1, 1, &:+)
+      delay = Concurrent.completed_future(1).delay.then { |v| v + 1 }
       expect(delay.completed?).to eq false
       expect(delay.value!).to eq 2
     end
@@ -55,7 +48,11 @@ describe 'Concurrent::Edge futures' do
 
       start  = Time.now.to_f
       queue  = Queue.new
-      future = Concurrent.schedule(0.1, 1, 1, &:+).then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
+      future = Concurrent.
+          completed_future(1).
+          schedule(0.1).
+          then { |v| v + 1 }.
+          then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
@@ -76,6 +73,7 @@ describe 'Concurrent::Edge futures' do
       expect(queue.pop).to eq 2
       expect(queue.pop).to be_between(0.2, 0.3)
     end
+
   end
 
   describe '.event' do
@@ -139,23 +137,30 @@ describe 'Concurrent::Edge futures' do
       expect(q.pop).to eq [1, 2]
       z1.then { |a, b, c| q << [a, b, c] }
       expect(q.pop).to eq [1, 2, nil]
+      z2.then { |a, b, c| q << [a, b, c] }
+      expect(q.pop).to eq [1, 2, 3]
 
       expect(z1.then { |a, b| a+b }.value!).to eq 3
       expect(z1.then { |a, b| a+b }.value!).to eq 3
       expect(z1.then(&:+).value!).to eq 3
       expect(z2.then { |a, b, c| a+b+c }.value!).to eq 6
-    end
-  end
 
-  it 'auto explodes arrays' do
-    f = Concurrent.future { [1, 2] }
-    q = Queue.new
-    f.then { |*args| q << args }
-    expect(q.pop).to eq [1, 2]
-    f.then { |a, b| q << [a, b] }
-    expect(q.pop).to eq [1, 2]
-    expect(Concurrent.future { [1, 2] }.then(&:+).value!).to eq 3
-    expect(Concurrent.future { [1, 2] }.then { |a, b| a+b }.value!).to eq 3
+      expect(Concurrent.future { 1 }.delay).to be_a_kind_of Concurrent::Edge::Future
+      expect(Concurrent.future { 1 }.delay.wait!).to be_completed
+      expect(Concurrent.event.complete.delay).to be_a_kind_of Concurrent::Edge::Event
+      expect(Concurrent.event.complete.delay.wait).to be_completed
+
+      a = Concurrent.future { 1 }
+      b = Concurrent.future { raise 'b' }
+      c = Concurrent.future { raise 'c' }
+
+      Concurrent.zip(a, b, c).chain { |*args| q << args }
+      expect(q.pop.flatten.map(&:class)).to eq [FalseClass, Fixnum, NilClass, NilClass, NilClass, RuntimeError, RuntimeError]
+      Concurrent.zip(a, b, c).rescue { |*args| q << args }
+      expect(q.pop.map(&:class)).to eq [NilClass, RuntimeError, RuntimeError]
+
+      expect(Concurrent.zip.wait(0.1)).to eq true
+    end
   end
 
   describe 'Future' do
@@ -187,7 +192,7 @@ describe 'Concurrent::Edge futures' do
     [:wait, :wait!, :value, :value!, :reason, :result].each do |method_with_timeout|
       it "#{ method_with_timeout } supports setting timeout" do
         start_latch = Concurrent::CountDownLatch.new
-        end_latch = Concurrent::CountDownLatch.new
+        end_latch   = Concurrent::CountDownLatch.new
 
         future = Concurrent.future do
           start_latch.count_down
