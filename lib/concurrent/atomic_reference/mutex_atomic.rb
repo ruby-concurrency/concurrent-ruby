@@ -42,14 +42,14 @@ module Concurrent
 
     # @!macro atomic_reference_method_compare_and_set
     def _compare_and_set(old_value, new_value)
-      return false unless @mutex.try_lock
-      begin
-        return false unless @value.equal? old_value
-        @value = new_value
-      ensure
-        @mutex.unlock
+      @mutex.synchronize do
+        if @value == old_value
+          @value = new_value
+          true
+        else
+          false
+        end
       end
-      true
     end
   end
 end
