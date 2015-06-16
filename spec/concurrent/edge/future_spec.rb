@@ -160,15 +160,28 @@ describe 'Concurrent::Edge futures' do
 
   describe 'Future' do
     it 'has sync and async callbacks' do
-      queue  = Queue.new
-      future = Concurrent.future { :value } # executed on FAST_EXECUTOR pool by default
-      future.on_completion(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
-      future.on_completion! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
-      future.on_success(:io) { queue.push(:async) } # async callback overridden to execute on IO_EXECUTOR pool
-      future.on_success! { queue.push(:sync) } # sync callback executed right after completion in the same thread-pool
+      callbacks_tester = ->(future) do
+        queue  = Queue.new
+        future.on_completion(:io) { |result| queue.push("async on_completion #{ result.inspect }") }
+        future.on_completion! { |result| queue.push("sync on_completion #{ result.inspect }") }
+        future.on_success(:io) { |value| queue.push("async on_success #{ value.inspect }") }
+        future.on_success! { |value| queue.push("sync on_success #{ value.inspect }") }
+        future.on_failure(:io) { |reason| queue.push("async on_failure #{ reason.inspect }") }
+        future.on_failure! { |reason| queue.push("sync on_failure #{ reason.inspect }") }
+        future.wait
+        [queue.pop, queue.pop, queue.pop, queue.pop].sort
+      end
+      callback_results = callbacks_tester.call(Concurrent.future { :value })
+      expect(callback_results).to eq ["async on_completion [true, :value, nil]",
+                                      "async on_success :value",
+                                      "sync on_completion [true, :value, nil]",
+                                      "sync on_success :value"]
 
-      expect(future.value!).to eq :value
-      expect([queue.pop, queue.pop, queue.pop, queue.pop].sort).to eq [:async, :async, :sync, :sync]
+      callback_results = callbacks_tester.call(Concurrent.future { raise 'error' })
+      expect(callback_results).to eq ["async on_completion [false, nil, #<RuntimeError: error>]",
+                                      "async on_failure #<RuntimeError: error>",
+                                      "sync on_completion [false, nil, #<RuntimeError: error>]",
+                                      "sync on_failure #<RuntimeError: error>"]
     end
 
     it 'supports setting timeout while waiting' do

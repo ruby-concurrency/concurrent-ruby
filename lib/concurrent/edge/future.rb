@@ -456,6 +456,10 @@ module Concurrent
         def to_sym
           :failed
         end
+
+        def apply(block)
+          block.call reason
+        end
       end
 
       # @!method state
