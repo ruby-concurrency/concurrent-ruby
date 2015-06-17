@@ -3,6 +3,23 @@ require 'thread'
 
 describe 'Concurrent::Edge futures' do
 
+  describe 'chain_completable' do
+    it 'event' do
+      b = Concurrent.event
+      a = Concurrent.event.chain_completable(b)
+      a.complete
+      expect(b).to be_completed
+    end
+
+    it 'future' do
+      b = Concurrent.future
+      a = Concurrent.future.chain_completable(b)
+      a.success :val
+      expect(b).to be_completed
+      expect(b.value).to eq :val
+    end
+  end
+
   describe '.post' do
     it 'executes tasks asynchronously' do
       queue = Queue.new

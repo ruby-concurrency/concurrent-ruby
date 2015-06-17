@@ -223,6 +223,12 @@ module Concurrent
 
       alias_method :then, :chain
 
+      def chain_completable(completable_event)
+        on_completion! { completable_event.complete_with COMPLETED }
+      end
+
+      alias_method :tangle, :chain_completable
+
       # Zip with future producing new Future
       # @return [Event]
       def zip(other)
@@ -605,6 +611,12 @@ module Concurrent
       def then_ask(actor)
         self.then { |v| actor.ask(v) }.flat
       end
+
+      def chain_completable(completable_future)
+        on_completion! { completable_future.complete_with internal_state }
+      end
+
+      alias_method :tangle, :chain_completable
 
       # @yield [reason] executed only on parent failure
       # @return [Future]
