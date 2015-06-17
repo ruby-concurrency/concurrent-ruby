@@ -33,6 +33,10 @@ module Concurrent
     #   given (old) value
     # @yieldparam [Object] old_value the starting value of the atomic reference
     #
+    # @note This method was altered to avoid raising an exception by default.
+    # Instead, this method now returns `nil` in case of failure. For more info,
+    # please see: https://github.com/ruby-concurrency/concurrent-ruby/pull/336
+    #
     # @return [Object] the new value, or nil if update failed
     def try_update
       old_value = get
@@ -52,6 +56,11 @@ module Concurrent
     # @yield [Object] Calculate a new value for the atomic reference using
     #   given (old) value
     # @yieldparam [Object] old_value the starting value of the atomic reference
+    #
+    # @note This behavior mimics the behavior of the original
+    # `AtomicReference#try_update` API. The reason this was changed was to
+    # avoid raising exceptions (which are inherently slow) by default. For more
+    # info: https://github.com/ruby-concurrency/concurrent-ruby/pull/336
     #
     # @return [Object] the new value
     #
