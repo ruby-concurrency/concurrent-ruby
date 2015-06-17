@@ -19,7 +19,7 @@ raise future rescue $!
 
 ### Chaining
 
-head    = Concurrent.future { 1 } #
+head    = Concurrent.completed_future 1 #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
 branch1.zip(branch2).value!
@@ -28,10 +28,6 @@ branch1.zip(branch2).value!
 Concurrent.zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # pick only first completed
 (branch1 | branch2).value!
-
-# auto splat arrays for blocks
-Concurrent.future { [1, 2] }.then(&:+).value!
-
 
 ### Error handling
 
@@ -94,6 +90,7 @@ scheduled.value # returns after another 0.1sec
 
 future = Concurrent.future
 event  = Concurrent.event
+# Don't forget to keep the reference, `Concurrent.future.then { |v| v }` is incompletable
 
 # will be blocked until completed
 t1     = Thread.new { future.value } #
