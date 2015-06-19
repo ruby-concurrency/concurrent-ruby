@@ -43,7 +43,7 @@ module Concurrent
     # @!macro atomic_reference_method_compare_and_set
     def _compare_and_set(old_value, new_value)
       @mutex.synchronize do
-        if @value == old_value
+        if @value.equal? old_value
           @value = new_value
           true
         else
