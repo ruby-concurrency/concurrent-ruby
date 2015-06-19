@@ -1,5 +1,10 @@
 ### Next Release v0.9.0 (Target Date: 7 June 2015)
 
+
+* Updated `AtomicReference`
+  - `AtomicReference#try_update` now simply returns instead of raising exception
+  - `AtomicReference#try_update!` was added to raise exceptions if an update
+    fails. Note: this is the same behavior as the old `try_update`
 * Pure Java implementations of
   - `AtomicBoolean`
   - `AtomicFixnum`
@@ -58,7 +63,7 @@
   - `Channel`
   - `Exchanger`
   - `LazyRegister`
-  - **new Future Framework** <http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html> - unified 
+  - **new Future Framework** <http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html> - unified
     implementation of Futures and Promises which combines Features of previous `Future`,
     `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
     new synchronization layer to make all the paths **lock-free** with exception of blocking threads on `#wait`.
@@ -80,7 +85,7 @@
   - Add AbstractContext#default_executor to be able to override executor class wide
   - Add basic IO example
   - Documentation somewhat improved
-  - All messages should have same priority. It's now possible to send `actor << job1 << job2 << :terminate!` and 
+  - All messages should have same priority. It's now possible to send `actor << job1 << job2 << :terminate!` and
     be sure that both jobs are processed first.
 * Refactored `Channel` to use newer synchronization objects
 * Added `#reset` and `#cancel` methods to `TimerSet`
@@ -162,7 +167,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
   - `SerializedExecutionDelegator` for serializing *any* executor
 * Updated `Async` with serialized execution
 * Updated `ImmediateExecutor` and `PerThreadExecutor` with full executor service lifecycle
-* Added a `Delay` to root `Actress` initialization 
+* Added a `Delay` to root `Actress` initialization
 * Minor bug fixes to thread pools
 * Refactored many intermittently failing specs
 * Removed Java interop warning `executor.rb:148 warning: ambiguous Java methods found, using submit(java.lang.Runnable)`
