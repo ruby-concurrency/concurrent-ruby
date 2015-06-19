@@ -5,6 +5,7 @@ require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/executor/serialized_execution'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
 
@@ -30,22 +31,11 @@ module Concurrent
   # object. The former method allows methods to be called asynchronously by posting
   # to the global thread pool. The latter allows a method to be called synchronously
   # on the current thread but does so safely with respect to any pending asynchronous
-  # method calls. Both methods return an `Obligation` which can be inspected for
+  # method calls. Both methods return an `IVar` which can be inspected for
   # the result of the method call. Calling a method with `async` will return a
-  # `:pending` `Obligation` whereas `await` will return a `:complete` `Obligation`.
+  # `:pending` `IVar` whereas `await` will return a `:complete` `IVar`.
   # 
   # Very loosely based on the `async` and `await` keywords in C#.
-  # 
-  # ### An Important Note About Initialization
-  # 
-  # > This module depends on several internal stnchronization mechanisms that
-  # > must be initialized prior to calling any of the async/await/executor methods.
-  # > To ensure thread-safe initialization the class `new` method will be made
-  # > private when the `Concurrent::Async` module is included. A factory method
-  # > called `create` will be defined in its place. The `create`factory will
-  # > create a new object instance, passing all arguments to the constructor,
-  # > and will initialize all stnchronization mechanisms. This is the only way
-  # > thread-safe initialization can be guaranteed. 
   # 
   # ### An Important Note About Thread Safe Guarantees
   # 
@@ -70,23 +60,19 @@ module Concurrent
   #       nil
   #     end
   #   end
-  #
-  #   horn = Echo.new #=> NoMethodError: private method `new' called for Echo:Class
   #   
-  #   horn = Echo.create
+  #   horn = Echo.new
   #   horn.echo('zero')      # synchronous, not thread-safe
   #   
   #   horn.async.echo('one') # asynchronous, non-blocking, thread-safe
   #   horn.await.echo('two') # synchronous, blocking, thread-safe
   #
-  # @see Concurrent::Concern::Obligation
   # @see Concurrent::IVar
   module Async
 
-    # @!method self.create(*args, &block)
+    # @!method self.new(*args, &block)
     #
-    #   The factory method used to create new instances of the asynchronous
-    #   class. Used instead of `new` to ensure proper initialization of the
+    #   Instanciate a new object and ensure proper initialization of the
     #   synchronization mechanisms.
     #
     #   @param [Array<Object>] args Zero or more arguments to be passed to the
@@ -129,21 +115,13 @@ module Concurrent
     # @!visibility private
     def self.included(base)
       base.singleton_class.send(:alias_method, :original_new, :new)
-      base.send(:private_class_method, :original_new)
       base.extend(ClassMethods)
       super(base)
     end
 
     # @!visibility private
     module ClassMethods
-
-      # @deprecated
       def new(*args, &block)
-        warn '[DEPRECATED] use the `create` method instead'
-        create(*args, &block)
-      end
-
-      def create(*args, &block)
         obj = original_new(*args, &block)
         obj.send(:init_synchronization)
         obj
@@ -280,7 +258,7 @@ module Concurrent
     # @!visibility private
     # @deprecated
     def init_mutex
-      warn '[DEPRECATED] use the `create` method instead'
+      deprecated 'mutex synchronization now happens automatically'
       init_synchronization
     rescue InitializationError
       # suppress

@@ -29,38 +29,20 @@ module Concurrent
     end
 
     subject do
-      obj = async_class.create
+      obj = async_class.new
       obj.executor = executor
       obj
     end
 
     context 'object creation' do
 
-      # Will be added in 1.0 once deprecated methods are removed
-      #it 'makes #new private' do
-      #  expect{ async_class.new }.to raise_error(NoMethodError)
-      #end
-
-      # Will be removed in 1.0 once deprecated methods are removed
-      it '#new delegates to #create' do
+      it 'delegates to the original constructor' do
         args = [:foo, 'bar', 42]
-        expect(async_class).to receive(:create).once.with(*args)
+        expect(async_class).to receive(:original_new).once.with(*args).and_call_original
         async_class.new(*args)
       end
 
-      it 'uses #create to instanciate new objects' do
-        object = async_class.create
-        expect(object).to be_a async_class
-      end
-
-      specify '#create initializes synchronization' do
-        mock = async_class.create
-        allow(async_class).to receive(:original_new).and_return(mock)
-        expect(mock).to receive(:init_synchronization).once.with(no_args)
-        async_class.create
-      end
-
-      specify '#create passes all args to the constructor' do
+      specify 'passes all args to the original constructor' do
         clazz = Class.new do
           include Concurrent::Async
           attr_reader :args
@@ -69,11 +51,11 @@ module Concurrent
           end
         end
 
-        object = clazz.create(:foo, :bar)
+        object = clazz.new(:foo, :bar)
         expect(object.args).to eq [:foo, :bar]
       end
 
-      specify '#create passes all args to the constructor' do
+      specify 'passes a given block to the original constructor' do
         clazz = Class.new do
           include Concurrent::Async
           attr_reader :block
@@ -82,8 +64,15 @@ module Concurrent
           end
         end
 
-        object = clazz.create{ 42 }
+        object = clazz.new{ 42 }
         expect(object.block).to eq 42
+      end
+
+      specify 'initializes synchronization' do
+        mock = async_class.new
+        allow(async_class).to receive(:original_new).and_return(mock)
+        expect(mock).to receive(:init_synchronization).once.with(no_args)
+        async_class.new
       end
     end
 
@@ -158,21 +147,21 @@ module Concurrent
       it 'returns the default executor when #executor= has never been called' do
         expect(Concurrent).to receive(:global_io_executor).
           and_return(ImmediateExecutor.new)
-        subject = async_class.create
+        subject = async_class.new
         subject.async.echo(:foo)
       end
 
       it 'returns the memo after #executor= has been called' do
         executor = ImmediateExecutor.new
         expect(executor).to receive(:post)
-        subject = async_class.create
+        subject = async_class.new
         subject.executor = executor
         subject.async.echo(:foo)
       end
 
       it 'raises an exception if #executor= is called after initialization complete' do
         executor = ImmediateExecutor.new
-        subject = async_class.create
+        subject = async_class.new
         subject.async.echo(:foo)
         expect {
           subject.executor = executor
@@ -209,7 +198,7 @@ module Concurrent
       it 'runs the future on the memoized executor' do
         executor = ImmediateExecutor.new
         expect(executor).to receive(:post).with(any_args)
-        subject = async_class.create
+        subject = async_class.new
         subject.executor = executor
         subject.async.echo(:foo)
       end
@@ -351,7 +340,7 @@ module Concurrent
             (@bucket ||= []).concat([first])
             @bucket.concat(rest)
           end
-        }.create
+        }.new
 
         object.async.gather(0.5, :a, :b)
         object.await.gather(0, :c, :d)
