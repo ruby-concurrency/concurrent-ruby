@@ -1,3 +1,5 @@
+require 'monitor'
+
 module Concurrent
   module Synchronization
 
