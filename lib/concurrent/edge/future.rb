@@ -1057,7 +1057,7 @@ module Concurrent
             evaluate_to lambda { done_future.apply task }
           end
         else
-          complete_with Future::Failed.new(done_future.reason)
+          complete_with done_future.internal_state
         end
       end
     end
