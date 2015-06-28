@@ -144,8 +144,8 @@ public class SynchronizationLibrary implements Library {
                 UnsafeHolder.storeFence();
                 return result;
             } else {
+                final IRubyObject result = instance_variable_set(name, value);
                 UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
-                IRubyObject result = instance_variable_set(name, value);
                 return result;
             }
         }
