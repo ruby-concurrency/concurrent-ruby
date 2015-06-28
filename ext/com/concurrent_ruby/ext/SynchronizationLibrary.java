@@ -111,10 +111,18 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PROTECTED)
         public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
-            if (UnsafeHolder.SUPPORTS_FENCES)
-                UnsafeHolder.storeFence();
-            else
-                anVolatileField = 1;
+            if (UnsafeHolder.U == null) {
+                // We are screwed
+                throw new UnsupportedOperationException();
+            } else if (UnsafeHolder.SUPPORTS_FENCES)
+                // We have to prevent ivar writes to reordered with storing of the final instance reference
+                // Therefore wee need a fullFence to prevent reordering in both directions.
+                UnsafeHolder.fullFence();
+            else {
+                // Assumption that this is not eliminated, if false it will break non x86 platforms.
+                UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
+                UnsafeHolder.U.getIntVolatile(this, AN_VOLATILE_FIELD_OFFSET);
+            }
             return context.nil;
         }
 
