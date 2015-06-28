@@ -35,6 +35,11 @@ Concurrent.future { Object.new }.then(&:succ).then(&:succ).rescue { |e| e.class 
 Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value
 Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value
 
+failing_zip = Concurrent.completed_future(1) & Concurrent.future { raise 'boom' }
+failing_zip.result
+failing_zip.then { |v| 'never happens' }.result
+failing_zip.rescue { |a, b| (a || b).message }.value
+failing_zip.chain { |success, values, reasons| [success, values.compact, reasons.compactß] }.value
 
 ### Delay
 
