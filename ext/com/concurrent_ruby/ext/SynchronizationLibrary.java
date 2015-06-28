@@ -121,10 +121,12 @@ public class SynchronizationLibrary implements Library {
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
             if (UnsafeHolder.U == null) {
+                // TODO: Possibly dangerous, there may be a deadlock on the this
                 synchronized (this) {
                     return instance_variable_get(context, name);
                 }
             } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                // ensure we see latest value
                 UnsafeHolder.loadFence();
                 return instance_variable_get(context, name);
             } else {
@@ -136,11 +138,13 @@ public class SynchronizationLibrary implements Library {
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
             if (UnsafeHolder.U == null) {
+                // TODO: Possibly dangerous, there may be a deadlock on the this
                 synchronized (this) {
                     return instance_variable_set(name, value);
                 }
             } else if (UnsafeHolder.SUPPORTS_FENCES) {
-                IRubyObject result = instance_variable_set(name, value);
+                final IRubyObject result = instance_variable_set(name, value);
+                // ensure we make latest value visible
                 UnsafeHolder.storeFence();
                 return result;
             } else {
