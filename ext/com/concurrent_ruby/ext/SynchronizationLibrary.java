@@ -21,6 +21,12 @@ import org.jruby.util.unsafe.UnsafeHolder;
 
 public class SynchronizationLibrary implements Library {
 
+    private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new JavaObject(runtime, klazz);
+        }
+    };
+
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule synchronizationModule = runtime.
                 defineModule("Concurrent").
@@ -36,14 +42,12 @@ public class SynchronizationLibrary implements Library {
         synchronizedObjectJavaClass.defineAnnotatedMethods(JavaObject.class);
     }
 
-    private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new JavaObject(runtime, klazz);
-        }
-    };
-
     @JRubyClass(name = "JavaObject", parent = "AbstractObject")
     public static class JavaObject extends RubyObject {
+
+        public static final long AN_VOLATILE_FIELD_OFFSET =
+                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
+        private volatile int anVolatileField = 0;
 
         public JavaObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -113,10 +117,6 @@ public class SynchronizationLibrary implements Library {
                 anVolatileField = 1;
             return context.nil;
         }
-
-        private volatile int anVolatileField = 0; // TODO unused on JAVA8
-        public static final long AN_VOLATILE_FIELD_OFFSET =
-                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
 
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
