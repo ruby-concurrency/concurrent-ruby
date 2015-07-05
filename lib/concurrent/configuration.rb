@@ -11,37 +11,6 @@ module Concurrent
   extend Concern::Logging
   extend Concern::Deprecation
 
-  # Suppresses all output when used for logging.
-  NULL_LOGGER = lambda { |level, progname, message = nil, &block| }
-
-  # @!visibility private
-  GLOBAL_LOGGER = AtomicReference.new(NULL_LOGGER)
-  private_constant :GLOBAL_LOGGER
-
-  # @!visibility private
-  GLOBAL_FAST_EXECUTOR = Delay.new { Concurrent.new_fast_executor(auto_terminate: true) }
-  private_constant :GLOBAL_FAST_EXECUTOR
-
-  # @!visibility private
-  GLOBAL_IO_EXECUTOR = Delay.new { Concurrent.new_io_executor(auto_terminate: true) }
-  private_constant :GLOBAL_IO_EXECUTOR
-
-  # @!visibility private
-  GLOBAL_TIMER_SET = Delay.new { TimerSet.new(auto_terminate: true) }
-  private_constant :GLOBAL_TIMER_SET
-
-  # @!visibility private
-  GLOBAL_IMMEDIATE_EXECUTOR = ImmediateExecutor.new
-  private_constant :GLOBAL_IMMEDIATE_EXECUTOR
-
-  def self.global_logger
-    GLOBAL_LOGGER.value
-  end
-
-  def self.global_logger=(value)
-    GLOBAL_LOGGER.value = value
-  end
-
   # @return [Logger] Logger with provided level and output.
   def self.create_stdlib_logger(level = Logger::FATAL, output = $stderr)
     logger           = Logger.new(output)
@@ -62,16 +31,47 @@ module Concurrent
              progname,
              formatted_message
     end
-    logger
+
+    lambda do |level, progname, message = nil, &block|
+      logger.add level, message, progname, &block
+    end
   end
 
   # Use logger created by #create_stdlib_logger to log concurrent-ruby messages.
   def self.use_stdlib_logger(level = Logger::FATAL, output = $stderr)
-    logger = create_stdlib_logger level, output
-    Concurrent.global_logger = lambda do |level, progname, message = nil, &block|
-      logger.add level, message, progname, &block
-    end
+    Concurrent.global_logger = create_stdlib_logger level, output
   end
+
+  # Suppresses all output when used for logging.
+  NULL_LOGGER   = lambda { |level, progname, message = nil, &block| }
+
+  # @!visibility private
+  GLOBAL_LOGGER = AtomicReference.new(create_stdlib_logger(Logger::WARN))
+  private_constant :GLOBAL_LOGGER
+
+  def self.global_logger
+    GLOBAL_LOGGER.value
+  end
+
+  def self.global_logger=(value)
+    GLOBAL_LOGGER.value = value
+  end
+
+  # @!visibility private
+  GLOBAL_FAST_EXECUTOR = Delay.new { Concurrent.new_fast_executor(auto_terminate: true) }
+  private_constant :GLOBAL_FAST_EXECUTOR
+
+  # @!visibility private
+  GLOBAL_IO_EXECUTOR = Delay.new { Concurrent.new_io_executor(auto_terminate: true) }
+  private_constant :GLOBAL_IO_EXECUTOR
+
+  # @!visibility private
+  GLOBAL_TIMER_SET = Delay.new { TimerSet.new(auto_terminate: true) }
+  private_constant :GLOBAL_TIMER_SET
+
+  # @!visibility private
+  GLOBAL_IMMEDIATE_EXECUTOR = ImmediateExecutor.new
+  private_constant :GLOBAL_IMMEDIATE_EXECUTOR
 
   # Disables AtExit handlers including pool auto-termination handlers.
   # When disabled it will be the application programmer's responsibility
@@ -274,5 +274,19 @@ module Concurrent
   # @yieldparam [Configuration] the current configuration object
   def self.configure
     yield(configuration)
+  end
+
+  # for dependency reasons this check cannot be in concurrent/synchronization
+  if Concurrent.on_jruby?
+    require 'java'
+
+    version_string = java.lang.System.getProperties['java.runtime.version']
+    version        = version_string.split('.', 3)[0..1].map(&:to_i)
+    if (version <=> [1, 8]) < 0
+      deprecated <<-TXT.gsub(/^\s*\|/, '').chop, 0
+          |Java 7 is deprecated, please use Java 8.
+          |Java 7 support is only best effort, it may not work. It will be removed in next release (1.0).
+      TXT
+    end
   end
 end
