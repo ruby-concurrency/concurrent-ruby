@@ -3,6 +3,21 @@ require 'concurrent/edge/lock_free_linked_set/window'
 
 module Concurrent
   module Edge
+    # This class implements a lock-free linked set. The general idea of this
+    # implementation is this: each node has a successor which is an Atomic
+    # Markable Reference. This is used to ensure that all modifications to the
+    # list are atomic, preserving the structure of the linked list under _any_
+    # circumstance in a multithreaded application.
+    #
+    # One interesting aspect of this algorithm occurs with removing a node.
+    # Instead of physically removing a node when remove is called, a node is
+    # logically removed, by 'marking it.' By doing this, we prevent calls to
+    # `remove` from traversing the list twice to perform a physical removal.
+    # Instead, we have have calls to `add` and `remove` clean up all marked
+    # nodes they encounter while traversing the list.
+    #
+    # This algorithm is a variation of the Nonblocking Linked Set found in
+    # 'The Art of Multiprocessor Programming' by Herlihy and Shavit.
     class LockFreeLinkedSet
       include Enumerable
 
