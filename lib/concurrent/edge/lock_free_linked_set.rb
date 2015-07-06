@@ -55,7 +55,7 @@ module Concurrent
 
           node = Node.new item, curr
 
-          if pred.SuccessorReference.compare_and_set curr, node, false, false
+          if pred.Successor_reference.compare_and_set curr, node, false, false
             return true
           end
         end
@@ -88,7 +88,7 @@ module Concurrent
 
         while curr < item
           curr = curr.next_node
-          marked = curr.SuccessorReference.marked?
+          marked = curr.Successor_reference.marked?
         end
 
         curr == item && !marked
@@ -109,11 +109,11 @@ module Concurrent
           return false if curr != item
 
           succ = curr.next_node
-          removed = curr.SuccessorReference.compare_and_set succ, succ, false, true
+          removed = curr.Successor_reference.compare_and_set succ, succ, false, true
 
           next_node unless removed
 
-          pred.SuccessorReference.compare_and_set curr, succ, false, false
+          pred.Successor_reference.compare_and_set curr, succ, false, false
 
           return true
         end
@@ -134,7 +134,7 @@ module Concurrent
 
         until curr.last?
           curr = curr.next_node
-          marked = curr.SuccessorReference.marked?
+          marked = curr.Successor_reference.marked?
 
           yield curr.Data unless marked
         end
