@@ -70,7 +70,7 @@ elsif Concurrent.allow_c_extensions?
     }
     platforms.each do |platform, prefix|
       task "copy:#{EXT_NAME}:#{platform}:#{ruby_version}" do |t|
-        %w[lib tmp/#{platform}/stage/lib].each do |dir|
+        ["lib", "tmp/#{platform}/stage/lib/concurrent"].each do |dir|
           so_file = "#{dir}/#{ruby_version[/^\d+\.\d+/]}/#{EXT_NAME}.so"
           if File.exists?(so_file)
             sh "#{prefix}-strip -S #{so_file}"
