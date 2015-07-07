@@ -1,4 +1,5 @@
 require 'logger'
+require 'concurrent/configuration'
 
 module Concurrent
   module Concern

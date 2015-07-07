@@ -21,6 +21,12 @@ import org.jruby.util.unsafe.UnsafeHolder;
 
 public class SynchronizationLibrary implements Library {
 
+    private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new JavaObject(runtime, klazz);
+        }
+    };
+
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule synchronizationModule = runtime.
                 defineModule("Concurrent").
@@ -36,14 +42,12 @@ public class SynchronizationLibrary implements Library {
         synchronizedObjectJavaClass.defineAnnotatedMethods(JavaObject.class);
     }
 
-    private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new JavaObject(runtime, klazz);
-        }
-    };
-
     @JRubyClass(name = "JavaObject", parent = "AbstractObject")
     public static class JavaObject extends RubyObject {
+
+        public static final long AN_VOLATILE_FIELD_OFFSET =
+                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
+        private volatile int anVolatileField = 0;
 
         public JavaObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -107,24 +111,30 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PROTECTED)
         public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
-            if (UnsafeHolder.SUPPORTS_FENCES)
-                UnsafeHolder.storeFence();
-            else
-                anVolatileField = 1;
+            if (UnsafeHolder.U == null) {
+                // We are screwed
+                throw new UnsupportedOperationException();
+            } else if (UnsafeHolder.SUPPORTS_FENCES)
+                // We have to prevent ivar writes to reordered with storing of the final instance reference
+                // Therefore wee need a fullFence to prevent reordering in both directions.
+                UnsafeHolder.fullFence();
+            else {
+                // Assumption that this is not eliminated, if false it will break non x86 platforms.
+                UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
+                UnsafeHolder.U.getIntVolatile(this, AN_VOLATILE_FIELD_OFFSET);
+            }
             return context.nil;
         }
-
-        private volatile int anVolatileField = 0; // TODO unused on JAVA8
-        public static final long AN_VOLATILE_FIELD_OFFSET =
-                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
 
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
             if (UnsafeHolder.U == null) {
+                // TODO: Possibly dangerous, there may be a deadlock on the this
                 synchronized (this) {
                     return instance_variable_get(context, name);
                 }
             } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                // ensure we see latest value
                 UnsafeHolder.loadFence();
                 return instance_variable_get(context, name);
             } else {
@@ -136,16 +146,18 @@ public class SynchronizationLibrary implements Library {
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
             if (UnsafeHolder.U == null) {
+                // TODO: Possibly dangerous, there may be a deadlock on the this
                 synchronized (this) {
                     return instance_variable_set(name, value);
                 }
             } else if (UnsafeHolder.SUPPORTS_FENCES) {
-                IRubyObject result = instance_variable_set(name, value);
+                final IRubyObject result = instance_variable_set(name, value);
+                // ensure we make latest value visible
                 UnsafeHolder.storeFence();
                 return result;
             } else {
+                final IRubyObject result = instance_variable_set(name, value);
                 UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
-                IRubyObject result = instance_variable_set(name, value);
                 return result;
             }
         }

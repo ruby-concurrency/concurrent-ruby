@@ -5,52 +5,54 @@ require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/timer_set'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
+  include Concern::Deprecation
 
   # `ScheduledTask` is a close relative of `Concurrent::Future` but with one
   # important difference: A `Future` is set to execute as soon as possible
   # whereas a `ScheduledTask` is set to execute after a specified delay. This
   # implementation is loosely based on Java's
-  # [ScheduledExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html). 
+  # [ScheduledExecutorService](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html).
   # It is a more feature-rich variant of {Concurrent.timer}.
-  # 
+  #
   # The *intended* schedule time of task execution is set on object construction
   # with the `delay` argument. The delay is a numeric (floating point or integer)
   # representing a number of seconds in the future. Any other value or a numeric
   # equal to or less than zero will result in an exception. The *actual* schedule
   # time of task execution is set when the `execute` method is called.
-  #  
+  #
   # The constructor can also be given zero or more processing options. Currently
   # the only supported options are those recognized by the
-  # [Dereferenceable](Dereferenceable) module. 
-  # 
+  # [Dereferenceable](Dereferenceable) module.
+  #
   # The final constructor argument is a block representing the task to be performed.
   # If no block is given an `ArgumentError` will be raised.
-  # 
+  #
   # **States**
-  # 
+  #
   # `ScheduledTask` mixes in the  [Obligation](Obligation) module thus giving it
   # "future" behavior. This includes the expected lifecycle states. `ScheduledTask`
   # has one additional state, however. While the task (block) is being executed the
   # state of the object will be `:processing`. This additional state is necessary
-  # because it has implications for task cancellation. 
-  # 
+  # because it has implications for task cancellation.
+  #
   # **Cancellation**
-  # 
+  #
   # A `:pending` task can be cancelled using the `#cancel` method. A task in any
   # other state, including `:processing`, cannot be cancelled. The `#cancel`
   # method returns a boolean indicating the success of the cancellation attempt.
-  # A cancelled `ScheduledTask` cannot be restarted. It is immutable. 
-  # 
+  # A cancelled `ScheduledTask` cannot be restarted. It is immutable.
+  #
   # **Obligation and Observation**
-  # 
+  #
   # The result of a `ScheduledTask` can be obtained either synchronously or
   # asynchronously. `ScheduledTask` mixes in both the [Obligation](Obligation)
   # module and the
   # [Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html)
   # module from the Ruby standard library. With one exception `ScheduledTask`
-  # behaves identically to [Future](Observable) with regard to these modules. 
+  # behaves identically to [Future](Observable) with regard to these modules.
   #
   # @!macro copy_options
   #
@@ -59,7 +61,7 @@ module Concurrent
   #   require 'concurrent'
   #   require 'thread'   # for Queue
   #   require 'open-uri' # for open(uri)
-  #   
+  #
   #   class Ticker
   #     def get_year_end_closing(symbol, year)
   #       uri = "http://ichart.finance.yahoo.com/table.csv?s=#{symbol}&a=11&b=01&c=#{year}&d=11&e=31&f=#{year}&g=m"
@@ -67,75 +69,75 @@ module Concurrent
   #       data[1].split(',')[4].to_f
   #     end
   #   end
-  #   
+  #
   #   # Future
   #   price = Concurrent::Future.execute{ Ticker.new.get_year_end_closing('TWTR', 2013) }
   #   price.state #=> :pending
   #   sleep(1)    # do other stuff
   #   price.value #=> 63.65
   #   price.state #=> :fulfilled
-  #   
+  #
   #   # ScheduledTask
   #   task = Concurrent::ScheduledTask.execute(2){ Ticker.new.get_year_end_closing('INTC', 2013) }
   #   task.state #=> :pending
   #   sleep(3)   # do other stuff
   #   task.value #=> 25.96
-  # 
+  #
   # @example Successful task execution
-  #   
+  #
   #   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }
   #   task.state         #=> :unscheduled
   #   task.execute
   #   task.state         #=> pending
-  #   
+  #
   #   # wait for it...
   #   sleep(3)
-  #   
+  #
   #   task.unscheduled? #=> false
   #   task.pending?     #=> false
   #   task.fulfilled?   #=> true
   #   task.rejected?    #=> false
   #   task.value        #=> 'What does the fox say?'
-  # 
+  #
   # @example One line creation and execution
-  # 
+  #
   #   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
   #   task.state         #=> pending
-  # 
+  #
   #   task = Concurrent::ScheduledTask.execute(2){ 'What do you get when you multiply 6 by 9?' }
   #   task.state         #=> pending
-  # 
+  #
   # @example Failed task execution
-  # 
+  #
   #   task = Concurrent::ScheduledTask.execute(2){ raise StandardError.new('Call me maybe?') }
   #   task.pending?      #=> true
-  #   
+  #
   #   # wait for it...
   #   sleep(3)
-  #   
+  #
   #   task.unscheduled? #=> false
   #   task.pending?     #=> false
   #   task.fulfilled?   #=> false
   #   task.rejected?    #=> true
   #   task.value        #=> nil
-  #   task.reason       #=> #<StandardError: Call me maybe?> 
-  # 
+  #   task.reason       #=> #<StandardError: Call me maybe?>
+  #
   # @example Task execution with observation
-  # 
+  #
   #   observer = Class.new{
   #     def update(time, value, reason)
   #       puts "The task completed at #{time} with value '#{value}'"
   #     end
   #   }.new
-  #   
+  #
   #   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }
   #   task.add_observer(observer)
   #   task.execute
   #   task.pending?      #=> true
-  #   
+  #
   #   # wait for it...
   #   sleep(3)
-  #   
+  #
   #   #>> The task completed at 2013-11-07 12:26:09 -0500 with value 'What does the fox say?'
   #
   # @!macro monotonic_clock_warning
@@ -196,12 +198,12 @@ module Concurrent
     #
     # @deprecated use {#initial_delay} instead
     def delay
-      warn '[DEPRECATED] use #initial_delay instead'
+      deprecated_method 'delay', 'initial_delay'
       initial_delay
     end
 
     # The monotonic time at which the the task is scheduled to be executed.
-    # 
+    #
     # @return [Float] the schedule time or nil if `unscheduled`
     def schedule_time
       synchronize { @time }
@@ -234,7 +236,7 @@ module Concurrent
     #
     # @deprecated Use {#processing?} instead.
     def in_progress?
-      warn '[DEPRECATED] use #processing? instead'
+      deprecated_method 'in_progress?', 'processing?'
       processing?
     end
 
@@ -260,7 +262,7 @@ module Concurrent
     #
     # @deprecated Use {#cancel} instead.
     def stop
-      warn '[DEPRECATED] use #cancel instead'
+      deprecated_method 'stop', 'cancel'
       cancel
     end
 
@@ -363,7 +365,7 @@ module Concurrent
     # @!visibility private
     def calculate_delay!(delay)
       if delay.is_a?(Time)
-        warn '[DEPRECATED] Use an interval not a clock time; schedule is now based on a monotonic clock'
+        deprecated 'Use an interval not a clock time; schedule is now based on a monotonic clock'
         now = Time.now
         raise ArgumentError.new('schedule time must be in the future') if delay <= now
         delay.to_f - now.to_f

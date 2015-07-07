@@ -139,13 +139,14 @@ We are interested in following behaviors:
 
 ### Variables
 
--   **Local variables** - atomic assignment, non-volatile. 
+-   **Local variables** - atomic assignment (only Integer and Object), non-volatile. 
     -   Consequence: a lambda defined on `thread1` executing on `thread2` may not see updated values in local variables captured in its closure.
     -   Reason: local variables are non-volatile on Jruby and Rubinius.
--   **Instance variables** - atomic assignment, non-volatile. 
+-   **Instance variables** - atomic assignment (only Integer and Object), non-volatile. 
     -   Consequence: Different thread may see old values; different thread may see not fully-initialized object.
     -   Reason: local variables are non-volatile on Jruby and Rubinius.
 -   **Constants** - atomic assignment, volatile.
+-   **Assignments of Float** may not be atomic (some implementations (e.g. Truffle) may use native double).
 
 Other:
 

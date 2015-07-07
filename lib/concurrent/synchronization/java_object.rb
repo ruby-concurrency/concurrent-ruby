@@ -4,7 +4,6 @@ module Concurrent
   module Synchronization
 
     if Concurrent.on_jruby?
-      require 'jruby'
 
       # @!visibility private
       # @!macro internal_implementation_note
