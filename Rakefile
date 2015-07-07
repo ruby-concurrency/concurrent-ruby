@@ -135,6 +135,15 @@ namespace :build do
       sh 'mv *.gem pkg/'
     end
   end
+
+  desc "Build the windows binary gems per rake-compiler-dock"
+  task :windows do
+    require 'rake_compiler_dock'
+    RakeCompilerDock.sh <<-EOT
+      bundle --without="development testing" &&
+      rake cross native gem RUBY_CC_VERSION=1.9.3:2.0.0:2.1.6:2.2.2
+    EOT
+  end
 end
 
 if Concurrent.on_jruby?
