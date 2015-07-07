@@ -87,9 +87,8 @@ end
 task :clean do
   rm_rf 'pkg/classes'
   rm_rf 'tmp'
-  rm_rf 'lib/concurrent/1.9'
-  rm_rf 'lib/concurrent/2.0'
-  rm_rf 'lib/concurrent/2.1'
+  rm_rf Dir.glob('lib/concurrent/1.?')
+  rm_rf Dir.glob('lib/concurrent/2.?')
   rm_f Dir.glob('./**/*.so')
   rm_f Dir.glob('./**/*.bundle')
   rm_f Dir.glob('./lib/*.jar')
