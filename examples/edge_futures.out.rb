@@ -1,7 +1,7 @@
 ### Simple asynchronous task
 
 future = Concurrent.future { sleep 0.1; 1 + 1 } # evaluation starts immediately
-    # => <#Concurrent::Edge::Future:0x7fc6218f2318 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc73208180 pending blocks:[]>
 future.completed?                                  # => false
 # block until evaluated
 future.value                                       # => 2
@@ -11,7 +11,7 @@ future.completed?                                  # => true
 ### Failing asynchronous task
 
 future = Concurrent.future { raise 'Boom' }
-    # => <#Concurrent::Edge::Future:0x7fc6218eae38 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc731fa0a8 pending blocks:[]>
 future.value                                       # => nil
 future.value! rescue $!                            # => #<RuntimeError: Boom>
 future.reason                                      # => #<RuntimeError: Boom>
@@ -21,7 +21,7 @@ raise future rescue $!                             # => #<RuntimeError: Boom>
 
 ### Chaining
 
-head    = Concurrent.completed_future 1 
+head    = Concurrent.succeeded_future 1 
 branch1 = head.then(&:succ) 
 branch2 = head.then(&:succ).then(&:succ) 
 branch1.zip(branch2).value!                        # => [2, 3]
@@ -41,10 +41,10 @@ Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value
 Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value
     # => 3
 
-failing_zip = Concurrent.completed_future(1) & Concurrent.future { raise 'boom' }
-    # => <#Concurrent::Edge::Future:0x7fc6218b0f08 pending blocks:[]>
-failing_zip.result                                 # => [false, [1, nil], [nil, #<RuntimeError: boom>]]
-failing_zip.then { |v| 'never happens' }.result    # => [false, [1, nil], [nil, #<RuntimeError: boom>]]
+failing_zip = Concurrent.succeeded_future(1) & Concurrent.failed_future(StandardError.new('boom'))
+    # => <#Concurrent::Edge::Future:0x7fcc731c00b0 failed blocks:[]>
+failing_zip.result                                 # => [false, [1, nil], [nil, #<StandardError: boom>]]
+failing_zip.then { |v| 'never happens' }.result    # => [false, [1, nil], [nil, #<StandardError: boom>]]
 failing_zip.rescue { |a, b| (a || b).message }.value
     # => "boom"
 failing_zip.chain { |success, values, reasons| [success, values.compact, reasons.compactß] }.value
@@ -54,7 +54,7 @@ failing_zip.chain { |success, values, reasons| [success, values.compact, reasons
 
 # will not evaluate until asked by #value or other method requiring completion
 future = Concurrent.delay { 'lazy' }
-    # => <#Concurrent::Edge::Future:0x7fc6218a37e0 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc731a1840 pending blocks:[]>
 sleep 0.1 
 future.completed?                                  # => false
 future.value                                       # => "lazy"
@@ -62,20 +62,20 @@ future.value                                       # => "lazy"
 # propagates trough chain allowing whole or partial lazy chains
 
 head    = Concurrent.delay { 1 }
-    # => <#Concurrent::Edge::Future:0x7fc6218a0720 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc73193b28 pending blocks:[]>
 branch1 = head.then(&:succ)
-    # => <#Concurrent::Edge::Future:0x7fc6212c7b50 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc73190900 pending blocks:[]>
 branch2 = head.delay.then(&:succ)
-    # => <#Concurrent::Edge::Future:0x7fc6212c6098 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc7318b400 pending blocks:[]>
 join    = branch1 & branch2
-    # => <#Concurrent::Edge::Future:0x7fc6212c4f40 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc73180af0 pending blocks:[]>
 
 sleep 0.1 # nothing will complete                  # => 0
 [head, branch1, branch2, join].map(&:completed?)   # => [false, false, false, false]
 
 branch1.value                                      # => 2
 sleep 0.1 # forces only head to complete, branch 2 stays incomplete
-    # => 1
+    # => 0
 [head, branch1, branch2, join].map(&:completed?)   # => [true, true, false, false]
 
 join.value                                         # => [2, 2]
@@ -96,14 +96,14 @@ Concurrent.future { Concurrent.future { Concurrent.future { 1 + 1 } } }.
 ### Schedule
 
 scheduled = Concurrent.schedule(0.1) { 1 }
-    # => <#Concurrent::Edge::Future:0x7fc62128c550 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc73143e48 pending blocks:[]>
 
 scheduled.completed?                               # => false
 scheduled.value # available after 0.1sec           # => 1
 
 # and in chain
 scheduled = Concurrent.delay { 1 }.schedule(0.1).then(&:succ)
-    # => <#Concurrent::Edge::Future:0x7fc6228bcdc0 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc7313a758 pending blocks:[]>
 # will not be scheduled until value is requested
 sleep 0.1 
 scheduled.value # returns after another 0.1sec     # => 2
@@ -112,9 +112,9 @@ scheduled.value # returns after another 0.1sec     # => 2
 ### Completable Future and Event
 
 future = Concurrent.future
-    # => <#Concurrent::Edge::CompletableFuture:0x7fc623083720 pending blocks:[]>
+    # => <#Concurrent::Edge::CompletableFuture:0x7fcc731286e8 pending blocks:[]>
 event  = Concurrent.event
-    # => <#Concurrent::Edge::CompletableEvent:0x7fc623081100 pending blocks:[]>
+    # => <#Concurrent::Edge::CompletableEvent:0x7fcc73123058 pending blocks:[]>
 # Don't forget to keep the reference, `Concurrent.future.then { |v| v }` is incompletable
 
 # will be blocked until completed
@@ -122,26 +122,26 @@ t1     = Thread.new { future.value }
 t2     = Thread.new { event.wait } 
 
 future.success 1
-    # => <#Concurrent::Edge::CompletableFuture:0x7fc623083720 success blocks:[]>
+    # => <#Concurrent::Edge::CompletableFuture:0x7fcc731286e8 success blocks:[]>
 future.success 1 rescue $!
     # => #<Concurrent::MultipleAssignmentError: Future can be completed only once. Current result is [true, 1, nil], trying to set [true, 1, nil]>
 future.try_success 2                               # => false
 event.complete
-    # => <#Concurrent::Edge::CompletableEvent:0x7fc623081100 completed blocks:[]>
+    # => <#Concurrent::Edge::CompletableEvent:0x7fcc73123058 completed blocks:[]>
 
 [t1, t2].each &:join 
 
 
 ### Callbacks
 
-queue  = Queue.new                                 # => #<Thread::Queue:0x007fc62127df00>
+queue  = Queue.new                                 # => #<Thread::Queue:0x007fcc73110638>
 future = Concurrent.delay { 1 + 1 }
-    # => <#Concurrent::Edge::Future:0x7fc62127c060 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc7310ab98 pending blocks:[]>
 
 future.on_success { queue << 1 } # evaluated asynchronously
-    # => <#Concurrent::Edge::Future:0x7fc62127c060 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc7310ab98 pending blocks:[]>
 future.on_success! { queue << 2 } # evaluated on completing thread
-    # => <#Concurrent::Edge::Future:0x7fc62127c060 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc7310ab98 pending blocks:[]>
 
 queue.empty?                                       # => true
 future.value                                       # => 2
@@ -152,7 +152,7 @@ queue.pop                                          # => 1
 ### Thread-pools
 
 Concurrent.future(:fast) { 2 }.then(:io) { File.read __FILE__ }.wait
-    # => <#Concurrent::Edge::Future:0x7fc62125d9a8 success blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc730f98e8 success blocks:[]>
 
 
 ### Interoperability with actors
@@ -160,7 +160,7 @@ Concurrent.future(:fast) { 2 }.then(:io) { File.read __FILE__ }.wait
 actor = Concurrent::Actor::Utils::AdHoc.spawn :square do
   -> v { v ** 2 }
 end
-    # => #<Concurrent::Actor::Reference:0x7fc621234a30 /square (Concurrent::Actor::Utils::AdHoc)>
+    # => #<Concurrent::Actor::Reference:0x7fcc730c36f8 /square (Concurrent::Actor::Utils::AdHoc)>
 
 Concurrent.
     future { 2 }.
@@ -173,24 +173,24 @@ actor.ask(2).then(&:succ).value                    # => 5
 
 ### Interoperability with channels
 
-ch1 = Concurrent::Edge::Channel.new                # => #<Concurrent::Edge::Channel:0x007fc621205460>
-ch2 = Concurrent::Edge::Channel.new                # => #<Concurrent::Edge::Channel:0x007fc6212041c8>
+ch1 = Concurrent::Edge::Channel.new                # => #<Concurrent::Edge::Channel:0x007fcc73043188>
+ch2 = Concurrent::Edge::Channel.new                # => #<Concurrent::Edge::Channel:0x007fcc730425f8>
 
 result = Concurrent.select(ch1, ch2)
-    # => <#Concurrent::Edge::CompletableFuture:0x7fc6211fe5c0 pending blocks:[]>
+    # => <#Concurrent::Edge::CompletableFuture:0x7fcc730411a8 pending blocks:[]>
 ch1.push 1                                         # => nil
 result.value!
-    # => [1, #<Concurrent::Edge::Channel:0x007fc621205460>]
+    # => [1, #<Concurrent::Edge::Channel:0x007fcc73043188>]
 
 Concurrent.
     future { 1+1 }.
     then_push(ch1)
-    # => <#Concurrent::Edge::Future:0x7fc6211f7338 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc73032c98 pending blocks:[]>
 result = Concurrent.
     future { '%02d' }.
     then_select(ch1, ch2).
     then { |format, (value, channel)| format format, value }
-    # => <#Concurrent::Edge::Future:0x7fc6211ec668 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc7302a4f8 pending blocks:[]>
 result.value!                                      # => "02"
 
 
@@ -198,7 +198,7 @@ result.value!                                      # => "02"
 
 # simple background processing
 Concurrent.future { do_stuff }
-    # => <#Concurrent::Edge::Future:0x7fc6211df170 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc72123c48 pending blocks:[]>
 
 # parallel background processing
 jobs = 10.times.map { |i| Concurrent.future { i } } 
@@ -215,7 +215,7 @@ def schedule_job
 end                                                # => :schedule_job
 
 schedule_job
-    # => <#Concurrent::Edge::Future:0x7fc62119c140 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7fcc75011370 pending blocks:[]>
 @end = true                                        # => true
 
 
@@ -228,7 +228,7 @@ DB   = Concurrent::Actor::Utils::AdHoc.spawn :db do
     data[message]
   end
 end
-    # => #<Concurrent::Actor::Reference:0x7fc62117f568 /db (Concurrent::Actor::Utils::AdHoc)>
+    # => #<Concurrent::Actor::Reference:0x7fcc71832a08 /db (Concurrent::Actor::Utils::AdHoc)>
 
 concurrent_jobs = 11.times.map do |v|
   Concurrent.
@@ -258,7 +258,7 @@ DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |index|
     end
   end
 end
-    # => #<Concurrent::Actor::Reference:0x7fc6218969f0 /DB-pool (Concurrent::Actor::Utils::Pool)>
+    # => #<Concurrent::Actor::Reference:0x7fcc72320118 /DB-pool (Concurrent::Actor::Utils::Pool)>
 
 concurrent_jobs = 11.times.map do |v|
   Concurrent.

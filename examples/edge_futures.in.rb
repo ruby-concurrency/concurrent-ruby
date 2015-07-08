@@ -19,7 +19,7 @@ raise future rescue $!
 
 ### Chaining
 
-head    = Concurrent.completed_future 1 #
+head    = Concurrent.succeeded_future 1 #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
 branch1.zip(branch2).value!
@@ -35,7 +35,7 @@ Concurrent.future { Object.new }.then(&:succ).then(&:succ).rescue { |e| e.class 
 Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value
 Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value
 
-failing_zip = Concurrent.completed_future(1) & Concurrent.future { raise 'boom' }
+failing_zip = Concurrent.succeeded_future(1) & Concurrent.failed_future(StandardError.new('boom'))
 failing_zip.result
 failing_zip.then { |v| 'never happens' }.result
 failing_zip.rescue { |a, b| (a || b).message }.value
