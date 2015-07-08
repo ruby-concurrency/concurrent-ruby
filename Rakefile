@@ -70,7 +70,7 @@ elsif Concurrent.allow_c_extensions?
     }
     platforms.each do |platform, prefix|
       task "copy:#{EXT_NAME}:#{platform}:#{ruby_version}" do |t|
-        %w[lib tmp/#{platform}/stage/lib].each do |dir|
+        ["lib", "tmp/#{platform}/stage/lib/concurrent"].each do |dir|
           so_file = "#{dir}/#{ruby_version[/^\d+\.\d+/]}/#{EXT_NAME}.so"
           if File.exists?(so_file)
             sh "#{prefix}-strip -S #{so_file}"
@@ -87,9 +87,8 @@ end
 task :clean do
   rm_rf 'pkg/classes'
   rm_rf 'tmp'
-  rm_rf 'lib/concurrent/1.9'
-  rm_rf 'lib/concurrent/2.0'
-  rm_rf 'lib/concurrent/2.1'
+  rm_rf Dir.glob('lib/concurrent/1.?')
+  rm_rf Dir.glob('lib/concurrent/2.?')
   rm_f Dir.glob('./**/*.so')
   rm_f Dir.glob('./**/*.bundle')
   rm_f Dir.glob('./lib/*.jar')
@@ -134,6 +133,15 @@ namespace :build do
       sh "gem compile pkg/#{EXT_GEM}"
       sh 'mv *.gem pkg/'
     end
+  end
+
+  desc "Build the windows binary gems per rake-compiler-dock"
+  task :windows do
+    require 'rake_compiler_dock'
+    RakeCompilerDock.sh <<-EOT
+      bundle --without="development testing" &&
+      rake cross native gem RUBY_CC_VERSION=1.9.3:2.0.0:2.1.6:2.2.2
+    EOT
   end
 end
 
