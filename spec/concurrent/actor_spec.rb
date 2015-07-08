@@ -153,7 +153,6 @@ module Concurrent
           expect(subject.ask!(:terminated?)).to be_falsey
           subject.ask(:terminate!).wait
           expect(subject.ask!(:terminated?)).to be_truthy
-          child.ask!(:termination_event).wait
           expect(child.ask!(:terminated?)).to be_truthy
 
           terminate_actors subject, child
@@ -315,18 +314,24 @@ module Concurrent
 
       describe 'pool' do
         it 'supports asks' do
-          pool = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
-            Concurrent::Actor::Utils::AdHoc.spawn name: "worker-#{index}", supervised: true do
+          children = Queue.new
+          pool     = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
+            worker = Concurrent::Actor::Utils::AdHoc.spawn name: "worker-#{index}", supervised: true do
               lambda do |message|
                 fail if message == :fail
                 5 + message
               end
             end
+            children.push worker
+            worker
           end
 
           10.times { expect(pool.ask!(5)).to eq 10 }
           expect(pool.ask(:fail).reason).to be_kind_of RuntimeError
           expect(pool.ask!(5)).to eq 10
+          expect(pool.ask!(:terminate!)).to be_truthy
+          5.times { expect(children.pop.ask!(:terminated?)).to be_truthy }
+
           terminate_actors pool
         end
       end

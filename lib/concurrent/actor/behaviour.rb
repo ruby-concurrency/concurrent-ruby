@@ -37,10 +37,6 @@ module Concurrent
     #
     #     > {include:Actor::Behaviour::Termination}
     #
-    # -   {Behaviour::TerminatesChildren}:
-    #
-    #     > {include:Actor::Behaviour::TerminatesChildren}
-    #
     # -   {Behaviour::RemovesChild}:
     #
     #     > {include:Actor::Behaviour::RemovesChild}
@@ -66,14 +62,12 @@ module Concurrent
       require 'concurrent/actor/behaviour/sets_results'
       require 'concurrent/actor/behaviour/supervising'
       require 'concurrent/actor/behaviour/termination'
-      require 'concurrent/actor/behaviour/terminates_children'
 
       # Array of behaviours and their construction parameters.
       #
       #     [[Behaviour::SetResults, :terminate!],
       #      [Behaviour::RemovesChild],
       #      [Behaviour::Termination],
-      #      [Behaviour::TerminatesChildren],
       #      [Behaviour::Linking],
       #      [Behaviour::Awaits],
       #      [Behaviour::ExecutesContext],
@@ -91,7 +85,6 @@ module Concurrent
       #     [[Behaviour::SetResults, :pause!],
       #      [Behaviour::RemovesChild],
       #      [Behaviour::Termination],
-      #      [Behaviour::TerminatesChildren],
       #      [Behaviour::Linking],
       #      [Behaviour::Pausing],
       #      [Behaviour::Supervising, :reset!, :one_for_one],
@@ -113,8 +106,7 @@ module Concurrent
         [[SetResults, on_error],
          # has to be before Termination to be able to remove children from terminated actor
          RemovesChild,
-         Termination,
-         TerminatesChildren]
+         Termination]
       end
 
       # @see '' its source code
