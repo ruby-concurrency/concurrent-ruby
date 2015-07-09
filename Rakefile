@@ -7,23 +7,23 @@ require 'concurrent/utility/native_extension_loader'
 
 ## load the two gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
-EXT_GEMSPEC = Gem::Specification.load('concurrent-ruby-ext.gemspec')
+EXT_GEMSPEC  = Gem::Specification.load('concurrent-ruby-ext.gemspec')
 EDGE_GEMSPEC = Gem::Specification.load('concurrent-ruby-edge.gemspec')
 
 ## constants used for compile/build tasks
 
-GEM_NAME = 'concurrent-ruby'
-EXT_NAME = 'extension'
-EDGE_NAME = 'edge'
+GEM_NAME      = 'concurrent-ruby'
+EXT_NAME      = 'extension'
+EDGE_NAME     = 'edge'
 JAVA_EXT_NAME = 'concurrent_ruby_ext'
 
 if Concurrent.on_jruby?
-  CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
+  CORE_GEM   = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
 else
-  CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
-  EXT_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
+  CORE_GEM   = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
+  EXT_GEM    = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
   NATIVE_GEM = "#{GEM_NAME}-ext-#{Concurrent::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
-  EDGE_GEM = "#{GEM_NAME}-edge-#{Concurrent::EDGE_VERSION}.gem"
+  EDGE_GEM   = "#{GEM_NAME}-edge-#{Concurrent::EDGE_VERSION}.gem"
 end
 
 ## safely load all the rake tasks in the `tasks` directory
@@ -39,6 +39,10 @@ end
 
 Dir.glob('tasks/**/*.rake').each do |rakefile|
   safe_load rakefile
+end
+
+def has_docker?
+  system("docker version > /dev/null 2>&1 || boot2docker version > /dev/null 2>&1")
 end
 
 if Concurrent.on_jruby?
@@ -135,21 +139,27 @@ namespace :build do
     end
   end
 
-  desc "Build the windows binary gems per rake-compiler-dock"
-  task :windows do
-    require 'rake_compiler_dock'
-    RakeCompilerDock.sh <<-EOT
+  if has_docker?
+    desc "Build the windows binary #{Concurrent::VERSION} gems per rake-compiler-dock"
+    task :windows do
+      require 'rake_compiler_dock'
+      RakeCompilerDock.sh <<-EOT
       bundle --without="development testing" &&
       rake cross native gem RUBY_CC_VERSION=1.9.3:2.0.0:2.1.6:2.2.2
-    EOT
+      rm -rf .bundle
+      EOT
+    end
   end
 end
 
 if Concurrent.on_jruby?
   desc 'Build JRuby-specific core gem (alias for `build:core`)'
   task :build => ['build:core']
+elsif has_docker?
+  desc 'Build core, extension, and edge gems, including Windows binaries'
+  task :build => ['build:core', 'build:ext', 'build:edge', 'build:windows']
 else
-  desc 'Build core, extension, and edge gems'
+  desc 'Build core, extension, and edge gems (excluding Windows binaries)'
   task :build => ['build:core', 'build:ext', 'build:edge']
 end
 
@@ -170,7 +180,20 @@ begin
                    '--tag ~notravis'
   end
 
-  task :ci => [:clean, :compile, :travis]
+  RSpec::Core::RakeTask.new(:appveyor) do |t|
+    t.rspec_opts = '--backtrace ' \
+                   '--tag ~unfinished ' \
+                   '--seed 1 ' \
+                   '--format documentation ' \
+                   '--tag ~notravis'
+  end
+
+  if Concurrent.on_windows?
+    task :ci => [:clean, :compile, :appveyor]
+  else
+    task :ci => [:clean, :compile, :travis]
+  end
+
   task :default => [:clean, :compile, :spec]
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'

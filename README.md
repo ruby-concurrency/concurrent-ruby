@@ -249,9 +249,15 @@ bundle exec rake build              # Build JRuby-specific core gem (alias for `
 bundle exec rake build:core         # Build concurrent-ruby-<version>-java.gem into the pkg directory
 
 *All except JRuby*
-bundle exec rake build              # Build core and extension gems
 bundle exec rake build:core         # Build concurrent-ruby-<version>.gem into the pkg directory
 bundle exec rake build:ext          # Build concurrent-ruby-ext-<version>.gem into the pkg directory
+
+*When Docker IS installed*
+bundle exec rake build:windows      # Build the windows binary <version> gems per rake-compiler-dock
+bundle exec rake build              # Build core, extension, and edge gems, including Windows binaries
+
+*When Docker is NOT installed*
+bundle exec rake build              # Build core, extension, and edge gems (excluding Windows binaries)
 
 *All*
 bundle exec rake clean              # Remove any temporary products
@@ -261,7 +267,7 @@ bundle exec rake compile            # Compile all the extensions
 
 ## Maintainers
 
-* [Jerry D'Antonio](https://github.com/jdantonio)
+* [Jerry D'Antonio](https://github.com/jdantonio) (creator)
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Lucas Allan](https://github.com/lucasallan)
