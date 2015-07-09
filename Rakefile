@@ -42,8 +42,7 @@ Dir.glob('tasks/**/*.rake').each do |rakefile|
 end
 
 def has_docker?
-  system("docker version > /dev/null 2>&1")
-  0 == $?.exitstatus
+  system("docker version > /dev/null 2>&1 || boot2docker version > /dev/null 2>&1")
 end
 
 if Concurrent.on_jruby?
@@ -181,7 +180,20 @@ begin
                    '--tag ~notravis'
   end
 
-  task :ci => [:clean, :compile, :travis]
+  RSpec::Core::RakeTask.new(:appveyor) do |t|
+    t.rspec_opts = '--backtrace ' \
+                   '--tag ~unfinished ' \
+                   '--seed 1 ' \
+                   '--format documentation ' \
+                   '--tag ~notravis'
+  end
+
+  if Concurrent.on_windows?
+    task :ci => [:clean, :compile, :appveyor]
+  else
+    task :ci => [:clean, :compile, :travis]
+  end
+
   task :default => [:clean, :compile, :spec]
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
