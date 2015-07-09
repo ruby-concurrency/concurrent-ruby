@@ -4,25 +4,6 @@ require 'benchmark/ips'
 require 'concurrent'
 require 'concurrent-edge'
 
-# require 'ruby-prof'
-#
-# result = RubyProf.profile do
-#   1000.times do
-#     head    = Concurrent.future { 1 }
-#     branch1 = head.then(&:succ)
-#     branch2 = head.then(&:succ).then(&:succ)
-#     branch3 = head.then(&:succ).then(&:succ).then(&:succ)
-#     Concurrent.join(branch1, branch2, branch3).then { |(a, b, c)| a + b + c }.value!
-#   end
-# end
-#
-# printer = RubyProf::FlatPrinter.new(result)
-# printer.print(STDOUT)
-#
-# printer = RubyProf::GraphPrinter.new(result)
-# printer.print(STDOUT, {})
-#
-# exit
 
 scale  = 1
 time   = 10 * scale
@@ -43,7 +24,7 @@ end
 
 Benchmark.ips(time, warmup) do |x|
   of = Concurrent::Promise.execute { 1 }
-  nf = Concurrent.future(:fast) { 1 }
+  nf = Concurrent.succeeded_future(1, :fast)
   x.report('value-old') { of.value! }
   x.report('value-new') { nf.value! }
   x.compare!
@@ -60,7 +41,7 @@ Benchmark.ips(time, warmup) do |x|
     head.value!
   end
   x.report('graph-new') do
-    head = Concurrent.future(:fast) { 1 }
+    head = Concurrent.succeeded_future(1, :fast)
     10.times do
       branch1 = head.then(&:succ)
       branch2 = head.then(&:succ).then(&:succ)
@@ -73,13 +54,13 @@ end
 
 Benchmark.ips(time, warmup) do |x|
   x.report('immediate-old') { Concurrent::Promise.execute { nil }.value! }
-  x.report('immediate-new') { Concurrent.future(:fast) { nil }.value! }
+  x.report('immediate-new') { Concurrent.succeeded_future(nil, :fast).value! }
   x.compare!
 end
 
 Benchmark.ips(time, warmup) do |x|
   of = Concurrent::Promise.execute { 1 }
-  nf = Concurrent.future(:fast) { 1 }
+  nf = Concurrent.succeeded_future(1, :fast)
   x.report('then-old') { 100.times.reduce(nf) { |nf, _| nf.then(&:succ) }.value! }
   x.report('then-new') { 100.times.reduce(nf) { |nf, _| nf.then(&:succ) }.value! }
   x.compare!

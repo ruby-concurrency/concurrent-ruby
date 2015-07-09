@@ -18,10 +18,10 @@ module Concurrent
         behaviour!(Behaviour::Termination).terminated?
       end
 
-      # @see Termination#reason
-      def reason
-        behaviour!(Behaviour::Termination).reason
-      end
+      # # @see Termination#reason
+      # def reason
+      #   behaviour!(Behaviour::Termination).reason
+      # end
 
       # delegates to core.log
       # @see Logging#log

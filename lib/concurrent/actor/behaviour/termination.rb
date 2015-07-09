@@ -2,22 +2,22 @@ module Concurrent
   module Actor
     module Behaviour
 
-      # Handles actor termination.
+      # Handles actor termination. Waits until all its children are terminated,
+      # can be configured on behaviour initialization.
       # @note Actor rejects envelopes when terminated.
       # @note TODO missing example
       class Termination < Abstract
 
         # @!attribute [r] terminated
         #   @return [Edge::Event] event which will become set when actor is terminated.
-        # @!attribute [r] reason
-        attr_reader :terminated, :reason
+        attr_reader :terminated
 
-        def initialize(core, subsequent, core_options, trapping = false)
+        def initialize(core, subsequent, core_options, trapping = false, terminate_children = true)
           super core, subsequent, core_options
-          @terminated        = Concurrent.event
-          @public_terminated = @terminated.hide_completable
-          @reason            = nil
-          @trapping          = trapping
+          @terminated         = Concurrent.future
+          @public_terminated  = @terminated.hide_completable
+          @trapping           = trapping
+          @terminate_children = terminate_children
         end
 
         # @note Actor rejects envelopes when terminated.
@@ -43,7 +43,7 @@ module Concurrent
             if trapping? && reason != :kill
               pass envelope
             else
-              terminate! reason
+              terminate! reason, envelope
             end
           when :termination_event
             @public_terminated
@@ -59,14 +59,23 @@ module Concurrent
 
         # Terminates the actor. Any Envelope received after termination is rejected.
         # Terminates all its children, does not wait until they are terminated.
-        def terminate!(reason = :normal)
-          # TODO return after all children are terminated
+        def terminate!(reason = nil, envelope = nil)
           return true if terminated?
-          @reason = reason
-          terminated.complete
+
+          self_termination = Concurrent.completed_future(reason.nil?, reason.nil? || nil, reason)
+          all_terminations = if @terminate_children
+                               Concurrent.zip(*children.map { |ch| ch.ask(:terminate!) }, self_termination)
+                             else
+                               self_termination
+                             end
+
+          all_terminations.chain_completable(@terminated)
+          all_terminations.chain_completable(envelope.future) if envelope && envelope.future
+
           broadcast(true, [:terminated, reason]) # TODO do not end up in Dead Letter Router
           parent << :remove_child if parent
-          true
+
+          MESSAGE_PROCESSED
         end
       end
     end

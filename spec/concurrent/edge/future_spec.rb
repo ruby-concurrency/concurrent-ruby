@@ -36,7 +36,7 @@ describe 'Concurrent::Edge futures' do
       future = Concurrent.future { 1 + 1 }
       expect(future.value!).to eq 2
 
-      future = Concurrent.completed_future(1).then { |v| v + 1 }
+      future = Concurrent.succeeded_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
   end
@@ -47,7 +47,7 @@ describe 'Concurrent::Edge futures' do
       expect(delay.completed?).to eq false
       expect(delay.value!).to eq 2
 
-      delay = Concurrent.completed_future(1).delay.then { |v| v + 1 }
+      delay = Concurrent.succeeded_future(1).delay.then { |v| v + 1 }
       expect(delay.completed?).to eq false
       expect(delay.value!).to eq 2
     end
@@ -66,7 +66,7 @@ describe 'Concurrent::Edge futures' do
       start  = Time.now.to_f
       queue  = Queue.new
       future = Concurrent.
-          completed_future(1).
+          succeeded_future(1).
           schedule(0.1).
           then { |v| v + 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }

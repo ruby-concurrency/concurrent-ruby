@@ -39,9 +39,19 @@ module Concurrent
         end
       end
 
-      # @return [Future] which is already completed with value
-      def completed_future(value, default_executor = :io)
-        ImmediateFuturePromise.new(default_executor, value).future
+      # @return [Future] which is already completed
+      def completed_future(success, value, reason, default_executor = :io)
+        ImmediateFuturePromise.new(default_executor, success, value, reason).future
+      end
+
+      # @return [Future] which is already completed in success state with value
+      def succeeded_future(value, default_executor = :io)
+        completed_future true, value, nil, default_executor
+      end
+
+      # @return [Future] which is already completed in failed state with reason
+      def failed_future(reason, default_executor = :io)
+        completed_future false, nil, reason, default_executor
       end
 
       # @return [Event] which is already completed
@@ -678,10 +688,10 @@ module Concurrent
 
       alias_method :|, :any
 
-      # only proof of concept
       # @note may block
+      # @note only proof of concept
       def then_push(channel)
-        on_success { |value| channel.push value }
+        on_success(:io) { |value| channel.push value }
       end
 
       # @yield [value] executed async on `executor` when success
@@ -1104,8 +1114,9 @@ module Concurrent
 
     # @!visibility private
     class ImmediateFuturePromise < InnerPromise
-      def initialize(default_executor, value)
-        super Future.new(self, default_executor).complete_with(Future::Success.new(value))
+      def initialize(default_executor, success, value, reason)
+        super Future.new(self, default_executor).
+                  complete_with(success ? Future::Success.new(value) : Future::Failed.new(reason))
       end
     end
 
@@ -1360,7 +1371,7 @@ module Concurrent
       end
     end
 
-    # proof of concept
+    # @note proof of concept
     class Channel < Synchronization::Object
       # TODO make lock free
       def initialize

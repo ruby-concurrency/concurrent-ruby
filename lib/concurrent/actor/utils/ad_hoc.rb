@@ -18,7 +18,6 @@ module Concurrent
       #     # this block has to return proc defining #on_message behaviour
       #     -> message { where.tell message  }
       #   end
-      # @note TODO remove in favor of the module
       class AdHoc < Context
         include AsAdHoc
       end
