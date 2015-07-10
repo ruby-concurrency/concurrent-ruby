@@ -124,7 +124,8 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
   It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
   intended).
-
+* [Atomic Markable Reference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
+* [Lock Free Linked Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
 
 #### Statuses:
 
@@ -135,7 +136,9 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 - **Agent** - Incomplete behaviour compared to Clojure's models; stability good.
 - **Channel** - Missing documentation; limted features; stability good.
 - **Exchanger** - Known race condition requiring a new implementation.
-- **LazyRegister** - Missing documentation and tests.   
+- **LazyRegister** - Missing documentation and tests.
+- **AtomicMarkableReference** - Needs real world battle testing
+- **LockFreeLinkedSet** - Needs real world battle testing
 
 ## Usage
 
