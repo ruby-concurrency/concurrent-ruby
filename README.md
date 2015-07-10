@@ -1,5 +1,13 @@
 # Concurrent Ruby
-[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby) [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby) [![Build status](https://ci.appveyor.com/api/projects/status/iq8aboyuu3etad4w?svg=true)](https://ci.appveyor.com/project/rubyconcurrency/concurrent-ruby) [![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.svg)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby) [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby) [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg)](https://gemnasium.com/ruby-concurrency/concurrent-ruby) [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT) [![Gitter chat](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
+
+[![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby)
+[![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby)
+[![Build status](https://ci.appveyor.com/api/projects/status/iq8aboyuu3etad4w?svg=true)](https://ci.appveyor.com/project/rubyconcurrency/concurrent-ruby)
+[![Code Climate](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.svg)](https://codeclimate.com/github/ruby-concurrency/concurrent-ruby)
+[![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby)
+[![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg)](https://gemnasium.com/ruby-concurrency/concurrent-ruby)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT)
+[![Gitter chat](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
 <table>
   <tr>
@@ -49,7 +57,7 @@ The primary site for documentation is the automatically generated [API documenta
 
 We also have a [mailing list](http://groups.google.com/group/concurrent-ruby).
 
-This library contains a variety of concurrency abstractions at high and low levels. One of the high-level abstractions is likely to meet most common needs. 
+This library contains a variety of concurrency abstractions at high and low levels. One of the high-level abstractions is likely to meet most common needs.
 
 #### General-purpose Concurrency Abstractions
 
@@ -59,7 +67,7 @@ This library contains a variety of concurrency abstractions at high and low leve
   * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
 * [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
-* [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals. 
+* [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals.
 
 #### Thread-safe Value Objects
 
@@ -108,7 +116,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
-* [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new 
+* [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new
   unified implementation of Futures and Promises which combines Features of previous `Future`,
   `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
   new synchronization layer to make all the paths **lock-free** with exception of blocking threads on `#wait`.
@@ -118,24 +126,27 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   Communicating Sequential Processes (CSP).
 * [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
-* [New Future Promise Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new 
+* [New Future Promise Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new
   unified implementation of Futures and Promises which combines Features of previous `Future`,
   `Promise`, `IVar`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
   new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
   It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
   intended).
-
+* [Atomic Markable Reference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
+* [Lock Free Linked Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
 
 #### Statuses:
 
 *Why are these not in core?*
 
-- **Actor** - Partial documentation and tests; stability is good. 
+- **Actor** - Partial documentation and tests; stability is good.
 - **Future/Promise Framework** - API changes; partial documentation and tests; stability good.
 - **Agent** - Incomplete behaviour compared to Clojure's models; stability good.
 - **Channel** - Missing documentation; limted features; stability good.
 - **Exchanger** - Known race condition requiring a new implementation.
-- **LazyRegister** - Missing documentation and tests.   
+- **LazyRegister** - Missing documentation and tests.
+- **AtomicMarkableReference** - Needs real world battle testing
+- **LockFreeLinkedSet** - Needs real world battle testing
 
 ## Usage
 
