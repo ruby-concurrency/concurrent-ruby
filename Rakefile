@@ -5,7 +5,7 @@ $:.push File.join(File.dirname(__FILE__), 'lib')
 require 'concurrent/version'
 require 'concurrent/utility/native_extension_loader'
 
-## load the two gemspec files
+## load the gemspec files
 CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
 EXT_GEMSPEC  = Gem::Specification.load('concurrent-ruby-ext.gemspec')
 EDGE_GEMSPEC = Gem::Specification.load('concurrent-ruby-edge.gemspec')

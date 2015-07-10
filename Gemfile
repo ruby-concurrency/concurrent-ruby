@@ -6,7 +6,7 @@ gemspec name: 'concurrent-ruby-edge'
 group :development do
   gem 'rake', '~> 10.4.2'
   gem 'rake-compiler', '~> 0.9.5'
-  gem 'rake-compiler-dock', '~> 0.4.2'
+  gem 'rake-compiler-dock', '~> 0.4.3'
   gem 'gem-compiler', '~> 0.3.0'
   gem 'benchmark-ips', '~> 2.2.0'
 

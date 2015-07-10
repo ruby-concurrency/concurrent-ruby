@@ -1,5 +1,4 @@
-### Next Release v0.9.0 (Target Date: 7 June 2015)
-
+## Current Release v0.9.0 (10 July 2015)
 
 * Updated `AtomicReference`
   - `AtomicReference#try_update` now simply returns instead of raising exception
@@ -98,7 +97,7 @@
 * Removed brute-force killing of threads in tests
 * Fixed a thread pool bug when the operating system cannot allocate more threads
 
-## Current Release v0.8.0 (25 January 2015)
+### Release v0.8.0 (25 January 2015)
 
 * C extension for MRI have been extracted into the `concurrent-ruby-ext` companion gem.
   Please see the README for more detail.

@@ -1,4 +1,4 @@
-require 'concurrent/concern/logging'
+require 'logger'
 require 'concurrent/synchronization'
 
 module Concurrent
@@ -8,7 +8,7 @@ module Concurrent
   #
   # @!visibility private
   class AtExitImplementation < Synchronization::Object
-    include Concern::Logging
+    include Logger::Severity
 
     def initialize(*args)
       super()
@@ -46,9 +46,9 @@ module Concurrent
     def install
       synchronize do
         @installed ||= begin
-          at_exit { runner }
-          true
-        end
+                         at_exit { runner }
+                         true
+                       end
         self
       end
     end
@@ -71,7 +71,7 @@ module Concurrent
         begin
           handler.call
         rescue => error
-          log ERROR, error
+          Concurrent.global_logger.call(ERROR, error)
         end
       end
       handlers.keys

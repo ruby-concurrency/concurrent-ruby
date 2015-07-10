@@ -1,5 +1,4 @@
 require 'logger'
-require 'concurrent/configuration'
 
 module Concurrent
   module Concern
@@ -16,6 +15,8 @@ module Concurrent
       # @param [String, nil] message when nil block is used to generate the message
       # @yieldreturn [String] a message
       def log(level, progname, message = nil, &block)
+        #NOTE: Cannot require 'concurrent/configuration' above due to circular references.
+        #      Assume that the gem has been initialized if we've gotten this far.
         (@logger || Concurrent.global_logger).call level, progname, message, &block
       rescue => error
         $stderr.puts "`Concurrent.configuration.logger` failed to log #{[level, progname, message, block]}\n" +
