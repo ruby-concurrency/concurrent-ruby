@@ -7,7 +7,7 @@ module Concurrent
       # @!macro internal_implementation_note
       class RbxObject < AbstractObject
         def initialize
-          @Waiters = []
+          @RbxWaiters = []
           ensure_ivar_visibility!
         end
 
@@ -21,16 +21,16 @@ module Concurrent
           wchan = Rubinius::Channel.new
 
           begin
-            @Waiters.push wchan
+            @RbxWaiters.push wchan
             Rubinius.unlock(self)
             signaled = wchan.receive_timeout timeout
           ensure
             Rubinius.lock(self)
 
-            if !signaled && !@Waiters.delete(wchan)
+            if !signaled && !@RbxWaiters.delete(wchan)
               # we timed out, but got signaled afterwards,
               # so pass that signal on to the next waiter
-              @Waiters.shift << true unless @Waiters.empty?
+              @RbxWaiters.shift << true unless @RbxWaiters.empty?
             end
           end
 
@@ -38,12 +38,12 @@ module Concurrent
         end
 
         def ns_signal
-          @Waiters.shift << true unless @Waiters.empty?
+          @RbxWaiters.shift << true unless @RbxWaiters.empty?
           self
         end
 
         def ns_broadcast
-          @Waiters.shift << true until @Waiters.empty?
+          @RbxWaiters.shift << true until @RbxWaiters.empty?
           self
         end
 
