@@ -25,9 +25,6 @@ module Concurrent
             # may be a Windows cross-compiled native gem
             require "concurrent/#{RUBY_VERSION[0..2]}/extension"
             @c_ext_loaded = true
-          end,
-          lambda do
-            warn 'Performance on MRI may be improved with the concurrent-ruby-ext gem. Please see http://concurrent-ruby.com'
           end]
 
         tries.each do |try|
@@ -45,7 +42,7 @@ module Concurrent
           require 'concurrent_ruby_ext'
           @java_ext_loaded = true
         rescue LoadError
-          warn 'Performance on JRuby may be improved by installing the pre-compiled Java extensions. Please see http://concurrent-ruby.com'
+          # move on with pure-Ruby implementations
         end
       end
     end
