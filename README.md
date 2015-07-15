@@ -119,19 +119,13 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 * [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new
   unified implementation of Futures and Promises which combines Features of previous `Future`,
   `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
-  new synchronization layer to make all the paths **lock-free** with exception of blocking threads on `#wait`.
-  It offers better performance and does not block threads when not required.
+  new synchronization layer to make all the features **non-blocking** and **lock-free** with exception of obviously blocking
+  operations like `#wait`, `#value`. It also offers better performance.
 * [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
   Communicating Sequential Processes (CSP).
 * [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
-* [New Future Promise Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new
-  unified implementation of Futures and Promises which combines Features of previous `Future`,
-  `Promise`, `IVar`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
-  new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
-  It offers better performance and does not block threads (exception being `#wait` and similar methods where it's
-  intended).
 * [Atomic Markable Reference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [Lock Free Linked Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
 
