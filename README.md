@@ -7,7 +7,7 @@
 [![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby)
 [![Dependency Status](https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg)](https://gemnasium.com/ruby-concurrency/concurrent-ruby)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT)
-[![Gitter chat](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
+[![Gitter chat](https://img.shields.io/badge/IRC%20(gitter)-devs%20%26%20users-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
 <table>
   <tr>
@@ -278,6 +278,8 @@ bundle exec rake compile            # Compile all the extensions
 * [Lucas Allan](https://github.com/lucasallan)
 * [Petr Chalupa](https://github.com/pitr-ch)
 * [Paweł Obrok](https://github.com/obrok)
+
+Find us on [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
 
 ## Contributing
 
