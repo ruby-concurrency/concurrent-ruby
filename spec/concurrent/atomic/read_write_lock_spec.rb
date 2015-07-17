@@ -149,10 +149,11 @@ module Concurrent
         }.to raise_error(Concurrent::ResourceLimitError)
       end
 
-      it 'does not release the lock when an exception is raised' do
-        expect(subject).to_not receive(:release_read_lock).with(any_args)
-        lambda do
-          subject.with_read_lock { raise StandardError }
+      it 'releases the lock when an exception is raised' do
+        expect(subject).to receive(:release_read_lock).with(any_args)
+        begin
+          subject.release_read_lock { raise StandardError }
+        rescue
         end
       end
     end
@@ -189,10 +190,11 @@ module Concurrent
         }.to raise_error(Concurrent::ResourceLimitError)
       end
 
-      it 'does not release the lock when an exception is raised' do
-        expect(subject).to_not receive(:release_write_lock).with(any_args)
-        lambda do
+      it 'releases the lock when an exception is raised' do
+        expect(subject).to receive(:release_write_lock).with(any_args)
+        begin
           subject.with_write_lock { raise StandardError }
+        rescue
         end
       end
     end
