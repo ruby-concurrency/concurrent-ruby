@@ -203,7 +203,7 @@ module Concurrent
     #
     # @return [Boolean] true if the lock is successfully released
     def release_write_lock
-      c = @Counter.update { |c| c-RUNNING_WRITER }
+      c = @Counter.update { |count| count-RUNNING_WRITER }
       @WriterLock.set(nil)
       @ReadLock.broadcast
       @WriteLock.signal if waiting_writers(c) > 0
