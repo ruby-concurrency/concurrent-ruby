@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic/atomic_reference'
 require 'concurrent/errors'
 require 'concurrent/synchronization'
 
@@ -54,9 +55,10 @@ module Concurrent
 
     # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
-      @Counter   = AtomicFixnum.new(0) # single integer which represents lock state
-      @ReadLock  = Synchronization::Lock.new
-      @WriteLock = Synchronization::Lock.new
+      @Counter    = AtomicFixnum.new(0) # single integer which represents lock state
+      @ReadLock   = Synchronization::Lock.new
+      @WriteLock  = Synchronization::Lock.new
+      @WriterLock = AtomicReference.new(nil)
       ensure_ivar_visibility!
       super()
     end
@@ -162,6 +164,7 @@ module Concurrent
     # @raise [Concurrent::ResourceLimitError] if the maximum number of writers
     #   is exceeded.
     def acquire_write_lock(no_wait = false)
+      return true if @WriterLock.value == Thread.current
       while true
         c = @Counter.value
         return false if no_wait && running_writer?(c)
@@ -192,6 +195,7 @@ module Concurrent
           break
         end
       end
+      @WriterLock.set(Thread.current)
       true
     end
 
@@ -200,6 +204,7 @@ module Concurrent
     # @return [Boolean] true if the lock is successfully released
     def release_write_lock
       c = @Counter.update { |c| c-RUNNING_WRITER }
+      @WriterLock.set(nil)
       @ReadLock.broadcast
       @WriteLock.signal if waiting_writers(c) > 0
       true

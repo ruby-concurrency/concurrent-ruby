@@ -460,6 +460,11 @@ module Concurrent
         expect(write_flag.value).to be true
       end
 
+      it 'is reentrant' do
+        expect(subject.acquire_write_lock).to be true
+        expect(subject.acquire_write_lock).to be true
+      end
+
       it 'raises an exception if maximum lock limit is exceeded' do
         counter = Concurrent::AtomicFixnum.new(ReadWriteLock::MAX_WRITERS)
         allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
