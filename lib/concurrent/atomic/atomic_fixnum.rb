@@ -1,3 +1,4 @@
+require 'concurrent/atomic_reference/direct_update'
 require 'concurrent/utility/native_extension_loader'
 require 'concurrent/synchronization'
 
@@ -151,6 +152,12 @@ module Concurrent
   #
   # @see Concurrent::MutexAtomicFixnum
   class AtomicFixnum < AtomicFixnumImplementation
+    include Concurrent::AtomicDirectUpdate
+
+    # @!visibility private
+    # needed for AtomicDirectUpdate
+    alias_method :get, :value
+    private :get
 
     # @!method initialize(initial = 0)
     #   @!macro atomic_fixnum_method_initialize
