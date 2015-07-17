@@ -160,9 +160,33 @@ module Concurrent
 
     context '#with_write_lock' do
 
-      it 'acquires the lock' do
-        expect(subject).to receive(:acquire_write_lock).with(no_args)
+      it 'acquires the lock when no_wait is false' do
+        expect(subject).to receive(:acquire_write_lock).with(any_args)
         subject.with_write_lock { nil }
+      end
+
+      it 'returns false immediately if the lock has been acquired and `no_wait` is true' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        latch_2.wait(1)
+
+        block_run = Concurrent::AtomicBoolean.new(false)
+        acquired = subject.with_write_lock(true) { block_run.make_true }
+        latch_3.count_down
+
+        expect(acquired).to be nil
+        expect(block_run.value).to be false
       end
 
       it 'returns the value of the block operation' do
@@ -208,7 +232,7 @@ module Concurrent
         expect(counter.value).to eq 1
       end
 
-      it 'waits for a running writer to finish' do
+      it 'waits for a running writer to finish when `no_wait` is false' do
         latch_1 = Concurrent::CountDownLatch.new(1)
         latch_2 = Concurrent::CountDownLatch.new(1)
         latch_3 = Concurrent::CountDownLatch.new(1)
@@ -240,6 +264,28 @@ module Concurrent
 
         expect(write_flag.value).to be true
         expect(read_flag.value).to be true
+      end
+
+      it 'returns false immediately if the lock has been acquired and `no_wait` is true' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        latch_2.wait(1)
+
+        acquired = subject.acquire_write_lock(true)
+        latch_3.count_down
+
+        expect(acquired).to be false
       end
 
       it 'does not wait for any running readers' do

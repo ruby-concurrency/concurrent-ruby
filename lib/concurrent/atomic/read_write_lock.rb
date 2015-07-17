@@ -82,6 +82,9 @@ module Concurrent
 
     # Execute a block operation within a write lock.
     #
+    # @param [Boolean] no_wait When true will return immediately if the lock cannot
+    #   be acquired without waiting. When false will wait for the lock.
+    #
     # @yield the task to be performed within the lock.
     #
     # @return [Object] the result of the block operation.
@@ -89,9 +92,9 @@ module Concurrent
     # @raise [ArgumentError] when no block is given.
     # @raise [Concurrent::ResourceLimitError] if the maximum number of readers
     #   is exceeded.
-    def with_write_lock
+    def with_write_lock(no_wait = false)
       raise ArgumentError.new('no block given') unless block_given?
-      acquire_write_lock
+      return nil unless acquire_write_lock(no_wait)
       begin
         yield
       ensure
@@ -151,13 +154,17 @@ module Concurrent
 
     # Acquire a write lock. Will block and wait for all active readers and writers.
     #
-    # @return [Boolean] true if the lock is successfully acquired
+    # @param [Boolean] no_wait When true will return immediately if the lock cannot
+    #   be acquired without waiting. When false will wait for the lock.
+    #
+    # @return [Boolean] true if the lock is successfully acquired else false
     #
     # @raise [Concurrent::ResourceLimitError] if the maximum number of writers
     #   is exceeded.
-    def acquire_write_lock
+    def acquire_write_lock(no_wait = false)
       while true
         c = @Counter.value
+        return false if no_wait && running_writer?(c)
         raise ResourceLimitError.new('Too many writer threads') if max_writers?(c)
 
         if c == 0 # no readers OR writers running
