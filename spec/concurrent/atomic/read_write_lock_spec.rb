@@ -142,26 +142,51 @@ module Concurrent
       end
 
       it 'raises an exception if maximum lock limit is exceeded' do
-        counter = Concurrent::AtomicReference.new(ReadWriteLock::MAX_READERS)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(ReadWriteLock::MAX_READERS)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         expect {
           subject.with_read_lock { nil }
         }.to raise_error(Concurrent::ResourceLimitError)
       end
 
-      it 'does not release the lock when an exception is raised' do
-        expect(subject).to_not receive(:release_read_lock).with(any_args)
-        lambda do
-          subject.with_read_lock { raise StandardError }
+      it 'releases the lock when an exception is raised' do
+        expect(subject).to receive(:release_read_lock).with(any_args)
+        begin
+          subject.release_read_lock { raise StandardError }
+        rescue
         end
       end
     end
 
     context '#with_write_lock' do
 
-      it 'acquires the lock' do
-        expect(subject).to receive(:acquire_write_lock).with(no_args)
+      it 'acquires the lock when no_wait is false' do
+        expect(subject).to receive(:acquire_write_lock).with(any_args)
         subject.with_write_lock { nil }
+      end
+
+      it 'returns false immediately if the lock has been acquired and `no_wait` is true' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        latch_2.wait(1)
+
+        block_run = Concurrent::AtomicBoolean.new(false)
+        acquired = subject.with_write_lock(true) { block_run.make_true }
+        latch_3.count_down
+
+        expect(acquired).to be nil
+        expect(block_run.value).to be false
       end
 
       it 'returns the value of the block operation' do
@@ -182,17 +207,18 @@ module Concurrent
       end
 
       it 'raises an exception if maximum lock limit is exceeded' do
-        counter = Concurrent::AtomicReference.new(ReadWriteLock::MAX_WRITERS)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(ReadWriteLock::MAX_WRITERS)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         expect {
           subject.with_write_lock { nil }
         }.to raise_error(Concurrent::ResourceLimitError)
       end
 
-      it 'does not release the lock when an exception is raised' do
-        expect(subject).to_not receive(:release_write_lock).with(any_args)
-        lambda do
+      it 'releases the lock when an exception is raised' do
+        expect(subject).to receive(:release_write_lock).with(any_args)
+        begin
           subject.with_write_lock { raise StandardError }
+        rescue
         end
       end
     end
@@ -200,13 +226,13 @@ module Concurrent
     context '#acquire_read_lock' do
 
       it 'increments the lock count' do
-        counter = Concurrent::AtomicReference.new(0)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(0)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         subject.acquire_read_lock
         expect(counter.value).to eq 1
       end
 
-      it 'waits for a running writer to finish' do
+      it 'waits for a running writer to finish when `no_wait` is false' do
         latch_1 = Concurrent::CountDownLatch.new(1)
         latch_2 = Concurrent::CountDownLatch.new(1)
         latch_3 = Concurrent::CountDownLatch.new(1)
@@ -240,9 +266,31 @@ module Concurrent
         expect(read_flag.value).to be true
       end
 
+      it 'returns false immediately if the lock has been acquired and `no_wait` is true' do
+        latch_1 = Concurrent::CountDownLatch.new(1)
+        latch_2 = Concurrent::CountDownLatch.new(1)
+        latch_3 = Concurrent::CountDownLatch.new(1)
+
+        thread_1 = Thread.new do
+          latch_1.wait(1)
+          subject.acquire_write_lock
+          latch_2.count_down
+          latch_3.wait(1)
+          subject.release_write_lock
+        end
+
+        latch_1.count_down
+        latch_2.wait(1)
+
+        acquired = subject.acquire_write_lock(true)
+        latch_3.count_down
+
+        expect(acquired).to be false
+      end
+
       it 'does not wait for any running readers' do
-        counter = Concurrent::AtomicReference.new(0)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(0)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
 
         latch_1 = Concurrent::CountDownLatch.new(1)
         latch_2 = Concurrent::CountDownLatch.new(1)
@@ -280,8 +328,8 @@ module Concurrent
       end
 
       it 'raises an exception if maximum lock limit is exceeded' do
-        counter = Concurrent::AtomicReference.new(ReadWriteLock::MAX_WRITERS)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(ReadWriteLock::MAX_WRITERS)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         expect {
           subject.acquire_write_lock { nil }
         }.to raise_error(Concurrent::ResourceLimitError)
@@ -295,8 +343,8 @@ module Concurrent
     context '#release_read_lock' do
 
       it 'decrements the counter' do
-        counter = Concurrent::AtomicReference.new(0)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(0)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         subject.acquire_read_lock
         expect(counter.value).to eq 1
         subject.release_read_lock
@@ -338,8 +386,8 @@ module Concurrent
     context '#acquire_write_lock' do
 
       it 'increments the lock count' do
-        counter = Concurrent::AtomicReference.new(0)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(0)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         subject.acquire_write_lock
         expect(counter.value).to be > 1
       end
@@ -412,9 +460,14 @@ module Concurrent
         expect(write_flag.value).to be true
       end
 
+      it 'is reentrant' do
+        expect(subject.acquire_write_lock).to be true
+        expect(subject.acquire_write_lock).to be true
+      end
+
       it 'raises an exception if maximum lock limit is exceeded' do
-        counter = Concurrent::AtomicReference.new(ReadWriteLock::MAX_WRITERS)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(ReadWriteLock::MAX_WRITERS)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         expect {
           subject.acquire_write_lock { nil }
         }.to raise_error(Concurrent::ResourceLimitError)
@@ -428,8 +481,8 @@ module Concurrent
     context '#release_write_lock' do
 
       it 'decrements the counter' do
-        counter = Concurrent::AtomicReference.new(0)
-        allow(Concurrent::AtomicReference).to receive(:new).with(anything).and_return(counter)
+        counter = Concurrent::AtomicFixnum.new(0)
+        allow(Concurrent::AtomicFixnum).to receive(:new).with(anything).and_return(counter)
         subject.acquire_write_lock
         expect(counter.value).to be > 1
         subject.release_write_lock
