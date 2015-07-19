@@ -55,7 +55,7 @@ We have a roadmap guiding our work toward the [v1.0.0 release](https://github.co
 
 The primary site for documentation is the automatically generated [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
 
-We also have a [mailing list](http://groups.google.com/group/concurrent-ruby).
+We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) and [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
 
 This library contains a variety of concurrency abstractions at high and low levels. One of the high-level abstractions is likely to meet most common needs.
 
@@ -278,8 +278,6 @@ bundle exec rake compile            # Compile all the extensions
 * [Lucas Allan](https://github.com/lucasallan)
 * [Petr Chalupa](https://github.com/pitr-ch)
 * [Paweł Obrok](https://github.com/obrok)
-
-Find us on [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
 
 ## Contributing
 
