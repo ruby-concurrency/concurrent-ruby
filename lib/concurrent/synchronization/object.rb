@@ -1,3 +1,8 @@
+require 'concurrent/synchronization/java_object'
+require 'concurrent/synchronization/monitor_object'
+require 'concurrent/synchronization/mutex_object'
+require 'concurrent/synchronization/rbx_object'
+
 module Concurrent
   module Synchronization
 
