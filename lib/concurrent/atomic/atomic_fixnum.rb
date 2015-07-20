@@ -81,7 +81,7 @@ module Concurrent
     #
     #   @return [Fixnum] the current value after decrementation
     def decrement
-      synchronize { ns_set(@value -1) }
+      synchronize { ns_set(@value - 1) }
     end
 
     alias_method :down, :decrement
