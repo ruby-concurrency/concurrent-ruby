@@ -1,4 +1,4 @@
-require 'concurrent/atomic/thread_local_var/weak_key_map'
+require 'thread'
 
 module Concurrent
 
@@ -70,7 +70,7 @@ module Concurrent
     # @!macro [attach] thread_local_var_method_set
     #
     #   Sets the current thread's copy of this thread-local variable to the specified value.
-    #   
+    #
     #   @param [Object] value the value to set
     #   @return [Object] the new value
     def value=(value)
@@ -81,7 +81,7 @@ module Concurrent
     #
     #   Bind the given value to thread local storage during
     #   execution of the given block.
-    #   
+    #
     #   @param [Object] value the value to bind
     #   @yield the operation to be performed with the bound variable
     #   @return [Object] the value
@@ -119,29 +119,129 @@ module Concurrent
   # @!macro internal_implementation_note
   class RubyThreadLocalVar < AbstractThreadLocalVar
 
+    # Each thread has a (lazily initialized) array of thread-local variable values
+    # Each time a new thread-local var is created, we allocate an "index" for it
+    # For example, if the allocated index is 1, that means slot #1 in EVERY
+    #   thread's thread-local array will be used for the value of that TLV
+    #
+    # The good thing about using a per-THREAD structure to hold values, rather
+    #   than a per-TLV structure, is that no synchronization is needed when
+    #    reading and writing those values (since the structure is only ever
+    #    accessed by a single thread)
+    #
+    # Of course, when a TLV is GC'd, 1) we need to recover its index for use
+    #   by other new TLVs (otherwise the thread-local arrays could get bigger
+    #   and bigger with time), and 2) we need to null out all the references
+    #   held in the now-unused slots (both to avoid blocking GC of those objects,
+    #   and also to prevent "stale" values from being passed on to a new TLV
+    #   when the index is reused)
+    # Because we need to null out freed slots, we need to keep references to
+    #   ALL the thread-local arrays -- ARRAYS is for that
+    # But when a Thread is GC'd, we need to drop the reference to its thread-local
+    #   array, so we don't leak memory
+
+    FREE = []
+    LOCK = Mutex.new
+    ARRAYS = {} # used as a hash set
+    @@next = 0
+
     protected
 
     # @!visibility private
+    def self.threadlocal_finalizer(index)
+      proc do
+        LOCK.synchronize do
+          FREE.push(index)
+          # The cost of GC'ing a TLV is linear in the number of threads using TLVs
+          # But that is natural! More threads means more storage is used per TLV
+          # So naturally more CPU time is required to free more storage
+          ARRAYS.each_value do |array|
+            array[index] = nil
+          end
+        end
+      end
+    end
+
+    # @!visibility private
+    def self.thread_finalizer(array)
+      proc do
+        LOCK.synchronize do
+          # The thread which used this thread-local array is now gone
+          # So don't hold onto a reference to the array (thus blocking GC)
+          ARRAYS.delete(array.object_id)
+        end
+      end
+    end
+
     def allocate_storage
-      @storage = WeakKeyMap.new
+      @index = LOCK.synchronize do
+        FREE.pop || begin
+          result = @@next
+          @@next += 1
+          result
+        end
+      end
+      ObjectSpace.define_finalizer(self, self.class.threadlocal_finalizer(@index))
     end
 
-    # @!visibility private
-    def get
-      @storage[Thread.current]
+    public
+
+    # @!macro [attach] thread_local_var_method_get
+    #
+    #   Returns the value in the current thread's copy of this thread-local variable.
+    #
+    #   @return [Object] the current value
+    def value
+      if array = Thread.current[:__threadlocal_array__]
+        value = array[@index]
+        if value.nil?
+          @default
+        elsif value.equal?(NIL_SENTINEL)
+          nil
+        else
+          value
+        end
+      else
+        @default
+      end
     end
 
-    # @!visibility private
-    def set(value)
-      key = Thread.current
+    # @!macro [attach] thread_local_var_method_set
+    #
+    #   Sets the current thread's copy of this thread-local variable to the specified value.
+    #
+    #   @param [Object] value the value to set
+    #   @return [Object] the new value
+    def value=(value)
+      me = Thread.current
+      # We could keep the thread-local arrays in a hash, keyed by Thread
+      # But why? That would require locking
+      # Using Ruby's built-in thread-local storage is faster
+      unless array = me[:__threadlocal_array__]
+        array = me[:__threadlocal_array__] = []
+        LOCK.synchronize { ARRAYS[array.object_id] = array }
+        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
+      end
+      array[@index] = (value.nil? ? NIL_SENTINEL : value)
+      value
+    end
 
-      @storage[key] = value
-
+    # @!macro [attach] thread_local_var_method_bind
+    #
+    #   Bind the given value to thread local storage during
+    #   execution of the given block.
+    #
+    #   @param [Object] value the value to bind
+    #   @yield the operation to be performed with the bound variable
+    #   @return [Object] the value
+    def bind(value, &block)
       if block_given?
+        old_value = self.value
         begin
+          self.value = value
           yield
         ensure
-          @storage.delete(key)
+          self.value = old_value
         end
       end
     end
