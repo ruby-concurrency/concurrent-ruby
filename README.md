@@ -116,7 +116,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
-* [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html) - new
+* [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/FutureShortcuts.html) - new
   unified implementation of Futures and Promises which combines Features of previous `Future`,
   `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
   new synchronization layer to make all the features **non-blocking** and **lock-free** with exception of obviously blocking
