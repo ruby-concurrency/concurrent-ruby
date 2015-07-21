@@ -51,7 +51,7 @@ Java 8 is required for JRuby (Java 7 support is deprecated in version 0.9 and wi
 
 ## Features & Documentation
 
-We have a roadmap guiding our work toward the [v1.0.0 release](https://github.com/ruby-concurrency/concurrent-ruby/wiki/v1.0-Roadmap).
+We have a roadmap guiding our work toward the [v1.0.0 release](https://github.com/ruby-concurrency/concurrent-ruby/issues/257).
 
 The primary site for documentation is the automatically generated [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
 
