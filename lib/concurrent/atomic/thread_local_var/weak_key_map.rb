@@ -28,20 +28,20 @@ module Concurrent
       require 'weakref'
 
       # @!visibility private 
-      class WeakReference
+      class WeakReference < ::WeakRef
 
         # The object id of the object being referenced.
         attr_reader :referenced_object_id
 
-        # This implementation of a weak reference simply wraps the standard WeakRef implementation
-        # that comes with the Ruby standard library.
+        # This implementation of a weak reference simply delegates to the
+        # standard WeakRef implementation that comes with the Ruby standard library.
         def initialize(obj)
           @referenced_object_id = obj.__id__
-          @ref = ::WeakRef.new(obj)
+          super(obj)
         end
 
         def object
-          @ref.__getobj__
+          __getobj__
         rescue => e
           # Jruby implementation uses RefError while MRI uses WeakRef::RefError
           if (defined?(RefError) && e.is_a?(RefError)) || (defined?(::WeakRef::RefError) && e.is_a?(::WeakRef::RefError))
