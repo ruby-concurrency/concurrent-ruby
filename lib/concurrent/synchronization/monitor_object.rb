@@ -1,4 +1,5 @@
 require 'monitor'
+require 'concurrent/synchronization/mutex_object'
 
 module Concurrent
   module Synchronization
