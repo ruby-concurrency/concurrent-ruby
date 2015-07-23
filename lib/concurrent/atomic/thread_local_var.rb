@@ -33,91 +33,7 @@ module Concurrent
   #
   #   @see https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html Java ThreadLocal
   #
-  # @!visibility private
-  class AbstractThreadLocalVar
-
-    # @!visibility private
-    NIL_SENTINEL = Object.new
-    private_constant :NIL_SENTINEL
-
-    # @!macro [attach] thread_local_var_method_initialize
-    #
-    #   Creates a thread local variable.
-    #
-    #   @param [Object] default the default value when otherwise unset
-    def initialize(default = nil)
-      @default = default
-      allocate_storage
-    end
-
-    # @!macro [attach] thread_local_var_method_get
-    #
-    #   Returns the value in the current thread's copy of this thread-local variable.
-    #
-    #   @return [Object] the current value
-    def value
-      value = get
-
-      if value.nil?
-        @default
-      elsif value == NIL_SENTINEL
-        nil
-      else
-        value
-      end
-    end
-
-    # @!macro [attach] thread_local_var_method_set
-    #
-    #   Sets the current thread's copy of this thread-local variable to the specified value.
-    #
-    #   @param [Object] value the value to set
-    #   @return [Object] the new value
-    def value=(value)
-      bind value
-    end
-
-    # @!macro [attach] thread_local_var_method_bind
-    #
-    #   Bind the given value to thread local storage during
-    #   execution of the given block.
-    #
-    #   @param [Object] value the value to bind
-    #   @yield the operation to be performed with the bound variable
-    #   @return [Object] the value
-    def bind(value, &block)
-      if value.nil?
-        stored_value = NIL_SENTINEL
-      else
-        stored_value = value
-      end
-
-      set(stored_value, &block)
-
-      value
-    end
-
-    protected
-
-    # @!visibility private
-    def allocate_storage
-      raise NotImplementedError
-    end
-
-    # @!visibility private
-    def get
-      raise NotImplementedError
-    end
-
-    # @!visibility private
-    def set(value)
-      raise NotImplementedError
-    end
-  end
-
-  # @!visibility private
-  # @!macro internal_implementation_note
-  class RubyThreadLocalVar < AbstractThreadLocalVar
+  class ThreadLocalVar
 
     # Each thread has a (lazily initialized) array of thread-local variable values
     # Each time a new thread-local var is created, we allocate an "index" for it
@@ -140,10 +56,64 @@ module Concurrent
     # But when a Thread is GC'd, we need to drop the reference to its thread-local
     #   array, so we don't leak memory
 
+    # @!visibility private
+    NIL_SENTINEL = Object.new
     FREE = []
     LOCK = Mutex.new
     ARRAYS = {} # used as a hash set
     @@next = 0
+    private_constant :NIL_SENTINEL, :FREE, :LOCK, :ARRAYS
+
+    #   Creates a thread local variable.
+    #
+    #   @param [Object] default the default value when otherwise unset
+    def initialize(default = nil)
+      @default = default
+      @index = LOCK.synchronize do
+        FREE.pop || begin
+          result = @@next
+          @@next += 1
+          result
+        end
+      end
+      ObjectSpace.define_finalizer(self, self.class.threadlocal_finalizer(@index))
+    end
+
+    #   Returns the value in the current thread's copy of this thread-local variable.
+    #
+    #   @return [Object] the current value
+    def value
+      if array = Thread.current[:__threadlocal_array__]
+        value = array[@index]
+        if value.nil?
+          @default
+        elsif value.equal?(NIL_SENTINEL)
+          nil
+        else
+          value
+        end
+      else
+        @default
+      end
+    end
+
+    #   Sets the current thread's copy of this thread-local variable to the specified value.
+    #
+    #   @param [Object] value the value to set
+    #   @return [Object] the new value
+    def value=(value)
+      me = Thread.current
+      # We could keep the thread-local arrays in a hash, keyed by Thread
+      # But why? That would require locking
+      # Using Ruby's built-in thread-local storage is faster
+      unless array = me[:__threadlocal_array__]
+        array = me[:__threadlocal_array__] = []
+        LOCK.synchronize { ARRAYS[array.object_id] = array }
+        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
+      end
+      array[@index] = (value.nil? ? NIL_SENTINEL : value)
+      value
+    end
 
     protected
 
@@ -173,61 +143,6 @@ module Concurrent
       end
     end
 
-    def allocate_storage
-      @index = LOCK.synchronize do
-        FREE.pop || begin
-          result = @@next
-          @@next += 1
-          result
-        end
-      end
-      ObjectSpace.define_finalizer(self, self.class.threadlocal_finalizer(@index))
-    end
-
-    public
-
-    # @!macro [attach] thread_local_var_method_get
-    #
-    #   Returns the value in the current thread's copy of this thread-local variable.
-    #
-    #   @return [Object] the current value
-    def value
-      if array = Thread.current[:__threadlocal_array__]
-        value = array[@index]
-        if value.nil?
-          @default
-        elsif value.equal?(NIL_SENTINEL)
-          nil
-        else
-          value
-        end
-      else
-        @default
-      end
-    end
-
-    # @!macro [attach] thread_local_var_method_set
-    #
-    #   Sets the current thread's copy of this thread-local variable to the specified value.
-    #
-    #   @param [Object] value the value to set
-    #   @return [Object] the new value
-    def value=(value)
-      me = Thread.current
-      # We could keep the thread-local arrays in a hash, keyed by Thread
-      # But why? That would require locking
-      # Using Ruby's built-in thread-local storage is faster
-      unless array = me[:__threadlocal_array__]
-        array = me[:__threadlocal_array__] = []
-        LOCK.synchronize { ARRAYS[array.object_id] = array }
-        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
-      end
-      array[@index] = (value.nil? ? NIL_SENTINEL : value)
-      value
-    end
-
-    # @!macro [attach] thread_local_var_method_bind
-    #
     #   Bind the given value to thread local storage during
     #   execution of the given block.
     #
@@ -245,57 +160,5 @@ module Concurrent
         end
       end
     end
-  end
-
-  if Concurrent.on_jruby?
-
-    # @!visibility private
-    # @!macro internal_implementation_note
-    class JavaThreadLocalVar < AbstractThreadLocalVar
-
-      protected
-
-      # @!visibility private
-      def allocate_storage
-        @var = java.lang.ThreadLocal.new
-      end
-
-      # @!visibility private
-      def get
-        @var.get
-      end
-
-      # @!visibility private
-      def set(value)
-        @var.set(value)
-      end
-    end
-  end
-
-  # @!visibility private
-  # @!macro internal_implementation_note
-  ThreadLocalVarImplementation = case
-                                 when Concurrent.on_jruby?
-                                   JavaThreadLocalVar
-                                 else
-                                   RubyThreadLocalVar
-                                 end
-  private_constant :ThreadLocalVarImplementation
-
-  # @!macro thread_local_var
-  class ThreadLocalVar < ThreadLocalVarImplementation
-
-    # @!method initialize(default = nil)
-    #   @!macro thread_local_var_method_initialize
-
-    # @!method value
-    #   @!macro thread_local_var_method_get
-
-    # @!method value=(value)
-    #   @!macro thread_local_var_method_set
-
-    # @!method bind(value, &block)
-    #   @!macro thread_local_var_method_bind
-
   end
 end

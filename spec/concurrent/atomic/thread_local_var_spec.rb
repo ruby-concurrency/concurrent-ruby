@@ -27,16 +27,6 @@ module Concurrent
         expect(t1.value).to eq 14
         expect(t2.value).to eq 14
       end
-
-      if Concurrent.on_jruby?
-        it 'extends JavaThreadLocalVar' do
-          expect(subject.class.ancestors).to include(Concurrent::JavaThreadLocalVar)
-        end
-      else
-        it 'extends ThreadLocalNewStorage' do
-          expect(subject.class.ancestors).to include(Concurrent::RubyThreadLocalVar)
-        end
-      end
     end
 
     context '#value' do
