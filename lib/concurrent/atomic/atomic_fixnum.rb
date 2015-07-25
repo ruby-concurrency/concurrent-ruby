@@ -106,6 +106,23 @@ module Concurrent
       end
     end
 
+    # @!macro [attach] atomic_fixnum_method_update
+    #
+    # Pass the current value to the given block, replacing it
+    # with the block's result. May retry if the value changes
+    # during the block's execution.
+    #
+    # @yield [Object] Calculate a new value for the atomic reference using
+    #   given (old) value
+    # @yieldparam [Object] old_value the starting value of the atomic reference
+    #
+    # @return [Object] the new value
+    def update
+      synchronize do
+        @value = yield @value
+      end
+    end
+
     protected
 
     # @!visibility private

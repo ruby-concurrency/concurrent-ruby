@@ -9,5 +9,6 @@ VALUE method_atomic_fixnum_value_set(VALUE, VALUE);
 VALUE method_atomic_fixnum_increment(VALUE);
 VALUE method_atomic_fixnum_decrement(VALUE);
 VALUE method_atomic_fixnum_compare_and_set(VALUE, VALUE, VALUE);
+VALUE method_atomic_fixnum_update(VALUE);
 
 #endif

@@ -13,6 +13,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.jruby.runtime.Block;
 
 public class JavaAtomicFixnumLibrary implements Library {
 
@@ -74,6 +75,18 @@ public class JavaAtomicFixnumLibrary implements Library {
         @JRubyMethod(name = "compare_and_set")
         public IRubyObject compareAndSet(ThreadContext context, IRubyObject expect, IRubyObject update) {
             return getRuntime().newBoolean(atomicLong.compareAndSet(rubyFixnumToLong(expect), rubyFixnumToLong(update)));
+        }
+
+        @JRubyMethod
+        public IRubyObject update(ThreadContext context, Block block) {
+            for (;;) {
+                long _oldValue       = atomicLong.get();
+                IRubyObject oldValue = getRuntime().newFixnum(_oldValue);
+                IRubyObject newValue = block.yield(context, oldValue);
+                if (atomicLong.compareAndSet(_oldValue, rubyFixnumToLong(newValue))) {
+                    return newValue;
+                }
+            }
         }
 
         private long rubyFixnumToLong(IRubyObject value) {

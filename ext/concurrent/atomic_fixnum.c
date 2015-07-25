@@ -48,3 +48,14 @@ VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb
   Check_Type(rb_update, T_FIXNUM);
   return ir_compare_and_set(self, rb_expect, rb_update);
 }
+
+VALUE method_atomic_fixnum_update(VALUE self) {
+  VALUE old_value, new_value;
+  for (;;) {
+    old_value = method_atomic_fixnum_value(self);
+    new_value = rb_yield(old_value);
+    if (ir_compare_and_set(self, old_value, new_value) == Qtrue) {
+      return new_value;
+    }
+  }
+}
