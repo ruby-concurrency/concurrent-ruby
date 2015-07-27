@@ -178,6 +178,17 @@ describe 'Concurrent::Edge futures' do
 
       expect(Concurrent.zip.wait(0.1)).to eq true
     end
+
+    context 'when a future raises an error' do
+
+      let(:future) { Concurrent.future { raise 'error' } }
+
+      it 'raises a concurrent error' do
+        expect { Concurrent.zip(future).value! }.to raise_error(Concurrent::Error)
+      end
+
+    end
+
   end
 
   describe 'Future' do
