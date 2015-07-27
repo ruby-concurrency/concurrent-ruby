@@ -115,6 +115,24 @@ module Concurrent
       value
     end
 
+    #   Bind the given value to thread local storage during
+    #   execution of the given block.
+    #
+    #   @param [Object] value the value to bind
+    #   @yield the operation to be performed with the bound variable
+    #   @return [Object] the value
+    def bind(value, &block)
+      if block_given?
+        old_value = self.value
+        begin
+          self.value = value
+          yield
+        ensure
+          self.value = old_value
+        end
+      end
+    end
+
     protected
 
     # @!visibility private
@@ -143,21 +161,22 @@ module Concurrent
       end
     end
 
-    #   Bind the given value to thread local storage during
-    #   execution of the given block.
-    #
-    #   @param [Object] value the value to bind
-    #   @yield the operation to be performed with the bound variable
-    #   @return [Object] the value
-    def bind(value, &block)
-      if block_given?
-        old_value = self.value
-        begin
-          self.value = value
-          yield
-        ensure
-          self.value = old_value
+    private
+
+    # This exists only for use in testing
+    # @!visibility private
+    def value_for(thread)
+      if array = thread[:__threadlocal_array__]
+        value = array[@index]
+        if value.nil?
+          @default
+        elsif value.equal?(NIL_SENTINEL)
+          nil
+        else
+          value
         end
+      else
+        @default
       end
     end
   end
