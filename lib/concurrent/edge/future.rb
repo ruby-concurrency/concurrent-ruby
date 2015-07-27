@@ -603,7 +603,7 @@ module Concurrent
         raise 'obligation is not failed' unless failed?
         reason = @State.get.reason
         if reason.is_a?(Array)
-          reason.each { |e| log Error, 'Edge::Future', e }
+          reason.each { |e| log ERROR, 'Edge::Future', e }
           Concurrent::Error.new 'multiple exceptions, inspect log'
         else
           reason.exception(*args)
