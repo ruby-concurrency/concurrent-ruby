@@ -36,5 +36,6 @@ Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require Fil
 
 RSpec.configure do |config|
   #config.raise_errors_for_deprecations!
+  config.filter_run_excluding stress: true
   config.order = 'random'
 end

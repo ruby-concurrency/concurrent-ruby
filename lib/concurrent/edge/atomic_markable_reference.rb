@@ -174,7 +174,7 @@ module Concurrent
       end
 
       # Internal/private ImmutableArray for representing pairs
-      class ImmutableArray < Array
+      class ImmutableArray < ::Array
         def self.new(*args)
           super(*args).freeze
         end

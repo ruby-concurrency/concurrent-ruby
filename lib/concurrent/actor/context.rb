@@ -129,7 +129,7 @@ module Concurrent
       end
 
       def self.to_spawn_options(name_or_opts, *args)
-        if name_or_opts.is_a? Hash
+        if name_or_opts.is_a? ::Hash
           if name_or_opts.key?(:class) && name_or_opts[:class] != self
             raise ArgumentError,
                   ':class option is ignored when calling on context class, use Actor.spawn instead'

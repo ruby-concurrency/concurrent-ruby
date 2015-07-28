@@ -2,6 +2,7 @@ import java.io.IOException;
 
 import org.jruby.Ruby;
 import org.jruby.runtime.load.BasicLibraryService;
+import com.concurrent_ruby.ext.JRubyCacheBackendLibrary;
 
 public class ConcurrentRubyExtService implements BasicLibraryService {
     public boolean basicLoad(final Ruby runtime) throws IOException {
@@ -10,6 +11,7 @@ public class ConcurrentRubyExtService implements BasicLibraryService {
         new com.concurrent_ruby.ext.JavaAtomicFixnumLibrary().load(runtime, false);
         new com.concurrent_ruby.ext.JavaSemaphoreLibrary().load(runtime, false);
         new com.concurrent_ruby.ext.SynchronizationLibrary().load(runtime, false);
+        new com.concurrent_ruby.ext.JRubyCacheBackendLibrary().load(runtime, false);
         return true;
     }
 }

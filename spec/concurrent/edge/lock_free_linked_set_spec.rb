@@ -23,7 +23,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
       it 'adds the items to the set' do
         to_insert = %w(one two three four five six)
 
-        threads = Array.new(16) do
+        threads = ::Array.new(16) do
           Thread.new do
             to_insert.each do |item|
               subject.add item
@@ -77,7 +77,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
 
       context 'when set is long' do
         it 'does not break' do
-          arr = Array.new(1000) { SecureRandom.hex }
+          arr = ::Array.new(1000) { SecureRandom.hex }
           arr.each { |n| subject << n }
           ret = arr.all? { |n| subject.contains? n }
 
@@ -90,7 +90,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
           to_insert = %w(one two three four five six)
           to_insert.each { |item| subject << item }
 
-          threads = Array.new(16) do
+          threads = ::Array.new(16) do
             Thread.new do
               100.times { subject << SecureRandom.hex  }
 
@@ -132,7 +132,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
-        threads = Array.new(8) do
+        threads = ::Array.new(8) do
           Thread.new { subject.remove 'one' }
           Thread.new { subject.remove 'two' }
           Thread.new { subject.remove 'three' }
@@ -152,7 +152,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
-        threads = Array.new(16) do
+        threads = ::Array.new(16) do
           Thread.new do
             100.times { subject << SecureRandom.hex  }
 

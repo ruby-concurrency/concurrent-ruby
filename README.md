@@ -69,24 +69,32 @@ This library contains a variety of concurrency abstractions at high and low leve
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals.
 
+#### Thread-safe Collection Classes
+
+These classes were originally part of the (deprecated) `thread_safe` gem.
+
+* [Array](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Array.html) A thread-safe subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
+* [Hash](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html) A thread-safe subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
+* [Cache](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Cache.html) A hash-like object that should have much better performance characteristics, especially under high concurrency, than `Concurrent::Hash`.
+
 #### Thread-safe Value Objects
 
-* `Maybe` A thread-safe, immutable object representing an optional value, based on
+* [Maybe](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Maybe.html) A thread-safe, immutable object representing an optional value, based on
   [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
-* `Delay` Lazy evaluation of a block yielding an immutable result. Based on Clojure's
+* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation of a block yielding an immutable result. Based on Clojure's
    [delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html).
 
 #### Thread-safe Structures
 
 Derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 
-* `ImmutableStruct` Immutable struct where values are set at construction and cannot be changed later.
-* `MutableStruct` Synchronized, mutable struct where values can be safely changed at any time.
-* `SettableStruct` Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
+* [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmutableStruct.html) Immutable struct where values are set at construction and cannot be changed later.
+* [MutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutableStruct.html) Synchronized, mutable struct where values can be safely changed at any time.
+* [SettableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SettableStruct.html) Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
 
 #### Java-inspired ThreadPools and Other Executors
 
-* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
+* See the [thread pool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
 
 #### Thread Synchronization Classes and Algorithms
 
@@ -272,11 +280,17 @@ bundle exec rake compile            # Compile all the extensions
 ## Maintainers
 
 * [Jerry D'Antonio](https://github.com/jdantonio) (creator)
+* [Petr Chalupa](https://github.com/pitr-ch)
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
-* [Lucas Allan](https://github.com/lucasallan)
-* [Petr Chalupa](https://github.com/pitr-ch)
 * [Paweł Obrok](https://github.com/obrok)
+* [Lucas Allan](https://github.com/lucasallan)
+
+### Special Thanks
+
+* [Brian Durand](https://github.com/bdurand) for the `ref` gem
+* [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
+* [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
 ## Contributing
 
