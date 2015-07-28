@@ -33,14 +33,26 @@ VALUE method_atomic_fixnum_value_set(VALUE self, VALUE value) {
   return(value);
 }
 
-VALUE method_atomic_fixnum_increment(VALUE self) {
+VALUE method_atomic_fixnum_increment(int argc, VALUE* argv, VALUE self) {
   long long value = NUM2LL((VALUE) DATA_PTR(self));
-  return method_atomic_fixnum_value_set(self, LL2NUM(value + 1));
+  long long delta = 1;
+  rb_check_arity(argc, 0, 1);
+  if (argc == 1) {
+    Check_Type(argv[0], T_FIXNUM);
+    delta = NUM2LL(argv[0]);
+  }
+  return method_atomic_fixnum_value_set(self, LL2NUM(value + delta));
 }
 
-VALUE method_atomic_fixnum_decrement(VALUE self) {
+VALUE method_atomic_fixnum_decrement(int argc, VALUE* argv, VALUE self) {
   long long value = NUM2LL((VALUE) DATA_PTR(self));
-  return method_atomic_fixnum_value_set(self, LL2NUM(value - 1));
+  long long delta = 1;
+  rb_check_arity(argc, 0, 1);
+  if (argc == 1) {
+    Check_Type(argv[0], T_FIXNUM);
+    delta = NUM2LL(argv[0]);
+  }
+  return method_atomic_fixnum_value_set(self, LL2NUM(value - delta));
 }
 
 VALUE method_atomic_fixnum_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb_update) {

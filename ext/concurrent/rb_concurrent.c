@@ -49,8 +49,8 @@ void Init_extension() {
   rb_define_method(rb_cAtomicFixnum, "initialize", method_atomic_fixnum_initialize, -1);
   rb_define_method(rb_cAtomicFixnum, "value", method_atomic_fixnum_value, 0);
   rb_define_method(rb_cAtomicFixnum, "value=", method_atomic_fixnum_value_set, 1);
-  rb_define_method(rb_cAtomicFixnum, "increment", method_atomic_fixnum_increment, 0);
-  rb_define_method(rb_cAtomicFixnum, "decrement", method_atomic_fixnum_decrement, 0);
+  rb_define_method(rb_cAtomicFixnum, "increment", method_atomic_fixnum_increment, -1);
+  rb_define_method(rb_cAtomicFixnum, "decrement", method_atomic_fixnum_decrement, -1);
   rb_define_method(rb_cAtomicFixnum, "compare_and_set", method_atomic_fixnum_compare_and_set, 2);
   rb_define_alias(rb_cAtomicFixnum, "up", "increment");
   rb_define_alias(rb_cAtomicFixnum, "down", "decrement");

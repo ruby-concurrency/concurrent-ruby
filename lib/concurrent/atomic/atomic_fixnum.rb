@@ -66,22 +66,26 @@ module Concurrent
 
     # @!macro [attach] atomic_fixnum_method_increment
     #
-    #   Increases the current value by 1.
+    #   Increases the current value by the given amount (defaults to 1).
+    #
+    #   @param [Fixnum] delta the amount by which to increase the current value
     #
     #   @return [Fixnum] the current value after incrementation
-    def increment
-      synchronize { ns_set(@value + 1) }
+    def increment(delta = 1)
+      synchronize { ns_set(@value + delta.to_i) }
     end
 
     alias_method :up, :increment
 
     # @!macro [attach] atomic_fixnum_method_decrement
     #
-    #   Decreases the current value by 1.
+    #   Decreases the current value by the given amount (defaults to 1).
+    #
+    #   @param [Fixnum] delta the amount by which to decrease the current value
     #
     #   @return [Fixnum] the current value after decrementation
-    def decrement
-      synchronize { ns_set(@value - 1) }
+    def decrement(delta = 1)
+      synchronize { ns_set(@value - delta.to_i) }
     end
 
     alias_method :down, :decrement
@@ -97,8 +101,8 @@ module Concurrent
     #   @return [Fixnum] true if the value was updated else false
     def compare_and_set(expect, update)
       synchronize do
-        if @value == expect
-          @value = update
+        if @value == expect.to_i
+          @value = update.to_i
           true
         else
           false

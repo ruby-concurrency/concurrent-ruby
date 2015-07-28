@@ -52,15 +52,26 @@ shared_examples :atomic_fixnum do
 
   context '#increment' do
 
-    it 'increases the value by one' do
+    it 'increases the value by one when no argument is given' do
       counter = described_class.new(10)
       3.times{ counter.increment }
       expect(counter.value).to eq 13
     end
 
-    it 'returns the new value' do
+    it 'returns the new value when no argument is given' do
       counter = described_class.new(10)
       expect(counter.increment).to eq 11
+    end
+
+    it 'increases the value by the given argument' do
+      counter = described_class.new(10)
+      counter.increment(5)
+      expect(counter.value).to eq 15
+    end
+
+    it 'returns the new value the given argument' do
+      counter = described_class.new(10)
+      expect(counter.increment(5)).to eq 15
     end
 
     it 'is aliased as #up' do
@@ -70,15 +81,26 @@ shared_examples :atomic_fixnum do
 
   context '#decrement' do
 
-    it 'decreases the value by one' do
+    it 'decreases the value by one when no argument is given' do
       counter = described_class.new(10)
       3.times{ counter.decrement }
       expect(counter.value).to eq 7
     end
 
-    it 'returns the new value' do
+    it 'returns the new value when no argument is given' do
       counter = described_class.new(10)
       expect(counter.decrement).to eq 9
+    end
+
+    it 'decreases the value by the given argument' do
+      counter = described_class.new(10)
+      counter.decrement(5)
+      expect(counter.value).to eq 5
+    end
+
+    it 'returns the new value the given argument' do
+      counter = described_class.new(10)
+      expect(counter.decrement(5)).to eq 5
     end
 
     it 'is aliased as #down' do

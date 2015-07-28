@@ -1,3 +1,7 @@
+### Upcoming Release v0.9.1 (TBD)
+
+* `AtomicFixnum` methods `#increment` and `#decrement` now support optional delta
+
 ## Current Release v0.9.0 (10 July 2015)
 
 * Updated `AtomicReference`
