@@ -1,5 +1,4 @@
 require 'thread'
-require 'concurrent/configuration'
 require 'concurrent/concern/obligation'
 require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'

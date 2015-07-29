@@ -37,7 +37,7 @@ module Concurrent
         end
 
         def on_message(message)
-          command, *rest = message
+          command, _ = message
           return if [:restarted, :reset, :resumed, :terminated].include? command # ignore events from supervised actors
 
           envelope_to_redirect = if envelope.future

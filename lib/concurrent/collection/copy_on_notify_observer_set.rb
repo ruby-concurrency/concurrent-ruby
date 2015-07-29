@@ -100,7 +100,7 @@ module Concurrent
       end
 
       def duplicate_observers
-        synchronize { observers = @observers.dup }
+        synchronize { @observers.dup }
       end
 
       def notify_to(observers, *args)

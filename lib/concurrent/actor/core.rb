@@ -208,7 +208,7 @@ module Concurrent
       end
 
       def initialize_behaviours(opts)
-        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |(behaviour, *args)|
+        @behaviour_definition = (Type! opts[:behaviour_definition] || @context.behaviour_definition, Array).each do |(behaviour, _)|
           Child! behaviour, Behaviour::Abstract
         end
         @behaviours           = {}
