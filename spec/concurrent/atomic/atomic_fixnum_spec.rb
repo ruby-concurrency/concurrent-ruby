@@ -130,6 +130,25 @@ shared_examples :atomic_fixnum do
       expect(f.value).to eq 14
     end
   end
+
+  context '#update' do
+
+    it 'passes the current value to the block' do
+      atomic = described_class.new(1000)
+      atomic.update { |v| (expect(v).to eq 1000); 1 }
+    end
+
+    it 'atomically sets the value to the return value from the block' do
+      atomic = described_class.new(1000)
+      atomic.update { |v| v + 1 }
+      expect(atomic.value).to eq 1001
+    end
+
+    it 'returns the new value' do
+      atomic = described_class.new(1000)
+      expect(atomic.update { |v| v + 1 }).to eq 1001
+    end
+  end
 end
 
 module Concurrent

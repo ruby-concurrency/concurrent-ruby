@@ -1,5 +1,5 @@
 require 'thread'
-require 'concurrent/atomic/atomic_reference'
+require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/errors'
 require 'concurrent/synchronization'
 
@@ -33,7 +33,7 @@ module Concurrent
     WAITING_WRITER = 1 << 15
 
     # @!visibility private
-    RUNNING_WRITER = 1 << 30
+    RUNNING_WRITER = 1 << 29
 
     # @!visibility private
     MAX_READERS    = WAITING_WRITER - 1
@@ -50,11 +50,11 @@ module Concurrent
     # Each reader increments the counter by 1 when acquiring a read lock
     #   (and decrements by 1 when releasing the read lock)
     # The counter is increased by (1 << 15) for each writer waiting to acquire the
-    #   write lock, and by (1 << 30) if the write lock is taken
+    #   write lock, and by (1 << 29) if the write lock is taken
 
     # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
-      @Counter   = AtomicReference.new(0) # single integer which represents lock state
+      @Counter   = AtomicFixnum.new(0) # single integer which represents lock state
       @ReadLock  = Synchronization::Lock.new
       @WriteLock = Synchronization::Lock.new
       ensure_ivar_visibility!
@@ -122,11 +122,11 @@ module Concurrent
             if running_writer?(c)
               @ReadLock.wait_until { !running_writer? }
             else
-              return if @Counter.compare_and_swap(c, c+1)
+              return if @Counter.compare_and_set(c, c+1)
             end
           end
         else
-          break if @Counter.compare_and_swap(c, c+1)
+          break if @Counter.compare_and_set(c, c+1)
         end
       end
       true
@@ -138,7 +138,7 @@ module Concurrent
     def release_read_lock
       while true
         c = @Counter.value
-        if @Counter.compare_and_swap(c, c-1)
+        if @Counter.compare_and_set(c, c-1)
           # If one or more writers were waiting, and we were the last reader, wake a writer up
           if waiting_writer?(c) && running_readers(c) == 1
             @WriteLock.signal
@@ -162,8 +162,8 @@ module Concurrent
 
         if c == 0 # no readers OR writers running
           # if we successfully swap the RUNNING_WRITER bit on, then we can go ahead
-          break if @Counter.compare_and_swap(0, RUNNING_WRITER)
-        elsif @Counter.compare_and_swap(c, c+WAITING_WRITER)
+          break if @Counter.compare_and_set(0, RUNNING_WRITER)
+        elsif @Counter.compare_and_set(c, c+WAITING_WRITER)
           while true
             # Now we have successfully incremented, so no more readers will be able to increment
             #   (they will wait instead)
@@ -180,7 +180,7 @@ module Concurrent
             # Then we are OK to stop waiting and go ahead
             # Otherwise go back and wait again
             c = @Counter.value
-            break if !running_writer?(c) && !running_readers?(c) && @Counter.compare_and_swap(c, c+RUNNING_WRITER-WAITING_WRITER)
+            break if !running_writer?(c) && !running_readers?(c) && @Counter.compare_and_set(c, c+RUNNING_WRITER-WAITING_WRITER)
           end
           break
         end

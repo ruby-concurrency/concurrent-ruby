@@ -1,3 +1,5 @@
+require 'timeout'
+
 module Concurrent
 
   describe Synchronization do
@@ -26,6 +28,8 @@ module Concurrent
           synchronize { ns_wait(timeout) }
         end
 
+        public :synchronize
+
         private
 
         def ns_initialize
@@ -37,7 +41,7 @@ module Concurrent
 
       describe '#wait' do
 
-        it 'waiting thread is sleeping' do
+        it 'puts the current thread to sleep' do
           t = Thread.new do
             Thread.abort_on_exception = true
             subject.wait
@@ -46,7 +50,7 @@ module Concurrent
           expect(t.status).to eq 'sleep'
         end
 
-        it 'sleeping thread can be killed' do
+        it 'allows the sleeping thread to be killed' do
           t = Thread.new do
             Thread.abort_on_exception = true
             subject.wait rescue nil
@@ -56,6 +60,25 @@ module Concurrent
           sleep 0.1
           expect(t.status).to eq false
           expect(t.alive?).to eq false
+        end
+
+        it 'releases the lock on the current object' do
+          expect { Timeout.timeout(3) do
+            t = Thread.new { subject.wait }
+            sleep 0.1
+            expect(t.status).to eq 'sleep'
+            subject.synchronize {} # we will deadlock here if #wait doesn't release lock
+          end }.not_to raise_error
+        end
+
+        it 'can be called from within a #synchronize block' do
+          expect { Timeout.timeout(3) do
+            # #wait should release lock, even if it was already held on entry
+            t = Thread.new { subject.synchronize { subject.wait }}
+            sleep 0.1
+            expect(t.status).to eq 'sleep'
+            subject.synchronize {} # we will deadlock here if lock wasn't released
+          end }.not_to raise_error
         end
       end
 

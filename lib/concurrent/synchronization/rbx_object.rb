@@ -8,13 +8,26 @@ module Concurrent
       class RbxObject < AbstractObject
         def initialize
           @__Waiters__ = []
+          @__owner__   = nil
           ensure_ivar_visibility!
         end
 
         protected
 
         def synchronize(&block)
-          Rubinius.synchronize(self, &block)
+          if @__owner__ == Thread.current
+            yield
+          else
+            Rubinius.lock(self)
+            begin
+              @__owner__ = Thread.current
+              result = yield
+            ensure
+              @__owner__ = nil
+              Rubinius.unlock(self)
+              result
+            end
+          end
         end
 
         def ns_wait(timeout = nil)

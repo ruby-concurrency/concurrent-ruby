@@ -15,6 +15,10 @@ module Concurrent
   # Raised when an attempt is made to violate an immutability guarantee.
   ImmutabilityError = Class.new(Error)
 
+  # Raised when an operation is attempted which is not legal given the
+  # receiver's current state
+  IllegalOperationError = Class.new(Error)
+
   # Raised when an object's methods are called when it has not been
   # properly initialized.
   InitializationError = Class.new(Error)
