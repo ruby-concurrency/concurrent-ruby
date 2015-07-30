@@ -83,7 +83,7 @@ module Concurrent
     #
     #   @return [Object] the current value
     def value
-      if array = Thread.current[:__threadlocal_array__]
+      if array = Thread.current.thread_variable_get(:__threadlocal_array__)
         value = array[@index]
         if value.nil?
           @default
@@ -106,8 +106,8 @@ module Concurrent
       # We could keep the thread-local arrays in a hash, keyed by Thread
       # But why? That would require locking
       # Using Ruby's built-in thread-local storage is faster
-      unless array = me[:__threadlocal_array__]
-        array = me[:__threadlocal_array__] = []
+      unless array = me.thread_variable_get(:__threadlocal_array__)
+        array = me.thread_variable_set(:__threadlocal_array__, [])
         LOCK.synchronize { ARRAYS[array.object_id] = array }
         ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
       end
