@@ -41,7 +41,7 @@ module Concurrent
 
       describe '#wait' do
 
-        it 'waiting thread is sleeping' do
+        it 'puts the current thread to sleep' do
           t = Thread.new do
             Thread.abort_on_exception = true
             subject.wait
@@ -50,7 +50,7 @@ module Concurrent
           expect(t.status).to eq 'sleep'
         end
 
-        it 'sleeping thread can be killed' do
+        it 'allows the sleeping thread to be killed' do
           t = Thread.new do
             Thread.abort_on_exception = true
             subject.wait rescue nil
