@@ -33,7 +33,65 @@ module Concurrent
   #
   #   @see https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html Java ThreadLocal
   #
-  class ThreadLocalVar
+  # @!visibility private
+  class AbstractThreadLocalVar
+
+    # @!visibility private
+    NIL_SENTINEL = Object.new
+    private_constant :NIL_SENTINEL
+
+    # @!macro [attach] thread_local_var_method_initialize
+    #
+    #   Creates a thread local variable.
+    #
+    #   @param [Object] default the default value when otherwise unset
+    def initialize(default = nil)
+      @default = default
+      allocate_storage
+    end
+
+    # @!macro [attach] thread_local_var_method_get
+    #
+    #   Returns the value in the current thread's copy of this thread-local variable.
+    #
+    #   @return [Object] the current value
+    def value
+      raise NotImplementedError
+    end
+
+    # @!macro [attach] thread_local_var_method_set
+    #
+    #   Sets the current thread's copy of this thread-local variable to the specified value.
+    #
+    #   @param [Object] value the value to set
+    #   @return [Object] the new value
+    def value=(value)
+      raise NotImplementedError
+    end
+
+    # @!macro [attach] thread_local_var_method_bind
+    #
+    #   Bind the given value to thread local storage during
+    #   execution of the given block.
+    #
+    #   @param [Object] value the value to bind
+    #   @yield the operation to be performed with the bound variable
+    #   @return [Object] the value
+    def bind(value, &block)
+      raise NotImplementedError
+    end
+
+    protected
+
+    # @!visibility private
+    def allocate_storage
+      raise NotImplementedError
+    end
+  end
+
+  # @!visibility private
+  # @!macro internal_implementation_note
+  class RubyThreadLocalVar < AbstractThreadLocalVar
 
     # Each thread has a (lazily initialized) array of thread-local variable values
     # Each time a new thread-local var is created, we allocate an "index" for it
@@ -57,31 +115,23 @@ module Concurrent
     #   array, so we don't leak memory
 
     # @!visibility private
-    NIL_SENTINEL = Object.new
     FREE = []
     LOCK = Mutex.new
     ARRAYS = {} # used as a hash set
     @@next = 0
-    private_constant :NIL_SENTINEL, :FREE, :LOCK, :ARRAYS
+    private_constant :FREE, :LOCK, :ARRAYS
 
+    # @!macro [attach] thread_local_var_method_initialize
+    #
     #   Creates a thread local variable.
     #
     #   @param [Object] default the default value when otherwise unset
     def initialize(default = nil)
       @default = default
-      @index = LOCK.synchronize do
-        FREE.pop || begin
-          result = @@next
-          @@next += 1
-          result
-        end
-      end
-      ObjectSpace.define_finalizer(self, self.class.threadlocal_finalizer(@index))
+      allocate_storage
     end
 
-    #   Returns the value in the current thread's copy of this thread-local variable.
-    #
-    #   @return [Object] the current value
+    # @!macro thread_local_var_method_get
     def value
       if array = Thread.current.thread_variable_get(:__threadlocal_array__)
         value = array[@index]
@@ -97,10 +147,7 @@ module Concurrent
       end
     end
 
-    #   Sets the current thread's copy of this thread-local variable to the specified value.
-    #
-    #   @param [Object] value the value to set
-    #   @return [Object] the new value
+    # @!macro thread_local_var_method_set
     def value=(value)
       me = Thread.current
       # We could keep the thread-local arrays in a hash, keyed by Thread
@@ -115,12 +162,7 @@ module Concurrent
       value
     end
 
-    #   Bind the given value to thread local storage during
-    #   execution of the given block.
-    #
-    #   @param [Object] value the value to bind
-    #   @yield the operation to be performed with the bound variable
-    #   @return [Object] the value
+    # @!macro thread_local_var_method_bind
     def bind(value, &block)
       if block_given?
         old_value = self.value
@@ -134,6 +176,18 @@ module Concurrent
     end
 
     protected
+
+    # @!visibility private
+    def allocate_storage
+      @index = LOCK.synchronize do
+        FREE.pop || begin
+        result = @@next
+        @@next += 1
+        result
+        end
+      end
+      ObjectSpace.define_finalizer(self, self.class.threadlocal_finalizer(@index))
+    end
 
     # @!visibility private
     def self.threadlocal_finalizer(index)
@@ -160,43 +214,78 @@ module Concurrent
         end
       end
     end
+  end
 
-    private
+  if Concurrent.on_jruby?
 
-    # This exists only for use in testing
     # @!visibility private
-    def value_for(thread)
-      if array = thread[:__threadlocal_array__]
-        value = array[@index]
+    # @!macro internal_implementation_note
+    class JavaThreadLocalVar < AbstractThreadLocalVar
+
+      # @!macro thread_local_var_method_get
+      def value
+        value = @var.get
+
         if value.nil?
           @default
-        elsif value.equal?(NIL_SENTINEL)
+        elsif value == NIL_SENTINEL
           nil
         else
           value
         end
-      else
-        @default
       end
-    end
 
-    private
+      # @!macro thread_local_var_method_set
+      def value=(value)
+        @var.set(value)
+      end
 
-    # This exists only for use in testing
-    # @!visibility private
-    def value_for(thread)
-      if array = thread[:__threadlocal_array__]
-        value = array[@index]
-        if value.nil?
-          @default
-        elsif value.equal?(NIL_SENTINEL)
-          nil
-        else
-          value
+      # @!macro thread_local_var_method_bind
+      def bind(value, &block)
+        if block_given?
+          old_value = @var.get
+          begin
+            @var.set(value)
+            yield
+          ensure
+            @var.set(old_value)
+          end
         end
-      else
-        @default
+      end
+
+      protected
+
+      # @!visibility private
+      def allocate_storage
+        @var = java.lang.ThreadLocal.new
       end
     end
+  end
+
+  # @!visibility private
+  # @!macro internal_implementation_note
+  ThreadLocalVarImplementation = case
+                                 when Concurrent.on_jruby?
+                                   JavaThreadLocalVar
+                                 else
+                                   RubyThreadLocalVar
+                                 end
+  private_constant :ThreadLocalVarImplementation
+
+  # @!macro thread_local_var
+  class ThreadLocalVar < ThreadLocalVarImplementation
+
+    # @!method initialize(default = nil)
+    #   @!macro thread_local_var_method_initialize
+
+    # @!method value
+    #   @!macro thread_local_var_method_get
+
+    # @!method value=(value)
+    #   @!macro thread_local_var_method_set
+
+    # @!method bind(value, &block)
+    #   @!macro thread_local_var_method_bind
+
   end
 end
