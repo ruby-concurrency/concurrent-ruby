@@ -66,9 +66,21 @@ public class JavaAtomicFixnumLibrary implements Library {
             return getRuntime().newFixnum(atomicLong.incrementAndGet());
         }
 
+        @JRubyMethod(name = {"increment", "up"})
+        public IRubyObject increment(IRubyObject value) {
+            long delta = rubyFixnumToLong(value);
+            return getRuntime().newFixnum(atomicLong.addAndGet(delta));
+        }
+
         @JRubyMethod(name = {"decrement", "down"})
         public IRubyObject decrement() {
             return getRuntime().newFixnum(atomicLong.decrementAndGet());
+        }
+
+        @JRubyMethod(name = {"decrement", "down"})
+        public IRubyObject decrement(IRubyObject value) {
+            long delta = rubyFixnumToLong(value);
+            return getRuntime().newFixnum(atomicLong.addAndGet(-delta));
         }
 
         @JRubyMethod(name = "compare_and_set")
