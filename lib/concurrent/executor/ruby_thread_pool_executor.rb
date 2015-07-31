@@ -166,7 +166,7 @@ module Concurrent
     def ns_kill_execution
       # TODO log out unprocessed tasks in queue
       # TODO try to shutdown first?
-      @pool.each &:kill
+      @pool.each(&:kill)
       @pool.clear
       @ready.clear
     end
@@ -297,32 +297,31 @@ module Concurrent
       private
 
       def create_worker(queue, pool, idletime)
-        Thread.new(queue, pool, idletime) do |queue, pool, idletime|
+        Thread.new(queue, pool, idletime) do |my_queue, my_pool, my_idletime|
           last_message = Concurrent.monotonic_time
           catch(:stop) do
             loop do
 
-              case message = queue.pop
+              case message = my_queue.pop
               when :idle_test
-                if (Concurrent.monotonic_time - last_message) > idletime
-                  pool.remove_busy_worker(self)
+                if (Concurrent.monotonic_time - last_message) > my_idletime
+                  my_pool.remove_busy_worker(self)
                   throw :stop
                 else
-                  pool.worker_not_old_enough(self)
+                  my_pool.worker_not_old_enough(self)
                 end
 
               when :stop
-                pool.remove_busy_worker(self)
+                my_pool.remove_busy_worker(self)
                 throw :stop
 
               else
                 task, args = message
-                run_task pool, task, args
+                run_task my_pool, task, args
                 last_message = Concurrent.monotonic_time
 
-                pool.ready_worker(self)
+                my_pool.ready_worker(self)
               end
-
             end
           end
         end

@@ -1,5 +1,6 @@
-require 'concurrent/executor/executor_service'
+require 'concurrent/configuration'
 require 'concurrent/concern/deprecation'
+require 'concurrent/executor/executor_service'
 
 module Concurrent
 

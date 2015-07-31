@@ -27,4 +27,4 @@ matrix:
     - rvm: jruby-head
     - rvm: 1.9.3
 
-script: bundle exec rake ci
+script: RUBYOPT=-w bundle exec rake ci

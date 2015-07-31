@@ -105,6 +105,7 @@ Derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 * [Thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
 * [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html)
+* [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html)
 
 ### Edge Features
 
@@ -127,7 +128,8 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 * [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [Atomic Markable Reference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
-* [Lock Free Linked Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
+* [LockFreeLinked Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
+* [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeStack.html)
 
 #### Statuses:
 
@@ -139,8 +141,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 - **Channel** - Missing documentation; limted features; stability good.
 - **Exchanger** - Known race condition requiring a new implementation.
 - **LazyRegister** - Missing documentation and tests.
-- **AtomicMarkableReference** - Needs real world battle testing
-- **LockFreeLinkedSet** - Needs real world battle testing
+- **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Needs real world battle testing
 
 ## Usage
 
@@ -184,8 +185,6 @@ require 'concurrent/actor'          # Concurrent::Actor and supporting code
 require 'concurrent/edge/future'    # new Future Framework
 require 'concurrent/agent'          # Concurrent::Agent
 require 'concurrent/channel '       # Concurrent::Channel and supporting code
-require 'concurrent/exchanger'      # Concurrent::Exchanger
-require 'concurrent/lazy_register'  # Concurrent::LazyRegister
 ```
 
 If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to reveal the problem.

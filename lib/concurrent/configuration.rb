@@ -1,9 +1,13 @@
 require 'thread'
-require 'concurrent/atomics'
+require 'concurrent/delay'
 require 'concurrent/errors'
-require 'concurrent/executors'
+require 'concurrent/atomic/atomic_reference'
 require 'concurrent/concern/deprecation'
 require 'concurrent/concern/logging'
+require 'concurrent/executor/timer_set'
+require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/fixed_thread_pool'
+require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_counter'
 
@@ -32,8 +36,8 @@ module Concurrent
              formatted_message
     end
 
-    lambda do |level, progname, message = nil, &block|
-      logger.add level, message, progname, &block
+    lambda do |loglevel, progname, message = nil, &block|
+      logger.add loglevel, message, progname, &block
     end
   end
 

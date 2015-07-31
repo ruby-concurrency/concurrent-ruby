@@ -113,7 +113,7 @@ module Concurrent
       # post job on executor
       # @return [true, false]
       def post_on(executor, *args, &job)
-        Concurrent.executor(executor).post *args, &job
+        Concurrent.executor(executor).post(*args, &job)
       end
 
       # TODO add first(futures, count=count)
@@ -307,7 +307,7 @@ module Concurrent
       # @!visibility private
       def complete_with(state, raise_on_reassign = true)
         if @State.compare_and_set(PENDING, state)
-          (state)
+          #(state)
           # go to synchronized block only if there were waiting threads
           synchronize { ns_broadcast } if @Waiters.clear
           call_callbacks
@@ -323,7 +323,7 @@ module Concurrent
       # @return [Array<AbstractPromise>]
       def blocks
         @Callbacks.each_with_object([]) do |callback, promises|
-          promises.push *callback.select { |v| v.is_a? AbstractPromise }
+          promises.push(*(callback.select { |v| v.is_a? AbstractPromise }))
         end
       end
 
@@ -464,7 +464,7 @@ module Concurrent
       # @!visibility private
       class SuccessArray < Success
         def apply(block)
-          block.call *value
+          block.call(*value)
         end
       end
 
@@ -520,7 +520,7 @@ module Concurrent
         end
 
         def apply(block)
-          block.call *reason
+          block.call(*reason)
         end
       end
 
@@ -776,14 +776,14 @@ module Concurrent
       end
 
       def pr_async_callback_on_success(state, executor, callback)
-        pr_with_async(executor, state, callback) do |state, callback|
-          pr_callback_on_success state, callback
+        pr_with_async(executor, state, callback) do |st, cb|
+          pr_callback_on_success st, cb
         end
       end
 
       def pr_async_callback_on_failure(state, executor, callback)
-        pr_with_async(executor, state, callback) do |state, callback|
-          pr_callback_on_failure state, callback
+        pr_with_async(executor, state, callback) do |st, cb|
+          pr_callback_on_failure st, cb
         end
       end
 
@@ -804,8 +804,8 @@ module Concurrent
       end
 
       def pr_async_callback_on_completion(state, executor, callback)
-        pr_with_async(executor, state, callback) do |state, callback|
-          pr_callback_on_completion state, callback
+        pr_with_async(executor, state, callback) do |st, cb|
+          pr_callback_on_completion st, cb
         end
       end
 
@@ -981,7 +981,7 @@ module Concurrent
         @Countdown = AtomicFixnum.new countdown
 
         super(future)
-        @BlockedBy.each { |future| future.add_callback :pr_callback_notify_blocked, self }
+        @BlockedBy.each { |f| f.add_callback :pr_callback_notify_blocked, self }
       end
 
       # @api private
@@ -1063,8 +1063,8 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.success?
-          Concurrent.post_on(@Executor, done_future, @Task) do |done_future, task|
-            evaluate_to lambda { done_future.apply task }
+          Concurrent.post_on(@Executor, done_future, @Task) do |future, task|
+            evaluate_to lambda { future.apply task }
           end
         else
           complete_with done_future.internal_state
@@ -1082,8 +1082,8 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.failed?
-          Concurrent.post_on(@Executor, done_future, @Task) do |done_future, task|
-            evaluate_to lambda { done_future.apply task }
+          Concurrent.post_on(@Executor, done_future, @Task) do |future, task|
+            evaluate_to lambda { future.apply task }
           end
         else
           complete_with done_future.internal_state
@@ -1097,7 +1097,7 @@ module Concurrent
 
       def on_completable(done_future)
         if Future === done_future
-          Concurrent.post_on(@Executor, done_future, @Task) { |future, task| evaluate_to *future.result, task }
+          Concurrent.post_on(@Executor, done_future, @Task) { |future, task| evaluate_to(*future.result, task) }
         else
           Concurrent.post_on(@Executor, @Task) { |task| evaluate_to task }
         end
