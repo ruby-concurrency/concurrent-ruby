@@ -87,6 +87,25 @@ module Concurrent
     def allocate_storage
       raise NotImplementedError
     end
+
+    private
+
+    # This exists only for use in testing
+    # @!visibility private
+    def value_for(thread)
+      if array = thread.thread_variable_get(:__threadlocal_array__)
+        value = array[@index]
+        if value.nil?
+          @default
+        elsif value.equal?(NIL_SENTINEL)
+          nil
+        else
+          value
+        end
+      else
+        @default
+      end
+    end
   end
 
   # @!visibility private
