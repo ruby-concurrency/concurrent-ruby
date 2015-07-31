@@ -27,6 +27,16 @@ module Concurrent
         expect(t1.value).to eq 14
         expect(t2.value).to eq 14
       end
+
+      if Concurrent.on_jruby?
+        it 'extends JavaThreadLocalVar' do
+          expect(subject.class.ancestors).to include(Concurrent::JavaThreadLocalVar)
+        end
+      else
+        it 'extends RubyThreadLocalVar' do
+          expect(subject.class.ancestors).to include(Concurrent::RubyThreadLocalVar)
+        end
+      end
     end
 
     context '#value' do
@@ -37,17 +47,16 @@ module Concurrent
       end
 
       it 'returns the value after modification' do
-        v       = ThreadLocalVar.new(14)
+        v = ThreadLocalVar.new(14)
         v.value = 2
         expect(v.value).to eq 2
       end
-
     end
 
     context '#value=' do
 
       it 'sets a new value' do
-        v       = ThreadLocalVar.new(14)
+        v = ThreadLocalVar.new(14)
         v.value = 2
         expect(v.value).to eq 2
       end
@@ -58,14 +67,14 @@ module Concurrent
       end
 
       it 'does not modify the initial value for other threads' do
-        v       = ThreadLocalVar.new(14)
+        v = ThreadLocalVar.new(14)
         v.value = 2
-        t       = Thread.new { v.value }
+        t = Thread.new { v.value }
         expect(t.value).to eq 14
       end
 
       it 'does not modify the value for other threads' do
-        v       = ThreadLocalVar.new(14)
+        v = ThreadLocalVar.new(14)
         v.value = 2
 
         b1 = CountDownLatch.new(2)
@@ -92,9 +101,6 @@ module Concurrent
         expect(t1.value).to eq 1
         expect(t2.value).to eq 2
       end
-
     end
-
   end
-
 end
