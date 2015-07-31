@@ -1,4 +1,4 @@
-unless Concurrent.on_jruby? || Concurrent.ruby_version(:<, 2)
+unless Concurrent.on_jruby?
 
   # NOTE: These tests depend heavily on the private/undocumented
   # `ThreadLocalVar#value_for` method. This method does not, and cannot work
