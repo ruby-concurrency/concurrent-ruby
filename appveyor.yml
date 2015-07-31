@@ -9,7 +9,7 @@ install:
 build: off
 
 test_script:
-  - RUBYOPT=-w bundle exec rake ci
+  - bundle exec rake ci
 
 environment:
   matrix:
