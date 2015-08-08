@@ -68,7 +68,6 @@ module Concurrent
 
         start_latch.wait(1)
         barrier.reset
-        expect(continue_latch.wait(1)).to be_truthy
 
         expect(barrier).not_to be_broken
         expect(barrier.number_waiting).to eq 0
@@ -115,7 +114,6 @@ module Concurrent
         it 'can be reused' do
           first_latch = CountDownLatch.new(parties)
           parties.times { Thread.new { barrier.wait; first_latch.count_down } }
-          expect(first_latch.wait(1)).to be_truthy
 
           latch = CountDownLatch.new(parties)
           parties.times { Thread.new { barrier.wait; latch.count_down } }
