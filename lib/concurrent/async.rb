@@ -5,7 +5,6 @@ require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/executor/serialized_execution'
-require 'concurrent/concern/deprecation'
 
 module Concurrent
 
@@ -246,22 +245,6 @@ module Concurrent
     def executor=(executor)
       @__async_executor__.reconfigure { executor } or
         raise ArgumentError.new('executor has already been set')
-    end
-
-    # Initialize the internal serializer and other stnchronization mechanisms.
-    #
-    # @note This method *must* be called immediately upon object construction.
-    #   This is the only way thread-safe initialization can be guaranteed.
-    #
-    # @raise [Concurrent::InitializationError] when called more than once
-    #
-    # @!visibility private
-    # @deprecated
-    def init_mutex
-      deprecated 'mutex synchronization now happens automatically'
-      init_synchronization
-    rescue InitializationError
-      # suppress
     end
 
     private

@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Configuration, notravis: true do
+  describe 'configuration', notravis: true do
 
     before(:all) do
       reset_gem_configuration
@@ -27,12 +27,12 @@ module Concurrent
         expect(Concurrent.global_io_executor).to respond_to(:post)
       end
 
-      specify '#terminate_pools! acts on all executors with auto_terminate: true' do
+      specify 'Concurrent::AtExit.run acts on all executors with auto_terminate: true' do
         # The 'at_least(:once)' clauses account for global config reset
         expect(Concurrent.global_fast_executor).to receive(:kill).at_least(:once).with(no_args).and_call_original
         expect(Concurrent.global_io_executor).to receive(:kill).at_least(:once).with(no_args).and_call_original
         expect(Concurrent.global_timer_set).to receive(:kill).at_least(:once).with(no_args).and_call_original
-        Concurrent.terminate_pools!
+        Concurrent::AtExit.run
       end
     end
   end

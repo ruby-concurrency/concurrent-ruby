@@ -97,13 +97,4 @@ module Concurrent
       @count = Concurrent::AtomicFixnum.new(0)
     end
   end
-
-  # @deprecated
-  class PerThreadExecutor < SimpleExecutorService
-
-    def initialize
-      deprecated 'use SimpleExecutorService instead'
-      super
-    end
-  end
 end

@@ -3,14 +3,12 @@ require 'timeout'
 
 require 'concurrent/atomic/event'
 require 'concurrent/concern/dereferenceable'
-require 'concurrent/concern/deprecation'
 
 module Concurrent
   module Concern
 
     module Obligation
       include Concern::Dereferenceable
-      include Concern::Deprecation
 
       # Has the obligation been fulfilled?
       #
@@ -46,16 +44,6 @@ module Concurrent
       # @return [Boolean]
       def complete?
         [:fulfilled, :rejected].include? state
-      end
-
-      # Has the obligation completed processing?
-      #
-      # @return [Boolean]
-      #
-      # @deprecated
-      def completed?
-        deprecated_method 'completed?', 'complete?'
-        complete?
       end
 
       # Is the obligation still awaiting completion of processing?

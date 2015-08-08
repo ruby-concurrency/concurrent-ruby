@@ -62,23 +62,9 @@ module Concurrent
         end
       end
 
-      it 'accepts a Time object as the schedule time' do
-        warn 'deprecated syntax'
-        expected = 60 * 10
-        schedule = Time.now + expected
-        task = ScheduledTask.new(schedule){ nil }.execute
-        expect(task.initial_delay).to be_within(0.1).of(expected)
-      end
-
       it 'raises an exception when seconds is less than zero' do
         expect {
           ScheduledTask.new(-1){ nil }
-        }.to raise_error(ArgumentError)
-      end
-
-      it 'raises an exception when schedule time is in the past' do
-        expect {
-          ScheduledTask.new(Time.now - 60){ nil }
         }.to raise_error(ArgumentError)
       end
 

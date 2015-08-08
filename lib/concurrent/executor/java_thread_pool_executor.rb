@@ -94,8 +94,7 @@ if Concurrent.on_jruby?
         max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
         idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
         @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
-        @fallback_policy = opts.fetch(:fallback_policy, opts.fetch(:overflow_policy, :abort))
-        deprecated ' :overflow_policy is deprecated terminology, please use :fallback_policy instead' if opts.has_key?(:overflow_policy)
+        @fallback_policy = opts.fetch(:fallback_policy, :abort)
 
         raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if max_length < DEFAULT_MIN_POOL_SIZE
         raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if max_length > DEFAULT_MAX_POOL_SIZE

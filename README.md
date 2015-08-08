@@ -184,7 +184,7 @@ require 'concurrent/tvar'             # Concurrent::TVar
 require 'concurrent/actor'          # Concurrent::Actor and supporting code
 require 'concurrent/edge/future'    # new Future Framework
 require 'concurrent/agent'          # Concurrent::Agent
-require 'concurrent/channel '       # Concurrent::Channel and supporting code
+require 'concurrent/channel'        # Concurrent::Channel and supporting code
 ```
 
 If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to reveal the problem.

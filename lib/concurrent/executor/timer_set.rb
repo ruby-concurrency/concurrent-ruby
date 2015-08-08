@@ -1,7 +1,6 @@
 require 'concurrent/scheduled_task'
 require 'concurrent/atomic/event'
 require 'concurrent/collection/priority_queue'
-require 'concurrent/concern/deprecation'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 
@@ -16,7 +15,6 @@ module Concurrent
   #
   # @!macro monotonic_clock_warning
   class TimerSet < RubyExecutorService
-    extend Concern::Deprecation
 
     # Create a new set of timed tasks.
     #
@@ -45,8 +43,6 @@ module Concurrent
     #
     # @raise [ArgumentError] if the intended execution time is not in the future.
     # @raise [ArgumentError] if no block is given.
-    #
-    # @!macro deprecated_scheduling_by_clock_time
     def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       return false unless running?

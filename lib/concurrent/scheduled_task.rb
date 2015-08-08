@@ -3,10 +3,8 @@ require 'concurrent/ivar'
 require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/executor/executor'
 require 'concurrent/utility/monotonic_time'
-require 'concurrent/concern/deprecation'
 
 module Concurrent
-  include Concern::Deprecation
 
   # `ScheduledTask` is a close relative of `Concurrent::Future` but with one
   # important difference: A `Future` is set to execute as soon as possible
@@ -161,21 +159,17 @@ module Concurrent
     #
     # @raise [ArgumentError] When no block is given
     # @raise [ArgumentError] When given a time that is in the past
-    #
-    # @!macro [attach] deprecated_scheduling_by_clock_time
-    #
-    #   @note Scheduling is now based on a monotonic clock. This makes the timer much
-    #     more accurate, but only when scheduling based on a delay interval.
-    #     Scheduling a task based on a clock time is deprecated. It will still work
-    #     but will not be supported in the 1.0 release.
     def initialize(delay, opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
+      raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
+
       super(IVar::NO_VALUE, opts, &nil)
+
       synchronize do
-        @delay = calculate_delay!(delay) # may raise exception
         ns_set_state(:unscheduled)
         @parent = opts.fetch(:timer_set, Concurrent.global_timer_set)
         @args = get_arguments_from(opts)
+        @delay = delay.to_f
         @task = task
         @time = nil
         @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
@@ -188,16 +182,6 @@ module Concurrent
     # @return [Float] the initial delay.
     def initial_delay
       synchronize { @delay }
-    end
-
-    # The `delay` value given at instanciation.
-    #
-    # @return [Float] the initial delay.
-    #
-    # @deprecated use {#initial_delay} instead
-    def delay
-      deprecated_method 'delay', 'initial_delay'
-      initial_delay
     end
 
     # The monotonic time at which the the task is scheduled to be executed.
@@ -228,16 +212,6 @@ module Concurrent
       synchronize { ns_check_state?(:processing) }
     end
 
-    # In the task execution in progress?
-    #
-    # @return [Boolean] true if the task is in the given state else false
-    #
-    # @deprecated Use {#processing?} instead.
-    def in_progress?
-      deprecated_method 'in_progress?', 'processing?'
-      processing?
-    end
-
     # Cancel this task and prevent it from executing. A task can only be
     # cancelled if it is pending or unscheduled.
     #
@@ -251,17 +225,6 @@ module Concurrent
       else
         false
       end
-    end
-
-    # Cancel this task and prevent it from executing. A task can only be
-    # cancelled if it is `:pending` or `:unscheduled`.
-    #
-    # @return [Boolean] true if successfully cancelled else false
-    #
-    # @deprecated Use {#cancel} instead.
-    def stop
-      deprecated_method 'stop', 'cancel'
-      cancel
     end
 
     # Reschedule the task using the original delay and the current time.
@@ -281,7 +244,9 @@ module Concurrent
     #
     # @raise [ArgumentError] When given a time that is in the past
     def reschedule(delay)
-      synchronize{ ns_reschedule(calculate_delay!(delay)) }
+      delay = delay.to_f
+      raise ArgumentError.new('seconds must be greater than zero') if delay < 0.0
+      synchronize{ ns_reschedule(delay) }
     end
 
     # Execute an `:unscheduled` `ScheduledTask`. Immediately sets the state to `:pending`
@@ -306,8 +271,6 @@ module Concurrent
     # @return [ScheduledTask] the newly created `ScheduledTask` in the `:pending` state
     #
     # @raise [ArgumentError] if no block is given
-    #
-    # @!macro deprecated_scheduling_by_clock_time
     def self.execute(delay, opts = {}, &task)
       new(delay, opts, &task).execute
     end
@@ -347,30 +310,6 @@ module Concurrent
     def ns_reschedule(delay)
       return false unless ns_check_state?(:pending)
       @parent.send(:remove_task, self) && ns_schedule(delay)
-    end
-
-    # Calculate the actual delay in seconds based on the given delay.
-    #
-    # @param [Float] delay the number of seconds to wait for before executing the task
-    #
-    # @return [Float] the number of seconds to delay
-    #
-    # @raise [ArgumentError] if the intended execution time is not in the future
-    # @raise [ArgumentError] if no block is given
-    #
-    # @!macro deprecated_scheduling_by_clock_time
-    #
-    # @!visibility private
-    def calculate_delay!(delay)
-      if delay.is_a?(Time)
-        deprecated 'Use an interval not a clock time; schedule is now based on a monotonic clock'
-        now = Time.now
-        raise ArgumentError.new('schedule time must be in the future') if delay <= now
-        delay.to_f - now.to_f
-      else
-        raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
-        delay.to_f
-      end
     end
   end
 end

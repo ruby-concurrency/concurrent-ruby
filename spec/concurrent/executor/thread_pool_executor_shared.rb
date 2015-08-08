@@ -524,26 +524,4 @@ shared_examples :thread_pool_executor do
       end
     end
   end
-
-  context '#overflow_policy' do
-    context ':caller_runs is honoured even if the old overflow_policy arg is used' do
-
-      subject do
-        described_class.new(
-          min_threads: 1,
-          max_threads: 1,
-          idletime: 60,
-          max_queue: 1,
-          overflow_policy: :caller_runs
-        )
-      end
-
-      specify '#<< executes the task on the current thread when the executor is shutting down' do
-        latch = Concurrent::CountDownLatch.new(1)
-        subject.shutdown
-        subject << proc { latch.count_down }
-        latch.wait(0.1)
-      end
-    end
-  end
 end

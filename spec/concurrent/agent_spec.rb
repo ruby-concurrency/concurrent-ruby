@@ -31,22 +31,6 @@ module Concurrent
         subject.await
         expect(subject.value).to eq 12
       end
-
-      it 'times out' do
-        ex      = nil
-        timeout = false
-        subject.rescue(Concurrent::TimeoutError) { timeout = true }
-        subject.post_off(0.1) do |v|
-          sleep(0.2)
-          ex = true
-        end
-        sleep 0.1
-        subject.await
-        expect(timeout).to eq false
-        sleep 0.3
-        expect(timeout).to eq false
-        expect(ex).to eq true
-      end
     end
 
     context 'behavior' do

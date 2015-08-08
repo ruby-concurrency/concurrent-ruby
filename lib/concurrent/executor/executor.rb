@@ -1,12 +1,10 @@
 require 'concurrent/configuration'
-require 'concurrent/concern/deprecation'
 require 'concurrent/executor/executor_service'
 
 module Concurrent
 
   # @!visibility private
   module Executor
-    extend Concern::Deprecation
 
     # Get the requested `Executor` based on the values set in the options hash.
     #
@@ -20,25 +18,8 @@ module Concurrent
     #
     # @!visibility private
     def self.executor_from_options(opts = {}) # :nodoc:
-      case
-      when opts.key?(:executor)
-        if opts[:executor].nil?
-          nil
-        else
-          executor(opts[:executor])
-        end
-      when opts.key?(:operation) || opts.key?(:task)
-        if opts[:operation] == true || opts[:task] == false
-          deprecated 'use `executor: :fast` instead'
-          return Concurrent.global_fast_executor
-        end
-
-        if opts[:operation] == false || opts[:task] == true
-          deprecated 'use `executor: :io` instead'
-          return Concurrent.global_io_executor
-        end
-
-        raise ArgumentError.new("executor '#{opts[:executor]}' not recognized")
+      if identifier = opts.fetch(:executor, nil)
+        executor(identifier)
       else
         nil
       end
@@ -52,12 +33,6 @@ module Concurrent
         Concurrent.global_io_executor
       when :immediate
         Concurrent.global_immediate_executor
-      when :operation
-        deprecated 'use `executor: :fast` instead'
-        Concurrent.global_fast_executor
-      when :task
-        deprecated 'use `executor: :io` instead'
-        Concurrent.global_io_executor
       when Concurrent::ExecutorService
         executor_identifier
       else

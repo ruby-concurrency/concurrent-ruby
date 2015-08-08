@@ -4,7 +4,6 @@ require 'concurrent/concern/dereferenceable'
 require 'concurrent/concern/observable'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/executor'
-require 'concurrent/concern/deprecation'
 
 module Concurrent
 
@@ -85,7 +84,6 @@ module Concurrent
     include Concern::Dereferenceable
     include Concern::Observable
     include Concern::Logging
-    include Concern::Deprecation
 
     attr_reader :timeout, :io_executor, :fast_executor
 
@@ -179,30 +177,13 @@ module Concurrent
     # Update the current value with the result of the given block fast,
     # block can do blocking calls
     #
-    # @param [Fixnum, nil] timeout [DEPRECATED] maximum number of seconds before an update is cancelled
-    #
     # @yield the fast to be performed with the current value in order to calculate
     #   the new value
     # @yieldparam [Object] value the current value
     # @yieldreturn [Object] the new value
     # @return [true, nil] nil when no block is given
-    def post_off(timeout = nil, &block)
-      task = if timeout
-               deprecated 'post_off with option timeout options is deprecated and will be removed'
-               lambda do |value|
-                 future = Future.execute do
-                   block.call(value)
-                 end
-                 if future.wait(timeout)
-                   future.value!
-                 else
-                   raise Concurrent::TimeoutError
-                 end
-               end
-             else
-               block
-             end
-      post_on(@io_executor, &task)
+    def post_off(&block)
+      post_on(@io_executor, &block)
     end
 
     # Update the current value with the result of the given block fast,
