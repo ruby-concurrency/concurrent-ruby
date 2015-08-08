@@ -13,7 +13,7 @@ module Concurrent
           describe '#push' do
             it 'should block' do
               t = Thread.new { channel.push 5 }
-              sleep(0.05)
+              t.join(0.1)
               expect(t.status).to eq 'sleep'
             end
           end
@@ -21,7 +21,7 @@ module Concurrent
           describe '#pop' do
             it 'should block' do
               t = Thread.new { channel.pop }
-              sleep(0.05)
+              t.join(0.1)
               expect(t.status).to eq 'sleep'
             end
           end
@@ -33,35 +33,42 @@ module Concurrent
       context 'cooperating threads' do
 
         it 'passes the pushed value to thread waiting on pop' do
+          push_latch = Concurrent::CountDownLatch.new(1)
+          pop_latch = Concurrent::CountDownLatch.new(1)
+
           result = nil
 
-          Thread.new { channel.push 42 }
-          Thread.new { result = channel.pop; }
+          Thread.new { push_latch.wait(1); channel.push(42) }
+          Thread.new { push_latch.count_down; result = channel.pop; pop_latch.count_down }
 
-          sleep(0.1)
-
+          pop_latch.wait(1)
           expect(result.first).to eq 42
         end
 
         it 'passes the pushed value to only one thread' do
-          result = []
+          result = Concurrent::AtomicFixnum.new(0)
 
-          Thread.new { channel.push 37 }
-          Thread.new { result << channel.pop }
-          Thread.new { result << channel.pop }
+          threads = [
+            Thread.new { channel.push 37 },
+            Thread.new { channel.pop; result.increment },
+            Thread.new { channel.pop; result.increment },
+            Thread.new { channel.pop; result.increment }
+          ]
 
-          sleep(0.1)
+          threads.each{|t| t.join(0.1) }
 
-          expect(result.size).to eq(1)
+          expect(result.value).to eq(1)
         end
 
         it 'gets the pushed value when ready' do
           result = nil
 
-          Thread.new { result = channel.pop; }
-          Thread.new { channel.push 57 }
+          threads = [
+            Thread.new { result = channel.pop; },
+            Thread.new { channel.push 57 }
+          ]
 
-          sleep(0.1)
+          threads.each{|t| t.join(0.1) }
 
           expect(result.first).to eq 57
         end
@@ -71,8 +78,7 @@ module Concurrent
 
         it 'does not block' do
           t = Thread.new { channel.select(probe) }
-
-          sleep(0.05)
+          t.join(0.1)
 
           expect(t.status).to eq false
         end
@@ -91,16 +97,14 @@ module Concurrent
           channel.select(probe)
 
           t = Thread.new { channel.push 72 }
-
-          sleep(0.05)
+          t.join(0.1)
 
           expect(t.status).to eq 'sleep'
 
           new_probe = Channel::Probe.new
 
           channel.select(new_probe)
-
-          sleep(0.05)
+          t.join(0.1)
 
           expect(new_probe.value.first).to eq 72
         end
