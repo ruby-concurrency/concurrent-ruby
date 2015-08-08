@@ -1,9 +1,9 @@
-require 'thread'
 require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/dereferenceable'
 require 'concurrent/concern/observable'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/executor'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -80,7 +80,7 @@ module Concurrent
   #   @return [Fixnum] the maximum number of seconds before an update is cancelled
   #
   # @!macro edge_warning
-  class Agent
+  class Agent < Synchronization::Object
     include Concern::Dereferenceable
     include Concern::Observable
     include Concern::Logging
@@ -93,15 +93,8 @@ module Concurrent
     #
     # @!macro executor_and_deref_options
     def initialize(initial, opts = {})
-      @value                = initial
-      @rescuers             = []
-      @validator            = Proc.new { |result| true }
-      self.observers        = Collection::CopyOnWriteObserverSet.new
-      @serialized_execution = SerializedExecution.new
-      @io_executor          = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-      @fast_executor        = Executor.executor_from_options(opts) || Concurrent.global_fast_executor
-      init_mutex
-      set_deref_options(opts)
+      super()
+      synchronize { ns_initialize(initial, opts) }
     end
 
     # Specifies a block fast to be performed when an update fast raises
@@ -127,9 +120,7 @@ module Concurrent
     #   #=> puts "Pow!"
     def rescue(clazz = StandardError, &block)
       unless block.nil?
-        mutex.synchronize do
-          @rescuers << Rescuer.new(clazz, block)
-        end
+        synchronize { @rescuers << Rescuer.new(clazz, block) }
       end
       self
     end
@@ -137,7 +128,7 @@ module Concurrent
     alias_method :catch, :rescue
     alias_method :on_error, :rescue
 
-    # A block fast to be performed after every update to validate if the new
+    # A block task to be performed after every update to validate if the new
     # value is valid. If the new value is not valid then the current value is not
     # updated. If no validator is provided then all updates are considered valid.
     #
@@ -148,12 +139,7 @@ module Concurrent
     def validate(&block)
 
       unless block.nil?
-        begin
-          mutex.lock
-          @validator = block
-        ensure
-          mutex.unlock
-        end
+        synchronize { @validator = block }
       end
       self
     end
@@ -208,6 +194,20 @@ module Concurrent
       done.wait timeout
     end
 
+    protected
+
+    def ns_initialize(initial, opts)
+      init_mutex(self)
+      @value                = initial
+      @rescuers             = []
+      @validator            = Proc.new { |result| true }
+      self.observers        = Collection::CopyOnWriteObserverSet.new
+      @serialized_execution = SerializedExecution.new
+      @io_executor          = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @fast_executor        = Executor.executor_from_options(opts) || Concurrent.global_fast_executor
+      set_deref_options(opts)
+    end
+
     private
 
     def post_on(executor, &block)
@@ -221,7 +221,7 @@ module Concurrent
 
     # @!visibility private
     def try_rescue(ex) # :nodoc:
-      rescuer = mutex.synchronize do
+      rescuer = synchronize do
         @rescuers.find { |r| ex.is_a?(r.clazz) }
       end
       rescuer.block.call(ex) if rescuer
@@ -232,7 +232,7 @@ module Concurrent
 
     # @!visibility private
     def work(&handler) # :nodoc:
-      validator, value = mutex.synchronize { [@validator, @value] }
+      validator, value = synchronize { [@validator, @value] }
 
       begin
         result = handler.call(value)
@@ -241,14 +241,11 @@ module Concurrent
         exception = ex
       end
 
-      begin
-        mutex.lock
-        should_notify = if !exception && valid
-                          @value = result
-                          true
-                        end
-      ensure
-        mutex.unlock
+      should_notify = synchronize do
+        if !exception && valid
+          @value = result
+          true
+        end
       end
 
       if should_notify
