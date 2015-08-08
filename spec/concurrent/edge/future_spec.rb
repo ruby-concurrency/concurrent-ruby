@@ -61,7 +61,7 @@ describe 'Concurrent::Edge futures' do
 
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
-      expect(queue.pop).to be_between(0.1, 0.2)
+      expect(queue.pop).to be_between(0.05, 0.2)
 
       start  = Time.now.to_f
       queue  = Queue.new
@@ -73,7 +73,7 @@ describe 'Concurrent::Edge futures' do
 
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
-      expect(queue.pop).to be_between(0.1, 0.2)
+      expect(queue.pop).to be_between(0.05, 0.2)
     end
 
     it 'scheduled execution in graph' do
@@ -88,7 +88,7 @@ describe 'Concurrent::Edge futures' do
       future.wait!
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
-      expect(queue.pop).to be_between(0.2, 0.3)
+      expect(queue.pop).to be_between(0.1, 0.3)
     end
 
   end
