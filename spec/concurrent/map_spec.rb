@@ -1,7 +1,7 @@
 Thread.abort_on_exception = true
 
 module Concurrent
-  describe Cache do
+  describe Map do
     before(:each) do
       @cache = described_class.new
     end
@@ -814,7 +814,7 @@ module Concurrent
 
     it 'marshal dump load' do
       new_cache = Marshal.load(Marshal.dump(@cache))
-      expect(new_cache).to be_an_instance_of Concurrent::Cache
+      expect(new_cache).to be_an_instance_of Concurrent::Map
       expect(0).to eq new_cache.size
       @cache[:a] = 1
       new_cache = Marshal.load(Marshal.dump(@cache))
@@ -823,19 +823,19 @@ module Concurrent
     end
 
     it 'marshal dump doesnt work with default proc' do
-      expect { Marshal.dump(Concurrent::Cache.new {}) }.to raise_error(TypeError)
+      expect { Marshal.dump(Concurrent::Map.new {}) }.to raise_error(TypeError)
     end
 
     private
 
     def with_or_without_default_proc(&block)
       block.call(false)
-      @cache = Concurrent::Cache.new { |h, k| h[k] = :default_value }
+      @cache = Concurrent::Map.new { |h, k| h[k] = :default_value }
       block.call(true)
     end
 
     def cache_with_default_proc(default_value = 1)
-      Concurrent::Cache.new { |cache, k| cache[k] = default_value }
+      Concurrent::Map.new { |cache, k| cache[k] = default_value }
     end
 
     def expect_size_change(change, cache = @cache, &block)
@@ -849,8 +849,8 @@ module Concurrent
     end
 
     def expect_valid_options(options)
-      c = Concurrent::Cache.new(options)
-      expect(c).to be_an_instance_of Concurrent::Cache
+      c = Concurrent::Map.new(options)
+      expect(c).to be_an_instance_of Concurrent::Map
     end
 
     def expect_invalid_option(option_name, value)
@@ -858,7 +858,7 @@ module Concurrent
     end
 
     def expect_invalid_options(options)
-      expect { Concurrent::Cache.new(options) }.to raise_error(ArgumentError)
+      expect { Concurrent::Map.new(options) }.to raise_error(ArgumentError)
     end
 
     def expect_no_size_change(cache = @cache, &block) 

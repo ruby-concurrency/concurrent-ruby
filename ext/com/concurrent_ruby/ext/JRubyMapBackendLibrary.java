@@ -23,24 +23,24 @@ import static org.jruby.runtime.Visibility.PRIVATE;
  *
  * @author thedarkone
  */
-public class JRubyCacheBackendLibrary implements Library {
+public class JRubyMapBackendLibrary implements Library {
   public void load(Ruby runtime, boolean wrap) throws IOException {
 
     RubyModule concurrentMod = runtime.defineModule("Concurrent");
     RubyModule thread_safeMod = concurrentMod.defineModuleUnder("ThreadSafe");
-    RubyClass jrubyRefClass = thread_safeMod.defineClassUnder("JRubyCacheBackend", runtime.getObject(), BACKEND_ALLOCATOR);
+    RubyClass jrubyRefClass = thread_safeMod.defineClassUnder("JRubyMapBackend", runtime.getObject(), BACKEND_ALLOCATOR);
     jrubyRefClass.setAllocator(BACKEND_ALLOCATOR);
-    jrubyRefClass.defineAnnotatedMethods(JRubyCacheBackend.class);
+    jrubyRefClass.defineAnnotatedMethods(JRubyMapBackend.class);
   }
 
   private static final ObjectAllocator BACKEND_ALLOCATOR = new ObjectAllocator() {
     public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-      return new JRubyCacheBackend(runtime, klazz);
+      return new JRubyMapBackend(runtime, klazz);
     }
   };
 
-  @JRubyClass(name="JRubyCacheBackend", parent="Object")
-    public static class JRubyCacheBackend extends RubyObject {
+  @JRubyClass(name="JRubyMapBackend", parent="Object")
+    public static class JRubyMapBackend extends RubyObject {
       // Defaults used by the CHM
       static final int DEFAULT_INITIAL_CAPACITY = 16;
       static final float DEFAULT_LOAD_FACTOR = 0.75f;
@@ -65,7 +65,7 @@ public class JRubyCacheBackendLibrary implements Library {
         return false;
       }
 
-      public JRubyCacheBackend(Ruby runtime, RubyClass klass) {
+      public JRubyMapBackend(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
       }
 
@@ -228,7 +228,7 @@ public class JRubyCacheBackendLibrary implements Library {
       }
 
       @JRubyMethod(visibility = PRIVATE)
-        public JRubyCacheBackend initialize_copy(ThreadContext context, IRubyObject other) {
+        public JRubyMapBackend initialize_copy(ThreadContext context, IRubyObject other) {
           map = newCHM();
           return this;
         }

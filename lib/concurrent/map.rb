@@ -1,42 +1,42 @@
 require 'thread'
 
 module Concurrent
-  autoload :JRubyCacheBackend,           'concurrent/thread_safe/jruby_cache_backend'
-  autoload :MriCacheBackend,             'concurrent/thread_safe/mri_cache_backend'
-  autoload :NonConcurrentCacheBackend,   'concurrent/thread_safe/non_concurrent_cache_backend'
-  autoload :AtomicReferenceCacheBackend, 'concurrent/thread_safe/atomic_reference_cache_backend'
-  autoload :SynchronizedCacheBackend,    'concurrent/thread_safe/synchronized_cache_backend'
+  autoload :JRubyMapBackend,           'concurrent/thread_safe/jruby_map_backend'
+  autoload :MriMapBackend,             'concurrent/thread_safe/mri_map_backend'
+  autoload :NonConcurrentMapBackend,   'concurrent/thread_safe/non_concurrent_map_backend'
+  autoload :AtomicReferenceMapBackend, 'concurrent/thread_safe/atomic_reference_map_backend'
+  autoload :SynchronizedMapBackend,    'concurrent/thread_safe/synchronized_map_backend'
 
   # @!visibility private
   module ThreadSafe
 
     # @!visibility private
-    CacheBackend = if defined?(RUBY_ENGINE)
-                     case RUBY_ENGINE
-                     when 'jruby'; JRubyCacheBackend
-                     when 'ruby';  MriCacheBackend
-                     when 'rbx';   AtomicReferenceCacheBackend
-                     else
-                       warn 'Concurrent::Cache: unsupported Ruby engine, using a fully synchronized Concurrent::Cache implementation' if $VERBOSE
-                       SynchronizedCacheBackend
-                     end
+    MapBackend = if defined?(RUBY_ENGINE)
+                   case RUBY_ENGINE
+                   when 'jruby'; JRubyMapBackend
+                   when 'ruby';  MriMapBackend
+                   when 'rbx';   AtomicReferenceMapBackend
                    else
-                     MriCacheBackend
+                     warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
+                     SynchronizedMapBackend
                    end
+                 else
+                   MriMapBackend
+                 end
   end
 
-  # `Concurrent::Cache` is a hash-like object and should have much better performance
+  # `Concurrent::Map` is a hash-like object and should have much better performance
   # characteristics, especially under high concurrency, than `Concurrent::Hash`.
-  # However, `Concurrent::Cache `is not strictly semantically equivalent to a ruby `Hash`
+  # However, `Concurrent::Map `is not strictly semantically equivalent to a ruby `Hash`
   # -- for instance, it does not necessarily retain ordering by insertion time as `Hash`
   # does. For most uses it should do fine though, and we recommend you consider
-  # `Concurrent::Cache` instead of `Concurrent::Hash` for your concurrency-safe hash needs.
+  # `Concurrent::Map` instead of `Concurrent::Hash` for your concurrency-safe hash needs.
   # 
   # > require 'concurrent'
   # >
-  # > cache = Concurrent::Cache.new
+  # > map = Concurrent::Map.new
 
-  class Cache < ThreadSafe::CacheBackend
+  class Map < ThreadSafe::MapBackend
     def initialize(options = nil, &block)
       if options.kind_of?(::Hash)
         validate_options_hash!(options)

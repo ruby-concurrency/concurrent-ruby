@@ -1,16 +1,16 @@
-#!/usr/bin/env ruby -wU
+#!/usr/bin/env ruby
 
-require 'benchmark'
-require 'concurrent'
+require "benchmark"
+require "concurrent"
 
 hash  = {}
-cache = Concurrent::Map.new
+map = Concurrent::Map.new
 
 ENTRIES = 10_000
 
 ENTRIES.times do |i|
   hash[i]  = i
-  cache[i] = i
+  map[i] = i
 end
 
 TESTS = 40_000_000
@@ -22,7 +22,7 @@ Benchmark.bmbm do |results|
   end
 
   results.report('Map#[]') do
-    TESTS.times { cache[key] }
+    TESTS.times { map[key] }
   end
 
   results.report('Hash#each_pair') do
@@ -30,6 +30,6 @@ Benchmark.bmbm do |results|
   end
 
   results.report('Map#each_pair') do
-    (TESTS / ENTRIES).times { cache.each_pair {|k,v| v} }
+    (TESTS / ENTRIES).times { map.each_pair {|k,v| v} }
   end
 end

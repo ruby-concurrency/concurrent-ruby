@@ -183,7 +183,7 @@ module Concurrent
     # checks.
     #
     # @!visibility private
-    class AtomicReferenceCacheBackend
+    class AtomicReferenceMapBackend
       
       # @!visibility private
       class Table < Util::PowerOfTwoTuple

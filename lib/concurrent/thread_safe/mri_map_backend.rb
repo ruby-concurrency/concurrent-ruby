@@ -4,7 +4,7 @@ module Concurrent
   module ThreadSafe
         
     # @!visibility private
-    class MriCacheBackend < NonConcurrentCacheBackend
+    class MriMapBackend < NonConcurrentMapBackend
 
       # We can get away with a single global write lock (instead of a per-instance
       # one) because of the GVL/green threads.

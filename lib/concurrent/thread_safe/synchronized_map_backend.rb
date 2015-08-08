@@ -4,7 +4,7 @@ module Concurrent
   module ThreadSafe
 
     # @!visibility private
-    class SynchronizedCacheBackend < NonConcurrentCacheBackend
+    class SynchronizedMapBackend < NonConcurrentMapBackend
 
       require 'mutex_m'
       include Mutex_m

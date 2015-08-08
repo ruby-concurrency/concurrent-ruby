@@ -4,11 +4,11 @@ module Concurrent
   module ThreadSafe
 
     # @!visibility private
-    class NonConcurrentCacheBackend
+    class NonConcurrentMapBackend
 
       # WARNING: all public methods of the class must operate on the @backend
       # directly without calling each other. This is important because of the
-      # SynchronizedCacheBackend which uses a non-reentrant mutex for perfomance
+      # SynchronizedMapBackend which uses a non-reentrant mutex for perfomance
       # reasons.
       def initialize(options = nil)
         @backend = {}

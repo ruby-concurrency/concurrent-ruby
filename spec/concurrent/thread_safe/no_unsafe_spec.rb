@@ -20,7 +20,7 @@ if defined?(JRUBY_VERSION) && ENV['TEST_NO_UNSAFE']
 
       it 'no_unsafe_version_of_chmv8_is_used' do
         require 'concurrent/thread_safe/jruby_cache_backend' # make sure the jar has been loaded
-        expect(!Java::OrgJrubyExtThread_safe::JRubyCacheBackendLibrary::JRubyCacheBackend::CAN_USE_UNSAFE_CHM).to be_truthy
+        expect(!Java::OrgJrubyExtThread_safe::JRubyMapBackendLibrary::JRubyMapBackend::CAN_USE_UNSAFE_CHM).to be_truthy
       end
     end
   end

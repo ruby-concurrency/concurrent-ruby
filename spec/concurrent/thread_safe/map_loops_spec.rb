@@ -2,13 +2,13 @@ Thread.abort_on_exception = true
 
 module Concurrent
 
-  describe 'CacheTorture', stress: true, notravis: true do
+  describe 'MapTorture', stress: true, notravis: true do
     THREAD_COUNT  = 40
     KEY_COUNT     = (((2**13) - 2) * 0.75).to_i # get close to the doubling cliff
     LOW_KEY_COUNT = (((2**8 ) - 2) * 0.75).to_i # get close to the doubling cliff
 
     INITIAL_VALUE_CACHE_SETUP = lambda do |options, keys|
-      cache         = Concurrent::Cache.new
+      cache         = Concurrent::Map.new
       initial_value = options[:initial_value] || 0
       keys.each { |key| cache[key] = initial_value }
       cache
@@ -22,7 +22,7 @@ module Concurrent
       thread_count: THREAD_COUNT,
       loop_count:   1,
       prelude:      '',
-      cache_setup:  lambda { |options, keys| Concurrent::Cache.new }
+      cache_setup:  lambda { |options, keys| Concurrent::Map.new }
     }
 
     LOW_KEY_COUNT_OPTIONS    = {loop_count: 150,     key_count: LOW_KEY_COUNT}

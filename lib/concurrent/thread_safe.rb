@@ -2,8 +2,8 @@ require 'concurrent/utility/engine'
 require 'concurrent/thread_safe/synchronized_delegator'
 
 module Concurrent
-  autoload :Cache, 'concurrent/cache'
-  autoload :Util,  'concurrent/thread_safe/util'
+  autoload :Map,  'concurrent/map'
+  autoload :Util, 'concurrent/thread_safe/util'
 
   # Various classes within allows for +nil+ values to be stored,
   # so a special +NULL+ token is required to indicate the "nil-ness".

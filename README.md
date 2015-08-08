@@ -75,7 +75,7 @@ These classes were originally part of the (deprecated) `thread_safe` gem.
 
 * [Array](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Array.html) A thread-safe subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
 * [Hash](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html) A thread-safe subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
-* [Cache](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Cache.html) A hash-like object that should have much better performance characteristics, especially under high concurrency, than `Concurrent::Hash`.
+* [Map](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Map.html) A hash-like object that should have much better performance characteristics, especially under high concurrency, than `Concurrent::Hash`.
 
 #### Thread-safe Value Objects
 
