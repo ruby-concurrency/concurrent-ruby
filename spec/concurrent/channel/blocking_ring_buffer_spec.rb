@@ -65,8 +65,7 @@ module Concurrent
           fill_buffer
 
           t = Thread.new { buffer.put 32 }
-
-          sleep(0.1)
+          t.join(0.1)
 
           expect(t.status).to eq 'sleep'
         end
@@ -74,18 +73,24 @@ module Concurrent
         it 'continues when an element is removed' do
           latch = CountDownLatch.new(1)
 
-          Thread.new { (capacity + 1).times { buffer.put 'hi' }; latch.count_down }
-          Thread.new { sleep(0.1); buffer.take }
+          t1 = Thread.new do
+            (capacity + 3).times { buffer.put 'hi' }
+            latch.count_down
+          end
 
-          expect(latch.wait(0.2)).to be_truthy
+          Thread.new do
+            t1.join(0.1)
+            3.times { buffer.take }
+          end
+
+          expect(latch.wait(1)).to be_truthy
         end
       end
 
       describe '#take' do
         it 'blocks when buffer is empty' do
           t = Thread.new { buffer.take }
-
-          sleep(0.1)
+          t.join(0.1)
 
           expect(t.status).to eq 'sleep'
         end
