@@ -157,9 +157,9 @@ module Concurrent
 
       it 'uses the :executor from the options' do
         latch = Concurrent::CountDownLatch.new
-        executor = Concurrent::SingleThreadExecutor.new
+        executor = Concurrent::ImmediateExecutor.new
         expect(executor).to receive(:post).once.with(any_args).and_call_original
-        task = ScheduledTask.execute(0.1, executor: executor) do
+        task = ScheduledTask.execute(0, executor: executor) do
           latch.count_down
         end
         latch.wait(2)

@@ -24,7 +24,7 @@ module Concurrent
             channel.push 2
 
             t = Thread.new { channel.push 3 }
-            sleep(0.05)
+            t.join(0.1)
             expect(t.status).to eq 'sleep'
           end
 
@@ -34,13 +34,11 @@ module Concurrent
 
             result = nil
 
-            Thread.new { channel.push 'bar'; result = 42 }
+            t = Thread.new { channel.push 'bar'; result = 42 }
 
-            sleep(0.1)
-
+            t.join(0.1)
             channel.pop
-
-            sleep(0.1)
+            t.join(0.1)
 
             expect(result).to eq 42
           end
@@ -55,7 +53,7 @@ module Concurrent
         describe '#pop' do
           it 'should block if buffer is empty' do
             t = Thread.new { channel.pop }
-            sleep(0.05)
+            t.join(0.1)
             expect(t.status).to eq 'sleep'
           end
 
@@ -81,9 +79,7 @@ module Concurrent
 
         it 'does not block' do
           t = Thread.new { channel.select(probe) }
-
-          sleep(0.05)
-
+          t.join(0.1)
           expect(t.status).to eq false
         end
 
