@@ -106,7 +106,7 @@ module Concurrent
         start = Time.now.to_f
         subject.post(0.2){ latch.count_down }
         expect(latch.wait(1)).to be true
-        expect(Time.now.to_f - start).to be_within(0.1).of(0.2)
+        expect(Time.now.to_f - start).to be >= 0.2
       end
 
       it 'executes all tasks scheduled for the same time' do

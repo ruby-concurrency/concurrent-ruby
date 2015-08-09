@@ -106,28 +106,44 @@ module Concurrent
       end
 
       it 'should resist to spurious wake ups without timeout' do
-        @expected = false
-        Thread.new { subject.wait; @expected = true }
+        latch = Concurrent::CountDownLatch.new(1)
+        expected = false
 
-        sleep(0.1)
+        t = Thread.new do
+          latch.wait(1)
+          subject.wait
+          expected = true
+        end
+
+        latch.count_down
+        t.join(0.1)
         subject.simulate_spurious_wake_up
 
-        sleep(0.1)
-        expect(@expected).to be_falsey
+        t.join(0.1)
+        expect(expected).to be_falsey
       end
 
       it 'should resist to spurious wake ups with timeout' do
-        @expected = false
-        Thread.new { subject.wait(0.5); @expected = true }
+        start_latch = Concurrent::CountDownLatch.new(1)
+        finish_latch = Concurrent::CountDownLatch.new(1)
+        expected = false
 
-        sleep(0.1)
+        t = Thread.new do
+          start_latch.wait(1)
+          subject.wait(0.5)
+          expected = true
+          finish_latch.count_down
+        end
+
+        start_latch.count_down
+        t.join(0.1)
         subject.simulate_spurious_wake_up
 
-        sleep(0.1)
-        expect(@expected).to be_falsey
+        t.join(0.1)
+        expect(expected).to be_falsey
 
-        sleep(0.4)
-        expect(@expected).to be_truthy
+        finish_latch.wait(1)
+        expect(expected).to be_truthy
       end
     end
   end
