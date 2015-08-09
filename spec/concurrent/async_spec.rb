@@ -171,6 +171,10 @@ module Concurrent
 
     context '#async' do
 
+      before(:each) do
+        subject.executor = ImmediateExecutor.new
+      end
+
       it 'raises an error when calling a method that does not exist' do
         expect {
           subject.async.bogus
@@ -190,7 +194,8 @@ module Concurrent
       end
 
       it 'returns a :pending IVar' do
-        val = subject.async.wait(5)
+        subject.executor = executor
+        val = subject.async.wait(1)
         expect(val).to be_a Concurrent::IVar
         expect(val).to be_pending
       end
@@ -212,30 +217,25 @@ module Concurrent
       it 'sets the reason on failure' do
         ex = ArgumentError.new
         val = subject.async.boom(ex)
-        sleep(0.1)
         expect(val.reason).to eq ex
         expect(val).to be_rejected
       end
 
       it 'sets the reason when giving too many optional arguments' do
         val = subject.async.gather(1, 2, 3, 4, 5)
-        sleep(0.1)
         expect(val.reason).to be_a StandardError
         expect(val).to be_rejected
       end
 
       it 'supports attribute accessors' do
         subject.async.accessor = :foo
-        sleep(0.1)
         val = subject.async.accessor
-        sleep(0.1)
         expect(val.value).to eq :foo
         expect(subject.accessor).to eq :foo
       end
 
       it 'supports methods with blocks' do
         val = subject.async.with_block{ :foo }
-        sleep(0.1)
         expect(val.value).to eq :foo
       end
 
@@ -244,7 +244,6 @@ module Concurrent
         it 'defines the method after the first call' do
           expect { subject.async.method(:echo) }.to raise_error(NameError)
           subject.async.echo(:foo)
-          sleep(0.1)
           expect { subject.async.method(:echo) }.not_to raise_error
         end
 
