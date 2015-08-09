@@ -114,6 +114,8 @@ Derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 * [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html)
 * [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html)
+* [Volatile](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Volatile.html)
+  Provides `volatile` (in the JVM's sense) attribute accessors implemented atop of `Concurrent::AtomicReference`.
 
 ### Edge Features
 

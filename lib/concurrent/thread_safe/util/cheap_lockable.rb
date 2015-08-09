@@ -85,7 +85,7 @@ module Concurrent
         else
           require 'thread'
 
-          extend Volatile
+          extend Concurrent::Volatile
           attr_volatile :mutex
 
           # Non-reentrant Mutex#syncrhonize
