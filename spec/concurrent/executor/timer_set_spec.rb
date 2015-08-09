@@ -24,14 +24,14 @@ module Concurrent
         expect(executor).to receive(:post).with(no_args)
         subject = TimerSet.new(executor: executor)
         subject.post(0){ nil }
-        sleep(0.1)
       end
 
       it 'uses the global io executor be default' do
+        latch = Concurrent::CountDownLatch.new(1)
         expect(Concurrent.global_io_executor).to receive(:post).with(no_args)
         subject = TimerSet.new
-        subject.post(0){ nil }
-        sleep(0.1)
+        subject.post(0){ latch.count_down }
+        latch.wait(0.1)
       end
     end
 
@@ -85,7 +85,6 @@ module Concurrent
       it 'executes a given task when given an interval in seconds, even if longer tasks have been scheduled' do
         latch = CountDownLatch.new(1)
         subject.post(0.5){ nil }
-        sleep 0.1
         subject.post(0.1){ latch.count_down }
         expect(latch.wait(0.2)).to be_truthy
       end
@@ -106,7 +105,7 @@ module Concurrent
         start = Time.now.to_f
         subject.post(0.2){ latch.count_down }
         expect(latch.wait(1)).to be true
-        expect(Time.now.to_f - start).to be >= 0.2
+        expect(Time.now.to_f - start).to be >= 0.19
       end
 
       it 'executes all tasks scheduled for the same time' do
@@ -143,10 +142,9 @@ module Concurrent
       end
 
       it 'continues to execute new tasks even after the queue is emptied' do
-        10.times do |i|
+        3.times do |i|
           task = subject.post(0.1){ i }
           expect(task.value).to eq i
-          sleep(0.1)
         end
       end
     end
@@ -233,7 +231,7 @@ module Concurrent
       it 'returns false when not running' do
         task = subject.post(10){ nil }
         subject.shutdown
-        subject.wait_for_termination(2)
+        subject.wait_for_termination(1)
         expect(task.cancel).to be false
       end
     end
@@ -313,7 +311,7 @@ module Concurrent
       it 'returns false when not running' do
         task = subject.post(10){ nil }
         subject.shutdown
-        subject.wait_for_termination(2)
+        subject.wait_for_termination(1)
         expected = task.schedule_time
         success = task.reschedule(10)
         expect(success).to be false
@@ -334,65 +332,89 @@ module Concurrent
     context 'termination' do
 
       it 'cancels all pending tasks on #shutdown' do
+        count = 10
+        latch = Concurrent::CountDownLatch.new(count)
         expected = AtomicFixnum.new(0)
-        10.times{ subject.post(0.2){ expected.increment } }
-        sleep(0.1)
+
+        count.times do |i|
+          subject.post(0.2){ expected.increment }
+          latch.count_down
+        end
+
+        latch.wait(1)
         subject.shutdown
-        sleep(0.2)
+        subject.wait_for_termination(1)
+
         expect(expected.value).to eq 0
       end
 
       it 'cancels all pending tasks on #kill' do
+        count = 10
+        latch = Concurrent::CountDownLatch.new(count)
         expected = AtomicFixnum.new(0)
-        10.times{ subject.post(0.2){ expected.increment } }
-        sleep(0.1)
+
+        count.times do |i|
+          subject.post(0.2){ expected.increment }
+          latch.count_down
+        end
+
+        latch.wait(1)
         subject.kill
-        sleep(0.2)
+        subject.wait_for_termination(1)
+
         expect(expected.value).to eq 0
       end
 
       it 'stops the monitor thread on #shutdown' do
         timer_executor = subject.instance_variable_get(:@timer_executor)
         subject.shutdown
-        sleep(0.1)
+        subject.wait_for_termination(1)
         expect(timer_executor).not_to be_running
       end
 
       it 'kills the monitor thread on #kill' do
         timer_executor = subject.instance_variable_get(:@timer_executor)
         subject.kill
-        sleep(0.1)
+        subject.wait_for_termination(1)
         expect(timer_executor).not_to be_running
       end
 
       it 'rejects tasks once shutdown' do
+        latch = Concurrent::CountDownLatch.new(1)
         expected = AtomicFixnum.new(0)
+
         subject.shutdown
-        sleep(0.1)
-        expect(subject.post(0){ expected.increment }).to be_falsey
-        sleep(0.1)
+        subject.wait_for_termination(1)
+
+        expect(subject.post(0){ expected.increment; latch.count_down }).to be_falsey
+        latch.wait(0.1)
         expect(expected.value).to eq 0
       end
 
       it 'rejects tasks once killed' do
+        latch = Concurrent::CountDownLatch.new(1)
         expected = AtomicFixnum.new(0)
+
         subject.kill
-        sleep(0.1)
-        expect(subject.post(0){ expected.increment }).to be_falsey
-        sleep(0.1)
+        subject.wait_for_termination(1)
+
+        expect(subject.post(0){ expected.increment; latch.count_down }).to be_falsey
+        latch.wait(0.1)
         expect(expected.value).to eq 0
       end
 
       specify '#wait_for_termination returns true if shutdown completes before timeout' do
-        subject.post(0.1){ nil }
-        sleep(0.1)
+        latch = Concurrent::CountDownLatch.new(1)
+        subject.post(0){ latch.count_down }
+        latch.wait(1)
         subject.shutdown
         expect(subject.wait_for_termination(0.1)).to be_truthy
       end
 
       specify '#wait_for_termination returns false on timeout' do
-        subject.post(0.1){ nil }
-        sleep(0.1)
+        latch = Concurrent::CountDownLatch.new(1)
+        subject.post(0){ latch.count_down }
+        latch.wait(0.1)
         # do not call shutdown -- force timeout
         expect(subject.wait_for_termination(0.1)).to be_falsey
       end
@@ -413,14 +435,14 @@ module Concurrent
 
       it 'is shutdown? after shutdown completes' do
         subject.shutdown
-        sleep(0.1)
+        subject.wait_for_termination(1)
         expect(subject).not_to be_running
         expect(subject).to be_shutdown
       end
 
       it 'is shutdown? after being killed' do
         subject.kill
-        sleep(0.1)
+        subject.wait_for_termination(1)
         expect(subject).not_to be_running
         expect(subject).to be_shutdown
       end
