@@ -91,6 +91,7 @@ Derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 * [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmutableStruct.html) Immutable struct where values are set at construction and cannot be changed later.
 * [MutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutableStruct.html) Synchronized, mutable struct where values can be safely changed at any time.
 * [SettableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SettableStruct.html) Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
+* [Tuple](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Tuple.html) A fixed size array with volatile (synchronized, thread safe) getters/setters.
 
 #### Java-inspired ThreadPools and Other Executors
 

@@ -26,6 +26,7 @@ require 'concurrent/promise'
 require 'concurrent/scheduled_task'
 require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
+require 'concurrent/tuple'
 require 'concurrent/tvar'
 require 'concurrent/volatile'
 
