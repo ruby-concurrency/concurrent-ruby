@@ -1,8 +1,8 @@
-### Upcoming Release v0.9.1 (TBD)
+## Current Release v0.9.1 (09 August 2015)
 
 * Fixed a Rubiniux bug in synchronization object
-* Fixed all unterpreter warnings (except circular references)
-* Fixed requires when requiring `Atom` alone
+* Fixed all interpreter warnings (except circular references)
+* Fixed require statements when requiring `Atom` alone
 * Significantly improved `ThreadLocalVar` on non-JRuby platforms
 * Fixed error handling in Edge `Concurrent.zip`
 * `AtomicFixnum` methods `#increment` and `#decrement` now support optional delta
@@ -12,7 +12,7 @@
 * `ThreadLocalVar#bind` method is now public
 * Refactored many tests
 
-## Current Release v0.9.0 (10 July 2015)
+### Release v0.9.0 (10 July 2015)
 
 * Updated `AtomicReference`
   - `AtomicReference#try_update` now simply returns instead of raising exception
