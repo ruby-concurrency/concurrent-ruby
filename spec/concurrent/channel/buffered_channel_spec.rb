@@ -4,93 +4,91 @@ module Concurrent
     describe BufferedChannel do
 
       let(:size) { 2 }
-      let!(:channel) { BufferedChannel.new(size) }
+      subject { described_class.new(size) }
       let(:probe) { Channel::Probe.new }
 
       context 'without timeout' do
 
         describe '#push' do
           it 'adds elements to buffer' do
-            expect(channel.buffer_queue_size).to be 0
+            expect(subject.buffer_queue_size).to be 0
 
-            channel.push('a')
-            channel.push('a')
+            subject.push('a')
+            subject.push('a')
 
-            expect(channel.buffer_queue_size).to be 2
+            expect(subject.buffer_queue_size).to be 2
           end
 
           it 'should block when buffer is full' do
-            channel.push 1
-            channel.push 2
+            subject.push 1
+            subject.push 2
 
-            t = Thread.new { channel.push 3 }
+            t = Thread.new { subject.push 3 }
             t.join(0.1)
             expect(t.status).to eq 'sleep'
           end
 
           it 'restarts thread when buffer is no more full' do
-            channel.push 'hi'
-            channel.push 'foo'
+            subject.push 'hi'
+            subject.push 'foo'
 
             result = nil
 
-            t = Thread.new { channel.push 'bar'; result = 42 }
+            t = Thread.new { subject.push 'bar'; result = 42 }
 
             t.join(0.1)
-            channel.pop
+            subject.pop
             t.join(0.1)
 
             expect(result).to eq 42
           end
 
           it 'should assign value to a probe if probe set is not empty' do
-            channel.select(probe)
-            Thread.new { sleep(0.1); channel.push 3 }
+            subject.select(probe)
+            Thread.new { sleep(0.1); subject.push 3 }
             expect(probe.value.first).to eq 3
           end
         end
 
         describe '#pop' do
           it 'should block if buffer is empty' do
-            t = Thread.new { channel.pop }
+            t = Thread.new { subject.pop }
             t.join(0.1)
             expect(t.status).to eq 'sleep'
           end
 
           it 'returns value if buffer is not empty' do
-            channel.push 1
-            result = channel.pop
+            subject.push 1
+            result = subject.pop
 
             expect(result.first).to eq 1
           end
 
           it 'removes the first value from the buffer' do
-            channel.push 'a'
-            channel.push 'b'
+            subject.push 'a'
+            subject.push 'b'
 
-            expect(channel.pop.first).to eq 'a'
-            expect(channel.buffer_queue_size).to eq 1
+            expect(subject.pop.first).to eq 'a'
+            expect(subject.buffer_queue_size).to eq 1
           end
         end
-
       end
 
       describe 'select' do
 
         it 'does not block' do
-          t = Thread.new { channel.select(probe) }
+          t = Thread.new { subject.select(probe) }
           t.join(0.1)
           expect(t.status).to eq false
         end
 
         it 'gets notified by writer thread' do
-          channel.select(probe)
+          subject.select(probe)
 
-          Thread.new { channel.push 82 }
+          Thread.new { subject.push 82 }
 
           expect(probe.value.first).to eq 82
         end
-
       end
 
       context 'already set probes' do
@@ -98,12 +96,12 @@ module Concurrent
           it 'discards already set probes' do
             probe.set('set value')
 
-            channel.select(probe)
+            subject.select(probe)
 
-            channel.push 27
+            subject.push 27
 
-            expect(channel.buffer_queue_size).to eq 1
-            expect(channel.probe_set_size).to eq 0
+            expect(subject.buffer_queue_size).to eq 1
+            expect(subject.probe_set_size).to eq 0
           end
         end
 
@@ -111,14 +109,13 @@ module Concurrent
           it 'discards set probe' do
             probe.set('set value')
 
-            channel.push 82
+            subject.push 82
 
-            channel.select(probe)
+            subject.select(probe)
 
-            expect(channel.buffer_queue_size).to eq 1
+            expect(subject.buffer_queue_size).to eq 1
 
-            expect(channel.pop.first).to eq 82
-
+            expect(subject.pop.first).to eq 82
           end
         end
       end
@@ -126,22 +123,20 @@ module Concurrent
       describe 'probe set' do
 
         it 'has size zero after creation' do
-          expect(channel.probe_set_size).to eq 0
+          expect(subject.probe_set_size).to eq 0
         end
 
         it 'increases size after a select' do
-          channel.select(probe)
-          expect(channel.probe_set_size).to eq 1
+          subject.select(probe)
+          expect(subject.probe_set_size).to eq 1
         end
 
         it 'decreases size after a removal' do
-          channel.select(probe)
-          channel.remove_probe(probe)
-          expect(channel.probe_set_size).to eq 0
+          subject.select(probe)
+          subject.remove_probe(probe)
+          expect(subject.probe_set_size).to eq 0
         end
-
       end
-
     end
   end
 end
