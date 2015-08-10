@@ -78,7 +78,7 @@ module Concurrent
       else
         # this function has been optimized for performance and
         # should not be modified without running new benchmarks
-        mutex.synchronize do
+        synchronize do
           execute = @computing = true unless @computing
           if execute
             begin
@@ -140,7 +140,7 @@ module Concurrent
     # @yield the delayed operation to perform
     # @return [true, false] if success
     def reconfigure(&block)
-      mutex.synchronize do
+      synchronize do
         raise ArgumentError.new('no block given') unless block_given?
         unless @computing
           @task = block
@@ -170,7 +170,7 @@ module Concurrent
       # this function has been optimized for performance and
       # should not be modified without running new benchmarks
       execute = task = nil
-      mutex.synchronize do
+      synchronize do
         execute = @computing = true unless @computing
         task    = @task
       end
@@ -183,7 +183,7 @@ module Concurrent
           rescue => ex
             reason = ex
           end
-          mutex.synchronize do
+          synchronize do
             set_state(success, result, reason)
             event.set
           end

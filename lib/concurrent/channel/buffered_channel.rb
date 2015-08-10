@@ -1,3 +1,4 @@
+require 'concurrent/synchronization'
 require 'concurrent/channel/waitable_list'
 
 module Concurrent
@@ -5,14 +6,11 @@ module Concurrent
 
     # @api Channel
     # @!macro edge_warning
-    class BufferedChannel
+    class BufferedChannel < Synchronization::Object
 
       def initialize(size)
-        @mutex = Mutex.new
-        @buffer_condition = ConditionVariable.new
-
-        @probe_set = WaitableList.new
-        @buffer = RingBuffer.new(size)
+        super()
+        synchronize { ns_initialize(size) }
       end
 
       def probe_set_size
@@ -20,11 +18,11 @@ module Concurrent
       end
 
       def buffer_queue_size
-        @mutex.synchronize { @buffer.count }
+        synchronize { @buffer.count }
       end
 
       def push(value)
-        until set_probe_or_push_into_buffer(value)
+        until set_probe_or_ns_push_into_buffer(value)
         end
       end
 
@@ -35,15 +33,13 @@ module Concurrent
       end
 
       def select(probe)
-        @mutex.synchronize do
-
+        synchronize do
           if @buffer.empty?
             @probe_set.put(probe)
             true
           else
-            shift_buffer if probe.try_set([peek_buffer, self])
+            ns_shift_buffer if probe.try_set([ns_peek_buffer, self])
           end
-
         end
       end
 
@@ -51,37 +47,43 @@ module Concurrent
         @probe_set.delete(probe)
       end
 
-      private
+      protected
 
-      def push_into_buffer(value)
-        @buffer_condition.wait(@mutex) while @buffer.full?
-        @buffer.offer value
-        @buffer_condition.broadcast
+      def ns_initialize(size)
+        @probe_set = WaitableList.new
+        @buffer = RingBuffer.new(size)
       end
 
-      def peek_buffer
-        @buffer_condition.wait(@mutex) while @buffer.empty?
+      private
+
+      def ns_push_into_buffer(value)
+        ns_wait while @buffer.full?
+        @buffer.offer value
+        ns_broadcast
+      end
+
+      def ns_peek_buffer
+        ns_wait while @buffer.empty?
         @buffer.peek
       end
 
-      def shift_buffer
-        @buffer_condition.wait(@mutex) while @buffer.empty?
+      def ns_shift_buffer
+        ns_wait while @buffer.empty?
         result = @buffer.poll
-        @buffer_condition.broadcast
+        ns_broadcast
         result
       end
 
-      def set_probe_or_push_into_buffer(value)
-        @mutex.synchronize do
+      def set_probe_or_ns_push_into_buffer(value)
+        synchronize do
           if @probe_set.empty?
-            push_into_buffer(value)
+            ns_push_into_buffer(value)
             true
           else
             @probe_set.take.try_set([value, self])
           end
         end
       end
-
     end
   end
 end

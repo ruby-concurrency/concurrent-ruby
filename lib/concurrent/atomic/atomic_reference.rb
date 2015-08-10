@@ -40,10 +40,3 @@ else
   class Concurrent::AtomicReference < Concurrent::MutexAtomicReference
   end
 end
-
-module Concurrent
-
-  # @see Concurrent::AtomicReference
-  # @deprecated Use Concurrent::AtomicReference instead.
-  Atomic = AtomicReference
-end

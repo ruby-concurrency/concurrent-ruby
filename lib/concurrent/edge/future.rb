@@ -1,4 +1,5 @@
 require 'concurrent' # TODO do not require whole concurrent gem
+require 'concurrent/concern/deprecation'
 require 'concurrent/edge/lock_free_stack'
 
 

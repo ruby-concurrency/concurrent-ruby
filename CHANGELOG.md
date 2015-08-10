@@ -1,3 +1,8 @@
+### Upcoming Release v1.0.0 (TBD)
+
+* Removed all deprecated code (classes, methods, constants, etc.)
+* Updated Agent, MutexAtomic, and BufferedChannel to inherit from Synchronization::Object.
+
 ## Current Release v0.9.1 (09 August 2015)
 
 * Fixed a Rubiniux bug in synchronization object

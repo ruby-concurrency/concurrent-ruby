@@ -7,7 +7,6 @@ require 'concurrent/configuration'
 require 'concurrent/atomics'
 require 'concurrent/errors'
 require 'concurrent/executors'
-require 'concurrent/utilities'
 
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atom'

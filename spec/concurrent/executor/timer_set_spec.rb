@@ -37,13 +37,6 @@ module Concurrent
 
     context '#post' do
 
-      it 'raises an exception when given a task with a past Time value' do
-        warn 'deprecated syntax'
-        expect {
-          subject.post(Time.now - 10){ nil }
-        }.to raise_error(ArgumentError)
-      end
-
       it 'raises an exception when given a task with a delay less than zero' do
         expect {
           subject.post(-10){ nil }
@@ -64,13 +57,6 @@ module Concurrent
     end
 
     context 'execution' do
-
-      it 'executes a given task when given a Time' do
-        warn 'deprecated syntax'
-        latch = CountDownLatch.new(1)
-        subject.post(Time.now + 0.1){ latch.count_down }
-        expect(latch.wait(0.2)).to be_truthy
-      end
 
       it 'executes a given task when given an interval in seconds' do
         latch = CountDownLatch.new(1)

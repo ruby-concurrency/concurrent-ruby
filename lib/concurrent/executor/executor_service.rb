@@ -1,5 +1,4 @@
 require 'concurrent/errors'
-require 'concurrent/concern/deprecation'
 require 'concurrent/concern/logging'
 require 'concurrent/atomic/event'
 require 'concurrent/synchronization'
@@ -68,7 +67,6 @@ module Concurrent
   # @!visibility private
   module ExecutorService
     include Concern::Logging
-    include Concern::Deprecation
 
     # @!macro executor_service_method_post
     def post(*args, &task)
