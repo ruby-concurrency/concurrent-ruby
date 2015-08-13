@@ -9,7 +9,7 @@ module Concurrent
     module Logging
       include Logger::Severity
 
-      # Logs through {Configuration#logger}, it can be overridden by setting @logger
+      # Logs through {Concurrent.global_logger}, it can be overridden by setting @logger
       # @param [Integer] level one of Logger::Severity constants
       # @param [String] progname e.g. a path of an Actor
       # @param [String, nil] message when nil block is used to generate the message
