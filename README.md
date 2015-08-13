@@ -107,6 +107,7 @@ Thread-safe variables:
 * [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html) A synchronization object that allows one thread to wait on multiple other threads.
 * [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html) A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.
 * [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html) Old school kernel-style event.
+* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [I-Structure](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar) Similar to a "future" but can be manually assigned once, after which it becomes immutable.
 * [M-Structure](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar) A synchronized single element container.
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html) A lock that supports multiple readers but only one writer.
@@ -132,7 +133,6 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 * [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
   Communicating Sequential Processes (CSP).
-* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
@@ -146,7 +146,6 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 - **Future/Promise Framework** - API changes; partial documentation and tests; stability good.
 - **Agent** - Incomplete behaviour compared to Clojure's models; stability good.
 - **Channel** - Missing documentation; limted features; stability good.
-- **Exchanger** - Known race condition requiring a new implementation.
 - **LazyRegister** - Missing documentation and tests.
 - **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Needs real world battle testing
 
