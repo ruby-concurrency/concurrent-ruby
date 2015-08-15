@@ -14,9 +14,9 @@ module Concurrent
 end
 
 require 'concurrent/tuple'
+require 'concurrent/thread_safe/util/xor_shift_random'
 require 'concurrent/thread_safe/util/volatile'
 require 'concurrent/thread_safe/util/striped64'
 require 'concurrent/thread_safe/util/adder'
 require 'concurrent/thread_safe/util/cheap_lockable'
 require 'concurrent/thread_safe/util/power_of_two_tuple'
-

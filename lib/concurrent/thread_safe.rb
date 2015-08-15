@@ -1,6 +1,6 @@
+require 'concurrent/map'
 require 'concurrent/utility/engine'
 require 'concurrent/thread_safe/synchronized_delegator'
-require 'concurrent/map'
 require 'concurrent/thread_safe/util'
 
 module Concurrent
