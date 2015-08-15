@@ -3,15 +3,14 @@ package com.concurrent_ruby.ext;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import com.concurrent_ruby.ext.jsr166e.ConcurrentHashMap;
+import com.concurrent_ruby.ext.jsr166e.ConcurrentHashMapV8;
+import com.concurrent_ruby.ext.jsr166e.nounsafe.*;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import java.util.Iterator;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.concurrent.ConcurrentHashMap;
 
 import java.io.IOException;
 import java.util.Map;
@@ -45,14 +44,33 @@ public class JRubyMapBackendLibrary implements Library {
       static final int DEFAULT_INITIAL_CAPACITY = 16;
       static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
+      public static final boolean CAN_USE_UNSAFE_CHM = canUseUnsafeCHM();
+
       private ConcurrentHashMap<IRubyObject, IRubyObject> map;
 
       private static ConcurrentHashMap<IRubyObject, IRubyObject> newCHM(int initialCapacity, float loadFactor) {
-        return new java.util.concurrent.ConcurrentHashMap<IRubyObject, IRubyObject>(initialCapacity, loadFactor);
+        if (CAN_USE_UNSAFE_CHM) {
+          return new ConcurrentHashMapV8<IRubyObject, IRubyObject>(initialCapacity, loadFactor);
+        } else {
+          return new com.concurrent_ruby.ext.jsr166e.nounsafe.ConcurrentHashMapV8<IRubyObject, IRubyObject>(initialCapacity, loadFactor);
+        }
       }
 
       private static ConcurrentHashMap<IRubyObject, IRubyObject> newCHM() {
         return newCHM(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);
+      }
+
+      private static boolean canUseUnsafeCHM() {
+        try {
+          new com.concurrent_ruby.ext.jsr166e.ConcurrentHashMapV8(); // force class load and initialization
+          return true;
+        } catch (Throwable t) { // ensuring we really do catch everything
+          // Doug's Unsafe setup errors always have this "Could not ini.." message
+          if (isCausedBySecurityException(t)) {
+            return false;
+          }
+          throw (t instanceof RuntimeException ? (RuntimeException) t : new RuntimeException(t));
+        }
       }
 
       private static boolean isCausedBySecurityException(Throwable t) {
@@ -114,7 +132,7 @@ public class JRubyMapBackendLibrary implements Library {
 
       @JRubyMethod
       public IRubyObject compute_if_absent(final ThreadContext context, final IRubyObject key, final Block block) {
-        return map.computeIfAbsent(key, new java.util.function.Function<IRubyObject, IRubyObject>() {
+        return map.computeIfAbsent(key, new ConcurrentHashMap.Fun<IRubyObject, IRubyObject>() {
           @Override
           public IRubyObject apply(IRubyObject key) {
             return block.yieldSpecific(context);
@@ -124,7 +142,7 @@ public class JRubyMapBackendLibrary implements Library {
 
       @JRubyMethod
       public IRubyObject compute_if_present(final ThreadContext context, final IRubyObject key, final Block block) {
-        IRubyObject result = map.computeIfPresent(key, new java.util.function.BiFunction<IRubyObject, IRubyObject, IRubyObject>() {
+        IRubyObject result = map.computeIfPresent(key, new ConcurrentHashMap.BiFun<IRubyObject, IRubyObject, IRubyObject>() {
           @Override
           public IRubyObject apply(IRubyObject key, IRubyObject oldValue) {
             IRubyObject result = block.yieldSpecific(context, oldValue == null ? context.getRuntime().getNil() : oldValue);
@@ -136,7 +154,7 @@ public class JRubyMapBackendLibrary implements Library {
 
       @JRubyMethod
       public IRubyObject compute(final ThreadContext context, final IRubyObject key, final Block block) {
-        IRubyObject result = map.compute(key, new java.util.function.BiFunction<IRubyObject, IRubyObject, IRubyObject>() {
+        IRubyObject result = map.compute(key, new ConcurrentHashMap.BiFun<IRubyObject, IRubyObject, IRubyObject>() {
           @Override
           public IRubyObject apply(IRubyObject key, IRubyObject oldValue) {
             IRubyObject result = block.yieldSpecific(context, oldValue == null ? context.getRuntime().getNil() : oldValue);
@@ -148,7 +166,7 @@ public class JRubyMapBackendLibrary implements Library {
 
       @JRubyMethod
       public IRubyObject merge_pair(final ThreadContext context, final IRubyObject key, final IRubyObject value, final Block block) {
-        IRubyObject result = map.merge(key, value, new java.util.function.BiFunction<IRubyObject, IRubyObject, IRubyObject>() {
+        IRubyObject result = map.merge(key, value, new ConcurrentHashMap.BiFun<IRubyObject, IRubyObject, IRubyObject>() {
           @Override
           public IRubyObject apply(IRubyObject oldValue, IRubyObject newValue) {
             IRubyObject result = block.yieldSpecific(context, oldValue == null ? context.getRuntime().getNil() : oldValue);
@@ -164,20 +182,14 @@ public class JRubyMapBackendLibrary implements Library {
       }
 
       @JRubyMethod(name = "key?", required = 1)
-      public RubyBoolean has_key_p(IRubyObject key) {
-        return map.containsKey(key) ? getRuntime().getTrue() : getRuntime().getFalse();
-      }
+        public RubyBoolean has_key_p(IRubyObject key) {
+          return map.containsKey(key) ? getRuntime().getTrue() : getRuntime().getFalse();
+        }
 
       @JRubyMethod
       public IRubyObject key(IRubyObject value) {
-        Iterator itr = map.entrySet().iterator();
-        while(itr.hasNext()) {
-          Map.Entry<IRubyObject, IRubyObject> entry = (Map.Entry<IRubyObject, IRubyObject>) itr.next();
-          if (entry.getValue() == value) {
-            return entry.getKey();
-          }
-        }
-        return null;
+        final IRubyObject key = map.findKey(value);
+        return key == null ? getRuntime().getNil() : key;
       }
 
       @JRubyMethod
@@ -224,7 +236,7 @@ public class JRubyMapBackendLibrary implements Library {
 
       @JRubyMethod
       public IRubyObject get_or_default(IRubyObject key, IRubyObject defaultValue) {
-        return map.getOrDefault(key, defaultValue);
+        return map.getValueOrDefault(key, defaultValue);
       }
 
       @JRubyMethod(visibility = PRIVATE)

@@ -1,3 +1,5 @@
+require 'concurrent/thread_safe/util/xor_shift_random'
+
 module Concurrent
 
   # @!visibility private
