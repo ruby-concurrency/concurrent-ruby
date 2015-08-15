@@ -1,23 +1,23 @@
 require 'thread'
 
 module Concurrent
-  autoload :JRubyMapBackend,           'concurrent/thread_safe/jruby_map_backend'
-  autoload :MriMapBackend,             'concurrent/thread_safe/mri_map_backend'
-  autoload :NonConcurrentMapBackend,   'concurrent/thread_safe/non_concurrent_map_backend'
-  autoload :AtomicReferenceMapBackend, 'concurrent/thread_safe/atomic_reference_map_backend'
-  autoload :SynchronizedMapBackend,    'concurrent/thread_safe/synchronized_map_backend'
-
   # @!visibility private
   module ThreadSafe
 
     # @!visibility private
     MapBackend = if defined?(RUBY_ENGINE)
                    case RUBY_ENGINE
-                   when 'jruby'; JRubyMapBackend
-                   when 'ruby';  MriMapBackend
-                   when 'rbx';   AtomicReferenceMapBackend
+                   when 'jruby'
+                     JRubyMapBackend
+                   when 'ruby'
+                     require 'concurrent/thread_safe/mri_map_backend'
+                     MriMapBackend
+                   when 'rbx'
+                     require 'concurrent/thread_safe/atomic_reference_map_backend'
+                     AtomicReferenceMapBackend
                    else
                      warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
+                     require 'concurrent/thread_safe/synchronized_map_backend'
                      SynchronizedMapBackend
                    end
                  else
@@ -31,7 +31,7 @@ module Concurrent
   # -- for instance, it does not necessarily retain ordering by insertion time as `Hash`
   # does. For most uses it should do fine though, and we recommend you consider
   # `Concurrent::Map` instead of `Concurrent::Hash` for your concurrency-safe hash needs.
-  # 
+  #
   # > require 'concurrent'
   # >
   # > map = Concurrent::Map.new

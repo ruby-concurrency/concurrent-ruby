@@ -1,8 +1,10 @@
+require 'concurrent/thread_safe/non_concurrent_map_backend'
+
 module Concurrent
 
   # @!visibility private
   module ThreadSafe
-        
+
     # @!visibility private
     class MriMapBackend < NonConcurrentMapBackend
 
