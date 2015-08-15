@@ -92,7 +92,7 @@ module Concurrent
           end
         end
 
-        extend Concurrent::Volatile
+        extend Volatile
         attr_volatile :cells, # Table of cells. When non-null, size is a power of 2.
           :base,  # Base value, used mainly when there is no contention, but also as a fallback during table initialization races. Updated via CAS.
           :busy   # Spinlock (locked via CAS) used when resizing and/or creating Cells.

@@ -234,7 +234,7 @@ module Concurrent
       #
       # @!visibility private
       class Node
-        extend Concurrent::Volatile
+        extend Util::Volatile
         attr_volatile :hash, :value, :next
 
         include Util::CheapLockable
@@ -354,7 +354,7 @@ module Concurrent
       # most locking stalls during resizes.
       TRANSFER_BUFFER_SIZE = 32
 
-      extend Concurrent::Volatile
+      extend Util::Volatile
       attr_volatile :table, # The array of bins. Lazily initialized upon first insertion. Size is always a power of two.
 
         # Table initialization and resizing control.  When negative, the

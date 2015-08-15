@@ -28,7 +28,6 @@ require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
 require 'concurrent/tuple'
 require 'concurrent/tvar'
-require 'concurrent/volatile'
 
 # @!macro [new] internal_implementation_note
 #

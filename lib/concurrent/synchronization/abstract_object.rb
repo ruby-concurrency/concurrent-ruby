@@ -1,19 +1,16 @@
-require 'concurrent/volatile'
-
 module Concurrent
   module Synchronization
 
     # @!macro synchronization_object
     # @!visibility private
     class AbstractObject
-      extend Concurrent::Volatile
 
       # @!macro [attach] synchronization_object_method_initialize
       #  
       #   @abstract for helper ivar initialization if needed,
       #     otherwise it can be left empty. It has to call ns_initialize.
       def initialize(*args, &block)
-        super(&nil)
+        raise NotImplementedError
       end
 
       protected
@@ -140,6 +137,26 @@ module Concurrent
       #     end
       def ensure_ivar_visibility!
         raise NotImplementedError
+      end
+
+      # @!macro [attach] synchronization_object_method_self_attr_volatile
+      #    
+      #   creates methods for reading and writing to a instance variable with volatile (Java semantic) instance variable
+      #   return [Array<Symbol>] names of defined method names
+      def self.attr_volatile(*names)
+        names.each do |name|
+          ivar = :"@volatile_#{name}"
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def #{name}
+              #{ivar}
+            end
+
+            def #{name}=(value)
+              #{ivar} = value
+            end
+          RUBY
+        end
+        names.map { |n| [n, :"#{n}="] }.flatten
       end
     end
   end

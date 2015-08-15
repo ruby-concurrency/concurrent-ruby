@@ -76,7 +76,7 @@ module Concurrent
       # @!method ensure_ivar_visibility!
       #   @!macro synchronization_object_method_ensure_ivar_visibility
 
-      # @!method self.attr_volatile(*attr_names)
+      # @!method self.attr_volatile(*names)
       #   @!macro synchronization_object_method_self_attr_volatile
     end
   end

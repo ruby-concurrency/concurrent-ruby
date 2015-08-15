@@ -97,8 +97,6 @@ Thread-safe variables:
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html) A numeric value that can be updated atomically.
 * [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html) An object reference that may be updated atomically.
 * [ThreadLocalVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html) A variable where the value is different for each thread.
-* [Volatile](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Volatile.html)
-  Provides `volatile` (in the JVM's sense) attribute accessors implemented atop of `Concurrent::AtomicReference`.
 
 #### Java-inspired ThreadPools and Other Executors
 
