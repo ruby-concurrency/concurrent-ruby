@@ -8,7 +8,7 @@ module Concurrent
     class RingBuffer
 
       def initialize(capacity)
-        @buffer = Array.new(capacity)
+        @buffer = ::Array.new(capacity)
         @first = @last = 0
         @count = 0
       end

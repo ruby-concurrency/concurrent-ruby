@@ -62,50 +62,57 @@ This library contains a variety of concurrency abstractions at high and low leve
 #### General-purpose Concurrency Abstractions
 
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to any standard class/object or object.
-* [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, synchronous, independent state.
 * [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
   * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
 * [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals.
 
-#### Thread-safe Value Objects
+#### Thread-safe Value Objects, Structures, and Collections
 
-* `Maybe` A thread-safe, immutable object representing an optional value, based on
+Collection classes that were originally part of the (deprecated) `thread_safe` gem:
+
+* [Array](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Array.html) A thread-safe subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
+* [Hash](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html) A thread-safe subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
+* [Map](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Map.html) A hash-like object that should have much better performance characteristics, especially under high concurrency, than `Concurrent::Hash`.
+* [Tuple](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Tuple.html) A fixed size array with volatile (synchronized, thread safe) getters/setters.
+
+Value objects inspired by other languages:
+
+* [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, synchronous, independent state.
+* [Maybe](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Maybe.html) A thread-safe, immutable object representing an optional value, based on
   [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
-* `Delay` Lazy evaluation of a block yielding an immutable result. Based on Clojure's
+* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation of a block yielding an immutable result. Based on Clojure's
    [delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html).
 
-#### Thread-safe Structures
+Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 
-Derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
+* [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmutableStruct.html) Immutable struct where values are set at construction and cannot be changed later.
+* [MutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutableStruct.html) Synchronized, mutable struct where values can be safely changed at any time.
+* [SettableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SettableStruct.html) Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
 
-* `ImmutableStruct` Immutable struct where values are set at construction and cannot be changed later.
-* `MutableStruct` Synchronized, mutable struct where values can be safely changed at any time.
-* `SettableStruct` Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.
+Thread-safe variables:
+
+* [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html) A boolean value that can be updated atomically.
+* [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html) A numeric value that can be updated atomically.
+* [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html) An object reference that may be updated atomically.
+* [ThreadLocalVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html) A variable where the value is different for each thread.
 
 #### Java-inspired ThreadPools and Other Executors
 
-* See [ThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
+* See the [thread pool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) overview, which also contains a list of other Executors available.
 
 #### Thread Synchronization Classes and Algorithms
 
-* [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html)
-* [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html)
-* [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html)
-* [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html)
-
-#### Thread-safe Variables
-
-* [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html)
-* [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html)
-* [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html)
-* [I-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar)
-* [M-Structures](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar)
-* [Thread-local variables](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html)
-* [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar)
-* [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html)
-* [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html)
+* [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html) A synchronization object that allows one thread to wait on multiple other threads.
+* [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html) A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.
+* [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html) Old school kernel-style event.
+* [I-Structure](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar) Similar to a "future" but can be manually assigned once, after which it becomes immutable.
+* [M-Structure](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar) A synchronized single element container.
+* [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html) A lock that supports multiple readers but only one writer.
+* [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html) A read/write lock with reentrant and upgrade features.
+* [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html) A counting-based locking mechanism that uses permits.
+* [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar) A transactional variable - a single-element container that is used as part of a transaction.
 
 ### Edge Features
 
@@ -127,8 +134,8 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   Communicating Sequential Processes (CSP).
 * [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
-* [Atomic Markable Reference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
-* [LockFreeLinked Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
+* [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
+* [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
 * [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeStack.html)
 
 #### Statuses:
@@ -272,11 +279,17 @@ bundle exec rake compile            # Compile all the extensions
 ## Maintainers
 
 * [Jerry D'Antonio](https://github.com/jdantonio) (creator)
+* [Petr Chalupa](https://github.com/pitr-ch)
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
-* [Lucas Allan](https://github.com/lucasallan)
-* [Petr Chalupa](https://github.com/pitr-ch)
 * [Paweł Obrok](https://github.com/obrok)
+* [Lucas Allan](https://github.com/lucasallan)
+
+### Special Thanks
+
+* [Brian Durand](https://github.com/bdurand) for the `ref` gem
+* [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
+* [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
 ## Contributing
 

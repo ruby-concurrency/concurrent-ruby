@@ -14,7 +14,7 @@ module Concurrent
       # to allow spawning of new actors, spawn needs to be called inside the parent Actor
       def on_message(message)
         case
-        when message.is_a?(Array) && message.first == :spawn
+        when message.is_a?(::Array) && message.first == :spawn
           Actor.spawn message[1], &message[2]
         when message == :dead_letter_routing
           @dead_letter_router

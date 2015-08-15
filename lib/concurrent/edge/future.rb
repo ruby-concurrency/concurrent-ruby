@@ -603,7 +603,7 @@ module Concurrent
       def exception(*args)
         raise 'obligation is not failed' unless failed?
         reason = @State.get.reason
-        if reason.is_a?(Array)
+        if reason.is_a?(::Array)
           reason.each { |e| log ERROR, 'Edge::Future', e }
           Concurrent::Error.new 'multiple exceptions, inspect log'
         else
@@ -1015,7 +1015,7 @@ module Concurrent
       private
 
       def initialize_blocked_by(blocked_by_futures)
-        @BlockedBy = Array(blocked_by_futures)
+        @BlockedBy = [blocked_by_futures].flatten
       end
 
       def clear_blocked_by!

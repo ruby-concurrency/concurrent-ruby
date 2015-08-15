@@ -85,7 +85,7 @@ module Concurrent
     # @overload to_spawn_options(opts)
     #   see {Core#initialize} opts
     def self.to_spawn_options(*args)
-      if args.size == 1 && args.first.is_a?(Hash)
+      if args.size == 1 && args.first.is_a?(::Hash)
         args.first
       else
         { class: args[0],

@@ -29,7 +29,7 @@ module Concurrent
       class Pool < RestartingContext
         def initialize(size, &worker_initializer)
           @balancer = Balancer.spawn name: :balancer, supervise: true
-          @workers  = Array.new(size, &worker_initializer)
+          @workers  = ::Array.new(size, &worker_initializer)
           @workers.each do |worker|
             Type! worker, Reference
             @balancer << [:subscribe, worker]
