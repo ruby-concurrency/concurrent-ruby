@@ -4,30 +4,32 @@ require 'concurrent-edge'
 
 Concurrent.use_stdlib_logger Logger::FATAL
 
-if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
-  require 'simplecov'
-  require 'coveralls'
+unless Concurrent.on_jruby_9000?
+  if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
+    require 'simplecov'
+    require 'coveralls'
 
-  if ENV['TRAVIS']
-    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-      SimpleCov::Formatter::HTMLFormatter,
-      Coveralls::SimpleCov::Formatter
-    ]
-  else
-    SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-  end
+    if ENV['TRAVIS']
+      SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+        SimpleCov::Formatter::HTMLFormatter,
+        Coveralls::SimpleCov::Formatter
+      ]
+    else
+      SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+    end
 
-  SimpleCov.start do
-    project_name 'concurrent-ruby'
-    add_filter '/build-tests/'
-    add_filter '/coverage/'
-    add_filter '/doc/'
-    add_filter '/examples/'
-    add_filter '/pkg/'
-    add_filter '/spec/'
-    add_filter '/tasks/'
-    add_filter '/yard-template/'
-    add_filter '/yardoc/'
+    SimpleCov.start do
+      project_name 'concurrent-ruby'
+      add_filter '/build-tests/'
+      add_filter '/coverage/'
+      add_filter '/doc/'
+      add_filter '/examples/'
+      add_filter '/pkg/'
+      add_filter '/spec/'
+      add_filter '/tasks/'
+      add_filter '/yard-template/'
+      add_filter '/yardoc/'
+    end
   end
 end
 
