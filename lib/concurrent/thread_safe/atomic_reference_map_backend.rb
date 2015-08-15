@@ -1,4 +1,4 @@
-require 'concurrent/thread_safe/util/xor_shift_random'
+require 'concurrent/thread_safe/util'
 
 module Concurrent
 
@@ -88,7 +88,7 @@ module Concurrent
     # operations (insert, delete, and replace) require locks. We do not want to
     # waste the space required to associate a distinct lock object with each bin,
     # so instead use the first node of a bin list itself as a lock. Blocking
-    # support for these locks relies +Util::CheapLockable. However, we also need a
+    # support for these locks relies +Concurrent::ThreadSafe::Util::CheapLockable. However, we also need a
     # +try_lock+ construction, so we overlay these by using bits of the +Node+
     # hash field for lock control (see above), and so normally use builtin
     # monitors only for blocking and signalling using
@@ -188,7 +188,7 @@ module Concurrent
     class AtomicReferenceMapBackend
       
       # @!visibility private
-      class Table < Util::PowerOfTwoTuple
+      class Table < Concurrent::ThreadSafe::Util::PowerOfTwoTuple
         def cas_new_node(i, hash, key, value)
           cas(i, nil, Node.new(hash, key, value))
         end
@@ -236,19 +236,19 @@ module Concurrent
       #
       # @!visibility private
       class Node
-        extend Util::Volatile
+        extend Concurrent::ThreadSafe::Util::Volatile
         attr_volatile :hash, :value, :next
 
-        include Util::CheapLockable
+        include Concurrent::ThreadSafe::Util::CheapLockable
 
-        bit_shift = Util::FIXNUM_BIT_SIZE - 2 # need 2 bits for ourselves
+        bit_shift = Concurrent::ThreadSafe::Util::FIXNUM_BIT_SIZE - 2 # need 2 bits for ourselves
         # Encodings for special uses of Node hash fields. See above for explanation.
         MOVED     = ('10' << ('0' * bit_shift)).to_i(2) # hash field for forwarding nodes
         LOCKED    = ('01' << ('0' * bit_shift)).to_i(2) # set/tested only as a bit
         WAITING   = ('11' << ('0' * bit_shift)).to_i(2) # both bits set/tested together
         HASH_BITS = ('00' << ('1' * bit_shift)).to_i(2) # usable bits of normal node hash
 
-        SPIN_LOCK_ATTEMPTS = Util::CPU_COUNT > 1 ? Util::CPU_COUNT * 2 : 0
+        SPIN_LOCK_ATTEMPTS = Concurrent::ThreadSafe::Util::CPU_COUNT > 1 ? Concurrent::ThreadSafe::Util::CPU_COUNT * 2 : 0
 
         attr_reader :key
 
@@ -272,14 +272,14 @@ module Concurrent
         def try_await_lock(table, i)
           if table && i >= 0 && i < table.size # bounds check, TODO: why are we bounds checking?
             spins = SPIN_LOCK_ATTEMPTS
-            randomizer = base_randomizer = Util::XorShiftRandom.get
+            randomizer = base_randomizer = Concurrent::ThreadSafe::Util::XorShiftRandom.get
             while equal?(table.volatile_get(i)) && self.class.locked_hash?(my_hash = hash)
               if spins >= 0
                 if (randomizer = (randomizer >> 1)).even? # spin at random
                   if (spins -= 1) == 0
                     Thread.pass # yield before blocking
                   else
-                    randomizer = base_randomizer = Util::XorShiftRandom.xorshift(base_randomizer) if randomizer.zero?
+                    randomizer = base_randomizer = Concurrent::ThreadSafe::Util::XorShiftRandom.xorshift(base_randomizer) if randomizer.zero?
                   end
                 end
               elsif cas_hash(my_hash, my_hash | WAITING)
@@ -349,14 +349,14 @@ module Concurrent
 
       NOW_RESIZING     = -1
       DEFAULT_CAPACITY = 16
-      MAX_CAPACITY     = Util::MAX_INT
+      MAX_CAPACITY     = Concurrent::ThreadSafe::Util::MAX_INT
 
       # The buffer size for skipped bins during transfers. The
       # value is arbitrary but should be large enough to avoid
       # most locking stalls during resizes.
       TRANSFER_BUFFER_SIZE = 32
 
-      extend Util::Volatile
+      extend Concurrent::ThreadSafe::Util::Volatile
       attr_volatile :table, # The array of bins. Lazily initialized upon first insertion. Size is always a power of two.
 
         # Table initialization and resizing control.  When negative, the
@@ -368,7 +368,7 @@ module Concurrent
 
       def initialize(options = nil)
         super()
-        @counter = Util::Adder.new
+        @counter = Concurrent::ThreadSafe::Util::Adder.new
         initial_capacity  = options && options[:initial_capacity] || DEFAULT_CAPACITY
         self.size_control = (capacity = table_size_for(initial_capacity)) > MAX_CAPACITY ? MAX_CAPACITY : capacity
       end
@@ -747,7 +747,7 @@ module Concurrent
 
       def initialize_copy(other)
         super
-        @counter = Util::Adder.new
+        @counter = Concurrent::ThreadSafe::Util::Adder.new
         self.table = nil
         self.size_control = (other_table = other.table) ? other_table.size : DEFAULT_CAPACITY
         self
