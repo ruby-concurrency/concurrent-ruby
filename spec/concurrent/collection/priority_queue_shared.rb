@@ -13,7 +13,7 @@ shared_examples :priority_queue do
 
     it 'sorts from high to low when :order is :high' do
       subject = described_class.new(order: :high)
-      [2, 1, 4, 5, 3, 0].each{|item| subject << item }
+      [2, 1, 4, 5, 3, 0].each{|item| subject.push item }
       expect(subject.pop).to eq 5
       expect(subject.pop).to eq 4
       expect(subject.pop).to eq 3
@@ -28,7 +28,7 @@ shared_examples :priority_queue do
 
     it 'sorts from low to high when :order is :low' do
       subject = described_class.new(order: :low)
-      [2, 1, 4, 5, 3, 0].each{|item| subject << item }
+      [2, 1, 4, 5, 3, 0].each{|item| subject.push item }
       expect(subject.pop).to eq 0
       expect(subject.pop).to eq 1
       expect(subject.pop).to eq 2
@@ -46,7 +46,7 @@ shared_examples :priority_queue do
   context '#clear' do
 
     it 'removes all items from a populated queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       subject.clear
       expect(subject).to be_empty
     end
@@ -62,7 +62,7 @@ shared_examples :priority_queue do
   context '#delete' do
 
     it 'deletes the requested item when found' do
-      10.times{|item| subject << item }
+      10.times{|item| subject.push item }
       subject.delete(5)
       expect(subject.pop).to eq 9
       expect(subject.pop).to eq 8
@@ -76,7 +76,7 @@ shared_examples :priority_queue do
     end
 
     it 'deletes the requested item when it is the first element' do
-      10.times{|item| subject << item }
+      10.times{|item| subject.push item }
       subject.delete(9)
       expect(subject.length).to eq 9
       expect(subject.pop).to eq 8
@@ -91,7 +91,7 @@ shared_examples :priority_queue do
     end
 
     it 'deletes the requested item when it is the last element' do
-      10.times{|item| subject << item }
+      10.times{|item| subject.push item }
       subject.delete(2)
       expect(subject.length).to eq 9
       expect(subject.pop).to eq 9
@@ -106,19 +106,19 @@ shared_examples :priority_queue do
     end
 
     it 'deletes multiple matching items when present' do
-      [2, 1, 2, 2, 2, 3, 2].each{|item| subject << item }
+      [2, 1, 2, 2, 2, 3, 2].each{|item| subject.push item }
       subject.delete(2)
       expect(subject.pop).to eq 3
       expect(subject.pop).to eq 1
     end
 
     it 'returns true when found' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject.delete(2)).to be_truthy
     end
 
     it 'returns false when not found' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject.delete(100)).to be_falsey
     end
 
@@ -134,7 +134,7 @@ shared_examples :priority_queue do
     end
 
     it 'returns false for a populated queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject).not_to be_empty
     end
   end
@@ -142,51 +142,41 @@ shared_examples :priority_queue do
   context '#include?' do
 
     it 'returns true if the item is found' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject).to include(5)
     end
 
     it 'returns false if the item is not found' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject).not_to include(50)
     end
 
     it 'returns false when the queue is empty' do
       expect(subject).not_to include(1)
     end
-
-    it 'is aliased as #has_priority?' do
-      10.times{|i| subject << i}
-      expect(subject).to have_priority(5)
-    end
   end
 
   context '#length' do
 
     it 'returns the length of a populated queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject.length).to eq 10
     end
 
     it 'returns zero when the queue is empty' do
       expect(subject.length).to eq 0
     end
-
-    it 'is aliased as #size' do
-      10.times{|i| subject << i}
-      expect(subject.size).to eq 10
-    end
   end
 
   context '#peek' do
 
     it 'returns the item at the head of the queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject.peek).to eq 9
     end
 
     it 'does not remove the item from the queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       subject.peek
       expect(subject.length).to eq 10
       expect(subject).to include(9)
@@ -200,12 +190,12 @@ shared_examples :priority_queue do
   context '#pop' do
 
     it 'returns the item at the head of the queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       expect(subject.pop).to eq 9
     end
 
     it 'removes the item from the queue' do
-      10.times{|i| subject << i}
+      10.times{|i| subject.push i}
       subject.pop
       expect(subject.length).to eq 9
       expect(subject).not_to include(9)
@@ -213,16 +203,6 @@ shared_examples :priority_queue do
 
     it 'returns nil when the queue is empty' do
       expect(subject.pop).to be_nil
-    end
-
-    it 'is aliased as #deq' do
-      10.times{|i| subject << i}
-      expect(subject.deq).to eq 9
-    end
-
-    it 'is aliased as #shift' do
-      10.times{|i| subject << i}
-      expect(subject.shift).to eq 9
     end
   end
 
@@ -234,14 +214,14 @@ shared_examples :priority_queue do
     end
 
     it 'sorts the new item in priority order' do
-      3.times{|i| subject << i}
+      3.times{|i| subject.push i}
       expect(subject.pop).to eq 2
       expect(subject.pop).to eq 1
       expect(subject.pop).to eq 0
     end
 
     it 'arbitrarily orders equal items with respect to each other' do
-      3.times{|i| subject << i}
+      3.times{|i| subject.push i}
       subject.push(1)
       expect(subject.pop).to eq 2
       expect(subject.pop).to eq 1
@@ -250,16 +230,6 @@ shared_examples :priority_queue do
     end
 
     specify { expect(subject.push(10)).to be_truthy }
-
-    it 'is aliased as <<' do
-      subject << 1
-      expect(subject).to include(1)
-    end
-
-    it 'is aliased as enq' do
-      subject.enq(1)
-      expect(subject).to include(1)
-    end
   end
 
   context '.from_list' do
@@ -282,36 +252,6 @@ shared_examples :priority_queue do
     it 'creates a sorted, populated queue from a Hash' do
       subject = described_class.from_list(two: 2, one: 1, three: 3, zero: 0)
       expect(subject.length).to eq 4
-    end
-  end
-end
-
-module Concurrent
-  module Collection
-
-    describe MutexPriorityQueue do
-
-      it_should_behave_like :priority_queue
-    end
-
-    if Concurrent.on_jruby?
-
-      describe JavaPriorityQueue do
-
-        it_should_behave_like :priority_queue
-      end
-    end
-
-    describe PriorityQueue do
-      if Concurrent.on_jruby?
-        it 'inherits from JavaPriorityQueue' do
-          expect(PriorityQueue.ancestors).to include(JavaPriorityQueue)
-        end
-      else
-        it 'inherits from MutexPriorityQueue' do
-          expect(PriorityQueue.ancestors).to include(MutexPriorityQueue)
-        end
-      end
     end
   end
 end

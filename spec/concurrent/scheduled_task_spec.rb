@@ -155,7 +155,7 @@ module Concurrent
         timer = Concurrent::TimerSet.new
         queue = timer.instance_variable_get(:@queue)
         task = ScheduledTask.execute(1, timer_set: timer){ nil }
-        expect(queue.size).to eq 1
+        expect(queue.length).to eq 1
         task.cancel
       end
 
