@@ -32,8 +32,8 @@ Concurrent.zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.v
 ### Error handling
 
 Concurrent.future { Object.new }.then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
-Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value
-Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value
+Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
+Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
 
 failing_zip = Concurrent.succeeded_future(1) & Concurrent.failed_future(StandardError.new('boom'))
 failing_zip.result

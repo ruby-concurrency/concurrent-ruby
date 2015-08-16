@@ -36,13 +36,13 @@ Concurrent.zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.v
 
 Concurrent.future { Object.new }.then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
     # => NoMethodError
-Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value
+Concurrent.future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
     # => 2
-Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value
+Concurrent.future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
     # => 3
 
 failing_zip = Concurrent.succeeded_future(1) & Concurrent.failed_future(StandardError.new('boom'))
-    # => <#Concurrent::Edge::Future:0x7fcc731c00b0 failed blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7ffcc19ac2a0 failed blocks:[]>
 failing_zip.result                                 # => [false, [1, nil], [nil, #<StandardError: boom>]]
 failing_zip.then { |v| 'never happens' }.result    # => [false, [1, nil], [nil, #<StandardError: boom>]]
 failing_zip.rescue { |a, b| (a || b).message }.value
