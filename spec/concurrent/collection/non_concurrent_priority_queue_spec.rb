@@ -289,27 +289,27 @@ end
 module Concurrent
   module Collection
 
-    describe MutexPriorityQueue do
+    describe RubyNonConcurrentPriorityQueue do
 
       it_should_behave_like :priority_queue
     end
 
     if Concurrent.on_jruby?
 
-      describe JavaPriorityQueue do
+      describe JavaNonConcurrentPriorityQueue do
 
         it_should_behave_like :priority_queue
       end
     end
 
-    describe PriorityQueue do
+    describe NonConcurrentPriorityQueue do
       if Concurrent.on_jruby?
-        it 'inherits from JavaPriorityQueue' do
-          expect(PriorityQueue.ancestors).to include(JavaPriorityQueue)
+        it 'inherits from JavaNonConcurrentPriorityQueue' do
+          expect(NonConcurrentPriorityQueue.ancestors).to include(JavaNonConcurrentPriorityQueue)
         end
       else
-        it 'inherits from MutexPriorityQueue' do
-          expect(PriorityQueue.ancestors).to include(MutexPriorityQueue)
+        it 'inherits from RubyNonConcurrentPriorityQueue' do
+          expect(NonConcurrentPriorityQueue.ancestors).to include(RubyNonConcurrentPriorityQueue)
         end
       end
     end
