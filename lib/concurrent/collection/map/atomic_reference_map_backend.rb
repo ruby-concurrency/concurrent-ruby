@@ -3,7 +3,7 @@ require 'concurrent/thread_safe/util'
 module Concurrent
 
   # @!visibility private
-  module ThreadSafe
+  module Collection
 
     # A Ruby port of the Doug Lea's jsr166e.ConcurrentHashMapV8 class version 1.59
     # available in public domain.
@@ -186,7 +186,7 @@ module Concurrent
     #
     # @!visibility private
     class AtomicReferenceMapBackend
-      
+
       # @!visibility private
       class Table < Concurrent::ThreadSafe::Util::PowerOfTwoTuple
         def cas_new_node(i, hash, key, value)

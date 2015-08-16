@@ -1,4 +1,4 @@
-require 'concurrent/tuple'
+require 'concurrent/collection/tuple'
 
 module Concurrent
 
@@ -7,7 +7,7 @@ module Concurrent
 
     # @!visibility private
     module Util
-      
+
       # @!visibility private
       class PowerOfTwoTuple < Concurrent::Tuple
 

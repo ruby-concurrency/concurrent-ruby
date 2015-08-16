@@ -26,7 +26,7 @@ public class JRubyMapBackendLibrary implements Library {
   public void load(Ruby runtime, boolean wrap) throws IOException {
 
     RubyModule concurrentMod = runtime.defineModule("Concurrent");
-    RubyModule thread_safeMod = concurrentMod.defineModuleUnder("ThreadSafe");
+    RubyModule thread_safeMod = concurrentMod.defineModuleUnder("Collection");
     RubyClass jrubyRefClass = thread_safeMod.defineClassUnder("JRubyMapBackend", runtime.getObject(), BACKEND_ALLOCATOR);
     jrubyRefClass.setAllocator(BACKEND_ALLOCATOR);
     jrubyRefClass.defineAnnotatedMethods(JRubyMapBackend.class);

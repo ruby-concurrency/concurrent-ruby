@@ -2,22 +2,23 @@ require 'thread'
 
 module Concurrent
   # @!visibility private
-  module ThreadSafe
+  module Collection
 
     # @!visibility private
-    MapBackend = if defined?(RUBY_ENGINE)
+    MapImplementation = if defined?(RUBY_ENGINE)
                    case RUBY_ENGINE
                    when 'jruby'
+                     # noinspection RubyResolve
                      JRubyMapBackend
                    when 'ruby'
-                     require 'concurrent/thread_safe/mri_map_backend'
+                     require 'concurrent/collection/map/mri_map_backend'
                      MriMapBackend
                    when 'rbx'
-                     require 'concurrent/thread_safe/atomic_reference_map_backend'
+                     require 'concurrent/collection/map/atomic_reference_map_backend'
                      AtomicReferenceMapBackend
                    else
                      warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
-                     require 'concurrent/thread_safe/synchronized_map_backend'
+                     require 'concurrent/collection/map/synchronized_map_backend'
                      SynchronizedMapBackend
                    end
                  else
@@ -36,7 +37,7 @@ module Concurrent
   # >
   # > map = Concurrent::Map.new
 
-  class Map < ThreadSafe::MapBackend
+  class Map < Collection::MapImplementation
     def initialize(options = nil, &block)
       if options.kind_of?(::Hash)
         validate_options_hash!(options)
