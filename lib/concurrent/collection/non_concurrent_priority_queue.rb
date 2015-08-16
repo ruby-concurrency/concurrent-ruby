@@ -12,15 +12,15 @@ module Concurrent
     #
     #   The API is based on the `Queue` class from the Ruby standard library.
     #
-    #   The pure Ruby implementation, `MutexPriorityQueue` uses a heap algorithm
+    #   The pure Ruby implementation, `RubyNonConcurrentPriorityQueue` uses a heap algorithm
     #   stored in an array. The algorithm is based on the work of Robert Sedgewick
     #   and Kevin Wayne.
     #
     #   The JRuby native implementation is a thin wrapper around the standard
-    #   library `java.util.PriorityQueue`.
+    #   library `java.util.NonConcurrentPriorityQueue`.
     #
-    #   When running under JRuby the class `PriorityQueue` extends `JavaPriorityQueue`.
-    #   When running under all other interpreters it extends `MutexPriorityQueue`.
+    #   When running under JRuby the class `NonConcurrentPriorityQueue` extends `JavaNonConcurrentPriorityQueue`.
+    #   When running under all other interpreters it extends `RubyNonConcurrentPriorityQueue`.
     #
     #   @note This implementation is *not* thread safe.
     #
@@ -30,11 +30,11 @@ module Concurrent
     #   @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
     #   @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
     #
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/NonConcurrentPriorityQueue.html
     # 
     # @!visibility private
     # @!macro internal_implementation_note
-    class MutexPriorityQueue
+    class RubyNonConcurrentPriorityQueue
 
       # @!macro [attach] priority_queue_method_initialize
       #
@@ -161,7 +161,7 @@ module Concurrent
       #   @param [Enumerable] list the list to build the queue from
       #   @param [Hash] opts the options for creating the queue
       #  
-      #   @return [PriorityQueue] the newly created and populated queue
+      #   @return [NonConcurrentPriorityQueue] the newly created and populated queue
       def self.from_list(list, opts = {})
         queue = new(opts)
         list.each{|item| queue << item }
@@ -229,7 +229,7 @@ module Concurrent
       # 
       # @!visibility private
       # @!macro internal_implementation_note
-      class JavaPriorityQueue
+      class JavaNonConcurrentPriorityQueue
 
         # @!macro priority_queue_method_initialize
         def initialize(opts = {})
@@ -303,18 +303,18 @@ module Concurrent
 
     # @!visibility private
     # @!macro internal_implementation_note
-    PriorityQueueImplementation = case
-                                  when Concurrent.on_jruby?
-                                    JavaPriorityQueue
-                                  else
-                                    MutexPriorityQueue
-                                  end
-    private_constant :PriorityQueueImplementation
+    NonConcurrentPriorityQueueImplementation = case
+                                               when Concurrent.on_jruby?
+                                                 JavaNonConcurrentPriorityQueue
+                                               else
+                                                 RubyNonConcurrentPriorityQueue
+                                               end
+    private_constant :NonConcurrentPriorityQueueImplementation
 
     # @!macro priority_queue
     # 
     # @!visibility private
-    class PriorityQueue < PriorityQueueImplementation
+    class NonConcurrentPriorityQueue < NonConcurrentPriorityQueueImplementation
 
       alias_method :has_priority?, :include?
 

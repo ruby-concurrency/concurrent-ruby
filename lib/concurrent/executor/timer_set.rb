@@ -1,6 +1,6 @@
 require 'concurrent/scheduled_task'
 require 'concurrent/atomic/event'
-require 'concurrent/collection/priority_queue'
+require 'concurrent/collection/non_concurrent_priority_queue'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 
@@ -72,7 +72,7 @@ module Concurrent
     # @param [Hash] opts the options to create the object with.
     # @!visibility private
     def ns_initialize(opts)
-      @queue          = Collection::PriorityQueue.new(order: :min)
+      @queue          = Collection::NonConcurrentPriorityQueue.new(order: :min)
       @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
       @timer_executor = SingleThreadExecutor.new
       @condition      = Event.new
