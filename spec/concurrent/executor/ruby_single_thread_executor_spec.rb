@@ -1,4 +1,5 @@
 require_relative 'executor_service_shared'
+require_relative 'thread_pool_shared'
 
 module Concurrent
 
@@ -10,7 +11,9 @@ module Concurrent
     end
 
     subject { RubySingleThreadExecutor.new }
+    it_behaves_like :executor_service
 
-    it_should_behave_like :executor_service
+    subject { RubySingleThreadExecutor.new(prioritize: true) }
+    it_behaves_like :prioritized_thread_pool
   end
 end

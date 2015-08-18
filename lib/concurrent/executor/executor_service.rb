@@ -360,6 +360,17 @@ module Concurrent
   # @!visibility private
   class RubyExecutorService < AbstractExecutorService
 
+    # @!visibility private
+    Infinity = Float::INFINITY
+    private_constant :Infinity
+
+    # @!visibility private
+    Job = Struct.new(:priority, :args, :task) do
+      def <=>(other)
+        priority <=> other.priority
+      end
+    end
+
     def initialize(*args, &block)
       super
       @stop_event    = Event.new
@@ -368,13 +379,7 @@ module Concurrent
     end
 
     def post(*args, &task)
-      raise ArgumentError.new('no block given') unless block_given?
-      synchronize do
-        # If the executor is shut down, reject this task
-        return handle_fallback(*args, &task) unless running?
-        execute(*args, &task)
-        true
-      end
+      prioritize(0, *args, &task)
     end
 
     def shutdown
@@ -405,6 +410,16 @@ module Concurrent
     protected
 
     attr_reader :stop_event, :stopped_event
+
+    def prioritize(priority, *args, &task)
+      raise ArgumentError.new('no block given') unless block_given?
+      synchronize do
+        # If the executor is shut down, reject this task
+        return handle_fallback(*args, &task) unless running?
+        execute(priority, *args, &task)
+        true
+      end
+    end
 
     def shutdown_execution
       stopped_event.set

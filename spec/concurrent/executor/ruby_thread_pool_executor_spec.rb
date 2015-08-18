@@ -23,6 +23,9 @@ module Concurrent
 
     it_should_behave_like :thread_pool_executor
 
+    subject { RubyThreadPoolExecutor.new(min_threads: 1, max_threads: 1, prioritize: true) }
+    it_behaves_like :prioritized_thread_pool
+
     context '#remaining_capacity' do
 
       let!(:expected_max){ 100 }
