@@ -233,7 +233,7 @@ The best practice is to depend on `concurrent-ruby` and let users to decide if t
 
 All published versions of this gem (core, extension, and several platform-specific packages) are compiled,
 packaged, tested, and published using an open, [automated process](https://github.com/ruby-concurrency/rake-compiler-dev-box).
-This process can also be used to create pre-compiled binaries of the extension gem for virtally
+This process can also be used to create pre-compiled binaries of the extension gem for virtually
 any platform. *Documentation is forthcoming...*
 
 ```
