@@ -1,6 +1,8 @@
 require 'thread'
 
+require 'concurrent/priority_blocking_queue'
 require 'concurrent/atomic/event'
+require 'concurrent/collection/non_concurrent_priority_queue'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/executor_service'
 require 'concurrent/utility/monotonic_time'
@@ -49,6 +51,12 @@ module Concurrent
     def initialize(opts = {})
       super(opts)
     end
+
+    def prioritized?
+      @prioritized
+    end
+
+    public :prioritize
 
     # @!macro executor_service_method_can_overflow_question
     def can_overflow?
@@ -104,6 +112,7 @@ module Concurrent
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+      @prioritized     = opts.fetch(:prioritize, false)
       @fallback_policy = opts.fetch(:fallback_policy, :abort)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
 
@@ -114,10 +123,11 @@ module Concurrent
 
       self.auto_terminate = opts.fetch(:auto_terminate, true)
 
-      @pool                 = [] # all workers
-      @ready                = [] # used as a stash (most idle worker is at the start)
-      @queue                = [] # used as queue
+      @pool        = [] # all workers
+      @ready       = [] # used as a stash (most idle worker is at the start)
+      @queue       = @prioritized ? Concurrent::Collection::NonConcurrentPriorityQueue.new(order: :max) : []
       # @ready or @queue is empty at all times
+
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length       = 0
@@ -132,8 +142,9 @@ module Concurrent
     end
 
     # @!visibility private
-    def ns_execute(*args, &task)
-      if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
+    def ns_execute(priority, *args, &task)
+      job = Job.new(priority, args, task)
+      if ns_assign_worker(job) || ns_enqueue(job)
         @scheduled_task_count += 1
       else
         handle_fallback(*args, &task)
@@ -176,11 +187,11 @@ module Concurrent
     # @return [true, false] if task is assigned to a worker
     #
     # @!visibility private
-    def ns_assign_worker(*args, &task)
+    def ns_assign_worker(job)
       # keep growing if the pool is not at the minimum yet
       worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
-        worker << [task, args]
+        worker << job
         true
       else
         false
@@ -194,9 +205,9 @@ module Concurrent
     # @return [true, false] if enqueued
     #
     # @!visibility private
-    def ns_enqueue(*args, &task)
+    def ns_enqueue(job)
       if !ns_limited_queue? || @queue.size < @max_queue
-        @queue << [task, args]
+        @queue << job
         true
       else
         false
@@ -227,9 +238,9 @@ module Concurrent
     # @!visibility private
     def ns_ready_worker(worker, success = true)
       @completed_task_count += 1 if success
-      task_and_args         = @queue.shift
-      if task_and_args
-        worker << task_and_args
+      job = @queue.shift
+      if job
+        worker << job
       else
         # stop workers when !running?, do not return them to @ready
         if running?
@@ -265,7 +276,7 @@ module Concurrent
       return if @pool.size <= @min_length
 
       last_used = @ready.shift
-      last_used << :idle_test if last_used
+      last_used << Job.new(-Infinity, :idle_test, :idle_test) if last_used
 
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
     end
@@ -276,17 +287,17 @@ module Concurrent
 
       def initialize(pool)
         # instance variables accessed only under pool's lock so no need to sync here again
-        @queue  = Queue.new
+        @queue  = pool.prioritized? ? Concurrent::PriorityBlockingQueue.new(order: :max) : Queue.new
         @pool   = pool
         @thread = create_worker @queue, pool, pool.idletime
       end
 
-      def <<(message)
-        @queue << message
+      def <<(job)
+        @queue << job
       end
 
       def stop
-        @queue << :stop
+        @queue << Job.new(-Infinity, :stop, :stop)
       end
 
       def kill
@@ -297,13 +308,13 @@ module Concurrent
 
       def create_worker(queue, pool, idletime)
         Thread.new(queue, pool, idletime) do |my_queue, my_pool, my_idletime|
-          last_message = Concurrent.monotonic_time
+          last_job = Concurrent.monotonic_time
           catch(:stop) do
             loop do
 
-              case message = my_queue.pop
+              case (job = my_queue.pop).task
               when :idle_test
-                if (Concurrent.monotonic_time - last_message) > my_idletime
+                if (Concurrent.monotonic_time - last_job) > my_idletime
                   my_pool.remove_busy_worker(self)
                   throw :stop
                 else
@@ -315,9 +326,8 @@ module Concurrent
                 throw :stop
 
               else
-                task, args = message
-                run_task my_pool, task, args
-                last_message = Concurrent.monotonic_time
+                run_task my_pool, job.task, job.args
+                last_job = Concurrent.monotonic_time
 
                 my_pool.ready_worker(self)
               end

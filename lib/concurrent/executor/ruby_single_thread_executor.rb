@@ -14,10 +14,17 @@ module Concurrent
       super
     end
 
+    def prioritized?
+      @prioritized
+    end
+
+    public :prioritize
+
     protected
 
     def ns_initialize(opts)
-      @queue = Queue.new
+      @prioritized = opts.fetch(:prioritize, false)
+      @queue = @prioritized ? Concurrent::PriorityBlockingQueue.new(order: :max) : Queue.new
       @thread = nil
       @fallback_policy = opts.fetch(:fallback_policy, :discard)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
@@ -25,14 +32,14 @@ module Concurrent
     end
 
     # @!visibility private
-    def execute(*args, &task)
+    def execute(priority, *args, &task)
       supervise
-      @queue << [args, task]
+      @queue << Job.new(priority, args, task)
     end
 
     # @!visibility private
     def shutdown_execution
-      @queue << :stop
+      @queue << Job.new(-Infinity, :stop, :stop)
       stopped_event.set unless alive?
     end
 
@@ -63,10 +70,10 @@ module Concurrent
     # @!visibility private
     def work
       loop do
-        task = @queue.pop
-        break if task == :stop
+        job = @queue.pop
+        break if job.task == :stop
         begin
-          task.last.call(*task.first)
+          job.task.call(*job.args)
         rescue => ex
           # let it fail
           log DEBUG, ex

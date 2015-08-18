@@ -30,7 +30,7 @@ module Concurrent
     #   @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
     #   @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
     #
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/NonConcurrentPriorityQueue.html
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
     # 
     # @!visibility private
     # @!macro internal_implementation_note
@@ -130,6 +130,7 @@ module Concurrent
       #   
       #   @return [Object] the head of the queue or `nil` when empty
       def pop
+        return nil if empty?
         max = @queue[1]
         swap(1, @length)
         @length -= 1
@@ -146,6 +147,7 @@ module Concurrent
       #  
       #   @param [Object] item the item to insert onto the queue
       def push(item)
+        raise ArgumentError.new('cannot enqueue nil') if item.nil?
         @length += 1
         @queue << item
         swim(@length)
@@ -287,6 +289,7 @@ module Concurrent
 
         # @!macro priority_queue_method_push
         def push(item)
+          raise ArgumentError.new('cannot enqueue nil') if item.nil?
           @queue.add(item)
         end
         alias_method :<<, :push
