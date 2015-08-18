@@ -10,22 +10,32 @@ module Concurrent
   class AbstractExecutorService < Synchronization::Object
     include ExecutorService
 
-    # @!visibility private
-    Job = Struct.new(:priority, :args, :task) do
-      def execute
-        task.call(*args)
+    class Job
+      attr_reader :priority
+
+      def initialize(priority, args, task)
+        @priority = priority
+        @args = args
+        @task = task
       end
+
+      def run
+        @task.call(*@args)
+      end
+
+      def <=>(other)
+        @priority <=> other.priority
+      end 
     end
     private_constant :Job
 
-    # @!visibility private
     Infinity = Float::INFINITY
     private_constant :Infinity
 
     # The set of possible fallback policies that may be set at thread pool creation.
     FALLBACK_POLICIES = [:abort, :discard, :caller_runs].freeze
 
-    # @!macro executor_service_attr_reader_fallback_policy
+    # @!macro thread_pool_executor_attr_reader_fallback_policy
     attr_reader :fallback_policy
 
     # Create a new thread pool.
@@ -90,7 +100,7 @@ module Concurrent
         false
       when :caller_runs
         begin
-          job.execute
+          job.run
         rescue => ex
           # let it fail
           log DEBUG, ex

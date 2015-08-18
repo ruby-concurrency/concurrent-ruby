@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/atomic/event'
+require 'concurrent/collection/non_concurrent_priority_queue'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/utility/monotonic_time'
@@ -55,6 +56,15 @@ module Concurrent
       super(opts)
     end
 
+    # @!macro executor_service_method_prioritized_question
+    def prioritized?
+      @prioritized
+    end
+
+    # @!method prioritize(priority, *args, &task)
+    #   @!macro executor_service_method_prioritize
+    public :prioritize
+
     # @!macro executor_service_method_can_overflow_question
     def can_overflow?
       synchronize { ns_limited_queue? }
@@ -109,6 +119,7 @@ module Concurrent
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+      @prioritized     = opts.fetch(:prioritize, false)
       @fallback_policy = opts.fetch(:fallback_policy, :abort)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
 
@@ -121,8 +132,9 @@ module Concurrent
 
       @pool                 = [] # all workers
       @ready                = [] # used as a stash (most idle worker is at the start)
-      @queue                = [] # used as queue
+      @queue = @prioritized ? Concurrent::Collection::NonConcurrentPriorityQueue.new(order: :max) : []
       # @ready or @queue is empty at all times
+
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length       = 0
@@ -274,8 +286,8 @@ module Concurrent
 
       def initialize(pool)
         # instance variables accessed only under pool's lock so no need to sync here again
-        @queue  = Queue.new
         @pool   = pool
+        @queue  = Queue.new
         @thread = create_worker @queue, pool, pool.idletime
       end
 
@@ -324,7 +336,7 @@ module Concurrent
       end
 
       def run_job(pool, job)
-        job.execute
+        job.run
       rescue => ex
         # let it fail
         log DEBUG, ex
