@@ -215,6 +215,12 @@ shared_examples :priority_queue do
       expect(subject.pop).to be_nil
     end
 
+    it 'returns nil when called multiple times while empty' do
+      10.times do
+        expect(subject.pop).to be nil
+      end
+    end
+
     it 'is aliased as #deq' do
       10.times{|i| subject << i}
       expect(subject.deq).to eq 9
@@ -227,6 +233,12 @@ shared_examples :priority_queue do
   end
 
   context '#push' do
+
+    it 'raises an exception when attempting to enqueue nil' do
+      expect {
+        subject.push(nil)
+      }.to raise_error(ArgumentError)
+    end
 
     it 'adds the item to the queue' do
       subject.push(1)

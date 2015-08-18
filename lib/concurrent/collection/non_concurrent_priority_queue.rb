@@ -30,7 +30,7 @@ module Concurrent
     #   @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
     #   @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
     #
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/NonConcurrentPriorityQueue.html
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
     # 
     # @!visibility private
     # @!macro internal_implementation_note
@@ -66,6 +66,7 @@ module Concurrent
       #   @param [Object] item the item to be removed from the queue
       #   @return [Object] true if the item is found else false
       def delete(item)
+        return false if empty?
         original_length = @length
         k = 1
         while k <= @length
@@ -120,7 +121,7 @@ module Concurrent
       #   
       #   @return [Object] the head of the queue or `nil` when empty
       def peek
-        @queue[1]
+        empty? ? nil : @queue[1]
       end
 
       # @!macro [attach] priority_queue_method_pop
@@ -130,6 +131,7 @@ module Concurrent
       #   
       #   @return [Object] the head of the queue or `nil` when empty
       def pop
+        return nil if empty?
         max = @queue[1]
         swap(1, @length)
         @length -= 1
@@ -146,6 +148,7 @@ module Concurrent
       #  
       #   @param [Object] item the item to insert onto the queue
       def push(item)
+        raise ArgumentError.new('cannot enqueue nil') if item.nil?
         @length += 1
         @queue << item
         swim(@length)
@@ -168,7 +171,7 @@ module Concurrent
         queue
       end
 
-      protected
+      private
 
       # Exchange the values at the given indexes within the internal array.
       # 
@@ -287,6 +290,7 @@ module Concurrent
 
         # @!macro priority_queue_method_push
         def push(item)
+          raise ArgumentError.new('cannot enqueue nil') if item.nil?
           @queue.add(item)
         end
         alias_method :<<, :push
