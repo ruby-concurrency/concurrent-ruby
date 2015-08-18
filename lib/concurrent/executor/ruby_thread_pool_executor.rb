@@ -11,6 +11,12 @@ module Concurrent
   # @!visibility private
   class RubyThreadPoolExecutor < RubyExecutorService
 
+    # @!visibility private
+    STOP_JOB = Job.new(-Infinity, :stop, :stop).freeze
+
+    # @!visibility private
+    IDLE_TEST_JOB = Job.new(-Infinity, :idle_test, :idle_test).freeze
+
     # @!macro thread_pool_executor_constant_default_max_pool_size
     DEFAULT_MAX_POOL_SIZE      = 2_147_483_647 # java.lang.Integer::MAX_VALUE
 
@@ -131,11 +137,11 @@ module Concurrent
     end
 
     # @!visibility private
-    def ns_execute(*args, &task)
-      if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
+    def ns_execute(job)
+      if ns_assign_worker(job) || ns_enqueue(job)
         @scheduled_task_count += 1
       else
-        handle_fallback(*args, &task)
+        handle_fallback(job)
       end
 
       ns_prune_pool if @next_gc_time < Concurrent.monotonic_time
@@ -169,11 +175,11 @@ module Concurrent
     # @return [true, false] if task is assigned to a worker
     #
     # @!visibility private
-    def ns_assign_worker(*args, &task)
+    def ns_assign_worker(job)
       # keep growing if the pool is not at the minimum yet
       worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
-        worker << [task, args]
+        worker << job
         true
       else
         false
@@ -187,9 +193,9 @@ module Concurrent
     # @return [true, false] if enqueued
     #
     # @!visibility private
-    def ns_enqueue(*args, &task)
+    def ns_enqueue(job)
       if !ns_limited_queue? || @queue.size < @max_queue
-        @queue << [task, args]
+        @queue << job
         true
       else
         false
@@ -220,9 +226,8 @@ module Concurrent
     # @!visibility private
     def ns_ready_worker(worker, success = true)
       @completed_task_count += 1 if success
-      task_and_args         = @queue.shift
-      if task_and_args
-        worker << task_and_args
+      if job = @queue.shift
+        worker << job
       else
         # stop workers when !running?, do not return them to @ready
         if running?
@@ -258,7 +263,7 @@ module Concurrent
       return if @pool.size <= @min_length
 
       last_used = @ready.shift
-      last_used << :idle_test if last_used
+      last_used << IDLE_TEST_JOB if last_used
 
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
     end
@@ -274,12 +279,12 @@ module Concurrent
         @thread = create_worker @queue, pool, pool.idletime
       end
 
-      def <<(message)
-        @queue << message
+      def <<(job)
+        @queue << job
       end
 
       def stop
-        @queue << :stop
+        @queue << STOP_JOB
       end
 
       def kill
@@ -290,27 +295,26 @@ module Concurrent
 
       def create_worker(queue, pool, idletime)
         Thread.new(queue, pool, idletime) do |my_queue, my_pool, my_idletime|
-          last_message = Concurrent.monotonic_time
+          last_job = Concurrent.monotonic_time
           catch(:stop) do
             loop do
 
-              case message = my_queue.pop
-              when :idle_test
-                if (Concurrent.monotonic_time - last_message) > my_idletime
+              case job = my_queue.pop
+              when Concurrent::RubyThreadPoolExecutor::IDLE_TEST_JOB
+                if (Concurrent.monotonic_time - last_job) > my_idletime
                   my_pool.remove_busy_worker(self)
                   throw :stop
                 else
                   my_pool.worker_not_old_enough(self)
                 end
 
-              when :stop
+              when Concurrent::RubyThreadPoolExecutor::STOP_JOB
                 my_pool.remove_busy_worker(self)
                 throw :stop
 
               else
-                task, args = message
-                run_task my_pool, task, args
-                last_message = Concurrent.monotonic_time
+                run_job my_pool, job
+                last_job = Concurrent.monotonic_time
 
                 my_pool.ready_worker(self)
               end
@@ -319,8 +323,8 @@ module Concurrent
         end
       end
 
-      def run_task(pool, task, args)
-        task.call(*args)
+      def run_job(pool, job)
+        job.execute
       rescue => ex
         # let it fail
         log DEBUG, ex

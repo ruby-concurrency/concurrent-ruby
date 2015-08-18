@@ -16,10 +16,11 @@ module Concurrent
 
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
+      job = Job.new(0, args, task)
+      # If the executor is shut down, reject this task
+      return handle_fallback(job) unless running?
       synchronize do
-        # If the executor is shut down, reject this task
-        return handle_fallback(*args, &task) unless running?
-        ns_execute(*args, &task)
+        ns_execute(job)
         true
       end
     end

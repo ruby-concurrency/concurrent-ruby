@@ -11,6 +11,10 @@ module Concurrent
   class RubySingleThreadExecutor < RubyExecutorService
     include SerialExecutorService
 
+    # @!visibility private
+    STOP_JOB = Job.new(-Infinity, :stop, :stop).freeze
+    private_constant :STOP_JOB
+
     # @!macro single_thread_executor_method_initialize
     def initialize(opts = {})
       super
@@ -27,14 +31,14 @@ module Concurrent
     end
 
     # @!visibility private
-    def ns_execute(*args, &task)
+    def ns_execute(job)
       supervise
-      @queue << [args, task]
+      @queue << job
     end
 
     # @!visibility private
     def ns_shutdown_execution
-      @queue << :stop
+      @queue << STOP_JOB
       stopped_event.set unless alive?
     end
 
@@ -65,10 +69,10 @@ module Concurrent
     # @!visibility private
     def work
       loop do
-        task = @queue.pop
-        break if task == :stop
+        job = @queue.pop
+        break if job == STOP_JOB
         begin
-          task.last.call(*task.first)
+          job.execute
         rescue => ex
           # let it fail
           log DEBUG, ex
