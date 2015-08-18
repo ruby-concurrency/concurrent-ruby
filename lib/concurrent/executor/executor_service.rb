@@ -39,6 +39,13 @@ module Concurrent
   #     will be post in the order they are received and no two operations may
   #     occur simultaneously. Else false.
 
+  # @!macro [new] executor_service_method_prioritized_question
+  #
+  #   Does this executor allow tasks to be ordered based on a given priority?
+  #
+  #   @return [Boolean] True if the executor provides the caller the ability
+  #   to influence the prioritization of operations post to it. Else false.
+
   ###################################################################
 
   # @!macro [new] executor_service_public_api
@@ -54,6 +61,9 @@ module Concurrent
   #
   #   @!method serialized?
   #     @!macro executor_service_method_serialized_question
+  #
+  #   @!method prioritized?
+  #     @!macro executor_service_method_prioritized_question
 
   ###################################################################
 
@@ -179,6 +189,13 @@ module Concurrent
     #
     # @note Always returns `false`
     def serialized?
+      false
+    end
+
+    # @!macro executor_service_method_prioritized_question
+    #
+    # @note Always returns `false`
+    def prioritized?
       false
     end
   end
