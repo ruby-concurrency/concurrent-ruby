@@ -18,6 +18,28 @@ if Concurrent.on_jruby?
       }.freeze
       private_constant :FALLBACK_POLICY_CLASSES
 
+      class JavaJob
+        include java.lang.Runnable
+        include java.lang.Comparable
+
+        attr_reader :priority
+
+        def initialize(priority, args, block)
+          @priority = priority
+          @args = args
+          @block = block
+        end
+
+        def run
+          @block.call(*@args)
+        end
+
+        def compareTo(other)
+          other.priority <=> @priority
+        end
+      end
+      private_constant :JavaJob
+
       def initialize(*args, &block)
         super
         ns_make_executor_runnable
@@ -25,11 +47,12 @@ if Concurrent.on_jruby?
 
       def post(*args, &task)
         raise ArgumentError.new('no block given') unless block_given?
-        return handle_fallback(*args, &task) unless running?
-        @executor.submit_runnable Job.new(args, task)
-        true
-      rescue Java::JavaUtilConcurrent::RejectedExecutionException
-        raise RejectedExecutionError
+        enqueue_job(0, args, task)
+      end
+
+      def prioritize(priority, *args, &task)
+        raise ArgumentError.new('no block given') unless block_given?
+        enqueue_job(priority, args, task)
       end
 
       def wait_for_termination(timeout = nil)
@@ -59,6 +82,15 @@ if Concurrent.on_jruby?
 
       private
 
+      def enqueue_job(priority, args, task)
+        job = JavaJob.new(priority, args, task)
+        return handle_fallback(job) unless running?
+        @executor.execute job
+        true
+      rescue Java::JavaUtilConcurrent::RejectedExecutionException
+        raise RejectedExecutionError
+      end
+
       def ns_running?
         !(ns_shuttingdown? || ns_shutdown?)
       end
@@ -82,19 +114,6 @@ if Concurrent.on_jruby?
           end
         end
       end
-
-      class Job
-        include Runnable
-        def initialize(args, block)
-          @args = args
-          @block = block
-        end
-
-        def run
-          @block.call(*@args)
-        end
-      end
-      private_constant :Job
     end
   end
 end

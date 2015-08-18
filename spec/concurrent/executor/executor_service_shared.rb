@@ -4,7 +4,7 @@ shared_examples :executor_service do
 
   after(:each) do
     subject.kill
-    sleep(0.1)
+    subject.wait_for_termination(0.1)
   end
 
   it_should_behave_like :global_thread_pool

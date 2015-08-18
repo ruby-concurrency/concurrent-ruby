@@ -1,6 +1,7 @@
 if Concurrent.on_jruby?
 
   require_relative 'thread_pool_executor_shared'
+  require_relative 'prioritized_thread_pool_shared'
 
   module Concurrent
 
@@ -8,11 +9,11 @@ if Concurrent.on_jruby?
 
       after(:each) do
         subject.kill
-        sleep(0.1)
+        subject.wait_for_termination(0.1)
       end
 
       subject do
-        JavaThreadPoolExecutor.new(
+        described_class.new(
           min_threads: 2,
           max_threads: 5,
           idletime: 60,
@@ -25,13 +26,18 @@ if Concurrent.on_jruby?
 
       it_should_behave_like :thread_pool_executor
 
+      context 'when prioritized' do
+        subject { described_class.new(min_threads: 1, max_threads: 1, prioritize: true) }
+        it_behaves_like :prioritized_thread_pool
+      end
+
       context '#overload_policy' do
 
         specify ':abort maps to AbortPolicy' do
           clazz = java.util.concurrent.ThreadPoolExecutor::AbortPolicy
           policy = clazz.new
           expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
-          JavaThreadPoolExecutor.new(
+          described_class.new(
             min_threads: 2,
             max_threads: 5,
             idletime: 60,
@@ -44,7 +50,7 @@ if Concurrent.on_jruby?
           clazz = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
           policy = clazz.new
           expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
-          JavaThreadPoolExecutor.new(
+          described_class.new(
             min_threads: 2,
             max_threads: 5,
             idletime: 60,
@@ -57,7 +63,7 @@ if Concurrent.on_jruby?
           clazz = java.util.concurrent.ThreadPoolExecutor::CallerRunsPolicy
           policy = clazz.new
           expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
-          JavaThreadPoolExecutor.new(
+          described_class.new(
             min_threads: 2,
             max_threads: 5,
             idletime: 60,

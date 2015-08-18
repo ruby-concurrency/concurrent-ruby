@@ -16,13 +16,7 @@ module Concurrent
 
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      job = Job.new(0, args, task)
-      # If the executor is shut down, reject this task
-      return handle_fallback(job) unless running?
-      synchronize do
-        ns_execute(job)
-        true
-      end
+      enqueue_job(0, args, task)
     end
 
     def shutdown
@@ -53,6 +47,21 @@ module Concurrent
     private
 
     attr_reader :stop_event, :stopped_event
+
+    def prioritize(priority, *args, &task)
+      raise ArgumentError.new('no block given') unless block_given?
+      enqueue_job(priority, args, task)
+    end
+
+    def enqueue_job(priority, args, task)
+      job = Job.new(priority, args, task)
+      # If the executor is shut down, reject this task
+      return handle_fallback(job) unless running?
+      synchronize do
+        ns_execute(job)
+        true
+      end
+    end
 
     def ns_shutdown_execution
       stopped_event.set
