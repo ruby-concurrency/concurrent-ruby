@@ -62,7 +62,7 @@ module Concurrent
       synchronize { self.ns_auto_terminate = value }
     end
 
-    protected
+    private
 
     # Handler which executes the `fallback_policy` once the queue size
     # reaches `max_queue`.
@@ -89,27 +89,25 @@ module Concurrent
       end
     end
 
-    def execute(*args, &task)
+    def ns_execute(*args, &task)
       raise NotImplementedError
     end
 
-    # @!macro [attach] executor_service_method_shutdown_execution
+    # @!macro [attach] executor_service_method_ns_shutdown_execution
     #
     #   Callback method called when an orderly shutdown has completed.
     #   The default behavior is to signal all waiting threads.
-    def shutdown_execution
+    def ns_shutdown_execution
       # do nothing
     end
 
-    # @!macro [attach] executor_service_method_kill_execution
+    # @!macro [attach] executor_service_method_ns_kill_execution
     #
     #   Callback method called when the executor has been killed.
     #   The default behavior is to do nothing.
-    def kill_execution
+    def ns_kill_execution
       # do nothing
     end
-
-    protected
 
     def ns_auto_terminate?
       !!@auto_terminate

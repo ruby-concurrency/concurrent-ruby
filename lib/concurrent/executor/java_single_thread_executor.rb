@@ -17,7 +17,7 @@ if Concurrent.on_jruby?
         super(opts)
       end
 
-      protected
+      private
       
       def ns_initialize(opts)
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor

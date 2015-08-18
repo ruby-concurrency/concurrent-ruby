@@ -19,7 +19,7 @@ module Concurrent
       synchronize do
         # If the executor is shut down, reject this task
         return handle_fallback(*args, &task) unless running?
-        execute(*args, &task)
+        ns_execute(*args, &task)
         true
       end
     end
@@ -29,7 +29,7 @@ module Concurrent
         break unless running?
         self.ns_auto_terminate = false
         stop_event.set
-        shutdown_execution
+        ns_shutdown_execution
       end
       true
     end
@@ -39,7 +39,7 @@ module Concurrent
         break if shutdown?
         self.ns_auto_terminate = false
         stop_event.set
-        kill_execution
+        ns_kill_execution
         stopped_event.set
       end
       true
@@ -49,11 +49,11 @@ module Concurrent
       stopped_event.wait(timeout)
     end
 
-    protected
+    private
 
     attr_reader :stop_event, :stopped_event
 
-    def shutdown_execution
+    def ns_shutdown_execution
       stopped_event.set
     end
 

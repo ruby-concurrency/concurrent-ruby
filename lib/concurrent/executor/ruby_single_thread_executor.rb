@@ -16,7 +16,7 @@ module Concurrent
       super
     end
 
-    protected
+    private
 
     def ns_initialize(opts)
       @queue = Queue.new
@@ -27,19 +27,19 @@ module Concurrent
     end
 
     # @!visibility private
-    def execute(*args, &task)
+    def ns_execute(*args, &task)
       supervise
       @queue << [args, task]
     end
 
     # @!visibility private
-    def shutdown_execution
+    def ns_shutdown_execution
       @queue << :stop
       stopped_event.set unless alive?
     end
 
     # @!visibility private
-    def kill_execution
+    def ns_kill_execution
       @queue.clear
       @thread.kill if alive?
     end

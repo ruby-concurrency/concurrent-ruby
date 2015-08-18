@@ -95,7 +95,7 @@ module Concurrent
       synchronize { ns_worker_died worker }
     end
 
-    protected
+    private
 
     # @!visibility private
     def ns_initialize(opts)
@@ -142,8 +142,6 @@ module Concurrent
       # raise unless @ready.empty? || @queue.empty? # assert
     end
 
-    alias_method :execute, :ns_execute
-
     # @!visibility private
     def ns_shutdown_execution
       if @pool.empty?
@@ -158,8 +156,6 @@ module Concurrent
       # raise unless @ready.empty? || @queue.empty? # assert
     end
 
-    alias_method :shutdown_execution, :ns_shutdown_execution
-
     # @!visibility private
     def ns_kill_execution
       # TODO log out unprocessed tasks in queue
@@ -168,8 +164,6 @@ module Concurrent
       @pool.clear
       @ready.clear
     end
-
-    alias_method :kill_execution, :ns_kill_execution
 
     # tries to assign task to a worker, tries to get one from @ready or to create new one
     # @return [true, false] if task is assigned to a worker

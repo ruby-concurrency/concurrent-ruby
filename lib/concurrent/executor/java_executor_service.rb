@@ -57,7 +57,7 @@ if Concurrent.on_jruby?
         end
       end
 
-      protected
+      private
 
       def ns_running?
         !(ns_shuttingdown? || ns_shutdown?)

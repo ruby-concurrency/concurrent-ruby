@@ -87,7 +87,7 @@ if Concurrent.on_jruby?
         super && !@executor.isTerminating
       end
 
-      protected
+      private
 
       def ns_initialize(opts)
         min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i

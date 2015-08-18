@@ -65,7 +65,7 @@ module Concurrent
 
     private :<<
 
-    protected
+    private
 
     # Initialize the object.
     #
@@ -118,7 +118,7 @@ module Concurrent
     # `ExecutorServic` callback called during shutdown.
     #
     # @!visibility private
-    def shutdown_execution
+    def ns_shutdown_execution
       @queue.clear
       @timer_executor.kill
       stopped_event.set

@@ -89,7 +89,7 @@ module Concurrent
       @stopped.wait(timeout)
     end
 
-    protected
+    private
 
     def ns_initialize
       @running = Concurrent::AtomicBoolean.new(true)

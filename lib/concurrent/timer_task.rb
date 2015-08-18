@@ -268,7 +268,7 @@ module Concurrent
 
     private :post, :<<
 
-    protected
+    private
 
     def ns_initialize(opts, &task)
       init_mutex(self)
@@ -284,13 +284,13 @@ module Concurrent
     end
 
     # @!visibility private
-    def shutdown_execution
+    def ns_shutdown_execution
       @running.make_false
       super
     end
 
     # @!visibility private
-    def kill_execution
+    def ns_kill_execution
       @running.make_false
       super
     end
