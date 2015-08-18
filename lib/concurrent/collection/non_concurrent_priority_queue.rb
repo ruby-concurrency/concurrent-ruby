@@ -33,13 +33,9 @@ module Concurrent
     #   The JRuby native implementation is a thin wrapper around the standard
     #   library `java.util.NonConcurrentPriorityQueue`.
     #
-    #   When running under JRuby the class `NonConcurrentPriorityQueue` extends `JavaNonConcurrentPriorityQueue`.
-    #   When running under all other interpreters it extends `RubyNonConcurrentPriorityQueue`.
-    #
     #   @note This implementation is *not* thread safe.
     #
     #   @see http://en.wikipedia.org/wiki/Priority_queue
-    #   @see http://ruby-doc.org/stdlib-2.0.0/libdoc/thread/rdoc/Queue.html
     #
     #   @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
     #   @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
