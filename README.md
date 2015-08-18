@@ -117,7 +117,7 @@ Thread-safe variables:
 
 ### Edge Features
 
-These are available in the `concurrent-ruby-edge` companion gem, installed with `gem install concurrent-ruby-edge`.
+These are available in the `concurrent-ruby-edge` companion gem.
 
 These features are under active development and may change frequently. They are expected not to
 keep backward compatibility (there may also lack tests and documentation). Semantic versions will
@@ -151,46 +151,16 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 ## Usage
 
-All abstractions within this gem can be loaded simply by requiring it:
+Everything within this gem can be loaded simply by requiring it:
 
 ```ruby
 require 'concurrent'
 ```
 
-To reduce the amount of code loaded at runtime, subsets of this gem can be required:
+To use the tools in the Edge gem it must be required separately:
 
 ```ruby
-require 'concurrent'                # everything
-
-# groups
-
-require 'concurrent/atomics'        # atomic and thread synchronization classes
-require 'concurrent/executors'      # Thread pools and other executors
-
-# individual abstractions
-
-require 'concurrent/async'            # Concurrent::Async
-require 'concurrent/atom'             # Concurrent::Atom
-require 'concurrent/dataflow'         # Concurrent::dataflow
-require 'concurrent/delay'            # Concurrent::Delay
-require 'concurrent/future'           # Concurrent::Future
-require 'concurrent/immutable_struct' # Concurrent::ImmutableStruct
-require 'concurrent/ivar'             # Concurrent::IVar
-require 'concurrent/maybe'            # Concurrent::Maybe
-require 'concurrent/mutable_struct'   # Concurrent::MutableStruct
-require 'concurrent/mvar'             # Concurrent::MVar
-require 'concurrent/promise'          # Concurrent::Promise
-require 'concurrent/scheduled_task'   # Concurrent::ScheduledTask
-require 'concurrent/settable_struct'  # Concurrent::SettableStruct
-require 'concurrent/timer_task'       # Concurrent::TimerTask
-require 'concurrent/tvar'             # Concurrent::TVar
-
-# experimental - available in `concurrent-ruby-edge` companion gem
-
-require 'concurrent/actor'          # Concurrent::Actor and supporting code
-require 'concurrent/edge/future'    # new Future Framework
-require 'concurrent/agent'          # Concurrent::Agent
-require 'concurrent/channel'        # Concurrent::Channel and supporting code
+require 'concurrent-edge'
 ```
 
 If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could help to reveal the problem.
@@ -208,6 +178,23 @@ gem 'concurrent-ruby'
 ```
 
 and run `bundle install` from your shell.
+
+### Edge Gem Installation
+
+The Edge gem must be installed separately from the core gem:
+
+```shell
+gem install concurrent-ruby-edge
+```
+
+or add the following line to Gemfile:
+
+```ruby
+gem 'concurrent-ruby-edge'
+```
+
+and run `bundle install` from your shell.
+
 
 ### C Extensions for MRI
 
