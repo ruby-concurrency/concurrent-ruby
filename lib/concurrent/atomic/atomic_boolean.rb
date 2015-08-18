@@ -108,10 +108,7 @@ module Concurrent
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicBoolean.html java.util.concurrent.atomic.AtomicBoolean
   #
-  # @see Concurrent::MutexAtomicBoolean
-  #
   # @!macro atomic_boolean_public_api
   class AtomicBoolean < AtomicBooleanImplementation
-
   end
 end
