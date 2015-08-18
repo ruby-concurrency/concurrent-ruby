@@ -1,5 +1,5 @@
 require 'concurrent/atomic/event'
-require 'concurrent/executor/executor_service'
+require 'concurrent/executor/serial_executor_service'
 
 module Concurrent
 

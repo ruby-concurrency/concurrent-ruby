@@ -1,8 +1,7 @@
 require 'thread'
-
 require 'concurrent/atomic/event'
 require 'concurrent/concern/logging'
-require 'concurrent/executor/executor_service'
+require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/utility/monotonic_time'
 
 module Concurrent

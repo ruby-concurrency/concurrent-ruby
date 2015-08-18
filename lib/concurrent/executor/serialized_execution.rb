@@ -1,7 +1,6 @@
-require 'delegate'
-require 'concurrent/executor/executor_service'
+require 'concurrent/errors'
 require 'concurrent/concern/logging'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/object'
 
 module Concurrent
 
@@ -75,11 +74,11 @@ module Concurrent
 
     def call_job(job)
       did_it_run = begin
-        job.executor.post { work(job) }
-        true
-      rescue RejectedExecutionError => ex
-        false
-      end
+                     job.executor.post { work(job) }
+                     true
+                   rescue RejectedExecutionError => ex
+                     false
+                   end
 
       # TODO not the best idea to run it myself
       unless did_it_run
@@ -103,28 +102,6 @@ module Concurrent
       # TODO maybe be able to tell caching pool to just enqueue this job, because the current one end at the end
       # of this block
       call_job job if job
-    end
-  end
-
-  # A wrapper/delegator for any `ExecutorService` that
-  # guarantees serialized execution of tasks.
-  #
-  # @see [SimpleDelegator](http://www.ruby-doc.org/stdlib-2.1.2/libdoc/delegate/rdoc/SimpleDelegator.html)
-  # @see Concurrent::SerializedExecution
-  class SerializedExecutionDelegator < SimpleDelegator
-    include SerialExecutorService
-
-    def initialize(executor)
-      @executor   = executor
-      @serializer = SerializedExecution.new
-      super(executor)
-    end
-
-    # @!macro executor_service_method_post
-    def post(*args, &task)
-      Kernel.raise ArgumentError.new('no block given') unless block_given?
-      return false unless running?
-      @serializer.post(@executor, *args, &task)
     end
   end
 end
