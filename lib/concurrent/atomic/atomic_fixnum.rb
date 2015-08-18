@@ -127,6 +127,5 @@ module Concurrent
   #
   # @!macro atomic_fixnum_public_api
   class AtomicFixnum < AtomicFixnumImplementation
-
   end
 end
