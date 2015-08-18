@@ -88,7 +88,7 @@ end
 
 module Concurrent
 
-  describe PureCountDownLatch do
+  describe MutexCountDownLatch do
 
     it_should_behave_like :count_down_latch
 
@@ -163,7 +163,7 @@ module Concurrent
       end
     else
       it 'inherits from MutexCountDownLatch' do
-        expect(CountDownLatch.ancestors).to include(PureCountDownLatch)
+        expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
       end
     end
   end

@@ -1,4 +1,6 @@
-require 'concurrent/executor/executor_service'
+require 'thread'
+require 'concurrent/executor/ruby_executor_service'
+require 'concurrent/executor/serial_executor_service'
 
 module Concurrent
 

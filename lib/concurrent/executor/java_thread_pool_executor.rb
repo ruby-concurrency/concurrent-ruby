@@ -1,6 +1,6 @@
 if Concurrent.on_jruby?
 
-  require 'concurrent/executor/executor_service'
+  require 'concurrent/executor/java_executor_service'
 
   module Concurrent
 

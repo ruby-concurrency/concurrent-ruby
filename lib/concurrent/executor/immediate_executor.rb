@@ -1,5 +1,6 @@
 require 'concurrent/atomic/event'
-require 'concurrent/executor/executor_service'
+require 'concurrent/executor/abstract_executor_service'
+require 'concurrent/executor/serial_executor_service'
 
 module Concurrent
 
@@ -13,7 +14,7 @@ module Concurrent
   # during testing because it makes all operations deterministic.
   #
   # @note Intended for use primarily in testing and debugging.
-  class ImmediateExecutor
+  class ImmediateExecutor < AbstractExecutorService
     include SerialExecutorService
 
     # Creates a new executor
