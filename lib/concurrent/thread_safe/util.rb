@@ -13,7 +13,7 @@ module Concurrent
   end
 end
 
-require 'concurrent/collection/tuple'
+require 'concurrent/tuple'
 require 'concurrent/thread_safe/util/xor_shift_random'
 require 'concurrent/thread_safe/util/volatile'
 require 'concurrent/thread_safe/util/striped64'

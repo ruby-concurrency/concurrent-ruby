@@ -1,4 +1,4 @@
-require 'concurrent/collection/tuple'
+require 'concurrent/tuple'
 
 module Concurrent
 

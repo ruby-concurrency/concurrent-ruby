@@ -205,7 +205,7 @@ module Concurrent
     # @see http://promises-aplus.github.io/promises-spec/
     def initialize(opts = {}, &block)
       opts.delete_if { |k, v| v.nil? }
-      super(IVar::NO_VALUE, opts.merge(__promise_body_from_block__: block), &nil)
+      super(NULL, opts.merge(__promise_body_from_block__: block), &nil)
     end
 
     # Create a new `Promise` and fulfill it immediately.
@@ -254,7 +254,7 @@ module Concurrent
     # @!macro ivar_set_method
     #
     # @raise [Concurrent::PromiseExecutionError] if not the root promise
-    def set(value = IVar::NO_VALUE, &block)
+    def set(value = NULL, &block)
       raise PromiseExecutionError.new('supported only on root promise') unless root?
       check_for_block_or_value!(block_given?, value)
       synchronize do

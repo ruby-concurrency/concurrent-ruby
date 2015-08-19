@@ -27,7 +27,7 @@ module Concurrent
     # @raise [ArgumentError] if no block is given
     def initialize(opts = {}, &block)
       raise ArgumentError.new('no block given') unless block_given?
-      super(IVar::NO_VALUE, opts.merge(__task_from_block__: block), &nil)
+      super(NULL, opts.merge(__task_from_block__: block), &nil)
     end
 
     # Execute an `:unscheduled` `Future`. Immediately sets the state to `:pending` and
@@ -74,7 +74,7 @@ module Concurrent
     end
 
     # @!macro ivar_set_method
-    def set(value = IVar::NO_VALUE, &block)
+    def set(value = NULL, &block)
       check_for_block_or_value!(block_given?, value)
       synchronize do
         if @state != :unscheduled
