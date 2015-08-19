@@ -1,9 +1,18 @@
-### Upcoming Release v1.0.0 (TBD)
+## Current Release v1.0.0.pre1 (19 Aug 2015)
 
+* Merged in the `thread_safe` gem
+  - `Concurrent::Array`
+  - `Concurrent::Hash`
+  - `Concurrent::Map` (formerly ThreadSafe::Cache)
+  - `Concurrent::Tuple`
+* Minor improvements to Concurrent::Map
+* Complete rewrite of `Exchanger`
 * Removed all deprecated code (classes, methods, constants, etc.)
 * Updated Agent, MutexAtomic, and BufferedChannel to inherit from Synchronization::Object.
+* Many improved tests
+* Some internal reorganization
 
-## Current Release v0.9.1 (09 August 2015)
+### Release v0.9.1 (09 August 2015)
 
 * Fixed a Rubiniux bug in synchronization object
 * Fixed all interpreter warnings (except circular references)

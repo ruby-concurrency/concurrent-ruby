@@ -11,7 +11,7 @@ module FileMap
   CORE_LIB_FILES = ALL_LIB_FILES - EDGE_LIB_FILES
 
   MAP = {
-    core: CORE_LIB_FILES + %w(lib/concurrent.rb lib/concurrent_ruby.rb),
+    core: CORE_LIB_FILES + %w(lib/concurrent.rb),
     edge: EDGE_LIB_FILES + %w(lib/concurrent-edge.rb)
   }
 end
