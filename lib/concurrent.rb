@@ -11,15 +11,16 @@ require 'concurrent/executors'
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atom'
 require 'concurrent/array'
+require 'concurrent/hash'
+require 'concurrent/map'
+require 'concurrent/tuple'
 require 'concurrent/async'
 require 'concurrent/dataflow'
 require 'concurrent/delay'
 require 'concurrent/exchanger'
 require 'concurrent/future'
-require 'concurrent/hash'
 require 'concurrent/immutable_struct'
 require 'concurrent/ivar'
-require 'concurrent/map'
 require 'concurrent/maybe'
 require 'concurrent/mutable_struct'
 require 'concurrent/mvar'
@@ -27,8 +28,11 @@ require 'concurrent/promise'
 require 'concurrent/scheduled_task'
 require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
-require 'concurrent/tuple'
 require 'concurrent/tvar'
+
+require 'concurrent/thread_safe/synchronized_delegator'
+require 'concurrent/thread_safe/util'
+
 
 # @!macro [new] internal_implementation_note
 #
@@ -121,5 +125,10 @@ require 'concurrent/tvar'
 # * Exclude features that don't make sense in Ruby
 # * Be small, lean, and loosely coupled
 module Concurrent
+
+  # Various classes within allows for +nil+ values to be stored,
+  # so a special +NULL+ token is required to indicate the "nil-ness".
+  # @!visibility private
+  NULL = Object.new
 
 end

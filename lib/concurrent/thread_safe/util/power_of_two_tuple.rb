@@ -7,7 +7,7 @@ module Concurrent
 
     # @!visibility private
     module Util
-      
+
       # @!visibility private
       class PowerOfTwoTuple < Concurrent::Tuple
 

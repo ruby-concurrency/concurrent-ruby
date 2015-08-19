@@ -163,7 +163,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       raise ArgumentError.new('seconds must be greater than zero') if delay.to_f < 0.0
 
-      super(IVar::NO_VALUE, opts, &nil)
+      super(NULL, opts, &nil)
 
       synchronize do
         ns_set_state(:unscheduled)

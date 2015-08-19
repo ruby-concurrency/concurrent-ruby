@@ -1,10 +1,10 @@
 require 'thread'
-require 'concurrent/thread_safe/non_concurrent_map_backend'
+require 'concurrent/collection/map/non_concurrent_map_backend'
 
 module Concurrent
 
   # @!visibility private
-  module ThreadSafe
+  module Collection
 
     # @!visibility private
     class MriMapBackend < NonConcurrentMapBackend

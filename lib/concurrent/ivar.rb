@@ -47,9 +47,6 @@ module Concurrent
     include Concern::Obligation
     include Concern::Observable
 
-    # @!visibility private
-    NO_VALUE = Object.new # :nodoc:
-
     # Create a new `IVar` in the `:pending` state with the (optional) initial value.
     #
     # @param [Object] value the initial value
@@ -60,8 +57,8 @@ module Concurrent
     #   returning the data
     # @option opts [String] :copy_on_deref (nil) call the given `Proc` passing
     #   the internal value and returning the value returned from the proc
-    def initialize(value = NO_VALUE, opts = {}, &block)
-      if value != NO_VALUE && block_given?
+    def initialize(value = NULL, opts = {}, &block)
+      if value != NULL && block_given?
         raise ArgumentError.new('provide only a value or a block')
       end
       super(&nil)
@@ -102,16 +99,16 @@ module Concurrent
 
     # @!macro [attach] ivar_set_method
     #   Set the `IVar` to a value and wake or notify all threads waiting on it.
-    #  
+    #
     #   @!macro [attach] ivar_set_parameters_and_exceptions
     #     @param [Object] value the value to store in the `IVar`
     #     @yield A block operation to use for setting the value
     #     @raise [ArgumentError] if both a value and a block are given
     #     @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
     #       been set or otherwise completed
-    #  
+    #
     #   @return [IVar] self
-    def set(value = NO_VALUE)
+    def set(value = NULL)
       check_for_block_or_value!(block_given?, value)
       raise MultipleAssignmentError unless compare_and_set_state(:processing, :pending)
 
@@ -128,7 +125,7 @@ module Concurrent
 
     # @!macro [attach] ivar_fail_method
     #   Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
-    #  
+    #
     #   @param [Object] reason for the failure
     #   @raise [Concurrent::MultipleAssignmentError] if the `IVar` has already
     #     been set or otherwise completed
@@ -143,7 +140,7 @@ module Concurrent
     # @!macro ivar_set_parameters_and_exceptions
     #
     # @return [Boolean] true if the value was set else false
-    def try_set(value = NO_VALUE, &block)
+    def try_set(value = NULL, &block)
       set(value, &block)
       true
     rescue MultipleAssignmentError
@@ -159,7 +156,7 @@ module Concurrent
       self.observers = Collection::CopyOnWriteObserverSet.new
       set_deref_options(opts)
 
-      if value == NO_VALUE
+      if value == NULL
         @state = :pending
       else
         ns_complete_without_notification(true, value, nil)
@@ -202,7 +199,7 @@ module Concurrent
 
     # @!visibility private
     def check_for_block_or_value!(block_given, value) # :nodoc:
-      if (block_given && value != NO_VALUE) || (! block_given && value == NO_VALUE)
+      if (block_given && value != NULL) || (! block_given && value == NULL)
         raise ArgumentError.new('must set with either a value or a block')
       end
     end

@@ -36,7 +36,7 @@ module Concurrent
       end
 
       def dereferenceable_observable(opts = {})
-        IVar.new(IVar::NO_VALUE, opts)
+        IVar.new(NULL, opts)
       end
 
       def execute_dereferenceable(subject)
@@ -55,8 +55,8 @@ module Concurrent
         expect(i).to be_incomplete
       end
 
-      it 'does not set an initial value if you pass NO_VALUE' do
-        i = IVar.new(IVar::NO_VALUE)
+      it 'does not set an initial value if you pass NULL' do
+        i = IVar.new(NULL)
         expect(i).to be_incomplete
       end
 

@@ -1,7 +1,7 @@
 module Concurrent
 
   # @!visibility private
-  module ThreadSafe
+  module Collection
 
     # @!visibility private
     class NonConcurrentMapBackend
