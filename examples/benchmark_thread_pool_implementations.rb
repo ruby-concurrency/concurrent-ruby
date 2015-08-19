@@ -1,30 +1,25 @@
 #!/usr/bin/env ruby
 
-$: << File.expand_path('../../lib', __FILE__)
+#$: << File.expand_path('../../lib', __FILE__)
 
 require 'benchmark'
 require 'concurrent/executors'
 
-COUNT = 1000
+COUNT = 10_000
 
+executors = [
+  [Concurrent::CachedThreadPool],
+  [Concurrent::FixedThreadPool, 10],
+  [Concurrent::SingleThreadExecutor],
+  [Concurrent::ThreadPoolExecutor]
+]
 if Concurrent.on_jruby?
-  EXECUTORS = [
-    [Concurrent::JavaCachedThreadPool],
-    [Concurrent::JavaFixedThreadPool, 10],
-    [Concurrent::JavaSingleThreadExecutor],
-    [Concurrent::JavaThreadPoolExecutor]
-  ]
-else
-  EXECUTORS = [
-    [Concurrent::CachedThreadPool],
-    [Concurrent::FixedThreadPool, 10],
-    [Concurrent::SingleThreadExecutor],
-    [Concurrent::ThreadPoolExecutor]
-  ]
+  executors << [Concurrent::SingleThreadExecutor]
+  executors << [Concurrent::RubyThreadPoolExecutor]
 end
 
 Benchmark.bmbm do |x|
-  EXECUTORS.each do |executor_class, *args|
+  executors.each do |executor_class, *args|
     x.report(executor_class.to_s) do
       if args.empty?
         executor = executor_class.new

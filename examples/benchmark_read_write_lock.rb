@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$: << File.expand_path('../../lib', __FILE__)
+#$: << File.expand_path('../../lib', __FILE__)
 
 require 'concurrent/atomic/read_write_lock'
 require 'benchmark'

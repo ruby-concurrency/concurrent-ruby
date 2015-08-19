@@ -1,4 +1,5 @@
 require 'concurrent/errors'
+require 'concurrent/configuration'
 require 'concurrent/ivar'
 require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/executor/executor'

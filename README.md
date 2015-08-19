@@ -47,7 +47,7 @@
 
 MRI 1.9.3, 2.0, 2.1, 2.2, JRuby (1.9 mode), and Rubinius 2.x are supported.
 This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
-Java 8 is required for JRuby (Java 7 support is deprecated in version 0.9 and will be removed in 1.0).
+Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs will be supported.
 
 ## Features & Documentation
 

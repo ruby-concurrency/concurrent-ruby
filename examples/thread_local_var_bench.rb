@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-$: << File.expand_path('../../lib', __FILE__)
+#$: << File.expand_path('../../lib', __FILE__)
 
 require 'concurrent'
 require 'concurrent/atomic/thread_local_var'

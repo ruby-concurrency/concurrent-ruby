@@ -1,5 +1,5 @@
-require 'concurrent/configuration'
-require 'concurrent/executor/executor_service'
+# This file has circular require issues. For now we assume all
+# necessary dependencies have been required already.
 
 module Concurrent
 
