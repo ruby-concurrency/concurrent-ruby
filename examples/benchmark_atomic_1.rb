@@ -109,7 +109,7 @@ end
 
 $tg = nil
 if $conf[:lock] == "atomic"
-  $atom = Concurrent::Atomic.new(0)
+  $atom = Concurrent::AtomicReference.new(0)
   $tg = para_prepare do |diff|
     $atom.update do |x|
       slow_down
