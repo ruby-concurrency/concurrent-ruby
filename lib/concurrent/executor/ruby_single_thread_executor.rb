@@ -1,5 +1,5 @@
 require 'thread'
-require 'concurrent/collection/non_concurrent_priority_queue'
+require 'concurrent/priority_blocking_queue'
 require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/executor/serial_executor_service'
 require 'concurrent/synchronization/object'
@@ -15,30 +15,6 @@ module Concurrent
 
     STOP_JOB = Job.new(-Infinity, :stop, :stop).freeze
     private_constant :STOP_JOB
-
-    class PriorityBlockingQueue < Synchronization::Object
-      def initialize
-        super()
-        @queue = Concurrent::Collection::NonConcurrentPriorityQueue.new(order: :max)
-        ensure_ivar_visibility!
-      end
-
-      def clear
-        synchronize { @queue.clear }
-      end
-
-      def push(item)
-        synchronize { @queue.push(item) }
-      end
-
-      def pop
-        loop do
-          item = synchronize { @queue.pop }
-          break item if item
-        end
-      end
-    end
-    private_constant :PriorityBlockingQueue
 
     # @!macro single_thread_executor_method_initialize
     def initialize(opts = {})
@@ -58,7 +34,7 @@ module Concurrent
 
     def ns_initialize(opts)
       @prioritized = opts.fetch(:prioritize, false)
-      @queue = @prioritized ? PriorityBlockingQueue.new : Queue.new
+      @queue = @prioritized ? Concurrent::PriorityBlockingQueue.new(order: :max) : Queue.new
       @thread = nil
       @fallback_policy = opts.fetch(:fallback_policy, :discard)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
