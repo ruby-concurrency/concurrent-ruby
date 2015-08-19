@@ -67,6 +67,9 @@ module Concurrent
     #   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
     #     tasks that are received when the queue size has reached
     #     `max_queue` or the executor has shut down
+    #   @option opts [Boolean] :prioritize (false) when true the queue will be configured
+    #     to prioritize waiting tasks. When false tasks will be enqueued in strict
+    #     first in, first out (FIFO) order. See `#prioritize` for more information.
     #  
     #   @raise [ArgumentError] if `:max_threads` is less than one
     #   @raise [ArgumentError] if `:min_threads` is less than zero
@@ -77,5 +80,8 @@ module Concurrent
 
     # @!method initialize(opts = {})
     #   @!macro thread_pool_executor_method_initialize
+
+    # @!method prioritize(priority, *args, &task)
+    #   @!macro executor_service_method_prioritize
   end
 end

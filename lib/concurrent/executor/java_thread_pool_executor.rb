@@ -87,6 +87,15 @@ if Concurrent.on_jruby?
         super && !@executor.isTerminating
       end
 
+      # @!macro executor_service_method_prioritized_question
+      def prioritized?
+        @prioritized
+      end
+
+      # @!method prioritize(priority, *args, &task)
+      #   @!macro executor_service_method_prioritize
+      public :prioritize
+
       private
 
       def ns_initialize(opts)
@@ -95,6 +104,7 @@ if Concurrent.on_jruby?
         idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
         @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
         @fallback_policy = opts.fetch(:fallback_policy, :abort)
+        @prioritized = opts.fetch(:prioritize, false)
 
         raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if max_length < DEFAULT_MIN_POOL_SIZE
         raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if max_length > DEFAULT_MAX_POOL_SIZE
@@ -102,7 +112,9 @@ if Concurrent.on_jruby?
         raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if min_length > max_length
         raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.include?(@fallback_policy)
 
-        if @max_queue == 0
+        if @prioritized
+          queue = java.util.concurrent.PriorityBlockingQueue.new
+        elsif @max_queue == 0
           queue = java.util.concurrent.LinkedBlockingQueue.new
         else
           queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)

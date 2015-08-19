@@ -10,10 +10,32 @@ module Concurrent
   class AbstractExecutorService < Synchronization::Object
     include ExecutorService
 
+    class Job
+      attr_reader :priority
+
+      def initialize(priority, args, task)
+        @priority = priority
+        @args = args
+        @task = task
+      end
+
+      def run
+        @task.call(*@args)
+      end
+
+      def <=>(other)
+        @priority <=> other.priority
+      end 
+    end
+    private_constant :Job
+
+    Infinity = Float::INFINITY
+    private_constant :Infinity
+
     # The set of possible fallback policies that may be set at thread pool creation.
     FALLBACK_POLICIES = [:abort, :discard, :caller_runs].freeze
 
-    # @!macro executor_service_attr_reader_fallback_policy
+    # @!macro thread_pool_executor_attr_reader_fallback_policy
     attr_reader :fallback_policy
 
     # Create a new thread pool.
@@ -67,10 +89,10 @@ module Concurrent
     # Handler which executes the `fallback_policy` once the queue size
     # reaches `max_queue`.
     #
-    # @param [Array] args the arguments to the task which is being handled.
+    # @param [Concurrent::AbstractExecutorService::Job] job the job which is being handled
     #
     # @!visibility private
-    def handle_fallback(*args)
+    def handle_fallback(job)
       case fallback_policy
       when :abort
         raise RejectedExecutionError
@@ -78,7 +100,7 @@ module Concurrent
         false
       when :caller_runs
         begin
-          yield(*args)
+          job.run
         rescue => ex
           # let it fail
           log DEBUG, ex
@@ -89,7 +111,7 @@ module Concurrent
       end
     end
 
-    def ns_execute(*args, &task)
+    def ns_execute(job)
       raise NotImplementedError
     end
 
