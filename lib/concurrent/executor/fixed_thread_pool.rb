@@ -36,6 +36,9 @@ module Concurrent
   #   The number of tasks that have been completed by the pool since construction.
   #   @return [Integer] The number of tasks that have been completed by the pool since construction.
 
+  # @!macro [new] thread_pool_executor_attr_reader_fallback_policy
+  #   @return [Symbol] The fallback policy in effect. Either `:abort`, `:discard`, or `:caller_runs`.
+
   # @!macro [new] thread_pool_executor_attr_reader_idletime
   #   The number of seconds that a thread may be idle before being reclaimed.
   #   @return [Integer] The number of seconds that a thread may be idle before being reclaimed.
@@ -87,6 +90,9 @@ module Concurrent
   #   @!attribute [r] completed_task_count
   #     @!macro thread_pool_executor_attr_reader_completed_task_count
   #
+  #   @!attribute [r] fallback_policy
+  #     @!macro thread_pool_executor_attr_reader_fallback_policy
+  #
   #   @!attribute [r] idletime
   #     @!macro thread_pool_executor_attr_reader_idletime
   #
@@ -104,6 +110,9 @@ module Concurrent
   #
   #   @!method can_overflow?
   #     @!macro executor_service_method_can_overflow_question
+  #
+  #   @!method prioritized?
+  #     @!macro executor_service_method_prioritized_question
 
 
 
@@ -122,6 +131,8 @@ module Concurrent
   #     will stop the thread pool when the application exits. See below for more information
   #     on shutting down thread pools.
   #   * `fallback_policy`: The policy defining how rejected tasks are handled.
+  #   * `prioritize`: Whether or not tasks waiting in the queue can be given relative
+  #     priority with respect to one another (default: false).
   #
   #   Three fallback policies are supported:
   #
@@ -180,6 +191,7 @@ module Concurrent
   #   The API and behavior of this class are based on Java's `FixedThreadPool`
   #
   # @!macro thread_pool_options
+  # @!macro abstract_executor_service_public_api
   class FixedThreadPool < ThreadPoolExecutor
 
     # @!macro [attach] fixed_thread_pool_method_initialize
@@ -189,6 +201,9 @@ module Concurrent
     #   @param [Integer] num_threads the number of threads to allocate
     #   @param [Hash] opts the options defining pool behavior.
     #   @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
+    #   @option opts [Boolean] :prioritize (false) when true the queue will be configured
+    #     to prioritize waiting tasks. When false tasks will be enqueued in strict
+    #     first in, first out (FIFO) order. See `#prioritize` for more information.
     #
     #   @raise [ArgumentError] if `num_threads` is less than or equal to zero
     #   @raise [ArgumentError] if `fallback_policy` is not a known policy
@@ -197,10 +212,14 @@ module Concurrent
     def initialize(num_threads, opts = {})
       raise ArgumentError.new('number of threads must be greater than zero') if num_threads.to_i < 1
       defaults  = { max_queue:   DEFAULT_MAX_QUEUE_SIZE,
-                    idletime:    DEFAULT_THREAD_IDLETIMEOUT }
+                    idletime:    DEFAULT_THREAD_IDLETIMEOUT,
+                    prioritize:  false }
       overrides = { min_threads: num_threads,
                     max_threads: num_threads }
       super(defaults.merge(opts).merge(overrides))
     end
+
+    # @!method prioritize(priority, *args, &task)
+    #   @!macro executor_service_method_prioritize
   end
 end

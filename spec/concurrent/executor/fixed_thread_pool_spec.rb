@@ -1,4 +1,5 @@
 require_relative 'thread_pool_shared'
+require_relative 'prioritized_thread_pool_shared'
 
 module Concurrent
 
@@ -9,10 +10,15 @@ module Concurrent
 
     after(:each) do
       subject.kill
-      sleep(0.1)
+      subject.wait_for_termination(0.1)
     end
 
     it_should_behave_like :thread_pool
+
+    context 'when prioritized' do
+      subject { described_class.new(1, prioritize: true) }
+      it_behaves_like :prioritized_thread_pool
+    end
 
     context '#initialize default values' do
 

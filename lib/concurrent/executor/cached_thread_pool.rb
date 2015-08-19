@@ -24,11 +24,15 @@ module Concurrent
   # The API and behavior of this class are based on Java's `CachedThreadPool`
   #
   # @!macro thread_pool_options
+  # @!macro abstract_executor_service_public_api
   class CachedThreadPool < ThreadPoolExecutor
 
     # @!macro [attach] cached_thread_pool_method_initialize
     #
     #   Create a new thread pool.
+    #
+    #   A `CachedThreadPool` cannot be prioritized as the number of threads in the
+    #   pool will grow without bound.
     #
     #   @param [Hash] opts the options defining pool behavior.
     #   @option opts [Symbol] :fallback_policy (`:abort`) the fallback policy
@@ -40,8 +44,15 @@ module Concurrent
       defaults  = { idletime:    DEFAULT_THREAD_IDLETIMEOUT }
       overrides = { min_threads: 0,
                     max_threads: DEFAULT_MAX_POOL_SIZE,
-                    max_queue:   DEFAULT_MAX_QUEUE_SIZE }
+                    max_queue:   DEFAULT_MAX_QUEUE_SIZE,
+                    prioritize:  false }
       super(defaults.merge(opts).merge(overrides))
+    end
+
+    # @!macro executor_service_method_prioritized_question
+    # Always returns false.
+    def prioritized?
+      false
     end
 
     private

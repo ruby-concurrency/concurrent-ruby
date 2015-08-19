@@ -1,6 +1,8 @@
 require 'thread'
+require 'concurrent/priority_blocking_queue'
 require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/executor/serial_executor_service'
+require 'concurrent/synchronization/object'
 
 module Concurrent
 
@@ -11,15 +13,28 @@ module Concurrent
   class RubySingleThreadExecutor < RubyExecutorService
     include SerialExecutorService
 
+    STOP_JOB = Job.new(-Infinity, :stop, :stop).freeze
+    private_constant :STOP_JOB
+
     # @!macro single_thread_executor_method_initialize
     def initialize(opts = {})
       super
     end
 
+    # @!macro executor_service_method_prioritized_question
+    def prioritized?
+      @prioritized
+    end
+
+    # @!method prioritize(priority, *args, &task)
+    #   @!macro executor_service_method_prioritize
+    public :prioritize
+
     private
 
     def ns_initialize(opts)
-      @queue = Queue.new
+      @prioritized = opts.fetch(:prioritize, false)
+      @queue = @prioritized ? Concurrent::PriorityBlockingQueue.new(order: :max) : Queue.new
       @thread = nil
       @fallback_policy = opts.fetch(:fallback_policy, :discard)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
@@ -27,14 +42,14 @@ module Concurrent
     end
 
     # @!visibility private
-    def ns_execute(*args, &task)
+    def ns_execute(job)
       supervise
-      @queue << [args, task]
+      @queue.push(job)
     end
 
     # @!visibility private
     def ns_shutdown_execution
-      @queue << :stop
+      @queue.push(STOP_JOB)
       stopped_event.set unless alive?
     end
 
@@ -65,10 +80,10 @@ module Concurrent
     # @!visibility private
     def work
       loop do
-        task = @queue.pop
-        break if task == :stop
+        job = @queue.pop
+        break if job == STOP_JOB
         begin
-          task.last.call(*task.first)
+          job.run
         rescue => ex
           # let it fail
           log DEBUG, ex

@@ -17,6 +17,41 @@ module Concurrent
   #
   #   @raise [ArgumentError] if no task is given
 
+  # @!macro [new] executor_service_method_prioritize
+  #
+  #   Submit a prioritized task to the executor for asynchronous processing.
+  #   Tasks will be enqueued in priority order so that tasks with higher
+  #   priority will be executed before tasks with a lower priority.
+  #
+  #   If the queue is empty when a task is post or the pool is capable of
+  #   adding additional threads then prioritization is irrelevant. Tasks
+  #   will be passed to a thread for execution as soon as they are post. When
+  #   the pool is unable to add more threads due to configuration constraints
+  #   and tasks are backing up in the queue then prioritization is important.
+  #   In this situation, tasks with a higher priority will move ahead of tasks
+  #   with a lower priority in the queue.
+  #
+  #   The order in which tasks of the same priority are enqueued with respect
+  #   to one another is undefined.
+  #
+  #   The executor must be configured for prioritization when it is created
+  #   otherwise the `priority` argument is ignored. In that case this
+  #   method becomes the equivalent or the `#post` method.
+  #
+  #   When an executor is configured for prioritization the `#post` method
+  #   posts its tasks with a priority of zero.
+  #
+  #   @param [Fixnum] priority the relative priority of this task with respect
+  #     to all other tasks in the queue
+  #   @param [Array] args zero or more arguments to be passed to the task
+  #
+  #   @yield the asynchronous task to perform
+  #
+  #   @return [Boolean] `true` if the task is queued, `false` if the executor
+  #     is not running
+  #
+  #   @raise [ArgumentError] if no task is given
+
   # @!macro [new] executor_service_method_left_shift
   #
   #   Submit a task to the executor for asynchronous processing.
@@ -39,6 +74,13 @@ module Concurrent
   #     will be post in the order they are received and no two operations may
   #     occur simultaneously. Else false.
 
+  # @!macro [new] executor_service_method_prioritized_question
+  #
+  #   Does this executor allow tasks to be ordered based on a given priority?
+  #
+  #   @return [Boolean] True if the executor provides the caller the ability
+  #     to influence the prioritization of operations post to it. Else false.
+
   ###################################################################
 
   # @!macro [new] executor_service_public_api
@@ -54,11 +96,11 @@ module Concurrent
   #
   #   @!method serialized?
   #     @!macro executor_service_method_serialized_question
+  #
+  #   @!method prioritized?
+  #     @!macro executor_service_method_prioritized_question
 
   ###################################################################
-
-  # @!macro [new] executor_service_attr_reader_fallback_policy
-  #   @return [Symbol] The fallback policy in effect. Either `:abort`, `:discard`, or `:caller_runs`.
 
   # @!macro [new] executor_service_method_shutdown
   #
@@ -123,9 +165,6 @@ module Concurrent
   #
   #   @!macro executor_service_public_api
   #
-  #   @!attribute [r] fallback_policy
-  #     @!macro executor_service_attr_reader_fallback_policy
-  #
   #   @!method shutdown
   #     @!macro executor_service_method_shutdown
   #
@@ -179,6 +218,13 @@ module Concurrent
     #
     # @note Always returns `false`
     def serialized?
+      false
+    end
+
+    # @!macro executor_service_method_prioritized_question
+    #
+    # @note Always returns `false`
+    def prioritized?
       false
     end
   end

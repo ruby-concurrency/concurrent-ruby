@@ -35,6 +35,9 @@ module Concurrent
     #   @option opts [Symbol] :fallback_policy (:discard) the policy for
     #     handling new tasks that are received when the queue size has
     #     reached `max_queue` or after the executor has shut down
+    #   @option opts [Boolean] :prioritize (false) when true the queue will be configured
+    #     to prioritize waiting tasks. When false tasks will be enqueued in strict
+    #     first in, first out (FIFO) order. See `#prioritize` for more information.
     #
     #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html
     #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html
@@ -42,5 +45,8 @@ module Concurrent
 
     # @!method initialize(opts = {})
     #   @!macro single_thread_executor_method_initialize
+
+    # @!method prioritize(priority, *args, &task)
+    #   @!macro executor_service_method_prioritize
   end
 end

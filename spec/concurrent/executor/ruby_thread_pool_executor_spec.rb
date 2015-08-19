@@ -1,4 +1,5 @@
 require_relative 'thread_pool_executor_shared'
+require_relative 'prioritized_thread_pool_shared'
 
 module Concurrent
 
@@ -6,11 +7,11 @@ module Concurrent
 
     after(:each) do
       subject.kill
-      sleep(0.1)
+      subject.wait_for_termination(0.1)
     end
 
     subject do
-      RubyThreadPoolExecutor.new(
+      described_class.new(
         min_threads: 2,
         max_threads: 5,
         idletime: 60,
@@ -23,12 +24,17 @@ module Concurrent
 
     it_should_behave_like :thread_pool_executor
 
+    context 'when prioritized' do
+      subject { described_class.new(min_threads: 1, max_threads: 1, prioritize: true) }
+      it_behaves_like :prioritized_thread_pool
+    end
+
     context '#remaining_capacity' do
 
       let!(:expected_max){ 100 }
 
       subject do
-        RubyThreadPoolExecutor.new(
+        described_class.new(
           min_threads: 10,
           max_threads: 20,
           idletime: 60,
