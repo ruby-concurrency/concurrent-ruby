@@ -11,17 +11,18 @@ module Concurrent
     end
 
     it 'returns the global io executor when :executor is :io' do
-      expect(Concurrent).to receive(:global_io_executor).and_return(:io_executor)
-      Executor.executor_from_options(executor: :io)
+      executor = Executor.executor_from_options(executor: :io)
+      expect(executor).to eq Concurrent.global_io_executor
     end
 
     it 'returns the global fast executor when :executor is :fast' do
-      expect(Concurrent).to receive(:global_fast_executor).and_return(:fast_executor)
-      Executor.executor_from_options(executor: :fast)
+      executor = Executor.executor_from_options(executor: :fast)
+      expect(executor).to eq Concurrent.global_fast_executor
     end
 
     it 'returns an immediate executor when :executor is :immediate' do
       executor = Executor.executor_from_options(executor: :immediate)
+      expect(executor).to be_a Concurrent::ImmediateExecutor
     end
 
     it 'raises an exception when :executor is an unrecognized symbol' do
