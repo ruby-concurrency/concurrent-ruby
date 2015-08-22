@@ -1,485 +1,1177 @@
-require_relative 'concern/dereferenceable_shared'
 require_relative 'concern/observable_shared'
 
 module Concurrent
 
   describe Agent do
 
-    let(:executor) { SimpleExecutorService.new }
+    let!(:immediate) { Concurrent::ImmediateExecutor.new }
+    let!(:executor) { Concurrent::SingleThreadExecutor.new }
 
-    subject { Agent.new(0, executor: executor) }
+    context 'initialization' do
 
-    after(:each) do
-      executor.kill
-    end
-
-    let(:observer) do
-      Class.new do
-        attr_reader :value
-        define_method(:update) do |time, value|
-          @value = value
-        end
-      end.new
-    end
-
-    context '#post_off' do
-      subject { Agent.new 2, executor: executor }
-
-      it 'executes post and post-off in order' do
-        subject.post { |v| v + 2 }
-        subject.post_off { |v| v * 3 }
-        subject.await
-        expect(subject.value).to eq 12
-      end
-    end
-
-    context 'behavior' do
-
-      # dereferenceable
-
-      def dereferenceable_subject(value, opts = {})
-        opts = opts.merge(executor: Concurrent::ImmediateExecutor.new)
-        Agent.new(value, opts)
+      it 'sets the initial value' do
+        subject = Agent.new(42)
+        expect(subject.value).to eq 42
       end
 
-      def dereferenceable_observable(opts = {})
-        opts = opts.merge(executor: Concurrent::ImmediateExecutor.new)
-        Agent.new(0, opts)
+      it 'sets the initial error to nil' do
+        subject = Agent.new(42)
+        expect(subject.error).to be nil
       end
 
-      def execute_dereferenceable(subject)
-        subject.post { |value| 10 }
-        sleep(0.1)
+      it 'sets the error mode when given a valid value' do
+        subject = Agent.new(42, error_mode: :fail)
+        expect(subject.error_mode).to eq :fail
       end
 
-      it_should_behave_like :dereferenceable
-
-      # observable
-
-      subject { Agent.new(0) }
-
-      def trigger_observable(observable)
-        observable.post { nil }
-        sleep(0.1)
+      it 'defaults the error mode to :continue when an error handler is given' do
+        subject = Agent.new(42, error_handler: ->(value){ true })
+        expect(subject.error_mode).to eq :continue
       end
 
-      it_should_behave_like :observable
-    end
-
-    context '#initialize' do
-
-      let(:executor) { ImmediateExecutor.new }
-
-      it 'sets the value to the given initial state' do
-        expect(Agent.new(10).value).to eq 10
+      it 'defaults the error mode to :fail when no error handler is given' do
+        subject = Agent.new(42)
+        expect(subject.error_mode).to eq :fail
       end
 
-      it 'uses the executor given with the :executor option' do
-        expect(executor).to receive(:post).with(any_args).and_return(0)
-        agent = Agent.new(0, executor: executor)
-        agent.post { |value| 0 }
-      end
-
-      it 'uses the global io executor when :executor is :io' do
-        expect(Concurrent).to \
-          receive(:global_io_executor).at_least(:once).and_return(executor)
-        agent = Agent.new(0, executor: :io)
-        agent.post { |value| 0 }
-      end
-
-      it 'uses the global fast executor when :executor is :fast' do
-        expect(Concurrent).to \
-          receive(:global_fast_executor).at_least(:once).and_return(executor)
-        agent = Agent.new(0, executor: :fast)
-        agent.post { |value| 0 }
-      end
-
-      it 'uses the global io executor for #post by default' do
-        expect(Concurrent).to \
-          receive(:global_io_executor).at_least(:once).and_return(executor)
-        agent = Agent.new(0)
-        agent.post { |value| 0 }
-      end
-
-      it 'uses the global io executor for #post_off by default' do
-        expect(Concurrent).to \
-          receive(:global_io_executor).at_least(:once).and_return(executor)
-        agent = Agent.new(0)
-        agent.post_off { |value| 0 }
-      end
-    end
-
-    context '#rescue' do
-
-      it 'returns self when a block is given' do
-        a1 = subject
-        a2 = a1.rescue {}
-
-        expect(a2).to be a1
-      end
-
-      it 'returns self when no block is given' do
-        a1 = subject
-        a2 = a1.rescue
-
-        expect(a2).to be a1
-      end
-
-      it 'accepts an exception class as the first parameter' do
+      it 'raises an error when given an invalid error mode' do
         expect {
-          subject.rescue(StandardError) {}
-        }.not_to raise_error
+          Agent.new(42, error_mode: :bogus)
+        }.to raise_error(ArgumentError)
       end
 
-      it 'ignores rescuers without a block' do
-        subject.rescue
-        expect(subject.instance_variable_get(:@rescuers)).to be_empty
-      end
-    end
-
-    context '#validate' do
-
-      it 'returns self when a block is given' do
-        a1 = subject
-        a2 = a1.validate {}
-
-        expect(a2).to be a1
-      end
-
-      it 'returns self when no block is given' do
-        a1 = subject
-        a2 = a1.validate
-
-        expect(a2).to be a1
-      end
-
-      it 'ignores validators without a block' do
-        default_validator = subject.instance_variable_get(:@validator)
-        subject.validate
-        expect(subject.instance_variable_get(:@validator)).to be default_validator
+      it 'sets #failed? to false' do
+        subject = Agent.new(42)
+        expect(subject).to_not be_failed
+        expect(subject).to_not be_stopped
       end
     end
 
-    context '#post' do
+    context 'action processing' do
 
-      it 'adds the given block to the queue' do
-        expect(executor).to receive(:post).with(no_args).exactly(1).times
-        subject.post { sleep(1) }
-        subject.post { nil }
-        subject.post { nil }
-        sleep(0.1)
-        expect(subject.
-               instance_variable_get(:@serialized_execution).
-               instance_variable_get(:@stash).
-               size).to eq 2
+      specify 'the given block will be passed the current value' do
+        actual = nil
+        expected = 0
+        subject = Agent.new(expected)
+        subject.send_via(immediate){|value| actual = value }
+        expect(actual).to eq expected
       end
 
-      it 'does not add to the queue when no block is given' do
-        expect(executor).to receive(:post).with(no_args).exactly(0).times
-        subject.post
-        sleep(0.1)
+      specify 'the given block will be passed any provided arguments' do
+        actual = nil
+        expected = [1, 2, 3, 4]
+        subject = Agent.new(0)
+        subject.send_via(immediate, *expected){|_, *args| actual = args }
+        expect(actual).to eq expected
       end
 
-      it 'works with ImmediateExecutor' do
-        agent = Agent.new(0, executor: ImmediateExecutor.new)
-        agent.post { |old| old + 1 }
-        agent.post { |old| old + 1 }
-        expect(agent.value).to eq 2
+      specify 'the return value will be passed to the validator function' do
+        actual = nil
+        expected = 42
+        validator = ->(new_value){ actual = new_value; true }
+        subject = Agent.new(0, validator: validator)
+        subject.send_via(immediate){ expected }
+        expect(actual).to eq expected
       end
 
-    end
-
-    context '#await' do
-
-      it 'waits until already sent updates are done' do
-        actual = Concurrent::AtomicBoolean.new(false)
-        latch = Concurrent::CountDownLatch.new
-        subject.post { latch.count_down; sleep(0.1); actual.make_true }
-        latch.wait(1)
-        subject.await
-        expect(actual.value).to be true
+      specify 'upon validation the new value will be set to the block return value' do
+        actual = nil
+        expected = 42
+        validator = ->(new_value){ true }
+        subject = Agent.new(0, validator: validator)
+        subject.send_via(immediate){ expected }
+        expect(subject.value).to eq expected
       end
 
-      it 'does not alter the value' do
-        subject.post { |v| v + 1 }
-        subject.await
-        expect(subject.value).to eq 1
-      end
-
-    end
-
-    context 'fulfillment' do
-
-      it 'process each block in the queue' do
-        latch = Concurrent::CountDownLatch.new(3)
-        subject.post { latch.count_down }
-        subject.post { latch.count_down }
-        subject.post { latch.count_down }
-        expect(latch.wait(1)).to be_truthy
-      end
-
-      it 'passes the current value to the handler' do
-        latch = Concurrent::CountDownLatch.new(5)
-        Agent.new(latch.count, executor: executor).post do |i|
-          i.times { latch.count_down }
+      specify 'on success all observers will be notified' do
+        observer_class = Class.new do
+          def initialize(bucket)
+            @bucket = bucket
+          end
+          def update(time, old_value, new_value)
+            @bucket.concat([time, old_value, new_value])
+          end
         end
-        expect(latch.wait(1)).to be_truthy
+
+        bucket = []
+        subject = Agent.new(0)
+        subject.add_observer(observer_class.new(bucket))
+        subject.send_via(immediate){ 42 }
+
+        expect(bucket[0]).to be_a Time
+        expect(bucket[1]).to eq 0
+        expect(bucket[2]).to eq 42
       end
 
-      it 'sets the value to the handler return value on success' do
-        agent = Agent.new(10, executor: Concurrent::ImmediateExecutor.new)
-        expect(agent.value).to eq 10
-        agent.post { 100 }
-        expect(agent.value).to eq 100
+      specify 'any recursive action dispatches will run after the value has been updated' do
+        subject = Agent.new(0)
+
+        subject.send_via(executor, subject) do |v1, a1|
+          expect(v1).to eq 0
+          a1.send_via(executor, a1) do |v2, a2|
+            expect(v2).to eq 1
+            a1.send_via(executor, a2) do |v3, a3|
+              expect(v3).to eq 2
+              3
+            end
+            2
+          end
+          1
+        end
       end
 
-      it 'rejects the handler after timeout reached' do
-        agent = Agent.new(0, timeout: 0.1, executor: executor)
-        agent.post { sleep(1); 10 }
-        sleep(0.2)
-        expect(agent.value).to eq 0
+      specify 'when the action raises an error the value will not change' do
+        expected = 0
+        subject = Agent.new(expected)
+        subject.send_via(immediate){ raise StandardError }
+        expect(subject.value).to eq expected
+      end
+
+      specify 'when the action raises an error the validator will not be called' do
+        validator_called = false
+        validator = ->(new_value){ validator_called = true }
+        subject = Agent.new(0, validator: validator)
+        subject.send_via(immediate){ raise StandareError }
+        expect(validator_called).to be false
+      end
+
+      specify 'when validation returns false the value will not change' do
+        expected = 0
+        validator = ->(new_value){ false }
+        subject = Agent.new(0, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.value).to eq expected
+      end
+
+      specify 'when validation raises an error the value will not change' do
+        expected = 0
+        validator = ->(new_value){ raise StandareError }
+        subject = Agent.new(0, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.value).to eq expected
+      end
+
+      specify 'when the action raises an error the handler will be called' do
+        error_handler_called = false
+        error_handler = ->(agent, exception){ error_handler_called = true }
+        subject = Agent.new(0, error_handler: error_handler)
+        subject.send_via(immediate){ raise StandardError }
+        expect(error_handler_called).to be true
+      end
+
+      specify 'when validation fails the handler will be called' do
+        error_handler_called = false
+        error_handler = ->(agent, exception){ error_handler_called = true }
+        validator = ->(new_value){ false }
+        subject = Agent.new(0, error_handler: error_handler, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(error_handler_called).to be true
+      end
+
+      specify 'when validation raises an error the handler will be called' do
+        error_handler_called = false
+        error_handler = ->(agent, exception){ error_handler_called = true }
+        validator = ->(new_value){ raise StandardError }
+        subject = Agent.new(0, error_handler: error_handler, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(error_handler_called).to be true
       end
     end
 
     context 'validation' do
 
-      it 'processes the validator when present' do
-        latch = Concurrent::CountDownLatch.new(1)
-        subject.validate { latch.count_down; true }
-        subject.post { nil }
-        expect(latch.wait(1)).to be_truthy
-      end
-
-      it 'passes the new value to the validator' do
-        expected = Concurrent::AtomicFixnum.new(0)
-        latch    = Concurrent::CountDownLatch.new(1)
-        subject.validate { |v| expected.value = v; latch.count_down; true }
-        subject.post { 10 }
-        latch.wait(1)
-        expect(expected.value).to eq 10
-      end
-
       it 'sets the new value when the validator returns true' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).validate { true }
-        agent.post { 10 }
-        expect(agent.value).to eq 10
+        expected = 42
+        validator = ->(new_value){ true }
+        subject = Agent.new(0, validator: validator)
+        subject.send_via(immediate){ expected }
+        expect(subject.value).to eq expected
       end
 
-      it 'does not change the value when the validator returns false' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).validate { false }
-        agent.post { 10 }
-        expect(agent.value).to eq 0
+      it 'rejects the new value when the validator returns false' do
+        expected = 0
+        validator = ->(new_value){ false }
+        subject = Agent.new(expected, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.value).to eq expected
       end
 
-      it 'does not change the value when the validator raises an exception' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).validate { raise StandardError }
-        agent.post { 10 }
-        expect(agent.value).to eq 0
+      it 'rejects the new value when the validator raises an error' do
+        expected = 0
+        validator = ->(new_value){ raise StandardError }
+        subject = Agent.new(expected, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.value).to eq expected
+      end
+
+      it 'sets the error when the error mode is :fail and the validator returns false' do
+        validator = ->(new_value){ false }
+        subject = Agent.new(0, error_mode: :fail, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.error).to be_a Agent::ValidationError
+      end
+
+      it 'sets the error when the error mode is :fail and the validator raises an error' do
+        validator = ->(new_value){ raise expected }
+        subject = Agent.new(0, error_mode: :fail, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.error).to be_a Agent::ValidationError
+      end
+
+      it 'does not set an error when the error mode is :continue and the validator returns false' do
+        validator = ->(new_value){ false }
+        subject = Agent.new(0, error_mode: :continue, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.error).to be nil
+      end
+
+      it 'does not set an error when the error mode is :continue and the validator raises an error' do
+        validator = ->(new_value){ raise StandardError }
+        subject = Agent.new(0, error_mode: :continue, validator: validator)
+        subject.send_via(immediate){ 42 }
+        expect(subject.error).to be nil
+      end
+
+      it 'does not trigger observation when validation fails' do
+        observer_class = Class.new do
+          attr_reader :count
+          def initialize
+            @count = 0
+          end
+          def update(time, old_value, new_value)
+            @count += 1
+          end
+        end
+
+        observer = observer_class.new
+        subject = Agent.new(0, validator: ->(new_value){ false })
+        subject.add_observer(observer)
+        subject.send_via(immediate){ 42 }
+
+        expect(observer.count).to eq 0
       end
     end
 
-    context 'rejection' do
+    context 'error handling' do
 
-      it 'calls the first exception block with a matching class' do
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-      rescue(StandardError) { |ex| expected = 1 }.
-        rescue(StandardError) { |ex| expected = 2 }.
-        rescue(StandardError) { |ex| expected = 3 }
-          agent.post { raise StandardError }
-          expect(expected).to eq 1
+      specify 'the agent will be passed to the handler' do
+        actual = nil
+        error_handler = ->(agent, error){ actual = agent }
+        subject = Agent.new(0, error_handler: error_handler)
+        subject.send_via(immediate){ raise StandardError}
+        expect(actual).to eq subject
+      end
+
+      specify 'the exception will be passed to the handler' do
+        expected = StandardError.new
+        actual = nil
+        error_handler = ->(agent, error){ actual = error }
+        subject = Agent.new(0, error_handler: error_handler)
+        subject.send_via(immediate){ raise expected}
+        expect(actual).to eq expected
+      end
+
+      specify 'does not trigger observation' do
+        observer_class = Class.new do
+          attr_reader :count
+          def initialize
+            @count = 0
+          end
+          def update(time, old_value, new_value)
+            @count += 1
+          end
         end
 
-      it 'matches all with a rescue with no class given' do
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-      rescue(LoadError) { |ex| expected = 1 }.
-        rescue { |ex| expected = 2 }.
-        rescue(StandardError) { |ex| expected = 3 }
-          agent.post { raise NoMethodError }
-          expect(expected).to eq 2
+        observer = observer_class.new
+        subject = Agent.new(0)
+        subject.add_observer(observer)
+        subject.send_via(immediate){ raise StandardError }
+
+        expect(observer.count).to eq 0
+      end
+    end
+
+    context 'error mode' do
+
+      context ':continue' do
+
+        it 'does not set an error when the validator returns false' do
+          validator = ->(new_value){ false }
+          subject = Agent.new(0, error_mode: :continue, validator: validator)
+          subject.send_via(immediate){ 42 }
+          expect(subject.error).to be nil
         end
 
-      it 'searches associated rescue handlers in order' do
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-      rescue(ArgumentError) { |ex| expected = 1 }.
-        rescue(LoadError) { |ex| expected = 2 }.
-        rescue(StandardError) { |ex| expected = 3 }
-          agent.post { raise ArgumentError }
-          expect(expected).to eq 1
+        it 'does not set an error when the validator raises an error' do
+          validator = ->(new_value){ raise StandardError }
+          subject = Agent.new(0, error_mode: :continue, validator: validator)
+          subject.send_via(immediate){ 42 }
+          expect(subject.error).to be nil
+        end
 
-          expected = nil
-          agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-        rescue(ArgumentError) { |ex| expected = 1 }.
-          rescue(LoadError) { |ex| expected = 2 }.
-          rescue(StandardError) { |ex| expected = 3 }
-            agent.post { raise LoadError }
-            expect(expected).to eq 2
+        it 'does not set an error when the action raises an error' do
+          subject = Agent.new(0, error_mode: :continue)
+          subject.send_via(immediate){ raise StandardError }
+          expect(subject.error).to be nil
+        end
 
-            expected = nil
-            agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-          rescue(ArgumentError) { |ex| expected = 1 }.
-            rescue(LoadError) { |ex| expected = 2 }.
-            rescue(StandardError) { |ex| expected = 3 }
-              agent.post { raise StandardError }
-              expect(expected).to eq 3
+        it 'does not block further action processing' do
+          expected = 42
+          actual = nil
+          subject = Agent.new(0, error_mode: :continue)
+          subject.send_via(immediate){ raise StandardError }
+          subject.send_via(immediate){ 42 }
+          expect(subject.value).to eq 42
+        end
+
+        it 'sets #failed? to false' do
+          subject = Agent.new(0, error_mode: :continue)
+          subject.send_via(immediate){ raise StandardError }
+          expect(subject).to_not be_failed
+        end
+      end
+
+      context ':fail' do
+
+        it 'sets the error when the validator returns false' do
+          validator = ->(new_value){ false }
+          subject = Agent.new(0, error_mode: :fail, validator: validator)
+          subject.send_via(immediate){ 42 }
+          expect(subject.error).to be_a Agent::ValidationError
+        end
+
+        it 'sets the error when the validator raises an error' do
+          validator = ->(new_value){ raise expected }
+          subject = Agent.new(0, error_mode: :fail, validator: validator)
+          subject.send_via(immediate){ 42 }
+          expect(subject.error).to be_a Agent::ValidationError
+        end
+
+        it 'sets the error when the action raises an error' do
+          expected = StandardError.new
+          subject = Agent.new(0, error_mode: :fail)
+          subject.send_via(immediate){ raise expected }
+          expect(subject.error).to eq expected
+        end
+
+        it 'blocks all further action processing until a restart' do
+          latch = Concurrent::CountDownLatch.new
+          expected = 42
+
+          subject = Agent.new(0, error_mode: :fail)
+          subject.send_via(immediate){ raise StandardError }
+          subject.send_via(executor){ latch.count_down; expected }
+
+          latch.wait(0.1)
+          expect(subject.value).to eq 0
+
+          subject.restart(42)
+          latch.wait(0.1)
+          sleep(0.1)
+          expect(subject.value).to eq expected
+        end
+
+        it 'sets #failed? to true' do
+          subject = Agent.new(0, error_mode: :fail)
+          subject.send_via(immediate){ raise StandardError }
+          expect(subject).to be_failed
+        end
+      end
+    end
+
+    context 'nested actions' do
+
+      specify 'occur in the order they ar post' do
+        actual = []
+        expected = [0, 1, 2, 3, 4]
+        latch = Concurrent::CountDownLatch.new
+        subject = Agent.new(0)
+
+        subject.send_via(executor, subject) do |v1, a1|
+          a1.send_via(executor, a1) do |v2, a2|
+            a1.send_via(executor, a2) do |v3, a3|
+              a1.send_via(executor, a3) do |v4, a4|
+                a1.send_via(executor, a4) do |v5, a5|
+                  actual << v5; latch.count_down
+                end
+                actual << v4; v4 + 1
+              end
+              actual << v3; v3 + 1
             end
-
-      it 'passes the exception object to the matched block' do
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-      rescue(ArgumentError) { |ex| expected = ex }.
-        rescue(LoadError) { |ex| expected = ex }.
-        rescue(StandardError) { |ex| expected = ex }
-          agent.post { raise StandardError }
-          expect(expected).to be_a(StandardError)
+            actual << v2; v2 + 1
+          end
+          actual << v1; v1 + 1
         end
 
-      it 'ignores rescuers without a block' do
-        expected = nil
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-      rescue(StandardError).
-        rescue(StandardError) { |ex| expected = ex }
-          agent.post { raise StandardError }
-          expect(expected).to be_a(StandardError)
+        latch.wait(2)
+        expect(actual).to eq expected
+      end
+
+      specify 'work with immediate execution' do
+        actual = []
+        expected = [0, 1, 2]
+        subject = Agent.new(0)
+
+        subject.send_via(immediate) do |v1|
+          subject.send_via(immediate) do |v2|
+            subject.send_via(immediate) do |v3|
+              actual << v3
+            end
+            actual << v2; v2 + 1
+          end
+          actual << v1; v1 + 1
         end
 
-      it 'supresses the exception if no rescue matches' do
-        expect {
-          agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).
-      rescue(ArgumentError) { |ex| @expected = ex }.
-        rescue(NotImplementedError) { |ex| @expected = ex }.
-        rescue(NoMethodError) { |ex| @expected = ex }
-          agent.post { raise StandardError }
-        }.not_to raise_error
-        end
-
-      it 'suppresses exceptions thrown from rescue handlers' do
-        expect {
-          agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new).rescue(StandardError) { raise StandardError }
-          agent.post { raise ArgumentError }
-        }.not_to raise_error
+        expect(actual).to eq expected
       end
     end
 
-    context 'observation' do
+    context 'posting' do
 
-      it 'notifies all observers when the value changes' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
-        agent.add_observer(observer)
-        agent.post { 10 }
-        expect(observer.value).to eq 10
+      context 'with #send' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.send{ nil }).to be true
+        end
+
+        it 'returns false when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect(subject.send{ nil }).to be false
+        end
+
+        it 'posts to the global fast executor' do
+          expect(Concurrent.global_fast_executor).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.send{ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.send{ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
       end
 
-      it 'does not notify removed observers when the value changes' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
-        agent.add_observer(observer)
-        agent.delete_observer(observer)
-        agent.post { 10 }
-        expect(observer.value).to be_nil
+      context 'with #send!' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.send!{ nil }).to be true
+        end
+
+        it 'raises an error when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect {
+            subject.send!{ nil }
+          }.to raise_error(Agent::Error)
+        end
+
+        it 'posts to the global fast executor' do
+          expect(Concurrent.global_fast_executor).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.send!{ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.send!{ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
       end
 
-      it 'does not notify observers when validation fails' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
-        agent.validate { false }
-        agent.add_observer(observer)
-        agent.post { 10 }
-        expect(observer.value).to be_nil
+      context 'with #send_off' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.send_off{ nil }).to be true
+        end
+
+        it 'returns false when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect(subject.send_off{ nil }).to be false
+        end
+
+        it 'posts to the global io executor' do
+          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.send_off{ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.send_off{ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
       end
 
-      it 'does not notify observers when the handler raises an exception' do
-        agent = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
-        agent.add_observer(observer)
-        agent.post { raise StandardError }
-        expect(observer.value).to be_nil
+      context 'with #send_off!' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.send_off!{ nil }).to be true
+        end
+
+        it 'raises an error when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect {
+            subject.send_off!{ nil }
+          }.to raise_error(Agent::Error)
+        end
+
+        it 'posts to the global io executor' do
+          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.send_off!{ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.send_off!{ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
+      end
+
+      context 'with #send_via' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.send_via(immediate){ nil }).to be true
+        end
+
+        it 'returns false when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect(subject.send_via(immediate){ nil }).to be false
+        end
+
+        it 'posts to the given executor' do
+          expect(immediate).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.send_via(immediate){ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
+      end
+
+      context 'with #send_via!' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.send_via!(immediate){ nil }).to be true
+        end
+
+        it 'raises an error when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect {
+            subject.send_via!(immediate){ nil }
+          }.to raise_error(Agent::Error)
+        end
+
+        it 'posts to the given executor' do
+          expect(immediate).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.send_via!(immediate){ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.send_via!(executor){ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
+      end
+
+      context 'with #post' do
+
+        it 'returns true when the job is post' do
+          subject = Agent.new(0)
+          expect(subject.post{ nil }).to be true
+        end
+
+        it 'returns false when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect(subject.post{ nil }).to be false
+        end
+
+        it 'posts to the global io executor' do
+          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject.post{ nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject.post{ sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
+      end
+
+      context 'with #<<' do
+
+        it 'returns self when the job is post' do
+          subject = Agent.new(0)
+          expect(subject << proc { nil }).to be subject
+        end
+
+        it 'returns self when #failed?' do
+          subject = Agent.new(0)
+          allow(subject).to receive(:failed?).and_return(true)
+          expect(subject << proc { nil }).to be subject
+        end
+
+        it 'posts to the global io executor' do
+          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
+          subject = Agent.new(0)
+          subject << proc { nil }
+        end
+
+        it 'does not wait for the action to process' do
+          job_done = false
+          subject = Agent.new(0)
+          subject << proc { sleep(5); job_done = true }
+          expect(job_done).to be false
+        end
       end
     end
 
-    context 'clojure-like behaviour' do
-      it 'does not block dereferencing when updating the value' do
-        continue = IVar.new
-        agent    = Agent.new(0, executor: executor)
-        agent.post { |old| old + continue.value }
-        sleep 0.1
-        expect(agent.value).to eq 0
-        continue.set 1
-        agent.await
-        expect(agent.value).to eq 1
-        sleep 0.1
+    context '#restart' do
+
+      context 'when #failed?' do
+
+        it 'raises an error if the new value is not valid' do
+          subject = Agent.new(0, error_mode: :fail, validator: ->(new_value){ false })
+          subject.send_via(immediate){ raise StandardError }
+
+          expect {
+            subject.restart(0)
+          }.to raise_error(Agent::Error)
+        end
+
+        it 'sets the new value' do
+          subject = Agent.new(0, error_mode: :fail)
+          subject.send_via(immediate){ raise StandardError }
+
+          subject.restart(42)
+          expect(subject.value).to eq 42
+        end
+
+        it 'clears the error' do
+          subject = Agent.new(0, error_mode: :fail)
+          subject.send_via(immediate){ raise StandardError }
+
+          subject.restart(42)
+          expect(subject.error).to be nil
+        end
+
+        it 'sets #failed? to true' do
+          subject = Agent.new(0, error_mode: :fail)
+          subject.send_via(immediate){ raise StandardError }
+
+          subject.restart(42)
+          expect(subject).to_not be_failed
+        end
+
+        it 'removes all actions from the queue when :clear_actions is true' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ latch.wait; raise StandardError }
+          5.times{ subject.send_via(executor){ nil } }
+
+          queue = subject.instance_variable_get(:@queue)
+          expect(queue.size).to be > 0
+
+          latch.count_down
+          10.times{ break if subject.failed?; sleep(0.1) }
+
+          subject.restart(42, clear_actions: true)
+          expect(queue).to be_empty
+        end
+
+        it 'does not clear the action queue when :clear_actions is false' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ latch.wait; raise StandardError }
+          5.times{ subject.send_via(executor){ nil } }
+
+          queue = subject.instance_variable_get(:@queue)
+          size = queue.size
+          expect(size).to be > 0
+
+          latch.count_down
+          10.times{ break if subject.failed?; sleep(0.1) }
+
+          subject.restart(42, clear_actions: false)
+          expect(queue.size).to eq size-1
+        end
+
+        it 'does not clear the action queue when :clear_actions is not given' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ latch.wait; raise StandardError }
+          5.times{ subject.send_via(executor){ nil } }
+
+          queue = subject.instance_variable_get(:@queue)
+          size = queue.size
+          expect(size).to be > 0
+
+          latch.count_down
+          10.times{ break if subject.failed?; sleep(0.1) }
+
+          subject.restart(42)
+          expect(queue.size).to eq size-1
+        end
+
+        it 'resumes action processing if actions are enqueued' do
+          count = 5
+          latch = Concurrent::CountDownLatch.new
+          finish_latch = Concurrent::CountDownLatch.new(5)
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ latch.wait; raise StandardError }
+          count.times{ subject.send_via(executor){ finish_latch.count_down } }
+
+          queue = subject.instance_variable_get(:@queue)
+          size = queue.size
+          expect(size).to be > 0
+
+          latch.count_down
+          10.times{ break if subject.failed?; sleep(0.1) }
+
+          subject.restart(42, clear_actions: false)
+          expect(finish_latch.wait(5)).to be true
+        end
+
+        it 'does not trigger observation' do
+          observer_class = Class.new do
+            attr_reader :count
+            def initialize
+              @count = 0
+            end
+            def update(time, old_value, new_value)
+              @count += 1
+            end
+          end
+
+          observer = observer_class.new
+          subject = Agent.new(0, error_mode: :fail)
+          subject.add_observer(observer)
+          subject.send_via(immediate){ raise StandardError }
+          subject.restart(42)
+
+          expect(observer.count).to eq 0
+        end
       end
 
-      it 'does not allow to execute two updates at the same time' do
-        agent     = Agent.new(0, executor: executor)
-        continue1 = IVar.new
-        continue2 = IVar.new
-        f1        = f2 = false
-        agent.post { |old| f1 = true; old + continue1.value }
-        agent.post { |old| f2 = true; old + continue2.value }
+      context 'when not #failed?' do
 
-        sleep 0.1
-        expect(f1).to eq true
-        expect(f2).to eq false
-        expect(agent.value).to eq 0
-
-        continue1.set 1
-        sleep 0.1
-        expect(f1).to eq true
-        expect(f2).to eq true
-        expect(agent.value).to eq 1
-
-        continue2.set 1
-        sleep 0.1
-        expect(f1).to eq true
-        expect(f2).to eq true
-        expect(agent.value).to eq 2
+        it 'raises an error' do
+          subject = Agent.new(0)
+          expect {
+            subject.restart(0)
+          }.to raise_error(Agent::Error)
+        end
       end
-
-      it 'waits with sending functions to other agents until update is done'
     end
 
-    context 'aliases' do
+    context 'waiting' do
 
-      it 'aliases #deref for #value' do
-        expect(Agent.new(10, executor: executor).deref).to eq 10
+      context 'the await job' do
+
+        it 'does not change the value' do
+          expected = 42
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(0.1); expected }
+          subject.await_for(1)
+          expect(subject.value).to eq expected
+        end
+
+        it 'does not trigger observers' do
+          observer_class = Class.new do
+            attr_reader :count
+            def initialize
+              @count = 0
+            end
+            def update(time, old_value, new_value)
+              @count += 1
+            end
+          end
+
+          observer = observer_class.new
+          subject = Agent.new(0)
+          subject.add_observer(observer)
+          subject.send_via(executor){ sleep(0.1); 42 }
+          subject.await_for(1)
+
+          expect(observer.count).to eq 1
+        end
+
+        it 'waits for nested actions' do
+          bucket = []
+          latch = Concurrent::CountDownLatch.new
+          executor = Concurrent::FixedThreadPool.new(3)
+          subject = Agent.new(0)
+
+          subject.send_via(executor) do
+            subject.send_via(executor) do
+              subject.send_via(executor) do
+                bucket << 3
+              end
+              latch.count_down
+              sleep(0.2)
+              bucket << 2
+            end
+            bucket << 1
+          end
+          latch.wait
+
+          subject.await_for(5)
+          expect(bucket).to eq [1, 2, 3]
+        end
       end
 
-      it 'aliases #validates for :validate' do
-        latch = Concurrent::CountDownLatch.new(1)
-        subject.validates { latch.count_down; true }
-        subject.post { nil }
-        expect(latch.wait(1)).to be_truthy
+      context 'with #await' do
+
+        it 'returns self when there are no pending actions' do
+          subject = Agent.new(0)
+          expect(subject.await).to eq subject
+          expect(subject.await.value).to eq 0
+        end
+
+        it 'does not block on actions from other threads' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0)
+          t = Thread.new do
+            subject.send_via(executor){ sleep }
+            latch.count_down
+          end
+
+          latch.wait(0.1)
+          ok = subject.await
+          t.kill
+
+          expect(ok).to be_truthy
+        end
+
+        it 'blocks indefinitely' do
+          start = Concurrent.monotonic_time
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          expect(subject.await).to be_truthy
+          expect(Concurrent.monotonic_time - start).to be > 0.5
+        end
+
+        it 'returns true when all prior actions have processed' do
+          count = 0
+          expected = 5
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          expected.times{ subject.send_via(executor){ count += 1 } }
+          subject.await
+          expect(count).to eq expected
+        end
+
+        it 'blocks forever if restarted with :clear_actions true', notravis: true do
+          pending('the timing is nearly impossible'); fail
+          subject = Agent.new(0, error_mode: :fail)
+
+          t = Thread.new do
+            subject.send_via(executor){ sleep(0.1) }
+            subject.send_via(executor){ raise StandardError }
+            subject.send_via(executor){ nil }
+            Thread.new{ subject.restart(42, clear_actions: true) }
+            subject.await
+          end
+
+          thread_status = t.join(0.3)
+          t.kill
+
+          expect(thread_status).to be nil
+        end
       end
 
-      it 'aliases #validate_with for :validate' do
-        latch = Concurrent::CountDownLatch.new(1)
-        subject.validate_with { latch.count_down; true }
-        subject.post { nil }
-        expect(latch.wait(1)).to be_truthy
+      context 'with #await_for' do
+
+        it 'returns true when there are no pending actions' do
+          subject = Agent.new(0)
+          expect(subject.await_for(1)).to be true
+        end
+
+        it 'does not block on actions from other threads' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0)
+          t = Thread.new do
+            subject.send_via(executor){ sleep }
+            latch.count_down
+          end
+
+          latch.wait(0.1)
+          ok = subject.await_for(0.1)
+          t.kill
+
+          expect(ok).to be true
+        end
+
+        it 'returns true when all prior actions have processed' do
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          5.times{ subject.send_via(executor){ nil } }
+          expect(subject.await_for(10)).to be true
+        end
+
+        it 'returns false on timeout' do
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          5.times{ subject.send_via(executor){ nil } }
+          expect(subject.await_for(0.1)).to be false
+        end
+
+        it 'returns false if restarted with :clear_actions true', notravis: true do
+          pending('the timing is nearly impossible'); fail
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ sleep(0.1) }
+          subject.send_via(executor){ raise StandardError }
+          subject.send_via(executor){ nil }
+
+          t = Thread.new{ subject.restart(42, clear_actions: true) }
+          ok = subject.await_for(0.2)
+
+          expect(ok).to be false
+        end
       end
 
-      it 'aliases #validates_with for :validate' do
-        latch = Concurrent::CountDownLatch.new(1)
-        subject.validates_with { latch.count_down; true }
-        subject.post { nil }
-        expect(latch.wait(1)).to be_truthy
+      context 'with #await_for!' do
+
+        it 'returns true when there are no pending actions' do
+          subject = Agent.new(0)
+          expect(subject.await_for!(1)).to be true
+        end
+
+        it 'does not block on actions from other threads' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0)
+          t = Thread.new do
+            subject.send_via(executor){ sleep }
+            latch.count_down
+          end
+
+          latch.wait(0.1)
+          ok = subject.await_for!(0.1)
+          t.kill
+
+          expect(ok).to be true
+        end
+
+        it 'returns true when all prior actions have processed' do
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          5.times{ subject.send_via(executor){ nil } }
+          expect(subject.await_for!(10)).to be true
+        end
+
+        it 'raises an error on timeout' do
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          5.times{ subject.send_via(executor){ nil } }
+          expect {
+            subject.await_for!(0.1) 
+          }.to raise_error(Concurrent::TimeoutError)
+        end
+
+        it 'raises an error if restarted with :clear_actions true', notravis: true do
+          pending('the timing is nearly impossible'); fail
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ sleep(0.1) }
+          subject.send_via(executor){ raise StandardError }
+          subject.send_via(executor){ nil }
+
+          t = Thread.new{ subject.restart(42, clear_actions: true) }
+
+          expect {
+            subject.await_for!(0.2) 
+          }.to raise_error(Concurrent::TimeoutError)
+        end
       end
 
-      it 'aliases #catch for #rescue' do
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
-        expected = nil
-        agent.catch { expected = true }
-        agent.post { raise StandardError }
-        expect(agent).to be_truthy
+      context 'with #wait' do
+
+        it 'returns true when there are no pending actions and timeout is nil' do
+          subject = Agent.new(0)
+          expect(subject.wait(nil)).to be true
+        end
+
+        it 'returns true when there are no pending actions and a timeout is given' do
+          subject = Agent.new(0)
+          expect(subject.wait(1)).to be true
+        end
+
+        it 'does not block on actions from other threads' do
+          latch = Concurrent::CountDownLatch.new
+          subject = Agent.new(0)
+          t = Thread.new do
+            subject.send_via(executor){ sleep }
+            latch.count_down
+          end
+
+          latch.wait(0.1)
+          ok = subject.wait(0.1)
+          t.kill
+
+          expect(ok).to be true
+        end
+
+        it 'blocks indefinitely when timeout is nil' do
+          start = Concurrent.monotonic_time
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          expect(subject.wait(nil)).to be true
+          expect(Concurrent.monotonic_time - start).to be > 0.5
+        end
+
+        it 'blocks forever when timeout is nil and restarted with :clear_actions true', notravis: true do
+          pending('the timing is nearly impossible'); fail
+          subject = Agent.new(0, error_mode: :fail)
+
+          t = Thread.new do
+            subject.send_via(executor){ sleep(0.1) }
+            subject.send_via(executor){ raise StandardError }
+            subject.send_via(executor){ nil }
+            Thread.new{ subject.restart(42, clear_actions: true) }
+            subject.wait(nil)
+          end
+
+          thread_status = t.join(0.3)
+          t.kill
+
+          expect(thread_status).to be nil
+        end
+
+        it 'returns true when all prior actions have processed' do
+          count = 0
+          expected = 5
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          expected.times{ subject.send_via(executor){ count += 1 } }
+          subject.wait(nil)
+          expect(count).to eq expected
+        end
+
+        it 'returns false on timeout' do
+          subject = Agent.new(0)
+          subject.send_via(executor){ sleep(1) }
+          5.times{ subject.send_via(executor){ nil } }
+          expect(subject.wait(0.1)).to be false
+        end
+
+        it 'returns false when timeout is given and restarted with :clear_actions true', notravis: true do
+          pending('the timing is nearly impossible'); fail
+          subject = Agent.new(0, error_mode: :fail)
+
+          subject.send_via(executor){ sleep(0.1) }
+          subject.send_via(executor){ raise StandardError }
+          subject.send_via(executor){ nil }
+
+          t = Thread.new{ subject.restart(42, clear_actions: true) }
+          ok = subject.wait(0.2)
+
+          expect(ok).to be false
+        end
       end
 
-      it 'aliases #on_error for #rescue' do
-        agent    = Agent.new(0, executor: Concurrent::ImmediateExecutor.new)
-        expected = nil
-        agent.on_error { expected = true }
-        agent.post { raise StandardError }
-        expect(agent).to be_truthy
+      context 'with .await' do
+
+        it 'returns true when all prior actions on all agents have processed' do
+          latch = Concurrent::CountDownLatch.new
+          agents = 3.times.collect{ Agent.new(0) }
+          agents.each{|agent| agent.send_via(executor, latch){|_, l| l.wait(1) } }
+          Thread.new{ latch.count_down }
+          ok = Agent.await(*agents)
+          expect(ok).to be true
+        end
       end
+
+      context 'with .await_for' do
+
+        it 'returns true when there are no pending actions' do
+          agents = 3.times.collect{ Agent.new(0) }
+          ok = Agent.await_for(1, *agents)
+          expect(ok).to be true
+        end
+
+        it 'returns true when all prior actions for all agents have processed' do
+          latch = Concurrent::CountDownLatch.new
+          agents = 3.times.collect{ Agent.new(0) }
+          agents.each{|agent| agent.send_via(executor, latch){|_, l| l.wait(1) } }
+          Thread.new{ latch.count_down }
+          ok = Agent.await_for(1, *agents)
+          expect(ok).to be true
+        end
+
+        it 'returns false on timeout' do
+          agents = 3.times.collect{ Agent.new(0) }
+          agents.each{|agent| agent.send_via(executor){ sleep(0.3) } }
+          ok = Agent.await_for(0.1, *agents)
+          expect(ok).to be false
+        end
+      end
+
+      context 'with await_for!' do
+
+        it 'returns true when there are no pending actions' do
+          agents = 3.times.collect{ Agent.new(0) }
+          ok = Agent.await_for!(1, *agents)
+          expect(ok).to be true
+        end
+
+        it 'returns true when all prior actions for all agents have processed' do
+          latch = Concurrent::CountDownLatch.new
+          agents = 3.times.collect{ Agent.new(0) }
+          agents.each{|agent| agent.send_via(executor, latch){|_, l| l.wait(1) } }
+          Thread.new{ latch.count_down }
+          ok = Agent.await_for!(1, *agents)
+          expect(ok).to be true
+        end
+
+        it 'raises an exception on timeout' do
+          agents = 3.times.collect{ Agent.new(0) }
+          agents.each{|agent| agent.send_via(executor){ sleep(0.3) } }
+          expect {
+            Agent.await_for!(0.1, *agents)
+          }.to raise_error(Concurrent::TimeoutError)
+        end
+      end
+    end
+
+    context :observable do
+
+      subject { Agent.new(0) }
+
+      def trigger_observable(observable)
+        observable.send_via(immediate){ 42 }
+      end
+
+      it_behaves_like :observable
     end
   end
 end

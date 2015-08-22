@@ -94,6 +94,8 @@ module Concurrent
   #   boolean and thread-safe and guaranteed to succeed. Reads and writes may block
   #   briefly but no explicit locking is required.
   #
+  #   @!macro thread_safe_variable_comparison
+  #
   #       Testing with ruby 2.1.2
   #       Testing with Concurrent::MutexAtomicBoolean...
   #         2.790000   0.000000   2.790000 (  2.791454)

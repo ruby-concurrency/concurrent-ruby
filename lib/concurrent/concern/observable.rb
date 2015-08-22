@@ -49,30 +49,55 @@ module Concurrent
     # or an AtomicFixum)
     module Observable
 
-      # @return [Object] the added observer
-      def add_observer(*args, &block)
-        observers.add_observer(*args, &block)
+      # @!macro [attach] observable_add_observer
+      #
+      #   Adds an observer to this set. If a block is passed, the observer will be
+      #   created by this method and no other params should be passed.
+      #
+      #   @param [Object] observer the observer to add
+      #   @param [Symbol] func the function to call on the observer during notification.
+      #     Default is :update
+      #   @return [Object] the added observer
+      def add_observer(observer = nil, func = :update, &block)
+        observers.add_observer(observer, func, &block)
       end
 
-      # as #add_observer but it can be used for chaining
+      # As `#add_observer` but can be used for chaining.
+      #
+      # @param [Object] observer the observer to add
+      # @param [Symbol] func the function to call on the observer during notification.
       # @return [Observable] self
-      def with_observer(*args, &block)
-        add_observer(*args, &block)
+      def with_observer(observer = nil, func = :update, &block)
+        add_observer(observer, func, &block)
         self
       end
 
-      # @return [Object] the deleted observer
-      def delete_observer(*args)
-        observers.delete_observer(*args)
+      # @!macro [attach] observable_delete_observer
+      # 
+      #   Remove `observer` as an observer on this object so that it will no
+      #   longer receive notifications.
+      #
+      #   @param [Object] observer the observer to remove
+      #   @return [Object] the deleted observer
+      def delete_observer(observer)
+        observers.delete_observer(observer)
       end
 
-      # @return [Observable] self
+      # @!macro [attach] observable_delete_observers
+      # 
+      #   Remove all observers associated with this object.
+      #   
+      #   @return [Observable] self
       def delete_observers
         observers.delete_observers
         self
       end
 
-      # @return [Integer] the observers count
+      # @!macro [attach] observable_count_observers
+      #
+      #   Return the number of observers associated with this object.
+      #
+      #   @return [Integer] the observers count
       def count_observers
         observers.count_observers
       end

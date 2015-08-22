@@ -13,6 +13,8 @@ module Concurrent
   #   pairs. Each thread presents some object on entry to the exchange method,
   #   matches with a partner thread, and receives its partner's object on return.
   #
+  #   @!macro thread_safe_variable_comparison
+  #
   #   This implementation is very simple, using only a single slot for each
   #   exchanger (unlike more advanced implementations which use an "arena").
   #   This approach will work perfectly fine when there are only a few threads

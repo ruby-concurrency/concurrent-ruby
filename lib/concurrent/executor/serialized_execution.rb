@@ -39,8 +39,8 @@ module Concurrent
     # As {#post} but allows to submit multiple tasks at once, it's guaranteed that they will not
     # be interleaved by other tasks.
     #
-    # @param [Array<Array(Executor, Array<Object>, Proc)>] posts array of triplets where
-    #   first is a {Executor}, second is array of args for task, third is a task (Proc)
+    # @param [Array<Array(ExecutorService, Array<Object>, Proc)>] posts array of triplets where
+    #   first is a {ExecutorService}, second is array of args for task, third is a task (Proc)
     def posts(posts)
       # if can_overflow?
       #   raise ArgumentError, 'SerializedExecution does not support thread-pools which can overflow'

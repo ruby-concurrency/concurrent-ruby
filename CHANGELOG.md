@@ -9,6 +9,7 @@
   - No longer `Dereferenceable`
   - Now `Observable`
   - Added a `#reset` method
+* Brand new `Agent` API and implementation. Now functionally equivalent to Clojure.
 
 ## Current Release v1.0.0.pre1 (19 Aug 2015)
 

@@ -2,6 +2,8 @@
 #
 #   An object reference that may be updated atomically.
 #
+#   @!macro thread_safe_variable_comparison
+#
 #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/AtomicReference.html
 #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/atomic/package-summary.html
 #

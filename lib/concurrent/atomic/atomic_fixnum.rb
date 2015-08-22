@@ -111,6 +111,8 @@ module Concurrent
   #   fixnum and thread-safe and guaranteed to succeed. Reads and writes may block
   #   briefly but no explicit locking is required.
   #
+  #   @!macro thread_safe_variable_comparison
+  #
   #       Testing with ruby 2.1.2
   #       Testing with Concurrent::MutexAtomicFixnum...
   #         3.130000   0.000000   3.130000 (  3.136505)

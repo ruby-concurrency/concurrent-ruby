@@ -19,7 +19,44 @@ module Concurrent
   # new value to the result of running the given block if and only if that
   # value validates.
   #
+  # ## Example
+  # 
+  # ```
+  # def next_fibonacci(set = nil)
+  #   return [0, 1] if set.nil?
+  #   set + [set[-2..-1].reduce{|sum,x| sum + x }]
+  # end
+  #
+  # # create an atom with aninitial value
+  # atom = Concurrent::Atom.new(next_fibonacci)
+  #
+  # # send a few update requests
+  # 5.times do
+  #   atom.swap{|set| next_fibonacci(set) }
+  # end
+  #
+  # # get the current value
+  # atom.value #=> [0, 1, 1, 2, 3, 5, 8]
+  # ```
+  #
+  # ## Observation
+  #
+  # Atoms support observers through the {Concurrent::Observable} mixin module.
+  # Notification of observers occurs every time the value of the Atom changes.
+  # When notified the observer will receive three arguments: `time`, `old_value`,
+  # and `new_value`. The `time` argument is the time at which the value change
+  # occurred. The `old_value` is the value of the Atom when the change began
+  # The `new_value` is the value to which the Atom was set when the change
+  # completed. Note that `old_value` and `new_value` may be the same. This is
+  # not an error. It simply means that the change operation returned the same
+  # value.
+  #
+  # Unlike in Clojure, `Atom` cannot participate in {Concurrent::TVar} transactions.
+  #
+  # @!macro thread_safe_variable_comparison
+  #
   # @see http://clojure.org/atoms Clojure Atoms
+  # @see http://clojure.org/state Values and Change - Clojure's approach to Identity and State
   class Atom < Synchronization::Object
     include Concern::Observable
 
@@ -107,7 +144,7 @@ module Concurrent
     # @return [Boolean] True if the value is changed else false.
     def compare_and_set(old_value, new_value)
       if valid?(new_value) && @value.compare_and_set(old_value, new_value)
-        observers.notify_observers(Time.now, new_value, nil)
+        observers.notify_observers(Time.now, old_value, new_value)
         true
       else
         false
@@ -126,7 +163,7 @@ module Concurrent
       old_value = @value.value
       if valid?(new_value)
         @value.set(new_value)
-        observers.notify_observers(Time.now, new_value, nil)
+        observers.notify_observers(Time.now, old_value, new_value)
         new_value
       else
         old_value

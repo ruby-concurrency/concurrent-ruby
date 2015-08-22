@@ -28,12 +28,12 @@ module Concurrent
       end
 
       it 'delegates #add_observer' do
-        expect(observer_set).to receive(:add_observer).with(:observer) { |v| v }
+        expect(observer_set).to receive(:add_observer).with(:observer, :update) { |v| v }
         expect(subject.add_observer(:observer)).to eq :observer
       end
 
       it 'delegates #with_observer' do
-        expect(observer_set).to receive(:add_observer).with(:observer) { |v| v }
+        expect(observer_set).to receive(:add_observer).with(:observer, :update) { |v| v }
         expect(subject.with_observer(:observer)).to eq subject
       end
 

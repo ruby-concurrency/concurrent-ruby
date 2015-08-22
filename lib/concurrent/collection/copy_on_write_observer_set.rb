@@ -15,14 +15,8 @@ module Concurrent
         synchronize { ns_initialize }
       end
 
-      # Adds an observer to this set
-      # If a block is passed, the observer will be created by this method and no
-      #   other params should be passed
-      # @param [Object] observer the observer to add
-      # @param [Symbol] func the function to call on the observer during notification.
-      #   Default is :update
-      # @return [Object] the added observer
-      def add_observer(observer=nil, func=:update, &block)
+      # @!macro observable_add_observer
+      def add_observer(observer = nil, func = :update, &block)
         if observer.nil? && block.nil?
           raise ArgumentError, 'should pass observer as a first argument or block'
         elsif observer && block
@@ -42,8 +36,7 @@ module Concurrent
         end
       end
 
-      # @param [Object] observer the observer to remove
-      # @return [Object] the deleted observer
+      # @!macro observable_delete_observer
       def delete_observer(observer)
         synchronize do
           new_observers = @observers.dup
@@ -53,14 +46,13 @@ module Concurrent
         end
       end
 
-      # Deletes all observers
-      # @return [CopyOnWriteObserverSet] self
+      # @!macro observable_delete_observers
       def delete_observers
         self.observers = {}
         self
       end
 
-      # @return [Integer] the observers count
+      # @!macro observable_count_observers
       def count_observers
         observers.count
       end

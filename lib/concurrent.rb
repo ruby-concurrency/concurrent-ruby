@@ -7,6 +7,7 @@ require 'concurrent/executors'
 require 'concurrent/synchronization'
 
 require 'concurrent/atomic/atomic_reference'
+require 'concurrent/agent'
 require 'concurrent/atom'
 require 'concurrent/array'
 require 'concurrent/hash'

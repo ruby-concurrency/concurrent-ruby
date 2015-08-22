@@ -91,7 +91,8 @@ Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/St
 
 Thread-safe variables:
 
-* [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, synchronous, independent state. Based on Clojure's [Atom](http://clojure.org/atoms).
+* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A way to manage shared, mutable, *asynchronous*, independent, state. Based on Clojure's [Agent](http://clojure.org/agents).
+* [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, mutable, *synchronous*, independent state. Based on Clojure's [Atom](http://clojure.org/atoms).
 * [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html) A boolean value that can be updated atomically.
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html) A numeric value that can be updated atomically.
 * [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html) An object reference that may be updated atomically.
@@ -124,12 +125,11 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
-* [new Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/FutureShortcuts.html) - new
-  unified implementation of Futures and Promises which combines Features of previous `Future`,
-  `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
-  new synchronization layer to make all the features **non-blocking** and **lock-free** with exception of obviously blocking
+* [New Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/FutureShortcuts.html):
+  Unified implementation of futures and promises which combines features of previous `Future`,
+  `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
+  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
   operations like `#wait`, `#value`. It also offers better performance.
-* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A single atomic value that represents an identity.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
   Communicating Sequential Processes (CSP).
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
@@ -141,12 +141,11 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 *Why are these not in core?*
 
-- **Actor** - Partial documentation and tests; stability is good.
+- **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
 - **Future/Promise Framework** - API changes; partial documentation and tests; stability good.
-- **Agent** - Incomplete behaviour compared to Clojure's models; stability good.
 - **Channel** - Missing documentation; limited features; stability good.
 - **LazyRegister** - Missing documentation and tests.
-- **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Needs real world battle testing
+- **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing
 
 ## Usage
 
