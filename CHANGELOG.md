@@ -1,6 +1,10 @@
 ### Upcoming Release v1.0.0.pre2 (TBD)
 
 * Simplification of `RubySingleThreadExecutor`
+* `Async` improvements
+  - Each object uses its own `SingleThreadExecutor` instead of the global thread pool.
+  - No longers supports executor injection
+  - Much better documentation
 
 ## Current Release v1.0.0.pre1 (19 Aug 2015)
 

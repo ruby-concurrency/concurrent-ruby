@@ -2,8 +2,6 @@ module Concurrent
 
   describe Async do
 
-    let(:executor) { SimpleExecutorService.new }
-
     let(:async_class) do
       Class.new do
         include Concurrent::Async
@@ -29,9 +27,7 @@ module Concurrent
     end
 
     subject do
-      obj = async_class.new
-      obj.executor = executor
-      obj
+      async_class.new
     end
 
     context 'object creation' do
@@ -142,38 +138,7 @@ module Concurrent
       end
     end
 
-    context 'executor' do
-
-      it 'returns the default executor when #executor= has never been called' do
-        expect(Concurrent).to receive(:global_io_executor).
-          and_return(ImmediateExecutor.new)
-        subject = async_class.new
-        subject.async.echo(:foo)
-      end
-
-      it 'returns the memo after #executor= has been called' do
-        executor = ImmediateExecutor.new
-        expect(executor).to receive(:post)
-        subject = async_class.new
-        subject.executor = executor
-        subject.async.echo(:foo)
-      end
-
-      it 'raises an exception if #executor= is called after initialization complete' do
-        executor = ImmediateExecutor.new
-        subject = async_class.new
-        subject.async.echo(:foo)
-        expect {
-          subject.executor = executor
-        }.to raise_error(ArgumentError)
-      end
-    end
-
     context '#async' do
-
-      before(:each) do
-        subject.executor = ImmediateExecutor.new
-      end
 
       it 'raises an error when calling a method that does not exist' do
         expect {
@@ -194,17 +159,14 @@ module Concurrent
       end
 
       it 'returns a :pending IVar' do
-        subject.executor = executor
         val = subject.async.wait(1)
         expect(val).to be_a Concurrent::IVar
         expect(val).to be_pending
       end
 
       it 'runs the future on the memoized executor' do
-        executor = ImmediateExecutor.new
+        executor = subject.instance_variable_get(:@__async_executor__)
         expect(executor).to receive(:post).with(any_args)
-        subject = async_class.new
-        subject.executor = executor
         subject.async.echo(:foo)
       end
 
@@ -217,12 +179,14 @@ module Concurrent
       it 'sets the reason on failure' do
         ex = ArgumentError.new
         val = subject.async.boom(ex)
+        val.wait
         expect(val.reason).to eq ex
         expect(val).to be_rejected
       end
 
       it 'sets the reason when giving too many optional arguments' do
         val = subject.async.gather(1, 2, 3, 4, 5)
+        val.wait
         expect(val.reason).to be_a StandardError
         expect(val).to be_rejected
       end

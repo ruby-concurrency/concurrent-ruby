@@ -1,52 +1,217 @@
 require 'thread'
 require 'concurrent/configuration'
-require 'concurrent/delay'
 require 'concurrent/errors'
 require 'concurrent/ivar'
-require 'concurrent/executor/immediate_executor'
-require 'concurrent/executor/serialized_execution'
+require 'concurrent/executor/single_thread_executor'
 
 module Concurrent
 
-  # A mixin module that provides simple asynchronous behavior to any standard
-  # class/object or object. 
+  # A mixin module that provides simple asynchronous behavior to a class,
+  # turning it into a simple actor. Loosely based on Erlang's
+  # [gen_server](http://www.erlang.org/doc/man/gen_server.html), but without
+  # supervision or linking.
+  #
+  # A more feature-rich {Concurrent::Actor} is also available when the
+  # capabilities of `Async` are too limited.
   # 
   # ```cucumber
   # Feature:
-  #   As a stateful, plain old Ruby class/object
+  #   As a stateful, plain old Ruby class
   #   I want safe, asynchronous behavior
   #   So my long-running methods don't block the main thread
   # ```
   # 
-  # Stateful, mutable objects must be managed carefully when used asynchronously.
-  # But Ruby is an object-oriented language so designing with objects and classes
-  # plays to Ruby's strengths and is often more natural to many Ruby programmers.
-  # The `Async` module is a way to mix simple yet powerful asynchronous capabilities
-  # into any plain old Ruby object or class. These capabilities provide a reasonable
-  # level of thread safe guarantees when used correctly.
+  # The `Async` module is a way to mix simple yet powerful asynchronous
+  # capabilities into any plain old Ruby object or class, turning each object
+  # into a simple Actor. Method calls are processed on a background thread. The
+  # caller is free to perform other actions while processing occurs in the
+  # background.
+  #
+  # Method calls to the asynchronous object are made via two proxy methods:
+  # `async` (alias `cast`) and `await` (alias `call`). These proxy methods post
+  # the method call to the object's background thread and return a "future"
+  # which will eventually contain the result of the method call.
+  #
+  # This behavior is loosely patterned after Erlang's `gen_server` behavior.
+  # When an Erlang module implements the `gen_server` behavior it becomes
+  # inherently asynchronous. The `start` or `start_link` function spawns a
+  # process (similar to a thread but much more lightweight and efficient) and
+  # reurns the ID of the process. Using the process ID, other processes can
+  # send messages to the `gen_server` via the `cast` and `call` methods. Unlike
+  # Erlang's `gen_server`, however, `Async` classes do not support linking or
+  # supervision trees.
   # 
-  # When this module is mixed into a class or object it provides to new methods:
-  # `async` and `await`. These methods are thread safe with respect to the enclosing
-  # object. The former method allows methods to be called asynchronously by posting
-  # to the global thread pool. The latter allows a method to be called synchronously
-  # on the current thread but does so safely with respect to any pending asynchronous
-  # method calls. Both methods return an `IVar` which can be inspected for
-  # the result of the method call. Calling a method with `async` will return a
+  # ## Basic Usage
+  #
+  # When this module is mixed into a class, objects of the class become inherently
+  # asynchronous. Each object gets its own background thread (specifically,
+  # `SingleThreadExecutor`) on which to post asynchronous method calls.
+  # Asynchronous method calls are executed in the background one at a time in
+  # the order they are received.
+  #
+  # To create an asynchronous class, simply mix in the `Concurrent::Async` module:
+  #
+  # ```
+  # class Hello
+  #   include Concurrent::Async
+  #
+  #   def hello(name)
+  #     "Hello, #{name}!"
+  #   end
+  # end
+  # ```
+  #
+  # When defining a constructor it is critica that the first line be a call to
+  # `super` with no arguments. The `super` method initializes the background
+  # thread and other asynchronous components.
+  #
+  # ```
+  # class BackgroundLogger
+  #   include Concurrent::Async
+  #
+  #   def initialize(level)
+  #     super()
+  #     @logger = Logger.new(STDOUT)
+  #     @logger.level = level
+  #   end
+  #
+  #   def info(msg)
+  #     @logger.info(msg)
+  #   end
+  # end
+  # ```
+  #
+  # Mixing this module into a class provides each object two proxy methods:
+  # `async` and `await`. These methods are thread safe with respect to the
+  # enclosing object. The former proxy allows methods to be called
+  # asynchronously by posting to the object's internal thread. The latter proxy
+  # allows a method to be called synchronously but does so safely with respect
+  # to any pending asynchronous method calls and ensures proper ordering. Both
+  # methods return a {Concurrent::IVar} which can be inspected for the result
+  # of the proxied method call. Calling a method with `async` will return a
   # `:pending` `IVar` whereas `await` will return a `:complete` `IVar`.
+  #
+  # ```
+  # class Echo
+  #   include Concurrent::Async
+  #
+  #   def echo(msg)
+  #     print "#{msg}\n"
+  #   end
+  # end
+  #
+  # horn = Echo.new
+  # horn.echo('zero')      # synchronous, not thread-safe
+  #                        # returns the actual return value of the method
+  #
+  # horn.async.echo('one') # asynchronous, non-blocking, thread-safe
+  #                        # returns an IVar in the :pending state
+  #
+  # horn.await.echo('two') # synchronous, blocking, thread-safe
+  #                        # returns an IVar in the :complete state
+  # ```
+  #
+  # ## Let It Fail
+  #
+  # The `async` and `await` proxy methods have built-in error protection based
+  # on Erlang's famous "let it fail" philosophy. Instance methods should not be
+  # programmed defensively. When an exception is raised by a delegated method
+  # the proxy will rescue the exception, expose it to the caller as the `reason`
+  # attribute of the returned future, then process the next method call.
+  #
+  # ## Calling Methods Internally
+  #
+  # External method calls should *always* use the `async` and `await` proxy
+  # methods. When one method calls another method, the `async` proxy should
+  # rarely be used and the `await` proxy should *never* be used.
+  #
+  # When an object calls one of its own methods using the `await` proxy the
+  # second call will be enqueued *behind* the currently running method call.
+  # Any attempt to wait on the result will fail as the second call will never
+  # run until after the current call completes.
+  #
+  # Calling a method using the `await` proxy from within a method that was
+  # itself called using `async` or `await` will irreversibly deadlock the
+  # object. Do *not* do this, ever.
+  #
+  # ## Instance Variables and Attribute Accessors
+  #
+  # Instance variables do not need to be thread-safe so long as they are private.
+  # Asynchronous method calls are processed in the order they are received and
+  # are processed one at a time. Therefore private instance variables can only
+  # be accessed by one thread at a time. This is inherently thread-safe.
+  #
+  # When using private instance variables within asynchronous methods, the best
+  # practice is to read the instance variable into a local variable at the start
+  # of the method then update the instance variable at the *end* of the method.
+  # This way, should an exception be raised during method execution the internal
+  # state of the boject will not have been changed.
+  #
+  # ### Reader Attributes
+  #
+  # The use of `attr_reader` is discouraged. Internal state exposed externally,
+  # when necessary, should be done through accessor methods. The instance
+  # variables exposed by these methods *must* be thread-safe, or they must be
+  # called using the `async` and `await` proxy methods. These two approaches are
+  # subtly different.
+  #
+  # When internal state is accessed via the `async` and `await` proxy methods,
+  # the returned value represents the object's sate *at the time the call is
+  # processed*, which may *not* be the state of the object at the time the call
+  # is made.
+  #
+  # To get the state *at the current* time, irrespective of an enqueued method
+  # calls, a reader method must be called directly. This is inherently unsafe
+  # unless the instance variable is itself thread-safe, preferrably using one
+  # of the thread-safe classes within this library. Because the thread-safe
+  # classes within this library are internally-locking or non-locking, they can
+  # be safely used from within asynchronous methods without causing deadlocks.
+  #
+  # Generally speaking, the best practice is to *not* expose internal state via
+  # reader methods. The best practice is to simply use the method's return value.
+  #
+  # ### Writer Attributes
+  #
+  # Writer attributes should never be used with asynchronous classes. Changing
+  # the state externally, even when done in the thread-safe way, is not logically
+  # consistent. Changes to state need to be timed with respect to all asynchronous
+  # method calls which my be in-process or enqueued. The only safe practice is to
+  # pass all necessary data to each method as arguments and let the method update
+  # the internal state as necessary.
+  #
+  # ## Class Constants, Variables, and Methods
+  #
+  # ### Class Constants
+  #
+  # Class constants do not need to be thread-safe. Since they are read-only and
+  # immutable they may be safely read both externally and from within
+  # asynchronous methods.
+  #
+  # ### Class Variables
+  #
+  # Class variables should be avoided. Class variables represent shared state.
+  # Shared state is anathema to concurrency. Should there be a need to share
+  # state using class variables they *must* be thread-safe, preferrably
+  # using the thread-safe classes within this library. When updating class
+  # variables, never assign a new value/object to the variable itself. Assignment
+  # is not thread-safe in Ruby. Instead, use the thread-safe update functions
+  # of the variable itself to change the value.
+  #
+  # The best practice is to *never* use class variables with `Async` classes.
+  #
+  # ### Class Methods
+  #
+  # Class methods which are pure functions are safe. Class methods which modify
+  # class variables should be avoided, for all the reasons listed above.
   # 
-  # Very loosely based on the `async` and `await` keywords in C#.
-  # 
-  # ### An Important Note About Thread Safe Guarantees
+  # ## An Important Note About Thread Safe Guarantees
   # 
   # > Thread safe guarantees can only be made when asynchronous method calls
-  # > are not mixed with synchronous method calls. Use only synchronous calls
+  # > are not mixed with direct method calls. Use only direct method calls
   # > when the object is used exclusively on a single thread. Use only
   # > `async` and `await` when the object is shared between threads. Once you
-  # > call a method using `async`, you should no longer call any methods
+  # > call a method using `async` or `await`, you should no longer call methods
   # > directly on the object. Use `async` and `await` exclusively from then on.
-  # > With careful programming it is possible to switch back and forth but it's
-  # > also very easy to create race conditions and break your application.
-  # > Basically, it's "async all the way down."
   # 
   # @example
   # 
@@ -54,19 +219,25 @@ module Concurrent
   #     include Concurrent::Async
   #   
   #     def echo(msg)
-  #       sleep(rand)
   #       print "#{msg}\n"
-  #       nil
   #     end
   #   end
   #   
   #   horn = Echo.new
   #   horn.echo('zero')      # synchronous, not thread-safe
+  #                          # returns the actual return value of the method
   #   
   #   horn.async.echo('one') # asynchronous, non-blocking, thread-safe
-  #   horn.await.echo('two') # synchronous, blocking, thread-safe
+  #                          # returns an IVar in the :pending state
   #
-  # @see Concurrent::IVar
+  #   horn.await.echo('two') # synchronous, blocking, thread-safe
+  #                          # returns an IVar in the :complete state
+  #
+  # @see Concurrent::Actor
+  # @see Concurrent::SingleThreadExecutor
+  # @see https://en.wikipedia.org/wiki/Actor_model "Actor Model" at Wikipedia
+  # @see http://www.erlang.org/doc/man/gen_server.html Erlang gen_server
+  # @see http://c2.com/cgi/wiki?LetItCrash "Let It Crash" at http://c2.com/
   module Async
 
     # @!method self.new(*args, &block)
@@ -76,7 +247,7 @@ module Concurrent
     #
     #   @param [Array<Object>] args Zero or more arguments to be passed to the
     #     object's initializer.
-    #   @param [Proc] bloc Optional block to pass to the object's initializer.
+    #   @param [Proc] block Optional block to pass to the object's initializer.
     #   @return [Object] A properly initialized object of the asynchronous class.
 
     # Check for the presence of a method on an object and determine if a given
@@ -138,13 +309,11 @@ module Concurrent
       # given executor. Block if necessary.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
-      # @param [Concurrent::Delay] executor a `Delay` wrapping the executor on which to execute delegated method calls
-      # @param [Concurrent::SerializedExecution] serializer the serializer to use when delegating method calls
+      # @param [Concurrent::ExecutorService] executor the executor on which to execute delegated method calls
       # @param [Boolean] blocking will block awaiting result when `true`
-      def initialize(delegate, executor, serializer, blocking = false)
+      def initialize(delegate, executor, blocking)
         @delegate = delegate
         @executor = executor
-        @serializer = serializer
         @blocking = blocking
       end
 
@@ -163,17 +332,17 @@ module Concurrent
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
 
-        self.define_singleton_method(method) do |*args2|
-          Async::validate_argc(@delegate, method, *args2)
+        self.define_singleton_method(method) do |*method_args|
+          Async::validate_argc(@delegate, method, *method_args)
           ivar = Concurrent::IVar.new
-          @serializer.post(@executor.value) do
+          @executor.post(method_args) do |arguments|
             begin
-              ivar.set(@delegate.send(method, *args2, &block))
-            rescue => reason
-              ivar.fail(reason)
+              ivar.set(@delegate.send(method, *arguments, &block))
+            rescue => error
+              ivar.fail(error)
             end
           end
-          ivar.value if @blocking
+          ivar.wait if @blocking
           ivar
         end
 
@@ -183,69 +352,46 @@ module Concurrent
     private_constant :AsyncDelegator
 
     # Causes the chained method call to be performed asynchronously on the
-    # global thread pool. The method called by this method will return a
-    # future object in the `:pending` state and the method call will have
-    # been scheduled on the global thread pool. The final disposition of the
-    # method call can be obtained by inspecting the returned future.
-    #
-    # Before scheduling the method on the global thread pool a best-effort
-    # attempt will be made to validate that the method exists on the object
-    # and that the given arguments match the arity of the requested function.
-    # Due to the dynamic nature of Ruby and limitations of its reflection
-    # library, some edge cases will be missed. For more information see
-    # the documentation for the `validate_argc` method.
+    # object's thread. The delegated method will return a future in the
+    # `:pending` state and the method call will have been scheduled on the
+    # object's thread. The final disposition of the method call can be obtained
+    # by inspecting the returned future.
     #
     # @!macro [attach] async_thread_safety_warning
     #   @note The method call is guaranteed to be thread safe with respect to
     #     all other method calls against the same object that are called with
     #     either `async` or `await`. The mutable nature of Ruby references
     #     (and object orientation in general) prevent any other thread safety
-    #     guarantees. Do NOT mix non-protected method calls with protected
-    #     method call. Use *only* protected method calls when sharing the object
-    #     between threads.
+    #     guarantees. Do NOT mix direct method calls with delegated method calls.
+    #     Use *only* delegated method calls when sharing the object between threads.
     #
     # @return [Concurrent::IVar] the pending result of the asynchronous operation
     #
-    # @raise [NameError] the object does not respond to `method` method
-    # @raise [ArgumentError] the given `args` do not match the arity of `method`
-    #
-    # @see Concurrent::IVar
+    # @raise [NameError] the object does not respond to the requested method
+    # @raise [ArgumentError] the given `args` do not match the arity of
+    #   the requested method
     def async
-      @__async_delegator__.value
+      @__async_delegator__
     end
+    alias_method :cast, :async
 
     # Causes the chained method call to be performed synchronously on the
-    # current thread. The method called by this method will return an
-    # `IVar` object in either the `:fulfilled` or `rejected` state and the
-    # method call will have completed. The final disposition of the
-    # method call can be obtained by inspecting the returned `IVar`.
-    #
-    # Before scheduling the method on the global thread pool a best-effort
-    # attempt will be made to validate that the method exists on the object
-    # and that the given arguments match the arity of the requested function.
-    # Due to the dynamic nature of Ruby and limitations of its reflection
-    # library, some edge cases will be missed. For more information see
-    # the documentation for the `validate_argc` method.
+    # current thread. The delegated will return a future in either the
+    # `:fulfilled` or `:rejected` state and the delegated method will have
+    # completed. The final disposition of the delegated method can be obtained
+    # by inspecting the returned future.
     #
     # @!macro async_thread_safety_warning
     #
     # @return [Concurrent::IVar] the completed result of the synchronous operation
     #
-    # @raise [NameError] the object does not respond to `method` method
-    # @raise [ArgumentError] the given `args` do not match the arity of `method`
-    #
-    # @see Concurrent::IVar
+    # @raise [NameError] the object does not respond to the requested method
+    # @raise [ArgumentError] the given `args` do not match the arity of the
+    #   requested method
     def await
-      @__await_delegator__.value
+      @__await_delegator__
     end
-
-    # Set a new executor.
-    #
-    # @raise [ArgumentError] executor has already been set.
-    def executor=(executor)
-      @__async_executor__.reconfigure { executor } or
-        raise ArgumentError.new('executor has already been set')
-    end
+    alias_method :call, :await
 
     private
 
@@ -254,27 +400,14 @@ module Concurrent
     # @note This method *must* be called immediately upon object construction.
     #   This is the only way thread-safe initialization can be guaranteed.
     #
-    # @raise [Concurrent::InitializationError] when called more than once
-    #
     # @!visibility private
     def init_synchronization
       return self if @__async_initialized__
-
       @__async_initialized__ = true
-      serializer = Concurrent::SerializedExecution.new
-
-      @__async_executor__ = Delay.new {
-        Concurrent.global_io_executor
-      }
-
-      @__await_delegator__ = Delay.new {
-        AsyncDelegator.new(self, Delay.new{ Concurrent::ImmediateExecutor.new }, serializer, true)
-      }
-
-      @__async_delegator__ = Delay.new {
-        AsyncDelegator.new(self, @__async_executor__, serializer, false)
-      }
-
+      @__async_executor__ = Concurrent::SingleThreadExecutor.new(
+        fallback_policy: :caller_runs, auto_terminate: true)
+      @__await_delegator__ = AsyncDelegator.new(self, @__async_executor__, true)
+      @__async_delegator__ = AsyncDelegator.new(self, @__async_executor__, false)
       self
     end
   end
