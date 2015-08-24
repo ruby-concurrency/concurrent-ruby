@@ -172,7 +172,7 @@ module Concurrent
       it 'inherits from JavaAtomicReference' do
         expect(AtomicReference.ancestors).to include(Concurrent::JavaAtomicReference)
       end
-    elsif Concurrent.allow_c_extensions?
+    elsif Concurrent.loaded_c_extensions?
       it 'inherits from CAtomicReference' do
         expect(AtomicReference.ancestors).to include(Concurrent::CAtomicReference)
       end
@@ -210,7 +210,7 @@ module Concurrent
       it 'inherits from JavaAtomicReference' do
         expect(AtomicReference.ancestors).to include(Concurrent::JavaAtomicReference)
       end
-    elsif Concurrent.allow_c_extensions?
+    elsif Concurrent.loaded_c_extensions?
       it 'inherits from CAtomicReference' do
         expect(AtomicReference.ancestors).to include(Concurrent::CAtomicReference)
       end

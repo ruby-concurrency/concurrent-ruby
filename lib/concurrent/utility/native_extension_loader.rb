@@ -14,6 +14,10 @@ module Concurrent
       def allow_c_extensions?
         Concurrent.on_cruby?
       end
+   
+      def loaded_c_extensions?
+        NativeExtensionLoader.instance_variable_get(:@c_ext_loaded)
+      end
 
       if Concurrent.on_cruby? && !@c_ext_loaded
         tries = [
