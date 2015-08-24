@@ -1,6 +1,3 @@
-require 'thread'
-require 'concurrent/configuration'
-require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/executor/single_thread_executor'
 
@@ -332,21 +329,16 @@ module Concurrent
         super unless @delegate.respond_to?(method)
         Async::validate_argc(@delegate, method, *args)
 
-        self.define_singleton_method(method) do |*method_args|
-          Async::validate_argc(@delegate, method, *method_args)
-          ivar = Concurrent::IVar.new
-          @executor.post(method_args) do |arguments|
-            begin
-              ivar.set(@delegate.send(method, *arguments, &block))
-            rescue => error
-              ivar.fail(error)
-            end
+        ivar = Concurrent::IVar.new
+        @executor.post(args) do |arguments|
+          begin
+            ivar.set(@delegate.send(method, *arguments, &block))
+          rescue => error
+            ivar.fail(error)
           end
-          ivar.wait if @blocking
-          ivar
         end
-
-        self.send(method, *args)
+        ivar.wait if @blocking
+        ivar
       end
     end
     private_constant :AsyncDelegator

@@ -202,21 +202,6 @@ module Concurrent
         val = subject.async.with_block{ :foo }
         expect(val.value).to eq :foo
       end
-
-      context '#method_missing' do
-
-        it 'defines the method after the first call' do
-          expect { subject.async.method(:echo) }.to raise_error(NameError)
-          subject.async.echo(:foo)
-          expect { subject.async.method(:echo) }.not_to raise_error
-        end
-
-        it 'does not define the method on name/arity exception' do
-          expect { subject.async.method(:bogus) }.to raise_error(NameError)
-          expect { subject.async.bogus }.to raise_error(NameError)
-          expect { subject.async.method(:bogus) }.to raise_error(NameError)
-        end
-      end
     end
 
     context '#await' do
@@ -275,26 +260,11 @@ module Concurrent
         val = subject.await.with_block{ :foo }
         expect(val.value).to eq :foo
       end
-
-      context '#method_missing' do
-
-        it 'defines the method after the first call' do
-          expect { subject.await.method(:echo) }.to raise_error(NameError)
-          subject.await.echo(:foo)
-          expect { subject.await.method(:echo) }.not_to raise_error
-        end
-
-        it 'does not define the method on name/arity exception' do
-          expect { subject.await.method(:bogus) }.to raise_error(NameError)
-          expect { subject.await.bogus }.to raise_error(NameError)
-          expect { subject.await.method(:bogus) }.to raise_error(NameError)
-        end
-      end
     end
 
     context 'locking' do
 
-      it 'uses the same mutex for both #async and #await' do
+      it 'uses the same lock for both #async and #await' do
         object = Class.new {
           include Concurrent::Async
           attr_reader :bucket
