@@ -1,3 +1,7 @@
+### Upcoming Release v1.0.0.pre2 (TBD)
+
+* Simplification of `RubySingleThreadExecutor`
+
 ## Current Release v1.0.0.pre1 (19 Aug 2015)
 
 * Merged in the `thread_safe` gem

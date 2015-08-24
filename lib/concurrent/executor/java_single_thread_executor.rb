@@ -6,7 +6,6 @@ if Concurrent.on_jruby?
   module Concurrent
 
     # @!macro single_thread_executor
-    # @!macro thread_pool_options
     # @!macro abstract_executor_service_public_api
     # @!visibility private
     class JavaSingleThreadExecutor < JavaExecutorService
