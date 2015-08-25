@@ -1,5 +1,6 @@
-require 'concurrent/concern/dereferenceable'
 require 'concurrent/atomic/atomic_reference'
+require 'concurrent/collection/copy_on_notify_observer_set'
+require 'concurrent/concern/observable'
 require 'concurrent/synchronization/object'
 
 module Concurrent
@@ -18,11 +19,9 @@ module Concurrent
   # new value to the result of running the given block if and only if that
   # value validates.
   #
-  # @!macro copy_options
-  #
   # @see http://clojure.org/atoms Clojure Atoms
   class Atom < Synchronization::Object
-    include Concern::Dereferenceable
+    include Concern::Observable
 
     # Create a new atom with the given initial value.
     #
@@ -38,20 +37,18 @@ module Concurrent
     # @raise [ArgumentError] if the validator is not a `Proc` (when given)
     def initialize(value, opts = {})
       super()
-
-      @validator = opts.fetch(:validator, ->(v){ true })
-      raise ArgumentError.new('validator must be a proc') unless @validator.is_a? Proc
-
-      @value = Concurrent::AtomicReference.new(value)
-      ns_set_deref_options(opts)
-      ensure_ivar_visibility!
+      synchronize do
+        @validator = opts.fetch(:validator, ->(v){ true })
+        @value = Concurrent::AtomicReference.new(value)
+        self.observers = Collection::CopyOnNotifyObserverSet.new
+      end
     end
 
     # The current value of the atom.
     #
     # @return [Object] The current value.
     def value
-      apply_deref_options(@value.value)
+      @value.value
     end
     alias_method :deref, :value
 
@@ -87,45 +84,66 @@ module Concurrent
     def swap(*args)
       raise ArgumentError.new('no block given') unless block_given?
 
-      begin
-        loop do
-          old_value = @value.value
+      loop do
+        old_value = @value.value
+        begin
           new_value = yield(old_value, *args)
-          return old_value unless @validator.call(new_value)
-          return new_value if compare_and_set!(old_value, new_value)
+          break old_value unless valid?(new_value)
+          break new_value if compare_and_set(old_value, new_value)
+        rescue
+          break old_value
         end
-      rescue
-        return @value.value
       end
     end
 
-    # @!macro [attach] atom_compare_and_set
-    #   Atomically sets the value of atom to the new value if and only if the
-    #   current value of the atom is identical to the old value and the new
-    #   value successfully validates against the (optional) validator given
-    #   at construction.
+    # Atomically sets the value of atom to the new value if and only if the
+    # current value of the atom is identical to the old value and the new
+    # value successfully validates against the (optional) validator given
+    # at construction.
     #
-    #   @param [Object] old_value The expected current value.
-    #   @param [Object] new_value The intended new value.
+    # @param [Object] old_value The expected current value.
+    # @param [Object] new_value The intended new value.
     #
-    #   @return [Boolean] True if the value is changed else false.
+    # @return [Boolean] True if the value is changed else false.
     def compare_and_set(old_value, new_value)
-      compare_and_set!(old_value, new_value)
-    rescue
-      false
+      if valid?(new_value) && @value.compare_and_set(old_value, new_value)
+        observers.notify_observers(Time.now, new_value, nil)
+        true
+      else
+        false
+      end
+    end
+
+    # Atomically sets the value of atom to the new value without regard for the
+    # current value so long as the new value successfully validates against the
+    # (optional) validator given at construction.
+    #
+    # @param [Object] new_value The intended new value.
+    #
+    # @return [Object] The final value of the atom after all operations and
+    #   validations are complete.
+    def reset(new_value)
+      old_value = @value.value
+      if valid?(new_value)
+        @value.set(new_value)
+        observers.notify_observers(Time.now, new_value, nil)
+        new_value
+      else
+        old_value
+      end
     end
 
     private
 
-    # @!macro atom_compare_and_set
-    # @raise [Exception] if the validator proc raises an exception
-    # @!visibility private
-    def compare_and_set!(old_value, new_value)
-      if @validator.call(new_value) # may raise exception
-        @value.compare_and_set(old_value, new_value)
-      else
-        false
-      end
+    # Is the new value valid?
+    #
+    # @param [Object] new_value The intended new value.
+    # @return [Boolean] false if the validator function returns false or raises
+    #   an exception else true
+    def valid?(new_value)
+      @validator.call(new_value)
+    rescue
+      false
     end
   end
 end

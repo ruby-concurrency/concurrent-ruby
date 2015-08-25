@@ -21,8 +21,8 @@ module Concurrent
     #
     # In a multi threaded environment things are more complex. The `subject` must
     # synchronize the access to its data structure and to do so currently we're
-    # using two specialized ObserverSet: CopyOnWriteObserverSet and
-    # CopyOnNotifyObserverSet.
+    # using two specialized ObserverSet: {Concurrent::Concern::CopyOnWriteObserverSet}
+    # and {Concurrent::Concern::CopyOnNotifyObserverSet}.
     #
     # When implementing and `observer` there's a very important rule to remember:
     # **there are no guarantees about the thread that will execute the callback**

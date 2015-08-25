@@ -1,26 +1,14 @@
-require_relative 'concern/dereferenceable_shared'
+require_relative 'concern/observable_shared'
 
 module Concurrent
 
   describe Atom do
-
-    it_should_behave_like :dereferenceable do
-      def dereferenceable_subject(value, opts = {})
-        Atom.new(value, opts)
-      end
-    end
 
     context 'construction' do
 
       it 'sets the initial value to the given value' do
         atom = Atom.new(42)
         expect(atom.value).to eq 42
-      end
-
-      it 'raises an exception if the validator is not a proc' do
-        expect {
-          Atom.new(42, validator: 42)
-        }.to raise_error(ArgumentError)
       end
     end
 
@@ -75,7 +63,7 @@ module Concurrent
       end
     end
 
-    context 'swap' do
+    context '#swap' do
 
       it 'raises an exception when no block is given' do
         atom = Atom.new(42)
@@ -141,25 +129,70 @@ module Concurrent
         expect(atom.swap{ 100 }).to eq 42
       end
 
-      #it 'calls the block more than once if the value changes underneath' do
-      #latch = Concurrent::CountDownLatch.new
-      #counter = Concurrent::AtomicBoolean.new(0)
-      #atom = Atom.new(0)
+      it 'calls the block more than once if the value changes underneath' do
+        latch1 = Concurrent::CountDownLatch.new
+        latch2 = Concurrent::CountDownLatch.new
+        counter = Concurrent::AtomicFixnum.new(0)
+        atom = Atom.new(0)
 
-      #t = Thread.new do
-      #atom.swap do |value|
-      #counter.increment
-      #latch.wait
-      #42
-      #end
-      #end
+        t = Thread.new do
+          atom.swap do |value|
+            latch1.count_down
+            latch2.wait(1)
+            counter.increment
+            42
+          end
+        end
 
-      #atom.swap{ 100 }
-      #latch.count_down
-      #t.join(1)
+        latch1.wait(1)
+        atom.swap{ 100 }
+        latch2.count_down
+        t.join(1)
 
-      #expect(counter.value).to eq 2
-      #end
+        expect(counter.value).to be > 1
+      end
+    end
+
+    context '#reset' do
+
+      it 'sets the new value' do
+        atom = Atom.new(42)
+        atom.reset(:foo)
+        expect(atom.value).to eq :foo
+      end
+
+      it 'returns the new value on success' do
+        atom = Atom.new(42)
+        expect(atom.reset(:foo)).to eq :foo
+      end
+
+      it 'returns the new value on success' do
+        atom = Atom.new(42)
+        expect(atom.reset(:foo)).to eq :foo
+      end
+
+      it 'returns the old value if the validator returns false' do
+        validator = ->(value){ false }
+        atom = Atom.new(42, validator: validator)
+        expect(atom.reset(:foo)).to eq 42
+      end
+
+      it 'returns the old value if the validator raises an exception' do
+        validator = ->(value){ raise StandardError }
+        atom = Atom.new(42, validator: validator)
+        expect(atom.reset(:foo)).to eq 42
+      end
+    end
+
+    context :observable do
+
+      subject { Atom.new(0) }
+
+      def trigger_observable(observable)
+        observable.reset(42)
+      end
+
+      it_behaves_like :observable
     end
   end
 end

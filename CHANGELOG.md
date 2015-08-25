@@ -5,6 +5,10 @@
   - Each object uses its own `SingleThreadExecutor` instead of the global thread pool.
   - No longers supports executor injection
   - Much better documentation
+* `Atom` updates
+  - No longer `Dereferenceable`
+  - Now `Observable`
+  - Added a `#reset` method
 
 ## Current Release v1.0.0.pre1 (19 Aug 2015)
 

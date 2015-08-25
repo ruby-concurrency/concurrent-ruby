@@ -4,11 +4,6 @@ require_relative 'concern/observable_shared'
 module Concurrent
 
   describe TimerTask do
-    #before(:each) do
-      ## suppress deprecation warnings.
-      #allow_any_instance_of(Concurrent::TimerTask).to receive(:warn)
-      #allow(Concurrent::TimerTask).to receive(:warn)
-    #end
 
     context :dereferenceable do
 
