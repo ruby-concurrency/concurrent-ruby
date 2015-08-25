@@ -79,11 +79,9 @@ Collection classes that were originally part of the (deprecated) `thread_safe` g
 
 Value objects inspired by other languages:
 
-* [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, synchronous, independent state.
 * [Maybe](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Maybe.html) A thread-safe, immutable object representing an optional value, based on
   [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
-* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation of a block yielding an immutable result. Based on Clojure's
-   [delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html).
+* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation of a block yielding an immutable result. Based on Clojure's [delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html).
 
 Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 
@@ -93,10 +91,14 @@ Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/St
 
 Thread-safe variables:
 
+* [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, synchronous, independent state. Based on Clojure's [Atom](http://clojure.org/atoms).
 * [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html) A boolean value that can be updated atomically.
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html) A numeric value that can be updated atomically.
 * [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html) An object reference that may be updated atomically.
+* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html) A synchronization point at which threads can pair and swap elements within pairs. Based on Java's [Exchanger](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Exchanger.html).
+* [MVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) A synchronized single element container. Based on Haskell's [MVar](https://hackage.haskell.org/package/base-4.8.1.0/docs/Control-Concurrent-MVar.html) and Scala's [MVar](http://docs.typelevel.org/api/scalaz/nightly/index.html#scalaz.concurrent.MVar$).
 * [ThreadLocalVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html) A variable where the value is different for each thread.
+* [TVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) A transactional variable implementing software transactional memory (STM). Based on Clojure's [Ref](http://clojure.org/refs).
 
 #### Java-inspired ThreadPools and Other Executors
 
@@ -104,16 +106,13 @@ Thread-safe variables:
 
 #### Thread Synchronization Classes and Algorithms
 
-* [CountdownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html) A synchronization object that allows one thread to wait on multiple other threads.
+* [CountDownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html) A synchronization object that allows one thread to wait on multiple other threads.
 * [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html) A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.
 * [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html) Old school kernel-style event.
-* [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html)
-* [I-Structure](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) (IVar) Similar to a "future" but can be manually assigned once, after which it becomes immutable.
-* [M-Structure](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) (MVar) A synchronized single element container.
+* [IVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) Similar to a "future" but can be manually assigned once, after which it becomes immutable.
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html) A lock that supports multiple readers but only one writer.
 * [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html) A read/write lock with reentrant and upgrade features.
 * [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html) A counting-based locking mechanism that uses permits.
-* [Software transactional memory](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) (TVar) A transactional variable - a single-element container that is used as part of a transaction.
 
 ### Edge Features
 
