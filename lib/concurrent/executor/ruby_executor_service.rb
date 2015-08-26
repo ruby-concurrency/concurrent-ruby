@@ -51,7 +51,13 @@ module Concurrent
 
     private
 
-    attr_reader :stop_event, :stopped_event
+    def stop_event
+      @stop_event
+    end
+
+    def stopped_event
+      @stopped_event
+    end
 
     def ns_shutdown_execution
       stopped_event.set
