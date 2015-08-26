@@ -3,15 +3,16 @@ require 'concurrent/delay'
 require 'concurrent/errors'
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/concern/logging'
-require 'concurrent/executor/timer_set'
 require 'concurrent/executor/immediate_executor'
-require 'concurrent/executor/fixed_thread_pool'
-require 'concurrent/executor/thread_pool_executor'
 require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_counter'
 
 module Concurrent
   extend Concern::Logging
+
+  autoload :Options,            'concurrent/options'
+  autoload :TimerSet,           'concurrent/executor/timer_set'
+  autoload :ThreadPoolExecutor, 'concurrent/executor/thread_pool_executor'
 
   # @return [Logger] Logger with provided level and output.
   def self.create_stdlib_logger(level = Logger::FATAL, output = $stderr)
@@ -125,7 +126,7 @@ module Concurrent
   #   - :immediate - {Concurrent.global_immediate_executor}
   # @return [Executor]
   def self.executor(executor_identifier)
-    Executor.executor(executor_identifier)
+    Options.executor(executor_identifier)
   end
 
   def self.new_fast_executor(opts = {})

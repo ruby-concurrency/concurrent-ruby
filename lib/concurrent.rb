@@ -1,12 +1,10 @@
 require 'concurrent/version'
-
-require 'concurrent/synchronization'
-
 require 'concurrent/configuration'
 
 require 'concurrent/atomics'
 require 'concurrent/errors'
 require 'concurrent/executors'
+require 'concurrent/synchronization'
 
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atom'
@@ -33,6 +31,7 @@ require 'concurrent/tvar'
 require 'concurrent/thread_safe/synchronized_delegator'
 require 'concurrent/thread_safe/util'
 
+require 'concurrent/options'
 
 # @!macro [new] internal_implementation_note
 #

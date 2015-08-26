@@ -2,10 +2,11 @@ require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/dereferenceable'
 require 'concurrent/concern/observable'
 require 'concurrent/concern/logging'
-require 'concurrent/executor/executor'
 require 'concurrent/synchronization'
 
 module Concurrent
+
+  autoload :Options, 'concurrent/options'
 
   # `Agent`s are inspired by [Clojure's](http://clojure.org/) [agent](http://clojure.org/agents) function. An `Agent` is a single atomic value that represents an identity. The current value of the `Agent` can be requested at any time (`deref`). Each `Agent` has a work queue and operates on the global thread pool (see below). Consumers can `post` code blocks to the `Agent`. The code block (function) will receive the current value of the `Agent` as its sole parameter. The return value of the block will become the new value of the `Agent`. `Agent`s support two error handling modes: fail and continue. A good example of an `Agent` is a shared incrementing counter, such as the score in a video game. 
   # 
@@ -203,8 +204,8 @@ module Concurrent
       @validator            = Proc.new { |result| true }
       self.observers        = Collection::CopyOnWriteObserverSet.new
       @serialized_execution = SerializedExecution.new
-      @io_executor          = Executor.executor_from_options(opts) || Concurrent.global_io_executor
-      @fast_executor        = Executor.executor_from_options(opts) || Concurrent.global_fast_executor
+      @io_executor          = Options.executor_from_options(opts) || Concurrent.global_io_executor
+      @fast_executor        = Options.executor_from_options(opts) || Concurrent.global_fast_executor
       set_deref_options(opts)
     end
 

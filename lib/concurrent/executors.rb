@@ -1,6 +1,5 @@
 require 'concurrent/executor/abstract_executor_service'
 require 'concurrent/executor/cached_thread_pool'
-require 'concurrent/executor/executor'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/fixed_thread_pool'
 require 'concurrent/executor/immediate_executor'
