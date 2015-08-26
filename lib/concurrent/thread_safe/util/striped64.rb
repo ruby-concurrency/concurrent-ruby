@@ -83,7 +83,7 @@ module Concurrent
 
           # TODO: this only adds padding after the :value slot, need to find a way to add padding before the slot
           # @!visibility private
-          attr_reader *(Array.new(12).map {|i| :"padding_#{i}"})
+          attr_reader *(12.times.collect{ |i| "padding_#{i}".to_sym })
 
           alias_method :cas, :compare_and_set
 
