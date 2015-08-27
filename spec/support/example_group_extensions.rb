@@ -27,7 +27,7 @@ module Concurrent
 
     def reset_gem_configuration
       GLOBAL_EXECUTORS.each do |var, factory|
-        executor = Concurrent.const_get(var).value!
+        executor = Concurrent.const_get(var).value
         executor.shutdown
         executor.wait_for_termination(0.2)
         executor.kill
