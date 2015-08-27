@@ -1,10 +1,11 @@
-# This file has circular require issues. For now we assume all
-# necessary dependencies have been required already.
+# This file has circular require issues. It must be autoloaded.
+
+require 'concurrent/configuration'
 
 module Concurrent
 
   # @!visibility private
-  module Executor
+  module Options
 
     # Get the requested `Executor` based on the values set in the options hash.
     #

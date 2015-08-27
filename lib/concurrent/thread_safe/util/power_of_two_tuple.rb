@@ -1,3 +1,4 @@
+require 'concurrent/thread_safe/util'
 require 'concurrent/tuple'
 
 module Concurrent

@@ -1,3 +1,6 @@
+require 'concurrent/thread_safe/util'
+require 'concurrent/thread_safe/util/striped64'
+
 module Concurrent
 
   # @!visibility private

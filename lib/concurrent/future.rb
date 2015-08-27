@@ -1,10 +1,11 @@
 require 'thread'
 require 'concurrent/errors'
 require 'concurrent/ivar'
-require 'concurrent/executor/executor'
 require 'concurrent/executor/safe_task_executor'
 
 module Concurrent
+
+  autoload :Options, 'concurrent/options'
 
   # {include:file:doc/future.md}
   #
@@ -129,7 +130,7 @@ module Concurrent
       super
       @state = :unscheduled
       @task = opts[:__task_from_block__]
-      @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @executor = Options.executor_from_options(opts) || Concurrent.global_io_executor
       @args = get_arguments_from(opts)
     end
   end

@@ -1,11 +1,11 @@
 require 'thread'
-require 'concurrent/configuration'
 require 'concurrent/concern/obligation'
-require 'concurrent/executor/executor'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/synchronization'
 
 module Concurrent
+
+  autoload :Options, 'concurrent/options'
 
   # Lazy evaluation of a block yielding an immutable result. Useful for
   # expensive operations that may never be needed. It may be non-blocking,
@@ -74,7 +74,7 @@ module Concurrent
     #
     # @!macro delay_note_regarding_blocking
     def value(timeout = nil)
-      if @task_executor
+      if @executor
         super
       else
         # this function has been optimized for performance and
@@ -108,7 +108,7 @@ module Concurrent
     #
     # @!macro delay_note_regarding_blocking
     def value!(timeout = nil)
-      if @task_executor
+      if @executor
         super
       else
         result = value
@@ -127,7 +127,7 @@ module Concurrent
     #
     # @!macro delay_note_regarding_blocking
     def wait(timeout = nil)
-      if @task_executor
+      if @executor
         execute_task_once
         super(timeout)
       else
@@ -157,7 +157,7 @@ module Concurrent
     def ns_initialize(opts, &block)
       init_obligation(self)
       set_deref_options(opts)
-      @task_executor = Executor.executor_from_options(opts)
+      @executor = opts[:executor]
 
       @task      = block
       @state     = :pending
@@ -177,7 +177,8 @@ module Concurrent
       end
 
       if execute
-        @task_executor.post do
+        executor = Options.executor_from_options(executor: @executor)
+        executor.post do
           begin
             result  = task.call
             success = true

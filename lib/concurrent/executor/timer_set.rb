@@ -6,6 +6,8 @@ require 'concurrent/executor/single_thread_executor'
 
 module Concurrent
 
+  autoload :Options, 'concurrent/options'
+
   # Executes a collection of tasks, each after a given delay. A master task
   # monitors the set and schedules each task for execution at the appropriate
   # time. Tasks are run on the global thread pool or on the supplied executor.
@@ -73,7 +75,7 @@ module Concurrent
     # @!visibility private
     def ns_initialize(opts)
       @queue          = Collection::NonConcurrentPriorityQueue.new(order: :min)
-      @task_executor  = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @task_executor  = Options.executor_from_options(opts) || Concurrent.global_io_executor
       @timer_executor = SingleThreadExecutor.new
       @condition      = Event.new
       self.auto_terminate = opts.fetch(:auto_terminate, true)
@@ -115,7 +117,7 @@ module Concurrent
       synchronize{ @queue.delete(task) }
     end
 
-    # `ExecutorServic` callback called during shutdown.
+    # `ExecutorService` callback called during shutdown.
     #
     # @!visibility private
     def ns_shutdown_execution

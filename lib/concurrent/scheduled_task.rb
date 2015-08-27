@@ -2,10 +2,11 @@ require 'concurrent/errors'
 require 'concurrent/configuration'
 require 'concurrent/ivar'
 require 'concurrent/collection/copy_on_notify_observer_set'
-require 'concurrent/executor/executor'
 require 'concurrent/utility/monotonic_time'
 
 module Concurrent
+
+  autoload :Options, 'concurrent/options'
 
   # `ScheduledTask` is a close relative of `Concurrent::Future` but with one
   # important difference: A `Future` is set to execute as soon as possible
@@ -173,7 +174,7 @@ module Concurrent
         @delay = delay.to_f
         @task = task
         @time = nil
-        @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+        @executor = Options.executor_from_options(opts) || Concurrent.global_io_executor
         self.observers = Collection::CopyOnNotifyObserverSet.new
       end
     end

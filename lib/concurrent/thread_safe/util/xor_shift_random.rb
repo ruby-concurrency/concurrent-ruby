@@ -1,3 +1,5 @@
+require 'concurrent/thread_safe/util'
+
 module Concurrent
 
   # @!visibility private

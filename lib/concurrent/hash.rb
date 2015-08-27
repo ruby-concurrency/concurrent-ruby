@@ -24,12 +24,12 @@ module Concurrent
 
   elsif Concurrent.on_rbx?
     require 'monitor'
+    require 'concurrent/thread_safe/util/array_hash_rbx'
 
     # @!macro concurrent_hash
     class Hash < ::Hash
     end
 
     ThreadSafe::Util.make_synchronized_on_rbx Hash
-
   end
 end

@@ -27,6 +27,7 @@ module Concurrent
 
   elsif Concurrent.on_rbx?
     require 'monitor'
+    require 'concurrent/thread_safe/util/array_hash_rbx'
 
     # @!macro concurrent_array
     class Array < ::Array

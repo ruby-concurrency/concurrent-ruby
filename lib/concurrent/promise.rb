@@ -1,9 +1,10 @@
 require 'thread'
 require 'concurrent/errors'
 require 'concurrent/ivar'
-require 'concurrent/executor/executor'
 
 module Concurrent
+
+  autoload :Options, 'concurrent/options'
 
   PromiseExecutionError = Class.new(StandardError)
 
@@ -441,7 +442,7 @@ module Concurrent
     def ns_initialize(value, opts)
       super
 
-      @executor = Executor.executor_from_options(opts) || Concurrent.global_io_executor
+      @executor = Options.executor_from_options(opts) || Concurrent.global_io_executor
       @args = get_arguments_from(opts)
 
       @parent = opts.fetch(:parent) { nil }
