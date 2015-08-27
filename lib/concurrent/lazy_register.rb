@@ -54,7 +54,7 @@ module Concurrent
     #
     # @return [LazyRegister] self
     def register(key, &block)
-      delay = Delay.new(executor: :immediate, &block)
+      delay = Delay.new(&block)
       @data.update { |h| h.merge(key => delay) }
       self
     end
