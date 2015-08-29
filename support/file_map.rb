@@ -6,7 +6,6 @@ module FileMap
                        'lib/concurrent/actor/**/*.rb',
                        'lib/concurrent/channel.rb',
                        'lib/concurrent/channel/**/*.rb',
-                       'lib/concurrent/agent.rb',
                        'lib/concurrent/edge/**/*.rb'] & GIT_FILES
   CORE_LIB_FILES = ALL_LIB_FILES - EDGE_LIB_FILES
 
