@@ -144,7 +144,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 - **Actor** - Partial documentation and tests; stability is good.
 - **Future/Promise Framework** - API changes; partial documentation and tests; stability good.
 - **Agent** - Incomplete behaviour compared to Clojure's models; stability good.
-- **Channel** - Missing documentation; limted features; stability good.
+- **Channel** - Missing documentation; limited features; stability good.
 - **LazyRegister** - Missing documentation and tests.
 - **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Needs real world battle testing
 
