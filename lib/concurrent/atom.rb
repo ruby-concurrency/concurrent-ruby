@@ -3,6 +3,40 @@ require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/concern/observable'
 require 'concurrent/synchronization'
 
+# @!macro [new] thread_safe_variable_comparison
+#
+#   ## Thread-safe Variable Classes
+#
+#   Each of the thread-safe variable classes is designed to solve a different
+#   problem. In general:
+#
+#   * *{Concurrent::Agent}:* Shared, mutable variable providing independent,
+#     uncoordinated, *asynchronous* change of individual values. Best used when
+#     the value will undergo frequent, complex updates. Suitable when the result
+#     of an update does not need to be known immediately.
+#   * *{Concurrent::Atom}:* Shared, mutable variable providing independent,
+#     uncoordinated, *synchronous* change of individual values. Best used when
+#     the value will undergo frequent reads but only occasional, though complex,
+#     updates. Suitable when the result of an update must be known immediately.
+#   * *{Concurrent::AtomicReference}:* A simple object reference that can be
+#     atomically. Updates are synchronous but fast. Bast used when updates a
+#     simple set operations. Not suitable when updates are complex.
+#     {Concurrent::AtomicBoolean} and {Concurrent::AtomicFixnum} are similar
+#     but optimized for the given data type.
+#   * *{Concurrent::Exchanger}:* Shared, stateless synchronization point. Used
+#     when two or more threads need to exchange data. The threads will pair then
+#     block on each other until the exchange is complete.
+#   * *{Concurrent::MVar}:* Shared synchronization point. Used when one thread
+#     must give a value to another, which must take the value. The threads will
+#     block on each other until the exchange is complete.
+#   * *{Concurrent::ThreadLocalVar}:* Shared, mutable, isolated variable which
+#     holds a different value for each thread which has access. Often used as
+#     an instance variable in objects which must maintain different state
+#     for different threads.
+#   * *{Concurrent::TVar}:* Shared, mutable variables which provide
+#     *coordinated*, *synchronous*, change of *many* stated. Used when multiple
+#     value must change together, in an all-or-nothing transaction.
+
 module Concurrent
 
   # Atoms provide a way to manage shared, synchronous, independent state.

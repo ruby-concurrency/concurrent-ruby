@@ -1,4 +1,5 @@
 require 'concurrent/synchronization'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
   module Channel
@@ -6,8 +7,10 @@ module Concurrent
     # @api Channel
     # @!macro edge_warning
     class WaitableList < Synchronization::LockableObject
+      include Concurrent::Concern::Deprecation
 
       def initialize
+        deprecated 'Use Concurrent::Edge::Channel instead'
         super()
         synchronize { ns_initialize }
       end

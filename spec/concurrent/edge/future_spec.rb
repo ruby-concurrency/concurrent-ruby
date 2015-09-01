@@ -333,12 +333,12 @@ describe 'Concurrent::Edge futures' do
       ch2 = Concurrent::Edge::Channel.new
 
       result = Concurrent.select(ch1, ch2)
-      ch1.push 1
+      ch1.put 1
       expect(result.value!).to eq [1, ch1]
 
       Concurrent.
           future { 1+1 }.
-          then_push(ch1)
+          then_put(ch1)
       result = Concurrent.
           future { '%02d' }.
           then_select(ch1, ch2).

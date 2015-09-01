@@ -94,9 +94,13 @@ module Concurrent
       # only proof of concept
       # @return [Future]
       def select(*channels)
-        probe = future
-        channels.each { |ch| ch.select probe }
-        probe
+        future do
+          Channel.select do |s|
+            channels.each do |ch|
+              s.take(ch) { |value| [value, ch] }
+            end
+          end
+        end
       end
 
       # post job on :fast executor
@@ -693,8 +697,8 @@ module Concurrent
 
       # @note may block
       # @note only proof of concept
-      def then_push(channel)
-        on_success(:io) { |value| channel.push value }
+      def then_put(channel)
+        on_success(:io) { |value| channel.put value }
       end
 
       # @yield [value] executed async on `executor` when success
@@ -1373,39 +1377,6 @@ module Concurrent
         Concurrent.global_timer_set.post(in_seconds) do
           @Future.complete_with Event::COMPLETED
         end
-      end
-    end
-
-    # @note proof of concept
-    class Channel < Synchronization::Object
-      safe_initialization!
-
-      # TODO make lock free
-      def initialize
-        super()
-        @ProbeSet = Concurrent::Channel::WaitableList.new
-      end
-
-      def probe_set_size
-        @ProbeSet.size
-      end
-
-      def push(value)
-        until @ProbeSet.take.try_success([value, self])
-        end
-      end
-
-      def pop
-        select(Concurrent.future)
-      end
-
-      def select(probe)
-        @ProbeSet.put(probe)
-        probe
-      end
-
-      def inspect
-        to_s
       end
     end
   end

@@ -1,3 +1,5 @@
+require 'concurrent/concern/deprecation'
+  
 module Concurrent
   module Channel
 
@@ -6,8 +8,10 @@ module Concurrent
     # @api Channel
     # @!macro edge_warning
     class RingBuffer
+      include Concurrent::Concern::Deprecation
 
       def initialize(capacity)
+        deprecated 'Use Concurrent::Edge::Channel instead'
         @buffer = ::Array.new(capacity)
         @first = @last = 0
         @count = 0

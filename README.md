@@ -130,8 +130,11 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
   new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
   operations like `#wait`, `#value`. It also offers better performance.
-* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
-  Communicating Sequential Processes (CSP).
+* New [channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
+  Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
+  inspiration from Clojure [core.async](https://clojure.github.io/core.async/).
+* Old [channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
+  Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
@@ -143,7 +146,8 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 - **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
 - **Future/Promise Framework** - API changes; partial documentation and tests; stability good.
-- **Channel** - Missing documentation; limited features; stability good.
+- **New channel** - Missing documentation; very new; stability good.
+- **Old channel** - Deprecated; missing documentation; limited features.
 - **LazyRegister** - Missing documentation and tests.
 - **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing
 

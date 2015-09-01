@@ -1,4 +1,5 @@
 require 'concurrent/channel/waitable_list'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
   module Channel
@@ -6,8 +7,10 @@ module Concurrent
     # @api Channel
     # @!macro edge_warning
     class UnbufferedChannel
+      include Concurrent::Concern::Deprecation
 
       def initialize
+        deprecated 'Use Concurrent::Edge::Channel instead'
         @probe_set = WaitableList.new
       end
 
