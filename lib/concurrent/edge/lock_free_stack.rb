@@ -22,6 +22,7 @@ module Concurrent
       EMPTY = Empty[nil, nil]
 
       def initialize
+        super
         @Head = AtomicReference.new EMPTY
         ensure_ivar_visibility!
       end

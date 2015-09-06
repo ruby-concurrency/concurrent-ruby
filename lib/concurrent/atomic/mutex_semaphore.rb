@@ -5,7 +5,7 @@ module Concurrent
   # @!macro semaphore
   # @!visibility private
   # @!macro internal_implementation_note
-  class MutexSemaphore < Synchronization::Object
+  class MutexSemaphore < Synchronization::LockableObject
 
     # @!macro semaphore_method_initialize
     def initialize(count)
@@ -78,7 +78,7 @@ module Concurrent
     # @raise [ArgumentError] if `@free` - `@reduction` is less than zero
     #
     # @return [nil]
-    # 
+    #
     # @!visibility private
     def reduce_permits(reduction)
       unless reduction.is_a?(Fixnum) && reduction >= 0

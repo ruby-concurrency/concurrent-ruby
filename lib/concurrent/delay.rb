@@ -40,7 +40,7 @@ module Concurrent
   #     execute on the given executor, allowing the call to timeout.
   #
   # @see Concurrent::Concern::Dereferenceable
-  class Delay < Synchronization::Object
+  class Delay < Synchronization::LockableObject
     include Concern::Obligation
 
     # NOTE: Because the global thread pools are lazy-loaded with these objects

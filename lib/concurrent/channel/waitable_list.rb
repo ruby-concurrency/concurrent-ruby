@@ -5,7 +5,7 @@ module Concurrent
 
     # @api Channel
     # @!macro edge_warning
-    class WaitableList < Synchronization::Object
+    class WaitableList < Synchronization::LockableObject
 
       def initialize
         super()

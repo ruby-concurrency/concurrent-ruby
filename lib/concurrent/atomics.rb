@@ -10,24 +10,24 @@
 #   @!method initialize
 #     @!macro [new] atomic_reference_method_initialize
 #       @param [Object] value The initial value.
-#   
+#
 #   @!method get
 #     @!macro [new] atomic_reference_method_get
 #       Gets the current value.
 #       @return [Object] the current value
-#   
+#
 #   @!method set
 #     @!macro [new] atomic_reference_method_set
 #       Sets to the given value.
 #       @param [Object] new_value the new value
 #       @return [Object] the new value
-#   
+#
 #   @!method get_and_set
 #     @!macro [new] atomic_reference_method_get_and_set
 #       Atomically sets to the given value and returns the old value.
 #       @param [Object] new_value the new value
 #       @return [Object] the old value
-#   
+#
 #   @!method compare_and_set
 #     @!macro [new] atomic_reference_method_compare_and_set
 #

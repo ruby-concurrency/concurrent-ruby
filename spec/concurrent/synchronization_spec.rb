@@ -3,9 +3,9 @@ require 'timeout'
 module Concurrent
 
   describe Synchronization do
-    describe Synchronization::Object do
+    describe Synchronization::LockableObject do
 
-      class AClass < Synchronization::Object
+      class AClass < Synchronization::LockableObject
         attr_volatile :volatile
         attr_accessor :not_volatile
 

@@ -4,7 +4,7 @@ module Concurrent
 
   # A synchronization aid that allows a set of threads to all wait for each
   # other to reach a common barrier point.
-  class CyclicBarrier < Synchronization::Object
+  class CyclicBarrier < Synchronization::LockableObject
 
     # @!visibility private
     Generation = Struct.new(:status)

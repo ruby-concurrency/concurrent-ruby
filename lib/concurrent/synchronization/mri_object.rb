@@ -1,31 +1,29 @@
 module Concurrent
   module Synchronization
 
-
     # @!visibility private
     # @!macro internal_implementation_note
-    class RbxObject < AbstractObject
+    class MriObject < AbstractObject
+
       def initialize
         # nothing to do
       end
 
       def full_memory_barrier
-        # Rubinius instance variables are not volatile so we need to insert barrier
-        Rubinius.memory_barrier
+        # relying on undocumented behavior of CRuby, GVL acquire has lock which ensures visibility of ivars
+        # https://github.com/ruby/ruby/blob/ruby_2_2/thread_pthread.c#L204-L211
       end
 
-      def self.attr_volatile *names
+      def self.attr_volatile(*names)
         names.each do |name|
           ivar = :"@volatile_#{name}"
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def #{name}
-              Rubinius.memory_barrier
-              #{ivar}
+          #{ivar}
             end
 
             def #{name}=(value)
               #{ivar} = value
-              Rubinius.memory_barrier
             end
           RUBY
         end

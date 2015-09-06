@@ -10,7 +10,7 @@ module Concurrent
     # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
     # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
     #   that would eat up all threads in task pool and deadlock
-    class Core < Synchronization::Object
+    class Core < Synchronization::LockableObject
       include TypeCheck
       include Concern::Logging
 

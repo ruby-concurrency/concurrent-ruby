@@ -43,7 +43,7 @@ module Concurrent
   #    In Proceedings of Workshop on Graph Reduction, 1986.
   # 2. For recent application:
   #    [DataDrivenFuture in Habanero Java from Rice](http://www.cs.rice.edu/~vs3/hjlib/doc/edu/rice/hj/api/HjDataDrivenFuture.html).
-  class IVar < Synchronization::Object
+  class IVar < Synchronization::LockableObject
     include Concern::Obligation
     include Concern::Observable
 

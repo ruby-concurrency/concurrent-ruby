@@ -1,6 +1,8 @@
 module Concurrent
   module Synchronization
-    class Condition < Object
+    class Condition < LockableObject
+
+      # TODO locks two objects, improve
 
       singleton_class.send :alias_method, :private_new, :new
       private_class_method :new
@@ -44,7 +46,7 @@ module Concurrent
       end
     end
 
-    class Object < Implementation
+    class LockableObject < LockableObjectImplementation
       def new_condition
         Condition.private_new(self)
       end

@@ -125,7 +125,7 @@ module Concurrent
     include FutureShortcuts
 
     # Represents an event which will happen in future (will be completed). It has to always happen.
-    class Event < Synchronization::Object
+    class Event < Synchronization::LockableObject
       include Concern::Deprecation
 
       # @!visibility private
@@ -879,6 +879,7 @@ module Concurrent
     # @!visibility private
     class AbstractPromise < Synchronization::Object
       def initialize(future)
+        super()
         @Future = future
         ensure_ivar_visibility!
       end

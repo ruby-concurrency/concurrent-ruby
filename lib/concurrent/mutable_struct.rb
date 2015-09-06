@@ -75,7 +75,7 @@ module Concurrent
     alias_method :to_s, :inspect
 
     # @!macro [attach] struct_merge
-    # 
+    #
     #   Returns a new struct containing the contents of `other` and the contents
     #   of `self`. If no block is specified, the value for entries with duplicate
     #   keys will be that of `other`. Otherwise the value for each duplicate key
@@ -98,7 +98,7 @@ module Concurrent
     # @!macro [attach] struct_to_h
     #
     #   Returns a hash containing the names and values for the struct’s members.
-    #   
+    #
     #   @return [Hash] the names and values for the struct’s members
     def to_h
       synchronize { ns_to_h }
@@ -206,10 +206,10 @@ module Concurrent
       FACTORY.define_struct(clazz_name, args, &block)
     end
 
-    FACTORY = Class.new(Synchronization::Object) do
+    FACTORY = Class.new(Synchronization::LockableObject) do
       def define_struct(name, members, &block)
         synchronize do
-          clazz = Synchronization::AbstractStruct.define_struct_class(MutableStruct, Synchronization::Object, name, members, &block)
+          clazz = Synchronization::AbstractStruct.define_struct_class(MutableStruct, Synchronization::LockableObject, name, members, &block)
           members.each_with_index do |member, index|
             clazz.send(:define_method, member) do
               synchronize { @values[index] }

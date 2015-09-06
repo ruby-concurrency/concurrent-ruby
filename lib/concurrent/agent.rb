@@ -19,13 +19,13 @@ module Concurrent
   # and no blocking receive. The state of an Agent should be itself immutable
   # and the `#value` of an Agent is always immediately available for reading by
   # any thread without any messages, i.e. observation does not require
-  # cooperation or coordination. 
+  # cooperation or coordination.
   #
   # Agent action dispatches are made using the various `#send` methods. These
   # methods always return immediately. At some point later, in another thread,
   # the following will happen:
   #
-  # 1. The given `action` will be applied to the state of the Agent and the 
+  # 1. The given `action` will be applied to the state of the Agent and the
   #    `args`, if any were supplied.
   # 2. The return value of `action` will be passed to the validator lambda,
   #    if one has been set on the Agent.
@@ -55,7 +55,7 @@ module Concurrent
   # Unlike in Clojure, `Agent` cannot participate in `Concurrent::TVar` transactions.
   #
   # ## Example
-  # 
+  #
   # ```
   # def next_fibonacci(set = nil)
   #   return [0, 1] if set.nil?
@@ -130,7 +130,7 @@ module Concurrent
   # ```
   #
   # @!macro [new] agent_await_warning
-  # 
+  #
   #   **NOTE** Never, *under any circumstances*, call any of the "await" methods
   #   ({#await}, {#await_for}, {#await_for!}, and {#wait}) from within an action
   #   block/proc/lambda. The call will block the Agent and will always fail.
@@ -141,7 +141,7 @@ module Concurrent
   #
   # @see http://clojure.org/Agents Clojure Agents
   # @see http://clojure.org/state Values and Change - Clojure's approach to Identity and State
-  class Agent < Synchronization::Object
+  class Agent < Synchronization::LockableObject
     include Concern::Observable
 
     ERROR_MODES = [:continue, :fail].freeze
@@ -150,13 +150,13 @@ module Concurrent
     AWAIT_FLAG = Object.new
     private_constant :AWAIT_FLAG
 
-    AWAIT_ACTION = ->(value, latch){ latch.count_down; AWAIT_FLAG }
+    AWAIT_ACTION = ->(value, latch) { latch.count_down; AWAIT_FLAG }
     private_constant :AWAIT_ACTION
 
-    DEFAULT_ERROR_HANDLER = ->(agent, error){ nil }
+    DEFAULT_ERROR_HANDLER = ->(agent, error) { nil }
     private_constant :DEFAULT_ERROR_HANDLER
 
-    DEFAULT_VALIDATOR = ->(value){ true }
+    DEFAULT_VALIDATOR = ->(value) { true }
     private_constant :DEFAULT_VALIDATOR
 
     Job = Struct.new(:action, :args, :executor, :caller)
@@ -226,6 +226,7 @@ module Concurrent
     def value
       @current.value
     end
+
     alias_method :deref, :value
 
     # When {#failed?} and {#error_mode} is `:fail`, returns the error object
@@ -236,6 +237,7 @@ module Concurrent
     def error
       @error.value
     end
+
     alias_method :reason, :error
 
     # @!macro [attach] agent_send
@@ -289,6 +291,7 @@ module Concurrent
     def send_off(*args, &action)
       enqueue_action_job(action, args, Concurrent.global_io_executor)
     end
+
     alias_method :post, :send_off
 
     # @!macro agent_send
@@ -396,6 +399,7 @@ module Concurrent
     def failed?
       !@error.value.nil?
     end
+
     alias_method :stopped?, :failed?
 
     # When an Agent is {#failed?}, changes the Agent {#value} to `new_value`
@@ -420,7 +424,7 @@ module Concurrent
         raise Error.new('agent is not failed') unless failed?
         raise ValidationError unless ns_validate(new_value)
         @current.value = new_value
-        @error.value = nil
+        @error.value   = nil
         @queue.clear if clear_actions
         ns_post_next_job unless @queue.empty?
       end
@@ -440,7 +444,7 @@ module Concurrent
       #
       # @!macro agent_await_warning
       def await(*agents)
-        agents.each {|agent| agent.await }
+        agents.each { |agent| agent.await }
         true
       end
 
@@ -455,11 +459,11 @@ module Concurrent
       # @!macro agent_await_warning
       def await_for(timeout, *agents)
         end_at = Concurrent.monotonic_time + timeout.to_f
-        ok = agents.length.times do |i|
+        ok     = agents.length.times do |i|
           break false if (delay = end_at - Concurrent.monotonic_time) < 0
           break false unless agents[i].await_for(delay)
         end
-        !! ok
+        !!ok
       end
 
       # Blocks the current thread until all actions dispatched thus far to all
@@ -481,7 +485,7 @@ module Concurrent
     private
 
     def ns_initialize(initial, opts)
-      @error_mode = opts[:error_mode]
+      @error_mode    = opts[:error_mode]
       @error_handler = opts[:error_handler]
 
       if @error_mode && !ERROR_MODES.include?(@error_mode)
@@ -491,11 +495,11 @@ module Concurrent
       end
 
       @error_handler ||= DEFAULT_ERROR_HANDLER
-      @validator       = opts.fetch(:validator, DEFAULT_VALIDATOR)
-      @current         = Concurrent::AtomicReference.new(initial)
-      @error           = Concurrent::AtomicReference.new(nil)
-      @caller          = Concurrent::ThreadLocalVar.new(nil)
-      @queue           = []
+      @validator     = opts.fetch(:validator, DEFAULT_VALIDATOR)
+      @current       = Concurrent::AtomicReference.new(initial)
+      @error         = Concurrent::AtomicReference.new(nil)
+      @caller        = Concurrent::ThreadLocalVar.new(nil)
+      @queue         = []
 
       self.observers = Collection::CopyOnNotifyObserverSet.new
     end
@@ -530,15 +534,15 @@ module Concurrent
     end
 
     def ns_post_next_job
-      @queue.first.executor.post{ execute_next_job }
+      @queue.first.executor.post { execute_next_job }
     end
 
     def execute_next_job
-      job = synchronize { @queue.first }
+      job       = synchronize { @queue.first }
       old_value = @current.value
 
       @caller.value = job.caller # for nested actions
-      new_value = job.action.call(old_value, *job.args)
+      new_value     = job.action.call(old_value, *job.args)
       @caller.value = nil
 
       if new_value != AWAIT_FLAG && ns_validate(new_value)
@@ -573,7 +577,7 @@ module Concurrent
     end
 
     def ns_find_last_job_for_thread
-      @queue.rindex {|job| job.caller == Thread.current.object_id }
+      @queue.rindex { |job| job.caller == Thread.current.object_id }
     end
   end
 end

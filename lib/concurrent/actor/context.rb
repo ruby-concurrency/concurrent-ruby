@@ -15,7 +15,7 @@ module Concurrent
     #     > {include:Actor::RestartingContext}
     #
     # Example of ac actor definition:
-    # 
+    #
     # {include:file:doc/actor/define.out.rb}
     #
     # See methods of {AbstractContext} what else can be tweaked, e.g {AbstractContext#default_reference_class}

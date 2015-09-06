@@ -6,7 +6,7 @@ module Concurrent
   # success - indicating if the callable has been executed without errors
   # value - filled by the callable result if it has been executed without errors, nil otherwise
   # reason - the error risen by the callable if it has been executed with errors, nil otherwise
-  class SafeTaskExecutor < Synchronization::Object
+  class SafeTaskExecutor < Synchronization::LockableObject
 
     def initialize(task, opts = {})
       super()

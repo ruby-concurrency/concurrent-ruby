@@ -77,7 +77,7 @@ module Concurrent
       FACTORY.define_struct(clazz_name, args, &block)
     end
 
-    FACTORY = Class.new(Synchronization::Object) do
+    FACTORY = Class.new(Synchronization::LockableObject) do
       def define_struct(name, members, &block)
         synchronize do
           Synchronization::AbstractStruct.define_struct_class(ImmutableStruct, Synchronization::Object, name, members, &block)

@@ -6,7 +6,7 @@ module Concurrent
 
     # @api Channel
     # @!macro edge_warning
-    class BufferedChannel < Synchronization::Object
+    class BufferedChannel < Synchronization::LockableObject
 
       def initialize(size)
         super()

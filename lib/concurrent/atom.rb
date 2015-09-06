@@ -20,7 +20,7 @@ module Concurrent
   # value validates.
   #
   # ## Example
-  # 
+  #
   # ```
   # def next_fibonacci(set = nil)
   #   return [0, 1] if set.nil?
@@ -57,7 +57,7 @@ module Concurrent
   #
   # @see http://clojure.org/atoms Clojure Atoms
   # @see http://clojure.org/state Values and Change - Clojure's approach to Identity and State
-  class Atom < Synchronization::Object
+  class Atom < Synchronization::LockableObject
     include Concern::Observable
 
     # Create a new atom with the given initial value.
@@ -70,7 +70,7 @@ module Concurrent
     #   is acceptable else return false (preferrably) or raise an exception.
     #
     # @!macro deref_options
-    # 
+    #
     # @raise [ArgumentError] if the validator is not a `Proc` (when given)
     def initialize(value, opts = {})
       super()
@@ -102,7 +102,7 @@ module Concurrent
     # the application of the supplied block to a current value, atomically.
     # However, because the block might be called multiple times, it must be free
     # of side effects.
-    # 
+    #
     # @note The given block may be called multiple times, and thus should be free
     #   of side effects.
     #

@@ -1,6 +1,7 @@
 module Concurrent
   module Synchronization
-    class Lock < Object
+    class Lock < LockableObject
+      # TODO use JavaReentrantLock on JRuby
 
       public :synchronize
 
@@ -21,7 +22,7 @@ module Concurrent
       end
 
       public :ns_signal
-      
+
       def broadcast
         synchronize { ns_broadcast }
       end

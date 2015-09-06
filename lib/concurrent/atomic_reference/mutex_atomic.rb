@@ -8,7 +8,7 @@ module Concurrent
   #
   # @!visibility private
   # @!macro internal_implementation_note
-  class MutexAtomicReference < Synchronization::Object
+  class MutexAtomicReference < Synchronization::LockableObject
     include Concurrent::AtomicDirectUpdate
     include Concurrent::AtomicNumericCompareAndSetWrapper
 
