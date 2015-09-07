@@ -9,7 +9,6 @@ module Concurrent
 
       def initialize(lock)
         @Lock = lock
-        ensure_ivar_visibility!
         super()
       end
 

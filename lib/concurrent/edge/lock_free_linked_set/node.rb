@@ -9,13 +9,11 @@ module Concurrent
         attr_reader :Data, :Successor_reference, :Key
 
         def initialize(data = nil, successor = nil)
-          super()
-
           @Successor_reference = AtomicMarkableReference.new(successor || Tail.new)
           @Data = data
           @Key = key_for data
 
-          ensure_ivar_visibility!
+          super() # ensures visibility
         end
 
         # Check to see if the node is the last in the list.

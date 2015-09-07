@@ -173,8 +173,7 @@ module Concurrent
         @Callbacks       = LockFreeStack.new
         @Waiters         = LockFreeStack.new # TODO replace with AtomicFixnum, avoid aba problem
         @State           = AtomicReference.new PENDING
-        super()
-        ensure_ivar_visibility!
+        super() # ensures visibility
       end
 
       # @return [:pending, :completed]
@@ -879,9 +878,8 @@ module Concurrent
     # @!visibility private
     class AbstractPromise < Synchronization::Object
       def initialize(future)
-        super()
         @Future = future
-        ensure_ivar_visibility!
+        super()
       end
 
       def future
@@ -1377,9 +1375,8 @@ module Concurrent
     class Channel < Synchronization::Object
       # TODO make lock free
       def initialize
-        super
         @ProbeSet = Concurrent::Channel::WaitableList.new
-        ensure_ivar_visibility!
+        super()
       end
 
       def probe_set_size

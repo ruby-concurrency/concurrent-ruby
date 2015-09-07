@@ -4,10 +4,10 @@ module Concurrent
     # @!visibility private
     # @!macro internal_implementation_note
     class RbxLockableObject < AbstractLockableObject
-      def initialize
+      def initialize(*defaults)
         @__Waiters__ = []
         @__owner__   = nil
-        ensure_ivar_visibility!
+        super(*defaults) # ensures visibility
       end
 
       protected

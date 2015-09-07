@@ -105,7 +105,7 @@ module Concurrent
       @ReadQueue  = Synchronization::Lock.new # used to queue waiting readers
       @WriteQueue = Synchronization::Lock.new # used to queue waiting writers
       @HeldCount  = ThreadLocalVar.new(0)     # indicates # of R & W locks held by this thread
-      ensure_ivar_visibility!
+      super() # ensures visibility
     end
 
     # Execute a block operation within a read lock.

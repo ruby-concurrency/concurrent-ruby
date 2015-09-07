@@ -4,9 +4,8 @@ module Concurrent
 
   class_definition = Class.new(Synchronization::LockableObject) do
     def initialize
-      super()
       @last_time = Time.now.to_f
-      ensure_ivar_visibility!
+      super()
     end
 
     if defined?(Process::CLOCK_MONOTONIC)

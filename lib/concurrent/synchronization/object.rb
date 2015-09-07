@@ -1,20 +1,19 @@
-
 module Concurrent
   module Synchronization
 
     # @!visibility private
     # @!macro internal_implementation_note
     ObjectImplementation = case
-                     when Concurrent.on_cruby?
-                       MriObject
-                     when Concurrent.on_jruby?
-                       JRubyObject
-                     when Concurrent.on_rbx?
-                       RbxObject
-                     else
-                       warn 'Possibly unsupported Ruby implementation'
-                       MriObject
-                     end
+                           when Concurrent.on_cruby?
+                             MriObject
+                           when Concurrent.on_jruby?
+                             JRubyObject
+                           when Concurrent.on_rbx?
+                             RbxObject
+                           else
+                             warn 'Possibly unsupported Ruby implementation'
+                             MriObject
+                           end
     private_constant :ObjectImplementation
 
     # TODO fix documentation
@@ -47,12 +46,57 @@ module Concurrent
     #
     class Object < ObjectImplementation
 
-      # TODO split to be able to use just final fields
-      # - object has mfence, volatile fields, and cas fields
+      def initialize(*defaults)
+        super()
+        initialize_volatile_cas_fields(defaults)
+        ensure_ivar_visibility!
+      end
 
-      # TODO lock should be the public api, Object with private synchronize, signal, .. should be
-      # private class just for concurrent-ruby, forbid inheritance of classes using it, like CountDownLatch
-      # TODO in place CAS
+      def self.attr_volatile_with_cas(*names)
+        @volatile_cas_fields ||= []
+        @volatile_cas_fields += names
+
+        names.each do |name|
+          ivar = :"@VolatileCas_#{name}"
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            def #{name}
+              #{ivar}.get
+            end
+
+            def #{name}=(value)
+              #{ivar}.set value
+            end
+
+            def swap_#{name}(value)
+              #{ivar}.swap value
+            end
+
+            def compare_and_set_#{name}(expected, value)
+              #{ivar}.compare_and_set expected, value
+            end
+
+            def update_#{name}(&block)
+              #{ivar}.update &block
+            end
+          RUBY
+        end
+        names.map { |n| [n, :"#{n}=", :"swap_#{n}", :"compare_and_set_#{n}"] }.flatten
+      end
+
+      def self.volatile_cas_fields(inherited = true)
+        @volatile_cas_fields ||= []
+        ((superclass.volatile_cas_fields if superclass.respond_to?(:volatile_cas_fields) && inherited) || []) +
+            @volatile_cas_fields
+      end
+
+      private
+
+      def initialize_volatile_cas_fields(defaults)
+        self.class.volatile_cas_fields.zip(defaults) do |name, default|
+          instance_variable_set :"@VolatileCas_#{name}", AtomicReference.new(default)
+        end
+        nil
+      end
 
       # @!method initialize
       #   @!macro synchronization_object_method_initialize

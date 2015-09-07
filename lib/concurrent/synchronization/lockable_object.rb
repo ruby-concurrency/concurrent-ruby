@@ -19,7 +19,10 @@ module Concurrent
     private_constant :LockableObjectImplementation
 
     class LockableObject < LockableObjectImplementation
-      def self.allow_only_direct_descendants! # FIXME interne dedime docela dost :/
+
+      # TODO make private for c-r
+
+      def self.allow_only_direct_descendants! # FIXME we inherit too much ourselves :/
         this = self
         singleton_class.send :define_method, :inherited do |child|
           # super child

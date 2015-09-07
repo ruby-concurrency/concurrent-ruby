@@ -9,23 +9,22 @@ module Concurrent
   class SafeTaskExecutor < Synchronization::LockableObject
 
     def initialize(task, opts = {})
-      super()
-      @task = task
+      @task            = task
       @exception_class = opts.fetch(:rescue_exception, false) ? Exception : StandardError
-      ensure_ivar_visibility!
+      super() # ensures visibility
     end
 
     # @return [Array]
     def execute(*args)
       synchronize do
         success = false
-        value = reason = nil
+        value   = reason = nil
 
         begin
-          value = @task.call(*args)
+          value   = @task.call(*args)
           success = true
         rescue @exception_class => ex
-          reason = ex
+          reason  = ex
           success = false
         end
 
