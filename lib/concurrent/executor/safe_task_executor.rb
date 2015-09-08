@@ -1,4 +1,4 @@
-require 'concurrent/synchronization/object'
+require 'concurrent/synchronization'
 
 module Concurrent
 

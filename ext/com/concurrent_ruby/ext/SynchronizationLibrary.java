@@ -1,7 +1,6 @@
 package com.concurrent_ruby.ext;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -14,16 +13,32 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.Visibility;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyNil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.util.unsafe.UnsafeHolder;
 
 public class SynchronizationLibrary implements Library {
 
-    private static final ObjectAllocator JRUBYREFERENCE_ALLOCATOR = new ObjectAllocator() {
+    private static final ObjectAllocator JRUBY_OBJECT_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new JavaObject(runtime, klazz);
+            return new JRubyObject(runtime, klazz);
+        }
+    };
+
+    private static final ObjectAllocator OBJECT_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new Object(runtime, klazz);
+        }
+    };
+
+    private static final ObjectAllocator ABSTRACT_LOCKABLE_OBJECT_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new AbstractLockableObject(runtime, klazz);
+        }
+    };
+
+    private static final ObjectAllocator JRUBY_LOCKABLE_OBJECT_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new JRubyLockableObject(runtime, klazz);
         }
     };
 
@@ -31,31 +46,114 @@ public class SynchronizationLibrary implements Library {
         RubyModule synchronizationModule = runtime.
                 defineModule("Concurrent").
                 defineModuleUnder("Synchronization");
-        RubyClass parentClass = synchronizationModule.getClass("AbstractObject");
 
-        if (parentClass == null)
-            throw runtime.newRuntimeError("Concurrent::Synchronization::AbstractObject is missing");
+        defineClass(runtime, synchronizationModule, "AbstractObject", "JRubyObject",
+                JRubyObject.class, JRUBY_OBJECT_ALLOCATOR);
 
-        RubyClass synchronizedObjectJavaClass =
-                synchronizationModule.defineClassUnder("JavaObject", parentClass, JRUBYREFERENCE_ALLOCATOR);
+        defineClass(runtime, synchronizationModule, "JRubyObject", "Object",
+                Object.class, OBJECT_ALLOCATOR);
 
-        synchronizedObjectJavaClass.defineAnnotatedMethods(JavaObject.class);
+        defineClass(runtime, synchronizationModule, "Object", "AbstractLockableObject",
+                AbstractLockableObject.class, ABSTRACT_LOCKABLE_OBJECT_ALLOCATOR);
+
+        defineClass(runtime, synchronizationModule, "AbstractLockableObject", "JRubyLockableObject",
+                JRubyLockableObject.class, JRUBY_LOCKABLE_OBJECT_ALLOCATOR);
     }
 
-    @JRubyClass(name = "JavaObject", parent = "AbstractObject")
-    public static class JavaObject extends RubyObject {
+    private RubyClass defineClass(Ruby runtime, RubyModule namespace, String parentName, String name,
+                                  Class javaImplementation, ObjectAllocator allocator) {
+        final RubyClass parentClass = namespace.getClass(parentName);
 
-        public static final long AN_VOLATILE_FIELD_OFFSET =
-                UnsafeHolder.fieldOffset(JavaObject.class, "anVolatileField");
-        private volatile int anVolatileField = 0;
+        if (parentClass == null) {
+            System.out.println("not found " + parentName);
+            throw runtime.newRuntimeError(namespace.toString() + "::" + parentName + " is missing");
+        }
 
-        public JavaObject(Ruby runtime, RubyClass metaClass) {
+        final RubyClass newClass = namespace.defineClassUnder(name, parentClass, allocator);
+        newClass.defineAnnotatedMethods(javaImplementation);
+        return newClass;
+    }
+
+    @JRubyClass(name = "JRubyObject", parent = "AbstractObject")
+    public static class JRubyObject extends RubyObject {
+        public JRubyObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context) {
             return this;
+        }
+
+        @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PRIVATE)
+        public IRubyObject fullMemoryBarrier(ThreadContext context) {
+            if (UnsafeHolder.U == null) {
+                // We are screwed
+                throw new UnsupportedOperationException();
+            } else if (UnsafeHolder.SUPPORTS_FENCES)
+                UnsafeHolder.fullFence();
+            else {
+                // TODO (pitr 06-Sep-2015): enforce Java 8
+                throw new UnsupportedOperationException();
+            }
+            return context.nil;
+        }
+
+        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
+        public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
+            if (UnsafeHolder.U == null) {
+                synchronized (this) {
+                    // TODO (pitr 06-Sep-2015): Possibly dangerous, there may be a deadlock here
+                    // TODO (pitr 08-Sep-2015): maybe remove the branch since full_memory_barrier is not supported anyway
+                    return instance_variable_get(context, name);
+                }
+            } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                // ensure we see latest value
+                UnsafeHolder.loadFence();
+                return instance_variable_get(context, name);
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
+        public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
+            if (UnsafeHolder.U == null) {
+                synchronized (this) {
+                    return instance_variable_set(name, value);
+                }
+            } else if (UnsafeHolder.SUPPORTS_FENCES) {
+                final IRubyObject result = instance_variable_set(name, value);
+                // ensure we make latest value visible
+                UnsafeHolder.storeFence();
+                return result;
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
+    }
+
+    @JRubyClass(name = "Object", parent = "JRubyObject")
+    public static class Object extends JRubyObject {
+
+        public Object(Ruby runtime, RubyClass metaClass) {
+            super(runtime, metaClass);
+        }
+    }
+
+    @JRubyClass(name = "AbstractLockableObject", parent = "Object")
+    public static class AbstractLockableObject extends Object {
+
+        public AbstractLockableObject(Ruby runtime, RubyClass metaClass) {
+            super(runtime, metaClass);
+        }
+    }
+
+    @JRubyClass(name = "JRubyLockableObject", parent = "AbstractLockableObject")
+    public static class JRubyLockableObject extends JRubyObject {
+
+        public JRubyLockableObject(Ruby runtime, RubyClass metaClass) {
+            super(runtime, metaClass);
         }
 
         @JRubyMethod(name = "synchronize", visibility = Visibility.PROTECTED)
@@ -107,59 +205,6 @@ public class SynchronizationLibrary implements Library {
         public IRubyObject nsBroadcast(ThreadContext context) {
             notifyAll();
             return this;
-        }
-
-        @JRubyMethod(name = "ensure_ivar_visibility!", visibility = Visibility.PROTECTED)
-        public IRubyObject ensureIvarVisibilityBang(ThreadContext context) {
-            if (UnsafeHolder.U == null) {
-                // We are screwed
-                throw new UnsupportedOperationException();
-            } else if (UnsafeHolder.SUPPORTS_FENCES)
-                // We have to prevent ivar writes to reordered with storing of the final instance reference
-                // Therefore wee need a fullFence to prevent reordering in both directions.
-                UnsafeHolder.fullFence();
-            else {
-                // Assumption that this is not eliminated, if false it will break non x86 platforms.
-                UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
-                UnsafeHolder.U.getIntVolatile(this, AN_VOLATILE_FIELD_OFFSET);
-            }
-            return context.nil;
-        }
-
-        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
-        public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
-            if (UnsafeHolder.U == null) {
-                // TODO: Possibly dangerous, there may be a deadlock on the this
-                synchronized (this) {
-                    return instance_variable_get(context, name);
-                }
-            } else if (UnsafeHolder.SUPPORTS_FENCES) {
-                // ensure we see latest value
-                UnsafeHolder.loadFence();
-                return instance_variable_get(context, name);
-            } else {
-                UnsafeHolder.U.getIntVolatile(this, AN_VOLATILE_FIELD_OFFSET);
-                return instance_variable_get(context, name);
-            }
-        }
-
-        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
-        public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
-            if (UnsafeHolder.U == null) {
-                // TODO: Possibly dangerous, there may be a deadlock on the this
-                synchronized (this) {
-                    return instance_variable_set(name, value);
-                }
-            } else if (UnsafeHolder.SUPPORTS_FENCES) {
-                final IRubyObject result = instance_variable_set(name, value);
-                // ensure we make latest value visible
-                UnsafeHolder.storeFence();
-                return result;
-            } else {
-                final IRubyObject result = instance_variable_set(name, value);
-                UnsafeHolder.U.putIntVolatile(this, AN_VOLATILE_FIELD_OFFSET, 1);
-                return result;
-            }
         }
     }
 }

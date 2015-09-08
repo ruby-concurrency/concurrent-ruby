@@ -1,7 +1,7 @@
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/concern/observable'
-require 'concurrent/synchronization/object'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -76,7 +76,7 @@ module Concurrent
     #
     # @raise [ArgumentError] if the validator is not a `Proc` (when given)
     def initialize(value, opts = {})
-      @Validator     = opts.fetch(:validator, -> (v) { true })
+      @Validator     = opts.fetch(:validator, -> v { true })
       self.observers = Collection::CopyOnNotifyObserverSet.new
       super(value) # ensures visibility
     end

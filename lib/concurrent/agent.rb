@@ -3,7 +3,7 @@ require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atomic/thread_local_var'
 require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/observable'
-require 'concurrent/synchronization/object'
+require 'concurrent/synchronization'
 
 module Concurrent
 

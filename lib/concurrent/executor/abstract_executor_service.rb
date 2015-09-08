@@ -1,6 +1,6 @@
 require 'concurrent/errors'
 require 'concurrent/executor/executor_service'
-require 'concurrent/synchronization/object'
+require 'concurrent/synchronization'
 require 'concurrent/utility/at_exit'
 
 module Concurrent
