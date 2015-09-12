@@ -87,14 +87,12 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PRIVATE)
         public IRubyObject fullMemoryBarrier(ThreadContext context) {
-            if (UnsafeHolder.U == null) {
-                // We are screwed
-                throw new UnsupportedOperationException();
-            } else if (UnsafeHolder.SUPPORTS_FENCES)
+            if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
+                throw new UnsupportedOperationException(
+                        "concurrent-ruby requires java with sun.mics.Unsafe fences support, such as Java 8. " +
+                                "Current version is: " + System.getProperty("java.version"));
+            } else {
                 UnsafeHolder.fullFence();
-            else {
-                // TODO (pitr 06-Sep-2015): enforce Java 8
-                throw new UnsupportedOperationException();
             }
             return context.nil;
         }

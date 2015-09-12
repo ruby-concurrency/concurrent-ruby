@@ -41,6 +41,8 @@ module Concurrent
     # @!visibility private
     MAX_WRITERS    = RUNNING_WRITER - MAX_READERS - 1
 
+    safe_initialization!
+
     # Implementation notes:
     # A goal is to make the uncontended path for both readers/writers lock-free
     # Only if there is reader-writer or writer-writer contention, should locks be used
@@ -54,10 +56,10 @@ module Concurrent
 
     # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
+      super()
       @Counter   = AtomicFixnum.new(0) # single integer which represents lock state
       @ReadLock  = Synchronization::Lock.new
       @WriteLock = Synchronization::Lock.new
-      super() # ensures visibility
     end
 
     # Execute a block operation within a read lock.

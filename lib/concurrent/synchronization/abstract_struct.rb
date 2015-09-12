@@ -9,7 +9,6 @@ module Concurrent
       def initialize(*values)
         super()
         ns_initialize(*values)
-        ensure_ivar_visibility!
       end
 
       # @!macro [attach] struct_length
@@ -131,7 +130,7 @@ module Concurrent
       def self.define_struct_class(parent, base, name, members, &block)
         clazz = Class.new(base || Object) do
           include parent
-          self.const_set(:MEMBERS, members.collect{|member| member.to_s.to_sym}.freeze) 
+          self.const_set(:MEMBERS, members.collect{|member| member.to_s.to_sym}.freeze)
           def ns_initialize(*values)
             raise ArgumentError.new('struct size differs') if values.length > length
             @values = values.fill(nil, values.length..length-1)
@@ -142,7 +141,7 @@ module Concurrent
             parent.const_set(name, clazz)
             parent.const_get(name)
           rescue NameError
-            raise NameError.new("identifier #{name} needs to be constant") 
+            raise NameError.new("identifier #{name} needs to be constant")
           end
         end
         members.each_with_index do |member, index|

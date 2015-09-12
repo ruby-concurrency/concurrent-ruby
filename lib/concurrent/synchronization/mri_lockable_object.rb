@@ -21,6 +21,8 @@ module Concurrent
     # @!visibility private
     # @!macro internal_implementation_note
     class MriMutexLockableObject < MriLockableObject
+      safe_initialization!
+
       def initialize(*defaults)
         super(*defaults)
         @__lock__      = ::Mutex.new
@@ -46,6 +48,8 @@ module Concurrent
     # @!visibility private
     # @!macro internal_implementation_note
     class MriMonitorLockableObject < MriLockableObject
+      safe_initialization!
+
       def initialize(*defaults)
         super(*defaults)
         @__lock__      = ::Monitor.new

@@ -6,25 +6,36 @@ module Concurrent
       class Node < Synchronization::Object
         include Comparable
 
-        attr_reader :Data, :Successor_reference, :Key
+        safe_initialization!
 
         def initialize(data = nil, successor = nil)
-          @Successor_reference = AtomicMarkableReference.new(successor || Tail.new)
-          @Data = data
-          @Key = key_for data
+          super()
+          @SuccessorReference = AtomicMarkableReference.new(successor || Tail.new)
+          @Data                = data
+          @Key                 = key_for data
+        end
 
-          super() # ensures visibility
+        def data
+          @Data
+        end
+
+        def successor_reference
+          @SuccessorReference
+        end
+
+        def key
+          @Key
         end
 
         # Check to see if the node is the last in the list.
         def last?
-          @Successor_reference.value.is_a? Tail
+          @SuccessorReference.value.is_a? Tail
         end
 
         # Next node in the list. Note: this is not the AtomicMarkableReference
         # of the next node, this is the actual Node itself.
         def next_node
-          @Successor_reference.value
+          @SuccessorReference.value
         end
 
         # This method provides a unqiue key for the data which will be used for
@@ -47,7 +58,7 @@ module Concurrent
       # a self-loop.
       class Tail < Node
         def initialize(_data = nil, _succ = nil)
-          @Successor_reference = AtomicMarkableReference.new self
+          @SuccessorReference = AtomicMarkableReference.new self
         end
 
         # Always greater than other nodes. This means that traversal will end

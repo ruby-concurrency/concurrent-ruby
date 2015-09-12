@@ -2,6 +2,8 @@ module Concurrent
   module Edge
     class LockFreeStack < Synchronization::Object
 
+      safe_initialization!
+
       class Node
         attr_reader :value, :next_node
 

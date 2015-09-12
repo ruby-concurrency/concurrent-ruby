@@ -4,14 +4,6 @@ module Concurrent
     # @!visibility private
     class AbstractLockableObject < Object
 
-      # # @!macro [attach] synchronization_object_method_initialize
-      # #
-      # #   @abstract for helper ivar initialization if needed,
-      # #     otherwise it can be left empty. It has to call ns_initialize. # FIXME no longer true
-      # def initialize
-      #   super
-      # end
-
       protected
 
       # @!macro [attach] synchronization_object_method_synchronize
@@ -38,6 +30,7 @@ module Concurrent
       #         @args = args
       #       end
       #     end
+      # TODO (pitr 12-Sep-2015): remove
       def ns_initialize(*args, &block)
       end
 
@@ -62,10 +55,7 @@ module Concurrent
           loop do
             now              = Concurrent.monotonic_time
             condition_result = condition.call
-            # TODO recheck and fix properly
-            # 0.001 correction to avoid error when `wait_until - now` is smaller than 0.0005 and rounded to 0
-            # when passed to java #wait(long timeout)
-            return condition_result if (now + 0.001) >= wait_until || condition_result
+            return condition_result if now >= wait_until || condition_result
             ns_wait wait_until - now
           end
         else

@@ -74,7 +74,7 @@ module Concurrent
     #
     # @!macro delay_note_regarding_blocking
     def value(timeout = nil)
-      if @executor
+      if @executor # TODO (pitr 12-Sep-2015): broken unsafe read?
         super
       else
         # this function has been optimized for performance and

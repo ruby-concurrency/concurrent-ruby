@@ -126,6 +126,7 @@ module Concurrent
 
     # Represents an event which will happen in future (will be completed). It has to always happen.
     class Event < Synchronization::LockableObject
+      safe_initialization!
       include Concern::Deprecation
 
       # @!visibility private
@@ -167,13 +168,15 @@ module Concurrent
       COMPLETED = Completed.new
 
       def initialize(promise, default_executor)
+        super()
         @Promise         = promise
         @DefaultExecutor = default_executor
         @Touched         = AtomicBoolean.new(false)
         @Callbacks       = LockFreeStack.new
-        @Waiters         = LockFreeStack.new # TODO replace with AtomicFixnum, avoid aba problem
+        # TODO (pitr 12-Sep-2015): replace with AtomicFixnum, avoid aba problem
+        # TODO (pitr 12-Sep-2015): look at java.util.concurrent solution
+        @Waiters         = LockFreeStack.new
         @State           = AtomicReference.new PENDING
-        super() # ensures visibility
       end
 
       # @return [:pending, :completed]
@@ -877,9 +880,11 @@ module Concurrent
     # @abstract
     # @!visibility private
     class AbstractPromise < Synchronization::Object
+      safe_initialization!
+
       def initialize(future)
-        @Future = future
         super()
+        @Future = future
       end
 
       def future
@@ -1373,10 +1378,12 @@ module Concurrent
 
     # @note proof of concept
     class Channel < Synchronization::Object
+      safe_initialization!
+
       # TODO make lock free
       def initialize
-        @ProbeSet = Concurrent::Channel::WaitableList.new
         super()
+        @ProbeSet = Concurrent::Channel::WaitableList.new
       end
 
       def probe_set_size

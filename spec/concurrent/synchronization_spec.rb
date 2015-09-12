@@ -3,9 +3,50 @@ require 'timeout'
 module Concurrent
 
   describe Synchronization do
+    describe Synchronization::Object do
+      class AAClass < Synchronization::Object
+      end
+
+      class ABClass < AAClass
+        safe_initialization!
+      end
+
+      class ACClass < ABClass
+      end
+
+      class ADClass < ACClass
+        safe_initialization!
+      end
+
+      it 'does not ensure visibility when not needed' do
+        expect_any_instance_of(AAClass).not_to receive(:ensure_ivar_visibility!)
+        AAClass.new
+      end
+
+      it "does ensure visibility when specified" do
+        expect_any_instance_of(ABClass).to receive(:ensure_ivar_visibility!)
+        ABClass.new
+      end
+
+      it "does ensure visibility when specified in a parent" do
+        expect_any_instance_of(ACClass).to receive(:ensure_ivar_visibility!)
+        ACClass.new
+      end
+
+      it "does ensure visibility once when specified in child again" do
+        expect_any_instance_of(ADClass).to receive(:ensure_ivar_visibility!)
+        ADClass.new
+      end
+
+      # TODO (pitr 12-Sep-2015): give a whole gem a pass to find classes with final fields without using the convention and migrate
+      Synchronization::Object.ensure_safe_initialization_when_final_fields_are_present
+    end
+
     describe Synchronization::LockableObject do
 
-      class AClass < Synchronization::LockableObject
+      class BClass < Synchronization::LockableObject
+        safe_initialization!
+
         attr_volatile :volatile
         attr_accessor :not_volatile
 
@@ -13,7 +54,6 @@ module Concurrent
           super()
           @Final = value
           ns_initialize
-          ensure_ivar_visibility!
         end
 
         def final
@@ -37,7 +77,7 @@ module Concurrent
         end
       end
 
-      subject { AClass.new }
+      subject { BClass.new }
 
       describe '#wait' do
 
@@ -74,7 +114,7 @@ module Concurrent
         it 'can be called from within a #synchronize block' do
           expect { Timeout.timeout(3) do
             # #wait should release lock, even if it was already held on entry
-            t = Thread.new { subject.synchronize { subject.wait }}
+            t = Thread.new { subject.synchronize { subject.wait } }
             sleep 0.1
             expect(t.status).to eq 'sleep'
             subject.synchronize {} # we will deadlock here if lock wasn't released
@@ -95,8 +135,8 @@ module Concurrent
       end
 
       specify 'final field always visible' do
-        store = AClass.new 'asd'
-        t1    = Thread.new { 1000000000.times { |i| store = AClass.new i.to_s } }
+        store = BClass.new 'asd'
+        t1    = Thread.new { 1000000000.times { |i| store = BClass.new i.to_s } }
         t2    = Thread.new { 10.times { expect(store.final).not_to be_nil; Thread.pass } }
         t2.join
         t1.kill
@@ -104,7 +144,7 @@ module Concurrent
 
       describe 'attr volatile' do
         specify 'older writes are always visible' do
-          store              = AClass.new
+          store              = BClass.new
           store.not_volatile = 0
           store.volatile     = 0
 

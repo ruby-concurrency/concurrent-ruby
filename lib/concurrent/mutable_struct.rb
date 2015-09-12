@@ -184,8 +184,9 @@ module Concurrent
     #   @raise [IndexError] if the index is out of range.
     def []=(member, value)
       if member.is_a? Integer
-        if member >= @values.length
-          raise IndexError.new("offset #{member} too large for struct(size:#{@values.length})")
+        length = synchronize { @values.length }
+        if member >= length
+          raise IndexError.new("offset #{member} too large for struct(size:#{length})")
         end
         synchronize { @values[member] = value }
       else

@@ -6,12 +6,12 @@ module Concurrent
   # @!macro abstract_executor_service_public_api
   # @!visibility private
   class RubyExecutorService < AbstractExecutorService
+    safe_initialization!
 
     def initialize(*args, &block)
       super
-      @stop_event    = Event.new
-      @stopped_event = Event.new
-      ensure_ivar_visibility!
+      @StopEvent    = Event.new
+      @StoppedEvent = Event.new
     end
 
     def post(*args, &task)
@@ -52,11 +52,11 @@ module Concurrent
     private
 
     def stop_event
-      @stop_event
+      @StopEvent
     end
 
     def stopped_event
-      @stopped_event
+      @StoppedEvent
     end
 
     def ns_shutdown_execution

@@ -14,7 +14,7 @@ module Concurrent
       end
 
       def probe_set_size
-        @probe_set.size
+        @probe_set.size # TODO (pitr 12-Sep-2015): unsafe?
       end
 
       def buffer_queue_size

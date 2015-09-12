@@ -224,7 +224,7 @@ module Concurrent
     #
     # @return [Object] the current value
     def value
-      @current.value
+      @current.value # TODO (pitr 12-Sep-2015): broken unsafe read?
     end
 
     alias_method :deref, :value

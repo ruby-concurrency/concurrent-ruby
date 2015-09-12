@@ -18,17 +18,17 @@ module Concurrent
                                    end
     private_constant :LockableObjectImplementation
 
+    # TODO (pitr 12-Sep-2015): make private for c-r, prohibit subclassing
     class LockableObject < LockableObjectImplementation
 
-      # TODO make private for c-r
-
-      def self.allow_only_direct_descendants! # FIXME we inherit too much ourselves :/
+      # TODO (pitr 12-Sep-2015): we inherit too much ourselves :/
+      def self.allow_only_direct_descendants!
         this = self
         singleton_class.send :define_method, :inherited do |child|
           # super child
 
           if child.superclass != this
-            raise "all children of #{this} are final, subclassing is not supported use composition."
+            warn "all children of #{this} are final, subclassing is not supported use composition."
           end
         end
       end

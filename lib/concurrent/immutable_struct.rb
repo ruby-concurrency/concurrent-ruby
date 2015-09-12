@@ -9,6 +9,10 @@ module Concurrent
   module ImmutableStruct
     include Synchronization::AbstractStruct
 
+    def self.included(base)
+      base.safe_initialization!
+    end
+
     # @!macro struct_values
     def values
       ns_values

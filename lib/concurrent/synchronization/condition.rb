@@ -1,15 +1,16 @@
 module Concurrent
   module Synchronization
     class Condition < LockableObject
+      safe_initialization!
 
-      # TODO locks two objects, improve
+      # TODO (pitr 12-Sep-2015): locks two objects, improve
 
       singleton_class.send :alias_method, :private_new, :new
       private_class_method :new
 
       def initialize(lock)
-        @Lock = lock
         super()
+        @Lock = lock
       end
 
       def wait(timeout = nil)

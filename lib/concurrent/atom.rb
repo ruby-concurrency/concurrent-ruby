@@ -60,6 +60,7 @@ module Concurrent
   class Atom < Synchronization::Object
     include Concern::Observable
 
+    safe_initialization!
     private *attr_volatile_with_cas(:value)
     public :value
 
@@ -78,7 +79,7 @@ module Concurrent
     def initialize(value, opts = {})
       @Validator     = opts.fetch(:validator, -> v { true })
       self.observers = Collection::CopyOnNotifyObserverSet.new
-      super(value) # ensures visibility
+      super(value)
     end
 
     # @!method value

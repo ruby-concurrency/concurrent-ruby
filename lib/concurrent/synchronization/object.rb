@@ -46,15 +46,61 @@ module Concurrent
     #
     class Object < ObjectImplementation
 
+      # Has to be called by children.
+      # Initializes default volatile fields with cas if any.
+      # @param [Array<Object>] defaults values for fields, in same order as they are defined
       def initialize(*defaults)
         super()
         initialize_volatile_cas_fields(defaults)
-        ensure_ivar_visibility!
       end
 
+      # By calling this method on a class, it and all its children are marked to be constructed safely. Meaning that
+      # all writes (ivar initializations) are made visible to all readers of newly constructed object. It ensures
+      # same behaviour as Java's final fields.
+      # @example
+      #   class AClass < Concurrent::Synchronization::Object
+      #     safe_initialization!
+      #
+      #     def initialize
+      #       @AFinalValue = 'value' # published safly, does not have to be synchronized
+      #     end
+      #   end
+      def self.safe_initialization!
+        # define only once, and not again in children
+        return if safe_initialization?
+
+        def self.new(*)
+          object = super
+        ensure
+          object.ensure_ivar_visibility! if object
+        end
+
+        @safe_initialization = true
+      end
+
+      def self.safe_initialization?
+        @safe_initialization || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
+      end
+
+      # For testing purposes, quite slow.
+      def self.ensure_safe_initialization_when_final_fields_are_present
+        Object.class_eval do
+          def self.new(*)
+            object = super
+          ensure
+            has_final_field = object.instance_variables.any? { |v| v.to_s =~ /^@[A-Z]/ }
+            if has_final_field && !safe_initialization?
+              raise "there was an instance of #{object.class} with final field but not marked with safe_initialization!"
+            end
+          end
+        end
+      end
+
+      # TODO documentation
       def self.attr_volatile_with_cas(*names)
         @volatile_cas_fields ||= []
         @volatile_cas_fields += names
+        safe_initialization!
 
         names.each do |name|
           ivar = :"@VolatileCas_#{name}"
@@ -84,6 +130,7 @@ module Concurrent
       end
 
       def self.volatile_cas_fields(inherited = true)
+        # TODO (pitr 11-Sep-2015): maybe use constant for better optimisation on Truffle since it will not speculate on ivar being final
         @volatile_cas_fields ||= []
         ((superclass.volatile_cas_fields if superclass.respond_to?(:volatile_cas_fields) && inherited) || []) +
             @volatile_cas_fields
@@ -97,9 +144,6 @@ module Concurrent
         end
         nil
       end
-
-      # @!method initialize
-      #   @!macro synchronization_object_method_initialize
 
       # @!method ensure_ivar_visibility!
       #   @!macro synchronization_object_method_ensure_ivar_visibility

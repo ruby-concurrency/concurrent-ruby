@@ -74,8 +74,9 @@ module Concurrent
     # @raise [Concurrent::ImmutabilityError] if the given member has already been set
     def []=(member, value)
       if member.is_a? Integer
-        if member >= @values.length
-          raise IndexError.new("offset #{member} too large for struct(size:#{@values.length})")
+        length = synchronize { @values.length }
+        if member >= length
+          raise IndexError.new("offset #{member} too large for struct(size:#{length})")
         end
         synchronize do
           unless @values[member].nil?
