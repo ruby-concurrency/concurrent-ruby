@@ -74,8 +74,17 @@ public class SynchronizationLibrary implements Library {
         return newClass;
     }
 
+    // Facts:
+    // - all ivar reads are without any synchronisation of fences see
+    //   https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/runtime/ivars/VariableAccessor.java#L110-110
+    // - writes depend on UnsafeHolder.U, null -> SynchronizedVariableAccessor, !null -> StampedVariableAccessor
+    //   SynchronizedVariableAccessor wraps with synchronized block, StampedVariableAccessor uses fullFence or
+    //   volatilePut
+
     @JRubyClass(name = "JRubyObject", parent = "AbstractObject")
     public static class JRubyObject extends RubyObject {
+        private static volatile ThreadContext threadContext = null;
+
         public JRubyObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }
@@ -87,10 +96,12 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PRIVATE)
         public IRubyObject fullMemoryBarrier(ThreadContext context) {
+            // Prevent reordering of ivar writes with publication of this instance
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
-                throw new UnsupportedOperationException(
-                        "concurrent-ruby requires java with sun.mics.Unsafe fences support, such as Java 8. " +
-                                "Current version is: " + System.getProperty("java.version"));
+                // Assuming that following volatile read and write is not eliminated it simulates fullFence.
+                // If it's eliminated it'll cause problems only on non-x86 platforms.
+                final ThreadContext oldContext = threadContext;
+                threadContext = context;
             } else {
                 UnsafeHolder.fullFence();
             }
@@ -99,34 +110,30 @@ public class SynchronizationLibrary implements Library {
 
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
-            if (UnsafeHolder.U == null) {
-                synchronized (this) {
-                    // TODO (pitr 06-Sep-2015): Possibly dangerous, there may be a deadlock here
-                    // TODO (pitr 08-Sep-2015): maybe remove the branch since full_memory_barrier is not supported anyway
-                    return instance_variable_get(context, name);
-                }
-            } else if (UnsafeHolder.SUPPORTS_FENCES) {
-                // ensure we see latest value
-                UnsafeHolder.loadFence();
+            // Ensure we ses latest value with loadFence
+            if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
+                // piggybacking on volatile read, simulating loadFence
+                final ThreadContext oldContext = threadContext;
                 return instance_variable_get(context, name);
             } else {
-                throw new UnsupportedOperationException();
+                UnsafeHolder.loadFence();
+                return instance_variable_get(context, name);
             }
         }
 
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
         public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
-            if (UnsafeHolder.U == null) {
-                synchronized (this) {
-                    return instance_variable_set(name, value);
-                }
-            } else if (UnsafeHolder.SUPPORTS_FENCES) {
+            // Ensure we make last update visible
+            if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
+                // piggybacking on volatile write, simulating storeFence
                 final IRubyObject result = instance_variable_set(name, value);
-                // ensure we make latest value visible
-                UnsafeHolder.storeFence();
+                threadContext = context;
                 return result;
             } else {
-                throw new UnsupportedOperationException();
+                // JRuby uses StampedVariableAccessor which calls fullFence
+                // so no additional steps needed.
+                // See https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/runtime/ivars/StampedVariableAccessor.java#L151-L159
+                return instance_variable_set(name, value);
             }
         }
     }
