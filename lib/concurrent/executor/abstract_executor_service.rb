@@ -1,13 +1,13 @@
 require 'concurrent/errors'
 require 'concurrent/executor/executor_service'
-require 'concurrent/synchronization/object'
+require 'concurrent/synchronization'
 require 'concurrent/utility/at_exit'
 
 module Concurrent
 
   # @!macro abstract_executor_service_public_api
   # @!visibility private
-  class AbstractExecutorService < Synchronization::Object
+  class AbstractExecutorService < Synchronization::LockableObject
     include ExecutorService
 
     # The set of possible fallback policies that may be set at thread pool creation.

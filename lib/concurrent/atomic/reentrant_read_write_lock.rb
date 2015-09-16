@@ -99,13 +99,15 @@ module Concurrent
     # @!visibility private
     WRITE_LOCK_MASK = MAX_WRITERS
 
+    safe_initialization!
+
     # Create a new `ReentrantReadWriteLock` in the unlocked state.
     def initialize
+      super()
       @Counter    = AtomicFixnum.new(0)       # single integer which represents lock state
       @ReadQueue  = Synchronization::Lock.new # used to queue waiting readers
       @WriteQueue = Synchronization::Lock.new # used to queue waiting writers
       @HeldCount  = ThreadLocalVar.new(0)     # indicates # of R & W locks held by this thread
-      ensure_ivar_visibility!
     end
 
     # Execute a block operation within a read lock.

@@ -7,7 +7,7 @@ module Concurrent
   # Each handler is executed at most once.
   #
   # @!visibility private
-  class AtExitImplementation < Synchronization::Object
+  class AtExitImplementation < Synchronization::LockableObject
     include Logger::Severity
 
     def initialize(*args)

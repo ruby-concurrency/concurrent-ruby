@@ -74,8 +74,9 @@ module Concurrent
     # @raise [Concurrent::ImmutabilityError] if the given member has already been set
     def []=(member, value)
       if member.is_a? Integer
-        if member >= @values.length
-          raise IndexError.new("offset #{member} too large for struct(size:#{@values.length})")
+        length = synchronize { @values.length }
+        if member >= length
+          raise IndexError.new("offset #{member} too large for struct(size:#{length})")
         end
         synchronize do
           unless @values[member].nil?
@@ -101,10 +102,10 @@ module Concurrent
       FACTORY.define_struct(clazz_name, args, &block)
     end
 
-    FACTORY = Class.new(Synchronization::Object) do
+    FACTORY = Class.new(Synchronization::LockableObject) do
       def define_struct(name, members, &block)
         synchronize do
-          clazz = Synchronization::AbstractStruct.define_struct_class(SettableStruct, Synchronization::Object, name, members, &block)
+          clazz = Synchronization::AbstractStruct.define_struct_class(SettableStruct, Synchronization::LockableObject, name, members, &block)
           members.each_with_index do |member, index|
             clazz.send(:define_method, member) do
               synchronize { @values[index] }

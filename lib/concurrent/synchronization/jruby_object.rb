@@ -1,5 +1,3 @@
-require 'concurrent/utility/native_extension_loader' # load native part first
-
 module Concurrent
   module Synchronization
 
@@ -7,7 +5,11 @@ module Concurrent
 
       # @!visibility private
       # @!macro internal_implementation_note
-      class JavaObject < AbstractObject
+      class JRubyObject < AbstractObject
+
+        def initialize
+          # nothing to do
+        end
 
         def self.attr_volatile(*names)
           names.each do |name|

@@ -2,11 +2,10 @@ require 'concurrent/synchronization'
 
 module Concurrent
 
-  class_definition = Class.new(Synchronization::Object) do
+  class_definition = Class.new(Synchronization::LockableObject) do
     def initialize
-      super()
       @last_time = Time.now.to_f
-      ensure_ivar_visibility!
+      super()
     end
 
     if defined?(Process::CLOCK_MONOTONIC)
@@ -44,7 +43,7 @@ module Concurrent
   private_constant :GLOBAL_MONOTONIC_CLOCK
 
   # @!macro [attach] monotonic_get_time
-  # 
+  #
   #   Returns the current time a tracked by the application monotonic clock.
   #
   #   @return [Float] The current monotonic time when `since` not given else

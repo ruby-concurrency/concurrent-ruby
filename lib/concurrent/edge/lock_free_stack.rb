@@ -2,6 +2,8 @@ module Concurrent
   module Edge
     class LockFreeStack < Synchronization::Object
 
+      safe_initialization!
+
       class Node
         attr_reader :value, :next_node
 
@@ -21,50 +23,51 @@ module Concurrent
 
       EMPTY = Empty[nil, nil]
 
+      private *attr_volatile_with_cas(:head)
+
       def initialize
-        @Head = AtomicReference.new EMPTY
-        ensure_ivar_visibility!
+        super(EMPTY)
       end
 
       def empty?
-        @Head.get.equal? EMPTY
+        head.equal? EMPTY
       end
 
       def compare_and_push(head, value)
-        @Head.compare_and_set head, Node[value, head]
+        compare_and_set_head head, Node[value, head]
       end
 
       def push(value)
         while true
-          head = @Head.get
-          return self if @Head.compare_and_set head, Node[value, head]
+          current_head = head
+          return self if compare_and_set_head current_head, Node[value, current_head]
         end
       end
 
       def peek
-        @Head.get
+        head
       end
 
       def compare_and_pop(head)
-        @Head.compare_and_set head, head.next_node
+        compare_and_set_head head, head.next_node
       end
 
       def pop
         while true
-          head = @Head.get
-          return head.value if @Head.compare_and_set head, head.next_node
+          current_head = head
+          return current_head.value if compare_and_set_head current_head, current_head.next_node
         end
       end
 
       def compare_and_clear(head)
-        @Head.compare_and_set head, EMPTY
+        compare_and_set_head head, EMPTY
       end
 
       def clear
         while true
-          head = @Head.get
-          return false if head == EMPTY
-          return true if @Head.compare_and_set head, EMPTY
+          current_head = head
+          return false if current_head == EMPTY
+          return true if compare_and_set_head current_head, EMPTY
         end
       end
 

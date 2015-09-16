@@ -5,7 +5,7 @@ module Concurrent
 
     # @api Channel
     # @!macro edge_warning
-    class BlockingRingBuffer < Synchronization::Object
+    class BlockingRingBuffer < Synchronization::LockableObject
 
       def initialize(capacity)
         super()

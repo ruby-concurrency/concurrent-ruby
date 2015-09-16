@@ -1,4 +1,4 @@
-require 'concurrent/synchronization/abstract_object' # for JRuby
+require 'concurrent/synchronization' # has to be loaded before JRuby extensions
 require 'concurrent/utility/engine'
 
 module Concurrent

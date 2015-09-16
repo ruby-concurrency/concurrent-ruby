@@ -1,11 +1,11 @@
 require 'concurrent/errors'
 require 'concurrent/concern/logging'
-require 'concurrent/synchronization/object'
+require 'concurrent/synchronization'
 
 module Concurrent
 
   # Ensures passed jobs in a serialized order never running at the same time.
-  class SerializedExecution < Synchronization::Object
+  class SerializedExecution < Synchronization::LockableObject
     include Concern::Logging
 
     def initialize()

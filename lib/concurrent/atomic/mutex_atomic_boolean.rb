@@ -5,7 +5,7 @@ module Concurrent
   # @!macro atomic_boolean
   # @!visibility private
   # @!macro internal_implementation_note
-  class MutexAtomicBoolean < Synchronization::Object
+  class MutexAtomicBoolean < Synchronization::LockableObject
 
     # @!macro atomic_boolean_method_initialize
     def initialize(initial = false)
