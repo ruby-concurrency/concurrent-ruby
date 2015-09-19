@@ -79,7 +79,7 @@ module Concurrent
       end
 
       def self.safe_initialization?
-        @safe_initialization || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
+        (defined?(@safe_initialization) && @safe_initialization) || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
       end
 
       # For testing purposes, quite slow.
