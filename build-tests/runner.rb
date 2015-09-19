@@ -102,13 +102,13 @@ puts RUBY_PLATFORM
 puts SUITE_BREAK
 
 run_test_suite(TEST_FILES, false)
-if mri?
-  if ! windows?
-    puts SUITE_BREAK
-    run_test_suite(TEST_FILES, true)
-  end
-  if platform_specific_extensions?(RUBY_PLATFORM)
-    puts SUITE_BREAK
-    run_test_suite(TEST_FILES, true, RUBY_PLATFORM)
-  end
-end
+#if mri?
+  #if ! windows?
+    #puts SUITE_BREAK
+    #run_test_suite(TEST_FILES, true)
+  #end
+  #if platform_specific_extensions?(RUBY_PLATFORM)
+    #puts SUITE_BREAK
+    #run_test_suite(TEST_FILES, true, RUBY_PLATFORM)
+  #end
+#end

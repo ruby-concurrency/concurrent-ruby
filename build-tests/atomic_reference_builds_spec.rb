@@ -28,15 +28,17 @@ describe Concurrent::AtomicReference do
   let!(:threads) { 10 }
   let!(:tests) { 1000 }
 
-  describe Concurrent::MutexAtomicReference do
+  unless jruby?
+    describe Concurrent::MutexAtomicReference do
 
-    specify 'is defined' do
-      expect(defined?(Concurrent::MutexAtomicReference)).to be_truthy
-    end
+      specify 'is defined' do
+        expect(defined?(Concurrent::MutexAtomicReference)).to be_truthy
+      end
 
-    specify 'runs the benchmarks' do
-      stats = atomic_reference_test('MutexAtomicReference', threads: threads, tests: tests)
-      expect(stats).to be_benchmark_results
+      specify 'runs the benchmarks' do
+        stats = atomic_reference_test('MutexAtomicReference', threads: threads, tests: tests)
+        expect(stats).to be_benchmark_results
+      end
     end
   end
 

@@ -1,4 +1,4 @@
-### Upcoming Release v1.0.0.pre2 (TBD)
+## Current Release v1.0.0.pre2 (19 September 2015)
 
 * Simplification of `RubySingleThreadExecutor`
 * `Async` improvements
@@ -10,8 +10,9 @@
   - Now `Observable`
   - Added a `#reset` method
 * Brand new `Agent` API and implementation. Now functionally equivalent to Clojure.
+* Continued improvements to the synchronization layer
 
-## Current Release v1.0.0.pre1 (19 Aug 2015)
+### Release v1.0.0.pre1 (19 August 2015)
 
 * Merged in the `thread_safe` gem
   - `Concurrent::Array`

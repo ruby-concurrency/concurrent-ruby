@@ -28,15 +28,17 @@ describe Concurrent::AtomicFixnum do
   let!(:threads) { 10 }
   let!(:tests) { 1000 }
 
-  describe Concurrent::MutexAtomicFixnum do
+  unless jruby?
+    describe Concurrent::MutexAtomicFixnum do
 
-    specify 'is defined' do
-      expect(defined?(Concurrent::MutexAtomicFixnum)).to be_truthy
-    end
+      specify 'is defined' do
+        expect(defined?(Concurrent::MutexAtomicFixnum)).to be_truthy
+      end
 
-    specify 'runs the benchmarks' do
-      stats = atomic_fixnum_test('MutexAtomicFixnum', threads: threads, tests: tests)
-      expect(stats).to be_benchmark_results
+      specify 'runs the benchmarks' do
+        stats = atomic_fixnum_test('MutexAtomicFixnum', threads: threads, tests: tests)
+        expect(stats).to be_benchmark_results
+      end
     end
   end
 

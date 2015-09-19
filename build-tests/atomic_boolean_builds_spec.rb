@@ -28,15 +28,17 @@ describe Concurrent::AtomicBoolean do
   let!(:threads) { 10 }
   let!(:tests) { 1000 }
 
-  describe Concurrent::MutexAtomicBoolean do
+  unless jruby?
+    describe Concurrent::MutexAtomicBoolean do
 
-    specify 'is defined' do
-      expect(defined?(Concurrent::MutexAtomicBoolean)).to be_truthy
-    end
+      specify 'is defined' do
+        expect(defined?(Concurrent::MutexAtomicBoolean)).to be_truthy
+      end
 
-    specify 'runs the benchmarks' do
-      stats = atomic_boolean_test('MutexAtomicBoolean', threads: threads, tests: tests)
-      expect(stats).to be_benchmark_results
+      specify 'runs the benchmarks' do
+        stats = atomic_boolean_test('MutexAtomicBoolean', threads: threads, tests: tests)
+        expect(stats).to be_benchmark_results
+      end
     end
   end
 
