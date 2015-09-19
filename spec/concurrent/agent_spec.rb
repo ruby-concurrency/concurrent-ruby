@@ -705,7 +705,7 @@ module Concurrent
           expect(queue).to be_empty
         end
 
-        it 'does not clear the action queue when :clear_actions is false' do
+        it 'does not clear the action queue when :clear_actions is false', buggy: true do
           latch = Concurrent::CountDownLatch.new
           subject = Agent.new(0, error_mode: :fail)
 

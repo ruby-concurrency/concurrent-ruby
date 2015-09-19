@@ -85,7 +85,7 @@ module Concurrent
         Future.execute(executor: executor){ nil }
       end
 
-      it 'uses the global io executor by default' do
+      it 'uses the global io executor by default', buggy: true do
         expect(Concurrent).to receive(:global_io_executor).and_return(executor)
         Future.execute{ nil }
       end

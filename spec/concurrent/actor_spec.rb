@@ -148,7 +148,7 @@ module Concurrent
           end
         end
 
-        it 'terminates with all its children' do
+        it 'terminates with all its children', buggy: true do
           child = subject.ask! :child
           expect(subject.ask!(:terminated?)).to be_falsey
           subject.ask(:terminate!).wait

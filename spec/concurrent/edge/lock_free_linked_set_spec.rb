@@ -128,7 +128,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
     end
 
     context 'in a multi-threaded environment' do
-      it 'adds the items to the set' do
+      it 'adds the items to the set', buggy: true do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 

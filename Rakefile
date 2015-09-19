@@ -177,7 +177,8 @@ begin
                    '--tag ~unfinished ' \
                    '--seed 1 ' \
                    '--format documentation ' \
-                   '--tag ~notravis'
+                   '--tag ~notravis ' \
+                   '--tag ~buggy'
   end
 
   RSpec::Core::RakeTask.new(:appveyor) do |t|
@@ -185,7 +186,8 @@ begin
                    '--tag ~unfinished ' \
                    '--seed 1 ' \
                    '--format documentation ' \
-                   '--tag ~notravis'
+                   '--tag ~notravis ' \
+                   '--tag ~buggy'
   end
 
   if Concurrent.on_windows?

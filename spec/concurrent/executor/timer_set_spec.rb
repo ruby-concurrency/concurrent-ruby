@@ -75,7 +75,7 @@ module Concurrent
         expect(latch.wait(0.2)).to be_truthy
       end
 
-      it 'passes all arguments to the task on execution' do
+      it 'passes all arguments to the task on execution', buggy: true do
         expected = nil
         latch = CountDownLatch.new(1)
         subject.post(0.1, 1, 2, 3) do |*args|
@@ -365,7 +365,7 @@ module Concurrent
         expect(timer_executor).not_to be_running
       end
 
-      it 'rejects tasks once shutdown' do
+      it 'rejects tasks once shutdown', buggy: true do
         latch = Concurrent::CountDownLatch.new(1)
         expected = AtomicFixnum.new(0)
 
