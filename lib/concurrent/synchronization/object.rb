@@ -122,7 +122,7 @@ module Concurrent
             end
 
             def update_#{name}(&block)
-              #{ivar}.update &block
+              #{ivar}.update(&block)
             end
           RUBY
         end
