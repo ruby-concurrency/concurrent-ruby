@@ -1,13 +1,11 @@
+require 'concurrent/constants'
+
 module Concurrent
 
   # @!macro thread_local_var
   # @!macro internal_implementation_note
   # @!visibility private
   class AbstractThreadLocalVar
-
-    # @!visibility private
-    NIL_SENTINEL = Object.new
-    private_constant :NIL_SENTINEL
 
     # @!macro thread_local_var_method_initialize
     def initialize(default = nil)

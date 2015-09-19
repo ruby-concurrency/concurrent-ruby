@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/errors'
 require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/obligation'

@@ -1,3 +1,5 @@
+require 'concurrent/constants'
+
 module Concurrent
 
   # @!visibility private

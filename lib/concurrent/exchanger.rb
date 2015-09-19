@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/errors'
 require 'concurrent/maybe'
 require 'concurrent/atomic/atomic_reference'
@@ -140,10 +141,6 @@ module Concurrent
     # http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/util/concurrent/Exchanger.java
 
     # @!visibility private
-    NIL_SENTINEL = Object.new
-    private_constant :NIL_SENTINEL
-
-    # @!visibility private
     class Node < Concurrent::AtomicReference
       attr_reader :item, :latch
       def initialize(item)
@@ -249,7 +246,7 @@ module Concurrent
       #     - Wake the sleeping occupier
       #     - Return the occupier's item
 
-      value = NIL_SENTINEL if value.nil?                # The sentinel allows nil to be a valid value
+      value = NULL if value.nil?                        # The sentinel allows nil to be a valid value
       slot = @slot                                      # Convenience to minimize typing @
       me = Node.new(value)                              # create my node in case I need to occupy
       end_at = Concurrent.monotonic_time + timeout.to_f # The time to give up
@@ -282,7 +279,7 @@ module Concurrent
         break CANCEL if timeout && Concurrent.monotonic_time >= end_at
       end
 
-      result == NIL_SENTINEL ? nil : result
+      result == NULL ? nil : result
     end
   end
 

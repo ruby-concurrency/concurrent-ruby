@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/errors'
 require 'concurrent/configuration'
 require 'concurrent/ivar'

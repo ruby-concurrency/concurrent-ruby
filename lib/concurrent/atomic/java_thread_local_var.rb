@@ -14,7 +14,7 @@ if Concurrent.on_jruby?
 
         if value.nil?
           @default
-        elsif value == NIL_SENTINEL
+        elsif value == NULL
           nil
         else
           value

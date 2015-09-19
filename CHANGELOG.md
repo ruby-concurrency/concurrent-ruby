@@ -1,3 +1,7 @@
+### Upcoming Release v1.0.0 (TBD)
+
+* Shared constants now in `lib/concurrent/constants.rb`
+
 ## Current Release v1.0.0.pre2 (19 September 2015)
 
 * Simplification of `RubySingleThreadExecutor`

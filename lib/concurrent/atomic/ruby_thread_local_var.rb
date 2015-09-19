@@ -51,7 +51,7 @@ module Concurrent
         value = array[@index]
         if value.nil?
           @default
-        elsif value.equal?(NIL_SENTINEL)
+        elsif value.equal?(NULL)
           nil
         else
           value
@@ -72,7 +72,7 @@ module Concurrent
         LOCK.synchronize { ARRAYS[array.object_id] = array }
         ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
       end
-      array[@index] = (value.nil? ? NIL_SENTINEL : value)
+      array[@index] = (value.nil? ? NULL : value)
       value
     end
 
@@ -159,7 +159,7 @@ module Concurrent
         value = array[@index]
         if value.nil?
           @default
-        elsif value.equal?(NIL_SENTINEL)
+        elsif value.equal?(NULL)
           nil
         else
           value

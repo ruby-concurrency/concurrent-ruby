@@ -1,8 +1,9 @@
 require 'concurrent/version'
+require 'concurrent/constants'
+require 'concurrent/errors'
 require 'concurrent/configuration'
 
 require 'concurrent/atomics'
-require 'concurrent/errors'
 require 'concurrent/executors'
 require 'concurrent/synchronization'
 
@@ -125,10 +126,5 @@ require 'concurrent/options'
 # * Exclude features that don't make sense in Ruby
 # * Be small, lean, and loosely coupled
 module Concurrent
-
-  # Various classes within allows for +nil+ values to be stored,
-  # so a special +NULL+ token is required to indicate the "nil-ness".
-  # @!visibility private
-  NULL = Object.new
 
 end

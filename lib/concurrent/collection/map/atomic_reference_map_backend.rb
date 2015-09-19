@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/thread_safe/util'
 require 'concurrent/thread_safe/util/adder'
 require 'concurrent/thread_safe/util/cheap_lockable'

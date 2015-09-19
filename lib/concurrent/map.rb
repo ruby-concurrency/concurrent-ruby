@@ -1,4 +1,5 @@
 require 'thread'
+require 'concurrent/constants'
 
 module Concurrent
   # @!visibility private
