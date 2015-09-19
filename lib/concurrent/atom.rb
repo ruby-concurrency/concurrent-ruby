@@ -61,7 +61,7 @@ module Concurrent
     include Concern::Observable
 
     safe_initialization!
-    private *attr_volatile_with_cas(:value)
+    private(*attr_volatile_with_cas(:value))
     public :value
 
     # Create a new atom with the given initial value.
