@@ -79,7 +79,7 @@ module Concurrent
       end
 
       def self.safe_initialization?
-        @safe_initialization || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
+        (defined?(@safe_initialization) && @safe_initialization) || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
       end
 
       # For testing purposes, quite slow.
@@ -122,7 +122,7 @@ module Concurrent
             end
 
             def update_#{name}(&block)
-              #{ivar}.update &block
+              #{ivar}.update(&block)
             end
           RUBY
         end
