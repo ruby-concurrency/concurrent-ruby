@@ -2,7 +2,7 @@
 
 $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
-Channel = Concurrent::Edge::Channel
+Channel = Concurrent::Channel
 
 ## Go by Example: Go by Example: Worker Pools
 # https://gobyexample.com/tickers

@@ -2,7 +2,7 @@
 
 $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
-Channel = Concurrent::Edge::Channel
+Channel = Concurrent::Channel
 
 ## A Tour of Go: Equivalent Binary Trees
 # https://tour.golang.org/concurrency/8

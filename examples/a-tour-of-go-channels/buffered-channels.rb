@@ -2,7 +2,7 @@
 
 $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
-Channel = Concurrent::Edge::Channel
+Channel = Concurrent::Channel
 
 ## A Tour of Go: Buffered Channels
 # https://tour.golang.org/concurrency/3 

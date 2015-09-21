@@ -329,8 +329,8 @@ describe 'Concurrent::Edge futures' do
     end
 
     it 'with channel' do
-      ch1 = Concurrent::Edge::Channel.new
-      ch2 = Concurrent::Edge::Channel.new
+      ch1 = Concurrent::Channel.new
+      ch2 = Concurrent::Channel.new
 
       result = Concurrent.select(ch1, ch2)
       ch1.put 1

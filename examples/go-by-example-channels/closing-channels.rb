@@ -2,7 +2,7 @@
 
 $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
-Channel = Concurrent::Edge::Channel
+Channel = Concurrent::Channel
 
 ## Go by Example: Closing Channels
 # https://gobyexample.com/closing-channels 

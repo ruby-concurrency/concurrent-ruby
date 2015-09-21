@@ -4,7 +4,7 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 require 'time'
 
-Channel = Concurrent::Edge::Channel
+Channel = Concurrent::Channel
 
 ## Go by Example: Rate Limiting
 # https://gobyexample.com/tickers

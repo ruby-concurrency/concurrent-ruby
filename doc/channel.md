@@ -28,7 +28,7 @@ The Go programming languages uses "goroutines" as the core concurrency mechanism
 ```ruby
 puts "Main thread: #{Thread.current}"
 
-Concurrent::Edge::Channel.go do
+Concurrent::Channel.go do
   puts "Goroutine thread: #{Thread.current}"
 end
 
@@ -47,9 +47,9 @@ The core channel operations are {#put} and {#take} (aliased as {#send} and {#rec
 The following, simple example creates a channel, launches a goroutine from which a value is placed into the channel, then reads that value from the channel. When run this example will display "ping" in the console.
 
 ```ruby
-messages = Concurrent::Edge::Channel.new
+messages = Concurrent::Channel.new
 
-Concurrent::Edge::Channel.go do
+Concurrent::Channel.go do
   messages.put 'ping'
 end
 
@@ -69,10 +69,10 @@ end
 
 a = [7, 2, 8, -9, 4, 0]
 l = a.length / 2
-c = Concurrent::Edge::Channel.new
+c = Concurrent::Channel.new
 
-Concurrent::Edge::Channel.go { sum(a[-l, l], c) }
-Concurrent::Edge::Channel.go { sum(a[0, l], c) }
+Concurrent::Channel.go { sum(a[-l, l], c) }
+Concurrent::Channel.go { sum(a[0, l], c) }
 x, y = ~c, ~c # `~` is an alias for `take` or `receive`
 
 puts [x, y, x+y].join(' ')
@@ -85,7 +85,7 @@ One common channel variation is a *buffered* channel. A buffered channel has a f
 The following example creates a buffered channel with two slots. It then makes two `put` calls, adding values to the channel. These calls do not block because the buffer has room. Were a third `put` call to be made before an `take` calls, the third `put` would block.
 
 ```ruby
-ch = Concurrent::Edge::Channel.new(size: 2)
+ch = Concurrent::Channel.new(size: 2)
 ch << 1
 ch << 2
 
@@ -106,8 +106,8 @@ def worker(done_channel)
   done_channel << true
 end
 
-done = Concurrent::Edge::Channel.new(size: 1)
-Concurrent::Edge::Channel.go{ worker(done) }
+done = Concurrent::Channel.new(size: 1)
+Concurrent::Channel.go{ worker(done) }
 
 ~done # block until signaled
 ```
@@ -119,21 +119,21 @@ Often it is necessary for a single thread to operate on more than one channel. T
 The following example spawns two goroutines, each of which goes to sleep before putting a value onto a channel. The main thread loops twice over a `select` and, in each loop, takes a value off of whichever channel returns one first.
 
 ```ruby
-c1 = Concurrent::Edge::Channel.new
-c2 = Concurrent::Edge::Channel.new
+c1 = Concurrent::Channel.new
+c2 = Concurrent::Channel.new
 
-Concurrent::Edge::Channel.go do
+Concurrent::Channel.go do
   sleep(1)
   c1 << 'one'
 end
 
-Concurrent::Edge::Channel.go do
+Concurrent::Channel.go do
   sleep(2)
   c1 << 'two'
 end
 
 2.times do
-  Concurrent::Edge::Channel.select do |s|
+  Concurrent::Channel.select do |s|
     s.take(c1) { |msg| print "received #{msg}\n" }
     s.take(c2) { |msg| print "received #{msg}\n" }
   end
@@ -153,7 +153,7 @@ The next example calculates the first 10 fibonacci numbers, passing them to the 
 def fibonacci(c, quit)
   x, y = 0, 1
   loop do
-    Concurrent::Edge::Channel.select do |s|
+    Concurrent::Channel.select do |s|
       s.case(c, :<<, x) { x, y = y, x+y; x } # alias for `s.put`
       s.case(quit, :~) do                    # alias for `s.take`
         puts 'quit'
@@ -163,10 +163,10 @@ def fibonacci(c, quit)
   end
 end
 
-c = Concurrent::Edge::Channel.new
-quit = Concurrent::Edge::Channel.new
+c = Concurrent::Channel.new
+quit = Concurrent::Channel.new
 
-Concurrent::Edge::Channel.go do
+Concurrent::Channel.go do
   10.times { puts ~c }
   quit << 0
 end
@@ -192,8 +192,8 @@ def fibonacci(n, c)
   c.close
 end
 
-chan = Concurrent::Edge::Channel.new(size: 10)
-Concurrent::Edge::Channel.go { fibonacci(chan.capacity, c) }
+chan = Concurrent::Channel.new(size: 10)
+Concurrent::Channel.go { fibonacci(chan.capacity, c) }
 chan.each { |i| puts i }
 ```
 
@@ -203,16 +203,16 @@ chan.each { |i| puts i }
 
 A {.timer} is a specialized channel which triggers at a predefined time, specified as a number of seconds in the future. It is similar in concept to a {Concurrent::ScheduledTask} but operates as a channel and can fully participate in all channel operations.
 
-The following code example creates two timers with different delay values. The first timer is allowed to expire (trigger) by having the main thread perform a `take` on it. When the timer expires it puts a {Concurrent::Edge::Channel::Tick} object into its buffer and closes. The second timer is listened to on a goroutine but the it never expires: the main thread stops (closes) the timer before it expires. Note that the goroutine in this example blocks forever and never exits. Since the timer is closed it never puts the `Tick` into its buffer.
+The following code example creates two timers with different delay values. The first timer is allowed to expire (trigger) by having the main thread perform a `take` on it. When the timer expires it puts a {Concurrent::Channel::Tick} object into its buffer and closes. The second timer is listened to on a goroutine but the it never expires: the main thread stops (closes) the timer before it expires. Note that the goroutine in this example blocks forever and never exits. Since the timer is closed it never puts the `Tick` into its buffer.
 
 ```ruby
-timer1 = Concurrent::Edge::Channel.timer(2)
+timer1 = Concurrent::Channel.timer(2)
 
 ~timer1
 puts 'Timer 1 expired'
 
-timer2 = Concurrent::Edge::Channel.timer(1)
-Concurrent::Edge::Channel.go do
+timer2 = Concurrent::Channel.timer(1)
+Concurrent::Channel.go do
   ~timer2
   print "Timer 2 expired\n"
 end
@@ -226,8 +226,8 @@ A {.ticker} is a specialized channel which triggers over and over again at a pre
 The following example creates a ticker which triggers every half-second. A goroutine iterates over the ticker using the `each` method, printing the tick at every interval. When the main thread stops (closes) the ticker the `each` call ends and the goroutine exits.
 
 ```ruby
-ticker = Concurrent::Edge::Channel.ticker(0.5)
-Concurrent::Edge::Channel.go do
+ticker = Concurrent::Channel.ticker(0.5)
+Concurrent::Channel.go do
   ticker.each do |tick|
     print "Tick at #{tick}\n"
   end
@@ -243,11 +243,11 @@ print "Ticker stopped\n"
 As with a Ruby `case` statement, a `Channel.select` statement will accept a `default` clause which will trigger if none of the other clauses trigger. Not surprisingly, the `default` clause must be the last clause in a `select` block.
 
 ```ruby
-tick = Concurrent::Edge::Channel.tick(0.1)  # alias for `ticker`
-boom = Concurrent::Edge::Channel.after(0.5) # alias for `timer`
+tick = Concurrent::Channel.tick(0.1)  # alias for `ticker`
+boom = Concurrent::Channel.after(0.5) # alias for `timer`
 
 loop do
-  Concurrent::Edge::Channel.select do |s|
+  Concurrent::Channel.select do |s|
     s.take(tick) { print "tick.\n" }
     s.take(boom) do
       print "BOOM!\n"
