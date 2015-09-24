@@ -6,6 +6,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
+import org.jruby.RubyBasicObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ObjectAllocator;
@@ -47,6 +48,9 @@ public class SynchronizationLibrary implements Library {
                 defineModule("Concurrent").
                 defineModuleUnder("Synchronization");
 
+        RubyModule jrubyAttrVolatileModule = synchronizationModule.defineModuleUnder("JRubyAttrVolatile");
+        jrubyAttrVolatileModule.defineAnnotatedMethods(JRubyAttrVolatile.class);
+
         defineClass(runtime, synchronizationModule, "AbstractObject", "JRubyObject",
                 JRubyObject.class, JRUBY_OBJECT_ALLOCATOR);
 
@@ -81,21 +85,12 @@ public class SynchronizationLibrary implements Library {
     //   SynchronizedVariableAccessor wraps with synchronized block, StampedVariableAccessor uses fullFence or
     //   volatilePut
 
-    @JRubyClass(name = "JRubyObject", parent = "AbstractObject")
-    public static class JRubyObject extends RubyObject {
+    // module JRubyAttrVolatile
+    public static class JRubyAttrVolatile {
         private static volatile ThreadContext threadContext = null;
 
-        public JRubyObject(Ruby runtime, RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-
-        @JRubyMethod
-        public IRubyObject initialize(ThreadContext context) {
-            return this;
-        }
-
         @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PRIVATE)
-        public IRubyObject fullMemoryBarrier(ThreadContext context) {
+        public static IRubyObject fullMemoryBarrier(ThreadContext context, IRubyObject self) {
             // Prevent reordering of ivar writes with publication of this instance
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
                 // Assuming that following volatile read and write is not eliminated it simulates fullFence.
@@ -109,32 +104,40 @@ public class SynchronizationLibrary implements Library {
         }
 
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
-        public IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject name) {
+        public static IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject self, IRubyObject name) {
             // Ensure we ses latest value with loadFence
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
                 // piggybacking on volatile read, simulating loadFence
                 final ThreadContext oldContext = threadContext;
-                return instance_variable_get(context, name);
+                return ((RubyBasicObject)self).instance_variable_get(context, name);
             } else {
                 UnsafeHolder.loadFence();
-                return instance_variable_get(context, name);
+                return ((RubyBasicObject)self).instance_variable_get(context, name);
             }
         }
 
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
-        public IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject name, IRubyObject value) {
+        public static IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject self, IRubyObject name, IRubyObject value) {
             // Ensure we make last update visible
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
                 // piggybacking on volatile write, simulating storeFence
-                final IRubyObject result = instance_variable_set(name, value);
+                final IRubyObject result = ((RubyBasicObject)self).instance_variable_set(name, value);
                 threadContext = context;
                 return result;
             } else {
                 // JRuby uses StampedVariableAccessor which calls fullFence
                 // so no additional steps needed.
                 // See https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/runtime/ivars/StampedVariableAccessor.java#L151-L159
-                return instance_variable_set(name, value);
+                return ((RubyBasicObject)self).instance_variable_set(name, value);
             }
+        }
+    }
+
+    @JRubyClass(name = "JRubyObject", parent = "AbstractObject")
+    public static class JRubyObject extends RubyObject {
+
+        public JRubyObject(Ruby runtime, RubyClass metaClass) {
+            super(runtime, metaClass);
         }
     }
 
