@@ -16,42 +16,16 @@ module Concurrent
                            end
     private_constant :ObjectImplementation
 
-    # TODO fix documentation
-    # @!macro [attach] synchronization_object
-    #
-    #   Safe synchronization under any Ruby implementation.
-    #   It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
-    #   Provides a single layer which can improve its implementation over time without changes needed to
-    #   the classes using it. Use {Synchronization::Object} not this abstract class.
-    #
-    #   @note this object does not support usage together with
-    #     [`Thread#wakeup`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
-    #     and [`Thread#raise`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
-    #     `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
-    #     `Thread#wakeup` will not work on all platforms.
-    #
-    #   @see {Event} implementation as an example of this class use
-    #
-    #   @example simple
-    #     class AnClass < Synchronization::Object
-    #       def initialize
-    #         super
-    #         synchronize { @value = 'asd' }
-    #       end
-    #
-    #       def value
-    #         synchronize { @value }
-    #       end
-    #     end
-    #
+    # Abstract object providing final, volatile, ans CAS extensions to build other concurrent abstractions.
+    # - final instance variables see {Object.safe_initialization!}
+    # - volatile instance variables see {Object.attr_volatile}
+    # - volatile instance variables see {Object.attr_volatile_with_cas}
     class Object < ObjectImplementation
 
       # Has to be called by children.
-      # Initializes default volatile fields with cas if any.
-      # @param [Array<Object>] defaults values for fields, in same order as they are defined
-      def initialize(*defaults)
-        super()
-        initialize_volatile_cas_fields(defaults)
+      def initialize
+        super
+        initialize_volatile_with_cas
       end
 
       # By calling this method on a class, it and all its children are marked to be constructed safely. Meaning that
@@ -62,7 +36,7 @@ module Concurrent
       #     safe_initialization!
       #
       #     def initialize
-      #       @AFinalValue = 'value' # published safly, does not have to be synchronized
+      #       @AFinalValue = 'value' # published safely, does not have to be synchronized
       #     end
       #   end
       def self.safe_initialization!
@@ -78,11 +52,14 @@ module Concurrent
         @safe_initialization = true
       end
 
+      # @return [true, false] if this class is safely initialized.
       def self.safe_initialization?
-        (defined?(@safe_initialization) && @safe_initialization) || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
+        @safe_initialization = false unless defined? @safe_initialization
+        @safe_initialization || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
       end
 
-      # For testing purposes, quite slow.
+      # For testing purposes, quite slow. Injects assert code to new method which will raise if class instance contains
+      # any instance variables with CamelCase names and isn't {.safe_initialization?}.
       def self.ensure_safe_initialization_when_final_fields_are_present
         Object.class_eval do
           def self.new(*)
@@ -96,14 +73,22 @@ module Concurrent
         end
       end
 
-      # TODO documentation
+      # Creates methods for reading and writing to a instance variable with
+      # volatile (Java) semantic as {.attr_volatile} does.
+      # The instance variable should be accessed oly through generated methods.
+      # This method generates following methods: `value`, `value=(new_value) #=> new_value`,
+      # `swap_value(new_value) #=> old_value`,
+      # `compare_and_set_value(expected, value) #=> true || false`, `update_value(&block)`.
+      # @param [Array<Symbol>] names of the instance variables to be volatile with CAS.
+      # @return [Array<Symbol>] names of defined method names.
       def self.attr_volatile_with_cas(*names)
         @volatile_cas_fields ||= []
         @volatile_cas_fields += names
         safe_initialization!
+        define_initialize_volatile_with_cas
 
         names.each do |name|
-          ivar = :"@VolatileCas_#{name}"
+          ivar = :"@VolatileCas#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }}"
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def #{name}
               #{ivar}.get
@@ -126,30 +111,41 @@ module Concurrent
             end
           RUBY
         end
-        names.map { |n| [n, :"#{n}=", :"swap_#{n}", :"compare_and_set_#{n}"] }.flatten
+        names.flat_map { |n| [n, :"#{n}=", :"swap_#{n}", :"compare_and_set_#{n}", :"update_#{n}"] }
       end
 
+      # @param [true,false] inherited should inherited volatile with CAS fields be returned?
+      # @return [Array<Symbol>] Returns defined volatile with CAS fields on this class.
       def self.volatile_cas_fields(inherited = true)
-        # TODO (pitr 11-Sep-2015): maybe use constant for better optimisation on Truffle since it will not speculate on ivar being final
         @volatile_cas_fields ||= []
         ((superclass.volatile_cas_fields if superclass.respond_to?(:volatile_cas_fields) && inherited) || []) +
             @volatile_cas_fields
       end
 
+      # @!method self.attr_volatile(*names)
+      #   Creates methods for reading and writing (as `attr_accessor` does) to a instance variable with
+      #   volatile (Java) semantic. The instance variable should be accessed oly through generated methods.
+      #
+      #   @param [Array<Symbol>] names of the instance variables to be volatile
+      #   @return [Array<Symbol>] names of defined method names
+
       private
 
-      def initialize_volatile_cas_fields(defaults)
-        self.class.volatile_cas_fields.zip(defaults) do |name, default|
-          instance_variable_set :"@VolatileCas_#{name}", AtomicReference.new(default)
+      def self.define_initialize_volatile_with_cas
+        assignments = @volatile_cas_fields.map { |name| "@VolatileCas#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }} = AtomicReference.new(nil)" }.join("\n")
+        class_eval <<-RUBY
+          def initialize_volatile_with_cas
+            super
+            #{assignments}
         end
-        nil
+        RUBY
       end
 
-      # @!method ensure_ivar_visibility!
-      #   @!macro synchronization_object_method_ensure_ivar_visibility
+      private_class_method :define_initialize_volatile_with_cas
 
-      # @!method self.attr_volatile(*names)
-      #   @!macro synchronization_object_method_self_attr_volatile
+      def initialize_volatile_with_cas
+      end
+
     end
   end
 end

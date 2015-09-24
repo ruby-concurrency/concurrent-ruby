@@ -38,7 +38,7 @@ module Concurrent
   #     threads.each {|t| t.join(2) }
   #
   # @!visibility private
-  class AbstractExchanger
+  class AbstractExchanger < Synchronization::Object
 
     # @!visibility private
     CANCEL = Object.new
@@ -46,7 +46,7 @@ module Concurrent
 
     # @!macro [attach] exchanger_method_initialize
     def initialize
-      raise NotImplementedError
+      super
     end
 
     # @!macro [attach] exchanger_method_do_exchange
@@ -140,23 +140,37 @@ module Concurrent
     # not include the arena or the multi-processor spin loops.
     # http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/java/util/concurrent/Exchanger.java
 
-    # @!visibility private
-    class Node < Concurrent::AtomicReference
-      attr_reader :item, :latch
+    safe_initialization!
+
+    class Node < Concurrent::Synchronization::Object
+      attr_volatile_with_cas :value
+      safe_initialization!
+
       def initialize(item)
-        @item = item
-        @latch = Concurrent::CountDownLatch.new
-        super(nil)
+        super()
+        @Item = item
+        @Latch = Concurrent::CountDownLatch.new
+        self.value = nil
+      end
+
+      def latch
+        @Latch
+      end
+
+      def item
+        @Item
       end
     end
     private_constant :Node
 
     # @!macro exchanger_method_initialize
     def initialize
-      @slot = Concurrent::AtomicReference.new
+      super
     end
 
     private
+
+    attr_volatile_with_cas(:slot)
 
     # @!macro exchanger_method_do_exchange
     #
@@ -247,20 +261,19 @@ module Concurrent
       #     - Return the occupier's item
 
       value = NULL if value.nil?                        # The sentinel allows nil to be a valid value
-      slot = @slot                                      # Convenience to minimize typing @
       me = Node.new(value)                              # create my node in case I need to occupy
       end_at = Concurrent.monotonic_time + timeout.to_f # The time to give up
 
       result = loop do
-        other = slot.get
-        if other && slot.compare_and_set(other, nil)
+        other = slot
+        if other && compare_and_set_slot(other, nil)
           # try to fulfill
-          if other.compare_and_set(nil, value)
+          if other.compare_and_set_value(nil, value)
             # happy path
             other.latch.count_down
             break other.item
           end
-        elsif other.nil? && slot.compare_and_set(nil, me)
+        elsif other.nil? && compare_and_set_slot(nil, me)
           # try to occupy
           timeout = end_at - Concurrent.monotonic_time if timeout
           if me.latch.wait(timeout)
@@ -268,11 +281,11 @@ module Concurrent
             break me.value
           else
             # attempt to remove myself from the slot
-            if slot.compare_and_set(me, nil)
+            if compare_and_set_slot(me, nil)
               break CANCEL
-            elsif !me.compare_and_set(nil, CANCEL)
+            elsif !me.compare_and_set_value(nil, CANCEL)
               # I've failed to block the fulfiller
-              break me.get
+              break me.value
             end
           end
         end

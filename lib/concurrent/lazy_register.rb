@@ -7,19 +7,22 @@ module Concurrent
   #
   # @example
   #   register = Concurrent::LazyRegister.new
-  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
+  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @Data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
   #   register[:key]
   #   #=> nil
   #   register.add(:key) { Concurrent::Actor.spawn!(Actor::AdHoc, :ping) { -> message { message } } }
-  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
+  #   #=> #<Concurrent::LazyRegister:0x007fd7ecd5e230 @Data=#<Concurrent::AtomicReference:0x007fd7ecd5e1e0>>
   #   register[:key]
   #   #=> #<Concurrent::Actor::Reference /ping (Concurrent::Actor::AdHoc)>
   #
   # @!macro edge_warning
-  class LazyRegister
+  class LazyRegister < Synchronization::Object
+
+    private *attr_volatile_with_cas(:data)
 
     def initialize
-      @data = AtomicReference.new(Hash.new)
+      super
+      self.data = {}
     end
 
     # Element reference. Retrieves the value object corresponding to the
@@ -31,7 +34,7 @@ module Concurrent
     #
     # @raise Exception when the initialization block fails
     def [](key)
-      delay = @data.get[key]
+      delay = data[key]
       delay ? delay.value! : nil
     end
 
@@ -40,7 +43,7 @@ module Concurrent
     # @param [Object] key
     # @return [true, false] if the key is registered
     def registered?(key)
-      @data.get.key?(key)
+      data.key?(key)
     end
 
     alias_method :key?, :registered?
@@ -55,7 +58,7 @@ module Concurrent
     # @return [LazyRegister] self
     def register(key, &block)
       delay = Delay.new(executor: :immediate, &block)
-      @data.update { |h| h.merge(key => delay) }
+      update_data { |h| h.merge(key => delay) }
       self
     end
 
@@ -68,7 +71,7 @@ module Concurrent
     #
     # @return [LazyRegister] self
     def unregister(key)
-      @data.update { |h| h.dup.tap { |j| j.delete(key) } }
+      update_data { |h| h.dup.tap { |j| j.delete(key) } }
       self
     end
 
