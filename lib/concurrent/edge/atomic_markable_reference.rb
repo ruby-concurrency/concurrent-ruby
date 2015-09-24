@@ -15,7 +15,8 @@ module Concurrent
 
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
-        super(ImmutableArray[value, mark]) # ensures visibility
+        super()
+        self.reference = ImmutableArray[value, mark]
       end
 
       # @!macro [attach] atomic_markable_reference_method_compare_and_set

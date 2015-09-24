@@ -1,6 +1,6 @@
 module Concurrent
   module Synchronization
-    # @!macro synchronization_object
+
     # @!visibility private
     class AbstractLockableObject < Object
 
@@ -13,25 +13,6 @@ module Concurrent
       #   @note can by made public in descendants if required by `public :synchronize`
       def synchronize
         raise NotImplementedError
-      end
-
-      # @!macro [attach] synchronization_object_method_ns_initialize
-      #
-      #   initialization of the object called inside synchronize block
-      #   @note has to be called manually when required in children of this class
-      #   @example
-      #     class Child < Concurrent::Synchornization::Object
-      #       def initialize(*args, &block)
-      #         super(&nil)
-      #         synchronize { ns_initialize(*args, &block) }
-      #       end
-      #
-      #       def ns_initialize(*args, &block)
-      #         @args = args
-      #       end
-      #     end
-      # TODO (pitr 12-Sep-2015): remove
-      def ns_initialize(*args, &block)
       end
 
       # @!macro [attach] synchronization_object_method_ns_wait_until

@@ -7,10 +7,6 @@ module Concurrent
       # @!macro internal_implementation_note
       class JRubyObject < AbstractObject
 
-        def initialize
-          # nothing to do
-        end
-
         def self.attr_volatile(*names)
           names.each do |name|
 

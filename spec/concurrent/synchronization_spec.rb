@@ -169,6 +169,32 @@ module Concurrent
           t1.kill
         end
       end
+
+      describe 'attr_volatile_with_cas' do
+        specify do
+          a = Class.new(Synchronization::Object) do
+            attr_volatile_with_cas :a
+
+            def initialize(*rest)
+              super
+              self.a = :a
+            end
+          end
+
+          b = Class.new(a) do
+            attr_volatile_with_cas :b
+
+            def initialize
+              super
+              self.b = :b
+            end
+          end
+
+          instance = b.new
+          expect(instance.a).to be == :a
+          expect(instance.b).to be == :b
+        end
+      end
     end
   end
 end

@@ -18,29 +18,42 @@ module Concurrent
                                    end
     private_constant :LockableObjectImplementation
 
-    # TODO (pitr 12-Sep-2015): make private for c-r, prohibit subclassing
+    #   Safe synchronization under any Ruby implementation.
+    #   It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
+    #   Provides a single layer which can improve its implementation over time without changes needed to
+    #   the classes using it. Use {Synchronization::Object} not this abstract class.
+    #
+    #   @note this object does not support usage together with
+    #     [`Thread#wakeup`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
+    #     and [`Thread#raise`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
+    #     `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
+    #     `Thread#wakeup` will not work on all platforms.
+    #
+    #   @see {Event} implementation as an example of this class use
+    #
+    #   @example simple
+    #     class AnClass < Synchronization::Object
+    #       def initialize
+    #         super
+    #         synchronize { @value = 'asd' }
+    #       end
+    #
+    #       def value
+    #         synchronize { @value }
+    #       end
+    #     end
+    #
+    # @!visibility private
     class LockableObject < LockableObjectImplementation
 
+      # TODO (pitr 12-Sep-2015): make private for c-r, prohibit subclassing
       # TODO (pitr 12-Sep-2015): we inherit too much ourselves :/
-      def self.allow_only_direct_descendants!
-        this = self
-        singleton_class.send :define_method, :inherited do |child|
-          # super child
-
-          if child.superclass != this
-            warn "all children of #{this} are final, subclassing is not supported use composition."
-          end
-        end
-      end
 
       # @!method initialize(*args, &block)
       #   @!macro synchronization_object_method_initialize
 
       # @!method synchronize
       #   @!macro synchronization_object_method_synchronize
-
-      # @!method initialize(*args, &block)
-      #   @!macro synchronization_object_method_ns_initialize
 
       # @!method wait_until(timeout = nil, &condition)
       #   @!macro synchronization_object_method_ns_wait_until
