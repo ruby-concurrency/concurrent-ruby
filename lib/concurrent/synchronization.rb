@@ -1,6 +1,8 @@
 require 'concurrent/utility/engine'
 
 require 'concurrent/synchronization/abstract_object'
+require 'concurrent/utility/native_extension_loader' # load native parts first
+
 require 'concurrent/synchronization/mri_object'
 require 'concurrent/synchronization/jruby_object'
 require 'concurrent/synchronization/rbx_object'
@@ -11,7 +13,6 @@ require 'concurrent/synchronization/mri_lockable_object'
 require 'concurrent/synchronization/jruby_lockable_object'
 require 'concurrent/synchronization/rbx_lockable_object'
 
-require 'concurrent/utility/native_extension_loader' # load native part first
 require 'concurrent/synchronization/lockable_object'
 
 require 'concurrent/synchronization/condition'
