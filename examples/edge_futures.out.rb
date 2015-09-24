@@ -173,14 +173,14 @@ actor.ask(2).then(&:succ).value                    # => 5
 
 ### Interoperability with channels
 
-ch1 = Concurrent::Edge::Channel.new                # => #<Concurrent::Edge::Channel:0x007fcc73043188>
-ch2 = Concurrent::Edge::Channel.new                # => #<Concurrent::Edge::Channel:0x007fcc730425f8>
+ch1 = Concurrent::Channel.new                # => #<Concurrent::Channel:0x007fcc73043188>
+ch2 = Concurrent::Channel.new                # => #<Concurrent::Channel:0x007fcc730425f8>
 
 result = Concurrent.select(ch1, ch2)
     # => <#Concurrent::Edge::CompletableFuture:0x7fcc730411a8 pending blocks:[]>
 ch1.push 1                                         # => nil
 result.value!
-    # => [1, #<Concurrent::Edge::Channel:0x007fcc73043188>]
+    # => [1, #<Concurrent::Channel:0x007fcc73043188>]
 
 Concurrent.
     future { 1+1 }.

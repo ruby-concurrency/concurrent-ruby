@@ -145,11 +145,11 @@ actor.ask(2).then(&:succ).value
 
 ### Interoperability with channels
 
-ch1 = Concurrent::Edge::Channel.new
-ch2 = Concurrent::Edge::Channel.new
+ch1 = Concurrent::Channel.new
+ch2 = Concurrent::Channel.new
 
 result = Concurrent.select(ch1, ch2)
-ch1.push 1
+ch1.put 1
 result.value!
 
 Concurrent.
