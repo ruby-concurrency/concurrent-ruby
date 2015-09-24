@@ -87,6 +87,10 @@ public class SynchronizationLibrary implements Library {
 
     // module JRubyAttrVolatile
     public static class JRubyAttrVolatile {
+
+        // volatile threadContext is used as a memory barrier per the JVM memory model happens-before semantic
+        // on volatile fields. any volatile field could have been used but using the thread context is an
+        // attempt to avoid code elimination.
         private static volatile ThreadContext threadContext = null;
 
         @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PRIVATE)
