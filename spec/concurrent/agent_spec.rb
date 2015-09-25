@@ -691,36 +691,34 @@ module Concurrent
         it 'removes all actions from the queue when :clear_actions is true' do
           latch = Concurrent::CountDownLatch.new
           subject = Agent.new(0, error_mode: :fail)
+          end_latch = Concurrent::CountDownLatch.new
 
           subject.send_via(executor){ latch.wait; raise StandardError }
-          5.times{ subject.send_via(executor){ nil } }
-
-          queue = subject.instance_variable_get(:@queue)
-          expect(queue.size).to be > 0
+          subject.send_via(executor){ end_latch.count_down }
 
           latch.count_down
           10.times{ break if subject.failed?; sleep(0.1) }
 
           subject.restart(42, clear_actions: true)
-          expect(queue).to be_empty
+          result = end_latch.wait(0.1)
+          expect(result).to be false
         end
 
-        it 'does not clear the action queue when :clear_actions is false', buggy: true do
+        it 'does not clear the action queue when :clear_actions is false' do
           latch = Concurrent::CountDownLatch.new
+          end_latch = Concurrent::CountDownLatch.new
+
           subject = Agent.new(0, error_mode: :fail)
 
           subject.send_via(executor){ latch.wait; raise StandardError }
-          5.times{ subject.send_via(executor){ nil } }
-
-          queue = subject.instance_variable_get(:@queue)
-          size = queue.size
-          expect(size).to be > 0
+          subject.send_via(executor){ end_latch.count_down }
 
           latch.count_down
           10.times{ break if subject.failed?; sleep(0.1) }
 
           subject.restart(42, clear_actions: false)
-          expect(queue.size).to eq size-1
+          result = end_latch.wait(3)
+          expect(result).to be true
         end
 
         it 'does not clear the action queue when :clear_actions is not given' do
