@@ -2,9 +2,11 @@ require_relative 'executor_service_shared'
 
 shared_examples :thread_pool do
 
+  let(:latch) { Concurrent::CountDownLatch.new }
+
   after(:each) do
     subject.kill
-    sleep(0.1)
+    subject.wait_for_termination(0.1)
   end
 
   it_should_behave_like :executor_service
@@ -42,7 +44,8 @@ shared_examples :thread_pool do
 
     it 'returns zero once shut down' do
       5.times{ subject.post{ sleep(0.1) } }
-      sleep(0.1)
+      subject.post { latch.count_down }
+      latch.wait(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
       expect(subject.length).to eq 0
@@ -57,13 +60,15 @@ shared_examples :thread_pool do
 
     it 'returns the approximate number of tasks that have been post thus far' do
       10.times{ subject.post{ nil } }
-      sleep(0.1)
+      subject.post { latch.count_down }
+      latch.wait(0.1)
       expect(subject.scheduled_task_count).to be > 0
     end
 
     it 'returns the approximate number of tasks that were post' do
       10.times{ subject.post{ nil } }
-      sleep(0.1)
+      subject.post { latch.count_down }
+      latch.wait(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
       expect(subject.scheduled_task_count).to be > 0
@@ -79,17 +84,17 @@ shared_examples :thread_pool do
     it 'returns the approximate number of tasks that have been completed thus far' do
       5.times{ subject.post{ raise StandardError } }
       5.times{ subject.post{ nil } }
-      sleep(0.1)
-      expect(subject.completed_task_count).to be > 0
+      subject.post { latch.count_down }
+      latch.wait(1)
+      expect(subject.completed_task_count).to be > 1
     end
 
     it 'returns the approximate number of tasks that were completed' do
       5.times{ subject.post{ raise StandardError } }
       5.times{ subject.post{ nil } }
-      sleep(0.1)
       subject.shutdown
       subject.wait_for_termination(1)
-      expect(subject.completed_task_count).to be > 0
+      expect(subject.completed_task_count).to be > 1
     end
   end
 

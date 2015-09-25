@@ -6,7 +6,7 @@ module Concurrent
 
     after(:each) do
       subject.kill
-      sleep(0.1)
+      subject.wait_for_termination(0.1)
     end
 
     subject { RubySingleThreadExecutor.new }

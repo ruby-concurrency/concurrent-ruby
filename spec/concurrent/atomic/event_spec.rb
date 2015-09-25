@@ -27,8 +27,8 @@ module Concurrent
 
       it 'triggers the event' do
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait.tap{ latch.count_down } }
-        sleep(0.1)
+        t = Thread.new{ subject.wait.tap{ latch.count_down } }
+        t.join(0.1)
         subject.set
         expect(latch.wait(1)).to be true
       end
@@ -156,21 +156,19 @@ module Concurrent
 
       it 'should resist to spurious wake ups without timeout' do
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait.tap{ latch.count_down } }
+        t = Thread.new{ subject.wait.tap{ latch.count_down } }
+        t.join(0.1)
 
-        sleep(0.1)
         subject.simulate_spurious_wake_up
-
         expect(latch.wait(0.1)).to be false
       end
 
       it 'should resist to spurious wake ups with timeout' do
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait(0.3); latch.count_down }
+        t = Thread.new{ subject.wait(0.3); latch.count_down }
+        t.join(0.1)
 
-        sleep(0.1)
         subject.simulate_spurious_wake_up
-
         expect(latch.wait(0.1)).to be false
         expect(latch.wait(1)).to be true
       end

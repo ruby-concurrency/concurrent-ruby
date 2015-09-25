@@ -4,12 +4,14 @@ module Concurrent
 
   describe FixedThreadPool do
 
+    let(:latch) { Concurrent::CountDownLatch.new }
+
     let!(:num_threads){ 5 }
     subject { described_class.new(num_threads) }
 
     after(:each) do
       subject.kill
-      sleep(0.1)
+      subject.wait_for_termination(0.1)
     end
 
     it_should_behave_like :thread_pool
@@ -82,13 +84,15 @@ module Concurrent
 
       it 'returns :num_threads while running' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.min_length).to eq num_threads
       end
 
       it 'returns :num_threads once shutdown' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         subject.shutdown
         subject.wait_for_termination(1)
         expect(subject.min_length).to eq num_threads
@@ -103,13 +107,15 @@ module Concurrent
 
       it 'returns :num_threads while running' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.max_length).to eq num_threads
       end
 
       it 'returns :num_threads once shutdown' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         subject.shutdown
         subject.wait_for_termination(1)
         expect(subject.max_length).to eq num_threads
@@ -120,7 +126,8 @@ module Concurrent
 
       it 'returns :num_threads while running' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.length).to eq num_threads
       end
     end
@@ -133,13 +140,15 @@ module Concurrent
 
       it 'returns :num_threads while running' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.largest_length).to eq num_threads
       end
 
       it 'returns :num_threads once shutdown' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         subject.shutdown
         subject.wait_for_termination(1)
         expect(subject.largest_length).to eq num_threads

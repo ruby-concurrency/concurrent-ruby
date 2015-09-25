@@ -4,9 +4,11 @@ module Concurrent
 
   describe RubyThreadPoolExecutor, :type=>:mrirbx do
 
+    let(:latch) { Concurrent::CountDownLatch.new }
+
     after(:each) do
       subject.kill
-      sleep(0.1)
+      subject.wait_for_termination(0.1)
     end
 
     subject do
@@ -39,13 +41,15 @@ module Concurrent
 
       it 'returns :max_length when no tasks are enqueued' do
         5.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.remaining_capacity).to eq expected_max
       end
 
       it 'returns the remaining capacity when tasks are enqueued' do
         100.times{ subject.post{ sleep(0.5) } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.remaining_capacity).to be < expected_max
       end
     end

@@ -4,13 +4,15 @@ module Concurrent
 
   describe CachedThreadPool do
 
+    let(:latch) { Concurrent::CountDownLatch.new }
+
     subject do
       described_class.new(fallback_policy: :discard)
     end
 
     after(:each) do
       subject.kill
-      sleep(0.1)
+      subject.wait_for_termination(1)
     end
 
     it_should_behave_like :thread_pool
@@ -42,13 +44,15 @@ module Concurrent
 
       it 'returns zero while running' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.min_length).to eq 0
       end
 
       it 'returns zero once shutdown' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         subject.shutdown
         subject.wait_for_termination(1)
         expect(subject.min_length).to eq 0
@@ -63,13 +67,15 @@ module Concurrent
 
       it 'returns :max_length while running' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
       end
 
       it 'returns :max_length once shutdown' do
         10.times{ subject.post{ nil } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         subject.shutdown
         subject.wait_for_termination(1)
         expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
@@ -84,13 +90,15 @@ module Concurrent
 
       it 'returns a non-zero number once tasks have been received' do
         10.times{ subject.post{ sleep(0.1) } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         expect(subject.largest_length).to be > 0
       end
 
       it 'returns a non-zero number after shutdown if tasks have been received' do
         10.times{ subject.post{ sleep(0.1) } }
-        sleep(0.1)
+        subject.post { latch.count_down }
+        latch.wait(0.1)
         subject.shutdown
         subject.wait_for_termination(1)
         expect(subject.largest_length).to be > 0

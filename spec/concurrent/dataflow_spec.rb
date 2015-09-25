@@ -223,12 +223,11 @@ module Concurrent
           else
             n1 = fib_with_dot(n - 1)
             n2 = fib_with_dot(n - 2)
-            Concurrent.dataflow_with(root_executor, n1, n2) { n1.value + n2.value }
+            Concurrent.dataflow_with(ImmediateExecutor.new, n1, n2) { n1.value + n2.value }
           end
         end
 
         expected = fib_with_dot(7)
-        sleep(0.1)
         expect(expected.value).to eq 13
       end
 
