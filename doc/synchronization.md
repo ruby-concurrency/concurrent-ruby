@@ -39,14 +39,28 @@ conditions it behaves in
 [sequential consistent](https://en.wikipedia.org/wiki/Sequential_consistency)
 manner.
 
-Sources:
+A memory model sources:
 
 -   [Java memory model](http://www.cs.umd.edu/~pugh/java/memoryModel/),
     and its [FAQ](http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html)
 -   [atomic&lt;&gt; Weapons 1](https://channel9.msdn.com/Shows/Going+Deep/Cpp-and-Beyond-2012-Herb-Sutter-atomic-Weapons-1-of-2)
 and
 [2](https://channel9.msdn.com/Shows/Going+Deep/Cpp-and-Beyond-2012-Herb-Sutter-atomic-Weapons-2-of-2)
-- [JRuby's wiki page about concurrency](https://github.com/jruby/jruby/wiki/Concurrency-in-jruby)
+
+Concurrent behavior sources of Ruby implementations:
+
+-   Source codes.
+-   [JRuby's wiki page](https://github.com/jruby/jruby/wiki/Concurrency-in-jruby)
+-   [Rubinius's wiki page](http://rubini.us/doc/en/systems/concurrency/)
+
+> A similar document for MRI was not found. Key fact about MRI is GVL (Global
+> VM lock) which ensures that only one thread can interpret a Ruby code at any
+> given time. When the GVL is handed from one thread to another a mutex is
+> released by first and acquired by the second thread implying that everything
+> done by first thread is visible to second thread. See
+> [thread_pthread.c](https://github.com/ruby/ruby/blob/ruby_2_2/thread_pthread.c#L101-L107)
+> and
+> [thread_win32.c](https://github.com/ruby/ruby/blob/ruby_2_2/thread_win32.c#L95-L100).
 
 This memory model was created by: comparing
 [MRI](https://www.ruby-lang.org/en/), [JRuby](http://jruby.org/),
