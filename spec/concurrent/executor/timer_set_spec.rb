@@ -94,7 +94,7 @@ module Concurrent
         expect(Time.now.to_f - start).to be >= 0.19
       end
 
-      it 'executes all tasks scheduled for the same time' do
+      it 'executes all tasks scheduled for the same time', buggy: true do
         latch = CountDownLatch.new(5)
         5.times{ subject.post(0.1){ latch.count_down } }
         expect(latch.wait(0.2)).to be_truthy
@@ -317,7 +317,7 @@ module Concurrent
 
     context 'termination' do
 
-      it 'cancels all pending tasks on #shutdown' do
+      it 'cancels all pending tasks on #shutdown', buggy: true do
         count = 10
         latch = Concurrent::CountDownLatch.new(count)
         expected = AtomicFixnum.new(0)
@@ -334,7 +334,7 @@ module Concurrent
         expect(expected.value).to eq 0
       end
 
-      it 'cancels all pending tasks on #kill' do
+      it 'cancels all pending tasks on #kill', buggy: true do
         count = 10
         latch = Concurrent::CountDownLatch.new(count)
         expected = AtomicFixnum.new(0)

@@ -148,7 +148,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
         expect(subject.contains? 'six').to be true
       end
 
-      it 'does not recognize the existence of the item when removed' do
+      it 'does not recognize the existence of the item when removed', buggy: true do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
