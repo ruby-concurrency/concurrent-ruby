@@ -94,7 +94,7 @@ module Concurrent
           expect(subject.timeout_interval).to eq TimerTask::TIMEOUT_INTERVAL
         end
 
-        it 'uses the given execution interval', buggy: true do
+        it 'uses the given execution interval' do
           subject = TimerTask.new(execution_interval: 5) { nil }
           expect(subject.execution_interval).to eq 5
         end

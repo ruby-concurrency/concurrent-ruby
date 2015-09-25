@@ -313,7 +313,7 @@ module Concurrent
       end
 
       describe 'pool' do
-        it 'supports asks' do
+        it 'supports asks', buggy: true do
           children = Queue.new
           pool     = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
             worker = Concurrent::Actor::Utils::AdHoc.spawn name: "worker-#{index}", supervised: true do
