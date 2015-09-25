@@ -128,7 +128,8 @@ describe Concurrent::Edge::LockFreeLinkedSet do
     end
 
     context 'in a multi-threaded environment' do
-      it 'adds the items to the set', buggy: true do
+
+      it 'adds the items to the set' do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
@@ -148,7 +149,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
         expect(subject.contains? 'six').to be true
       end
 
-      it 'does not recognize the existence of the item when removed', buggy: true do
+      it 'does not recognize the existence of the item when removed' do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
