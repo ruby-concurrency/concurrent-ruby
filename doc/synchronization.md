@@ -1,34 +1,41 @@
 > Quotations are used for notes.
 
 > This document is work-in-progress.
-> Intentions of this effort and document are: to sum up the behavior
+> Intentions of this effort and document are: to summarize the behavior
 > of Ruby in concurrent and parallel environment, initiate discussion,
 > identify problems in the document, find flaws in the Ruby
 > implementations if any, suggest what has to be enhanced in Ruby itself
 > and cooperate towards the goal in all implementations (using
 > `concurrent-ruby` as compatibility layer).
+>
+> It's not intention of this effort to introduce high-level concurrency
+> abstractions like actors to the language, but rather to improve low-level
+> concurrency support to add many more concurrency abstractions through gems.
 
 # Synchronization
 
-This layer provides tools to write concurrent abstractions independent on any
-particular Ruby implementation. It is build on top of Ruby memory model which is
-also described here. `concurrent-ruby` abstractions are build using this layer.
+This layer provides tools to write concurrent abstractions independent of any
+particular Ruby implementation. It is built on top of the Ruby memory model
+which is also described here. `concurrent-ruby` abstractions are build using
+this layer.
 
 **Why?** Ruby is great expressive language, but it lacks in support for
-concurrent and parallel computation. It's hoped that this document will provide
-ground steps for Ruby to become as good in this area as in others.
+well-defined low-level concurrent and parallel computation. It's hoped that this
+document will provide ground steps for Ruby to become as good in this area as
+in others.
 
-Without memory model and this layer it's very hard to write concurrent
+Without a memory model and this layer it's very hard to write concurrent
 abstractions for Ruby. To write a proper concurrent abstraction it often means
 to reimplement it more than once for different Ruby runtimes, which is very
 time-consuming and error-prone.
 
 # Ruby memory model
 
-Ruby memory model is a framework allowing to reason about programs in concurrent
-and parallel environment. It allows to identify what is and what is not a [race
-condition](https://en.wikipedia.org/wiki/Race_condition). Memory model is also a
-contract: if a program is written without the race conditions it behaves in
+The Ruby memory model is a framework allowing to reason about programs in
+concurrent and parallel environment. It allows to identify what is and what
+is not a [race condition](https://en.wikipedia.org/wiki/Race_condition).
+The memory model is also a contract: if a program is written without race
+conditions it behaves in
 [sequential consistent](https://en.wikipedia.org/wiki/Sequential_consistency)
 manner.
 
@@ -57,19 +64,20 @@ Key properties are:
 -   **serialized (S)** - Operations are serialized in some order (they
     cannot disappear). This is a new property not mentioned in other memory
     models, since Java and C++ do not have dynamically defined fields. All
-    operations on one line in the table are serialized with each other.
+    operations on one line in a row of the tables bellow are serialized with
+    each other.
 
 ### Core behavior:
 
 | Operation | V | A | S | Notes |
 |:----------|:-:|:-:|:-:|:-----|
-| local variable read/write/definition | - | x | x | Local variables are determined during parsing, they are not usually dinamically added (with exception of `local_variable_set`). Therefore definition is quite rare. |
-| instance variable read/write/(un)definition | - | x | x ||
+| local variable read/write/definition | - | x | x | Local variables are determined during parsing, they are not usually dynamically added (with exception of `local_variable_set`). Therefore definition is quite rare. |
+| instance variable read/write/(un)definition | - | x | x | Newly defined instance variables have to become visible eventually. |
 | class variable read/write/(un)definition | x | x | x ||
 | global variable read/write/definition | x | x | x | un-define us not possible currently. |
 | constant variable read/write/(un)definition | x | x | x ||
-| `Thread` local variable read/write/definition | - | x | x | un-define us not possible currently. |
-| `Fiber` local variable read/write/definition | - | x | x | un-define us not possible currently. |
+| `Thread` local variable read/write/definition | - | x | x | un-define is not possible currently. |
+| `Fiber` local variable read/write/definition | - | x | x | un-define is not possible currently. |
 | method creation/redefinition/removal | x | x | x ||
 | include/extend | x | x | x | If `AClass` is included `AModule`, `AClass` gets all `AModule`'s methods at once. |
 
@@ -87,13 +95,15 @@ Notes:
 -   Method invocation does not have any special properties that includes
     object initialization.
 
-Implementation differences from the model:
+Current Implementation differences from the model:
 
 -   MRI: everything is volatile.
 -   JRuby: `Thread` and `Fiber` local variables are volatile. Instance
     variables are volatile on x86 and people may un/intentionally depend
     on the fact.
 -   Class variables require investigation.
+
+> TODO: updated with specific versions of the implementations.
 
 ### Source loading:
 
@@ -106,7 +116,7 @@ Notes:
 
 -   Beware of requiring and autoloading in concurrent programs, it's possible to
     see partially defined classes. Eager loading or blocking until class is
-    fully loaded has should be used to mitigate.
+    fully loaded should be used to mitigate.
 
 ### Core classes
 
@@ -188,7 +198,7 @@ library cannot alter meaning of `@a_name` expression therefore when a
 `a_name` to be volatile, it creates method accessors.
 
 > However there is Ruby [issue](https://redmine.ruby-lang.org/issues/11539)
-> filled to address this.
+> filed to address this.
 
 ``` ruby
 # Simple counter with cheap reads.
@@ -215,10 +225,10 @@ class Counter < Concurrent::Synchronization::Object
     value
   end
 
-  # Safely increment the value without loosing updates
+  # Safely increments the value without loosing updates
   # (as it would happen with just += used).
   def increment(add)
-    # Wrap he two volatile operations to make them atomic.
+    # Wrap the two volatile operations to make them atomic.
     @Lock.synchronize do
       # volatile write and read
       self.value = self.value + add
@@ -229,7 +239,7 @@ end
 
 > This is currently planned to be migrated to a module to be able to add
 > volatile fields any object not just `Synchronization::Object` children. The
-> instance variable itself is named `@"volatile_#(name)"` to distinguish it and
+> instance variable itself is named `"@volatile_#{name}"` to distinguish it and
 > to prevent direct access by name.
 
 ## Volatile instance variable with compare-and-set
@@ -298,59 +308,6 @@ Three of them were used in the example above.
 > Current implementation relies on final instance variables where a instance of
 > `AtomicReference` is held to provide compare-and-set operations. That creates
 > extra indirection which is hoped to be removed over time when better
-> implementation will become available in Ruby implementations.
-
-## Concurrent Ruby Notes
-
-### Locks
-
-Concurrent Ruby also has an internal extension of `Object` called
-`LockableObject`, which provides same synchronization primitives as Java's
-Object: `synchronize(&block)`, `wait(timeout = nil)`,
-`wait_until(timeout = nil, &condition)`, `signal`, `broadcast`. This class is
-intended for internal use in `concurrent-ruby` only and it does not support
-subclassing (since it cannot protect its lock from its children, for more
-details see [this article](http://wiki.apidesign.org/wiki/Java_Monitor)). It has
-minimal interface to be able to use directly locking available on given
-platforms.
-
-For non-internal use there is `Lock` and `Condition` implementation in
-`Synchronization` namespace, a condition can be obtained with `new_condition`
-method on `Lock`. So far their implementation is naive and requires more work.
-API is not expected to change.
-
-### Method names conventions
-
-Methods starting with `ns_` are marking methods that are not using
-synchronization by themselves, they have to be used inside synchronize block.
-They are usually used in pairs to separate the synchronization from behavior and
-to allow to call methods in the same object without double locking.
-
-``` ruby
-class Node
-  # ...
-  def left
-    synchronize { ns_left }
-  end  
-
-  def left
-    synchronize { ns_left }
-  end  
-
-  def to_a
-    # avoids double locking
-    synchronize { [ns_left, ns_right] }
-  end    
-
-  private
-
-  def ns_left
-    @left
-  end
-
-  def ns_right
-    @right
-  end
-  # ...
-end
-```
+> implementation will become available in Ruby implementations. The
+> instance variable itself is named `"@VolatileCas#{camelized name}"` to
+> distinguish it and to prevent direct access by name.
