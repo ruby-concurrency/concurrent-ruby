@@ -10,7 +10,7 @@ module Concurrent
     #     attr_volatile :bar
     #
     #     def initialize
-    #       @volatile_bar = 1
+    #       self.bar = 1
     #     end
     #   end
     #
