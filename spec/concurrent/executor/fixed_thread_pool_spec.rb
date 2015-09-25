@@ -4,8 +4,6 @@ module Concurrent
 
   describe FixedThreadPool do
 
-    let(:latch) { Concurrent::CountDownLatch.new }
-
     let!(:num_threads){ 5 }
     subject { described_class.new(num_threads) }
 
@@ -15,6 +13,8 @@ module Concurrent
     end
 
     it_should_behave_like :thread_pool
+
+    let(:latch) { Concurrent::CountDownLatch.new }
 
     context '#initialize default values' do
 

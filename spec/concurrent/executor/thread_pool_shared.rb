@@ -2,14 +2,14 @@ require_relative 'executor_service_shared'
 
 shared_examples :thread_pool do
 
-  let(:latch) { Concurrent::CountDownLatch.new }
-
   after(:each) do
     subject.kill
     subject.wait_for_termination(0.1)
   end
 
   it_should_behave_like :executor_service
+
+  let(:latch) { Concurrent::CountDownLatch.new }
 
   context '#auto_terminate?' do
 

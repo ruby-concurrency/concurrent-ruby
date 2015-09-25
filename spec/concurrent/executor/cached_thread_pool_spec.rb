@@ -4,8 +4,6 @@ module Concurrent
 
   describe CachedThreadPool do
 
-    let(:latch) { Concurrent::CountDownLatch.new }
-
     subject do
       described_class.new(fallback_policy: :discard)
     end
@@ -16,6 +14,8 @@ module Concurrent
     end
 
     it_should_behave_like :thread_pool
+
+    let(:latch) { Concurrent::CountDownLatch.new }
 
     context '#initialize' do
 

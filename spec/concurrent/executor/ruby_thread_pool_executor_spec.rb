@@ -4,8 +4,6 @@ module Concurrent
 
   describe RubyThreadPoolExecutor, :type=>:mrirbx do
 
-    let(:latch) { Concurrent::CountDownLatch.new }
-
     after(:each) do
       subject.kill
       subject.wait_for_termination(0.1)
@@ -28,6 +26,7 @@ module Concurrent
     context '#remaining_capacity' do
 
       let!(:expected_max){ 100 }
+      let(:latch) { Concurrent::CountDownLatch.new }
 
       subject do
         RubyThreadPoolExecutor.new(
