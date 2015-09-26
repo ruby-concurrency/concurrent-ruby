@@ -123,6 +123,10 @@ Current Implementation differences from the model:
 
 > TODO: updated with specific versions of the implementations.
 
+### Threads
+
+> TODO: add description of `Thread.new`, `#join`, etc.
+
 ### Source loading:
 
 | Operation | V | A | S | Notes |
@@ -143,6 +147,9 @@ implementation VMs should not crash when for example `Array` or `Hash` is used
 in parallel environment but it may loose updates, or raise Exceptions. (If
 `Array` or `Hash` were synchronized it would have too much overhead when used
 in a single thread.)
+
+> `concurrent-ruby` contains synchronized versions of `Array` and `Hash` and
+> other thread-safe data structure. 
 
 > TODO: This section needs more work: e.g. Thread.raise and similar is an open
 > issue, better not to be used.
