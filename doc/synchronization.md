@@ -71,8 +71,13 @@ C++11). This is not a formal model.
 Key properties are:
 
 -   **volatility (V)** - Any written value is immediately visible to any
-    subsequent volatile reads including all writes leading to this value. (Same
-    meaning as in Java.)
+    subsequent volatile read of the same variable. Any write executed before
+    volatile write based on program-order is visible to the read as well, which
+    allows
+    [piggybacking](http://stackoverflow.com/questions/8769570/volatile-piggyback-is-this-enough-for-visiblity).
+    (Same meaning as in Java, it creates synchronizes-with (JMM term) order
+    between write and read, which participates in creating happens-before
+    order.)
 -   **atomicity (A)** - Operation is either done or not as a whole.
 -   **serialized (S)** - Operations are serialized in some order (they
     cannot disappear). This is a new property not mentioned in other memory
