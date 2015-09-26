@@ -32,17 +32,16 @@ time-consuming and error-prone.
 # Ruby memory model
 
 The Ruby memory model is a framework allowing to reason about programs in
-concurrent and parallel environment. It allows to identify what is and what
-is not a [race condition](https://en.wikipedia.org/wiki/Race_condition).
-The memory model is also a contract: if a program is written without race
-conditions it behaves in
-[sequential consistent](https://en.wikipedia.org/wiki/Sequential_consistency)
-manner.
+concurrent and parallel environment. It defines what variable writes can be
+observed by a particular variable read, which is essential to be able to
+determine if a program is correct. It is achieved be defining what subset of
+all possible program execution orders is allowed.
 
 A memory model sources:
 
 -   [Java memory model](http://www.cs.umd.edu/~pugh/java/memoryModel/),
     and its [FAQ](http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html)
+-   [Java Memory Model Pragmatics](http://shipilev.net/blog/2014/jmm-pragmatics/)
 -   [atomic&lt;&gt; Weapons 1](https://channel9.msdn.com/Shows/Going+Deep/Cpp-and-Beyond-2012-Herb-Sutter-atomic-Weapons-1-of-2)
 and
 [2](https://channel9.msdn.com/Shows/Going+Deep/Cpp-and-Beyond-2012-Herb-Sutter-atomic-Weapons-2-of-2)
