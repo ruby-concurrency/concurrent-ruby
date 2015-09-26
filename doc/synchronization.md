@@ -139,8 +139,10 @@ Notes:
 ### Core classes
 
 `Mutex`, `Monitor`, `Queue` have to work correctly on each implementation. Ruby
-implementations should not crash when e.g. Array is used in parallel environment
-but it may loose updates etc.
+implementation VMs should not crash when for example `Array` or `Hash` is used
+in parallel environment but it may loose updates, or raise Exceptions. (If
+`Array` or `Hash` were synchronized it would have too much overhead when used
+in a single thread.)
 
 > TODO: This section needs more work: e.g. Thread.raise and similar is an open
 > issue, better not to be used.
