@@ -52,3 +52,13 @@ class Node
   # ...
 end
 ```
+## Piggybacking
+
+Any write executed before volatile write based on program-order is visible to
+the volatile read as well, which allows
+[piggybacking](http://stackoverflow.com/questions/8769570/volatile-piggyback-is-this-enough-for-visiblity).
+Because it creates synchronizes-with (JMM term) order between volatile write
+and read, which participates in creating happens-before order.
+
+This trick is used in some of the abstractions, to avoid unnecessary
+synchronization or volatile declarations.
