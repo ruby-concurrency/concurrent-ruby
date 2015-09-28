@@ -100,8 +100,9 @@ Notes:
 -   Variable read reads value from preexisting variable.
 -   Variable definition creates new variable (operation is serialized with
     writes, implies an update cannot be lost).
--   Module/Class definition is actually constant definition. It is defined
-    instantly, however its methods are then processed sequentially.
+-   A Module or a Class definition is actually a constant definition.
+    The definition is atomic, it assigns the Module or the Class to the
+    constant, then its methods are defined atomically one by one.
 -   `||=`, `+=`, etc. are actually two operations read and write which implies
     that it's not an atomic operation. See volatile variables
     with compare-and-set.
