@@ -128,7 +128,7 @@ Current Implementation differences from the model:
 | Operation | V | A | S | Notes |
 |:----------|:-:|:-:|:-:|:-----|
 | requiring | x | x | x | File will not be required twice, classes and modules are still defined gradually. |
-| autoload | x | x | x | Only one autoload at a time. |
+| autoload | x | x | - | Only one autoload at a time for a given constant, others will be blocked until first triggered autoload is done. Different constants may be loaded concurrently. |
 
 Notes:
 
