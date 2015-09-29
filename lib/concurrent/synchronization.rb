@@ -20,6 +20,7 @@ require 'concurrent/synchronization/lock'
 
 module Concurrent
   # {include:file:doc/synchronization.md}
+  # {include:file:doc/synchronization-notes.md}
   module Synchronization
   end
 end

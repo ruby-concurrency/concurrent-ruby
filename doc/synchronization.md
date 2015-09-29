@@ -1,5 +1,9 @@
 > Quotations are used for notes.
 
+> This is an outdated version of
+> [this document](https://docs.google.com/document/d/1pVzU8w_QF44YzUCCab990Q_WZOdhpKolCIHaiXG-sPw/edit?usp=sharing) 
+> maintained on Google documents.
+
 > This document is work-in-progress.
 > Intentions of this effort and document are: to summarize the behavior
 > of Ruby in concurrent and parallel environment, initiate discussion,
@@ -145,7 +149,7 @@ in parallel environment but it may loose updates, or raise Exceptions. (If
 in a single thread.)
 
 > `concurrent-ruby` contains synchronized versions of `Array` and `Hash` and
-> other thread-safe data structure. 
+> other thread-safe data structure.
 
 > TODO: This section needs more work: e.g. Thread.raise and similar is an open
 > issue, better not to be used.

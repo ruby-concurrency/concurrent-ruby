@@ -22,6 +22,13 @@ module Concurrent
     # - volatile instance variables see {Object.attr_volatile_with_cas}
     class Object < ObjectImplementation
 
+      # @!method self.attr_volatile(*names)
+      #   Creates methods for reading and writing (as `attr_accessor` does) to a instance variable with
+      #   volatile (Java) semantic. The instance variable should be accessed oly through generated methods.
+      #
+      #   @param [Array<Symbol>] names of the instance variables to be volatile
+      #   @return [Array<Symbol>] names of defined method names
+
       # Has to be called by children.
       def initialize
         super
@@ -122,13 +129,6 @@ module Concurrent
             @volatile_cas_fields
       end
 
-      # @!method self.attr_volatile(*names)
-      #   Creates methods for reading and writing (as `attr_accessor` does) to a instance variable with
-      #   volatile (Java) semantic. The instance variable should be accessed oly through generated methods.
-      #
-      #   @param [Array<Symbol>] names of the instance variables to be volatile
-      #   @return [Array<Symbol>] names of defined method names
-
       private
 
       def self.define_initialize_volatile_with_cas
@@ -137,7 +137,7 @@ module Concurrent
           def initialize_volatile_with_cas
             super
             #{assignments}
-        end
+          end
         RUBY
       end
 
