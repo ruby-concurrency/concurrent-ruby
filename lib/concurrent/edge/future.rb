@@ -925,8 +925,11 @@ module Concurrent
       # @return [Future]
       def evaluate_to(*args, block)
         complete_with Future::Success.new(block.call(*args))
-      rescue => error
+      rescue StandardError => error
         complete_with Future::Failed.new(error)
+      rescue Exception => error
+        complete_with Future::Failed.new(error)
+        raise error
       end
     end
 
