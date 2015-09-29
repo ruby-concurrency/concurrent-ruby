@@ -312,6 +312,16 @@ describe 'Concurrent::Edge futures' do
     it 'has flat map' do
       f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
       expect(f.value!).to eq 2
+
+      err = StandardError.new('boo')
+      f   = Concurrent.future { Concurrent.failed_future(err) }.flat
+      expect(f.reason).to eq err
+
+      f   = Concurrent.future { raise 'boo' }.flat
+      expect(f.reason.message).to eq 'boo'
+
+      f   = Concurrent.future { 'boo' }.flat
+      expect(f.reason).to be_an_instance_of TypeError
     end
   end
 
