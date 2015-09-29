@@ -313,6 +313,14 @@ describe 'Concurrent::Edge futures' do
       f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
       expect(f.value!).to eq 2
     end
+
+    it 'completes future when Exception raised' do
+      f = Concurrent.future { raise Exception, 'fail' }
+      sleep 0.2
+      expect(f).to be_completed
+      expect(f).to be_failed
+      expect{ f.value! }.to raise_error(Exception, 'fail')
+    end
   end
 
   describe 'interoperability' do
