@@ -194,7 +194,7 @@ describe 'Concurrent::Edge futures' do
   describe 'Future' do
     it 'has sync and async callbacks' do
       callbacks_tester = ->(future) do
-        queue  = Queue.new
+        queue = Queue.new
         future.on_completion(:io) { |result| queue.push("async on_completion #{ result.inspect }") }
         future.on_completion! { |result| queue.push("sync on_completion #{ result.inspect }") }
         future.on_success(:io) { |value| queue.push("async on_success #{ value.inspect }") }
@@ -309,19 +309,30 @@ describe 'Concurrent::Edge futures' do
       expect(Concurrent.zip(branch1, branch2).value!).to eq [2, 3]
     end
 
-    it 'has flat map' do
-      f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
-      expect(f.value!).to eq 2
+    describe '#flat' do
+      it 'returns value of inner future' do
+        f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
+        expect(f.value!).to eq 2
+      end
 
-      err = StandardError.new('boo')
-      f   = Concurrent.future { Concurrent.failed_future(err) }.flat
-      expect(f.reason).to eq err
+      it 'propagates failure of inner future' do
+        err = StandardError.new('boo')
+        f   = Concurrent.future { Concurrent.failed_future(err) }.flat
+        expect(f.reason).to eq err
+      end
 
-      f   = Concurrent.future { raise 'boo' }.flat
-      expect(f.reason.message).to eq 'boo'
+      it 'it propagates failure of the future which was suppose to provide inner future' do
+        f = Concurrent.future { raise 'boo' }.flat
+        expect(f.reason.message).to eq 'boo'
+      end
 
-      f   = Concurrent.future { 'boo' }.flat
-      expect(f.reason).to be_an_instance_of TypeError
+      it 'fails if inner value is not a future' do
+        f = Concurrent.future { 'boo' }.flat
+        expect(f.reason).to be_an_instance_of TypeError
+
+        f = Concurrent.future { Concurrent.completed_event }.flat
+        expect(f.reason).to be_an_instance_of TypeError
+      end
     end
   end
 
