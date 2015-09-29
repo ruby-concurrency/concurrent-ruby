@@ -1,5 +1,5 @@
 require 'concurrent/atomic/mutex_atomic_boolean'
-require 'concurrent/utility/native_extension_loader'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -48,7 +48,7 @@ module Concurrent
   #   Explicitly sets the value to false.
   #
   #   @return [Boolean] true is value has changed, otherwise false
-  
+
   ###################################################################
 
   # @!macro [new] atomic_boolean_public_api

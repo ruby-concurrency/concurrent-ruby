@@ -1,7 +1,11 @@
-require 'concurrent/synchronization/abstract_object' # must be loaded before JRuby extensions
 require 'concurrent/utility/engine'
 
 module Concurrent
+
+  unless defined? Synchronization::AbstractObject
+    raise 'native_extension_loader loaded before Synchronization::AbstractObject'
+  end
+
   module Utility
 
     # @!visibility private

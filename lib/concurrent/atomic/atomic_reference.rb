@@ -1,4 +1,4 @@
-require 'concurrent/utility/native_extension_loader'
+require 'concurrent/synchronization'
 require 'concurrent/utility/engine'
 require 'concurrent/atomic_reference/concurrent_update_error'
 require 'concurrent/atomic_reference/mutex_atomic'
