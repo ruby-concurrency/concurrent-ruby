@@ -81,20 +81,23 @@ shared_examples :thread_pool do
       expect(subject.completed_task_count).to eq 0
     end
 
-    it 'returns the approximate number of tasks that have been completed thus far' do
-      5.times{ subject.post{ raise StandardError } }
-      5.times{ subject.post{ nil } }
-      subject.post { latch.count_down }
-      latch.wait(1)
-      expect(subject.completed_task_count).to be > 1
-    end
+    unless Concurrent.on_jruby?
 
-    it 'returns the approximate number of tasks that were completed' do
-      5.times{ subject.post{ raise StandardError } }
-      5.times{ subject.post{ nil } }
-      subject.shutdown
-      subject.wait_for_termination(1)
-      expect(subject.completed_task_count).to be > 1
+      it 'returns the approximate number of tasks that have been completed thus far' do
+        5.times{ subject.post{ raise StandardError } }
+        5.times{ subject.post{ nil } }
+        subject.post { latch.count_down }
+        latch.wait(1)
+        expect(subject.completed_task_count).to be > 1
+      end
+
+      it 'returns the approximate number of tasks that were completed' do
+        5.times{ subject.post{ raise StandardError } }
+        5.times{ subject.post{ nil } }
+        subject.shutdown
+        subject.wait_for_termination(1)
+        expect(subject.completed_task_count).to be > 1
+      end
     end
   end
 
