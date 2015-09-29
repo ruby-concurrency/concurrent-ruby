@@ -163,9 +163,9 @@ module Concurrent
         expect(latch.wait(0.1)).to be false
       end
 
-      it 'should resist to spurious wake ups with timeout' do
+      it 'should resist spurious wake ups with timeout', buggy: true do
         latch = CountDownLatch.new(1)
-        t = Thread.new{ subject.wait(0.3); latch.count_down }
+        t = Thread.new{ subject.wait(0.5); latch.count_down }
         t.join(0.1)
 
         subject.simulate_spurious_wake_up

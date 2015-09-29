@@ -143,7 +143,7 @@ shared_examples 'exchanger method cross-thread interactions' do
     t1.kill
   end
 
-  it 'allows multiple firsts to cancel if necessary' do
+  it 'allows multiple firsts to cancel if necessary', buggy: true do
     first_value = nil
     second_value = nil
     cancels = 3

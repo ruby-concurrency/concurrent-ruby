@@ -465,7 +465,7 @@ shared_examples :thread_pool_executor do
 
     context ':caller_runs' do
 
-      subject do
+      let(:executor) do
         described_class.new(
           min_threads: 1,
           max_threads: 1,
@@ -475,6 +475,12 @@ shared_examples :thread_pool_executor do
         )
       end
 
+      after(:each) do
+        # need to replicate this w/i scope otherwise rspec may complain
+        executor.kill
+        executor.wait_for_termination(0.1)
+      end
+
       specify '#post does not create any new threads when the queue is at capacity' do
         trigger = Concurrent::Event.new
         initial = Thread.list.length
@@ -482,7 +488,7 @@ shared_examples :thread_pool_executor do
         # Post several tasks to the executor. Has to be a new thread,
         # because it will start blocking once the queue fills up.
         Thread.new do
-          5.times{ subject.post{ trigger.wait } }
+          5.times{ executor.post{ trigger.wait } }
         end
 
         expect(Thread.list.length).to be < initial + 1 + 5
@@ -494,8 +500,8 @@ shared_examples :thread_pool_executor do
       specify '#<< executes the task on the current thread when the queue is at capacity' do
         trigger = Concurrent::Event.new
         latch = Concurrent::CountDownLatch.new(5)
-        subject.post{ trigger.wait }
-        5.times{|i| subject << proc { latch.count_down } }
+        executor.post{ trigger.wait }
+        5.times{|i| executor << proc { latch.count_down } }
         latch.wait(0.1)
         trigger.set
       end
@@ -503,23 +509,23 @@ shared_examples :thread_pool_executor do
       specify '#post executes the task on the current thread when the queue is at capacity' do
         trigger = Concurrent::Event.new
         latch = Concurrent::CountDownLatch.new(5)
-        subject.post{ trigger.wait }
-        5.times{|i| subject.post{ latch.count_down } }
+        executor.post{ trigger.wait }
+        5.times{|i| executor.post{ latch.count_down } }
         latch.wait(0.1)
         trigger.set
       end
 
       specify '#post executes the task on the current thread when the executor is shutting down' do
         latch = Concurrent::CountDownLatch.new(1)
-        subject.shutdown
-        subject.post{ latch.count_down }
+        executor.shutdown
+        executor.post{ latch.count_down }
         latch.wait(0.1)
       end
 
       specify '#<< executes the task on the current thread when the executor is shutting down' do
         latch = Concurrent::CountDownLatch.new(1)
-        subject.shutdown
-        subject << proc { latch.count_down }
+        executor.shutdown
+        executor << proc { latch.count_down }
         latch.wait(0.1)
       end
     end
