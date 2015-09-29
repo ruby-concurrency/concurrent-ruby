@@ -309,9 +309,27 @@ describe 'Concurrent::Edge futures' do
       expect(Concurrent.zip(branch1, branch2).value!).to eq [2, 3]
     end
 
-    it 'has flat map' do
-      f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
-      expect(f.value!).to eq 2
+    describe '.flat' do
+      it 'has flat map' do
+        f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
+        expect(f.value!).to eq 2
+      end
+
+      context 'with nested failing futures' do
+        it 'completes with explicit failed future' do
+          f = Concurrent.future { Concurrent.failed_future(StandardError.new('failed')) }.flat
+          sleep 0.2
+          expect(f).to be_completed
+          expect(f).to be_failed
+        end
+
+        it 'completes when nested exception raises' do
+          f = Concurrent.future { Concurrent.future { raise 'fail' } }.flat
+          sleep 0.2
+          expect(f).to be_completed
+          expect(f).to be_failed
+        end
+      end
     end
   end
 
