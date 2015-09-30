@@ -337,7 +337,7 @@ describe 'Concurrent::Edge futures' do
 
     it 'completes future when Exception raised' do
       f = Concurrent.future { raise Exception, 'fail' }
-      sleep 0.2
+      f.wait 1
       expect(f).to be_completed
       expect(f).to be_failed
       expect{ f.value! }.to raise_error(Exception, 'fail')
