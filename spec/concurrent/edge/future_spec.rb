@@ -334,6 +334,14 @@ describe 'Concurrent::Edge futures' do
         expect(f.reason).to be_an_instance_of TypeError
       end
     end
+
+    it 'completes future when Exception raised' do
+      f = Concurrent.future { raise Exception, 'fail' }
+      f.wait 1
+      expect(f).to be_completed
+      expect(f).to be_failed
+      expect{ f.value! }.to raise_error(Exception, 'fail')
+    end
   end
 
   describe 'interoperability' do

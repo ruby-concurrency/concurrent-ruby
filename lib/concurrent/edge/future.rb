@@ -132,6 +132,7 @@ module Concurrent
     class Event < Synchronization::LockableObject
       safe_initialization!
       include Concern::Deprecation
+      include Concern::Logging
 
       # @!visibility private
       class State
@@ -885,6 +886,7 @@ module Concurrent
     # @!visibility private
     class AbstractPromise < Synchronization::Object
       safe_initialization!
+      include Concern::Logging
 
       def initialize(future)
         super()
@@ -925,7 +927,10 @@ module Concurrent
       # @return [Future]
       def evaluate_to(*args, block)
         complete_with Future::Success.new(block.call(*args))
-      rescue => error
+      rescue StandardError => error
+        complete_with Future::Failed.new(error)
+      rescue Exception => error
+        log(ERROR, 'Edge::Future', error)
         complete_with Future::Failed.new(error)
       end
     end
