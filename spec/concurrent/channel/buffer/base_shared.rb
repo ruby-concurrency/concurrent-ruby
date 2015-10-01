@@ -1,14 +1,22 @@
 shared_examples :channel_buffer do
 
-  context '#empty?' do
+  context '#capacity' do
+    specify { expect(subject.capacity).to be >= 0 }
+  end
 
+  context '#size' do
+    it 'returns zero upon initialization' do
+      expect(subject.size).to eq 0
+    end
+  end
+
+  context '#empty?' do
     it 'returns true when empty' do
       expect(subject).to be_empty
     end
   end
 
   context '#full?' do
-
     it 'returns false when not full' do
       expect(subject).to_not be_full
     end
@@ -53,7 +61,6 @@ shared_examples :channel_buffer do
   end
 
   context '#take' do
-
     it 'returns NO_VALUE when closed' do
       subject.close
       expect(subject.take).to eq Concurrent::Channel::Buffer::NO_VALUE
@@ -61,7 +68,6 @@ shared_examples :channel_buffer do
   end
 
   context '#next' do
-
     it 'returns NO_VALUE, false when closed' do
       subject.close
       item, more = subject.next

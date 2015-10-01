@@ -8,15 +8,6 @@ module Concurrent
 
       class Timer < Base
 
-        def initialize(delay)
-          super()
-          synchronize do
-            @tick = Concurrent.monotonic_time + delay.to_f
-            @closed = false
-            @empty = false
-          end
-        end
-
         def size() 1; end
 
         def empty?
@@ -59,13 +50,19 @@ module Concurrent
 
         private
 
+        def ns_initialize(delay)
+          @tick = Concurrent.monotonic_time + delay.to_f
+          @closed = false
+          @empty = false
+        end
+
         def do_poll
           synchronize do
             return :closed, false if ns_closed?
 
             if Concurrent.monotonic_time > @tick
               # only one listener gets notified
-              @closed = @empty = true
+              closed = empty = true
               return :tick, Concurrent::Channel::Tick.new(@tick)
             else
               return :wait, true

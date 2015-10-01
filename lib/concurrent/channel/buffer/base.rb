@@ -20,19 +20,26 @@ module Concurrent
 
         # @!macro [attach] channel_buffer_size_reader
         #
+        #   The number of items currently in the buffer.
+        attr_reader :size
+
+        # @!macro [attach] channel_buffer_capacity_reader
+        #
         #   The maximum number of values which can be {#put} onto the buffer
         #   it becomes full.
-        attr_reader :size
-        alias_method :capacity, :size
+        attr_reader :capacity
 
         # @!macro [attach] channel_buffer_initialize
         #
         #   Creates a new buffer.
-        def initialize
+        def initialize(*args)
           super()
           synchronize do
             @closed = false
             @size = 0
+            @capacity = 0
+            @buffer = nil
+            ns_initialize(*args)
           end
         end
 
@@ -186,6 +193,12 @@ module Concurrent
         end
 
         private
+
+        attr_accessor :buffer
+        attr_writer :closed, :capacity, :size
+
+        def ns_initialize(*args)
+        end
 
         # @!macro channel_buffer_closed_question
         def ns_closed?
