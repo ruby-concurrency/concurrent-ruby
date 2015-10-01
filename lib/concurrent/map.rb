@@ -1,30 +1,31 @@
 require 'thread'
 require 'concurrent/constants'
+require 'concurrent/utility/native_extension_loader'
 
 module Concurrent
   # @!visibility private
   module Collection
 
     # @!visibility private
-    MapImplementation = if defined?(RUBY_ENGINE)
-                   case RUBY_ENGINE
-                   when 'jruby'
-                     # noinspection RubyResolve
-                     JRubyMapBackend
-                   when 'ruby'
-                     require 'concurrent/collection/map/mri_map_backend'
-                     MriMapBackend
-                   when 'rbx'
-                     require 'concurrent/collection/map/atomic_reference_map_backend'
-                     AtomicReferenceMapBackend
-                   else
-                     warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
-                     require 'concurrent/collection/map/synchronized_map_backend'
-                     SynchronizedMapBackend
-                   end
-                 else
-                   MriMapBackend
-                 end
+    MapImplementation = if Concurrent.java_extensions_loaded?
+                          # noinspection RubyResolve
+                          JRubyMapBackend
+                        elsif defined?(RUBY_ENGINE)
+                          case RUBY_ENGINE
+                          when 'ruby'
+                            require 'concurrent/collection/map/mri_map_backend'
+                            MriMapBackend
+                          when 'rbx'
+                            require 'concurrent/collection/map/atomic_reference_map_backend'
+                            AtomicReferenceMapBackend
+                          else
+                            warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
+                            require 'concurrent/collection/map/synchronized_map_backend'
+                            SynchronizedMapBackend
+                          end
+                        else
+                          MriMapBackend
+                        end
   end
 
   # `Concurrent::Map` is a hash-like object and should have much better performance

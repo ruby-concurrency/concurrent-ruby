@@ -96,7 +96,7 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   AtomicFixnumImplementation = case
-                               when Concurrent.on_jruby?
+                               when defined?(JavaAtomicFixnum)
                                  JavaAtomicFixnum
                                when defined?(CAtomicFixnum)
                                  CAtomicFixnum
