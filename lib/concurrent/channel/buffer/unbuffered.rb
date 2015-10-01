@@ -15,19 +15,8 @@ module Concurrent
       # and the first blocked call will return.
       class Unbuffered < Base
 
-        # @!macro channel_buffer_initialize
-        def initialize
-          super
-          synchronize do
-            # one will always be empty
-            @putting = []
-            @taking = []
-            @closed = false
-          end
-        end
-
         # @!macro channel_buffer_size_reader
-        # 
+        #
         # Always returns zero (0).
         def size() 0; end
 
@@ -54,11 +43,11 @@ module Concurrent
             return false if ns_closed?
 
             ref = Concurrent::AtomicReference.new(item)
-            if @taking.empty?
-              @putting.push(ref)
+            if taking.empty?
+              putting.push(ref)
             else
-              taking = @taking.shift
-              taking.value = item
+              taken = taking.shift
+              taken.value = item
               ref.value = nil
             end
             ref
@@ -78,10 +67,10 @@ module Concurrent
         # buffer is closed, this method will return `false` immediately.
         def offer(item)
           synchronize do
-            return false if ns_closed? || @taking.empty?
+            return false if ns_closed? || taking.empty?
 
-            taking = @taking.shift
-            taking.value = item
+            taken = taking.shift
+            taken.value = item
             true
           end
         end
@@ -96,15 +85,15 @@ module Concurrent
         # and this method will return.
         def take
           mine = synchronize do
-            return NO_VALUE if ns_closed? && @putting.empty?
+            return NO_VALUE if ns_closed? && putting.empty?
 
             ref = Concurrent::AtomicReference.new(nil)
-            if @putting.empty?
-              @taking.push(ref)
+            if putting.empty?
+              taking.push(ref)
             else
-              putting = @putting.shift
-              ref.value = putting.value
-              putting.value = nil
+              put = putting.shift
+              ref.value = put.value
+              put.value = nil
             end
             ref
           end
@@ -124,11 +113,11 @@ module Concurrent
         # buffer is closed, this method will return `NO_VALUE` immediately.
         def poll
           synchronize do
-            return NO_VALUE if @putting.empty?
+            return NO_VALUE if putting.empty?
 
-            putting = @putting.shift
-            value = putting.value
-            putting.value = nil
+            put = putting.shift
+            value = put.value
+            put.value = nil
             value
           end
         end
@@ -142,8 +131,21 @@ module Concurrent
         # @see {#take}
         def next
           item = take
-          more = synchronize { !@putting.empty? }
+          more = synchronize { !putting.empty? }
           return item, more
+        end
+
+        private
+
+        attr_accessor :putting, :taking
+
+        # @!macro channel_buffer_initialize
+        def ns_initialize
+          # one will always be empty
+          self.putting = []
+          self.taking = []
+          self.closed = false
+          self.capacity = 1
         end
       end
     end

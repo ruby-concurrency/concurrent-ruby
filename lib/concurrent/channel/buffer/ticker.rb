@@ -8,14 +8,6 @@ module Concurrent
 
       class Ticker < Base
 
-        def initialize(interval)
-          super()
-          synchronize do
-            @interval = interval.to_f
-            @next_tick = Concurrent.monotonic_time + interval
-          end
-        end
-
         def size() 1; end
 
         def empty?() false; end
@@ -62,6 +54,11 @@ module Concurrent
         end
 
         private
+
+        def ns_initialize(interval)
+          @interval = interval.to_f
+          @next_tick = Concurrent.monotonic_time + interval
+        end
 
         def do_poll
           if ns_closed?

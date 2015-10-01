@@ -10,20 +10,6 @@ module Concurrent
       # an item is removed from the buffer, creating spare capacity.
       class Buffered < Base
 
-        # @!macro channel_buffer_initialize
-        #
-        # @param [Integer] size the maximum capacity of the buffer; must be
-        #   greater than zero.
-        # @raise [ArgumentError] when the size is zero (0) or less.
-        def initialize(size)
-          raise ArgumentError.new('size must be greater than 0') if size.to_i <= 0
-          super()
-          synchronize do
-            @size = size.to_i
-            @buffer = []
-          end
-        end
-
         # @!macro channel_buffer_empty_question
         def empty?
           synchronize { ns_empty? }
@@ -85,7 +71,7 @@ module Concurrent
               if ns_closed? && ns_empty?
                 return NO_VALUE, false
               elsif !ns_empty?
-                item = @buffer.shift
+                item = buffer.shift
                 more = !ns_empty? || !ns_closed?
                 return item, more
               end
@@ -100,26 +86,37 @@ module Concurrent
             if ns_empty?
               NO_VALUE
             else
-              @buffer.shift
+              buffer.shift
             end
           end
         end
 
         private
 
+        # @!macro channel_buffer_initialize
+        #
+        # @param [Integer] size the maximum capacity of the buffer; must be
+        #   greater than zero.
+        # @raise [ArgumentError] when the size is zero (0) or less.
+        def ns_initialize(size)
+          raise ArgumentError.new('size must be greater than 0') if size.to_i <= 0
+          self.capacity = size.to_i
+          self.buffer = []
+        end
+
         # @!macro channel_buffer_empty_question
         def ns_empty?
-          @buffer.length == 0
+          buffer.length == 0
         end
 
         # @!macro channel_buffer_full_question
         def ns_full?
-          @buffer.length == @size
+          buffer.length == capacity
         end
 
         # @!macro channel_buffer_put
         def ns_put_onto_buffer(item)
-          @buffer.push(item)
+          buffer.push(item)
         end
       end
     end

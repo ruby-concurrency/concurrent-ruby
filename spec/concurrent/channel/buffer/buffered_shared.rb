@@ -13,11 +13,11 @@ shared_examples :channel_buffered_buffer do
     end
   end
 
-  context '#size' do
+  context '#capacity' do
 
-    it 'returns the maximum size of the buffer' do
+    it 'returns the maximum capacity of the buffer' do
       subject = described_class.new(10)
-      expect(subject.size).to eq 10
+      expect(subject.capacity).to eq 10
     end
   end
 
