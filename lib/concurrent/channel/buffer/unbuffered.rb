@@ -16,19 +16,21 @@ module Concurrent
       class Unbuffered < Base
 
         # @!macro channel_buffer_size_reader
-        #
-        # Always returns zero (0).
-        def size() 0; end
+        def size
+          synchronize do
+            putting.empty? ? 0 : 1
+          end
+        end
 
         # @!macro channel_buffer_empty_question
-        #
-        # Always returns `true`.
-        def empty?() true; end
+        def empty?
+          size == 0
+        end
 
         # @!macro channel_buffer_full_question
-        #
-        # Always returns `false`.
-        def full?() false; end
+        def full?
+          !empty?
+        end
 
         # @!macro channel_buffer_put
         #
@@ -131,19 +133,21 @@ module Concurrent
         # @see {#take}
         def next
           item = take
-          more = synchronize { !putting.empty? }
+          more = (item != NO_VALUE)
           return item, more
         end
 
         private
 
-        attr_accessor :putting, :taking
+        def putting() @putting; end
+
+        def taking() @taking; end
 
         # @!macro channel_buffer_initialize
         def ns_initialize
           # one will always be empty
-          self.putting = []
-          self.taking = []
+          @putting = []
+          @taking = []
           self.closed = false
           self.capacity = 1
         end

@@ -9,7 +9,7 @@ Channel = Concurrent::Channel
 ## Go by Example: Rate Limiting
 # https://gobyexample.com/tickers
 
-requests = Channel.new(buffer: :buffered, size: 5)
+requests = Channel.new(buffer: :buffered, capacity: 5)
 (1..5).each do |i|
   requests << i
 end
@@ -22,7 +22,7 @@ requests.each do |req|
 end
 print "\n"
 
-bursty_limiter = Channel.new(buffer: :buffered, size: 3)
+bursty_limiter = Channel.new(buffer: :buffered, capacity: 3)
 (1..3).each do
   bursty_limiter << Channel::Tick.new
 end
@@ -33,7 +33,7 @@ Channel.go do
   end
 end
 
-bursty_requests = Channel.new(buffer: :buffered, size: 5)
+bursty_requests = Channel.new(buffer: :buffered, capacity: 5)
 (1..5).each do |i|
   bursty_requests << i
 end
@@ -44,7 +44,7 @@ bursty_requests.each do |req|
   print "request #{req} #{Channel::Tick.new}\n"
 end
 
-expected = <<-STDOUT
+__END__
 request 1 2012-10-19 00:38:18.687438 +0000 UTC
 request 2 2012-10-19 00:38:18.887471 +0000 UTC
 request 3 2012-10-19 00:38:19.087238 +0000 UTC
@@ -56,4 +56,3 @@ request 2 2012-10-19 00:38:20.487645 +0000 UTC
 request 3 2012-10-19 00:38:20.487676 +0000 UTC
 request 4 2012-10-19 00:38:20.687483 +0000 UTC
 request 5 2012-10-19 00:38:20.887542 +0000 UTC
-STDOUT

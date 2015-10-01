@@ -5,7 +5,7 @@ require 'concurrent-edge'
 Channel = Concurrent::Channel
 
 ## A Tour of Go: Channels
-# https://tour.golang.org/concurrency/2 
+# https://tour.golang.org/concurrency/2
 
 def sum(a, c)
   sum = a.reduce(0, &:+)
@@ -22,6 +22,5 @@ x, y = ~c, ~c # `~` is an alias for `take` or `receive`
 
 puts [x, y, x+y].join(' ')
 
-expected = <<-STDOUT
+__END__
 -5 17 12
-STDOUT

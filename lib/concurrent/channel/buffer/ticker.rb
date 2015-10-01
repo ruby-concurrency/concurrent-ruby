@@ -8,12 +8,6 @@ module Concurrent
 
       class Ticker < Base
 
-        def size() 1; end
-
-        def empty?() false; end
-
-        def full?() true; end
-
         def put(item)
           false
         end
@@ -58,7 +52,14 @@ module Concurrent
         def ns_initialize(interval)
           @interval = interval.to_f
           @next_tick = Concurrent.monotonic_time + interval
+          self.capacity = 1
         end
+
+        def ns_size() 0; end
+
+        def ns_empty?() false; end
+
+        def ns_full?() true; end
 
         def do_poll
           if ns_closed?

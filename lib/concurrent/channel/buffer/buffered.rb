@@ -10,19 +10,6 @@ module Concurrent
       # an item is removed from the buffer, creating spare capacity.
       class Buffered < Base
 
-        # @!macro channel_buffer_empty_question
-        def empty?
-          synchronize { ns_empty? }
-        end
-
-        # @!macro channel_buffer_full_question
-        #
-        # Will return `true` once the number of items in the buffer reaches
-        # the {#size} value specified during initialization.
-        def full?
-          synchronize { ns_full? }
-        end
-
         # @!macro channel_buffer_put
         #
         # New items can be put onto the buffer until the number of items in
@@ -72,8 +59,7 @@ module Concurrent
                 return NO_VALUE, false
               elsif !ns_empty?
                 item = buffer.shift
-                more = !ns_empty? || !ns_closed?
-                return item, more
+                return item, true
               end
             end
             Thread.pass
@@ -104,14 +90,19 @@ module Concurrent
           self.buffer = []
         end
 
+        # @!macro channel_buffer_size_reader
+        def ns_size
+          buffer.size
+        end
+
         # @!macro channel_buffer_empty_question
         def ns_empty?
-          buffer.length == 0
+          ns_size == 0
         end
 
         # @!macro channel_buffer_full_question
         def ns_full?
-          buffer.length == capacity
+          ns_size == capacity
         end
 
         # @!macro channel_buffer_put

@@ -19,14 +19,13 @@ def pong(pings, pongs)
   pongs << msg
 end
 
-pings = Channel.new(size: 1) # buffered
-pongs = Channel.new(size: 1) # buffered
+pings = Channel.new(capacity: 1) # buffered
+pongs = Channel.new(capacity: 1) # buffered
 
 ping(pings, 'passed message')
 pong(pings, pongs)
 
 puts ~pongs
 
-expected = <<-STDOUT
+__END__
 passed message
-STDOUT

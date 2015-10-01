@@ -19,7 +19,7 @@ describe Concurrent::Edge::LockFreeLinkedSet do
       expect(subject.add 'test string1').to be true
     end
 
-    context 'in a multi-threaded environment' do
+    context 'in a multi-threaded environment', buggy: true do
       it 'adds the items to the set' do
         to_insert = %w(one two three four five six)
 

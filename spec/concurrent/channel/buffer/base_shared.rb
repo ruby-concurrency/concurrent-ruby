@@ -1,5 +1,9 @@
 shared_examples :channel_buffer do
 
+  specify do
+    expect(subject).to respond_to(:blocking?)
+  end
+
   context '#capacity' do
     specify { expect(subject.capacity).to be >= 0 }
   end

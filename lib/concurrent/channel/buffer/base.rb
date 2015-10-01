@@ -18,11 +18,6 @@ module Concurrent
       # used as a channel buffer should extend this class.
       class Base < Synchronization::LockableObject
 
-        # @!macro [attach] channel_buffer_size_reader
-        #
-        #   The number of items currently in the buffer.
-        attr_reader :size
-
         # @!macro [attach] channel_buffer_capacity_reader
         #
         #   The maximum number of values which can be {#put} onto the buffer
@@ -53,6 +48,13 @@ module Concurrent
           true
         end
 
+        # @!macro [attach] channel_buffer_size_reader
+        #
+        #   The number of items currently in the buffer.
+        def size
+          synchronize { ns_size }
+        end
+
         # @!macro [attach] channel_buffer_empty_question
         #
         #   Predicate indicating if the buffer is empty.
@@ -61,7 +63,7 @@ module Concurrent
         #
         # @raise [NotImplementedError] until overridden in a subclass.
         def empty?
-          raise NotImplementedError
+          synchronize { ns_empty? }
         end
 
         # @!macro [attach] channel_buffer_full_question
@@ -72,7 +74,7 @@ module Concurrent
         #
         # @raise [NotImplementedError] until overridden in a subclass.
         def full?
-          raise NotImplementedError
+          synchronize { ns_full? }
         end
 
         # @!macro [attach] channel_buffer_put
@@ -126,19 +128,16 @@ module Concurrent
 
         # @!macro [attach] channel_buffer_next
         #
-        #   Take the next item from the buffer and also return a boolean
-        #   indicating if subsequent items can be taken. Used for iterating
+        #   Take the next "item" from the buffer and also return a boolean
+        #   indicating if "more" items can be taken. Used for iterating
         #   over a buffer until it is closed and empty.
         #
         #   If the buffer is open but no items remain the calling thread will
         #   block until an item is available. The second of the two return
-        #   values, a boolean, will always be `true` when the buffer is open.
-        #   When the buffer is closed but more items remain the second return
-        #   value will also be `true`. When the buffer is closed and the last
-        #   item is taken the second return value will be `false`. When the
-        #   buffer is both closed and empty the first return value will be
-        #   `NO_VALUE` and the second return value will be `false`.
-        #   be `false` when the buffer is both closed and empty.
+        #   values, "more" (a boolean), will always be `true` when the buffer is
+        #   open. The "more" value will be `false` when the channel has been
+        #   closed and all values have already been received. When "more" is
+        #   false the returned item will be `NO_VALUE`.
         #
         #   Note that when multiple threads access the same channel a race
         #   condition can occur when using this method. A call to `next` from
@@ -194,10 +193,32 @@ module Concurrent
 
         private
 
-        attr_accessor :buffer
-        attr_writer :closed, :capacity, :size
+        def buffer() @buffer; end
+
+        def buffer=(value) @buffer = value; end
+
+        def closed=(value) @closed = value; end
+
+        def capacity=(value) @capacity = value; end
+
+        def size=(value) @size = value; end
 
         def ns_initialize(*args)
+        end
+
+        # @!macro channel_buffer_size_reader
+        def ns_size
+          raise NotImplementedError
+        end
+
+        # @!macro channel_buffer_empty_question
+        def ns_empty?
+          raise NotImplementedError
+        end
+
+        # @!macro channel_buffer_full_question
+        def ns_full?
+          raise NotImplementedError
         end
 
         # @!macro channel_buffer_closed_question

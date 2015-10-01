@@ -21,7 +21,6 @@ end
 stop2 = timer2.stop
 print "Timer 2 stopped\n" if stop2
 
-expected = <<-STDOUT
+__END__
 Timer 1 expired
 Timer 2 stopped
-STDOUT

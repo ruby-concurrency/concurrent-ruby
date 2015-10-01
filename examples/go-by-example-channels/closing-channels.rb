@@ -5,10 +5,10 @@ require 'concurrent-edge'
 Channel = Concurrent::Channel
 
 ## Go by Example: Closing Channels
-# https://gobyexample.com/closing-channels 
+# https://gobyexample.com/closing-channels
 
 validator = ->(v){ v.is_a? Numeric }
-jobs = Channel.new(buffer: :buffered, size: 5,
+jobs = Channel.new(buffer: :buffered, capacity: 5,
                    validator: validator)
 done = Channel.new(buffer: :unbuffered)
 
@@ -34,7 +34,7 @@ jobs.close
 print "sent all jobs\n"
 ~done
 
-expected = <<-STDOUT
+__END__
 sent job 1
 received job 1
 sent job 2
@@ -43,4 +43,3 @@ sent job 3
 received job 3
 sent all jobs
 received all jobs
-STDOUT

@@ -48,22 +48,22 @@ module Concurrent
         return
       end
 
-      size = opts[:size]
+      capacity = opts[:capacity] || opts[:size]
       buffer = opts[:buffer]
 
-      if size && buffer == :unbuffered
-        raise ArgumentError.new('unbuffered channels cannot have a size')
-      elsif size.nil? && buffer.nil?
+      if capacity && buffer == :unbuffered
+        raise ArgumentError.new('unbuffered channels cannot have a capacity')
+      elsif capacity.nil? && buffer.nil?
         self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif size == 0 && buffer == :buffered
+      elsif capacity == 0 && buffer == :buffered
         self.buffer = BUFFER_TYPES[:unbuffered].new
       elsif buffer == :unbuffered
         self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif size.nil? || size < 1
-        raise ArgumentError.new('size must be at least 1 for this buffer type')
+      elsif capacity.nil? || capacity < 1
+        raise ArgumentError.new('capacity must be at least 1 for this buffer type')
       else
         buffer ||= :buffered
-        self.buffer = BUFFER_TYPES[buffer].new(size)
+        self.buffer = BUFFER_TYPES[buffer].new(capacity)
       end
 
       self.validator = opts.fetch(:validator, DEFAULT_VALIDATOR)
@@ -238,7 +238,13 @@ module Concurrent
 
     private
 
-    attr_accessor :buffer, :validator
+    def validator() @validator; end
+
+    def validator=(value) @validator = value; end
+
+    def buffer() @buffer; end
+
+    def buffer=(value) @buffer = value; end
 
     def validate(value, allow_nil, raise_error)
       if !allow_nil && value.nil?

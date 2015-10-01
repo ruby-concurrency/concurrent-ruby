@@ -8,16 +8,6 @@ module Concurrent
 
       class Timer < Base
 
-        def size() 1; end
-
-        def empty?
-          synchronized { @empty }
-        end
-
-        def full?
-          !empty?
-        end
-
         def put(item)
           false
         end
@@ -27,13 +17,23 @@ module Concurrent
         end
 
         def take
-          self.next.first
+          loop do
+            result, tick = do_poll
+            if result == :closed
+              return NO_VALUE
+            elsif result == :tick
+              return tick
+            end
+            Thread.pass
+          end
         end
 
         def next
           loop do
             status, tick = do_poll
-            if status == :tick
+            if status == :closed
+              return NO_VALUE, false
+            elsif status == :tick
               return tick, false
               # AFAIK a Go timer will block forever if stopped
               #elsif status == :closed
@@ -52,16 +52,22 @@ module Concurrent
 
         def ns_initialize(delay)
           @tick = Concurrent.monotonic_time + delay.to_f
-          @closed = false
-          @empty = false
+          self.capacity = 1
         end
+
+        def ns_size() 0; end
+
+        def ns_empty?() false; end
+
+        def ns_full?() true; end
 
         def do_poll
           synchronize do
-            return :closed, false if ns_closed?
-
-            if Concurrent.monotonic_time > @tick
+            if ns_closed?
+              return :closed, false
+            elsif Concurrent.monotonic_time > @tick
               # only one listener gets notified
+              self.closed = true
               return :tick, Concurrent::Channel::Tick.new(@tick)
             else
               return :wait, true

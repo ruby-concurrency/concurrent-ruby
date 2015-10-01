@@ -24,7 +24,7 @@ loop do
   end
 end
 
-expected = <<-STDOUT
+__END__
     .
     .
 tick.
@@ -41,4 +41,3 @@ tick.
     .
 tick.
 BOOM!
-STDOUT
