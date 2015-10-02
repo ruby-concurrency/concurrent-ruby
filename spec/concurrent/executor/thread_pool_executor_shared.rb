@@ -485,6 +485,14 @@ shared_examples :thread_pool_executor do
         trigger = Concurrent::Event.new
         initial = Thread.list.length
 
+        executor = described_class.new(
+          min_threads: 1,
+          max_threads: 1,
+          idletime: idletime,
+          max_queue: 1,
+          fallback_policy: :caller_runs
+        )
+
         # Post several tasks to the executor. Has to be a new thread,
         # because it will start blocking once the queue fills up.
         Thread.new do
