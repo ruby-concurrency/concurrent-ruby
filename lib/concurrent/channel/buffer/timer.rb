@@ -62,7 +62,6 @@ module Concurrent
 
             if Concurrent.monotonic_time > @tick
               # only one listener gets notified
-              closed = empty = true
               return :tick, Concurrent::Channel::Tick.new(@tick)
             else
               return :wait, true
