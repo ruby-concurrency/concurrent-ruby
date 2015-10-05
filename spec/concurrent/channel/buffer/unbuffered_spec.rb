@@ -231,7 +231,7 @@ module Concurrent::Channel::Buffer
         expect(more).to be true
       end
 
-      it 'returns NO_VALUE, false when closed and no items remain' do
+      it 'returns Concurrent::NULL, false when closed and no items remain' do
         t = Thread.new do
           subject.put(:foo)
         end
@@ -241,7 +241,7 @@ module Concurrent::Channel::Buffer
         item, more = subject.next
         t.kill #clean up
 
-        expect(item).to eq Concurrent::Channel::Buffer::NO_VALUE
+        expect(item).to eq Concurrent::NULL
         expect(more).to be false
       end
     end

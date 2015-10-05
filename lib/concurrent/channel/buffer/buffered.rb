@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/channel/buffer/base'
 
 module Concurrent
@@ -56,7 +57,7 @@ module Concurrent
           loop do
             synchronize do
               if ns_closed? && ns_empty?
-                return NO_VALUE, false
+                return Concurrent::NULL, false
               elsif !ns_empty?
                 item = buffer.shift
                 return item, true
@@ -70,7 +71,7 @@ module Concurrent
         def poll
           synchronize do
             if ns_empty?
-              NO_VALUE
+              Concurrent::NULL
             else
               buffer.shift
             end

@@ -83,9 +83,9 @@ shared_examples :channel_timing_buffer do
 
   context '#poll' do
 
-    it 'returns NO_VALUE when the timer is not ready' do
+    it 'returns Concurrent::NULL when the timer is not ready' do
       subject = described_class.new(0.1)
-      expect(subject.poll).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(subject.poll).to eq Concurrent::NULL
     end
 
     it 'returns a Tick' do
@@ -94,9 +94,9 @@ shared_examples :channel_timing_buffer do
       expect(subject.poll).to be_a Concurrent::Channel::Tick
     end
 
-    it 'returns NO_VALUE when closed' do
+    it 'returns Concurrent::NULL when closed' do
       subject.close
-      expect(subject.poll).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(subject.poll).to eq Concurrent::NULL
     end
 
     it 'triggers after the specified time interval' do

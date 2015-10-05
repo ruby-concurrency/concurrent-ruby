@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/utility/monotonic_time'
 require 'concurrent/channel/tick'
 require 'concurrent/channel/buffer/base'
@@ -20,7 +21,7 @@ module Concurrent
           # a Go timer will block forever if stopped
           loop do
             tick = do_poll
-            return tick if tick != NO_VALUE
+            return tick if tick != Concurrent::NULL
             Thread.pass
           end
         end
@@ -30,7 +31,7 @@ module Concurrent
           # it will always return `true` for more
           loop do
             tick = do_poll
-            return tick, true if tick != NO_VALUE
+            return tick, true if tick != Concurrent::NULL
             Thread.pass
           end
         end
@@ -65,7 +66,7 @@ module Concurrent
               self.closed = true
               return Concurrent::Channel::Tick.new(@tick)
             else
-              return NO_VALUE
+              return Concurrent::NULL
             end
           end
         end

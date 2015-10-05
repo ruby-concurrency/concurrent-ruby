@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/channel/buffer/base'
 require 'concurrent/atomic/atomic_reference'
 
@@ -87,7 +88,7 @@ module Concurrent
         # and this method will return.
         def take
           mine = synchronize do
-            return NO_VALUE if ns_closed? && putting.empty?
+            return Concurrent::NULL if ns_closed? && putting.empty?
 
             ref = Concurrent::AtomicReference.new(nil)
             if putting.empty?
@@ -112,10 +113,10 @@ module Concurrent
         # waiting to {#put} items onto the buffer. When there is a thread
         # waiting to put an item this method will take the item and return
         # it immediately. When there are no threads waiting to put or the
-        # buffer is closed, this method will return `NO_VALUE` immediately.
+        # buffer is closed, this method will return `Concurrent::NULL` immediately.
         def poll
           synchronize do
-            return NO_VALUE if putting.empty?
+            return Concurrent::NULL if putting.empty?
 
             put = putting.shift
             value = put.value
@@ -133,7 +134,7 @@ module Concurrent
         # @see {#take}
         def next
           item = take
-          more = (item != NO_VALUE)
+          more = (item != Concurrent::NULL)
           return item, more
         end
 

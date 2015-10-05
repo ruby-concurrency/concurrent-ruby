@@ -65,17 +65,17 @@ shared_examples :channel_buffer do
   end
 
   context '#take' do
-    it 'returns NO_VALUE when closed' do
+    it 'returns Concurrent::NULL when closed' do
       subject.close
-      expect(subject.take).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(subject.take).to eq Concurrent::NULL
     end
   end
 
   context '#next' do
-    it 'returns NO_VALUE, false when closed' do
+    it 'returns Concurrent::NULL, false when closed' do
       subject.close
       item, more = subject.next
-      expect(item).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(item).to eq Concurrent::NULL
       expect(more).to be false
     end
   end
@@ -92,13 +92,13 @@ shared_examples :channel_buffer do
       expect(subject.poll).to eq 42
     end
 
-    it 'returns NO_VALUE immediately if no item is available' do
-      expect(subject.poll).to eq Concurrent::Channel::Buffer::NO_VALUE
+    it 'returns Concurrent::NULL immediately if no item is available' do
+      expect(subject.poll).to eq Concurrent::NULL
     end
 
-    it 'returns NO_VALUE when closed' do
+    it 'returns Concurrent::NULL when closed' do
       subject.close
-      expect(subject.poll).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(subject.poll).to eq Concurrent::NULL
     end
   end
 

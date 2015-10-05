@@ -117,20 +117,20 @@ module Concurrent
 
     def take
       item = do_take
-      item == Buffer::NO_VALUE ? nil : item
+      item == Concurrent::NULL ? nil : item
     end
     alias_method :receive, :take
     alias_method :~, :take
 
     def take!
       item = do_take
-      raise Error if item == Buffer::NO_VALUE
+      raise Error if item == Concurrent::NULL
       item
     end
 
     def take?
       item = do_take
-      item = if item == Buffer::NO_VALUE
+      item = if item == Concurrent::NULL
                Concurrent::Maybe.nothing
              else
                Concurrent::Maybe.just(item)
@@ -155,13 +155,13 @@ module Concurrent
     #   end
     def next
       item, more = do_next
-      item = nil if item == Buffer::NO_VALUE
+      item = nil if item == Concurrent::NULL
       return item, more
     end
 
     def next?
       item, more = do_next
-      item = if item == Buffer::NO_VALUE
+      item = if item == Concurrent::NULL
                Concurrent::Maybe.nothing
              else
                Concurrent::Maybe.just(item)
@@ -170,17 +170,17 @@ module Concurrent
     end
 
     def poll
-      (item = do_poll) == Buffer::NO_VALUE ? nil : item
+      (item = do_poll) == Concurrent::NULL ? nil : item
     end
 
     def poll!
       item = do_poll
-      raise Error if item == Buffer::NO_VALUE
+      raise Error if item == Concurrent::NULL
       item
     end
 
     def poll?
-      if (item = do_poll) == Buffer::NO_VALUE
+      if (item = do_poll) == Concurrent::NULL
         Concurrent::Maybe.nothing
       else
         Concurrent::Maybe.just(item)
@@ -191,7 +191,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       loop do
         item, more = do_next
-        if item != Buffer::NO_VALUE
+        if item != Concurrent::NULL
           yield(item)
         elsif !more
           break

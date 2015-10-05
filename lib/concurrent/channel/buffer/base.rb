@@ -4,9 +4,6 @@ module Concurrent
   class Channel
     module Buffer
 
-      # Placeholder for when a buffer slot contains no value.
-      NO_VALUE = Object.new
-
       # Abstract base class for all Channel buffers.
       #
       # {Concurrent::Channel} objects maintain an internal, queue-like
@@ -118,7 +115,7 @@ module Concurrent
         #   are available the remaining items can still be taken. Once the
         #   buffer closes, no remaining items can be taken.
         #
-        #   @return [Object] the item removed from the buffer; `NO_VALUE` once
+        #   @return [Object] the item removed from the buffer; `Concurrent::NULL` once
         #     the buffer has closed.
         #
         # @raise [NotImplementedError] until overridden in a subclass.
@@ -137,7 +134,7 @@ module Concurrent
         #   values, "more" (a boolean), will always be `true` when the buffer is
         #   open. The "more" value will be `false` when the channel has been
         #   closed and all values have already been received. When "more" is
-        #   false the returned item will be `NO_VALUE`.
+        #   false the returned item will be `Concurrent::NULL`.
         #
         #   Note that when multiple threads access the same channel a race
         #   condition can occur when using this method. A call to `next` from
@@ -161,7 +158,7 @@ module Concurrent
         #   immediately. Failing to return a value does not necessarily
         #   indicate that the buffer is closed, just that it is empty.
         #
-        #   @return [Object] the next item from the buffer or `NO_VALUE` if
+        #   @return [Object] the next item from the buffer or `Concurrent::NULL` if
         #     the buffer is empty.
         #
         # @raise [NotImplementedError] until overridden in a subclass.

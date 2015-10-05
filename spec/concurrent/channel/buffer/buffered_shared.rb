@@ -90,9 +90,9 @@ shared_examples :channel_buffered_buffer do
       expect(t.status).to be false
     end
 
-    it 'returns NO_VALUE when closed and empty' do
+    it 'returns Concurrent::NULL when closed and empty' do
       subject.close
-      expect(subject.take).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(subject.take).to eq Concurrent::NULL
     end
   end
 
@@ -158,7 +158,7 @@ shared_examples :channel_buffered_buffer do
       end
     end
 
-    it 'returns NO_VALUE, false when closed and no items remain' do
+    it 'returns Concurrent::NULL, false when closed and no items remain' do
       capacity = subject.capacity
       expect(capacity).to be >= 1
 
@@ -168,7 +168,7 @@ shared_examples :channel_buffered_buffer do
       capacity.times { subject.next }
 
       item, more = subject.next
-      expect(item).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(item).to eq Concurrent::NULL
       expect(more).to be false
     end
   end

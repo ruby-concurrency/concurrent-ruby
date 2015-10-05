@@ -19,7 +19,7 @@ module Concurrent::Channel::Buffer
     context '#poll' do
       it 'closes automatically on first take' do
         loop do
-          break if subject.poll != NO_VALUE
+          break if subject.poll != Concurrent::NULL
         end
         expect(subject).to be_closed
       end
@@ -29,7 +29,7 @@ module Concurrent::Channel::Buffer
       it 'closes automatically on first take' do
         loop do
           value, _ = subject.next
-          break if value != NO_VALUE
+          break if value != Concurrent::NULL
         end
         expect(subject).to be_closed
       end
