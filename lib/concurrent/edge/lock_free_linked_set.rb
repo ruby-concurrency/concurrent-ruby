@@ -112,7 +112,7 @@ module Concurrent
           removed = curr.successor_reference.compare_and_set succ, succ, false, true
 
           #next_node unless removed
-          continue unless removed
+          next unless removed
 
           pred.successor_reference.compare_and_set curr, succ, false, false
 
