@@ -29,15 +29,6 @@ module Concurrent
     # @!macro thread_pool_executor_attr_reader_min_length
     attr_reader :min_length
 
-    # @!macro thread_pool_executor_attr_reader_largest_length
-    attr_reader :largest_length
-
-    # @!macro thread_pool_executor_attr_reader_scheduled_task_count
-    attr_reader :scheduled_task_count
-
-    # @!macro thread_pool_executor_attr_reader_completed_task_count
-    attr_reader :completed_task_count
-
     # @!macro thread_pool_executor_attr_reader_idletime
     attr_reader :idletime
 
@@ -47,6 +38,21 @@ module Concurrent
     # @!macro thread_pool_executor_method_initialize
     def initialize(opts = {})
       super(opts)
+    end
+
+    # @!macro thread_pool_executor_attr_reader_largest_length
+    def largest_length
+      synchronize { @largest_length }
+    end
+
+    # @!macro thread_pool_executor_attr_reader_scheduled_task_count
+    def scheduled_task_count
+      synchronize { @scheduled_task_count }
+    end
+
+    # @!macro thread_pool_executor_attr_reader_completed_task_count
+    def completed_task_count
+      synchronize { @completed_task_count }
     end
 
     # @!macro executor_service_method_can_overflow_question
@@ -174,6 +180,7 @@ module Concurrent
       worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
         worker << [task, args]
+        @completed_task_count += 1
         true
       else
         false
@@ -219,8 +226,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_ready_worker(worker, success = true)
-      @completed_task_count += 1 if success
-      task_and_args         = @queue.shift
+      task_and_args = @queue.shift
       if task_and_args
         worker << task_and_args
       else
