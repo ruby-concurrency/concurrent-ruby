@@ -62,16 +62,22 @@ shared_examples :channel_timing_buffer do
       expect(subject.take).to be_a Concurrent::Channel::Tick
     end
 
-    it 'returns NO_VALUE when closed' do
-      subject.close
-      expect(subject.take).to eq Concurrent::Channel::Buffer::NO_VALUE
-    end
-
     it 'triggers after the specified time interval' do
       start = Concurrent::Channel::Tick.new.monotonic
       subject = described_class.new(0.1)
       actual = subject.take.monotonic
       expect(actual - start).to be >= 0.1
+    end
+
+    it 'blocks forever when closed' do
+      subject.close
+      t = Thread.new do
+        subject.take
+      end
+      actual = t.join(1)
+      t.kill # clean up
+
+      expect(actual).to be_falsey
     end
   end
 
@@ -123,11 +129,20 @@ shared_examples :channel_timing_buffer do
       expect(value).to be_a Concurrent::Channel::Tick
     end
 
-    it 'returns NO_VALUE and false when closed' do
+    it 'returns true for more' do
+      _, more = subject.next
+      expect(more).to be true
+    end
+
+    it 'blocks forever when closed' do
       subject.close
-      value, more = subject.next
-      expect(value).to eq Concurrent::Channel::Buffer::NO_VALUE
-      expect(more).to be false
+      t = Thread.new do
+        subject.next
+      end
+      actual = t.join(1)
+      t.kill # clean up
+
+      expect(actual).to be_falsey
     end
 
     it 'triggers after the specified time interval' do

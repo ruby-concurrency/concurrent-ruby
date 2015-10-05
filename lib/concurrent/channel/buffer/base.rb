@@ -193,15 +193,25 @@ module Concurrent
 
         private
 
-        def buffer() @buffer; end
+        def buffer
+          @buffer
+        end
 
-        def buffer=(value) @buffer = value; end
+        def buffer=(value)
+          @buffer = value
+        end
 
-        def closed=(value) @closed = value; end
+        def closed=(value)
+          @closed = value
+        end
 
-        def capacity=(value) @capacity = value; end
+        def capacity=(value)
+          @capacity = value
+        end
 
-        def size=(value) @size = value; end
+        def size=(value)
+          @size = value
+        end
 
         def ns_initialize(*args)
         end

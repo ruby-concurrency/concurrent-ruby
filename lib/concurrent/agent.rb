@@ -166,6 +166,7 @@ module Concurrent
     class Error < StandardError
       def initialize(message = nil)
         message ||= 'agent must be restarted before jobs can post'
+        super(message)
       end
     end
 
@@ -174,6 +175,7 @@ module Concurrent
     class ValidationError < Error
       def initialize(message = nil)
         message ||= 'invalid value'
+        super(message)
       end
     end
 

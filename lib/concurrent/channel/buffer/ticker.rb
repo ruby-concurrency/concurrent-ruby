@@ -17,34 +17,26 @@ module Concurrent
         end
 
         def take
+          # a Go timer will block forever if stopped
           loop do
-            result, _ = do_poll
-            if result.nil?
-              return NO_VALUE
-            elsif result != NO_VALUE
-              return result
-            end
+            tick = do_poll
+            return tick if tick != NO_VALUE
+            Thread.pass
           end
         end
 
         def next
+          # a Go timer will block forever if stopped
+          # it will always return `true` for more
           loop do
-            result, _ = do_poll
-            if result.nil?
-              return NO_VALUE, false
-            elsif result != NO_VALUE
-              return result, true
-            end
+            tick = do_poll
+            return tick, true if tick != NO_VALUE
+            Thread.pass
           end
         end
 
         def poll
-          result, _ = do_poll
-          if result.nil? || result == NO_VALUE
-            NO_VALUE
-          else
-            result
-          end
+          do_poll
         end
 
         private
@@ -55,21 +47,27 @@ module Concurrent
           self.capacity = 1
         end
 
-        def ns_size() 0; end
+        def ns_size
+          0
+        end
 
-        def ns_empty?() false; end
+        def ns_empty?
+          false
+        end
 
-        def ns_full?() true; end
+        def ns_full?
+          true
+        end
 
         def do_poll
-          if ns_closed?
-            return nil, false
-          elsif (now = Concurrent.monotonic_time) > @next_tick
-            tick = Concurrent::Channel::Tick.new(@next_tick)
-            @next_tick = now + @interval
-            return tick, true
-          else
-            return NO_VALUE, true
+          synchronize do
+            if !ns_closed? && (now = Concurrent.monotonic_time) >= @next_tick
+              tick = Concurrent::Channel::Tick.new(@next_tick)
+              @next_tick = now + @interval
+              return tick
+            else
+              return NO_VALUE
+            end
           end
         end
       end

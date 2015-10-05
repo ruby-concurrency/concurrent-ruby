@@ -116,20 +116,25 @@ module Concurrent
     end
 
     def take
-      item, _ = self.next
-      item
+      item = do_take
+      item == Buffer::NO_VALUE ? nil : item
     end
     alias_method :receive, :take
     alias_method :~, :take
 
     def take!
-      item, _ = do_next
+      item = do_take
       raise Error if item == Buffer::NO_VALUE
       item
     end
 
     def take?
-      item, _ = self.next?
+      item = do_take
+      item = if item == Buffer::NO_VALUE
+               Concurrent::Maybe.nothing
+             else
+               Concurrent::Maybe.just(item)
+             end
       item
     end
 
@@ -238,13 +243,21 @@ module Concurrent
 
     private
 
-    def validator() @validator; end
+    def validator
+      @validator
+    end
 
-    def validator=(value) @validator = value; end
+    def validator=(value)
+      @validator = value
+    end
 
-    def buffer() @buffer; end
+    def buffer
+      @buffer
+    end
 
-    def buffer=(value) @buffer = value; end
+    def buffer=(value)
+      @buffer = value
+    end
 
     def validate(value, allow_nil, raise_error)
       if !allow_nil && value.nil?
@@ -265,6 +278,10 @@ module Concurrent
 
     def do_offer(item)
       buffer.offer(item)
+    end
+
+    def do_take
+      buffer.take
     end
 
     def do_next

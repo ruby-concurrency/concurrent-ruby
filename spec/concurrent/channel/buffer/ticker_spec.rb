@@ -4,13 +4,13 @@ module Concurrent::Channel::Buffer
 
   describe Ticker do
 
-    subject { described_class.new(1) }
+    let(:delay) { 0.1 }
+    subject { described_class.new(delay) }
 
     it_behaves_like :channel_timing_buffer
 
     context '#take' do
       it 'triggers until closed' do
-        subject = described_class.new(0.1)
         expected = 3
         actual = 0
         expected.times { actual += 1 if subject.take.is_a? Concurrent::Channel::Tick }
@@ -20,7 +20,6 @@ module Concurrent::Channel::Buffer
 
     context '#poll' do
       it 'triggers until closed' do
-        subject = described_class.new(0.1)
         expected = 3
         actual = 0
         expected.times do
@@ -32,15 +31,7 @@ module Concurrent::Channel::Buffer
     end
 
     context '#next' do
-
-      it 'returns more until closed' do
-        subject = described_class.new(0.1)
-        _, more = subject.next
-        expect(more).to be true
-      end
-
       it 'triggers until closed' do
-        subject = described_class.new(0.1)
         expected = 3
         actual = 0
         expected.times { actual += 1 if subject.next.first.is_a? Concurrent::Channel::Tick }
