@@ -48,7 +48,7 @@ module Concurrent
   #   Explicitly sets the value to false.
   #
   #   @return [Boolean] true is value has changed, otherwise false
-  
+
   ###################################################################
 
   # @!macro [new] atomic_boolean_public_api
@@ -79,7 +79,7 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   AtomicBooleanImplementation = case
-                                when Concurrent.on_jruby?
+                                when defined?(JavaAtomicBoolean)
                                   JavaAtomicBoolean
                                 when defined?(CAtomicBoolean)
                                   CAtomicBoolean
