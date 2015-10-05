@@ -1,44 +1,13 @@
 require 'concurrent/constants'
 require 'concurrent/utility/monotonic_time'
 require 'concurrent/channel/tick'
-require 'concurrent/channel/buffer/base'
+require 'concurrent/channel/buffer/timer'
 
 module Concurrent
   class Channel
     module Buffer
 
-      class Ticker < Base
-
-        def put(item)
-          false
-        end
-
-        def offer(item)
-          false
-        end
-
-        def take
-          # a Go timer will block forever if stopped
-          loop do
-            tick = do_poll
-            return tick if tick != Concurrent::NULL
-            Thread.pass
-          end
-        end
-
-        def next
-          # a Go timer will block forever if stopped
-          # it will always return `true` for more
-          loop do
-            tick = do_poll
-            return tick, true if tick != Concurrent::NULL
-            Thread.pass
-          end
-        end
-
-        def poll
-          do_poll
-        end
+      class Ticker < Timer
 
         private
 
@@ -46,18 +15,6 @@ module Concurrent
           @interval = interval.to_f
           @next_tick = Concurrent.monotonic_time + interval
           self.capacity = 1
-        end
-
-        def ns_size
-          0
-        end
-
-        def ns_empty?
-          false
-        end
-
-        def ns_full?
-          true
         end
 
         def do_poll
