@@ -279,18 +279,4 @@ module Concurrent
   def self.configure
     yield(configuration)
   end
-
-  # for dependency reasons this check cannot be in concurrent/synchronization
-  if Concurrent.on_jruby?
-    require 'java'
-
-    version_string = java.lang.System.getProperties['java.runtime.version']
-    version        = version_string.split('.', 3)[0..1].map(&:to_i)
-    if (version <=> [1, 8]) < 0
-      deprecated <<-TXT.gsub(/^\s*\|/, '').chop, 0
-          |Java 7 is deprecated, please use Java 8.
-          |Java 7 support is only best effort, it may not work. It will be removed in next release (1.0).
-      TXT
-    end
-  end
 end
