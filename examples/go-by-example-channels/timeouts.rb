@@ -7,7 +7,7 @@ Channel = Concurrent::Channel
 ## Go by Example: Timeouts
 # https://gobyexample.com/timeouts
 
-c1 = Channel.new(size: 1) # buffered
+c1 = Channel.new(capacity: 1) # buffered
 Channel.go do
   sleep(2)
   c1 << 'result 1'
@@ -18,7 +18,7 @@ Channel.select do |s|
   s.after(1) { print "timeout 1\n" }
 end
 
-c2 = Channel.new(size: 1) # buffered
+c2 = Channel.new(capacity: 1) # buffered
 Channel.go do
   sleep(2)
   c2 << 'result 2'
@@ -29,7 +29,6 @@ Channel.select do |s|
   s.after(3) { print "timeout 2\n" }
 end
 
-expected = <<-STDOUT
+__END__
 timeout 1
 result 2
-STDOUT

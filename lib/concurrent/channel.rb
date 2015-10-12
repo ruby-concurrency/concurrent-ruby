@@ -12,7 +12,7 @@ module Concurrent
     include Enumerable
 
     # NOTE: Move to global IO pool once stable
-    GOROUTINES = Concurrent::CachedThreadPool.new
+    GOROUTINES = Concurrent::CachedThreadPool.new(auto_terminate: true)
     private_constant :GOROUTINES
 
     BUFFER_TYPES = {
@@ -48,22 +48,22 @@ module Concurrent
         return
       end
 
-      size = opts[:size]
+      capacity = opts[:capacity] || opts[:size]
       buffer = opts[:buffer]
 
-      if size && buffer == :unbuffered
-        raise ArgumentError.new('unbuffered channels cannot have a size')
-      elsif size.nil? && buffer.nil?
+      if capacity && buffer == :unbuffered
+        raise ArgumentError.new('unbuffered channels cannot have a capacity')
+      elsif capacity.nil? && buffer.nil?
         self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif size == 0 && buffer == :buffered
+      elsif capacity == 0 && buffer == :buffered
         self.buffer = BUFFER_TYPES[:unbuffered].new
       elsif buffer == :unbuffered
         self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif size.nil? || size < 1
-        raise ArgumentError.new('size must be at least 1 for this buffer type')
+      elsif capacity.nil? || capacity < 1
+        raise ArgumentError.new('capacity must be at least 1 for this buffer type')
       else
         buffer ||= :buffered
-        self.buffer = BUFFER_TYPES[buffer].new(size)
+        self.buffer = BUFFER_TYPES[buffer].new(capacity)
       end
 
       self.validator = opts.fetch(:validator, DEFAULT_VALIDATOR)
@@ -116,20 +116,25 @@ module Concurrent
     end
 
     def take
-      item, _ = self.next
-      item
+      item = do_take
+      item == Concurrent::NULL ? nil : item
     end
     alias_method :receive, :take
     alias_method :~, :take
 
     def take!
-      item, _ = do_next
-      raise Error if item == Buffer::NO_VALUE
+      item = do_take
+      raise Error if item == Concurrent::NULL
       item
     end
 
     def take?
-      item, _ = self.next?
+      item = do_take
+      item = if item == Concurrent::NULL
+               Concurrent::Maybe.nothing
+             else
+               Concurrent::Maybe.just(item)
+             end
       item
     end
 
@@ -150,13 +155,13 @@ module Concurrent
     #   end
     def next
       item, more = do_next
-      item = nil if item == Buffer::NO_VALUE
+      item = nil if item == Concurrent::NULL
       return item, more
     end
 
     def next?
       item, more = do_next
-      item = if item == Buffer::NO_VALUE
+      item = if item == Concurrent::NULL
                Concurrent::Maybe.nothing
              else
                Concurrent::Maybe.just(item)
@@ -165,17 +170,17 @@ module Concurrent
     end
 
     def poll
-      (item = do_poll) == Buffer::NO_VALUE ? nil : item
+      (item = do_poll) == Concurrent::NULL ? nil : item
     end
 
     def poll!
       item = do_poll
-      raise Error if item == Buffer::NO_VALUE
+      raise Error if item == Concurrent::NULL
       item
     end
 
     def poll?
-      if (item = do_poll) == Buffer::NO_VALUE
+      if (item = do_poll) == Concurrent::NULL
         Concurrent::Maybe.nothing
       else
         Concurrent::Maybe.just(item)
@@ -186,7 +191,7 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       loop do
         item, more = do_next
-        if item != Buffer::NO_VALUE
+        if item != Concurrent::NULL
           yield(item)
         elsif !more
           break
@@ -238,7 +243,21 @@ module Concurrent
 
     private
 
-    attr_accessor :buffer, :validator
+    def validator
+      @validator
+    end
+
+    def validator=(value)
+      @validator = value
+    end
+
+    def buffer
+      @buffer
+    end
+
+    def buffer=(value)
+      @buffer = value
+    end
 
     def validate(value, allow_nil, raise_error)
       if !allow_nil && value.nil?
@@ -259,6 +278,10 @@ module Concurrent
 
     def do_offer(item)
       buffer.offer(item)
+    end
+
+    def do_take
+      buffer.take
     end
 
     def do_next

@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/channel/buffer/base'
 
 module Concurrent
@@ -9,19 +10,6 @@ module Concurrent
       # the buffer is at capacity, subsequent calls to {#put} will block until
       # an item is removed from the buffer, creating spare capacity.
       class Buffered < Base
-
-        # @!macro channel_buffer_empty_question
-        def empty?
-          synchronize { ns_empty? }
-        end
-
-        # @!macro channel_buffer_full_question
-        #
-        # Will return `true` once the number of items in the buffer reaches
-        # the {#size} value specified during initialization.
-        def full?
-          synchronize { ns_full? }
-        end
 
         # @!macro channel_buffer_put
         #
@@ -69,11 +57,10 @@ module Concurrent
           loop do
             synchronize do
               if ns_closed? && ns_empty?
-                return NO_VALUE, false
+                return Concurrent::NULL, false
               elsif !ns_empty?
                 item = buffer.shift
-                more = !ns_empty? || !ns_closed?
-                return item, more
+                return item, true
               end
             end
             Thread.pass
@@ -84,7 +71,7 @@ module Concurrent
         def poll
           synchronize do
             if ns_empty?
-              NO_VALUE
+              Concurrent::NULL
             else
               buffer.shift
             end
@@ -104,14 +91,19 @@ module Concurrent
           self.buffer = []
         end
 
+        # @!macro channel_buffer_size_reader
+        def ns_size
+          buffer.size
+        end
+
         # @!macro channel_buffer_empty_question
         def ns_empty?
-          buffer.length == 0
+          ns_size == 0
         end
 
         # @!macro channel_buffer_full_question
         def ns_full?
-          buffer.length == capacity
+          ns_size == capacity
         end
 
         # @!macro channel_buffer_put

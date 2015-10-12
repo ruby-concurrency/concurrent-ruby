@@ -20,7 +20,7 @@ module Concurrent
     # @!macro [attach] synchronization_object
     #
     #   Safe synchronization under any Ruby implementation.
-    #   It provides methods like {#synchronize}, {#wait}, {#signal} and {#broadcast}.
+    #   It provides methods like `#synchronize`, `#wait`, `#signal` and `#broadcast`.
     #   Provides a single layer which can improve its implementation over time without changes needed to
     #   the classes using it. Use {Synchronization::Object} not this abstract class.
     #

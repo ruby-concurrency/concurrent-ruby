@@ -7,7 +7,7 @@ Channel = Concurrent::Channel
 ## Go by Example: Channel Buffering
 # https://gobyexample.com/channel-buffering
 
-messages = Channel.new(size: 2) # buffered
+messages = Channel.new(capacity: 2) # buffered
 
 messages.put 'buffered'
 messages.put 'channel'
@@ -15,7 +15,6 @@ messages.put 'channel'
 puts messages.take
 puts messages.take
 
-expected = <<-STDOUT
+__END__
 buffered
 channel
-STDOUT

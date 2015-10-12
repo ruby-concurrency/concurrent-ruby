@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/channel/buffer/base'
 require 'concurrent/atomic/atomic_reference'
 
@@ -16,19 +17,21 @@ module Concurrent
       class Unbuffered < Base
 
         # @!macro channel_buffer_size_reader
-        #
-        # Always returns zero (0).
-        def size() 0; end
+        def size
+          synchronize do
+            putting.empty? ? 0 : 1
+          end
+        end
 
         # @!macro channel_buffer_empty_question
-        #
-        # Always returns `true`.
-        def empty?() true; end
+        def empty?
+          size == 0
+        end
 
         # @!macro channel_buffer_full_question
-        #
-        # Always returns `false`.
-        def full?() false; end
+        def full?
+          !empty?
+        end
 
         # @!macro channel_buffer_put
         #
@@ -85,7 +88,7 @@ module Concurrent
         # and this method will return.
         def take
           mine = synchronize do
-            return NO_VALUE if ns_closed? && putting.empty?
+            return Concurrent::NULL if ns_closed? && putting.empty?
 
             ref = Concurrent::AtomicReference.new(nil)
             if putting.empty?
@@ -110,10 +113,10 @@ module Concurrent
         # waiting to {#put} items onto the buffer. When there is a thread
         # waiting to put an item this method will take the item and return
         # it immediately. When there are no threads waiting to put or the
-        # buffer is closed, this method will return `NO_VALUE` immediately.
+        # buffer is closed, this method will return `Concurrent::NULL` immediately.
         def poll
           synchronize do
-            return NO_VALUE if putting.empty?
+            return Concurrent::NULL if putting.empty?
 
             put = putting.shift
             value = put.value
@@ -131,19 +134,21 @@ module Concurrent
         # @see {#take}
         def next
           item = take
-          more = synchronize { !putting.empty? }
+          more = (item != Concurrent::NULL)
           return item, more
         end
 
         private
 
-        attr_accessor :putting, :taking
+        def putting() @putting; end
+
+        def taking() @taking; end
 
         # @!macro channel_buffer_initialize
         def ns_initialize
           # one will always be empty
-          self.putting = []
-          self.taking = []
+          @putting = []
+          @taking = []
           self.closed = false
           self.capacity = 1
         end

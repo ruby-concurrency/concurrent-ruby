@@ -27,7 +27,6 @@ end
   end
 end
 
-expected = <<-STDOUT
+__END__
 received one
 received two
-STDOUT

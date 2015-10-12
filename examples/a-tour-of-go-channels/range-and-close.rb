@@ -5,7 +5,7 @@ require 'concurrent-edge'
 Channel = Concurrent::Channel
 
 ## A Tour of Go: Range and Close
-# https://tour.golang.org/concurrency/4 
+# https://tour.golang.org/concurrency/4
 
 def fibonacci(n, c)
   x, y = 0, 1
@@ -16,11 +16,11 @@ def fibonacci(n, c)
   c.close
 end
 
-c = Channel.new(size: 10)
+c = Channel.new(capacity: 10)
 Channel.go { fibonacci(c.capacity, c) }
 c.each { |i| puts i }
 
-expected = <<-STDOUT
+__END__
 0
 1
 1
@@ -31,4 +31,3 @@ expected = <<-STDOUT
 13
 21
 34
-STDOUT

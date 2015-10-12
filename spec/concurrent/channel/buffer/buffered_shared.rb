@@ -4,8 +4,7 @@ shared_examples :channel_buffered_buffer do
 
   it_behaves_like :channel_buffer
 
-  context 'initialization' do
-
+  context '#initialize' do
     it 'raises an exception if size <= 0' do
       expect {
         described_class.new(0)
@@ -14,15 +13,33 @@ shared_examples :channel_buffered_buffer do
   end
 
   context '#capacity' do
-
     it 'returns the maximum capacity of the buffer' do
       subject = described_class.new(10)
       expect(subject.capacity).to eq 10
     end
   end
 
-  context '#empty?' do
+  context '#size' do
 
+    it 'is 0 when first created' do
+      expect(subject.size).to eq 0
+    end
+
+    it 'returns the number of items in the buffer' do
+      fill = subject.capacity / 2
+      fill.times { subject.put(:foo) }
+      expect(subject.size).to eq fill
+    end
+
+    it 'is 0 when there are taking threads but no putting threads' do
+      t = Thread.new { subject.take }
+      t.join(0.1)
+      expect(subject.size).to eq 0
+      t.kill # cleanup
+    end
+  end
+
+  context '#empty?' do
     it 'returns true when empty' do
       subject = described_class.new(10)
       expect(subject).to be_empty
@@ -42,7 +59,6 @@ shared_examples :channel_buffered_buffer do
   end
 
   context '#offer' do
-
     it 'enqueues the item immediately when not full and not closed' do
       subject.offer(:foo)
       expect(subject.take).to eq :foo
@@ -74,9 +90,9 @@ shared_examples :channel_buffered_buffer do
       expect(t.status).to be false
     end
 
-    it 'returns NO_VALUE when closed and empty' do
+    it 'returns Concurrent::NULL when closed and empty' do
       subject.close
-      expect(subject.take).to eq Concurrent::Channel::Buffer::NO_VALUE
+      expect(subject.take).to eq Concurrent::NULL
     end
   end
 
@@ -128,19 +144,32 @@ shared_examples :channel_buffered_buffer do
       expect(more3).to be true
     end
 
-    it 'returns <item> false when closed and last item' do
-      subject.offer(:foo)
-      subject.offer(:bar)
-      subject.offer(:baz)
+    it 'returns <item>, true when closed and last item' do
+      capacity = subject.capacity
+      expect(capacity).to be >= 1
+
+      capacity.times { subject.put(:foo) }
       subject.close
 
-      _, more1 = subject.next
-      _, more2 = subject.next
-      _, more3 = subject.next
+      capacity.times do
+        item, more = subject.next
+        expect(item).to eq :foo
+        expect(more).to be true
+      end
+    end
 
-      expect(more1).to be true
-      expect(more2).to be true
-      expect(more3).to be false
+    it 'returns Concurrent::NULL, false when closed and no items remain' do
+      capacity = subject.capacity
+      expect(capacity).to be >= 1
+
+      capacity.times { subject.put(:foo) }
+      subject.close
+
+      capacity.times { subject.next }
+
+      item, more = subject.next
+      expect(item).to eq Concurrent::NULL
+      expect(more).to be false
     end
   end
 end

@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/utility/monotonic_time'
 require 'concurrent/channel/tick'
 require 'concurrent/channel/buffer/base'
@@ -8,16 +9,6 @@ module Concurrent
 
       class Timer < Base
 
-        def size() 1; end
-
-        def empty?
-          synchronized { @empty }
-        end
-
-        def full?
-          !empty?
-        end
-
         def put(item)
           false
         end
@@ -27,44 +18,59 @@ module Concurrent
         end
 
         def take
-          self.next.first
+          loop do
+            tick, _ = do_poll
+            if tick
+              return tick
+            else
+              Thread.pass
+            end
+          end
         end
 
         def next
           loop do
-            status, tick = do_poll
-            if status == :tick
-              return tick, false
-              # AFAIK a Go timer will block forever if stopped
-              #elsif status == :closed
-              #return false, false
-            end
+            tick, more = do_poll
+            return tick, more if tick
             Thread.pass
           end
         end
 
         def poll
-          status, tick = do_poll
-          status == :tick ? tick : NO_VALUE
+          tick, _ = do_poll
+          tick = Concurrent::NULL unless tick
+          tick
         end
 
         private
 
         def ns_initialize(delay)
           @tick = Concurrent.monotonic_time + delay.to_f
-          @closed = false
-          @empty = false
+          self.capacity = 1
+        end
+
+        def ns_size
+          0
+        end
+
+        def ns_empty?
+          false
+        end
+
+        def ns_full?
+          true
         end
 
         def do_poll
           synchronize do
-            return :closed, false if ns_closed?
-
-            if Concurrent.monotonic_time > @tick
+            if ns_closed?
+              return Concurrent::NULL, false
+            elsif Concurrent.monotonic_time >= @tick
               # only one listener gets notified
-              return :tick, Concurrent::Channel::Tick.new(@tick)
+              self.closed = true
+              return Concurrent::Channel::Tick.new(@tick), false
             else
-              return :wait, true
+              return nil, true
             end
           end
         end
