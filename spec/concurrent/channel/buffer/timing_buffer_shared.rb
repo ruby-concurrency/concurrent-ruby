@@ -69,15 +69,9 @@ shared_examples :channel_timing_buffer do
       expect(actual - start).to be >= 0.1
     end
 
-    it 'blocks forever when closed' do
+    it 'returns Concurrent::NULL when closed' do
       subject.close
-      t = Thread.new do
-        subject.take
-      end
-      actual = t.join(1)
-      t.kill # clean up
-
-      expect(actual).to be_falsey
+      expect(subject.take).to eq Concurrent::NULL
     end
   end
 
@@ -129,20 +123,9 @@ shared_examples :channel_timing_buffer do
       expect(value).to be_a Concurrent::Channel::Tick
     end
 
-    it 'returns true for more' do
-      _, more = subject.next
-      expect(more).to be true
-    end
-
-    it 'blocks forever when closed' do
+    it 'returns Concurrent::NULL, false when closed' do
       subject.close
-      t = Thread.new do
-        subject.next
-      end
-      actual = t.join(1)
-      t.kill # clean up
-
-      expect(actual).to be_falsey
+      expect(subject.take).to eq Concurrent::NULL
     end
 
     it 'triggers after the specified time interval' do

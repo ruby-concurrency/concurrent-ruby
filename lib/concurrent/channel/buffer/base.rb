@@ -1,4 +1,5 @@
 require 'concurrent/synchronization/lockable_object'
+require 'concurrent/utility/at_exit'
 
 module Concurrent
   class Channel
@@ -32,6 +33,7 @@ module Concurrent
             @capacity = 0
             @buffer = nil
             ns_initialize(*args)
+            AtExit.add(self) { terminate_at_exit }
           end
         end
 
@@ -231,6 +233,11 @@ module Concurrent
         # @!macro channel_buffer_closed_question
         def ns_closed?
           @closed
+        end
+
+        # @!visibility private
+        def terminate_at_exit
+          synchronize { self.closed = true }
         end
       end
     end

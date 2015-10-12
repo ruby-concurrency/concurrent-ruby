@@ -9,13 +9,11 @@ Channel = Concurrent::Channel
 
 timer1 = Channel.timer(2)
 
-~timer1
-puts 'Timer 1 expired'
+puts 'Timer 1 expired' if ~timer1
 
 timer2 = Channel.timer(1)
 Channel.go do
-  ~timer2
-  print "Timer 2 expired\n"
+  print "Timer 2 expired\n" if ~timer2
 end
 
 stop2 = timer2.stop

@@ -12,7 +12,7 @@ boom = Channel.after(0.5)
 
 loop do
   Channel.select do |s|
-    s.take(tick) { print "tick.\n" }
+    s.take(tick) { |t| print "tick.\n" if t }
     s.take(boom) do
       print "BOOM!\n"
       exit

@@ -33,6 +33,11 @@ module Concurrent::Channel::Buffer
         end
         expect(subject).to be_closed
       end
+
+    it 'returns false for more' do
+      _, more = subject.next
+      expect(more).to be false
+    end
     end
   end
 end

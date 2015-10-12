@@ -10,7 +10,7 @@ Channel = Concurrent::Channel
 ticker = Channel.ticker(0.5)
 Channel.go do
   ticker.each do |tick|
-    print "Tick at #{tick}\n"
+    print "Tick at #{tick}\n" if tick
   end
 end
 

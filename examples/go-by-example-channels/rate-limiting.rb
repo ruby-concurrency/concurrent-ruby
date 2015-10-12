@@ -17,8 +17,7 @@ requests.close
 
 limiter = Channel.ticker(0.2)
 requests.each do |req|
-  ~limiter
-  print "request #{req} #{Channel::Tick.new}\n"
+  print "request #{req} #{Channel::Tick.new}\n" if ~limiter
 end
 print "\n"
 
@@ -27,8 +26,9 @@ bursty_limiter = Channel.new(buffer: :buffered, capacity: 3)
   bursty_limiter << Channel::Tick.new
 end
 
+ticker = Channel.ticker(0.2)
 Channel.go do
-  Channel.ticker(0.2).each do |t|
+  ticker.each do |t|
     bursty_limiter << t
   end
 end
@@ -43,6 +43,9 @@ bursty_requests.each do |req|
   ~bursty_limiter
   print "request #{req} #{Channel::Tick.new}\n"
 end
+
+limiter.close
+ticker.close
 
 __END__
 request 1 2012-10-19 00:38:18.687438 +0000 UTC

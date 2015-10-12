@@ -18,26 +18,28 @@ module Concurrent
         end
 
         def take
-          # a Go timer will block forever if stopped
           loop do
-            tick = do_poll
-            return tick if tick != Concurrent::NULL
-            Thread.pass
+            tick, _ = do_poll
+            if tick
+              return tick
+            else
+              Thread.pass
+            end
           end
         end
 
         def next
-          # a Go timer will block forever if stopped
-          # it will always return `true` for more
           loop do
-            tick = do_poll
-            return tick, true if tick != Concurrent::NULL
+            tick, more = do_poll
+            return tick, more if tick
             Thread.pass
           end
         end
 
         def poll
-          do_poll
+          tick, _ = do_poll
+          tick = Concurrent::NULL unless tick
+          tick
         end
 
         private
@@ -61,12 +63,14 @@ module Concurrent
 
         def do_poll
           synchronize do
-            if !ns_closed? && Concurrent.monotonic_time >= @tick
+            if ns_closed?
+              return Concurrent::NULL, false
+            elsif Concurrent.monotonic_time >= @tick
               # only one listener gets notified
               self.closed = true
-              return Concurrent::Channel::Tick.new(@tick)
+              return Concurrent::Channel::Tick.new(@tick), false
             else
-              return Concurrent::NULL
+              return nil, true
             end
           end
         end

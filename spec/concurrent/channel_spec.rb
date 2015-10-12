@@ -557,7 +557,7 @@ module Concurrent
       end
     end
 
-    context 'goroutines' do
+    context 'goroutines', notravis: true do
 
       let(:default_executor) { Channel.const_get(:GOROUTINES) }
 
@@ -608,7 +608,7 @@ module Concurrent
             actual < expected
           end
 
-          latch.wait(3)
+          latch.wait(10)
           expect(actual).to eq expected
         end
       end

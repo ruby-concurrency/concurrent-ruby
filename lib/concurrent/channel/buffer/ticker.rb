@@ -19,12 +19,14 @@ module Concurrent
 
         def do_poll
           synchronize do
-            if !ns_closed? && (now = Concurrent.monotonic_time) >= @next_tick
+            if ns_closed?
+              return Concurrent::NULL, false
+            elsif (now = Concurrent.monotonic_time) >= @next_tick
               tick = Concurrent::Channel::Tick.new(@next_tick)
               @next_tick = now + @interval
-              return tick
+              return tick, true
             else
-              return Concurrent::NULL
+              return nil, true
             end
           end
         end

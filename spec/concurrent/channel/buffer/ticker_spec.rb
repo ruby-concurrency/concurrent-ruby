@@ -16,6 +16,13 @@ module Concurrent::Channel::Buffer
         expected.times { actual += 1 if subject.take.is_a? Concurrent::Channel::Tick }
         expect(actual).to eq expected
       end
+
+      it 'returns Concurrent::NULL when closed after trigger' do
+        subject.take
+        subject.close
+        expect(subject).to be_closed
+        expect(subject.take).to eq Concurrent::NULL
+      end
     end
 
     context '#poll' do
@@ -36,6 +43,17 @@ module Concurrent::Channel::Buffer
         actual = 0
         expected.times { actual += 1 if subject.next.first.is_a? Concurrent::Channel::Tick }
         expect(actual).to eq expected
+      end
+
+      it 'returns true for more while open' do
+        _, more = subject.next
+        expect(more).to be true
+      end
+
+      it 'returns false for more once closed' do
+        subject.close
+        _, more = subject.next
+        expect(more).to be false
       end
     end
   end
