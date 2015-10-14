@@ -22,6 +22,13 @@ class AsyncClass
   end
 end
 
+class AsyncAlternateClass
+  include Concurrent::Async
+  def foo(latch = nil)
+    latch.count_down if latch
+  end
+end
+
 IPS_NUM = 100
 BMBM_NUM = 100_000
 
@@ -34,7 +41,14 @@ Benchmark.ips do |bm|
   end
 
   async = AsyncClass.new
-  bm.report('async') do
+  bm.report('async, thread per object') do
+    latch = Concurrent::CountDownLatch.new(IPS_NUM)
+    IPS_NUM.times { async.async.foo(latch) }
+    latch.wait
+  end
+
+  async = AsyncAlternateClass.new
+  bm.report('async, global thread pool') do
     latch = Concurrent::CountDownLatch.new(IPS_NUM)
     IPS_NUM.times { async.async.foo(latch) }
     latch.wait
@@ -52,7 +66,14 @@ Benchmark.bmbm do |bm|
   end
 
   async = AsyncClass.new
-  bm.report('async') do
+  bm.report('async, thread per object') do
+    latch = Concurrent::CountDownLatch.new(BMBM_NUM)
+    BMBM_NUM.times { async.async.foo(latch) }
+    latch.wait
+  end
+
+  async = AsyncAlternateClass.new
+  bm.report('async, global thread pool') do
     latch = Concurrent::CountDownLatch.new(BMBM_NUM)
     BMBM_NUM.times { async.async.foo(latch) }
     latch.wait
@@ -82,45 +103,30 @@ ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-darwin14]
 ===========================================================
 
 Calculating -------------------------------------
-           celluloid    26.000  i/100ms
-               async    47.000  i/100ms
+           celluloid    24.000  i/100ms
+async, thread per object
+                        30.000  i/100ms
+async, global thread pool
+                        31.000  i/100ms
 -------------------------------------------------
-           celluloid    279.912  (± 6.1%) i/s -      1.404k
-               async    478.932  (± 2.1%) i/s -      2.397k
+           celluloid    242.345  (±10.7%) i/s -      1.200k
+async, thread per object
+                        316.387  (± 2.5%) i/s -      1.590k
+async, global thread pool
+                        318.200  (± 1.6%) i/s -      1.612k
 
 Comparison:
-               async:      478.9 i/s
-           celluloid:      279.9 i/s - 1.71x slower
+async, global thread pool:      318.2 i/s
+async, thread per object:      316.4 i/s - 1.01x slower
+           celluloid:      242.3 i/s - 1.31x slower
 
-Rehearsal ---------------------------------------------
-celluloid   4.080000   0.620000   4.700000 (  4.695271)
-async       2.280000   0.100000   2.380000 (  2.345327)
------------------------------------- total: 7.080000sec
+Rehearsal -------------------------------------------------------------
+celluloid                   4.170000   0.630000   4.800000 (  4.812120)
+async, thread per object    3.400000   0.110000   3.510000 (  3.452749)
+async, global thread pool   3.410000   0.070000   3.480000 (  3.455878)
+--------------------------------------------------- total: 11.790000sec
 
-                user     system      total        real
-celluloid   3.910000   0.580000   4.490000 (  4.503884)
-async       2.220000   0.190000   2.410000 (  2.340467)
-
-===========================================================
-jruby 1.7.19 (1.9.3p551) 2015-01-29 20786bd on Java HotSpot(TM) 64-Bit Server VM 1.8.0_45-b14 +jit [darwin-x86_64]
-===========================================================
-
-Calculating -------------------------------------
-           celluloid     2.000  i/100ms
-               async    32.000  i/100ms
--------------------------------------------------
-           celluloid     72.887  (±26.1%) i/s -    334.000
-               async      1.822k (±31.6%) i/s -      6.368k
-
-Comparison:
-               async:     1821.9 i/s
-           celluloid:       72.9 i/s - 25.00x slower
-
-Rehearsal ---------------------------------------------
-celluloid   8.890000   1.700000  10.590000 (  5.930000)
-async       2.250000   0.150000   2.400000 (  1.283000)
------------------------------------ total: 12.990000sec
-
-                user     system      total        real
-celluloid   6.310000   1.530000   7.840000 (  5.817000)
-async       1.590000   0.060000   1.650000 (  0.912000)
+                                user     system      total        real
+celluloid                   4.080000   0.620000   4.700000 (  4.687752)
+async, thread per object    3.380000   0.160000   3.540000 (  3.469882)
+async, global thread pool   3.380000   0.050000   3.430000 (  3.426759)
