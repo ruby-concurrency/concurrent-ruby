@@ -1,6 +1,6 @@
+require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/ivar'
-require 'concurrent/executor/immediate_executor'
 
 module Concurrent
 
@@ -42,10 +42,9 @@ module Concurrent
   # ## Basic Usage
   #
   # When this module is mixed into a class, objects of the class become inherently
-  # asynchronous. Each object gets its own background thread (specifically,
-  # `SingleThreadExecutor`) on which to post asynchronous method calls.
-  # Asynchronous method calls are executed in the background one at a time in
-  # the order they are received.
+  # asynchronous. Each object gets its own background thread on which to post
+  # asynchronous method calls. Asynchronous method calls are executed in the
+  # background one at a time in the order they are received.
   #
   # To create an asynchronous class, simply mix in the `Concurrent::Async` module:
   #
@@ -232,7 +231,6 @@ module Concurrent
   #                          # returns an IVar in the :complete state
   #
   # @see Concurrent::Actor
-  # @see Concurrent::SingleThreadExecutor
   # @see https://en.wikipedia.org/wiki/Actor_model "Actor Model" at Wikipedia
   # @see http://www.erlang.org/doc/man/gen_server.html Erlang gen_server
   # @see http://c2.com/cgi/wiki?LetItCrash "Let It Crash" at http://c2.com/
@@ -307,13 +305,15 @@ module Concurrent
       # given executor. Block if necessary.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
-      # @param [Concurrent::ExecutorService] executor the executor on which to execute delegated method calls
+      # @param [Array] job queue which guarantees serialization of method calls
+      # @param [Mutex] mutex which synchronizes queue operations
       # @param [Boolean] blocking will block awaiting result when `true`
-      def initialize(delegate, executor, serializer, blocking)
+      def initialize(delegate, queue, mutex, blocking)
         @delegate = delegate
-        @executor = executor
-        @serializer = serializer
+        @queue = queue
+        @mutex = mutex
         @blocking = blocking
+        @executor = Concurrent.global_io_executor
       end
 
       # Delegates method calls to the wrapped object. For performance,
@@ -332,15 +332,28 @@ module Concurrent
         Async::validate_argc(@delegate, method, *args)
 
         ivar = Concurrent::IVar.new
-        @serializer.post(@executor, args) do |arguments|
+        @mutex.synchronize do
+          @queue.push [ivar, method, args, block]
+          @executor.post { perform } if @queue.length == 1
+        end
+
+        ivar.wait if @blocking
+        ivar
+      end
+
+      def perform
+        loop do
+          ivar, method, args, block = @mutex.synchronize { @queue.first }
+          break unless ivar # queue is empty
+
           begin
-            ivar.set(@delegate.send(method, *arguments, &block))
+            ivar.set(@delegate.send(method, *args, &block))
           rescue => error
             ivar.fail(error)
           end
+
+          @mutex.synchronize { @queue.shift }
         end
-        ivar.wait if @blocking
-        ivar
       end
     end
     private_constant :AsyncDelegator
@@ -387,8 +400,6 @@ module Concurrent
     end
     alias_method :call, :await
 
-    private
-
     # Initialize the internal serializer and other stnchronization mechanisms.
     #
     # @note This method *must* be called immediately upon object construction.
@@ -398,9 +409,10 @@ module Concurrent
     def init_synchronization
       return self if @__async_initialized__
       @__async_initialized__ = true
-      serializer = Concurrent::SerializedExecution.new
-      @__await_delegator__ = AsyncDelegator.new(self, Concurrent::ImmediateExecutor.new, serializer, true)
-      @__async_delegator__ = AsyncDelegator.new(self, Concurrent.global_io_executor, serializer, false)
+      queue = []
+      mutex = Mutex.new
+      @__await_delegator__ = AsyncDelegator.new(self, queue, mutex, true)
+      @__async_delegator__ = AsyncDelegator.new(self, queue, mutex, false)
       self
     end
   end

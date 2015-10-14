@@ -105,28 +105,61 @@ ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-darwin14]
 Calculating -------------------------------------
            celluloid    24.000  i/100ms
 async, thread per object
-                        30.000  i/100ms
+                        31.000  i/100ms
 async, global thread pool
                         31.000  i/100ms
 -------------------------------------------------
-           celluloid    242.345  (±10.7%) i/s -      1.200k
+           celluloid    277.834  (± 9.4%) i/s -      1.392k
 async, thread per object
-                        316.387  (± 2.5%) i/s -      1.590k
+                        316.357  (± 1.9%) i/s -      1.612k
 async, global thread pool
-                        318.200  (± 1.6%) i/s -      1.612k
+                        318.707  (± 2.2%) i/s -      1.612k
 
 Comparison:
-async, global thread pool:      318.2 i/s
+async, global thread pool:      318.7 i/s
 async, thread per object:      316.4 i/s - 1.01x slower
-           celluloid:      242.3 i/s - 1.31x slower
+           celluloid:      277.8 i/s - 1.15x slower
 
 Rehearsal -------------------------------------------------------------
-celluloid                   4.170000   0.630000   4.800000 (  4.812120)
-async, thread per object    3.400000   0.110000   3.510000 (  3.452749)
-async, global thread pool   3.410000   0.070000   3.480000 (  3.455878)
---------------------------------------------------- total: 11.790000sec
+celluloid                   4.110000   0.650000   4.760000 (  4.766239)
+async, thread per object    3.370000   0.100000   3.470000 (  3.420537)
+async, global thread pool   3.460000   0.240000   3.700000 (  3.598044)
+--------------------------------------------------- total: 11.930000sec
 
                                 user     system      total        real
-celluloid                   4.080000   0.620000   4.700000 (  4.687752)
-async, thread per object    3.380000   0.160000   3.540000 (  3.469882)
-async, global thread pool   3.380000   0.050000   3.430000 (  3.426759)
+celluloid                   4.000000   0.640000   4.640000 (  4.652382)
+async, thread per object    3.640000   0.160000   3.800000 (  3.751535)
+async, global thread pool   3.440000   0.220000   3.660000 (  3.550602)
+
+===========================================================
+jruby 1.7.19 (1.9.3p551) 2015-01-29 20786bd on Java HotSpot(TM) 64-Bit Server VM 1.8.0_45-b14 +jit [darwin-x86_64]
+===========================================================
+
+Calculating -------------------------------------
+           celluloid     2.000  i/100ms
+async, thread per object
+                        23.000  i/100ms
+async, global thread pool
+                        60.000  i/100ms
+-------------------------------------------------
+           celluloid    155.480  (±38.6%) i/s -    606.000
+async, thread per object
+                        823.969  (±18.2%) i/s -      3.404k
+async, global thread pool
+                        852.728  (±14.7%) i/s -      4.140k
+
+Comparison:
+async, global thread pool:      852.7 i/s
+async, thread per object:      824.0 i/s - 1.03x slower
+           celluloid:      155.5 i/s - 5.48x slower
+
+Rehearsal -------------------------------------------------------------
+celluloid                   5.640000   1.560000   7.200000 (  5.480000)
+async, thread per object    2.660000   0.240000   2.900000 (  1.670000)
+async, global thread pool   2.110000   0.240000   2.350000 (  1.360000)
+--------------------------------------------------- total: 12.450000sec
+
+                                user     system      total        real
+celluloid                   5.650000   1.540000   7.190000 (  5.470000)
+async, thread per object    2.350000   0.230000   2.580000 (  1.532000)
+async, global thread pool   1.910000   0.220000   2.130000 (  1.272000)
