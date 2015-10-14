@@ -1,6 +1,6 @@
-require 'thread'
 require 'concurrent/configuration'
 require 'concurrent/ivar'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 
@@ -298,27 +298,20 @@ module Concurrent
     # Delegates asynchronous, thread-safe method calls to the wrapped object.
     #
     # @!visibility private
-    class AsyncDelegator
+    class AsyncDelegator < Synchronization::LockableObject
 
-      # Create a new delegator object wrapping the given delegate,
-      # protecting it with the given serializer, and executing it on the
-      # given executor. Block if necessary.
+      # Create a new delegator object wrapping the given delegate.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
-      # @param [Array] job queue which guarantees serialization of method calls
-      # @param [Mutex] mutex which synchronizes queue operations
-      # @param [Boolean] blocking will block awaiting result when `true`
-      def initialize(delegate, queue, mutex, blocking)
+      def initialize(delegate)
+        super()
         @delegate = delegate
-        @queue = queue
-        @mutex = mutex
-        @blocking = blocking
+        @queue = []
         @executor = Concurrent.global_io_executor
+        ensure_ivar_visibility!
       end
 
-      # Delegates method calls to the wrapped object. For performance,
-      # dynamically defines the given method on the delegator so that
-      # all future calls to `method` will not be directed here.
+      # Delegates method calls to the wrapped object.
       #
       # @param [Symbol] method the method being called
       # @param [Array] args zero or more arguments to the method
@@ -332,18 +325,21 @@ module Concurrent
         Async::validate_argc(@delegate, method, *args)
 
         ivar = Concurrent::IVar.new
-        @mutex.synchronize do
+        synchronize do
           @queue.push [ivar, method, args, block]
           @executor.post { perform } if @queue.length == 1
         end
 
-        ivar.wait if @blocking
         ivar
       end
 
+      # Perform all enqueued tasks.
+      #
+      # This method must be called from within the executor. It must not be
+      # called while already running. It will loop until the queue is empty.
       def perform
         loop do
-          ivar, method, args, block = @mutex.synchronize { @queue.first }
+          ivar, method, args, block = synchronize { @queue.first }
           break unless ivar # queue is empty
 
           begin
@@ -352,11 +348,40 @@ module Concurrent
             ivar.fail(error)
           end
 
-          @mutex.synchronize { @queue.shift }
+          synchronize { @queue.shift }
         end
       end
     end
     private_constant :AsyncDelegator
+
+    # Delegates synchronous, thread-safe method calls to the wrapped object.
+    #
+    # @!visibility private
+    class AwaitDelegator
+
+      # Create a new delegator object wrapping the given delegate.
+      #
+      # @param [AsyncDelegator] delegate the object to wrap and delegate method calls to
+      def initialize(delegate)
+        @delegate = delegate
+      end
+
+      # Delegates method calls to the wrapped object.
+      #
+      # @param [Symbol] method the method being called
+      # @param [Array] args zero or more arguments to the method
+      #
+      # @return [IVar] the result of the method call
+      #
+      # @raise [NameError] the object does not respond to `method` method
+      # @raise [ArgumentError] the given `args` do not match the arity of `method`
+      def method_missing(method, *args, &block)
+        ivar = @delegate.send(method, *args, &block)
+        ivar.wait
+        ivar
+      end
+    end
+    private_constant :AwaitDelegator
 
     # Causes the chained method call to be performed asynchronously on the
     # object's thread. The delegated method will return a future in the
@@ -409,10 +434,8 @@ module Concurrent
     def init_synchronization
       return self if @__async_initialized__
       @__async_initialized__ = true
-      queue = []
-      mutex = Mutex.new
-      @__await_delegator__ = AsyncDelegator.new(self, queue, mutex, true)
-      @__async_delegator__ = AsyncDelegator.new(self, queue, mutex, false)
+      @__async_delegator__ = AsyncDelegator.new(self)
+      @__await_delegator__ = AwaitDelegator.new(@__async_delegator__)
       self
     end
   end
