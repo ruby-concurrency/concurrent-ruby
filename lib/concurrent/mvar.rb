@@ -68,10 +68,14 @@ module Concurrent
 
         # If we timed out we'll still be empty
         if unlocked_full?
-          value = @value
-          @value = EMPTY
-          @empty_condition.signal
-          apply_deref_options(value)
+          if block_given?
+            yield @value
+          else
+            value = @value
+            @value = EMPTY
+            @empty_condition.signal
+            apply_deref_options(value)
+          end
         else
           TIMEOUT
         end
