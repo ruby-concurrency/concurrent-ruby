@@ -162,6 +162,37 @@ shared_examples :thread_pool_executor do
     end
   end
 
+  context '#ready_length' do
+    subject do
+      described_class.new(
+        min_threads: 2,
+        max_threads: 5,
+        max_queue: 0,
+        fallback_policy: :discard
+      )
+    end
+
+    it 'returns 0 prior to enqueueing any tasks' do
+      expect(subject.ready_length).to eq 0
+    end
+
+    it 'returns max_threads after tasks are complete' do
+      latch = Concurrent::CountDownLatch.new(5)
+      5.times{ subject.post{ latch.count_down } }
+      latch.wait(0.1)
+      expect(subject.ready_length).to eq 5
+    end
+
+    it 'returns 0 when all workers are busy' do
+      trigger = Concurrent::Event.new
+      20.times{ subject.post{ trigger.wait } }
+      expect(subject.ready_length).to eq 0
+      subject.shutdown
+      trigger.set
+      subject.wait_for_termination(1)
+    end
+  end
+
   context '#remaining_capacity' do
 
     let!(:expected_max){ 100 }
