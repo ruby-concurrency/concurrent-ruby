@@ -68,14 +68,27 @@ module Concurrent
 
         # If we timed out we'll still be empty
         if unlocked_full?
-          if block_given?
-            yield @value
-          else
-            value = @value
-            @value = EMPTY
-            @empty_condition.signal
-            apply_deref_options(value)
-          end
+          value = @value
+          @value = EMPTY
+          @empty_condition.signal
+          apply_deref_options(value)
+        else
+          TIMEOUT
+        end
+      end
+    end
+
+    # acquires lock on the from an `MVAR`, yields the value to provided block,
+    # and release lock. A timeout can be set to limit the time spent blocked,
+    # in which case it returns `TIMEOUT` if the time is exceeded.
+    # @return [Object] the value returned by the block, or `TIMEOUT`
+    def borrow(timeout = nil)
+      @mutex.synchronize do
+        wait_for_full(timeout)
+
+        # if we timeoud out we'll still be empty
+        if unlocked_full?
+          yield @value
         else
           TIMEOUT
         end
