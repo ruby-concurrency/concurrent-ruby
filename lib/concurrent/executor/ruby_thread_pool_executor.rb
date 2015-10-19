@@ -103,7 +103,7 @@ module Concurrent
 
     # @!visibility private
     def worker_task_completed
-      @completed_task_count += 1
+      synchronize { @completed_task_count += 1 }
     end
 
     private
