@@ -101,6 +101,11 @@ module Concurrent
       synchronize { ns_worker_died worker }
     end
 
+    # @!visibility private
+    def worker_task_completed
+      synchronize { @completed_task_count += 1 }
+    end
+
     private
 
     # @!visibility private
@@ -180,7 +185,6 @@ module Concurrent
       worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
         worker << [task, args]
-        @completed_task_count += 1
         true
       else
         false
@@ -327,6 +331,7 @@ module Concurrent
 
       def run_task(pool, task, args)
         task.call(*args)
+        pool.worker_task_completed
       rescue => ex
         # let it fail
         log DEBUG, ex
