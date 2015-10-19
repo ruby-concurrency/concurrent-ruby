@@ -1,5 +1,6 @@
+require 'concurrent/configuration'
 require 'concurrent/ivar'
-require 'concurrent/executor/single_thread_executor'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 
@@ -10,14 +11,14 @@ module Concurrent
   #
   # A more feature-rich {Concurrent::Actor} is also available when the
   # capabilities of `Async` are too limited.
-  # 
+  #
   # ```cucumber
   # Feature:
   #   As a stateful, plain old Ruby class
   #   I want safe, asynchronous behavior
   #   So my long-running methods don't block the main thread
   # ```
-  # 
+  #
   # The `Async` module is a way to mix simple yet powerful asynchronous
   # capabilities into any plain old Ruby object or class, turning each object
   # into a simple Actor. Method calls are processed on a background thread. The
@@ -37,14 +38,13 @@ module Concurrent
   # send messages to the `gen_server` via the `cast` and `call` methods. Unlike
   # Erlang's `gen_server`, however, `Async` classes do not support linking or
   # supervision trees.
-  # 
+  #
   # ## Basic Usage
   #
   # When this module is mixed into a class, objects of the class become inherently
-  # asynchronous. Each object gets its own background thread (specifically,
-  # `SingleThreadExecutor`) on which to post asynchronous method calls.
-  # Asynchronous method calls are executed in the background one at a time in
-  # the order they are received.
+  # asynchronous. Each object gets its own background thread on which to post
+  # asynchronous method calls. Asynchronous method calls are executed in the
+  # background one at a time in the order they are received.
   #
   # To create an asynchronous class, simply mix in the `Concurrent::Async` module:
   #
@@ -200,30 +200,30 @@ module Concurrent
   #
   # Class methods which are pure functions are safe. Class methods which modify
   # class variables should be avoided, for all the reasons listed above.
-  # 
+  #
   # ## An Important Note About Thread Safe Guarantees
-  # 
+  #
   # > Thread safe guarantees can only be made when asynchronous method calls
   # > are not mixed with direct method calls. Use only direct method calls
   # > when the object is used exclusively on a single thread. Use only
   # > `async` and `await` when the object is shared between threads. Once you
   # > call a method using `async` or `await`, you should no longer call methods
   # > directly on the object. Use `async` and `await` exclusively from then on.
-  # 
+  #
   # @example
-  # 
+  #
   #   class Echo
   #     include Concurrent::Async
-  #   
+  #
   #     def echo(msg)
   #       print "#{msg}\n"
   #     end
   #   end
-  #   
+  #
   #   horn = Echo.new
   #   horn.echo('zero')      # synchronous, not thread-safe
   #                          # returns the actual return value of the method
-  #   
+  #
   #   horn.async.echo('one') # asynchronous, non-blocking, thread-safe
   #                          # returns an IVar in the :pending state
   #
@@ -231,7 +231,6 @@ module Concurrent
   #                          # returns an IVar in the :complete state
   #
   # @see Concurrent::Actor
-  # @see Concurrent::SingleThreadExecutor
   # @see https://en.wikipedia.org/wiki/Actor_model "Actor Model" at Wikipedia
   # @see http://www.erlang.org/doc/man/gen_server.html Erlang gen_server
   # @see http://c2.com/cgi/wiki?LetItCrash "Let It Crash" at http://c2.com/
@@ -299,24 +298,20 @@ module Concurrent
     # Delegates asynchronous, thread-safe method calls to the wrapped object.
     #
     # @!visibility private
-    class AsyncDelegator
+    class AsyncDelegator < Synchronization::LockableObject
 
-      # Create a new delegator object wrapping the given delegate,
-      # protecting it with the given serializer, and executing it on the
-      # given executor. Block if necessary.
+      # Create a new delegator object wrapping the given delegate.
       #
       # @param [Object] delegate the object to wrap and delegate method calls to
-      # @param [Concurrent::ExecutorService] executor the executor on which to execute delegated method calls
-      # @param [Boolean] blocking will block awaiting result when `true`
-      def initialize(delegate, executor, blocking)
+      def initialize(delegate)
+        super()
         @delegate = delegate
-        @executor = executor
-        @blocking = blocking
+        @queue = []
+        @executor = Concurrent.global_io_executor
+        ensure_ivar_visibility!
       end
 
-      # Delegates method calls to the wrapped object. For performance,
-      # dynamically defines the given method on the delegator so that
-      # all future calls to `method` will not be directed here.
+      # Delegates method calls to the wrapped object.
       #
       # @param [Symbol] method the method being called
       # @param [Array] args zero or more arguments to the method
@@ -330,18 +325,66 @@ module Concurrent
         Async::validate_argc(@delegate, method, *args)
 
         ivar = Concurrent::IVar.new
-        @executor.post(args) do |arguments|
+        synchronize do
+          @queue.push [ivar, method, args, block]
+          @executor.post { perform } if @queue.length == 1
+        end
+
+        ivar
+      end
+
+      # Perform all enqueued tasks.
+      #
+      # This method must be called from within the executor. It must not be
+      # called while already running. It will loop until the queue is empty.
+      def perform
+        loop do
+          ivar, method, args, block = synchronize { @queue.first }
+          break unless ivar # queue is empty
+
           begin
-            ivar.set(@delegate.send(method, *arguments, &block))
+            ivar.set(@delegate.send(method, *args, &block))
           rescue => error
             ivar.fail(error)
           end
+
+          synchronize do
+            @queue.shift
+            return if @queue.empty?
+          end
         end
-        ivar.wait if @blocking
-        ivar
       end
     end
     private_constant :AsyncDelegator
+
+    # Delegates synchronous, thread-safe method calls to the wrapped object.
+    #
+    # @!visibility private
+    class AwaitDelegator
+
+      # Create a new delegator object wrapping the given delegate.
+      #
+      # @param [AsyncDelegator] delegate the object to wrap and delegate method calls to
+      def initialize(delegate)
+        @delegate = delegate
+      end
+
+      # Delegates method calls to the wrapped object.
+      #
+      # @param [Symbol] method the method being called
+      # @param [Array] args zero or more arguments to the method
+      #
+      # @return [IVar] the result of the method call
+      #
+      # @raise [NameError] the object does not respond to `method` method
+      # @raise [ArgumentError] the given `args` do not match the arity of `method`
+      def method_missing(method, *args, &block)
+        ivar = @delegate.send(method, *args, &block)
+        ivar.wait
+        ivar
+      end
+    end
+    private_constant :AwaitDelegator
 
     # Causes the chained method call to be performed asynchronously on the
     # object's thread. The delegated method will return a future in the
@@ -385,8 +428,6 @@ module Concurrent
     end
     alias_method :call, :await
 
-    private
-
     # Initialize the internal serializer and other stnchronization mechanisms.
     #
     # @note This method *must* be called immediately upon object construction.
@@ -396,10 +437,8 @@ module Concurrent
     def init_synchronization
       return self if @__async_initialized__
       @__async_initialized__ = true
-      @__async_executor__ = Concurrent::SingleThreadExecutor.new(
-        fallback_policy: :caller_runs, auto_terminate: true)
-      @__await_delegator__ = AsyncDelegator.new(self, @__async_executor__, true)
-      @__async_delegator__ = AsyncDelegator.new(self, @__async_executor__, false)
+      @__async_delegator__ = AsyncDelegator.new(self)
+      @__await_delegator__ = AwaitDelegator.new(@__async_delegator__)
       self
     end
   end

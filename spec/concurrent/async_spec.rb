@@ -164,9 +164,9 @@ module Concurrent
         expect(val).to be_pending
       end
 
-      it 'runs the future on the memoized executor' do
-        executor = subject.instance_variable_get(:@__async_executor__)
-        expect(executor).to receive(:post).with(any_args)
+      it 'runs the future on the global executor' do
+        expect(Concurrent.global_io_executor).to receive(:post).with(any_args).
+          and_call_original
         subject.async.echo(:foo)
       end
 
@@ -228,6 +228,12 @@ module Concurrent
         val = subject.await.echo(5)
         expect(val).to be_a Concurrent::IVar
         expect(val).to be_fulfilled
+      end
+
+      it 'runs the future on the global executor' do
+        expect(Concurrent.global_io_executor).to receive(:post).with(any_args).
+          and_call_original
+        subject.await.echo(:foo)
       end
 
       it 'sets the value on success' do
