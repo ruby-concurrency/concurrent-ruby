@@ -108,7 +108,7 @@ module Concurrent
 
     # @!visibility private
     def worker_task_failed
-      @failed_task_count += 1
+      synchronize { @failed_task_count += 1 }
     end
 
     private
