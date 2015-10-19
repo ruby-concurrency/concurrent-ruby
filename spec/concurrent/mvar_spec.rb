@@ -70,6 +70,34 @@ module Concurrent
 
     end
 
+    describe '#borrow' do
+
+      it 'yields current value to the block and puts back value' do
+        m = MVar.new(14)
+        expect { |b| m.borrow(&b) }.to yield_with_args(14)
+        expect(m.take).to eq(14)
+      end
+
+      it 'puts back value even if an exception is raised' do
+        m = MVar.new(14)
+        expect { m.borrow { fail 'boom!' } }.to raise_error('boom!')
+        expect(m.take).to eq(14)
+      end
+
+      it 'returns the returned value of the block' do
+        m = MVar.new(14)
+        expect(m.borrow{2}).to eq(2)
+        expect(m.take).to eq(14)
+      end
+
+      it 'returns TIMEOUT on timeout on an empty MVar' do
+        m = MVar.new
+        expect(m.borrow(0.1){}).to eq MVar::TIMEOUT
+      end
+
+    end
+
+
     describe '#put' do
 
       it 'sets the MVar to be empty' do
