@@ -64,13 +64,14 @@ shared_examples :executor_service do
     it 'stops accepting new tasks' do
       latch1 = Concurrent::CountDownLatch.new(1)
       latch2 = Concurrent::CountDownLatch.new(1)
-      subject.post{ sleep(0.2); latch1.count_down }
+      subject.post{ sleep(0.1); latch1.count_down }
+      latch1.wait(1)
       subject.shutdown
+      subject.wait_for_termination
       begin
         expect(subject.post{ latch2.count_down }).to be_falsey
       rescue Concurrent::RejectedExecutionError
       end
-      expect(latch1.wait(1)).to be_truthy
       expect(latch2.wait(0.2)).to be_falsey
     end
 

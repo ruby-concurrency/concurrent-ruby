@@ -936,7 +936,7 @@ module Concurrent
           expect(ok).to be true
         end
 
-        it 'returns true when all prior actions have processed' do
+        it 'returns true when all prior actions have processed', buggy: true do
           subject = Agent.new(0)
           subject.send_via(executor){ sleep(1) }
           5.times{ subject.send_via(executor){ nil } }

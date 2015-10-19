@@ -510,7 +510,7 @@ module Concurrent
 
     context '#poll?' do
 
-      it 'returns a just Maybe immediately if available' do
+      it 'returns a just Maybe immediately if available', buggy: true do
         subject # initialize on this thread
         t = Thread.new do
           subject.put(42)
