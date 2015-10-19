@@ -69,7 +69,7 @@ shared_examples :executor_service do
       subject.shutdown
       subject.wait_for_termination
       begin
-        expect(subject.post{ latch2.count_down }).to be_falsey
+        subject.post{ latch2.count_down }
       rescue Concurrent::RejectedExecutionError
       end
       expect(latch2.wait(0.2)).to be_falsey
@@ -134,7 +134,7 @@ shared_examples :executor_service do
       latch.wait(1)
       subject.kill
       begin
-        expect(subject.post{ expected.make_true }).to be_falsey
+        subject.post{ expected.make_true }
       rescue Concurrent::RejectedExecutionError
       end
       sleep(0.1)
