@@ -1,7 +1,6 @@
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/concern/observable'
-require 'concurrent/synchronization'
 
 # @!macro [new] thread_safe_variable_comparison
 #
@@ -91,12 +90,8 @@ module Concurrent
   #
   # @see http://clojure.org/atoms Clojure Atoms
   # @see http://clojure.org/state Values and Change - Clojure's approach to Identity and State
-  class Atom < Synchronization::Object
+  class Atom
     include Concern::Observable
-
-    safe_initialization!
-    private(*attr_volatile_with_cas(:value))
-    public :value
 
     # Create a new atom with the given initial value.
     #
@@ -111,15 +106,18 @@ module Concurrent
     #
     # @raise [ArgumentError] if the validator is not a `Proc` (when given)
     def initialize(value, opts = {})
-      @Validator     = opts.fetch(:validator, -> v { true })
+      @validator     = opts.fetch(:validator, -> v { true })
       self.observers = Collection::CopyOnNotifyObserverSet.new
-      super(value)
+      @state = AtomicReference.new(value)
     end
 
     # @!method value
     #   The current value of the atom.
     #
     #   @return [Object] The current value.
+    def value
+      @state.get
+    end
 
     alias_method :deref, :value
 
@@ -160,7 +158,7 @@ module Concurrent
         begin
           new_value = yield(old_value, *args)
           break old_value unless valid?(new_value)
-          break new_value if compare_and_set(old_value, new_value)
+          break new_value if @state.compare_and_set(old_value, new_value)
         rescue
           break old_value
         end
@@ -177,7 +175,7 @@ module Concurrent
     #
     # @return [Boolean] True if the value is changed else false.
     def compare_and_set(old_value, new_value)
-      if valid?(new_value) && compare_and_set_value(old_value, new_value)
+      if valid?(new_value) && @state.compare_and_set(old_value, new_value)
         observers.notify_observers(Time.now, old_value, new_value)
         true
       else
@@ -196,7 +194,7 @@ module Concurrent
     def reset(new_value)
       old_value = value
       if valid?(new_value)
-        self.value = new_value
+        @state.set(new_value)
         observers.notify_observers(Time.now, old_value, new_value)
         new_value
       else
@@ -212,7 +210,7 @@ module Concurrent
     # @return [Boolean] false if the validator function returns false or raises
     #   an exception else true
     def valid?(new_value)
-      @Validator.call(new_value)
+      @validator.call(new_value)
     rescue
       false
     end
