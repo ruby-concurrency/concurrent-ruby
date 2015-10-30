@@ -8,10 +8,9 @@ module Concurrent
                              MriObject
                            when Concurrent.on_jruby?
                              JRubyObject
-                           when Concurrent.on_rbx?
+                           when Concurrent.on_rbx? || Concurrent.on_truffle?
                              RbxObject
                            else
-                             warn 'Possibly unsupported Ruby implementation'
                              MriObject
                            end
     private_constant :ObjectImplementation

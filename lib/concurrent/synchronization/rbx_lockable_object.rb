@@ -18,15 +18,13 @@ module Concurrent
         if @__owner__ == Thread.current
           yield
         else
-          Rubinius.lock(self)
-          begin
+          result = nil
+          Rubinius.synchronize(self) do
             @__owner__ = Thread.current
-            result = yield
-          ensure
+            result     = yield
             @__owner__ = nil
-            Rubinius.unlock(self)
-            result
           end
+          result
         end
       end
 

@@ -19,6 +19,10 @@ module Concurrent
         ruby_engine == 'rbx'
       end
 
+      def on_truffle?
+        ruby_engine == 'jruby+truffle'
+      end
+
       def on_windows?
         !(RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/).nil?
       end
