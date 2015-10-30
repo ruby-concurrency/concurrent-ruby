@@ -7,6 +7,7 @@ require 'concurrent/synchronization/mri_object'
 require 'concurrent/synchronization/jruby_object'
 require 'concurrent/synchronization/rbx_object'
 require 'concurrent/synchronization/object'
+require 'concurrent/synchronization/volatile'
 
 require 'concurrent/synchronization/abstract_lockable_object'
 require 'concurrent/synchronization/mri_lockable_object'

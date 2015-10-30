@@ -3,6 +3,36 @@ require 'timeout'
 module Concurrent
 
   describe Synchronization do
+
+    shared_examples :attr_volatile do
+
+      specify 'older writes are always visible' do
+        # store              = BClass.new
+        store.not_volatile = 0
+        store.volatile     = 0
+
+        t1 = Thread.new do
+          Thread.abort_on_exception = true
+          1000000000.times do |i|
+            store.not_volatile = i
+            store.volatile     = i
+          end
+        end
+
+        t2 = Thread.new do
+          10.times do
+            volatile     = store.volatile
+            not_volatile = store.not_volatile
+            expect(not_volatile).to be >= volatile
+            Thread.pass
+          end
+        end
+
+        t2.join
+        t1.kill
+      end
+    end
+
     describe Synchronization::Object do
       class AAClass < Synchronization::Object
       end
@@ -40,6 +70,14 @@ module Concurrent
 
       # TODO (pitr 12-Sep-2015): give a whole gem a pass to find classes with final fields without using the convention and migrate
       Synchronization::Object.ensure_safe_initialization_when_final_fields_are_present
+
+      class VolatileFieldClass < Synchronization::Object
+        attr_volatile :volatile
+        attr_accessor :not_volatile
+      end
+
+      let(:store) { VolatileFieldClass.new }
+      it_should_behave_like :attr_volatile
     end
 
     describe Synchronization::LockableObject do
@@ -142,59 +180,47 @@ module Concurrent
         t1.kill
       end
 
-      describe 'attr volatile' do
-        specify 'older writes are always visible' do
-          store              = BClass.new
-          store.not_volatile = 0
-          store.volatile     = 0
+      let(:store) { BClass.new }
+      it_should_behave_like :attr_volatile
+    end
 
-          t1 = Thread.new do
-            Thread.abort_on_exception = true
-            1000000000.times do |i|
-              store.not_volatile = i
-              store.volatile     = i
-            end
-          end
+    describe 'Concurrent::Synchronization::Volatile module' do
+      class BareClass
+        include Synchronization::Volatile
 
-          t2 = Thread.new do
-            10.times do
-              volatile     = store.volatile
-              not_volatile = store.not_volatile
-              expect(not_volatile).to be >= volatile
-              Thread.pass
-            end
-          end
-
-          t2.join
-          t1.kill
-        end
+        attr_volatile :volatile
+        attr_accessor :not_volatile
       end
 
-      describe 'attr_volatile_with_cas' do
-        specify do
-          a = Class.new(Synchronization::Object) do
-            attr_volatile_with_cas :a
+      let(:store) { BareClass.new }
+      it_should_behave_like :attr_volatile
+    end
 
-            def initialize(*rest)
-              super
-              self.a = :a
-            end
+    describe 'attr_volatile_with_cas' do
+      specify do
+        a = Class.new(Synchronization::Object) do
+          attr_volatile_with_cas :a
+
+          def initialize(*rest)
+            super
+            self.a = :a
           end
-
-          b = Class.new(a) do
-            attr_volatile_with_cas :b
-
-            def initialize
-              super
-              self.b = :b
-            end
-          end
-
-          instance = b.new
-          expect(instance.a).to be == :a
-          expect(instance.b).to be == :b
         end
+
+        b = Class.new(a) do
+          attr_volatile_with_cas :b
+
+          def initialize
+            super
+            self.b = :b
+          end
+        end
+
+        instance = b.new
+        expect(instance.a).to be == :a
+        expect(instance.b).to be == :b
       end
     end
+
   end
 end
