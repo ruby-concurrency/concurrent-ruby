@@ -299,6 +299,7 @@ module Concurrent
     #
     # @!visibility private
     class AsyncDelegator < Synchronization::LockableObject
+      safe_initialization!
 
       # Create a new delegator object wrapping the given delegate.
       #
@@ -308,7 +309,6 @@ module Concurrent
         @delegate = delegate
         @queue = []
         @executor = Concurrent.global_io_executor
-        ensure_ivar_visibility!
       end
 
       # Delegates method calls to the wrapped object.
