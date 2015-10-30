@@ -6,7 +6,6 @@ module Concurrent
       class Abstract
         include TypeCheck
         include InternalDelegations
-        include Concern::Logging
 
         attr_reader :core, :subsequent
 
@@ -42,7 +41,7 @@ module Concurrent
         def reject_envelope(envelope)
           envelope.reject! ActorTerminated.new(reference)
           dead_letter_routing << envelope unless envelope.future
-          log DEBUG, "rejected #{envelope.message} from #{envelope.sender_path}"
+          log(DEBUG) { "rejected #{envelope.message} from #{envelope.sender_path}"}
         end
       end
     end
