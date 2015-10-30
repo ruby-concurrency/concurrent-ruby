@@ -3,7 +3,6 @@
 $:.push File.join(File.dirname(__FILE__), 'lib')
 
 require 'concurrent/version'
-require 'concurrent/synchronization'
 require 'concurrent/utility/native_extension_loader'
 
 ## load the gemspec files

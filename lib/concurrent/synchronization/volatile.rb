@@ -25,10 +25,9 @@ module Concurrent
       MriAttrVolatile
     when Concurrent.on_jruby?
       JRubyAttrVolatile
-    when Concurrent.on_rbx?
+    when Concurrent.on_rbx? || Concurrent.on_truffle?
       RbxAttrVolatile
     else
-      warn 'Possibly unsupported Ruby implementation'
       MriAttrVolatile
     end
   end
