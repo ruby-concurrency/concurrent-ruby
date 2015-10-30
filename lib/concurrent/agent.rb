@@ -166,6 +166,7 @@ module Concurrent
     class Error < StandardError
       def initialize(message = nil)
         message ||= 'agent must be restarted before jobs can post'
+        super(message)
       end
     end
 
@@ -174,6 +175,7 @@ module Concurrent
     class ValidationError < Error
       def initialize(message = nil)
         message ||= 'invalid value'
+        super(message)
       end
     end
 
@@ -545,7 +547,9 @@ module Concurrent
       new_value     = job.action.call(old_value, *job.args)
       @caller.value = nil
 
-      if new_value != AWAIT_FLAG && ns_validate(new_value)
+      return if new_value == AWAIT_FLAG
+
+      if ns_validate(new_value)
         @current.value = new_value
         observers.notify_observers(Time.now, old_value, new_value)
       else

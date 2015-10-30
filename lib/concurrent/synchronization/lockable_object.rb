@@ -8,7 +8,7 @@ module Concurrent
                                      MriMonitorLockableObject
                                    when Concurrent.on_cruby? && Concurrent.ruby_version(:>, 1, 9, 3)
                                      MriMutexLockableObject
-                                   when Concurrent.on_jruby?
+                                   when defined? JRubyLockableObject
                                      JRubyLockableObject
                                    when Concurrent.on_rbx? || Concurrent.on_truffle?
                                      RbxLockableObject

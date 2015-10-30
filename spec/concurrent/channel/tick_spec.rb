@@ -26,6 +26,10 @@ module Concurrent
         expect(subject.utc.to_f).to eq subject.epoch
       end
 
+      specify do
+        expect(subject.to_s).to match /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} \+\d{4} UTC/
+      end
+
       context 'comparison' do
 
         it 'correctly compares to a Numeric (monotonic)' do

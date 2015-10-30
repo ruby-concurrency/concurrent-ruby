@@ -1,7 +1,7 @@
 module Concurrent
   module Synchronization
 
-    if Concurrent.on_jruby?
+    if Concurrent.on_jruby? && Concurrent.java_extensions_loaded?
 
       module JRubyAttrVolatile
         def self.included(base)

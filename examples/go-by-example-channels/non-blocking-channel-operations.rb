@@ -5,7 +5,7 @@ require 'concurrent-edge'
 Channel = Concurrent::Channel
 
 ## Go by Example: Non-Blocking Channel Operations
-# https://gobyexample.com/non-blocking-channel-operations 
+# https://gobyexample.com/non-blocking-channel-operations
 
 messages = Channel.new # unbuffered
 signals = Channel.new # unbuffered
@@ -27,8 +27,7 @@ Channel.select do |s|
   s.default { print "no activity\n" }
 end
 
-expected = <<-STDOUT
+__END__
 no message received
 no message sent
 no activity
-STDOUT

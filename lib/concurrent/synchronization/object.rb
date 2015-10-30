@@ -6,7 +6,7 @@ module Concurrent
     ObjectImplementation = case
                            when Concurrent.on_cruby?
                              MriObject
-                           when Concurrent.on_jruby?
+                           when defined? JRubyObject
                              JRubyObject
                            when Concurrent.on_rbx? || Concurrent.on_truffle?
                              RbxObject

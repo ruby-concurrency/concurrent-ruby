@@ -5,7 +5,7 @@ require 'concurrent-edge'
 Channel = Concurrent::Channel
 
 ## Go by Example: Unbuffered Channel
-# https://gobyexample.com/channels 
+# https://gobyexample.com/channels
 
 messages = Channel.new # unbuffered
 
@@ -16,6 +16,5 @@ end
 msg = messages.take
 puts msg
 
-expected = <<-STDOUT
+__END__
 ping
-STDOUT

@@ -15,8 +15,8 @@ def worker(id, jobs, results)
   end
 end
 
-jobs    = Channel.new(buffer: :buffered, size: 100)
-results = Channel.new(buffer: :buffered, size: 100)
+jobs    = Channel.new(buffer: :buffered, capacity: 100)
+results = Channel.new(buffer: :buffered, capacity: 100)
 
 (1..3).each do |w|
   Channel.go { worker(w, jobs, results) }
@@ -31,7 +31,7 @@ jobs.close
   ~results
 end
 
-expected = <<-STDOUT
+__END__
 worker 1 processing job 1
 worker 2 processing job 2
 worker 3 processing job 3
@@ -41,4 +41,3 @@ worker 3 processing job 6
 worker 1 processing job 7
 worker 2 processing job 8
 worker 3 processing job 9
-STDOUT

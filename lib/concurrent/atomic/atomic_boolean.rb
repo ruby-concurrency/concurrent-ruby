@@ -79,7 +79,7 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   AtomicBooleanImplementation = case
-                                when Concurrent.on_jruby?
+                                when defined?(JavaAtomicBoolean)
                                   JavaAtomicBoolean
                                 when defined?(CAtomicBoolean)
                                   CAtomicBoolean

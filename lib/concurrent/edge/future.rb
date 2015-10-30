@@ -134,6 +134,7 @@ module Concurrent
       private *attr_volatile_with_cas(:internal_state)
       public :internal_state
       include Concern::Deprecation
+      include Concern::Logging
 
       # @!visibility private
       class State
@@ -882,6 +883,7 @@ module Concurrent
     # @!visibility private
     class AbstractPromise < Synchronization::Object
       safe_initialization!
+      include Concern::Logging
 
       def initialize(future)
         super()
@@ -922,7 +924,10 @@ module Concurrent
       # @return [Future]
       def evaluate_to(*args, block)
         complete_with Future::Success.new(block.call(*args))
-      rescue => error
+      rescue StandardError => error
+        complete_with Future::Failed.new(error)
+      rescue Exception => error
+        log(ERROR, 'Edge::Future', error)
         complete_with Future::Failed.new(error)
       end
     end
@@ -1138,17 +1143,24 @@ module Concurrent
 
       def process_on_done(future)
         countdown = super(future)
-        value     = future.value!
         if countdown.nonzero?
+          internal_state = future.internal_state
+
+          unless internal_state.success?
+            complete_with internal_state
+            return countdown
+          end
+
+          value = internal_state.value
           case value
           when Future
             @BlockedBy.push value
             value.add_callback :pr_callback_notify_blocked, self
             @Countdown.value
           when Event
-            raise TypeError, 'cannot flatten to Event'
+            evaluate_to(lambda { raise TypeError, 'cannot flatten to Event' })
           else
-            raise TypeError, "returned value #{value.inspect} is not a Future"
+            evaluate_to(lambda { raise TypeError, "returned value #{value.inspect} is not a Future" })
           end
         end
         countdown
@@ -1170,6 +1182,10 @@ module Concurrent
       def clear_blocked_by!
         @BlockedBy.clear
         nil
+      end
+
+      def completable?(countdown)
+        !@Future.internal_state.completed? && super(countdown)
       end
     end
 

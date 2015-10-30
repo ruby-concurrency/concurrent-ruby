@@ -23,7 +23,7 @@ module Concurrent
 
       EMPTY = Empty[nil, nil]
 
-      private *attr_volatile_with_cas(:head)
+      private(*attr_volatile_with_cas(:head))
 
       def initialize
         super()

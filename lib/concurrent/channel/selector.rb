@@ -54,6 +54,7 @@ module Concurrent
       end
 
       def execute
+        raise Channel::Error.new('no clauses given') if @clauses.empty?
         loop do
           done = @clauses.each do |clause|
             result = clause.execute
@@ -63,7 +64,11 @@ module Concurrent
           Thread.pass
         end
       rescue => ex
-        @error_handler.call(ex) if @error_handler
+        if @error_handler
+          @error_handler.call(ex)
+        else
+          raise ex
+        end
       end
     end
   end

@@ -30,7 +30,7 @@ end
 
 fibonacci(c, quit)
 
-expected = <<-STDOUT
+__END__
 0
 1
 1
@@ -42,4 +42,3 @@ expected = <<-STDOUT
 21
 34
 quit
-STDOUT

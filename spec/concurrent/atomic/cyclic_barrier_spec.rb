@@ -56,7 +56,7 @@ module Concurrent
     end
 
     describe 'reset' do
-      it 'should release all waiting threads' do
+      it 'should release all waiting threads', buggy: true do
         start_latch = CountDownLatch.new(1)
         continue_latch = CountDownLatch.new(1)
 

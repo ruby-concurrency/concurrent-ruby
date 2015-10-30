@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/channel/buffer/base'
 
 module Concurrent
@@ -9,33 +10,6 @@ module Concurrent
       # the buffer is at capacity, subsequent calls to {#put} will block until
       # an item is removed from the buffer, creating spare capacity.
       class Buffered < Base
-
-        # @!macro channel_buffer_initialize
-        #
-        # @param [Integer] size the maximum capacity of the buffer; must be
-        #   greater than zero.
-        # @raise [ArgumentError] when the size is zero (0) or less.
-        def initialize(size)
-          raise ArgumentError.new('size must be greater than 0') if size.to_i <= 0
-          super()
-          synchronize do
-            @size = size.to_i
-            @buffer = []
-          end
-        end
-
-        # @!macro channel_buffer_empty_question
-        def empty?
-          synchronize { ns_empty? }
-        end
-
-        # @!macro channel_buffer_full_question
-        #
-        # Will return `true` once the number of items in the buffer reaches
-        # the {#size} value specified during initialization.
-        def full?
-          synchronize { ns_full? }
-        end
 
         # @!macro channel_buffer_put
         #
@@ -83,11 +57,10 @@ module Concurrent
           loop do
             synchronize do
               if ns_closed? && ns_empty?
-                return NO_VALUE, false
+                return Concurrent::NULL, false
               elsif !ns_empty?
-                item = @buffer.shift
-                more = !ns_empty? || !ns_closed?
-                return item, more
+                item = buffer.shift
+                return item, true
               end
             end
             Thread.pass
@@ -98,28 +71,44 @@ module Concurrent
         def poll
           synchronize do
             if ns_empty?
-              NO_VALUE
+              Concurrent::NULL
             else
-              @buffer.shift
+              buffer.shift
             end
           end
         end
 
         private
 
+        # @!macro channel_buffer_initialize
+        #
+        # @param [Integer] size the maximum capacity of the buffer; must be
+        #   greater than zero.
+        # @raise [ArgumentError] when the size is zero (0) or less.
+        def ns_initialize(size)
+          raise ArgumentError.new('size must be greater than 0') if size.to_i <= 0
+          self.capacity = size.to_i
+          self.buffer = []
+        end
+
+        # @!macro channel_buffer_size_reader
+        def ns_size
+          buffer.size
+        end
+
         # @!macro channel_buffer_empty_question
         def ns_empty?
-          @buffer.length == 0
+          ns_size == 0
         end
 
         # @!macro channel_buffer_full_question
         def ns_full?
-          @buffer.length == @size
+          ns_size == capacity
         end
 
         # @!macro channel_buffer_put
         def ns_put_onto_buffer(item)
-          @buffer.push(item)
+          buffer.push(item)
         end
       end
     end

@@ -1,8 +1,25 @@
 ### Upcoming Release v1.0.0 (TBD)
 
-* Shared constants now in `lib/concurrent/constants.rb`
+## Current Release v1.0.0.pre4 (08 October 2015)
 
-## Current Release v1.0.0.pre2 (19 September 2015)
+* Adopted a project Code of Conduct
+* Cleared interpreter warnings
+* Fixed bug in `ThreadPoolExecutor` task count methods
+* Fixed bug in 'LockFreeLinkedSet'
+* Improved Java extension loading
+* Handle Exception children in Edge::Future
+* Continued improvements to channel
+
+### Release v1.0.0.pre3 (29 September 2015)
+
+* Removed interpreter warnings.
+* Shared constants now in `lib/concurrent/constants.rb`
+* Refactored many tests.
+* Improved synchronization layer/memory model documentation.
+* Bug fix in Edge `Future#flat`
+* Brand new `Channel` implementation in Edge gem.
+
+### Release v1.0.0.pre2 (19 September 2015)
 
 * Simplification of `RubySingleThreadExecutor`
 * `Async` improvements

@@ -1,10 +1,7 @@
 $VERBOSE = nil # suppress our deprecation warnings
-require 'concurrent'
-require 'concurrent-edge'
 
-Concurrent.use_stdlib_logger Logger::FATAL
-
-unless Concurrent.on_jruby_9000?
+# wwe can't use our helpers here because we need to load the gem _after_ simplecov
+unless RUBY_ENGINE == 'jruby' && 0 == (JRUBY_VERSION =~ /^9\.0\.0\.0/)
   if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
     require 'simplecov'
     require 'coveralls'
@@ -21,17 +18,16 @@ unless Concurrent.on_jruby_9000?
     SimpleCov.start do
       project_name 'concurrent-ruby'
       add_filter '/build-tests/'
-      add_filter '/coverage/'
-      add_filter '/doc/'
       add_filter '/examples/'
-      add_filter '/pkg/'
       add_filter '/spec/'
-      add_filter '/tasks/'
-      add_filter '/yard-template/'
-      add_filter '/yardoc/'
     end
   end
 end
+
+require 'concurrent'
+require 'concurrent-edge'
+
+Concurrent.use_stdlib_logger Logger::FATAL
 
 # import all the support files
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require File.expand_path(f) }

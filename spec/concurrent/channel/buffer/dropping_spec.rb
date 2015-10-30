@@ -4,10 +4,13 @@ module Concurrent::Channel::Buffer
 
   describe Dropping do
 
-    specify { expect(subject).to_not be_blocking }
-
     subject { described_class.new(10) }
+
     it_behaves_like :channel_buffered_buffer
+
+    specify do
+      expect(subject).to_not be_blocking
+    end
 
     context '#put' do
 

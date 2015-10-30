@@ -1,3 +1,4 @@
+require 'concurrent/constants'
 require 'concurrent/channel/buffer/base'
 require 'concurrent/atomic/atomic_reference'
 
@@ -15,31 +16,22 @@ module Concurrent
       # and the first blocked call will return.
       class Unbuffered < Base
 
-        # @!macro channel_buffer_initialize
-        def initialize
-          super
+        # @!macro channel_buffer_size_reader
+        def size
           synchronize do
-            # one will always be empty
-            @putting = []
-            @taking = []
-            @closed = false
+            putting.empty? ? 0 : 1
           end
         end
 
-        # @!macro channel_buffer_size_reader
-        # 
-        # Always returns zero (0).
-        def size() 0; end
-
         # @!macro channel_buffer_empty_question
-        #
-        # Always returns `true`.
-        def empty?() true; end
+        def empty?
+          size == 0
+        end
 
         # @!macro channel_buffer_full_question
-        #
-        # Always returns `false`.
-        def full?() false; end
+        def full?
+          !empty?
+        end
 
         # @!macro channel_buffer_put
         #
@@ -54,11 +46,11 @@ module Concurrent
             return false if ns_closed?
 
             ref = Concurrent::AtomicReference.new(item)
-            if @taking.empty?
-              @putting.push(ref)
+            if taking.empty?
+              putting.push(ref)
             else
-              taking = @taking.shift
-              taking.value = item
+              taken = taking.shift
+              taken.value = item
               ref.value = nil
             end
             ref
@@ -78,10 +70,10 @@ module Concurrent
         # buffer is closed, this method will return `false` immediately.
         def offer(item)
           synchronize do
-            return false if ns_closed? || @taking.empty?
+            return false if ns_closed? || taking.empty?
 
-            taking = @taking.shift
-            taking.value = item
+            taken = taking.shift
+            taken.value = item
             true
           end
         end
@@ -96,15 +88,15 @@ module Concurrent
         # and this method will return.
         def take
           mine = synchronize do
-            return NO_VALUE if ns_closed? && @putting.empty?
+            return Concurrent::NULL if ns_closed? && putting.empty?
 
             ref = Concurrent::AtomicReference.new(nil)
-            if @putting.empty?
-              @taking.push(ref)
+            if putting.empty?
+              taking.push(ref)
             else
-              putting = @putting.shift
-              ref.value = putting.value
-              putting.value = nil
+              put = putting.shift
+              ref.value = put.value
+              put.value = nil
             end
             ref
           end
@@ -121,14 +113,14 @@ module Concurrent
         # waiting to {#put} items onto the buffer. When there is a thread
         # waiting to put an item this method will take the item and return
         # it immediately. When there are no threads waiting to put or the
-        # buffer is closed, this method will return `NO_VALUE` immediately.
+        # buffer is closed, this method will return `Concurrent::NULL` immediately.
         def poll
           synchronize do
-            return NO_VALUE if @putting.empty?
+            return Concurrent::NULL if putting.empty?
 
-            putting = @putting.shift
-            value = putting.value
-            putting.value = nil
+            put = putting.shift
+            value = put.value
+            put.value = nil
             value
           end
         end
@@ -142,8 +134,23 @@ module Concurrent
         # @see {#take}
         def next
           item = take
-          more = synchronize { !@putting.empty? }
+          more = (item != Concurrent::NULL)
           return item, more
+        end
+
+        private
+
+        def putting() @putting; end
+
+        def taking() @taking; end
+
+        # @!macro channel_buffer_initialize
+        def ns_initialize
+          # one will always be empty
+          @putting = []
+          @taking = []
+          self.closed = false
+          self.capacity = 1
         end
       end
     end

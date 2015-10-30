@@ -8,9 +8,11 @@ module Concurrent
 
   # {include:file:doc/channel.md}
   class Channel
+    extend Forwardable
     include Enumerable
 
-    GOROUTINES = Concurrent::CachedThreadPool.new
+    # NOTE: Move to global IO pool once stable
+    GOROUTINES = Concurrent::CachedThreadPool.new(auto_terminate: true)
     private_constant :GOROUTINES
 
     BUFFER_TYPES = {
@@ -32,38 +34,40 @@ module Concurrent
       end
     end
 
+    def_delegators :buffer,
+      :size, :capacity, :close, :closed?,
+      :blocking?, :empty?, :full?
+
+    alias_method :length, :size
+    alias_method :stop, :close
+
     def initialize(opts = {})
       # undocumented -- for internal use only
       if opts.is_a? Buffer::Base
-        @buffer = opts
+        self.buffer = opts
         return
       end
 
-      size = opts[:size]
+      capacity = opts[:capacity] || opts[:size]
       buffer = opts[:buffer]
 
-      if size && buffer == :unbuffered
-        raise ArgumentError.new('unbuffered channels cannot have a size')
-      elsif size.nil? && buffer.nil?
-        @buffer = BUFFER_TYPES[:unbuffered].new
-      elsif size == 0 && buffer == :buffered
-        @buffer = BUFFER_TYPES[:unbuffered].new
+      if capacity && buffer == :unbuffered
+        raise ArgumentError.new('unbuffered channels cannot have a capacity')
+      elsif capacity.nil? && buffer.nil?
+        self.buffer = BUFFER_TYPES[:unbuffered].new
+      elsif capacity == 0 && buffer == :buffered
+        self.buffer = BUFFER_TYPES[:unbuffered].new
       elsif buffer == :unbuffered
-        @buffer = BUFFER_TYPES[:unbuffered].new
-      elsif size.nil? || size < 1
-        raise ArgumentError.new('size must be at least 1 for this buffer type')
+        self.buffer = BUFFER_TYPES[:unbuffered].new
+      elsif capacity.nil? || capacity < 1
+        raise ArgumentError.new('capacity must be at least 1 for this buffer type')
       else
         buffer ||= :buffered
-        @buffer = BUFFER_TYPES[buffer].new(size)
+        self.buffer = BUFFER_TYPES[buffer].new(capacity)
       end
 
-      @validator = opts.fetch(:validator, DEFAULT_VALIDATOR)
+      self.validator = opts.fetch(:validator, DEFAULT_VALIDATOR)
     end
-
-    def size
-      @buffer.size
-    end
-    alias_method :capacity, :size
 
     def put(item)
       return false unless validate(item, false, false)
@@ -112,48 +116,52 @@ module Concurrent
     end
 
     def take
-      item, _ = self.next
-      item
+      item = do_take
+      item == Concurrent::NULL ? nil : item
     end
     alias_method :receive, :take
     alias_method :~, :take
 
     def take!
-      item, _ = do_next
-      raise Error if item == Buffer::NO_VALUE
+      item = do_take
+      raise Error if item == Concurrent::NULL
       item
     end
 
     def take?
-      item, _ = self.next?
+      item = do_take
+      item = if item == Concurrent::NULL
+               Concurrent::Maybe.nothing
+             else
+               Concurrent::Maybe.just(item)
+             end
       item
     end
 
+    # @example
     #
-    #   @example
+    #   jobs = Channel.new
     #
-    #     jobs = Channel.new
-    #
-    #     Channel.go do
-    #       loop do
-    #         j, more = jobs.next
-    #         if more
-    #           print "received job #{j}\n"
-    #         else
-    #           print "received all jobs\n"
-    #           break
-    #         end
+    #   Channel.go do
+    #     loop do
+    #       j, more = jobs.next
+    #       if more
+    #         print "received job #{j}\n"
+    #       else
+    #         print "received all jobs\n"
+    #         break
     #       end
     #     end
+    #   end
     def next
       item, more = do_next
-      item = nil if item == Buffer::NO_VALUE
+      item = nil if item == Concurrent::NULL
       return item, more
     end
 
     def next?
       item, more = do_next
-      item = if item == Buffer::NO_VALUE
+      item = if item == Concurrent::NULL
                Concurrent::Maybe.nothing
              else
                Concurrent::Maybe.just(item)
@@ -162,17 +170,17 @@ module Concurrent
     end
 
     def poll
-      (item = do_poll) == Buffer::NO_VALUE ? nil : item
+      (item = do_poll) == Concurrent::NULL ? nil : item
     end
 
     def poll!
       item = do_poll
-      raise Error if item == Buffer::NO_VALUE
+      raise Error if item == Concurrent::NULL
       item
     end
 
     def poll?
-      if (item = do_poll) == Buffer::NO_VALUE
+      if (item = do_poll) == Concurrent::NULL
         Concurrent::Maybe.nothing
       else
         Concurrent::Maybe.just(item)
@@ -183,18 +191,13 @@ module Concurrent
       raise ArgumentError.new('no block given') unless block_given?
       loop do
         item, more = do_next
-        if item != Buffer::NO_VALUE
+        if item != Concurrent::NULL
           yield(item)
         elsif !more
           break
         end
       end
     end
-
-    def close
-      @buffer.close
-    end
-    alias_method :stop, :close
 
     class << self
       def timer(seconds)
@@ -240,10 +243,26 @@ module Concurrent
 
     private
 
+    def validator
+      @validator
+    end
+
+    def validator=(value)
+      @validator = value
+    end
+
+    def buffer
+      @buffer
+    end
+
+    def buffer=(value)
+      @buffer = value
+    end
+
     def validate(value, allow_nil, raise_error)
       if !allow_nil && value.nil?
         raise_error ? raise(ValidationError.new('nil is not a valid value')) : false
-      elsif !@validator.call(value)
+      elsif !validator.call(value)
         raise_error ? raise(ValidationError) : false
       else
         true
@@ -254,19 +273,23 @@ module Concurrent
     end
 
     def do_put(item)
-      @buffer.put(item)
+      buffer.put(item)
     end
 
     def do_offer(item)
-      @buffer.offer(item)
+      buffer.offer(item)
+    end
+
+    def do_take
+      buffer.take
     end
 
     def do_next
-      @buffer.next
+      buffer.next
     end
 
     def do_poll
-      @buffer.poll
+      buffer.poll
     end
   end
 end

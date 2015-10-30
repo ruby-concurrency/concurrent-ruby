@@ -11,7 +11,7 @@ module Concurrent
     #   @api Edge
     class AtomicMarkableReference < ::Concurrent::Synchronization::Object
 
-      private *attr_volatile_with_cas(:reference)
+      private(*attr_volatile_with_cas(:reference))
 
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)

@@ -4,22 +4,47 @@ module Concurrent::Channel::Buffer
 
   describe Buffered do
 
-    specify { expect(subject).to be_blocking }
+    let(:capacity) { 10 }
+    subject { described_class.new(capacity) }
 
-    subject { described_class.new(10) }
     it_behaves_like :channel_buffered_buffer
 
-    context '#full?' do
+    specify do
+      expect(subject).to be_blocking
+    end
 
-      it 'returns true when full' do
+    context '#full?' do
+      it 'returns true when at max capacity' do
         subject = described_class.new(1)
         subject.put(:foo)
         expect(subject).to be_full
       end
     end
 
-    context '#offer' do
+    context '#put' do
+      it 'blocks when at capacity until a thread is ready to take' do
+        subject = described_class.new(1)
+        subject.put(13)
+        bucket = Concurrent::AtomicReference.new(nil)
+        t = Thread.new do
+          subject.put(42)
+          bucket.value = 42
+        end
 
+        t.join(0.1)
+
+        before = bucket.value
+        subject.take
+        t.join(0.1)
+        after = bucket.value
+
+        expect(before).to be nil
+        expect(after).to eq 42
+        expect(t.status).to be false
+      end
+    end
+
+    context '#offer' do
       it 'returns false immediately when full' do
         subject = described_class.new(1)
         subject.put(:foo)

@@ -65,7 +65,7 @@ STDOUT
       expect(result).to eq expected
     end
 
-    specify 'default-selection.rb' do
+    specify 'default-selection.rb', notravis: true do
 expected = <<-STDOUT
     .
     .

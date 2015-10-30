@@ -78,6 +78,23 @@ module Concurrent
       end
     end
 
+    # acquires lock on the from an `MVAR`, yields the value to provided block,
+    # and release lock. A timeout can be set to limit the time spent blocked,
+    # in which case it returns `TIMEOUT` if the time is exceeded.
+    # @return [Object] the value returned by the block, or `TIMEOUT`
+    def borrow(timeout = nil)
+      @mutex.synchronize do
+        wait_for_full(timeout)
+
+        # if we timeoud out we'll still be empty
+        if unlocked_full?
+          yield @value
+        else
+          TIMEOUT
+        end
+      end
+    end
+
     # Put a value into an `MVar`, blocking if there is already a value until
     # it is empty. A timeout can be set to limit the time spent blocked, in
     # which case it returns `TIMEOUT` if the time is exceeded.

@@ -45,7 +45,7 @@ module Concurrent
 
         # @!macro channel_buffer_put
         def ns_put_onto_buffer(item)
-          @buffer.push(item) unless @buffer.size == size
+          buffer.push(item) unless buffer.size == capacity
         end
       end
     end

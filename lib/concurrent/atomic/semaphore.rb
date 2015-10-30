@@ -91,7 +91,7 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   SemaphoreImplementation = case
-                            when Concurrent.on_jruby?
+                            when defined?(JavaSemaphore)
                               JavaSemaphore
                             else
                               MutexSemaphore

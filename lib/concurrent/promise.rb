@@ -304,7 +304,7 @@ module Concurrent
     # @return [Promise] the new promise
     def then(rescuer = nil, &block)
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
-      block = Proc.new { |result| result } if block.nil?
+      block = Proc.new { |result| result } unless block_given?
       child = Promise.new(
         parent: self,
         executor: @executor,

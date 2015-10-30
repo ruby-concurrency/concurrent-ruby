@@ -49,6 +49,14 @@ MRI 1.9.3, 2.0, 2.1, 2.2, JRuby (1.9 mode), and Rubinius 2.x are supported.
 This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
 Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs will be supported.
 
+## Thread Safety
+
+*Concurrent Ruby makes the strongest thread safety guarantees of any Ruby concurrency library. We are the only library with a published [memory model](https://github.com/ruby-concurrency/concurrent-ruby/blob/master/doc/synchronization.md) which provides consistent behavior and guarantees on all three of the main Ruby interpreters (MRI/CRuby, JRuby, and Rubinius).*
+
+Every abstraction in this library is thread safe. Similarly, all are deadlock free and many are fully lock free. Specific thread safety guarantees are documented with each abstraction.
+
+It is critical to remember, however, that Ruby is a language of mutable references. *No* concurrency library for Ruby can ever prevent the user from making thread safety mistakes (such as sharing a mutable object between threads and modifying it on both threads) or from creating deadlocks through incorrect use of locks. All the library can do is provide safe abstractions which encourage safe practices. Concurrent Ruby provides more safe concurrency abstractions than any other Ruby library, many of which support the mantra of ["Do not communicate by sharing memory; instead, share memory by communicating"](https://blog.golang.org/share-memory-by-communicating). Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and immutable variable types and data structures.
+
 ## Features & Documentation
 
 We have a roadmap guiding our work toward the [v1.0.0 release](https://github.com/ruby-concurrency/concurrent-ruby/issues/257).
@@ -130,11 +138,10 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
   new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
   operations like `#wait`, `#value`. It also offers better performance.
-* New [channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
+* [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
+  Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
   Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
   inspiration from Clojure [core.async](https://clojure.github.io/core.async/).
-* Old [channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Channel.html):
-  Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
@@ -145,11 +152,10 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 *Why are these not in core?*
 
 - **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
-- **Future/Promise Framework** - API changes; partial documentation and tests; stability good.
-- **New channel** - Missing documentation; very new; stability good.
-- **Old channel** - Deprecated; missing documentation; limited features.
+- **Channel** - Brand new implementation; partial documentation and tests; stability is good.
+- **Future/Promise Framework** - API changes; partial documentation and tests; stability is good.
 - **LazyRegister** - Missing documentation and tests.
-- **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing
+- **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing.
 
 ## Usage
 
@@ -231,39 +237,6 @@ and load the appropriate C extensions.
 No gems should depend on `concurrent-ruby-ext`. Doing so will force C extensions on your users.
 The best practice is to depend on `concurrent-ruby` and let users to decide if they want C extensions.
 
-### Building
-
-All published versions of this gem (core, extension, and several platform-specific packages) are compiled,
-packaged, tested, and published using an open, [automated process](https://github.com/ruby-concurrency/rake-compiler-dev-box).
-This process can also be used to create pre-compiled binaries of the extension gem for virtually
-any platform. *Documentation is forthcoming...*
-
-```
-*MRI only*
-bundle exec rake build:native       # Build concurrent-ruby-ext-<version>-<platform>.gem into the pkg dir
-bundle exec rake compile:extension  # Compile extension
-
-*JRuby only*
-bundle exec rake build              # Build JRuby-specific core gem (alias for `build:core`)
-bundle exec rake build:core         # Build concurrent-ruby-<version>-java.gem into the pkg directory
-
-*All except JRuby*
-bundle exec rake build:core         # Build concurrent-ruby-<version>.gem into the pkg directory
-bundle exec rake build:ext          # Build concurrent-ruby-ext-<version>.gem into the pkg directory
-
-*When Docker IS installed*
-bundle exec rake build:windows      # Build the windows binary <version> gems per rake-compiler-dock
-bundle exec rake build              # Build core, extension, and edge gems, including Windows binaries
-
-*When Docker is NOT installed*
-bundle exec rake build              # Build core, extension, and edge gems (excluding Windows binaries)
-
-*All*
-bundle exec rake clean              # Remove any temporary products
-bundle exec rake clobber            # Remove any generated file
-bundle exec rake compile            # Compile all the extensions
-```
-
 ## Maintainers
 
 * [Jerry D'Antonio](https://github.com/jdantonio) (creator)
@@ -278,14 +251,6 @@ bundle exec rake compile            # Compile all the extensions
 * [Brian Durand](https://github.com/bdurand) for the `ref` gem
 * [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
 * [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
 
 ## License and Copyright
 

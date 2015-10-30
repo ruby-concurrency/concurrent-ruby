@@ -65,7 +65,6 @@ end
 puts same(new_tree(1), new_tree(1))
 puts same(new_tree(1), new_tree(2))
 
-expected = <<-STDOUT
+__END__
 true
 false
-STDOUT

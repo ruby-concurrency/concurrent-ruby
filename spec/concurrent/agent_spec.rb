@@ -800,6 +800,16 @@ module Concurrent
           expect(subject.value).to eq expected
         end
 
+        it 'does not trigger the error mode' do
+          subject = Agent.new(10)
+          subject.send{ |x| sleep(0.1); x + 1 }
+          subject.await_for(1)
+
+          expect(subject.value).to eq 11
+          expect(subject).to_not be_failed
+          expect(subject.error).to be nil
+        end
+
         it 'does not trigger observers' do
           observer_class = Class.new do
             attr_reader :count
@@ -926,7 +936,7 @@ module Concurrent
           expect(ok).to be true
         end
 
-        it 'returns true when all prior actions have processed' do
+        it 'returns true when all prior actions have processed', buggy: true do
           subject = Agent.new(0)
           subject.send_via(executor){ sleep(1) }
           5.times{ subject.send_via(executor){ nil } }
@@ -989,7 +999,7 @@ module Concurrent
           subject.send_via(executor){ sleep(1) }
           5.times{ subject.send_via(executor){ nil } }
           expect {
-            subject.await_for!(0.1) 
+            subject.await_for!(0.1)
           }.to raise_error(Concurrent::TimeoutError)
         end
 
@@ -1004,7 +1014,7 @@ module Concurrent
           t = Thread.new{ subject.restart(42, clear_actions: true) }
 
           expect {
-            subject.await_for!(0.2) 
+            subject.await_for!(0.2)
           }.to raise_error(Concurrent::TimeoutError)
         end
       end

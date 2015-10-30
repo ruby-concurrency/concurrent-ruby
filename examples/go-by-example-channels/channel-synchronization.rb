@@ -15,12 +15,11 @@ def worker(done_channel)
   done_channel << true # alias for `#put`
 end
 
-done = Channel.new(size: 1) # buffered
+done = Channel.new(capacity: 1) # buffered
 Channel.go{ worker(done) }
 
 ~done # alias for `#take`
 
-expected = <<-STDOUT
+__END__
 working...
 done
-STDOUT
