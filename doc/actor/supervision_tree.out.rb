@@ -11,7 +11,7 @@ class Master < Concurrent::Actor::RestartingContext
     when :listener
       @listener
     when :reset, :terminated, :resumed, :paused
-      log Logger::DEBUG, " got #{msg} from #{envelope.sender}"
+      log(DEBUG) { " got #{msg} from #{envelope.sender}"}
     else
       pass
     end
@@ -48,22 +48,22 @@ class Listener < Concurrent::Actor::RestartingContext
 end 
 
 master   = Master.spawn(name: 'master', supervise: true)
-    # => #<Concurrent::Actor::Reference:0x7fb6fca9caa8 /master (Master)>
+    # => #<Concurrent::Actor::Reference:0x7ff3aa0d1380 /master (Master)>
 listener = master.ask!(:listener)
-    # => #<Concurrent::Actor::Reference:0x7fb6fcabd9b0 /master/listener1 (Listener)>
-listener.ask!(:number)                             # => 53
+    # => #<Concurrent::Actor::Reference:0x7ff3aa8776e8 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 73
 
 master << :crash
-    # => #<Concurrent::Actor::Reference:0x7fb6fca9caa8 /master (Master)>
+    # => #<Concurrent::Actor::Reference:0x7ff3aa0d1380 /master (Master)>
 
-sleep 0.1                                          # => 0
+sleep 0.1                                          # => 1
 
 # ask for listener again, old one is terminated
 listener.ask!(:terminated?)                        # => true
 listener = master.ask!(:listener)
-    # => #<Concurrent::Actor::Reference:0x7fb6fcb04ef0 /master/listener1 (Listener)>
-listener.ask!(:number)                             # => 71
+    # => #<Concurrent::Actor::Reference:0x7ff3ab147110 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 48
 
-master.ask!(:terminate!)                           # => true
+master.ask!(:terminate!)                           # => [true, true]
 
 sleep 0.1                                          # => 0

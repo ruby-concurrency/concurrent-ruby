@@ -1,4 +1,4 @@
-require 'algebrick'                                # => false
+require 'algebrick'                                # => true
 
 # Actor message protocol definition with Algebrick
 Protocol = Algebrick.type do
@@ -24,13 +24,13 @@ class Calculator < Concurrent::Actor::RestartingContext
 end 
 
 calculator = Calculator.spawn('calculator')
-    # => #<Concurrent::Actor::Reference:0x7fb6fc915ec8 /calculator (Calculator)>
+    # => #<Concurrent::Actor::Reference:0x7ff3ab0c4f80 /calculator (Calculator)>
 addition = calculator.ask Add[1, 2]
-    # => <#Concurrent::Edge::Future:0x7fb6fc937190 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7ff3ab08e188 pending blocks:[]>
 substraction = calculator.ask Subtract[1, 0.5]
-    # => <#Concurrent::Edge::Future:0x7fb6fc935598 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7ff3ab9de940 pending blocks:[]>
 results = (addition & substraction)
-    # => <#Concurrent::Edge::ArrayFuture:0x7fb6fc967ea8 pending blocks:[]>
+    # => <#Concurrent::Edge::Future:0x7ff3aa0b1b48 pending blocks:[]>
 results.value!                                     # => [3, 0.5]
 
 calculator.ask! :terminate!                        # => true
