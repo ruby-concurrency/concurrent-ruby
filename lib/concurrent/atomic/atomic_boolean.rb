@@ -1,5 +1,5 @@
 require 'concurrent/atomic/mutex_atomic_boolean'
-require 'concurrent/utility/native_extension_loader'
+require 'concurrent/synchronization'
 
 module Concurrent
 

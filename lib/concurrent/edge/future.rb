@@ -131,6 +131,8 @@ module Concurrent
     # Represents an event which will happen in future (will be completed). It has to always happen.
     class Event < Synchronization::LockableObject
       safe_initialization!
+      private *attr_volatile_with_cas(:internal_state)
+      public :internal_state
       include Concern::Deprecation
       include Concern::Logging
 
@@ -181,17 +183,17 @@ module Concurrent
         # TODO (pitr 12-Sep-2015): replace with AtomicFixnum, avoid aba problem
         # TODO (pitr 12-Sep-2015): look at java.util.concurrent solution
         @Waiters         = LockFreeStack.new
-        @State           = AtomicReference.new PENDING
+        self.internal_state = PENDING
       end
 
       # @return [:pending, :completed]
       def state
-        @State.get.to_sym
+        internal_state.to_sym
       end
 
       # Is Event/Future pending?
       # @return [Boolean]
-      def pending?(state = @State.get)
+      def pending?(state = internal_state)
         !state.completed?
       end
 
@@ -203,7 +205,7 @@ module Concurrent
 
       # Has the Event been completed?
       # @return [Boolean]
-      def completed?(state = @State.get)
+      def completed?(state = internal_state)
         state.completed?
       end
 
@@ -314,7 +316,7 @@ module Concurrent
 
       # @!visibility private
       def complete_with(state, raise_on_reassign = true)
-        if @State.compare_and_set(PENDING, state)
+        if compare_and_set_internal_state(PENDING, state)
           #(state)
           # go to synchronized block only if there were waiting threads
           synchronize { ns_broadcast } if @Waiters.clear
@@ -368,11 +370,6 @@ module Concurrent
       # only for debugging inspection
       def waiting_threads
         @Waiters.each.to_a
-      end
-
-      # @!visibility private
-      def internal_state
-        @State.get
       end
 
       private
@@ -537,7 +534,7 @@ module Concurrent
 
       # Has Future been success?
       # @return [Boolean]
-      def success?(state = @State.get)
+      def success?(state = internal_state)
         state.completed? && state.success?
       end
 
@@ -548,7 +545,7 @@ module Concurrent
 
       # Has Future been failed?
       # @return [Boolean]
-      def failed?(state = @State.get)
+      def failed?(state = internal_state)
         state.completed? && !state.success?
       end
 
@@ -564,7 +561,7 @@ module Concurrent
       # @!macro edge.periodical_wait
       def value(timeout = nil)
         touch
-        @State.get.value if wait_until_complete timeout
+        internal_state.value if wait_until_complete timeout
       end
 
       # @return [Exception, nil] the reason of the Future's failure
@@ -572,7 +569,7 @@ module Concurrent
       # @!macro edge.periodical_wait
       def reason(timeout = nil)
         touch
-        @State.get.reason if wait_until_complete timeout
+        internal_state.reason if wait_until_complete timeout
       end
 
       # @return [Array(Boolean, Object, Exception), nil] triplet of success, value, reason
@@ -580,7 +577,7 @@ module Concurrent
       # @!macro edge.periodical_wait
       def result(timeout = nil)
         touch
-        @State.get.result if wait_until_complete timeout
+        internal_state.result if wait_until_complete timeout
       end
 
       # Wait until Future is #complete?
@@ -602,14 +599,14 @@ module Concurrent
       # @!macro edge.periodical_wait
       def value!(timeout = nil)
         touch
-        @State.get.value if wait_until_complete! timeout
+        internal_state.value if wait_until_complete! timeout
       end
 
       # @example allows failed Future to be risen
       #   raise Concurrent.future.fail
       def exception(*args)
         raise 'obligation is not failed' unless failed?
-        reason = @State.get.reason
+        reason = internal_state.reason
         if reason.is_a?(::Array)
           reason.each { |e| log ERROR, 'Edge::Future', e }
           Concurrent::Error.new 'multiple exceptions, inspect log'
@@ -728,7 +725,7 @@ module Concurrent
 
       # @!visibility private
       def complete_with(state, raise_on_reassign = true)
-        if @State.compare_and_set(PENDING, state)
+        if compare_and_set_internal_state(PENDING, state)
           @Waiters.clear
           synchronize { ns_broadcast }
           call_callbacks state
@@ -746,12 +743,12 @@ module Concurrent
 
       # @!visibility private
       def add_callback(method, *args)
-        state = @State.get
+        state = internal_state
         if completed?(state)
           call_callback method, state, *args
         else
           @Callbacks.push [method, *args]
-          state = @State.get
+          state = internal_state
           # take back if it was completed in the meanwhile
           call_callbacks state if completed?(state)
         end
@@ -760,7 +757,7 @@ module Concurrent
 
       # @!visibility private
       def apply(block)
-        @State.get.apply block
+        internal_state.apply block
       end
 
       private

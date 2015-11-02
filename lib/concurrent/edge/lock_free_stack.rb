@@ -26,7 +26,8 @@ module Concurrent
       private(*attr_volatile_with_cas(:head))
 
       def initialize
-        super(EMPTY)
+        super()
+        self.head = EMPTY
       end
 
       def empty?

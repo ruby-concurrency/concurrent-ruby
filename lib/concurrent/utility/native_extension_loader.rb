@@ -1,7 +1,7 @@
-require 'concurrent/synchronization/abstract_object' # must be loaded before JRuby extensions
 require 'concurrent/utility/engine'
 
 module Concurrent
+
   module Utility
 
     # @!visibility private
@@ -28,6 +28,10 @@ module Concurrent
       end
 
       def load_native_extensions
+        unless defined? Synchronization::AbstractObject
+          raise 'native_extension_loader loaded before Synchronization::AbstractObject'
+        end
+
         if Concurrent.on_cruby? && !c_extensions_loaded?
           tries = [
             lambda do
@@ -56,7 +60,7 @@ module Concurrent
             set_java_extensions_loaded
           rescue LoadError
             # move on with pure-Ruby implementations
-            warn 'On JRuby but Java extensions failed to load.'
+            raise 'On JRuby but Java extensions failed to load.'
           end
         end
       end
@@ -67,4 +71,3 @@ module Concurrent
   extend Utility::NativeExtensionLoader
 end
 
-Concurrent.load_native_extensions

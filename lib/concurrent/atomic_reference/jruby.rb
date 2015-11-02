@@ -1,4 +1,4 @@
-require 'concurrent/utility/native_extension_loader'
+require 'concurrent/synchronization'
 
 if defined?(Concurrent::JavaAtomicReference)
   require 'concurrent/atomic_reference/direct_update'

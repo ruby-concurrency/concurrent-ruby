@@ -1,8 +1,8 @@
 module Concurrent
   module Synchronization
 
-    # @!macro synchronization_object
     # @!visibility private
+    # @!macro internal_implementation_note
     class AbstractObject
 
       # @abstract has to be implemented based on Ruby runtime
@@ -38,10 +38,6 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # @!macro [attach] synchronization_object_method_self_attr_volatile
-      #
-      #   creates methods for reading and writing to a instance variable with volatile (Java semantic) instance variable
-      #   return [Array<Symbol>] names of defined method names
       def self.attr_volatile(*names)
         raise NotImplementedError
       end
