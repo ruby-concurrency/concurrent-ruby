@@ -91,7 +91,7 @@ module Concurrent
       # @param [Envelope] envelope
       def on_envelope(envelope)
         schedule_execution do
-          log DEBUG, "was #{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} by #{envelope.sender}"
+          log(DEBUG) { "was #{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} by #{envelope.sender}" }
           process_envelope envelope
         end
         nil
@@ -128,7 +128,7 @@ module Concurrent
       end
 
       def broadcast(public, event)
-        log DEBUG, "event: #{event.inspect} (#{public ? 'public' : 'private'})"
+        log(DEBUG) { "event: #{event.inspect} (#{public ? 'public' : 'private'})" }
         @first_behaviour.on_event(public, event)
       end
 

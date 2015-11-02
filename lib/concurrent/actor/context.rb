@@ -24,7 +24,6 @@ module Concurrent
     class AbstractContext
       include TypeCheck
       include InternalDelegations
-      include Concern::Logging
 
       attr_reader :core
 

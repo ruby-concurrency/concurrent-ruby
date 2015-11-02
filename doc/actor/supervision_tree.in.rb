@@ -11,7 +11,7 @@ class Master < Concurrent::Actor::RestartingContext
     when :listener
       @listener
     when :reset, :terminated, :resumed, :paused
-      log Logger::DEBUG, " got #{msg} from #{envelope.sender}"
+      log(DEBUG) { " got #{msg} from #{envelope.sender}"}
     else
       pass
     end

@@ -2,6 +2,7 @@ module Concurrent
   module Actor
     module InternalDelegations
       include PublicDelegations
+      include Logger::Severity
 
       # @see Core#children
       def children
