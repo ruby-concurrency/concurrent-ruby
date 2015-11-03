@@ -15,9 +15,9 @@ Channel.select do |s|
   s.default { print "no message received\n" }
 end
 
-msg = 'hi'
+message = 'hi'
 Channel.select do |s|
-  s.put(messages, msg) { |m| print "sent message #{m}\n" }
+  s.put(messages, message) { |msg| print "sent message #{msg}\n" }
   s.default { print "no message sent\n" }
 end
 

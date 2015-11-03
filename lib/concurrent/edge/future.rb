@@ -131,7 +131,7 @@ module Concurrent
     # Represents an event which will happen in future (will be completed). It has to always happen.
     class Event < Synchronization::LockableObject
       safe_initialization!
-      private *attr_volatile_with_cas(:internal_state)
+      private(*attr_volatile_with_cas(:internal_state))
       public :internal_state
       include Concern::Deprecation
       include Concern::Logging
