@@ -93,7 +93,7 @@ public class SynchronizationLibrary implements Library {
         // attempt to avoid code elimination.
         private static volatile ThreadContext threadContext = null;
 
-        @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PRIVATE)
+        @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PUBLIC)
         public static IRubyObject fullMemoryBarrier(ThreadContext context, IRubyObject self) {
             // Prevent reordering of ivar writes with publication of this instance
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
@@ -107,7 +107,7 @@ public class SynchronizationLibrary implements Library {
             return context.nil;
         }
 
-        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PROTECTED)
+        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PUBLIC)
         public static IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject self, IRubyObject name) {
             // Ensure we ses latest value with loadFence
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
@@ -120,7 +120,7 @@ public class SynchronizationLibrary implements Library {
             }
         }
 
-        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PROTECTED)
+        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PUBLIC)
         public static IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject self, IRubyObject name, IRubyObject value) {
             // Ensure we make last update visible
             if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {

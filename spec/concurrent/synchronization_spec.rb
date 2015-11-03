@@ -49,22 +49,22 @@ module Concurrent
       end
 
       it 'does not ensure visibility when not needed' do
-        expect_any_instance_of(AAClass).not_to receive(:ensure_ivar_visibility!)
+        expect_any_instance_of(AAClass).not_to receive(:full_memory_barrier)
         AAClass.new
       end
 
       it "does ensure visibility when specified" do
-        expect_any_instance_of(ABClass).to receive(:ensure_ivar_visibility!)
+        expect_any_instance_of(ABClass).to receive(:full_memory_barrier)
         ABClass.new
       end
 
       it "does ensure visibility when specified in a parent" do
-        expect_any_instance_of(ACClass).to receive(:ensure_ivar_visibility!)
+        expect_any_instance_of(ACClass).to receive(:full_memory_barrier)
         ACClass.new
       end
 
       it "does ensure visibility once when specified in child again" do
-        expect_any_instance_of(ADClass).to receive(:ensure_ivar_visibility!)
+        expect_any_instance_of(ADClass).to receive(:full_memory_barrier)
         ADClass.new
       end
 

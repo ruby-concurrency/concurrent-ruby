@@ -52,7 +52,7 @@ module Concurrent
         def self.new(*)
           object = super
         ensure
-          object.ensure_ivar_visibility! if object
+          object.full_memory_barrier if object
         end
 
         @safe_initialization = true
