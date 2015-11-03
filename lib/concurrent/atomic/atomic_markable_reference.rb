@@ -1,6 +1,5 @@
 module Concurrent
-  module Edge
-
+  module Atomic
     # @!macro [attach] atomic_markable_reference
     #
     #   An atomic reference which maintains an object reference along with a mark bit
@@ -144,9 +143,9 @@ module Concurrent
 
         unless compare_and_set old_val, new_val, old_mark, new_mark
           fail ::Concurrent::ConcurrentUpdateError,
-               'AtomicMarkableReference: Update failed due to race condition.',
-               'Note: If you would like to guarantee an update, please use ' \
-               'the `AtomicMarkableReference#update` method.'
+            'AtomicMarkableReference: Update failed due to race condition.',
+            'Note: If you would like to guarantee an update, please use ' \
+            'the `AtomicMarkableReference#update` method.'
         end
 
         ImmutableArray[new_val, new_mark]
