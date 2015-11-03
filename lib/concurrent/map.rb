@@ -1,7 +1,6 @@
 require 'thread'
 require 'concurrent/constants'
-require 'concurrent/utility/native_extension_loader'
-Concurrent.load_native_extensions
+require 'concurrent/synchronization'
 
 module Concurrent
   # @!visibility private
