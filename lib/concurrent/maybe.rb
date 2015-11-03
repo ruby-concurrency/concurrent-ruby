@@ -1,3 +1,5 @@
+require 'concurrent/synchronization'
+
 module Concurrent
 
   # A `Maybe` encapsulates an optional value. A `Maybe` either contains a value
@@ -99,8 +101,9 @@ module Concurrent
   #
   # @see https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html Haskell Data.Maybe
   # @see https://github.com/purescript/purescript-maybe/blob/master/docs/Data.Maybe.md PureScript Data.Maybe
-  class Maybe
+  class Maybe < Synchronization::Object
     include Comparable
+    safe_initialization!
 
     # Indicates that the given attribute has not been set.
     # When `Just` the {#nothing} getter will return `NONE`.
@@ -168,7 +171,7 @@ module Concurrent
     end
 
     # Is this `Maybe` a `Just` (successfully fulfilled with a value)?
-    # 
+    #
     # @return [Boolean] True if `Just` or false if `Nothing`.
     def just?
       ! nothing?
@@ -176,7 +179,7 @@ module Concurrent
     alias :fulfilled? :just?
 
     # Is this `Maybe` a `nothing` (rejected with an exception upon fulfillment)?
-    # 
+    #
     # @return [Boolean] True if `Nothing` or false if `Just`.
     def nothing?
       @nothing != NONE
