@@ -200,6 +200,12 @@ module Concurrent
       !empty?
     end
 
+    protected
+
+    def synchronize(&block)
+      @mutex.synchronize(&block)
+    end
+
     private
 
     def unlocked_empty?

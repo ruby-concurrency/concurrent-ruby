@@ -5,14 +5,9 @@ module Concurrent
 
       let (:obligation_class) do
 
-        Class.new do
+        Class.new(Synchronization::LockableObject) do
           include Obligation
-
-          def initialize
-            init_mutex
-          end
-
-          public :state=, :compare_and_set_state, :if_state, :mutex
+          public :state=, :compare_and_set_state, :if_state
           attr_writer :value, :reason
         end
       end
@@ -278,7 +273,8 @@ module Concurrent
         end
 
         it 'should execute the block within the mutex' do
-          obligation.if_state(:unscheduled) { expect(obligation.mutex).to be_locked }
+          expect(obligation).to receive(:synchronize)
+          obligation.if_state(:unscheduled) { nil }
         end
       end
 

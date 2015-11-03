@@ -9,6 +9,10 @@ module Concurrent
 
     module Obligation
       include Concern::Dereferenceable
+      # NOTE: The Dereferenceable module is going away in 2.0. In the mean time
+      # we need it to place nicely with the synchronization layer. This means
+      # that the including class SHOULD be synchronized and it MUST implement a
+      # `#synchronize` method. Not doing so will lead to runtime errors.
 
       # Has the obligation been fulfilled?
       #
@@ -104,7 +108,7 @@ module Concurrent
       #
       # @return [Symbol] the current state
       def state
-        mutex.synchronize { @state }
+        synchronize { @state }
       end
 
       # If an exception was raised during processing this will return the
@@ -113,7 +117,7 @@ module Concurrent
       #
       # @return [Exception] the exception raised during processing or `nil`
       def reason
-        mutex.synchronize { @reason }
+        synchronize { @reason }
       end
 
       # @example allows Obligation to be risen
@@ -132,8 +136,7 @@ module Concurrent
       end
 
       # @!visibility private
-      def init_obligation(*args)
-        init_mutex(*args)
+      def init_obligation
         @event = Event.new
       end
 
@@ -155,7 +158,7 @@ module Concurrent
 
       # @!visibility private
       def state=(value)
-        mutex.synchronize { ns_set_state(value) }
+        synchronize { ns_set_state(value) }
       end
 
       # Atomic compare and set operation
@@ -163,12 +166,12 @@ module Concurrent
       #
       # @param [Symbol] next_state
       # @param [Symbol] expected_current
-      # 
+      #
       # @return [Boolean] true is state is changed, false otherwise
       #
       # @!visibility private
       def compare_and_set_state(next_state, *expected_current)
-        mutex.synchronize do
+        synchronize do
           if expected_current.include? @state
             @state = next_state
             true
@@ -184,7 +187,7 @@ module Concurrent
       #
       # @!visibility private
       def if_state(*expected_states)
-        mutex.synchronize do
+        synchronize do
           raise ArgumentError.new('no block given') unless block_given?
 
           if expected_states.include? @state

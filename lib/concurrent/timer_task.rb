@@ -271,7 +271,6 @@ module Concurrent
     private
 
     def ns_initialize(opts, &task)
-      init_mutex(self)
       set_deref_options(opts)
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
