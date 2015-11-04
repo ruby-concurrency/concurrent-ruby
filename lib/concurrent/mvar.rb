@@ -1,4 +1,5 @@
 require 'concurrent/concern/dereferenceable'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -34,9 +35,9 @@ module Concurrent
   # 2. S. Peyton Jones, A. Gordon, and S. Finne. [Concurrent Haskell](http://dl.acm.org/citation.cfm?id=237794).
   #    In Proceedings of the 23rd Symposium on Principles of Programming Languages
   #    (PoPL), 1996.
-  class MVar
-
+  class MVar < Synchronization::Object
     include Concern::Dereferenceable
+    safe_initialization!
 
     # Unique value that represents that an `MVar` was empty
     EMPTY = Object.new
@@ -198,6 +199,12 @@ module Concurrent
     # Returns if the `MVar` currently contains a value.
     def full?
       !empty?
+    end
+
+    protected
+
+    def synchronize(&block)
+      @mutex.synchronize(&block)
     end
 
     private

@@ -155,7 +155,7 @@ module Concurrent
     protected
 
     def ns_initialize(opts, &block)
-      init_obligation(self)
+      init_obligation
       set_deref_options(opts)
       @executor = opts[:executor]
 

@@ -1,4 +1,5 @@
 require 'set'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -8,7 +9,8 @@ module Concurrent
   # @!macro thread_safe_variable_comparison
   #
   # {include:file:doc/tvar.md}
-  class TVar
+  class TVar < Synchronization::Object
+    safe_initialization!
 
     # Create a new `TVar` with an initial value.
     def initialize(value)

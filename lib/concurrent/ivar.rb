@@ -153,7 +153,7 @@ module Concurrent
     # @!visibility private
     def ns_initialize(value, opts)
       value = yield if block_given?
-      init_obligation(self)
+      init_obligation
       self.observers = Collection::CopyOnWriteObserverSet.new
       set_deref_options(opts)
 

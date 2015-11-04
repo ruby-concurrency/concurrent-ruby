@@ -1,3 +1,4 @@
+require 'concurrent/synchronization'
 require 'concurrent/utility/monotonic_time'
 
 module Concurrent
@@ -13,8 +14,9 @@ module Concurrent
     # @see Concurrent.monotonic_time
     # @see Concurrent::Channel.ticker
     # @see Concurrent::Channel.timer
-    class Tick
+    class Tick < Synchronization::Object
       include Comparable
+      safe_initialization!
 
       STRING_FORMAT = '%F %T.%6N %z %Z'.freeze
 
