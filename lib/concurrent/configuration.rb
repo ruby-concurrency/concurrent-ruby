@@ -1,5 +1,4 @@
 require 'thread'
-require 'concurrent/delay'
 require 'concurrent/errors'
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/concern/logging'
@@ -11,8 +10,31 @@ module Concurrent
   extend Concern::Logging
 
   autoload :Options,            'concurrent/options'
+  autoload :FixedThreadPool,    'concurrent/executor/fixed_thread_pool'
   autoload :TimerSet,           'concurrent/executor/timer_set'
   autoload :ThreadPoolExecutor, 'concurrent/executor/thread_pool_executor'
+
+  def self.new_fast_executor(opts = {})
+    FixedThreadPool.new(
+      [2, Concurrent.processor_count].max,
+      auto_terminate:  opts.fetch(:auto_terminate, true),
+      idletime:        60, # 1 minute
+      max_queue:       0, # unlimited
+      fallback_policy: :abort # shouldn't matter -- 0 max queue
+    )
+  end
+
+  def self.new_io_executor(opts = {})
+    ThreadPoolExecutor.new(
+      min_threads:     [2, Concurrent.processor_count].max,
+      max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
+      # max_threads:     1000,
+      auto_terminate:  opts.fetch(:auto_terminate, true),
+      idletime:        60, # 1 minute
+      max_queue:       0, # unlimited
+      fallback_policy: :abort # shouldn't matter -- 0 max queue
+    )
+  end
 
   # @return [Logger] Logger with provided level and output.
   def self.create_stdlib_logger(level = Logger::FATAL, output = $stderr)
@@ -61,15 +83,15 @@ module Concurrent
   end
 
   # @!visibility private
-  GLOBAL_FAST_EXECUTOR = Delay.new { Concurrent.new_fast_executor(auto_terminate: true) }
+  GLOBAL_FAST_EXECUTOR = Concurrent.new_fast_executor(auto_terminate: true)
   private_constant :GLOBAL_FAST_EXECUTOR
 
   # @!visibility private
-  GLOBAL_IO_EXECUTOR = Delay.new { Concurrent.new_io_executor(auto_terminate: true) }
+  GLOBAL_IO_EXECUTOR = Concurrent.new_io_executor(auto_terminate: true)
   private_constant :GLOBAL_IO_EXECUTOR
 
   # @!visibility private
-  GLOBAL_TIMER_SET = Delay.new { TimerSet.new(auto_terminate: true) }
+  GLOBAL_TIMER_SET = TimerSet.new(executor: GLOBAL_IO_EXECUTOR, auto_terminate: true)
   private_constant :GLOBAL_TIMER_SET
 
   # @!visibility private
@@ -127,27 +149,5 @@ module Concurrent
   # @return [Executor]
   def self.executor(executor_identifier)
     Options.executor(executor_identifier)
-  end
-
-  def self.new_fast_executor(opts = {})
-    FixedThreadPool.new(
-      [2, Concurrent.processor_count].max,
-      auto_terminate:  opts.fetch(:auto_terminate, true),
-      idletime:        60, # 1 minute
-      max_queue:       0, # unlimited
-      fallback_policy: :abort # shouldn't matter -- 0 max queue
-    )
-  end
-
-  def self.new_io_executor(opts = {})
-    ThreadPoolExecutor.new(
-      min_threads:     [2, Concurrent.processor_count].max,
-      max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-      # max_threads:     1000,
-      auto_terminate:  opts.fetch(:auto_terminate, true),
-      idletime:        60, # 1 minute
-      max_queue:       0, # unlimited
-      fallback_policy: :abort # shouldn't matter -- 0 max queue
-    )
   end
 end
