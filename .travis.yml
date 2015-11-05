@@ -28,6 +28,7 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
+    - rvm: rbx-2
 
 before_script:
   - "echo $JAVA_OPTS"
