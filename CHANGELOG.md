@@ -1,6 +1,16 @@
 ### Upcoming Release v1.0.0 (TBD)
 
-## Current Release v1.0.0.pre4 (08 October 2015)
+## Current Release v1.0.0.pre5 (04 November 2015)
+
+* Further updates and improvements to the synchronization layer.
+* Performance and memory usage performance with `Actor` logging.
+* Fixed `ThreadPoolExecutor` task count methods.
+* Improved `Async` performance for both short and long-lived objects.
+* Fixed bug in `LockFreeLinkedSet`.
+* Fixed bug in which `Agent#await` triggered a validation failure.
+* Further `Channel` updates.
+
+### Release v1.0.0.pre4 (08 October 2015)
 
 * Adopted a project Code of Conduct
 * Cleared interpreter warnings
