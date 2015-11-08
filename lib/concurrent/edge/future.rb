@@ -131,7 +131,7 @@ module Concurrent
     # Represents an event which will happen in future (will be completed). It has to always happen.
     class Event < Synchronization::LockableObject
       safe_initialization!
-      private(*attr_volatile_with_cas(:internal_state))
+      private(*attr_atomic(:internal_state))
       public :internal_state
       include Concern::Deprecation
       include Concern::Logging
@@ -176,13 +176,13 @@ module Concurrent
 
       def initialize(promise, default_executor)
         super()
-        @Promise         = promise
-        @DefaultExecutor = default_executor
-        @Touched         = AtomicBoolean.new(false)
-        @Callbacks       = LockFreeStack.new
+        @Promise            = promise
+        @DefaultExecutor    = default_executor
+        @Touched            = AtomicBoolean.new(false)
+        @Callbacks          = LockFreeStack.new
         # TODO (pitr 12-Sep-2015): replace with AtomicFixnum, avoid aba problem
         # TODO (pitr 12-Sep-2015): look at java.util.concurrent solution
-        @Waiters         = LockFreeStack.new
+        @Waiters            = LockFreeStack.new
         self.internal_state = PENDING
       end
 

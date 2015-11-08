@@ -196,10 +196,10 @@ module Concurrent
       it_should_behave_like :attr_volatile
     end
 
-    describe 'attr_volatile_with_cas' do
+    describe 'attr_atomic' do
       specify do
         a = Class.new(Synchronization::Object) do
-          attr_volatile_with_cas :a
+          attr_atomic :a
 
           def initialize(*rest)
             super
@@ -208,7 +208,7 @@ module Concurrent
         end
 
         b = Class.new(a) do
-          attr_volatile_with_cas :b
+          attr_atomic :b
 
           def initialize
             super

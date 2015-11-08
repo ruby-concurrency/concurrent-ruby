@@ -1,3 +1,5 @@
+require 'forwardable'
+
 require 'concurrent/channel/buffer'
 require 'concurrent/channel/selector'
 
