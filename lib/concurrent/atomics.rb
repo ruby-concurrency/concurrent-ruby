@@ -1,6 +1,7 @@
 # @!macro [new] atomic_reference
 #
-#   An object reference that may be updated atomically.
+#   An object reference that may be updated atomically. All read and write
+#   operations have java volatile semantic.
 #
 #   @!macro thread_safe_variable_comparison
 #

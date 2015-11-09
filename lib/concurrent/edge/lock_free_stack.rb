@@ -23,7 +23,7 @@ module Concurrent
 
       EMPTY = Empty[nil, nil]
 
-      private(*attr_volatile_with_cas(:head))
+      private(*attr_atomic(:head))
 
       def initialize
         super()
@@ -64,6 +64,18 @@ module Concurrent
         compare_and_set_head head, EMPTY
       end
 
+      include Enumerable
+
+      def each(head = nil)
+        return to_enum(:each, head) unless block_given?
+        it = head || peek
+        until it.equal?(EMPTY)
+          yield it.value
+          it = it.next_node
+        end
+        self
+      end
+
       def clear
         while true
           current_head = head
@@ -72,16 +84,15 @@ module Concurrent
         end
       end
 
-      include Enumerable
-
-      def each
-        return to_enum unless block_given?
-        it = peek
-        until it.equal?(EMPTY)
-          yield it.value
-          it = it.next_node
+      def clear_each(&block)
+        while true
+          current_head = head
+          return self if current_head == EMPTY
+          if compare_and_set_head current_head, EMPTY
+            each current_head, &block
+            return self
+          end
         end
-        self
       end
 
     end

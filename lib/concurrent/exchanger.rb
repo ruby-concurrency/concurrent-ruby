@@ -143,7 +143,7 @@ module Concurrent
     safe_initialization!
 
     class Node < Concurrent::Synchronization::Object
-      attr_volatile_with_cas :value
+      attr_atomic :value
       safe_initialization!
 
       def initialize(item)
@@ -170,7 +170,7 @@ module Concurrent
 
     private
 
-    attr_volatile_with_cas(:slot)
+    attr_atomic(:slot)
 
     # @!macro exchanger_method_do_exchange
     #

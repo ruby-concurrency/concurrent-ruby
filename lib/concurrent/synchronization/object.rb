@@ -18,7 +18,7 @@ module Concurrent
     # Abstract object providing final, volatile, ans CAS extensions to build other concurrent abstractions.
     # - final instance variables see {Object.safe_initialization!}
     # - volatile instance variables see {Object.attr_volatile}
-    # - volatile instance variables see {Object.attr_volatile_with_cas}
+    # - volatile instance variables see {Object.attr_atomic}
     class Object < ObjectImplementation
 
       # @!method self.attr_volatile(*names)
@@ -87,14 +87,14 @@ module Concurrent
       # `compare_and_set_value(expected, value) #=> true || false`, `update_value(&block)`.
       # @param [Array<Symbol>] names of the instance variables to be volatile with CAS.
       # @return [Array<Symbol>] names of defined method names.
-      def self.attr_volatile_with_cas(*names)
+      def self.attr_atomic(*names)
         @volatile_cas_fields ||= []
         @volatile_cas_fields += names
         safe_initialization!
         define_initialize_volatile_with_cas
 
         names.each do |name|
-          ivar = :"@VolatileCas#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }}"
+          ivar = :"@Atomic#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }}"
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def #{name}
               #{ivar}.get
@@ -131,7 +131,7 @@ module Concurrent
       private
 
       def self.define_initialize_volatile_with_cas
-        assignments = @volatile_cas_fields.map { |name| "@VolatileCas#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }} = AtomicReference.new(nil)" }.join("\n")
+        assignments = @volatile_cas_fields.map { |name| "@Atomic#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }} = AtomicReference.new(nil)" }.join("\n")
         class_eval <<-RUBY
           def initialize_volatile_with_cas
             super

@@ -18,7 +18,7 @@ module Concurrent
   # @!macro edge_warning
   class LazyRegister < Synchronization::Object
 
-    private(*attr_volatile_with_cas(:data))
+    private(*attr_atomic(:data))
 
     def initialize
       super
