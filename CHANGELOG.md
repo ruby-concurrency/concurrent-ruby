@@ -1,7 +1,8 @@
-### Upcoming Release v1.0.0 (TBD)
+## Current Release v1.0.0 (13 November 2015)
 
-## Current Release v1.0.0.pre5 (04 November 2015)
-
+* Rename `attr_volatile_with_cas` to `attr_atomic`
+* Add `clear_each` to `LockFreeStack`
+* Update `AtomicReference` documentation
 * Further updates and improvements to the synchronization layer.
 * Performance and memory usage performance with `Actor` logging.
 * Fixed `ThreadPoolExecutor` task count methods.
@@ -9,9 +10,6 @@
 * Fixed bug in `LockFreeLinkedSet`.
 * Fixed bug in which `Agent#await` triggered a validation failure.
 * Further `Channel` updates.
-
-### Release v1.0.0.pre4 (08 October 2015)
-
 * Adopted a project Code of Conduct
 * Cleared interpreter warnings
 * Fixed bug in `ThreadPoolExecutor` task count methods
@@ -19,18 +17,12 @@
 * Improved Java extension loading
 * Handle Exception children in Edge::Future
 * Continued improvements to channel
-
-### Release v1.0.0.pre3 (29 September 2015)
-
 * Removed interpreter warnings.
 * Shared constants now in `lib/concurrent/constants.rb`
 * Refactored many tests.
 * Improved synchronization layer/memory model documentation.
 * Bug fix in Edge `Future#flat`
 * Brand new `Channel` implementation in Edge gem.
-
-### Release v1.0.0.pre2 (19 September 2015)
-
 * Simplification of `RubySingleThreadExecutor`
 * `Async` improvements
   - Each object uses its own `SingleThreadExecutor` instead of the global thread pool.
@@ -42,9 +34,6 @@
   - Added a `#reset` method
 * Brand new `Agent` API and implementation. Now functionally equivalent to Clojure.
 * Continued improvements to the synchronization layer
-
-### Release v1.0.0.pre1 (19 August 2015)
-
 * Merged in the `thread_safe` gem
   - `Concurrent::Array`
   - `Concurrent::Hash`
