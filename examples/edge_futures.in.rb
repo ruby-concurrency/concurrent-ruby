@@ -41,6 +41,12 @@ failing_zip.then { |v| 'never happens' }.result
 failing_zip.rescue { |a, b| (a || b).message }.value
 failing_zip.chain { |success, values, reasons| [success, values.compact, reasons.compactß] }.value
 
+### Timeout
+
+future = Concurrent.timeoutable(1) { sleep(2) } # Raise Timeout::Error after 1 second
+future = Concurrent.timeoutable(1) { :success } # Ok, return => :success
+
+
 ### Delay
 
 # will not evaluate until asked by #value or other method requiring completion

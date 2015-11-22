@@ -1,6 +1,7 @@
 require 'concurrent' # TODO do not require whole concurrent gem
 require 'concurrent/concern/deprecation'
 require 'concurrent/edge/lock_free_stack'
+require 'timeout'
 
 
 # @note different name just not to collide for now
@@ -37,6 +38,18 @@ module Concurrent
           ImmediateEventPromise.new(default_executor).future.then(&task)
         else
           CompletableFuturePromise.new(default_executor).future
+        end
+      end
+
+      #
+      # Future with timeout
+      # Construct new Future and wrap it into Timeout if timeout exceeded will be raised Timeout::Error
+      # @param [Numeric] - timeout in seconds
+      # @param [Symbol] - default executor (by default it's :io)
+      # @return [Future]
+      def timeoutable(timeout, default_executor = :io, &task)
+        future(default_executor) do
+          Timeout::timeout(timeout) { task.call }
         end
       end
 
