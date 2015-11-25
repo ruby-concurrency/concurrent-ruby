@@ -8,8 +8,10 @@ module Concurrent
                              MriObject
                            when Concurrent.on_jruby?
                              JRubyObject
-                           when Concurrent.on_rbx? || Concurrent.on_truffle?
+                           when Concurrent.on_rbx?
                              RbxObject
+                           when Concurrent.on_truffle?
+                             TruffleObject
                            else
                              MriObject
                            end
@@ -49,8 +51,8 @@ module Concurrent
         # define only once, and not again in children
         return if safe_initialization?
 
-        def self.new(*)
-          object = super
+        def self.new(*args, &block)
+          object = super(*args, &block)
         ensure
           object.full_memory_barrier if object
         end
