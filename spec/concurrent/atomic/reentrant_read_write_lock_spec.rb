@@ -9,8 +9,6 @@ unless Concurrent.on_jruby?
   # long as `ReentrantReadWriteLock` is not changed (with respect to
   # `ThreadLocalVar`) we can safely assume proper functionality on JRuby.
 
-  require 'concurrent/atomic/reentrant_read_write_lock'
-  require 'concurrent/atomic/count_down_latch'
   require 'timeout'
 
   module Concurrent
