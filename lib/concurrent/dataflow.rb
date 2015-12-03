@@ -39,7 +39,7 @@ module Concurrent
     call_dataflow(:value, executor, *inputs, &block)
   end
   module_function :dataflow_with
-  
+
   def dataflow!(*inputs, &block)
     dataflow_with!(Concurrent.global_io_executor, *inputs, &block)
   end
@@ -50,12 +50,14 @@ module Concurrent
   end
   module_function :dataflow_with!
 
-  private 
+  private
 
   def call_dataflow(method, executor, *inputs, &block)
     raise ArgumentError.new('an executor must be provided') if executor.nil?
     raise ArgumentError.new('no block given') unless block_given?
-    raise ArgumentError.new('not all dependencies are IVars') unless inputs.all? { |input| input.is_a? IVar }
+    unless inputs.all? { |input| input.is_a? IVar }
+      raise ArgumentError.new("Not all dependencies are IVars.\nDependencies: #{ inputs.inspect }")
+    end
 
     result = Future.new(executor: executor) do
       values = inputs.map { |input| input.send(method) }
