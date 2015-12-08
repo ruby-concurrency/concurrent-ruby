@@ -2,7 +2,7 @@ module Concurrent
   module Synchronization
 
     # @!visibility private
-    class AbstractLockableObject < Object
+    class AbstractLockableObject < Synchronization::Object
 
       protected
 

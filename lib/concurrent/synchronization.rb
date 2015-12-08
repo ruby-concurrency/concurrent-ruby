@@ -7,6 +7,7 @@ Concurrent.load_native_extensions
 require 'concurrent/synchronization/mri_object'
 require 'concurrent/synchronization/jruby_object'
 require 'concurrent/synchronization/rbx_object'
+require 'concurrent/synchronization/truffle_object'
 require 'concurrent/synchronization/object'
 require 'concurrent/synchronization/volatile'
 
@@ -14,6 +15,7 @@ require 'concurrent/synchronization/abstract_lockable_object'
 require 'concurrent/synchronization/mri_lockable_object'
 require 'concurrent/synchronization/jruby_lockable_object'
 require 'concurrent/synchronization/rbx_lockable_object'
+require 'concurrent/synchronization/truffle_lockable_object'
 
 require 'concurrent/synchronization/lockable_object'
 
