@@ -5,9 +5,9 @@ require 'concurrent/ivar'
 require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/utility/monotonic_time'
 
-module Concurrent
+require 'concurrent/options'
 
-  autoload :Options, 'concurrent/options'
+module Concurrent
 
   # `ScheduledTask` is a close relative of `Concurrent::Future` but with one
   # important difference: A `Future` is set to execute as soon as possible

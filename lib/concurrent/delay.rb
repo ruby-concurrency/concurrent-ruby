@@ -5,6 +5,7 @@ require 'concurrent/synchronization'
 
 module Concurrent
 
+  # This file has circular require issues. It must be autoloaded here.
   autoload :Options, 'concurrent/options'
 
   # Lazy evaluation of a block yielding an immutable result. Useful for
