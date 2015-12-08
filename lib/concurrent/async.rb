@@ -58,7 +58,7 @@ module Concurrent
   # end
   # ```
   #
-  # When defining a constructor it is critica that the first line be a call to
+  # When defining a constructor it is critical that the first line be a call to
   # `super` with no arguments. The `super` method initializes the background
   # thread and other asynchronous components.
   #
@@ -153,7 +153,7 @@ module Concurrent
   # subtly different.
   #
   # When internal state is accessed via the `async` and `await` proxy methods,
-  # the returned value represents the object's sate *at the time the call is
+  # the returned value represents the object's state *at the time the call is
   # processed*, which may *not* be the state of the object at the time the call
   # is made.
   #
