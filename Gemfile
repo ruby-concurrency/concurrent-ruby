@@ -25,3 +25,7 @@ group :testing do
   gem 'simplecov', '~> 0.10.0', :require => false
   gem 'coveralls', '~> 0.8.2', :require => false
 end
+
+group :benchmarks do
+  gem 'bench9000'
+end
