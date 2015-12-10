@@ -182,7 +182,7 @@ gem install concurrent-ruby
 or add the following line to Gemfile:
 
 ```ruby
-gem 'concurrent-ruby'
+gem 'concurrent-ruby', require: 'concurrent'
 ```
 
 and run `bundle install` from your shell.
@@ -198,7 +198,7 @@ gem install concurrent-ruby-edge
 or add the following line to Gemfile:
 
 ```ruby
-gem 'concurrent-ruby-edge'
+gem 'concurrent-ruby-edge', require: 'concurrent-edge'
 ```
 
 and run `bundle install` from your shell.
