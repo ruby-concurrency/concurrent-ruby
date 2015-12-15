@@ -48,7 +48,11 @@ If you'd like to configure a maximum number of threads, you can use the more gen
 
 A [ThreadPoolExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html) is a general-purpose thread pool that can be configured to have various behaviors.
 
-The `CachedThreadPool` and `FixedThreadPool` are simply `ThreadPoolExecutor`s with certain configuration pre-determined. For instance, to create a `ThreadPoolExecutor` that works just like a `FixedThreadPool.new 5`, you could:
+A `ThreadPoolExecutor` will automatically adjust the pool size according to the bounds set by `min-threads` and `max-threads`. 
+When a new task is submitted and fewer than `min-threads` threads are running, a new thread is created to handle the request, even if other worker threads are idle. 
+If there are more than `min-threads` but less than `max-threads` threads running, a new thread will be created only if the queue is full.
+
+The `CachedThreadPool` and `FixedThreadPool` are simply `ThreadPoolExecutors` with certain configuration pre-determined. For instance, to create a `ThreadPoolExecutor` that works just like a `FixedThreadPool.new 5`, you could:
 
 ~~~ruby
 pool = Concurrent::ThreadPoolExecutor.new(
@@ -58,11 +62,13 @@ pool = Concurrent::ThreadPoolExecutor.new(
 )
 ~~~
 
-If you want to provide a maximum queue size, you may also consider the `fallback_policy` -- what will happen if work is posted to a pool when the queue of waiting work has reached the maximum size? Available policies:
+If you wants to provide a maximum queue size, you may also consider the `fallback_policy` which defines what will happen if work is posted to a pool when the queue of waiting work has reached the maximum size and no new threads can be created. Available policies:
 
 * abort: Raise a `Concurrent::RejectedExecutionError` exception and discard the task. (default policy)
 * discard: Silently discard the task and return nil as the task result.
 * caller_runs: The work will be executed in the thread of the caller, instead of being given to another thread in the pool.
+
+For example:
 
 ~~~ruby
 pool = Concurrent::ThreadPoolExecutor.new(
@@ -73,24 +79,15 @@ pool = Concurrent::ThreadPoolExecutor.new(
 )
 ~~~
 
-Similarly, you can create something similar to a `CachedThreadPool`, but with a maximum number of threads. With an unbounded queue:
+You can create something similar to a `CachedThreadPool`, but with a maximum number of threads and a bounded queue.
+A new thread will be created for the first 3 tasks submitted, and then, once the queue is full, up to an additional 7 threads (10 total) will be created.
+If all 10 threads are busy and 100 tasks are already queued, additional tasks will be rejected.
 
 ~~~ruby
 pool = Concurrent::ThreadPoolExecutor.new(
-   min_threads: 3, # create 3 threads at startup
+   min_threads: 3, # create up to 3 threads before queueing tasks
    max_threads: 10, # create at most 10 threads
-   max_queue: 0, # unbounded queue of work waiting for an available thread
-)
-~~~
-
-Or, with a variable number of threads like a CachedThreadPool, but with a bounded queue and a fallback_policy:
-
-~~~ruby
-pool = Concurrent::ThreadPoolExecutor.new(
-   min_threads: 3, # create 3 threads at startup
-   max_threads: 10, # create at most 10 threads
-   max_queue: 100, # at most 100 jobs waiting in the queue,
-   fallback_policy: :abort
+   max_queue: 100, # at most 100 jobs waiting in the queue
 )
 ~~~
 
