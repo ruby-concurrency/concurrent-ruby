@@ -18,16 +18,22 @@ module Concurrent
   # @!macro [attach] thread_pool_executor
   #
   #   An abstraction composed of one or more threads and a task queue. Tasks
-  #   (blocks or `proc` objects) are submit to the pool and added to the queue.
+  #   (blocks or `proc` objects) are submitted to the pool and added to the queue.
   #   The threads in the pool remove the tasks and execute them in the order
-  #   they were received. When there are more tasks queued than there are
-  #   threads to execute them the pool will create new threads, up to the
-  #   configured maximum. Similarly, threads that are idle for too long will
-  #   be garbage collected, down to the configured minimum options. Should a
-  #   thread crash it, too, will be garbage collected.
+  #   they were received.
+  #
+  #   A `ThreadPoolExecutor` will automatically adjust the pool size according
+  #   to the bounds set by `min-threads` and `max-threads`. When a new task is
+  #   submitted and fewer than `min-threads` threads are running, a new thread
+  #   is created to handle the request, even if other worker threads are idle.
+  #   If there are more than `min-threads` but less than `max-threads` threads
+  #   running, a new thread will be created only if the queue is full.
+  #
+  #   Threads that are idle for too long will be garbage collected, down to the
+  #   configured minimum options. Should a thread crash it, too, will be garbage collected.
   #
   #   `ThreadPoolExecutor` is based on the Java class of the same name. From
-  #   the official Java documentationa;
+  #   the official Java documentation;
   #
   #   > Thread pools address two different problems: they usually provide
   #   > improved performance when executing large numbers of asynchronous tasks,
@@ -57,8 +63,8 @@ module Concurrent
     #  
     #   @option opts [Integer] :max_threads (DEFAULT_MAX_POOL_SIZE) the maximum
     #     number of threads to be created
-    #   @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) the minimum
-    #     number of threads to be retained
+    #   @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) When a new task is submitted
+    #      and fewer than `min_threads` are running, a new thread is created
     #   @option opts [Integer] :idletime (DEFAULT_THREAD_IDLETIMEOUT) the maximum
     #     number of seconds a thread may be idle before being reclaimed
     #   @option opts [Integer] :max_queue (DEFAULT_MAX_QUEUE_SIZE) the maximum
