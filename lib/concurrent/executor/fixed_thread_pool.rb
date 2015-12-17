@@ -116,8 +116,8 @@ module Concurrent
   #
   #   * `idletime`: The number of seconds that a thread may be idle before being reclaimed.
   #   * `max_queue`: The maximum number of tasks that may be waiting in the work queue at
-  #     any one time. When the queue size reaches `max_queue` subsequent tasks will be
-  #     rejected in accordance with the configured `fallback_policy`.
+  #     any one time. When the queue size reaches `max_queue` and no new threads can be created,
+  #     subsequent tasks will be rejected in accordance with the configured `fallback_policy`.
   #   * `auto_terminate`: When true (default) an `at_exit` handler will be registered which
   #     will stop the thread pool when the application exits. See below for more information
   #     on shutting down thread pools.
@@ -171,8 +171,8 @@ module Concurrent
 
   # @!macro [attach] fixed_thread_pool
   #
-  #   A thread pool with a set number of threads. The number of threads in the pool
-  #   is set on construction and remains constant. When all threads are busy new
+  #   A thread pool that reuses a fixed number of threads operating off an unbounded queue.
+  #   At any point, at most `num_threads` will be active processing tasks. When all threads are busy new
   #   tasks `#post` to the thread pool are enqueued until a thread becomes available.
   #   Should a thread crash for any reason the thread will immediately be removed
   #   from the pool and replaced.
