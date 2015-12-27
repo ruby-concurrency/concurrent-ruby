@@ -3,9 +3,9 @@ require 'concurrent/constants'
 require 'concurrent/errors'
 require 'concurrent/ivar'
 
-module Concurrent
+require 'concurrent/options'
 
-  autoload :Options, 'concurrent/options'
+module Concurrent
 
   PromiseExecutionError = Class.new(StandardError)
 

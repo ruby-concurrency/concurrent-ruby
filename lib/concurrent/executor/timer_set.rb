@@ -4,9 +4,9 @@ require 'concurrent/collection/non_concurrent_priority_queue'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
 
-module Concurrent
+require 'concurrent/options'
 
-  autoload :Options, 'concurrent/options'
+module Concurrent
 
   # Executes a collection of tasks, each after a given delay. A master task
   # monitors the set and schedules each task for execution at the appropriate
@@ -21,7 +21,7 @@ module Concurrent
     # Create a new set of timed tasks.
     #
     # @!macro [attach] executor_options
-    #  
+    #
     #   @param [Hash] opts the options used to specify the executor on which to perform actions
     #   @option opts [Executor] :executor when set use the given `Executor` instance.
     #     Three special values are also supported: `:task` returns the global task pool,

@@ -4,9 +4,9 @@ require 'concurrent/errors'
 require 'concurrent/ivar'
 require 'concurrent/executor/safe_task_executor'
 
-module Concurrent
+require 'concurrent/options'
 
-  autoload :Options, 'concurrent/options'
+module Concurrent
 
   # {include:file:doc/future.md}
   #

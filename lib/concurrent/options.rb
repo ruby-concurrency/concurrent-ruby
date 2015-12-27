@@ -1,5 +1,3 @@
-# This file has circular require issues. It must be autoloaded.
-
 require 'concurrent/configuration'
 
 module Concurrent
