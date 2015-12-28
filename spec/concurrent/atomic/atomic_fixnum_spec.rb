@@ -156,7 +156,7 @@ module Concurrent
   describe MutexAtomicFixnum do
 
     it_should_behave_like :atomic_fixnum
-    
+
     context 'construction' do
 
       it 'raises en exception if the initial value is too big' do
@@ -202,7 +202,7 @@ module Concurrent
 
   if defined? Concurrent::CAtomicFixnum
 
-    describe CAtomicFixnum do
+    describe CAtomicFixnum, ext: true do
       it_should_behave_like :atomic_fixnum
     end
   end
@@ -226,7 +226,7 @@ module Concurrent
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end
     elsif defined? Concurrent::CAtomicFixnum
-      it 'inherits from CAtomicFixnum' do
+      it 'inherits from CAtomicFixnum', ext: true do
         expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
       end
     else

@@ -1,4 +1,4 @@
-describe 'channel integration tests', notravis: true do
+describe 'channel integration tests', edge: true, notravis: true do
 
   let!(:examples_root) { File.expand_path(File.join(File.dirname(__FILE__), '../../../examples')) }
 

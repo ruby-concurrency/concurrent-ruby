@@ -2,7 +2,7 @@ module Concurrent
 
   class Channel
 
-    describe Tick do
+    describe Tick, edge: true do
 
       it 'initializes to current time when no argument given' do
         allow(Concurrent).to receive(:monotonic_time).and_return(42)

@@ -6,7 +6,7 @@ module Concurrent
 
     # FIXME better tests!
 
-    describe 'Concurrent::Actor' do
+    describe 'Concurrent::Actor', edge: true do
 
       def terminate_actors(*actors)
         actors.each do |actor|
