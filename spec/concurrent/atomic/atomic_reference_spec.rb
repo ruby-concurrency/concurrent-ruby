@@ -154,7 +154,7 @@ module Concurrent
   end
 
   if defined? Concurrent::CAtomicReference
-    describe CAtomicReference do
+    describe CAtomicReference, ext: true do
       it_should_behave_like :atomic_reference
     end
   elsif defined? Concurrent::JavaAtomicReference
@@ -192,7 +192,7 @@ module Concurrent
   end
 
   if defined? Concurrent::CAtomicReference
-    describe CAtomicReference do
+    describe CAtomicReference, ext: true do
       it_should_behave_like :atomic_reference
     end
   elsif defined? Concurrent::JavaAtomicReference
@@ -211,7 +211,7 @@ module Concurrent
         expect(AtomicReference.ancestors).to include(Concurrent::JavaAtomicReference)
       end
     elsif Concurrent.allow_c_extensions?
-      it 'inherits from CAtomicReference' do
+      it 'inherits from CAtomicReference', ext: true do
         expect(AtomicReference.ancestors).to include(Concurrent::CAtomicReference)
       end
     elsif Concurrent.on_rbx?

@@ -2,7 +2,7 @@ require_relative 'buffered_shared'
 
 module Concurrent::Channel::Buffer
 
-  describe Dropping do
+  describe Dropping, edge: true do
 
     subject { described_class.new(10) }
 

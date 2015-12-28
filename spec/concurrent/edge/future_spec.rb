@@ -1,7 +1,7 @@
 require 'concurrent-edge'
 require 'thread'
 
-describe 'Concurrent::Edge futures' do
+describe 'Concurrent::Edge futures', edge: true do
 
   describe 'chain_completable' do
     it 'event' do
