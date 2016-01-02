@@ -146,7 +146,7 @@ module Concurrent
   #   On some runtime platforms (most notably the JVM) the application will not
   #   exit until all thread pools have been shutdown. To prevent applications from
   #   "hanging" on exit all thread pools include an `at_exit` handler that will
-  #   stop the thread pool when the application exists. This handler uses a brute
+  #   stop the thread pool when the application exits. This handler uses a brute
   #   force method to stop the pool and makes no guarantees regarding resources being
   #   used by any tasks still running. Registration of this `at_exit` handler can be
   #   prevented by setting the thread pool's constructor `:auto_terminate` option to
