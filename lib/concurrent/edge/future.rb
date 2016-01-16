@@ -106,6 +106,7 @@ module Concurrent
       # @return [Future]
       def select(*channels)
         future do
+          # noinspection RubyArgCount
           Channel.select do |s|
             channels.each do |ch|
               s.take(ch) { |value| [value, ch] }
@@ -514,9 +515,9 @@ module Concurrent
       # @!visibility private
       class PartiallyFailed < CompletedWithResult
         def initialize(value, reason)
+          super()
           @Value  = value
           @Reason = reason
-          super()
         end
 
         def success?
@@ -999,10 +1000,9 @@ module Concurrent
     # @!visibility private
     class BlockedPromise < InnerPromise
       def initialize(future, blocked_by_futures, countdown)
+        super(future)
         initialize_blocked_by(blocked_by_futures)
         @Countdown = AtomicFixnum.new countdown
-
-        super(future)
         @BlockedBy.each { |f| f.add_callback :pr_callback_notify_blocked, self }
       end
 
@@ -1066,6 +1066,7 @@ module Concurrent
         raise ArgumentError, 'no block given' unless block_given?
         @Executor = executor
         @Task     = task
+        # has to be after @Executor and @Task is set
         super Future.new(self, default_executor), blocked_by_future, 1
       end
 
@@ -1214,8 +1215,8 @@ module Concurrent
     # @!visibility private
     class ZipFutureEventPromise < BlockedPromise
       def initialize(future, event, default_executor)
-        @FutureResult = future
         super Future.new(self, default_executor), [future, event], 2
+        @FutureResult = future
       end
 
       def on_completable(done_future)
@@ -1226,9 +1227,9 @@ module Concurrent
     # @!visibility private
     class ZipFutureFuturePromise < BlockedPromise
       def initialize(future1, future2, default_executor)
+        super Future.new(self, default_executor), [future1, future2], 2
         @Future1Result = future1
         @Future2Result = future2
-        super Future.new(self, default_executor), [future1, future2], 2
       end
 
       def on_completable(done_future)
@@ -1357,8 +1358,8 @@ module Concurrent
       private
 
       def initialize(default_executor, value)
-        @Value = value
         super Future.new(self, default_executor)
+        @Value = value
       end
     end
 
@@ -1376,6 +1377,8 @@ module Concurrent
       private
 
       def initialize(default_executor, intended_time)
+        super Event.new(self, default_executor)
+
         @IntendedTime = intended_time
 
         in_seconds = begin
@@ -1387,8 +1390,6 @@ module Concurrent
                           end
           [0, schedule_time.to_f - now.to_f].max
         end
-
-        super Event.new(self, default_executor)
 
         Concurrent.global_timer_set.post(in_seconds) do
           @Future.complete_with Event::COMPLETED
