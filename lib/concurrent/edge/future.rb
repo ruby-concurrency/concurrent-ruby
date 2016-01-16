@@ -76,12 +76,23 @@ module Concurrent
         ScheduledPromise.new(default_executor, intended_time).future.then(&task)
       end
 
-      # Constructs new {Future} which is completed after all futures are complete. Its value is array
-      # of dependent future values. If there is an error it fails with the first one.
-      # @param [Event] futures
+      # Constructs new {Future} which is completed after all futures_and_or_events are complete. Its value is array
+      # of dependent future values. If there is an error it fails with the first one. Event does not
+      # have a value so it's represented by nil in the array of values.
+      # @param [Event] futures_and_or_events
       # @return [Future]
-      def zip(*futures)
-        ZipPromise.new(futures, :io).future
+      def zip_futures(*futures_and_or_events)
+        ZipFuturesPromise.new(futures_and_or_events, :io).future
+      end
+
+      alias_method :zip, :zip_futures
+
+      # Constructs new {Event} which is completed after all futures_and_or_events are complete
+      # (Future is completed when Success or Failed).
+      # @param [Event] futures_and_or_events
+      # @return [Event]
+      def zip_events(*futures_and_or_events)
+        ZipEventsPromise.new(futures_and_or_events, :io).future
       end
 
       # Constructs new {Future} which is completed after first of the futures is complete.
@@ -670,7 +681,7 @@ module Concurrent
       # Zips with selected value form the suplied channels
       # @return [Future]
       def then_select(*channels)
-        ZipPromise.new([self, Concurrent.select(*channels)], @DefaultExecutor).future
+        ZipFuturesPromise.new([self, Concurrent.select(*channels)], @DefaultExecutor).future
       end
 
       # Changes default executor for rest of the chain
@@ -1256,59 +1267,51 @@ module Concurrent
     end
 
     # @!visibility private
-    class ZipPromise < BlockedPromise
+    class ZipFuturesPromise < BlockedPromise
 
       private
 
       def initialize(blocked_by_futures, default_executor)
-        klass = Event
-        blocked_by_futures.each do |f|
-          if f.is_a?(Future)
-            if klass == Event
-              klass = Future
-              break
-            end
-          end
-        end
+        super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
 
-        # noinspection RubyArgCount
-        super(klass.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
-
-        if blocked_by_futures.empty?
-          on_completable nil
-        end
+        on_completable nil if blocked_by_futures.empty?
       end
 
       def on_completable(done_future)
         all_success = true
-        values      = []
-        reasons     = []
+        values      = Array.new(blocked_by.size)
+        reasons     = Array.new(blocked_by.size)
 
-        blocked_by.each do |future|
-          next unless future.is_a?(Future)
-          success, value, reason = future.result
-
-          unless success
-            all_success = false
+        blocked_by.each_with_index do |future, i|
+          if future.is_a?(Future)
+            success, values[i], reasons[i] = future.result
+            all_success                    &&= success
+          else
+            values[i] = reasons[i] = nil
           end
-
-          values << value
-          reasons << reason
         end
 
         if all_success
-          if values.empty?
-            complete_with Event::COMPLETED
-          else
-            if values.size == 1
-              complete_with Future::Success.new(values.first)
-            else
-              complete_with Future::SuccessArray.new(values)
-            end
-          end
+          complete_with Future::SuccessArray.new(values)
         else
           complete_with Future::PartiallyFailed.new(values, reasons)
         end
+      end
+    end
+
+    # @!visibility private
+    class ZipEventsPromise < BlockedPromise
+
+      private
+
+      def initialize(blocked_by_futures, default_executor)
+        super(Event.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
+
+        on_completable nil if blocked_by_futures.empty?
+      end
+
+      def on_completable(done_future)
+        complete_with Event::COMPLETED
       end
     end
 
