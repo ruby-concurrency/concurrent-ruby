@@ -14,7 +14,7 @@ module Concurrent
       cache
     end
     ZERO_VALUE_CACHE_SETUP = lambda do |options, keys|
-      INITIAL_VALUE_CACHE_SETUP.call(options.merge(:initial_value => 0), keys)
+      INITIAL_VALUE_CACHE_SETUP.call(options.merge(initial_value: 0), keys)
     end
 
     DEFAULTS = {

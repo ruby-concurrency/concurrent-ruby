@@ -53,17 +53,17 @@ module Concurrent
 
 
       it 'sets explicit :max_queue correctly' do
-        subject = described_class.new(5, :max_queue => 10)
+        subject = described_class.new(5, max_queue: 10)
         expect(subject.max_queue).to eq 10
       end
 
       it 'correctly sets valid :fallback_policy' do
-        subject = described_class.new(5, :fallback_policy => :caller_runs)
+        subject = described_class.new(5, fallback_policy: :caller_runs)
         expect(subject.fallback_policy).to eq :caller_runs
       end
 
       it "correctly sets valid :idletime" do
-        subject = described_class.new(5, :idletime => 10)
+        subject = described_class.new(5, idletime: 10)
         expect(subject.idletime).to eq 10
       end
 
@@ -198,7 +198,7 @@ module Concurrent
         latch = Concurrent::CountDownLatch.new(5)
         mutex = Mutex.new
 
-        subject = described_class.new(2, :max_queue => 2, :fallback_policy => :abort)
+        subject = described_class.new(2, max_queue: 2, fallback_policy: :abort)
         expect {
           5.times do |i|
             subject.post do
@@ -216,7 +216,7 @@ module Concurrent
         latch = Concurrent::CountDownLatch.new(5)
         mutex = Mutex.new
 
-        subject = described_class.new(2, :max_queue => 2, :fallback_policy => :discard)
+        subject = described_class.new(2, max_queue: 2, fallback_policy: :discard)
         5.times do |i|
           subject.post do
             sleep 0.1
@@ -236,7 +236,7 @@ module Concurrent
         latch = Concurrent::CountDownLatch.new(5)
         mutex = Mutex.new
 
-        subject = described_class.new(2, :max_queue => 2, :fallback_policy => :caller_runs)
+        subject = described_class.new(2, max_queue: 2, fallback_policy: :caller_runs)
 
         5.times do |i|
           subject.post do
