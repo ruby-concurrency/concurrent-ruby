@@ -999,11 +999,16 @@ module Concurrent
     # @abstract
     # @!visibility private
     class BlockedPromise < InnerPromise
+      def self.new(*args, &block)
+        promise = super(*args, &block)
+        promise.blocked_by.each { |f| f.add_callback :pr_callback_notify_blocked, promise }
+        promise
+      end
+
       def initialize(future, blocked_by_futures, countdown)
         super(future)
         initialize_blocked_by(blocked_by_futures)
         @Countdown = AtomicFixnum.new countdown
-        @BlockedBy.each { |f| f.add_callback :pr_callback_notify_blocked, self }
       end
 
       # @api private
@@ -1064,10 +1069,9 @@ module Concurrent
     class BlockedTaskPromise < BlockedPromise
       def initialize(blocked_by_future, default_executor, executor, &task)
         raise ArgumentError, 'no block given' unless block_given?
+        super Future.new(self, default_executor), blocked_by_future, 1
         @Executor = executor
         @Task     = task
-        # has to be after @Executor and @Task is set
-        super Future.new(self, default_executor), blocked_by_future, 1
       end
 
       def executor
