@@ -109,7 +109,7 @@ describe 'Concurrent::Edge futures', edge: true do
     specify do
       completable_future = Concurrent.future
       one                = completable_future.then(&:succ)
-      join               = Concurrent.zip(completable_future).then { |v| v }
+      join               = Concurrent.zip_futures(completable_future).then { |v| v }
       expect(one.completed?).to be false
       completable_future.success 0
       expect(one.value!).to eq 1
@@ -138,24 +138,42 @@ describe 'Concurrent::Edge futures', edge: true do
   end
 
   describe '.zip' do
-    it 'continues on first result' do
+    it 'waits for all results' do
       a = Concurrent.future { 1 }
       b = Concurrent.future { 2 }
       c = Concurrent.future { 3 }
 
       z1 = a & b
       z2 = Concurrent.zip a, b, c
+      z3 = Concurrent.zip a
+      z4 = Concurrent.zip
 
       expect(z1.value!).to eq [1, 2]
       expect(z2.value!).to eq [1, 2, 3]
+      expect(z3.value!).to eq [1]
+      expect(z4.value!).to eq []
 
       q = Queue.new
       z1.then { |*args| q << args }
       expect(q.pop).to eq [1, 2]
+
       z1.then { |a, b, c| q << [a, b, c] }
       expect(q.pop).to eq [1, 2, nil]
+
       z2.then { |a, b, c| q << [a, b, c] }
       expect(q.pop).to eq [1, 2, 3]
+
+      z3.then { |a| q << a }
+      expect(q.pop).to eq 1
+
+      z3.then { |*a| q << a }
+      expect(q.pop).to eq [1]
+
+      z4.then { |a| q << a }
+      expect(q.pop).to eq nil
+
+      z4.then { |*a| q << a }
+      expect(q.pop).to eq []
 
       expect(z1.then { |a, b| a+b }.value!).to eq 3
       expect(z1.then { |a, b| a+b }.value!).to eq 3
@@ -188,7 +206,22 @@ describe 'Concurrent::Edge futures', edge: true do
       end
 
     end
+  end
 
+  describe '.zip_events' do
+    it 'waits for all and returns event' do
+      a = Concurrent.succeeded_future 1
+      b = Concurrent.failed_future :any
+      c = Concurrent.event.complete
+
+      z2 = Concurrent.zip_events a, b, c
+      z3 = Concurrent.zip_events a
+      z4 = Concurrent.zip_events
+
+      expect(z2.completed?).to be_truthy
+      expect(z3.completed?).to be_truthy
+      expect(z4.completed?).to be_truthy
+    end
   end
 
   describe 'Future' do
@@ -340,7 +373,7 @@ describe 'Concurrent::Edge futures', edge: true do
       f.wait 1
       expect(f).to be_completed
       expect(f).to be_failed
-      expect{ f.value! }.to raise_error(Exception, 'fail')
+      expect { f.value! }.to raise_error(Exception, 'fail')
     end
   end
 
