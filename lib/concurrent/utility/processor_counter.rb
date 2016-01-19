@@ -75,6 +75,8 @@ module Concurrent
       def compute_processor_count
         if Concurrent.on_jruby?
           java.lang.Runtime.getRuntime.availableProcessors
+        elsif Concurrent.on_truffle?
+          Truffle::Primitive.logical_processors
         else
           os_name = RbConfig::CONFIG["target_os"]
           if os_name =~ /mingw|mswin/
