@@ -1,1 +1,1 @@
-require 'concurrent/atomic_reference/rbx'
+require 'concurrent/atomic_reference/mutex_atomic'

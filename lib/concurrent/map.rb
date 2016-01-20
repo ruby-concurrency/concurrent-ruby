@@ -18,6 +18,9 @@ module Concurrent
                           when 'rbx'
                             require 'concurrent/collection/map/atomic_reference_map_backend'
                             AtomicReferenceMapBackend
+                          when 'jruby+truffle'
+                            require 'concurrent/collection/map/atomic_reference_map_backend'
+                            AtomicReferenceMapBackend
                           else
                             warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
                             require 'concurrent/collection/map/synchronized_map_backend'
