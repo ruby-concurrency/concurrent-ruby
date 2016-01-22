@@ -2,7 +2,7 @@ $VERBOSE = nil # suppress our deprecation warnings
 
 # we can't use our helpers here because we need to load the gem _after_ simplecov
 unless RUBY_ENGINE == 'jruby' && 0 == (JRUBY_VERSION =~ /^9\.0\.0\.0/)
-  if ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']
+  if (ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']) && !ENV['NO_COVERAGE']
     require 'simplecov'
     require 'coveralls'
 

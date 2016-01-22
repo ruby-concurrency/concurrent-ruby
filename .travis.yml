@@ -25,14 +25,21 @@ branches:
     - master
 
 matrix:
+  include:
+    - rvm: jruby-head
+      jdk: oraclejdk8
+      env: TRUFFLE=1
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
     - rvm: rbx-2
+    - rvm: jruby-head
+      jdk: oraclejdk8
+      env: TRUFFLE=1
 
 before_script:
   - "echo $JAVA_OPTS"
   - "export JAVA_OPTS=-Xmx1024m"
 
-script: RUBYOPT=-w bundle exec rake ci
+script: if [[ -v TRUFFLE ]]; then support/test-truffle.sh; else RUBYOPT=-w bundle exec rake ci; fi

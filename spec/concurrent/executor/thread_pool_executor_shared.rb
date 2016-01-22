@@ -100,7 +100,7 @@ shared_examples :thread_pool_executor do
       expect(subject.max_queue).to eq expected_max
     end
 
-    it 'returns the set value when running' do
+    it 'returns the set value when running', :truffle_bug => true do # only actually fails for RubyThreadPoolExecutor
       trigger = Concurrent::Event.new
       5.times{ subject.post{ trigger.wait } }
       expect(subject.max_queue).to eq expected_max
@@ -115,7 +115,7 @@ shared_examples :thread_pool_executor do
     end
   end
 
-  context '#queue_length' do
+  context '#queue_length', :truffle_bug => true do # only actually fails for RubyThreadPoolExecutor
 
     let!(:expected_max){ 10 }
     subject do
