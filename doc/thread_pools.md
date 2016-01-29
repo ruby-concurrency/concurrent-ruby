@@ -48,8 +48,8 @@ If you'd like to configure a maximum number of threads, you can use the more gen
 
 A [ThreadPoolExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html) is a general-purpose thread pool that can be configured to have various behaviors.
 
-A `ThreadPoolExecutor` will automatically adjust the pool size according to the bounds set by `min-threads` and `max-threads`. 
-When a new task is submitted and fewer than `min-threads` threads are running, a new thread is created to handle the request, even if other worker threads are idle. 
+A `ThreadPoolExecutor` will automatically adjust the pool size according to the bounds set by `min-threads` and `max-threads`.
+When a new task is submitted and fewer than `min-threads` threads are running, a new thread is created to handle the request, even if other worker threads are idle.
 If there are more than `min-threads` but less than `max-threads` threads running, a new thread will be created only if the queue is full.
 
 The `CachedThreadPool` and `FixedThreadPool` are simply `ThreadPoolExecutors` with certain configuration pre-determined. For instance, to create a `ThreadPoolExecutor` that works just like a `FixedThreadPool.new 5`, you could:
@@ -159,3 +159,20 @@ future = Future.new(:executor => pool).execute do
    #work
 end
 ~~~
+
+## Forking
+
+Some Ruby versions allow the Ruby process to be [forked](http://ruby-doc.org/core-2.3.0/Process.html#method-c-fork). Generally, mixing threading and forking is an [anti-pattern](https://en.wikipedia.org/wiki/Anti-pattern). Threading and forking are both concurrency techniques and mixing the two is rarely beneficial. Moreover, threads created before the fork become unusable ("dead") in the forked process. This aspect of forking is a significant issue for any application or library which spawns threads. It is strongly advised that applications using `ThreadPoolExecutor` do **not** also fork. Since Concurrent Ruby is a foundational library often used by gems which are in turn used by other applications, it is impossible to predict or prevent upstream forking. Concurrent Ruby therefore makes a few guarantees about the behavior of `ThreadPoolExecutor` after forking.
+
+*Concurrent Ruby guarantees that jobs post on the parent process will be handled on the parent process; the child process does not inherit any jobs at the time of the fork. Concurrent Ruby also guarantees that thread pools copied to the child process will continue to function normally.*
+
+When a fork occurs the `ThreadPoolExecutor` in the *forking* process takes no special actions whatsoever. It has no way of knowing that a fork occurred. It proceeds to process its jobs as normal and makes no attempt whatsoever to distribute those jobs to the forked process(es).
+
+When a `ThreadPoolExecutor` in the *forked* process detects that a fork has occurred it immediately takes the following actions:
+
+* Clears all pending jobs from its queue (assuming they will be handled by the *forking* process).
+* Deletes all worker threads (they will have died during the fork).
+* Resets all job counters (these counts will be reflected in the *forking* process).
+* Begins posting new jobs as normal.
+
+These actions guarantee that all in-flight jobs are processed normally in the forking process and that thread pools, including the global thread pools, remain functional in the forked process(es).

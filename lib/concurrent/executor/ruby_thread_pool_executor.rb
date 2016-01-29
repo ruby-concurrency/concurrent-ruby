@@ -131,6 +131,7 @@ module Concurrent
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length       = 0
+      @ruby_pid             = $$ # detects if Ruby has forked
 
       @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
@@ -143,6 +144,8 @@ module Concurrent
 
     # @!visibility private
     def ns_execute(*args, &task)
+      ns_reset_if_forked
+
       if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
         @scheduled_task_count += 1
       else
@@ -150,21 +153,21 @@ module Concurrent
       end
 
       ns_prune_pool if @next_gc_time < Concurrent.monotonic_time
-      # raise unless @ready.empty? || @queue.empty? # assert
     end
 
     # @!visibility private
     def ns_shutdown_execution
+      ns_reset_if_forked
+
       if @pool.empty?
         # nothing to do
         stopped_event.set
       end
+
       if @queue.empty?
         # no more tasks will be accepted, just stop all workers
         @pool.each(&:stop)
       end
-
-      # raise unless @ready.empty? || @queue.empty? # assert
     end
 
     # @!visibility private
@@ -271,6 +274,18 @@ module Concurrent
       last_used << :idle_test if last_used
 
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
+    end
+
+    def ns_reset_if_forked
+      if $$ != @ruby_pid
+        @queue.clear
+        @ready.clear
+        @pool.clear
+        @scheduled_task_count = 0
+        @completed_task_count = 0
+        @largest_length       = 0
+        @ruby_pid             = $$
+      end
     end
 
     # @!visibility private
