@@ -26,12 +26,12 @@ git pull upstream master
 git checkout -b my-feature-branch
 ```
 
-#### Bundle Install, Buildn and Test
+#### Bundle Install, Build and Test
 
 
 Ensure that you can build the project and run tests.
 
-Please note that Concurrent Ruby includes native Java and (optional) C extensions. When building you will need the appropriate build tools for your platform. If you don't have the build tools installed that's OK. The tests can still be run. A few tests nay fail, but these are just the tests that verify that the extensions exist. You can usually ignore these locally if you are working on the pure Ruby parts of the library (which is most of the lib).
+Please note that Concurrent Ruby includes native Java and (optional) C extensions. When building you will need the appropriate build tools for your platform. If you don't have the build tools installed that's OK. The tests can still be run. A few tests may fail, but these are just the tests that verify that the extensions exist. You can usually ignore these locally if you are working on the pure Ruby parts of the library (which is most of the lib).
 
 ```
 bundle install
@@ -105,10 +105,10 @@ git push origin my-feature-branch -f
 
 Go back to your pull request after a few minutes and see whether it passed muster with Travis-CI and AppVeyor. Everything should look green, otherwise fix issues and amend your commit as described above.
 
-Please note that testing concurrency is hard. Very hard. We have a few tests that occasionally fail due (mostly) to incorrect synchronization within the test itself. If everything passes locally but you see an error on CI, it's possibly you've become victim to ont of the tests. Don't worry, the Concurrent Ruby team reviews the tests output of all failed CI runs and will let you know if the failing test is unrelated to your commit.
+Please note that testing concurrency is hard. Very hard. We have a few tests that occasionally fail due (mostly) to incorrect synchronization within the test itself. If everything passes locally but you see an error on CI, it's possibly you've become victim to one of the tests. Don't worry, the Concurrent Ruby team reviews the tests output of all failed CI runs and will let you know if the failing test is unrelated to your commit.
 
 #### Thank You
 
 Please do know that we really appreciate and value your time and work. We love you, really.
 
-And also, a special thank you to the [Volt](https://github.com/voltrb/volt) team for writing an awesome guied for contributers. We have borroed liberally from theirs.
+And also, a special thank you to the [Volt](https://github.com/voltrb/volt) team for writing an awesome guide for contributors. We have borrowed liberally from theirs.
