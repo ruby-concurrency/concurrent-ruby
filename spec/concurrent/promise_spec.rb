@@ -641,6 +641,10 @@ module Concurrent
         child = rejected_subject.on_error { 7 }
         expect(child.value).to eq 7
       end
+
+      it 'aliases #settled? for #complete?' do
+        expect(fulfilled_subject).to be_settled
+      end
     end
   end
 end
