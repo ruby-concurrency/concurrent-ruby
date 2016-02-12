@@ -3,6 +3,7 @@ require 'concurrent/atomic/event'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/utility/system_exceptions_handler'
 
 module Concurrent
 
@@ -350,8 +351,8 @@ module Concurrent
       rescue => ex
         # let it fail
         log DEBUG, ex
-      rescue Exception => ex
-        log ERROR, ex
+      rescue Exception => error
+        Utility::SystemExceptionsHandler.handle(error, 'Worker task error')
         pool.worker_died(self)
         throw :stop
       end
