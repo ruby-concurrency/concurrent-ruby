@@ -4,7 +4,7 @@
 -  Inspired by Akka and Erlang.
 -  Modular.
 
-This Actor model implementation makes makes actors very cheap to create and discard.
+This Actor model implementation makes actors very cheap to create and discard.
 Thousands of actors can be created, allowing you to break the program into smaller 
 maintainable pieces, without violating the single responsibility principle.
 
