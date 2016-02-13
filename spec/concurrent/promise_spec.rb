@@ -496,6 +496,60 @@ module Concurrent
           expect(counter.value).to eq -1
           end
       end
+
+      describe '.race' do
+          it 'returns a new Promise' do
+            composite = Promise.race(promise1, promise2, promise3).execute
+            expect(composite).to be_a Concurrent::Promise
+          end
+
+          it 'does not execute the returned Promise' do
+            composite = Promise.race(promise1, promise2, promise3)
+            expect(composite).to be_unscheduled
+          end
+
+          it 'fulfills as soon as the first component fulfills' do
+            latch = Concurrent::CountDownLatch.new(1)
+
+            first_promise       = Promise.new { latch.count_down ; "first" }
+            not_first_promise1  = Promise.new { latch.wait ; "not first 1"}
+            not_first_promise2  = Promise.new { latch.wait ; "not first 2"}
+
+            composite = Promise.race(not_first_promise1, not_first_promise2, first_promise).execute
+
+            composite.wait(1)
+            expect(composite.value).to eq "first"
+          end
+
+          it 'rejects as soon as the first component rejects' do
+            latch = Concurrent::CountDownLatch.new(1)
+
+            first_promise       = Promise.new { latch.count_down ; raise ArgumentError.new("first") }
+            not_first_promise1  = Promise.new { latch.wait ; "not first 1"}
+            not_first_promise2  = Promise.new { latch.wait ; "not first 2"}
+
+            composite = Promise.race(not_first_promise1, not_first_promise2, first_promise).execute
+
+            composite.wait(1)
+            expect(composite.reason).not_to be_nil
+            expect(composite.reason.message).to eq("first")
+          end
+
+          it 'executes the #then condition when no promises are given' do
+            counter = Concurrent::AtomicFixnum.new(0)
+            latch = Concurrent::CountDownLatch.new(1)
+
+            composite = Promise.any?.
+              then { counter.up; latch.count_down }.
+              rescue { counter.down; latch.count_down }.
+            execute
+
+            latch.wait(1)
+
+            expect(counter.value).to eq 1
+          end
+        end
+
     end
 
     context 'fulfillment' do
