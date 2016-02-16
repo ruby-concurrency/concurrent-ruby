@@ -1,7 +1,7 @@
 
 class Master < Concurrent::Actor::RestartingContext
   def initialize
-    # for listener to be child of master
+    # create listener a supervised child of master
     @listener = Listener.spawn(name: 'listener1', supervise: true)
   end
 
@@ -17,7 +17,7 @@ class Master < Concurrent::Actor::RestartingContext
     end
   end
 
-  # TODO turn this into Behaviour and make it default part of RestartingContext
+  # TODO this should be a part of a behaviour, it ensures that children are restarted/paused etc. when theirs parents are
   def on_event(event)
     event_name, _ = event
     case event_name
@@ -50,12 +50,15 @@ end #
 master   = Master.spawn(name: 'master', supervise: true)
 listener = master.ask!(:listener)
 listener.ask!(:number)
+# crash the listener which is supervised by master, it's restarted automatically reporting a different number
+listener.tell(:crash)
+listener.ask!(:number)
 
 master << :crash
 
 sleep 0.1
 
-# ask for listener again, old one is terminated
+# ask for listener again, old one is terminated with master and replaced with new one
 listener.ask!(:terminated?)
 listener = master.ask!(:listener)
 listener.ask!(:number)

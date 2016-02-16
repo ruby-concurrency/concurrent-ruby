@@ -48,22 +48,26 @@ class Listener < Concurrent::Actor::RestartingContext
 end 
 
 master   = Master.spawn(name: 'master', supervise: true)
-    # => #<Concurrent::Actor::Reference:0x7ff3aa0d1380 /master (Master)>
+    # => #<Concurrent::Actor::Reference:0x7fd443366568 /master (Master)>
 listener = master.ask!(:listener)
-    # => #<Concurrent::Actor::Reference:0x7ff3aa8776e8 /master/listener1 (Listener)>
-listener.ask!(:number)                             # => 73
+    # => #<Concurrent::Actor::Reference:0x7fd44335cf68 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 20
+
+listener.tell(:crash)
+    # => #<Concurrent::Actor::Reference:0x7fd44335cf68 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 41
 
 master << :crash
-    # => #<Concurrent::Actor::Reference:0x7ff3aa0d1380 /master (Master)>
+    # => #<Concurrent::Actor::Reference:0x7fd443366568 /master (Master)>
 
-sleep 0.1                                          # => 1
+sleep 0.1                                          # => 0
 
 # ask for listener again, old one is terminated
 listener.ask!(:terminated?)                        # => true
 listener = master.ask!(:listener)
-    # => #<Concurrent::Actor::Reference:0x7ff3ab147110 /master/listener1 (Listener)>
-listener.ask!(:number)                             # => 48
+    # => #<Concurrent::Actor::Reference:0x7fd4433357b0 /master/listener1 (Listener)>
+listener.ask!(:number)                             # => 12
 
-master.ask!(:terminate!)                           # => [true, true]
+master.ask!(:terminate!)                           # => [[true], true]
 
 sleep 0.1                                          # => 0
