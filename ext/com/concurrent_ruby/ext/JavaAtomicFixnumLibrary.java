@@ -106,7 +106,7 @@ public class JavaAtomicFixnumLibrary implements Library {
                 RubyFixnum fixNum = (RubyFixnum) value;
                 return fixNum.getLongValue();
             } else {
-                throw getRuntime().newArgumentError("initial value must be a Fixnum");
+                throw getRuntime().newArgumentError("value must be a Fixnum");
             }
         }
     }
