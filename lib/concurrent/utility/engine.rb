@@ -27,6 +27,14 @@ module Concurrent
         !(RbConfig::CONFIG['host_os'] =~ /mswin|mingw|cygwin/).nil?
       end
 
+      def on_osx?
+        !(RbConfig::CONFIG['host_os'] =~ /darwin|mac os/).nil?
+      end
+
+      def on_linux?
+        !(RbConfig::CONFIG['host_os'] =~ /linux/).nil?
+      end
+
       def ruby_engine
         defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
       end

@@ -45,9 +45,9 @@
 
 ### Supported Ruby versions
 
-MRI 1.9.3, 2.0, 2.1, 2.2, JRuby (1.9 mode), and Rubinius 2.x are supported.
+MRI 1.9.3, 2.0 and above, JRuby 1.7x in 1.9 mode, JRuby 9000, and Rubinius 2.x are supported.
 This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
-Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs will be supported.
+Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.
 
 ## Thread Safety
 
@@ -59,13 +59,9 @@ It is critical to remember, however, that Ruby is a language of mutable referenc
 
 ## Features & Documentation
 
-We have a roadmap guiding our work toward the [v1.0.0 release](https://github.com/ruby-concurrency/concurrent-ruby/issues/257).
-
 The primary site for documentation is the automatically generated [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
 
 We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) and [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
-
-This library contains a variety of concurrency abstractions at high and low levels. One of the high-level abstractions is likely to meet most common needs.
 
 #### General-purpose Concurrency Abstractions
 

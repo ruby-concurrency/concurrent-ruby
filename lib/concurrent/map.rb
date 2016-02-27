@@ -41,8 +41,43 @@ module Concurrent
   # > require 'concurrent'
   # >
   # > map = Concurrent::Map.new
-
   class Map < Collection::MapImplementation
+
+    # @!macro [new] map_method_is_atomic
+    #   This method is atomic. Atomic methods of `Map` which accept a block
+    #   do not allow the `self` instance to be used within the block. Doing
+    #   so will cause a deadlock.
+
+    # @!method put_if_absent
+    #   @!macro map_method_is_atomic
+
+    # @!method compute_if_absent
+    #   @!macro map_method_is_atomic
+
+    # @!method compute_if_present
+    #   @!macro map_method_is_atomic
+
+    # @!method compute
+    #   @!macro map_method_is_atomic
+
+    # @!method merge_pair
+    #   @!macro map_method_is_atomic
+
+    # @!method replace_pair
+    #   @!macro map_method_is_atomic
+
+    # @!method replace_if_exists
+    #   @!macro map_method_is_atomic
+
+    # @!method get_and_set
+    #   @!macro map_method_is_atomic
+
+    # @!method delete
+    #   @!macro map_method_is_atomic
+
+    # @!method delete_pair
+    #   @!macro map_method_is_atomic
+
     def initialize(options = nil, &block)
       if options.kind_of?(::Hash)
         validate_options_hash!(options)
@@ -71,6 +106,15 @@ module Concurrent
     alias_method :get, :[]
     alias_method :put, :[]=
 
+    # @!macro [attach] map_method_not_atomic
+    #   The "fetch-then-act" methods of `Map` are not atomic. `Map` is intended
+    #   to be use as a concurrency primitive with strong happens-before
+    #   guarantees. It is not intended to be used as a high-level abstraction
+    #   supporting complex operations. All read and write operations are
+    #   thread safe, but no guarantees are made regarding race conditions
+    #   between the fetch operation and yielding to the block. Additionally,
+    #   this method does not support recursion. This is due to internal
+    #   constraints that are very unlikely to change in the near future.
     def fetch(key, default_value = NULL)
       if NULL != (value = get_or_default(key, NULL))
         value
@@ -83,12 +127,14 @@ module Concurrent
       end
     end
 
+    # @!macro map_method_not_atomic
     def fetch_or_store(key, default_value = NULL)
       fetch(key) do
         put(key, block_given? ? yield(key) : (NULL == default_value ? raise_fetch_no_key : default_value))
       end
     end
 
+    # @!macro map_method_is_atomic
     def put_if_absent(key, value)
       computed = false
       result = compute_if_absent(key) do

@@ -42,7 +42,13 @@ Dir.glob('tasks/**/*.rake').each do |rakefile|
 end
 
 def has_docker?
-  system("docker version > /dev/null 2>&1 || boot2docker version > /dev/null 2>&1")
+  if Concurrent.on_linux?
+    system("docker version > /dev/null 2>&1")
+  elsif Concurrent.on_osx?
+    system("docker version > /dev/null 2>&1 || boot2docker version > /dev/null 2>&1")
+  else
+    false
+  end
 end
 
 if Concurrent.on_jruby?

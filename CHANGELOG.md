@@ -1,4 +1,17 @@
-## Current Release v1.0.0 (13 November 2015)
+## Current Release v1.0.1 (27 February 2016)
+
+* Fix "uninitialized constant Concurrent::ReentrantReadWriteLock" error.
+* Better handling of `autoload` vs. `require`.
+* Improved API for Edge `Future` zipping.
+* Fix reference leak in Edge `Future` constructor .
+* Fix bug which prevented thread pools from surviving a `fork`.
+* Fix bug in which `TimerTask` did not correctly specify all its dependencies.
+* Improved support for JRuby+Truffle
+* Improved error messages.
+* Improved documentation.
+* Updated README and CONTRIBUTING.
+
+### Release v1.0.0 (13 November 2015)
 
 * Rename `attr_volatile_with_cas` to `attr_atomic`
 * Add `clear_each` to `LockFreeStack`
