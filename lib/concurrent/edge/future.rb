@@ -66,7 +66,7 @@ module Concurrent
       # requested by calling `#wait`, `#value`, `#value!`, etc. on it or on any of the chained futures.
       # @return [Future]
       def delay(default_executor = :io, &task)
-        Delay.new(default_executor).future.then(&task)
+        DelayPromise.new(default_executor).future.then(&task)
       end
 
       # Schedules the block to be executed on executor in given intended_time.
@@ -98,8 +98,18 @@ module Concurrent
       # Constructs new {Future} which is completed after first of the futures is complete.
       # @param [Event] futures
       # @return [Future]
-      def any(*futures)
-        AnyPromise.new(futures, :io).future
+      def any_complete(*futures)
+        AnyCompletePromise.new(futures, :io).future
+      end
+
+      alias_method :any, :any_complete
+
+      # Constructs new {Future} which becomes succeeded after first of the futures succeedes or
+      # failed if all futures fail (reason is last error).
+      # @param [Event] futures
+      # @return [Future]
+      def any_successful(*futures)
+        AnySuccessfulPromise.new(futures, :io).future
       end
 
       # only proof of concept
@@ -137,13 +147,11 @@ module Concurrent
       # TODO allow to to have a zip point for many futures and process them in batches by 10
     end
 
-    extend FutureShortcuts
-    include FutureShortcuts
-
     # Represents an event which will happen in future (will be completed). It has to always happen.
-    class Event < Synchronization::LockableObject
+    class Event < Synchronization::Object
       safe_initialization!
       private(*attr_atomic(:internal_state))
+      # @!visibility private
       public :internal_state
       include Concern::Deprecation
       include Concern::Logging
@@ -188,13 +196,13 @@ module Concurrent
 
       def initialize(promise, default_executor)
         super()
+        @Lock               = Mutex.new
+        @Condition          = ConditionVariable.new
         @Promise            = promise
         @DefaultExecutor    = default_executor
-        @Touched            = AtomicBoolean.new(false)
+        @Touched            = AtomicBoolean.new false
         @Callbacks          = LockFreeStack.new
-        # TODO (pitr 12-Sep-2015): replace with AtomicFixnum, avoid aba problem
-        # TODO (pitr 12-Sep-2015): look at java.util.concurrent solution
-        @Waiters            = LockFreeStack.new
+        @Waiters            = AtomicFixnum.new 0
         self.internal_state = PENDING
       end
 
@@ -276,7 +284,7 @@ module Concurrent
       # Inserts delay into the chain of Futures making rest of it lazy evaluated.
       # @return [Event]
       def delay
-        ZipEventEventPromise.new(self, Delay.new(@DefaultExecutor).event, @DefaultExecutor).event
+        ZipEventEventPromise.new(self, DelayPromise.new(@DefaultExecutor).event, @DefaultExecutor).event
       end
 
       # # Schedules rest of the chain for execution with specified time or on specified time
@@ -298,13 +306,13 @@ module Concurrent
       # @yield [success, value, reason] executed async on `executor` when completed
       # @return self
       def on_completion(executor = nil, &callback)
-        add_callback :pr_async_callback_on_completion, executor || @DefaultExecutor, callback
+        add_callback :async_callback_on_completion, executor || @DefaultExecutor, callback
       end
 
       # @yield [success, value, reason] executed sync when completed
       # @return self
       def on_completion!(&callback)
-        add_callback :pr_callback_on_completion, callback
+        add_callback :callback_on_completion, callback
       end
 
       # Changes default executor for rest of the chain
@@ -329,9 +337,8 @@ module Concurrent
       # @!visibility private
       def complete_with(state, raise_on_reassign = true)
         if compare_and_set_internal_state(PENDING, state)
-          #(state)
           # go to synchronized block only if there were waiting threads
-          synchronize { ns_broadcast } if @Waiters.clear
+          @Lock.synchronize { @Condition.broadcast } unless @Waiters.value == 0
           call_callbacks
         else
           Concurrent::MultipleAssignmentError.new('Event can be completed only once') if raise_on_reassign
@@ -388,32 +395,31 @@ module Concurrent
 
       # @return [true, false]
       def wait_until_complete(timeout)
-        while true
-          last_waiter = @Waiters.peek # waiters' state before completion
-          return true if completed?
+        return true if completed?
 
-          # synchronize so it cannot be signaled before it waits
-          synchronize do
-            # ok only if completing thread did not start signaling
-            next unless @Waiters.compare_and_push last_waiter, Thread.current
-            return ns_wait_until(timeout) { completed? }
+        @Lock.synchronize do
+          @Waiters.increment
+          unless completed?
+            @Condition.wait @Lock, timeout
           end
+          @Waiters.decrement
         end
+        completed?
       end
 
-      def pr_with_async(executor, *args, &block)
+      def with_async(executor, *args, &block)
         Concurrent.post_on(executor, *args, &block)
       end
 
-      def pr_async_callback_on_completion(executor, callback)
-        pr_with_async(executor) { pr_callback_on_completion callback }
+      def async_callback_on_completion(executor, callback)
+        with_async(executor) { callback_on_completion callback }
       end
 
-      def pr_callback_on_completion(callback)
+      def callback_on_completion(callback)
         callback.call
       end
 
-      def pr_callback_notify_blocked(promise)
+      def callback_notify_blocked(promise)
         promise.on_done self
       end
 
@@ -660,13 +666,13 @@ module Concurrent
 
       # @return [Future] which has first completed value from futures
       def any(*futures)
-        AnyPromise.new([self, *futures], @DefaultExecutor).future
+        AnyCompletePromise.new([self, *futures], @DefaultExecutor).future
       end
 
       # Inserts delay into the chain of Futures making rest of it lazy evaluated.
       # @return [Future]
       def delay
-        ZipFutureEventPromise.new(self, Delay.new(@DefaultExecutor).future, @DefaultExecutor).future
+        ZipFutureEventPromise.new(self, DelayPromise.new(@DefaultExecutor).future, @DefaultExecutor).future
       end
 
       # Schedules rest of the chain for execution with specified time or on specified time
@@ -714,32 +720,32 @@ module Concurrent
       # @yield [value] executed async on `executor` when success
       # @return self
       def on_success(executor = nil, &callback)
-        add_callback :pr_async_callback_on_success, executor || @DefaultExecutor, callback
+        add_callback :async_callback_on_success, executor || @DefaultExecutor, callback
       end
 
       # @yield [reason] executed async on `executor` when failed?
       # @return self
       def on_failure(executor = nil, &callback)
-        add_callback :pr_async_callback_on_failure, executor || @DefaultExecutor, callback
+        add_callback :async_callback_on_failure, executor || @DefaultExecutor, callback
       end
 
       # @yield [value] executed sync when success
       # @return self
       def on_success!(&callback)
-        add_callback :pr_callback_on_success, callback
+        add_callback :callback_on_success, callback
       end
 
       # @yield [reason] executed sync when failed?
       # @return self
       def on_failure!(&callback)
-        add_callback :pr_callback_on_failure, callback
+        add_callback :callback_on_failure, callback
       end
 
       # @!visibility private
       def complete_with(state, raise_on_reassign = true)
         if compare_and_set_internal_state(PENDING, state)
-          @Waiters.clear
-          synchronize { ns_broadcast }
+          # go to synchronized block only if there were waiting threads
+          @Lock.synchronize { @Condition.broadcast } unless @Waiters.value == 0
           call_callbacks state
         else
           if raise_on_reassign
@@ -792,37 +798,37 @@ module Concurrent
         self.send method, state, *args
       end
 
-      def pr_async_callback_on_success(state, executor, callback)
-        pr_with_async(executor, state, callback) do |st, cb|
-          pr_callback_on_success st, cb
+      def async_callback_on_success(state, executor, callback)
+        with_async(executor, state, callback) do |st, cb|
+          callback_on_success st, cb
         end
       end
 
-      def pr_async_callback_on_failure(state, executor, callback)
-        pr_with_async(executor, state, callback) do |st, cb|
-          pr_callback_on_failure st, cb
+      def async_callback_on_failure(state, executor, callback)
+        with_async(executor, state, callback) do |st, cb|
+          callback_on_failure st, cb
         end
       end
 
-      def pr_callback_on_success(state, callback)
+      def callback_on_success(state, callback)
         state.apply callback if state.success?
       end
 
-      def pr_callback_on_failure(state, callback)
+      def callback_on_failure(state, callback)
         state.apply callback unless state.success?
       end
 
-      def pr_callback_on_completion(state, callback)
+      def callback_on_completion(state, callback)
         callback.call state.result
       end
 
-      def pr_callback_notify_blocked(state, promise)
+      def callback_notify_blocked(state, promise)
         super(promise)
       end
 
-      def pr_async_callback_on_completion(state, executor, callback)
-        pr_with_async(executor, state, callback) do |st, cb|
-          pr_callback_on_completion st, cb
+      def async_callback_on_completion(state, executor, callback)
+        with_async(executor, state, callback) do |st, cb|
+          callback_on_completion st, cb
         end
       end
 
@@ -1001,7 +1007,7 @@ module Concurrent
     class BlockedPromise < InnerPromise
       def self.new(*args, &block)
         promise = super(*args, &block)
-        promise.blocked_by.each { |f| f.add_callback :pr_callback_notify_blocked, promise }
+        promise.blocked_by.each { |f| f.add_callback :callback_notify_blocked, promise }
         promise
       end
 
@@ -1014,7 +1020,7 @@ module Concurrent
       # @api private
       def on_done(future)
         countdown   = process_on_done(future)
-        completable = completable?(countdown)
+        completable = completable?(countdown, future)
 
         if completable
           on_completable(future)
@@ -1051,7 +1057,7 @@ module Concurrent
       end
 
       # @return [true,false] if completable
-      def completable?(countdown)
+      def completable?(countdown, future)
         countdown.zero?
       end
 
@@ -1171,7 +1177,7 @@ module Concurrent
           case value
           when Future
             @BlockedBy.push value
-            value.add_callback :pr_callback_notify_blocked, self
+            value.add_callback :callback_notify_blocked, self
             @Countdown.value
           when Event
             evaluate_to(lambda { raise TypeError, 'cannot flatten to Event' })
@@ -1200,8 +1206,8 @@ module Concurrent
         nil
       end
 
-      def completable?(countdown)
-        !@Future.internal_state.completed? && super(countdown)
+      def completable?(countdown, future)
+        !@Future.internal_state.completed? && super(countdown, future)
       end
     end
 
@@ -1321,7 +1327,7 @@ module Concurrent
     end
 
     # @!visibility private
-    class AnyPromise < BlockedPromise
+    class AnyCompletePromise < BlockedPromise
 
       private
 
@@ -1331,7 +1337,7 @@ module Concurrent
         super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
       end
 
-      def completable?(countdown)
+      def completable?(countdown, future)
         true
       end
 
@@ -1341,7 +1347,27 @@ module Concurrent
     end
 
     # @!visibility private
-    class Delay < InnerPromise
+    class AnySuccessfulPromise < BlockedPromise
+
+      private
+
+      def initialize(blocked_by_futures, default_executor)
+        blocked_by_futures.all? { |f| f.is_a? Future } or
+            raise ArgumentError, 'accepts only Futures not Events'
+        super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
+      end
+
+      def completable?(countdown, future)
+        future.success? || super(countdown, future)
+      end
+
+      def on_completable(done_future)
+        complete_with done_future.internal_state, false
+      end
+    end
+
+    # @!visibility private
+    class DelayPromise < InnerPromise
       def touch
         @Future.complete_with Event::COMPLETED
       end
@@ -1350,20 +1376,6 @@ module Concurrent
 
       def initialize(default_executor)
         super Event.new(self, default_executor)
-      end
-    end
-
-    # @!visibility private
-    class DelayValue < InnerPromise
-      def touch
-        @Future.complete_with Future::Success.new(@Value)
-      end
-
-      private
-
-      def initialize(default_executor, value)
-        super Future.new(self, default_executor)
-        @Value = value
       end
     end
 
@@ -1401,7 +1413,10 @@ module Concurrent
       end
     end
   end
-
-  extend Edge::FutureShortcuts
-  include Edge::FutureShortcuts
 end
+
+Concurrent::Edge.send :extend, Concurrent::Edge::FutureShortcuts
+Concurrent::Edge.send :include, Concurrent::Edge::FutureShortcuts
+
+Concurrent.send :extend, Concurrent::Edge::FutureShortcuts
+Concurrent.send :include, Concurrent::Edge::FutureShortcuts

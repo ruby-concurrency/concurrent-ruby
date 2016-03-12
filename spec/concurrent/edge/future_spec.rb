@@ -118,22 +118,34 @@ describe 'Concurrent::Edge futures', edge: true do
     end
   end
 
-  describe '.any' do
+  describe '.any_complete' do
     it 'continues on first result' do
-      queue = Queue.new
-      f1    = Concurrent.future(:io) { queue.pop }
-      f2    = Concurrent.future(:io) { queue.pop }
+      f1 = Concurrent.future
+      f2 = Concurrent.future
+      f3 = Concurrent.future
 
-      queue.push(1)
-      queue.push(2)
+      any1 = Concurrent.any_complete(f1, f2)
+      any2 = f2 | f3
 
-      anys = [Concurrent.any(f1, f2),
-              f1 | f2]
+      f1.success 1
+      f2.fail
 
-      anys.each do |any|
-        expect(any.value!.to_s).to match /1|2/
-      end
+      expect(any1.value!).to eq 1
+      expect(any2.reason).to be_a_kind_of StandardError
+    end
+  end
 
+  describe '.any_successful' do
+    it 'continues on first result' do
+      f1 = Concurrent.future
+      f2 = Concurrent.future
+
+      any = Concurrent.any_successful(f1, f2)
+
+      f1.fail
+      f2.success :value
+
+      expect(any.value!).to eq :value
     end
   end
 
