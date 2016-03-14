@@ -51,7 +51,7 @@ module Concurrent
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask(1).value # => 2
       #   adder.ask(nil).wait.reason # => #<NoMethodError: undefined method `+' for nil:NilClass>
-      def ask(message, future = Concurrent::Edge.future)
+      def ask(message, future = Concurrent::Edge.completable_future)
         message message, future
       end
 
@@ -69,7 +69,7 @@ module Concurrent
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask!(1) # => 2
-      def ask!(message, future = Concurrent::Edge.future)
+      def ask!(message, future = Concurrent::Edge.completable_future)
         ask(message, future).value!
       end
 

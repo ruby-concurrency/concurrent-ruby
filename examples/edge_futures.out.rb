@@ -115,8 +115,8 @@ scheduled.value # returns after another 0.1sec     # => 2
 
 ### Completable Future and Event
 
-future = future()
-    # => <#Concurrent::Edge::CompletableFuture:0x7fedf3820828 pending blocks:[]>
+future = completable_future
+    # => <#Concurrent::Edge::CompletableFuture:0x7fe8d312f9d0 pending blocks:[]>
 event  = event()
     # => <#Concurrent::Edge::CompletableEvent:0x7fedf1112f88 pending blocks:[]>
 # Don't forget to keep the reference, `future.then { |v| v }` is incompletable

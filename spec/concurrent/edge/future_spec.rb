@@ -18,8 +18,8 @@ describe 'Concurrent::Edge futures', edge: true do
     end
 
     it 'future' do
-      b = future
-      a = future.chain_completable(b)
+      b = completable_future
+      a = completable_future.chain_completable(b)
       a.success :val
       expect(b).to be_completed
       expect(b.value).to eq :val
@@ -111,7 +111,7 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.future without block' do
     specify do
-      completable_future = future
+      completable_future = completable_future()
       one                = completable_future.then(&:succ)
       join               = zip_futures(completable_future).then { |v| v }
       expect(one.completed?).to be false
@@ -124,9 +124,9 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.any_complete' do
     it 'continues on first result' do
-      f1 = future
-      f2 = future
-      f3 = future
+      f1 = completable_future
+      f2 = completable_future
+      f3 = completable_future
 
       any1 = any_complete(f1, f2)
       any2 = f2 | f3
@@ -141,8 +141,8 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.any_successful' do
     it 'continues on first result' do
-      f1 = future
-      f2 = future
+      f1 = completable_future
+      f2 = completable_future
 
       any = any_successful(f1, f2)
 

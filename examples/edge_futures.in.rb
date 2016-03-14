@@ -96,7 +96,7 @@ scheduled.value # returns after another 0.1sec
 
 ### Completable Future and Event
 
-future = future()
+future = completable_future
 event  = event()
 # Don't forget to keep the reference, `future.then { |v| v }` is incompletable
 

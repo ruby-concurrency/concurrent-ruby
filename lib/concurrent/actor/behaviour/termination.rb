@@ -14,7 +14,7 @@ module Concurrent
 
         def initialize(core, subsequent, core_options, trapping = false, terminate_children = true)
           super core, subsequent, core_options
-          @terminated         = Concurrent::Edge.future
+          @terminated         = Concurrent::Edge.completable_future
           @public_terminated  = @terminated.hide_completable
           @trapping           = trapping
           @terminate_children = terminate_children

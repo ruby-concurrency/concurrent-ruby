@@ -26,18 +26,16 @@ module Concurrent
         CompletableEventPromise.new(default_executor).future
       end
 
-      # @overload future(default_executor = :io, &task)
-      #   Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
-      #   @return [Future]
-      # @overload future(default_executor = :io)
-      #   User is responsible for completing the future once by {Edge::CompletableFuture#success} or {Edge::CompletableFuture#fail}
-      #   @return [CompletableFuture]
+      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
+      # @return [Future]
       def future(default_executor = :io, &task)
-        if task
-          ImmediateEventPromise.new(default_executor).future.then(&task)
-        else
-          CompletableFuturePromise.new(default_executor).future
-        end
+        ImmediateEventPromise.new(default_executor).future.then(&task)
+      end
+
+      # User is responsible for completing the future once by {Edge::CompletableFuture#success} or {Edge::CompletableFuture#fail}
+      # @return [CompletableFuture]
+      def completable_future(default_executor = :io)
+        CompletableFuturePromise.new(default_executor).future
       end
 
       # @return [Future] which is already completed
