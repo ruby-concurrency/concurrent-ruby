@@ -36,6 +36,21 @@ module Concurrent
         self.then { |v| actor.ask(v) }.flat
       end
 
+      # TODO (pitr-ch 14-Mar-2016): document, and move to core
+      def run(terminated = Promises.future)
+        on_completion do |success, value, reason|
+          if success
+            if value.is_a?(Future)
+              value.run terminated
+            else
+              terminated.success value
+            end
+          else
+            terminated.fail reason
+          end
+        end
+      end
+
       include Enumerable
 
       def each(&block)

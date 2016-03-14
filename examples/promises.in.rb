@@ -1,5 +1,7 @@
-# adds factory methods like: future, event, delay, schedule, zip,
-include Concurrent::Promises::FutureFactoryMethods
+# Adds factory methods like: future, event, delay, schedule, zip, ...
+# otherwise they can be called on Promises module
+include Concurrent::Promises::FutureFactoryMethods #
+
 
 ### Simple asynchronous task
 
@@ -19,30 +21,39 @@ future.reason
 # re-raising
 raise future rescue $!
 
+### Direct creation of completed futures
 
-### Chaining
+succeeded_future(Object.new)
+failed_future(StandardError.new("boom"))
+
+### Chaining of futures
 
 head    = succeeded_future 1 #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
 branch1.zip(branch2).value!
+# zip is aliased as &
 (branch1 & branch2).then { |a, b| a + b }.value!
 (branch1 & branch2).then(&:+).value!
+# or a class method zip from FutureFactoryMethods can be used to zip multiple futures
 zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # pick only first completed
+any(branch1, branch2).value!
 (branch1 | branch2).value!
+
 
 ### Error handling
 
-future { Object.new }.then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
-future { Object.new }.then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
-future { 1 }.then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
+succeeded_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
+succeeded_future(Object.new).then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
+succeeded_future(1).then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
 
 failing_zip = succeeded_future(1) & failed_future(StandardError.new('boom'))
 failing_zip.result
 failing_zip.then { |v| 'never happens' }.result
 failing_zip.rescue { |a, b| (a || b).message }.value
 failing_zip.chain { |success, values, reasons| [success, values.compact, reasons.compactß] }.value
+
 
 ### Delay
 
@@ -67,11 +78,13 @@ sleep 0.1 # forces only head to complete, branch 2 stays incomplete
 [head, branch1, branch2, join].map(&:completed?)
 
 join.value
+[head, branch1, branch2, join].map(&:completed?)
 
 
 ### Flatting
 
-future { future { 1+1 } }.flat.value # waits for inner future
+# waits for inner future, only the last call to value blocks thread
+future { future { 1+1 } }.flat.value
 
 # more complicated example
 future { future { future { 1 + 1 } } }.
@@ -82,6 +95,7 @@ future { future { future { 1 + 1 } } }.
 
 ### Schedule
 
+# it'll be executed after 0.1 seconds
 scheduled = schedule(0.1) { 1 }
 
 scheduled.completed?
@@ -98,9 +112,8 @@ scheduled.value # returns after another 0.1sec
 
 future = completable_future
 event  = event()
-# Don't forget to keep the reference, `future.then { |v| v }` is incompletable
 
-# will be blocked until completed
+# These threads will be blocked until the future and event is completed
 t1     = Thread.new { future.value } #
 t2     = Thread.new { event.wait } #
 
@@ -109,6 +122,7 @@ future.success 1 rescue $!
 future.try_success 2
 event.complete
 
+# The threads can be joined now
 [t1, t2].each &:join #
 
 
@@ -128,7 +142,12 @@ queue.pop
 
 ### Thread-pools
 
-future(:fast) { 2 }.then(:io) { File.read __FILE__ }.wait
+# Factory methods are taking names of the global executors
+# (ot instances of custom executors)
+
+future(:fast) { 2 }. # executed on :fast executor only short and non-blocking tasks can go there
+    then(:io) { File.read __FILE__ }. # executed on executor for blocking and long operations
+    wait
 
 
 ### Interoperability with actors
@@ -175,6 +194,7 @@ zip(*jobs).value
 
 
 # periodic task
+# TODO (pitr-ch 14-Mar-2016): fix to be volatile
 @end = false
 
 def schedule_job

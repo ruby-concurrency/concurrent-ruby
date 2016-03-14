@@ -4,23 +4,19 @@ require 'concurrent/lock_free_stack'
 
 module Concurrent
 
-  # # Futures and Promises
+  # # Promises Framework
   #
-  # New implementation added in version 0.8 differs from previous versions and has little in common.
-  # {Future} represents a value which will become {#completed?} in future, it'll contain {#value} if {#success?} or a {#reason} if {#failed?}. It cannot be directly completed, there are implementations of abstract {Promise} class for that, so {Promise}'s only purpose is to complete a given {Future} object. They are always constructed as a Pair even in chaining methods like {#then}, {#rescue}, {#then_delay}, etc.
+  # Unified implementation of futures and promises which combines features of previous `Future`,
+  # `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
+  # new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
+  # operations like `#wait`, `#value`. It also offers better performance.
   #
-  # There is few {Promise} implementations:
-  #
-  # -   OuterPromise - only Promise used by users, can be completed by outer code. Constructed with {Concurrent::Next.promise} helper method.
-  # -   Immediate - internal implementation of Promise used to represent immediate evaluation of a block. Constructed with {Concurrent::Next.future} helper method.
-  # -   Delay - internal implementation of Promise used to represent delayed evaluation of a block. Constructed with {Concurrent::Next.delay} helper method.
-  # -   ConnectedPromise - used internally to support {Future#with_default_executor}
-  #
-  # TODO documentation
+  # ## Examples
+  # {include:file:examples/promises.out.rb}
   module Promises
 
     module FutureFactoryMethods
-      # User is responsible for completing the event once by {Edge::CompletableEvent#complete}
+      # User is responsible for completing the event once by {Promises::CompletableEvent#complete}
       # @return [CompletableEvent]
       def event(default_executor = :io)
         CompletableEventPromise.new(default_executor).future
@@ -33,7 +29,7 @@ module Concurrent
         ImmediateEventPromise.new(default_executor).future.then(&task)
       end
 
-      # User is responsible for completing the future once by {Edge::CompletableFuture#success} or {Edge::CompletableFuture#fail}
+      # User is responsible for completing the future once by {Promises::CompletableFuture#success} or {Promises::CompletableFuture#fail}
       # @return [CompletableFuture]
       def completable_future(default_executor = :io)
         CompletableFuturePromise.new(default_executor).future
@@ -587,7 +583,7 @@ module Concurrent
         raise 'obligation is not failed' unless failed?
         reason = internal_state.reason
         if reason.is_a?(::Array)
-          reason.each { |e| log ERROR, 'Edge::Future', e }
+          reason.each { |e| log ERROR, 'Promises::Future', e }
           Concurrent::Error.new 'multiple exceptions, inspect log'
         else
           reason.exception(*args)
@@ -692,7 +688,7 @@ module Concurrent
           call_callbacks state
         else
           if raise_on_reassign
-            log ERROR, 'Edge::Future', reason if reason # print otherwise hidden error
+            log ERROR, 'Promises::Future', reason if reason # print otherwise hidden error
             raise(Concurrent::MultipleAssignmentError.new(
                       "Future can be completed only once. Current result is #{result}, " +
                           "trying to set #{state.result}"))
@@ -887,7 +883,7 @@ module Concurrent
       rescue StandardError => error
         complete_with Future::Failed.new(error)
       rescue Exception => error
-        log(ERROR, 'Edge::Future', error)
+        log(ERROR, 'Promises::Future', error)
         complete_with Future::Failed.new(error)
       end
     end
