@@ -43,7 +43,7 @@ module Concurrent
           envelope_to_redirect = if envelope.future
                                    envelope
                                  else
-                                   Envelope.new(envelope.message, Concurrent::Edge.future, envelope.sender, envelope.address)
+                                   Envelope.new(envelope.message, Concurrent::Promises.future, envelope.sender, envelope.address)
                                  end
           envelope_to_redirect.future.on_completion! { @balancer << :subscribe } # TODO check safety of @balancer reading
           redirect @balancer, envelope_to_redirect

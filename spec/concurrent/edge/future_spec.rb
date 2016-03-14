@@ -1,4 +1,4 @@
-require 'concurrent-edge'
+require 'concurrent/edge/promises'
 require 'thread'
 require 'pry'
 # require 'pry-stack_explorer'
@@ -7,7 +7,7 @@ Concurrent.use_stdlib_logger Logger::DEBUG
 
 describe 'Concurrent::Edge futures', edge: true do
 
-  include Concurrent::Edge::FutureFactoryMethods
+  include Concurrent::Promises::FutureFactoryMethods
 
   describe 'chain_completable' do
     it 'event' do
@@ -196,9 +196,9 @@ describe 'Concurrent::Edge futures', edge: true do
       expect(z1.then(&:+).value!).to eq 3
       expect(z2.then { |a, b, c| a+b+c }.value!).to eq 6
 
-      expect(future { 1 }.delay).to be_a_kind_of Concurrent::Edge::Future
+      expect(future { 1 }.delay).to be_a_kind_of Concurrent::Promises::Future
       expect(future { 1 }.delay.wait!).to be_completed
-      expect(event.complete.delay).to be_a_kind_of Concurrent::Edge::Event
+      expect(event.complete.delay).to be_a_kind_of Concurrent::Promises::Event
       expect(event.complete.delay.wait).to be_completed
 
       a = future { 1 }
@@ -221,6 +221,14 @@ describe 'Concurrent::Edge futures', edge: true do
         expect { zip(a_future).value! }.to raise_error(Concurrent::Error)
       end
 
+    end
+  end
+
+  describe '.each' do
+    specify do
+      expect(succeeded_future(nil).each.map(&:inspect)).to eq ['nil']
+      expect(succeeded_future(1).each.map(&:inspect)).to eq ['1']
+      expect(succeeded_future([1, 2]).each.map(&:inspect)).to eq ['1', '2']
     end
   end
 
@@ -326,9 +334,9 @@ describe 'Concurrent::Edge futures', edge: true do
       four  = three.delay.then(&:succ)
 
       # meaningful to_s and inspect defined for Future and Promise
-      expect(head.to_s).to match /<#Concurrent::Edge::Future:0x[\da-f]+ pending>/
+      expect(head.to_s).to match /<#Concurrent::Promises::Future:0x[\da-f]+ pending>/
       expect(head.inspect).to(
-          match(/<#Concurrent::Edge::Future:0x[\da-f]+ pending blocks:\[<#Concurrent::Edge::ThenPromise:0x[\da-f]+ pending>\]>/))
+          match(/<#Concurrent::Promises::Future:0x[\da-f]+ pending blocks:\[<#Concurrent::Promises::ThenPromise:0x[\da-f]+ pending>\]>/))
 
       # evaluates only up to three, four is left unevaluated
       expect(three.value!).to eq 3

@@ -1,6 +1,6 @@
 
 # adds factory methods like: future, event, delay, schedule, zip,
-include Concurrent::Edge::FutureFactoryMethods
+include Concurrent::Promises::FutureFactoryMethods
 
 ### Simple asynchronous task
 

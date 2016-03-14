@@ -66,6 +66,11 @@ We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) an
 #### General-purpose Concurrency Abstractions
 
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to a class. Loosely based on Erlang's [gen_server](http://www.erlang.org/doc/man/gen_server.html).
+* [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises/FutureFactoryMethods.html):
+  Unified implementation of futures and promises which combines features of previous `Future`,
+  `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
+  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
+  operations like `#wait`, `#value`. It also offers better performance.
 * [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
   * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
 * [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
@@ -80,6 +85,10 @@ Collection classes that were originally part of the (deprecated) `thread_safe` g
 * [Hash](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html) A thread-safe subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
 * [Map](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Map.html) A hash-like object that should have much better performance characteristics, especially under high concurrency, than `Concurrent::Hash`.
 * [Tuple](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Tuple.html) A fixed size array with volatile (synchronized, thread safe) getters/setters.
+
+and other collections:
+
+* [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
 
 Value objects inspired by other languages:
 
@@ -129,11 +138,6 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
-* [New Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/FutureShortcuts.html):
-  Unified implementation of futures and promises which combines features of previous `Future`,
-  `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
-  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
-  operations like `#wait`, `#value`. It also offers better performance.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
   Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
   Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
@@ -141,7 +145,6 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
-* [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeStack.html)
 
 #### Statuses:
 
@@ -149,7 +152,6 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 - **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
 - **Channel** - Brand new implementation; partial documentation and tests; stability is good.
-- **Future/Promise Framework** - API changes; partial documentation and tests; stability is good.
 - **LazyRegister** - Missing documentation and tests.
 - **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing.
 

@@ -45,13 +45,13 @@ module Concurrent
       #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
       #   global_io_executor.
       # @param [Object] message
-      # @param [Edge::Future] future to be fulfilled be message's processing result
-      # @return [Edge::Future] supplied future
+      # @param [Promises::Future] future to be fulfilled be message's processing result
+      # @return [Promises::Future] supplied future
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask(1).value # => 2
       #   adder.ask(nil).wait.reason # => #<NoMethodError: undefined method `+' for nil:NilClass>
-      def ask(message, future = Concurrent::Edge.completable_future)
+      def ask(message, future = Concurrent::Promises.completable_future)
         message message, future
       end
 
@@ -63,13 +63,13 @@ module Concurrent
       #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
       #   global_io_executor.
       # @param [Object] message
-      # @param [Edge::Future] future to be fulfilled be message's processing result
+      # @param [Promises::Future] future to be fulfilled be message's processing result
       # @return [Object] message's processing result
       # @raise [Exception] future.reason if future is #failed?
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask!(1) # => 2
-      def ask!(message, future = Concurrent::Edge.completable_future)
+      def ask!(message, future = Concurrent::Promises.completable_future)
         ask(message, future).value!
       end
 

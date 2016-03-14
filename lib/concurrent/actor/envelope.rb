@@ -16,7 +16,7 @@ module Concurrent
 
       def initialize(message, future, sender, address)
         @message = message
-        @future  = Type! future, Edge::CompletableFuture, NilClass
+        @future  = Type! future, Promises::CompletableFuture, NilClass
         @sender  = Type! sender, Reference, Thread
         @address = Type! address, Reference
       end

@@ -1,24 +1,24 @@
-require 'concurrent' # TODO do not require whole concurrent gem
-require 'concurrent/concern/deprecation'
-require 'concurrent/edge/lock_free_stack'
+# TODO do not require whole concurrent gem
+require 'concurrent'
+require 'concurrent/lock_free_stack'
 
-
-# @note different name just not to collide for now
 module Concurrent
-  module Edge
 
-    # Provides edge features, which will be added to or replace features in main gem.
-    #
-    # Contains new unified implementation of Futures and Promises which combines Features of previous `Future`,
-    # `Promise`, `IVar`, `Event`, `Probe`, `dataflow`, `Delay`, `TimerTask` into single framework. It uses extensively
-    # new synchronization layer to make all the paths lock-free with exception of blocking threads on `#wait`.
-    # It offers better performance and does not block threads (exception being #wait and similar methods where it's
-    # intended).
-    #
-    # ## Examples
-    # {include:file:examples/edge_futures.out.rb}
-    #
-    # @!macro edge_warning
+  # # Futures and Promises
+  #
+  # New implementation added in version 0.8 differs from previous versions and has little in common.
+  # {Future} represents a value which will become {#completed?} in future, it'll contain {#value} if {#success?} or a {#reason} if {#failed?}. It cannot be directly completed, there are implementations of abstract {Promise} class for that, so {Promise}'s only purpose is to complete a given {Future} object. They are always constructed as a Pair even in chaining methods like {#then}, {#rescue}, {#then_delay}, etc.
+  #
+  # There is few {Promise} implementations:
+  #
+  # -   OuterPromise - only Promise used by users, can be completed by outer code. Constructed with {Concurrent::Next.promise} helper method.
+  # -   Immediate - internal implementation of Promise used to represent immediate evaluation of a block. Constructed with {Concurrent::Next.future} helper method.
+  # -   Delay - internal implementation of Promise used to represent delayed evaluation of a block. Constructed with {Concurrent::Next.delay} helper method.
+  # -   ConnectedPromise - used internally to support {Future#with_default_executor}
+  #
+  # TODO documentation
+  module Promises
+
     module FutureFactoryMethods
       # User is responsible for completing the event once by {Edge::CompletableEvent#complete}
       # @return [CompletableEvent]
@@ -29,6 +29,7 @@ module Concurrent
       # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
       def future(default_executor = :io, &task)
+        # TODO (pitr-ch 14-Mar-2016): arguments for the block
         ImmediateEventPromise.new(default_executor).future.then(&task)
       end
 
@@ -110,22 +111,8 @@ module Concurrent
         AnySuccessfulPromise.new(futures, :io).future
       end
 
-      # only proof of concept
-      # @return [Future]
-      def select(*channels)
-        # TODO has to be redone, since it's blocking, resp. moved to edge
-        future do
-          # noinspection RubyArgCount
-          Channel.select do |s|
-            channels.each do |ch|
-              s.take(ch) { |value| [value, ch] }
-            end
-          end
-        end
-      end
-
-      # TODO add first(count, *futures)
-      # TODO allow to to have a zip point for many futures and process them in batches by 10
+      # TODO consider adding first(count, *futures)
+      # TODO consider adding zip_by(slice, *futures) processing futures in slices
     end
 
     # Represents an event which will happen in future (will be completed). It has to always happen.
@@ -134,7 +121,6 @@ module Concurrent
       private(*attr_atomic(:internal_state))
       # @!visibility private
       public :internal_state
-      include Concern::Deprecation
       include Concern::Logging
 
       # @!visibility private
@@ -541,20 +527,10 @@ module Concurrent
         state.completed? && state.success?
       end
 
-      def fulfilled?
-        deprecated_method 'fulfilled?', 'success?'
-        success?
-      end
-
       # Has Future been failed?
       # @return [Boolean]
       def failed?(state = internal_state)
         state.completed? && !state.success?
-      end
-
-      def rejected?
-        deprecated_method 'rejected?', 'failed?'
-        failed?
       end
 
       # @return [Object, nil] the value of the Future when success, nil on timeout
@@ -624,12 +600,6 @@ module Concurrent
         ThenPromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
       end
 
-      # Asks the actor with its value.
-      # @return [Future] new future with the response form the actor
-      def then_ask(actor)
-        self.then { |v| actor.ask(v) }.flat
-      end
-
       def chain_completable(completable_future)
         on_completion! { completable_future.complete_with internal_state }
       end
@@ -670,13 +640,6 @@ module Concurrent
         end.flat
       end
 
-      # Zips with selected value form the suplied channels
-      # @return [Future]
-      def then_select(*channels)
-        # TODO (pitr-ch 14-Mar-2016): has to go to edge
-        ZipFuturesPromise.new([self, Concurrent::Edge.select(*channels)], @DefaultExecutor).future
-      end
-
       # Changes default executor for rest of the chain
       # @return [Future]
       def with_default_executor(executor)
@@ -696,12 +659,6 @@ module Concurrent
       alias_method :&, :zip
 
       alias_method :|, :any
-
-      # @note may block
-      # @note only proof of concept
-      def then_put(channel)
-        on_success(:io) { |value| channel.put value }
-      end
 
       # @yield [value] executed async on `executor` when success
       # @return self
@@ -817,7 +774,6 @@ module Concurrent
           callback_on_completion st, cb
         end
       end
-
     end
 
     # A Event which can be completed by user.
@@ -1403,3 +1359,8 @@ module Concurrent
     extend FutureFactoryMethods
   end
 end
+
+# TODO cancelable Futures, will cancel the future but the task will finish anyway
+# TODO task interrupts, how to support?
+# TODO when value is requested the current thread may evaluate the tasks to get the value for performance reasons it may not evaluate :io though
+# TODO try work stealing pool, each thread has it's own queue

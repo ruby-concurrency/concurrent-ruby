@@ -192,7 +192,7 @@ module Concurrent
 
         @args       = opts.fetch(:args, [])
         @block      = block
-        initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
+        initialized = Type! opts[:initialized], Promises::CompletableFuture, NilClass
 
         schedule_execution do
           begin
