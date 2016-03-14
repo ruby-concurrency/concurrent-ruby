@@ -1,6 +1,6 @@
 # Adds factory methods like: future, event, delay, schedule, zip, ...
 # otherwise they can be called on Promises module
-include Concurrent::Promises::FutureFactoryMethods #
+include Concurrent::Promises::FactoryMethods #
 
 
 ### Simple asynchronous task
@@ -35,7 +35,7 @@ branch1.zip(branch2).value!
 # zip is aliased as &
 (branch1 & branch2).then { |a, b| a + b }.value!
 (branch1 & branch2).then(&:+).value!
-# or a class method zip from FutureFactoryMethods can be used to zip multiple futures
+# or a class method zip from FactoryMethods can be used to zip multiple futures
 zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # pick only first completed
 any(branch1, branch2).value!

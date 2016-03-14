@@ -7,7 +7,7 @@ Concurrent.use_stdlib_logger Logger::DEBUG
 
 describe 'Concurrent::Edge futures', edge: true do
 
-  include Concurrent::Promises::FutureFactoryMethods
+  include Concurrent::Promises::FactoryMethods
 
   describe 'chain_completable' do
     it 'event' do

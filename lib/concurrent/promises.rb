@@ -15,7 +15,7 @@ module Concurrent
   # {include:file:examples/promises.out.rb}
   module Promises
 
-    module FutureFactoryMethods
+    module FactoryMethods
       # User is responsible for completing the event once by {Promises::CompletableEvent#complete}
       # @return [CompletableEvent]
       def event(default_executor = :io)
@@ -1352,7 +1352,7 @@ module Concurrent
       end
     end
 
-    extend FutureFactoryMethods
+    extend FactoryMethods
   end
 end
 

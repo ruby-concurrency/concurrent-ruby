@@ -1,6 +1,6 @@
 # Adds factory methods like: future, event, delay, schedule, zip, ...
 # otherwise they can be called on Promises module
-include Concurrent::Promises::FutureFactoryMethods 
+include Concurrent::Promises::FactoryMethods
 
 
 ### Simple asynchronous task
@@ -32,14 +32,14 @@ failed_future(StandardError.new("boom"))
 
 ### Chaining of futures
 
-head    = succeeded_future 1 
-branch1 = head.then(&:succ) 
-branch2 = head.then(&:succ).then(&:succ) 
+head    = succeeded_future 1
+branch1 = head.then(&:succ)
+branch2 = head.then(&:succ).then(&:succ)
 branch1.zip(branch2).value!                        # => [2, 3]
 # zip is aliased as &
 (branch1 & branch2).then { |a, b| a + b }.value!   # => 5
 (branch1 & branch2).then(&:+).value!               # => 5
-# or a class method zip from FutureFactoryMethods can be used to zip multiple futures
+# or a class method zip from FactoryMethods can be used to zip multiple futures
 zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
     # => 7
 # pick only first completed
@@ -71,7 +71,7 @@ failing_zip.chain { |success, values, reasons| [success, values.compact, reasons
 # will not evaluate until asked by #value or other method requiring completion
 future = delay { 'lazy' }
     # => <#Concurrent::Promises::Future:0x7fae41aa4938 pending blocks:[]>
-sleep 0.1 
+sleep 0.1
 future.completed?                                  # => false
 future.value                                       # => "lazy"
 
@@ -123,7 +123,7 @@ scheduled.value # available after 0.1sec           # => 1
 scheduled = delay { 1 }.schedule(0.1).then(&:succ)
     # => <#Concurrent::Promises::Future:0x7fae4197ef68 pending blocks:[]>
 # will not be scheduled until value is requested
-sleep 0.1 
+sleep 0.1
 scheduled.value # returns after another 0.1sec     # => 2
 
 
@@ -135,8 +135,8 @@ event  = event()
     # => <#Concurrent::Promises::CompletableEvent:0x7fae41965db0 pending blocks:[]>
 
 # These threads will be blocked until the future and event is completed
-t1     = Thread.new { future.value } 
-t2     = Thread.new { event.wait } 
+t1     = Thread.new { future.value }
+t2     = Thread.new { event.wait }
 
 future.success 1
     # => <#Concurrent::Promises::CompletableFuture:0x7fae4196c368 success blocks:[]>
@@ -147,7 +147,7 @@ event.complete
     # => <#Concurrent::Promises::CompletableEvent:0x7fae41965db0 completed blocks:[]>
 
 # The threads can be joined now
-[t1, t2].each &:join 
+[t1, t2].each &:join
 
 
 ### Callbacks
@@ -225,7 +225,7 @@ future { do_stuff }
     # => <#Concurrent::Promises::Future:0x7fae43069070 pending blocks:[]>
 
 # parallel background processing
-jobs = 10.times.map { |i| future { i } } 
+jobs = 10.times.map { |i| future { i } }
 zip(*jobs).value                                   # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
@@ -263,7 +263,7 @@ concurrent_jobs = 11.times.map do |v|
       # get size of the string, fails for 11
       then(&:size).
       rescue { |reason| reason.message } # translate error to value (exception, message)
-end 
+end
 
 zip(*concurrent_jobs).value!
     # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "undefined method `size' for nil:NilClass"]
@@ -292,7 +292,7 @@ concurrent_jobs = 11.times.map do |v|
       then_ask(DB_POOL).
       then(&:size).
       rescue { |reason| reason.message }
-end 
+end
 
 zip(*concurrent_jobs).value!
     # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "undefined method `size' for nil:NilClass"]
