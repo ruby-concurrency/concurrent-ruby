@@ -14,7 +14,7 @@ module Concurrent
 
         def initialize(core, subsequent, core_options, trapping = false, terminate_children = true)
           super core, subsequent, core_options
-          @terminated         = Concurrent.future
+          @terminated         = Concurrent::Edge.future
           @public_terminated  = @terminated.hide_completable
           @trapping           = trapping
           @terminate_children = terminate_children
@@ -62,9 +62,9 @@ module Concurrent
         def terminate!(reason = nil, envelope = nil)
           return true if terminated?
 
-          self_termination = Concurrent.completed_future(reason.nil?, reason.nil? || nil, reason)
+          self_termination = Concurrent::Edge.completed_future(reason.nil?, reason.nil? || nil, reason)
           all_terminations = if @terminate_children
-                               Concurrent.zip(*children.map { |ch| ch.ask(:terminate!) }, self_termination)
+                               Concurrent::Edge.zip(*children.map { |ch| ch.ask(:terminate!) }, self_termination)
                              else
                                self_termination
                              end

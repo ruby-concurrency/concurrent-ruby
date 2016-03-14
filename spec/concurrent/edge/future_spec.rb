@@ -1,19 +1,25 @@
 require 'concurrent-edge'
 require 'thread'
+require 'pry'
+# require 'pry-stack_explorer'
+
+Concurrent.use_stdlib_logger Logger::DEBUG
 
 describe 'Concurrent::Edge futures', edge: true do
 
+  include Concurrent::Edge::FutureFactoryMethods
+
   describe 'chain_completable' do
     it 'event' do
-      b = Concurrent.event
-      a = Concurrent.event.chain_completable(b)
+      b = event
+      a = event.chain_completable(b)
       a.complete
       expect(b).to be_completed
     end
 
     it 'future' do
-      b = Concurrent.future
-      a = Concurrent.future.chain_completable(b)
+      b = future
+      a = future.chain_completable(b)
       a.success :val
       expect(b).to be_completed
       expect(b.value).to eq :val
@@ -24,8 +30,8 @@ describe 'Concurrent::Edge futures', edge: true do
     it 'executes tasks asynchronously' do
       queue = Queue.new
       value = 12
-      Concurrent.post { queue.push(value) }
-      Concurrent.post(:io) { queue.push(value) }
+      Concurrent.executor(:fast).post { queue.push(value) }
+      Concurrent.executor(:io).post { queue.push(value) }
       expect(queue.pop).to eq value
       expect(queue.pop).to eq value
     end
@@ -33,21 +39,21 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.future' do
     it 'executes' do
-      future = Concurrent.future { 1 + 1 }
+      future = future { 1 + 1 }
       expect(future.value!).to eq 2
 
-      future = Concurrent.succeeded_future(1).then { |v| v + 1 }
+      future = succeeded_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
   end
 
   describe '.delay' do
     it 'delays execution' do
-      delay = Concurrent.delay { 1 + 1 }
+      delay = delay { 1 + 1 }
       expect(delay.completed?).to eq false
       expect(delay.value!).to eq 2
 
-      delay = Concurrent.succeeded_future(1).delay.then { |v| v + 1 }
+      delay = succeeded_future(1).delay.then { |v| v + 1 }
       expect(delay.completed?).to eq false
       expect(delay.value!).to eq 2
     end
@@ -57,7 +63,7 @@ describe 'Concurrent::Edge futures', edge: true do
     it 'scheduled execution' do
       start  = Time.now.to_f
       queue  = Queue.new
-      future = Concurrent.schedule(0.1) { 1 + 1 }.then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
+      future = schedule(0.1) { 1 + 1 }.then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
@@ -65,8 +71,7 @@ describe 'Concurrent::Edge futures', edge: true do
 
       start  = Time.now.to_f
       queue  = Queue.new
-      future = Concurrent.
-          succeeded_future(1).
+      future = succeeded_future(1).
           schedule(0.1).
           then { |v| v + 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
@@ -79,8 +84,7 @@ describe 'Concurrent::Edge futures', edge: true do
     it 'scheduled execution in graph' do
       start  = Time.now.to_f
       queue  = Queue.new
-      future = Concurrent.
-          future { sleep 0.1; 1 }.
+      future = future { sleep 0.1; 1 }.
           schedule(0.1).
           then { |v| v + 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
@@ -95,9 +99,9 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.event' do
     specify do
-      completable_event = Concurrent.event
+      completable_event = event
       one               = completable_event.chain { 1 }
-      join              = Concurrent.zip(completable_event).chain { 1 }
+      join              = zip(completable_event).chain { 1 }
       expect(one.completed?).to be false
       completable_event.complete
       expect(one.value!).to eq 1
@@ -107,9 +111,9 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.future without block' do
     specify do
-      completable_future = Concurrent.future
+      completable_future = future
       one                = completable_future.then(&:succ)
-      join               = Concurrent.zip_futures(completable_future).then { |v| v }
+      join               = zip_futures(completable_future).then { |v| v }
       expect(one.completed?).to be false
       completable_future.success 0
       expect(one.value!).to eq 1
@@ -120,11 +124,11 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.any_complete' do
     it 'continues on first result' do
-      f1 = Concurrent.future
-      f2 = Concurrent.future
-      f3 = Concurrent.future
+      f1 = future
+      f2 = future
+      f3 = future
 
-      any1 = Concurrent.any_complete(f1, f2)
+      any1 = any_complete(f1, f2)
       any2 = f2 | f3
 
       f1.success 1
@@ -137,10 +141,10 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.any_successful' do
     it 'continues on first result' do
-      f1 = Concurrent.future
-      f2 = Concurrent.future
+      f1 = future
+      f2 = future
 
-      any = Concurrent.any_successful(f1, f2)
+      any = any_successful(f1, f2)
 
       f1.fail
       f2.success :value
@@ -151,14 +155,14 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.zip' do
     it 'waits for all results' do
-      a = Concurrent.future { 1 }
-      b = Concurrent.future { 2 }
-      c = Concurrent.future { 3 }
+      a = future { 1 }
+      b = future { 2 }
+      c = future { 3 }
 
       z1 = a & b
-      z2 = Concurrent.zip a, b, c
-      z3 = Concurrent.zip a
-      z4 = Concurrent.zip
+      z2 = zip a, b, c
+      z3 = zip a
+      z4 = zip
 
       expect(z1.value!).to eq [1, 2]
       expect(z2.value!).to eq [1, 2, 3]
@@ -192,29 +196,29 @@ describe 'Concurrent::Edge futures', edge: true do
       expect(z1.then(&:+).value!).to eq 3
       expect(z2.then { |a, b, c| a+b+c }.value!).to eq 6
 
-      expect(Concurrent.future { 1 }.delay).to be_a_kind_of Concurrent::Edge::Future
-      expect(Concurrent.future { 1 }.delay.wait!).to be_completed
-      expect(Concurrent.event.complete.delay).to be_a_kind_of Concurrent::Edge::Event
-      expect(Concurrent.event.complete.delay.wait).to be_completed
+      expect(future { 1 }.delay).to be_a_kind_of Concurrent::Edge::Future
+      expect(future { 1 }.delay.wait!).to be_completed
+      expect(event.complete.delay).to be_a_kind_of Concurrent::Edge::Event
+      expect(event.complete.delay.wait).to be_completed
 
-      a = Concurrent.future { 1 }
-      b = Concurrent.future { raise 'b' }
-      c = Concurrent.future { raise 'c' }
+      a = future { 1 }
+      b = future { raise 'b' }
+      c = future { raise 'c' }
 
-      Concurrent.zip(a, b, c).chain { |*args| q << args }
+      zip(a, b, c).chain { |*args| q << args }
       expect(q.pop.flatten.map(&:class)).to eq [FalseClass, 0.class, NilClass, NilClass, NilClass, RuntimeError, RuntimeError]
-      Concurrent.zip(a, b, c).rescue { |*args| q << args }
+      zip(a, b, c).rescue { |*args| q << args }
       expect(q.pop.map(&:class)).to eq [NilClass, RuntimeError, RuntimeError]
 
-      expect(Concurrent.zip.wait(0.1)).to eq true
+      expect(zip.wait(0.1)).to eq true
     end
 
     context 'when a future raises an error' do
 
-      let(:future) { Concurrent.future { raise 'error' } }
+      let(:a_future) { future { raise 'error' } }
 
       it 'raises a concurrent error' do
-        expect { Concurrent.zip(future).value! }.to raise_error(Concurrent::Error)
+        expect { zip(a_future).value! }.to raise_error(Concurrent::Error)
       end
 
     end
@@ -222,13 +226,13 @@ describe 'Concurrent::Edge futures', edge: true do
 
   describe '.zip_events' do
     it 'waits for all and returns event' do
-      a = Concurrent.succeeded_future 1
-      b = Concurrent.failed_future :any
-      c = Concurrent.event.complete
+      a = succeeded_future 1
+      b = failed_future :any
+      c = event.complete
 
-      z2 = Concurrent.zip_events a, b, c
-      z3 = Concurrent.zip_events a
-      z4 = Concurrent.zip_events
+      z2 = zip_events a, b, c
+      z3 = zip_events a
+      z4 = zip_events
 
       expect(z2.completed?).to be_truthy
       expect(z3.completed?).to be_truthy
@@ -249,13 +253,13 @@ describe 'Concurrent::Edge futures', edge: true do
         future.wait
         [queue.pop, queue.pop, queue.pop, queue.pop].sort
       end
-      callback_results = callbacks_tester.call(Concurrent.future { :value })
+      callback_results = callbacks_tester.call(future { :value })
       expect(callback_results).to eq ["async on_completion [true, :value, nil]",
                                       "async on_success :value",
                                       "sync on_completion [true, :value, nil]",
                                       "sync on_success :value"]
 
-      callback_results = callbacks_tester.call(Concurrent.future { raise 'error' })
+      callback_results = callbacks_tester.call(future { raise 'error' })
       expect(callback_results).to eq ["async on_completion [false, nil, #<RuntimeError: error>]",
                                       "async on_failure #<RuntimeError: error>",
                                       "sync on_completion [false, nil, #<RuntimeError: error>]",
@@ -267,7 +271,7 @@ describe 'Concurrent::Edge futures', edge: true do
         start_latch = Concurrent::CountDownLatch.new
         end_latch   = Concurrent::CountDownLatch.new
 
-        future = Concurrent.future do
+        future = future do
           start_latch.count_down
           end_latch.wait(1)
         end
@@ -282,7 +286,7 @@ describe 'Concurrent::Edge futures', edge: true do
 
 
     it 'chains' do
-      future0 = Concurrent.future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
+      future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
       future1 = future0.then(:fast) { raise 'boo' } # executed on IO_EXECUTOR
       future2 = future1.then { |v| v + 1 } # will fail with 'boo' error, executed on default FAST_EXECUTOR
       future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
@@ -318,7 +322,7 @@ describe 'Concurrent::Edge futures', edge: true do
     it 'constructs promise like tree' do
       # if head of the tree is not constructed with #future but with #delay it does not start execute,
       # it's triggered later by calling wait or value on any of the dependent futures or the delay itself
-      three = (head = Concurrent.delay { 1 }).then { |v| v.succ }.then(&:succ)
+      three = (head = delay { 1 }).then { |v| v.succ }.then(&:succ)
       four  = three.delay.then(&:succ)
 
       # meaningful to_s and inspect defined for Future and Promise
@@ -333,16 +337,16 @@ describe 'Concurrent::Edge futures', edge: true do
       expect(four.value!).to eq 4
 
       # futures hidden behind two delays trigger evaluation of both
-      double_delay = Concurrent.delay { 1 }.delay.then(&:succ)
+      double_delay = delay { 1 }.delay.then(&:succ)
       expect(double_delay.value!).to eq 2
     end
 
     it 'allows graphs' do
-      head    = Concurrent.future { 1 }
+      head    = future { 1 }
       branch1 = head.then(&:succ)
       branch2 = head.then(&:succ).delay.then(&:succ)
       results = [
-          Concurrent.zip(branch1, branch2).then { |b1, b2| b1 + b2 },
+          zip(branch1, branch2).then { |b1, b2| b1 + b2 },
           branch1.zip(branch2).then { |b1, b2| b1 + b2 },
           (branch1 & branch2).then { |b1, b2| b1 + b2 }]
 
@@ -351,31 +355,31 @@ describe 'Concurrent::Edge futures', edge: true do
       expect(branch2).not_to be_completed
 
       expect(results.map(&:value)).to eq [5, 5, 5]
-      expect(Concurrent.zip(branch1, branch2).value!).to eq [2, 3]
+      expect(zip(branch1, branch2).value!).to eq [2, 3]
     end
 
     describe '#flat' do
       it 'returns value of inner future' do
-        f = Concurrent.future { Concurrent.future { 1 } }.flat.then(&:succ)
+        f = future { future { 1 } }.flat.then(&:succ)
         expect(f.value!).to eq 2
       end
 
       it 'propagates failure of inner future' do
         err = StandardError.new('boo')
-        f   = Concurrent.future { Concurrent.failed_future(err) }.flat
+        f   = future { failed_future(err) }.flat
         expect(f.reason).to eq err
       end
 
       it 'it propagates failure of the future which was suppose to provide inner future' do
-        f = Concurrent.future { raise 'boo' }.flat
+        f = future { raise 'boo' }.flat
         expect(f.reason.message).to eq 'boo'
       end
 
       it 'fails if inner value is not a future' do
-        f = Concurrent.future { 'boo' }.flat
+        f = future { 'boo' }.flat
         expect(f.reason).to be_an_instance_of TypeError
 
-        f = Concurrent.future { Concurrent.completed_event }.flat
+        f = future { completed_event }.flat
         expect(f.reason).to be_an_instance_of TypeError
       end
 
@@ -385,7 +389,7 @@ describe 'Concurrent::Edge futures', edge: true do
     end
 
     it 'completes future when Exception raised' do
-      f = Concurrent.future { raise Exception, 'fail' }
+      f = future { raise Exception, 'fail' }
       f.wait 1
       expect(f).to be_completed
       expect(f).to be_failed
@@ -399,8 +403,7 @@ describe 'Concurrent::Edge futures', edge: true do
         -> v { v * 2 }
       end
 
-      expect(Concurrent.
-                 future { 2 }.
+      expect(future { 2 }.
                  then_ask(actor).
                  then { |v| v + 2 }.
                  value!).to eq 6
@@ -410,15 +413,14 @@ describe 'Concurrent::Edge futures', edge: true do
       ch1 = Concurrent::Channel.new
       ch2 = Concurrent::Channel.new
 
-      result = Concurrent.select(ch1, ch2)
+      result = select(ch1, ch2)
       ch1.put 1
       expect(result.value!).to eq [1, ch1]
 
-      Concurrent.
-          future { 1+1 }.
+
+      future { 1+1 }.
           then_put(ch1)
-      result = Concurrent.
-          future { '%02d' }.
+      result = future { '%02d' }.
           then_select(ch1, ch2).
           then { |format, (value, channel)| format format, value }
       expect(result.value!).to eq '02'
@@ -426,7 +428,7 @@ describe 'Concurrent::Edge futures', edge: true do
   end
 
   specify do
-    expect(Concurrent.future { :v }.value!).to eq :v
+    expect(future { :v }.value!).to eq :v
   end
 
 end

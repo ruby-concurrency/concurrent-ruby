@@ -19,7 +19,7 @@ module Concurrent
     # {include:file:examples/edge_futures.out.rb}
     #
     # @!macro edge_warning
-    module FutureShortcuts
+    module FutureFactoryMethods
       # User is responsible for completing the event once by {Edge::CompletableEvent#complete}
       # @return [CompletableEvent]
       def event(default_executor = :io)
@@ -115,6 +115,7 @@ module Concurrent
       # only proof of concept
       # @return [Future]
       def select(*channels)
+        # TODO has to be redone, since it's blocking, resp. moved to edge
         future do
           # noinspection RubyArgCount
           Channel.select do |s|
@@ -125,25 +126,7 @@ module Concurrent
         end
       end
 
-      # post job on :fast executor
-      # @return [true, false]
-      def post!(*args, &job)
-        post_on(:fast, *args, &job)
-      end
-
-      # post job on :io executor
-      # @return [true, false]
-      def post(*args, &job)
-        post_on(:io, *args, &job)
-      end
-
-      # post job on executor
-      # @return [true, false]
-      def post_on(executor, *args, &job)
-        Concurrent.executor(executor).post(*args, &job)
-      end
-
-      # TODO add first(futures, count=count)
+      # TODO add first(count, *futures)
       # TODO allow to to have a zip point for many futures and process them in batches by 10
     end
 
@@ -412,7 +395,7 @@ module Concurrent
       end
 
       def with_async(executor, *args, &block)
-        Concurrent.post_on(executor, *args, &block)
+        Concurrent.executor(executor).post(*args, &block)
       end
 
       def async_callback_on_completion(executor, callback)
@@ -692,7 +675,8 @@ module Concurrent
       # Zips with selected value form the suplied channels
       # @return [Future]
       def then_select(*channels)
-        ZipFuturesPromise.new([self, Concurrent.select(*channels)], @DefaultExecutor).future
+        # TODO (pitr-ch 14-Mar-2016): has to go to edge
+        ZipFuturesPromise.new([self, Concurrent::Edge.select(*channels)], @DefaultExecutor).future
       end
 
       # Changes default executor for rest of the chain
@@ -1100,7 +1084,7 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.success?
-          Concurrent.post_on(@Executor, done_future, @Task) do |future, task|
+          Concurrent.executor(@Executor).post(done_future, @Task) do |future, task|
             evaluate_to lambda { future.apply task }
           end
         else
@@ -1119,7 +1103,7 @@ module Concurrent
 
       def on_completable(done_future)
         if done_future.failed?
-          Concurrent.post_on(@Executor, done_future, @Task) do |future, task|
+          Concurrent.executor(@Executor).post(done_future, @Task) do |future, task|
             evaluate_to lambda { future.apply task }
           end
         else
@@ -1134,9 +1118,9 @@ module Concurrent
 
       def on_completable(done_future)
         if Future === done_future
-          Concurrent.post_on(@Executor, done_future, @Task) { |future, task| evaluate_to(*future.result, task) }
+          Concurrent.executor(@Executor).post(done_future, @Task) { |future, task| evaluate_to(*future.result, task) }
         else
-          Concurrent.post_on(@Executor, @Task) { |task| evaluate_to task }
+          Concurrent.executor(@Executor).post(@Task) { |task| evaluate_to task }
         end
       end
     end
@@ -1417,11 +1401,7 @@ module Concurrent
         end
       end
     end
+
+    extend FutureFactoryMethods
   end
 end
-
-Concurrent::Edge.send :extend, Concurrent::Edge::FutureShortcuts
-Concurrent::Edge.send :include, Concurrent::Edge::FutureShortcuts
-
-Concurrent.send :extend, Concurrent::Edge::FutureShortcuts
-Concurrent.send :include, Concurrent::Edge::FutureShortcuts
