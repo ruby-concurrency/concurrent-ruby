@@ -24,9 +24,12 @@ module Concurrent
 
       # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
-      def future(default_executor = :io, &task)
-        # TODO (pitr-ch 14-Mar-2016): arguments for the block
-        ImmediateEventPromise.new(default_executor).future.then(&task)
+      def future(*args, &task)
+        future_on(:io, *args, &task)
+      end
+
+      def future_on(executor, *args, &task)
+        ImmediateEventPromise.new(executor).future.then(*args, &task)
       end
 
       # User is responsible for completing the future once by {Promises::CompletableFuture#success} or {Promises::CompletableFuture#fail}
@@ -60,15 +63,23 @@ module Concurrent
       # Constructs new Future which will evaluate to the block after
       # requested by calling `#wait`, `#value`, `#value!`, etc. on it or on any of the chained futures.
       # @return [Future]
-      def delay(default_executor = :io, &task)
-        DelayPromise.new(default_executor).future.then(&task)
+      def delay(*args, &task)
+        delay_on :io, *args, &task
+      end
+
+      def delay_on(executor, *args, &task)
+        DelayPromise.new(executor).future.then(*args, &task)
       end
 
       # Schedules the block to be executed on executor in given intended_time.
       # @param [Numeric, Time] intended_time Numeric => run in `intended_time` seconds. Time => eun on time.
       # @return [Future]
-      def schedule(intended_time, default_executor = :io, &task)
-        ScheduledPromise.new(default_executor, intended_time).future.then(&task)
+      def schedule(intended_time, *args, &task)
+        schedule_on :io, intended_time, *args, &task
+      end
+
+      def schedule_on(executor, intended_time, *args, &task)
+        ScheduledPromise.new(executor, intended_time).future.then(*args, &task)
       end
 
       # Constructs new {Future} which is completed after all futures_and_or_events are complete. Its value is array
@@ -163,8 +174,10 @@ module Concurrent
         @Condition          = ConditionVariable.new
         @Promise            = promise
         @DefaultExecutor    = default_executor
+        # noinspection RubyArgCount
         @Touched            = AtomicBoolean.new false
         @Callbacks          = LockFreeStack.new
+        # noinspection RubyArgCount
         @Waiters            = AtomicFixnum.new 0
         self.internal_state = PENDING
       end
@@ -220,8 +233,12 @@ module Concurrent
       end
 
       # @yield [success, value, reason] of the parent
-      def chain(executor = nil, &callback)
-        ChainPromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
+      def chain(*args, &callback)
+        chain_on @DefaultExecutor, *args, &callback
+      end
+
+      def chain_on(executor, *args, &callback)
+        ChainPromise.new(self, @DefaultExecutor, executor, args, &callback).future
       end
 
       alias_method :then, :chain
@@ -250,6 +267,7 @@ module Concurrent
         ZipEventEventPromise.new(self, DelayPromise.new(@DefaultExecutor).event, @DefaultExecutor).event
       end
 
+      # TODO (pitr-ch 20-Mar-2016): fix schedule on event
       # # Schedules rest of the chain for execution with specified time or on specified time
       # # @return [Event]
       # def schedule(intended_time)
@@ -260,22 +278,21 @@ module Concurrent
       #   end.flat
       # end
 
-      # Zips with selected value form the suplied channels
-      # @return [Future]
-      def then_select(*channels)
-        ZipFutureEventPromise(Concurrent.select(*channels), self, @DefaultExecutor).future
+      # @yield [success, value, reason, *args] executed async on `executor` when completed
+      # @return self
+      def on_completion(*args, &callback)
+        on_completion_use @DefaultExecutor, *args, &callback
       end
 
-      # @yield [success, value, reason] executed async on `executor` when completed
-      # @return self
-      def on_completion(executor = nil, &callback)
-        add_callback :async_callback_on_completion, executor || @DefaultExecutor, callback
+      def on_completion_use(executor, *args, &callback)
+        # TODO (pitr-ch 21-Mar-2016): maybe remove all async callbacks?, `then` does the same thing
+        add_callback :async_callback_on_completion, executor, args, callback
       end
 
-      # @yield [success, value, reason] executed sync when completed
+      # @yield [success, value, reason, *args] executed sync when completed
       # @return self
-      def on_completion!(&callback)
-        add_callback :callback_on_completion, callback
+      def on_completion!(*args, &callback)
+        add_callback :callback_on_completion, args, callback
       end
 
       # Changes default executor for rest of the chain
@@ -378,12 +395,12 @@ module Concurrent
         Concurrent.executor(executor).post(*args, &block)
       end
 
-      def async_callback_on_completion(executor, callback)
-        with_async(executor) { callback_on_completion callback }
+      def async_callback_on_completion(executor, args, callback)
+        with_async(executor) { callback_on_completion args, callback }
       end
 
-      def callback_on_completion(callback)
-        callback.call
+      def callback_on_completion(args, callback)
+        callback.call *args
       end
 
       def callback_notify_blocked(promise)
@@ -422,6 +439,10 @@ module Concurrent
         def reason
           raise NotImplementedError
         end
+
+        def apply
+          raise NotImplementedError
+        end
       end
 
       # @!visibility private
@@ -434,8 +455,8 @@ module Concurrent
           true
         end
 
-        def apply(block)
-          block.call value
+        def apply(args, block)
+          block.call value, *args
         end
 
         def value
@@ -453,8 +474,8 @@ module Concurrent
 
       # @!visibility private
       class SuccessArray < Success
-        def apply(block)
-          block.call(*value)
+        def apply(args, block)
+          block.call(*value, *args)
         end
       end
 
@@ -480,8 +501,8 @@ module Concurrent
           :failed
         end
 
-        def apply(block)
-          block.call reason
+        def apply(args, block)
+          block.call reason, *args
         end
       end
 
@@ -509,8 +530,8 @@ module Concurrent
           @Reason
         end
 
-        def apply(block)
-          block.call(*reason)
+        def apply(args, block)
+          block.call(*reason, *args)
         end
       end
 
@@ -590,10 +611,14 @@ module Concurrent
         end
       end
 
-      # @yield [value] executed only on parent success
-      # @return [Future]
-      def then(executor = nil, &callback)
-        ThenPromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
+      # @yield [value, *args] executed only on parent success
+      # @return [Future] new
+      def then(*args, &callback)
+        then_on @DefaultExecutor, *args, &callback
+      end
+
+      def then_on(executor, *args, &callback)
+        ThenPromise.new(self, @DefaultExecutor, executor, args, &callback).future
       end
 
       def chain_completable(completable_future)
@@ -604,8 +629,12 @@ module Concurrent
 
       # @yield [reason] executed only on parent failure
       # @return [Future]
-      def rescue(executor = nil, &callback)
-        RescuePromise.new(self, @DefaultExecutor, executor || @DefaultExecutor, &callback).future
+      def rescue(*args, &callback)
+        rescue_on @DefaultExecutor, *args, &callback
+      end
+
+      def rescue_on(executor, *args, &callback)
+        RescuePromise.new(self, @DefaultExecutor, executor, args, &callback).future
       end
 
       # zips with the Future in the value
@@ -658,26 +687,34 @@ module Concurrent
 
       # @yield [value] executed async on `executor` when success
       # @return self
-      def on_success(executor = nil, &callback)
-        add_callback :async_callback_on_success, executor || @DefaultExecutor, callback
+      def on_success(*args, &callback)
+        on_success_use @DefaultExecutor, *args, &callback
+      end
+
+      def on_success_use(executor, *args, &callback)
+        add_callback :async_callback_on_success, executor, args, callback
       end
 
       # @yield [reason] executed async on `executor` when failed?
       # @return self
-      def on_failure(executor = nil, &callback)
-        add_callback :async_callback_on_failure, executor || @DefaultExecutor, callback
+      def on_failure(*args, &callback)
+        on_failure_use @DefaultExecutor, *args, &callback
+      end
+
+      def on_failure_use(executor, *args, &callback)
+        add_callback :async_callback_on_failure, executor, args, callback
       end
 
       # @yield [value] executed sync when success
       # @return self
-      def on_success!(&callback)
-        add_callback :callback_on_success, callback
+      def on_success!(*args, &callback)
+        add_callback :callback_on_success, args, callback
       end
 
       # @yield [reason] executed sync when failed?
       # @return self
-      def on_failure!(&callback)
-        add_callback :callback_on_failure, callback
+      def on_failure!(*args, &callback)
+        add_callback :callback_on_failure, args, callback
       end
 
       # @!visibility private
@@ -688,7 +725,10 @@ module Concurrent
           call_callbacks state
         else
           if raise_on_reassign
-            log ERROR, 'Promises::Future', reason if reason # print otherwise hidden error
+            # print otherwise hidden error
+            log ERROR, 'Promises::Future', reason if reason
+            log ERROR, 'Promises::Future', state.reason if state.reason
+
             raise(Concurrent::MultipleAssignmentError.new(
                       "Future can be completed only once. Current result is #{result}, " +
                           "trying to set #{state.result}"))
@@ -713,8 +753,8 @@ module Concurrent
       end
 
       # @!visibility private
-      def apply(block)
-        internal_state.apply block
+      def apply(args, block)
+        internal_state.apply args, block
       end
 
       private
@@ -737,37 +777,37 @@ module Concurrent
         self.send method, state, *args
       end
 
-      def async_callback_on_success(state, executor, callback)
-        with_async(executor, state, callback) do |st, cb|
-          callback_on_success st, cb
+      def async_callback_on_success(state, executor, args, callback)
+        with_async(executor, state, args, callback) do |st, ar, cb|
+          callback_on_success st, ar, cb
         end
       end
 
-      def async_callback_on_failure(state, executor, callback)
-        with_async(executor, state, callback) do |st, cb|
-          callback_on_failure st, cb
+      def async_callback_on_failure(state, executor, args, callback)
+        with_async(executor, state, args, callback) do |st, ar, cb|
+          callback_on_failure st, ar, cb
         end
       end
 
-      def callback_on_success(state, callback)
-        state.apply callback if state.success?
+      def callback_on_success(state, args, callback)
+        state.apply args, callback if state.success?
       end
 
-      def callback_on_failure(state, callback)
-        state.apply callback unless state.success?
+      def callback_on_failure(state, args, callback)
+        state.apply args, callback unless state.success?
       end
 
-      def callback_on_completion(state, callback)
-        callback.call state.result
+      def callback_on_completion(state, args, callback)
+        callback.call state.result, *args
       end
 
       def callback_notify_blocked(state, promise)
         super(promise)
       end
 
-      def async_callback_on_completion(state, executor, callback)
-        with_async(executor, state, callback) do |st, cb|
-          callback_on_completion st, cb
+      def async_callback_on_completion(state, executor, args, callback)
+        with_async(executor, state, args, callback) do |st, ar, cb|
+          callback_on_completion st, ar, cb
         end
       end
     end
@@ -1011,11 +1051,12 @@ module Concurrent
     # @abstract
     # @!visibility private
     class BlockedTaskPromise < BlockedPromise
-      def initialize(blocked_by_future, default_executor, executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, args, &task)
         raise ArgumentError, 'no block given' unless block_given?
         super Future.new(self, default_executor), blocked_by_future, 1
         @Executor = executor
         @Task     = task
+        @Args     = args
       end
 
       def executor
@@ -1027,15 +1068,15 @@ module Concurrent
     class ThenPromise < BlockedTaskPromise
       private
 
-      def initialize(blocked_by_future, default_executor, executor, &task)
+      def initialize(blocked_by_future, default_executor, executor, args, &task)
         raise ArgumentError, 'only Future can be appended with then' unless blocked_by_future.is_a? Future
-        super blocked_by_future, default_executor, executor, &task
+        super blocked_by_future, default_executor, executor, args, &task
       end
 
       def on_completable(done_future)
         if done_future.success?
-          Concurrent.executor(@Executor).post(done_future, @Task) do |future, task|
-            evaluate_to lambda { future.apply task }
+          Concurrent.executor(@Executor).post(done_future, @Args, @Task) do |future, args, task|
+            evaluate_to lambda { future.apply args, task }
           end
         else
           complete_with done_future.internal_state
@@ -1047,14 +1088,14 @@ module Concurrent
     class RescuePromise < BlockedTaskPromise
       private
 
-      def initialize(blocked_by_future, default_executor, executor, &task)
-        super blocked_by_future, default_executor, executor, &task
+      def initialize(blocked_by_future, default_executor, executor, args, &task)
+        super blocked_by_future, default_executor, executor, args, &task
       end
 
       def on_completable(done_future)
         if done_future.failed?
-          Concurrent.executor(@Executor).post(done_future, @Task) do |future, task|
-            evaluate_to lambda { future.apply task }
+          Concurrent.executor(@Executor).post(done_future, @Args, @Task) do |future, args, task|
+            evaluate_to lambda { future.apply args, task }
           end
         else
           complete_with done_future.internal_state
@@ -1068,9 +1109,13 @@ module Concurrent
 
       def on_completable(done_future)
         if Future === done_future
-          Concurrent.executor(@Executor).post(done_future, @Task) { |future, task| evaluate_to(*future.result, task) }
+          Concurrent.executor(@Executor).post(done_future, @Args, @Task) do |future, args, task|
+            evaluate_to(*future.result, *args, task)
+          end
         else
-          Concurrent.executor(@Executor).post(@Task) { |task| evaluate_to task }
+          Concurrent.executor(@Executor).post(@Args, @Task) do |args, task|
+            evaluate_to *args, task
+          end
         end
       end
     end

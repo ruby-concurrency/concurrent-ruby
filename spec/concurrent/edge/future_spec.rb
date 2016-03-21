@@ -5,7 +5,7 @@ require 'pry'
 
 Concurrent.use_stdlib_logger Logger::DEBUG
 
-describe 'Concurrent::Edge futures', edge: true do
+describe 'Concurrent::Promises' do
 
   include Concurrent::Promises::FactoryMethods
 
@@ -26,17 +26,6 @@ describe 'Concurrent::Edge futures', edge: true do
     end
   end
 
-  describe '.post' do
-    it 'executes tasks asynchronously' do
-      queue = Queue.new
-      value = 12
-      Concurrent.executor(:fast).post { queue.push(value) }
-      Concurrent.executor(:io).post { queue.push(value) }
-      expect(queue.pop).to eq value
-      expect(queue.pop).to eq value
-    end
-  end
-
   describe '.future' do
     it 'executes' do
       future = future { 1 + 1 }
@@ -45,17 +34,28 @@ describe 'Concurrent::Edge futures', edge: true do
       future = succeeded_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
+
+    it 'executes with args' do
+      future = future(1, 2, &:+)
+      expect(future.value!).to eq 3
+
+      future = succeeded_future(1).then(1) { |v, a| v + 1 }
+      expect(future.value!).to eq 2
+    end
   end
 
   describe '.delay' do
-    it 'delays execution' do
-      delay = delay { 1 + 1 }
-      expect(delay.completed?).to eq false
-      expect(delay.value!).to eq 2
 
-      delay = succeeded_future(1).delay.then { |v| v + 1 }
+    def behaves_as_delay(delay, value)
       expect(delay.completed?).to eq false
-      expect(delay.value!).to eq 2
+      expect(delay.value!).to eq value
+    end
+
+    specify do
+      behaves_as_delay delay { 1 + 1 }, 2
+      behaves_as_delay succeeded_future(1).delay.then { |v| v + 1 }, 2
+      behaves_as_delay delay(1) { |a| a + 1 }, 2
+      behaves_as_delay succeeded_future(1).delay.then { |v| v + 1 }, 2
     end
   end
 
@@ -295,7 +295,7 @@ describe 'Concurrent::Edge futures', edge: true do
 
     it 'chains' do
       future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
-      future1 = future0.then(:fast) { raise 'boo' } # executed on IO_EXECUTOR
+      future1 = future0.then_on(:fast) { raise 'boo' } # executed on IO_EXECUTOR
       future2 = future1.then { |v| v + 1 } # will fail with 'boo' error, executed on default FAST_EXECUTOR
       future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
@@ -421,7 +421,7 @@ describe 'Concurrent::Edge futures', edge: true do
       ch1 = Concurrent::Channel.new
       ch2 = Concurrent::Channel.new
 
-      result = select(ch1, ch2)
+      result = Concurrent::Promises.select(ch1, ch2)
       ch1.put 1
       expect(result.value!).to eq [1, ch1]
 

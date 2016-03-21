@@ -2,7 +2,7 @@ require 'concurrent/promises'
 
 module Concurrent
   module Promises
-    module FutureFactoryMethods
+    module FactoryMethods
       # only proof of concept
       # @return [Future]
       def select(*channels)

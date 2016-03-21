@@ -42,6 +42,15 @@ any(branch1, branch2).value!
 (branch1 | branch2).value!
 
 
+### Arguments
+
+# any supplied arguments are passed to the block, promises ensure that they are visible to the block
+
+future('3') { |s| s.to_i }.then(2) { |a, b| a + b }.value
+succeeded_future(1).then(2, &:+).value
+succeeded_future(1).chain(2) { |success, value, reason, arg| value + arg }.value
+
+
 ### Error handling
 
 succeeded_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
@@ -145,8 +154,10 @@ queue.pop
 # Factory methods are taking names of the global executors
 # (ot instances of custom executors)
 
-future(:fast) { 2 }. # executed on :fast executor only short and non-blocking tasks can go there
-    then(:io) { File.read __FILE__ }. # executed on executor for blocking and long operations
+# executed on :fast executor, only short and non-blocking tasks can go there
+future_on(:fast) { 2 }.
+    # executed on executor for blocking and long operations
+    then_on(:io) { File.read __FILE__ }.
     wait
 
 
@@ -194,22 +205,21 @@ zip(*jobs).value
 
 
 # periodic task
-# TODO (pitr-ch 14-Mar-2016): fix to be volatile
-@end = false
+DONE = Concurrent::AtomicBoolean.new false
 
 def schedule_job
   schedule(1) { do_stuff }.
       rescue { |e| StandardError === e ? report_error(e) : raise(e) }.
-      then { schedule_job unless @end }
+      then { schedule_job unless DONE.true? }
 end
 
 schedule_job
-@end = true
+DONE.make_true
 
 
 # How to limit processing where there are limited resources?
 # By creating an actor managing the resource
-DB   = Concurrent::Actor::Utils::AdHoc.spawn :db do
+DB = Concurrent::Actor::Utils::AdHoc.spawn :db do
   data = Array.new(10) { |i| '*' * i }
   lambda do |message|
     # pretending that this queries a DB
@@ -219,7 +229,7 @@ end
 
 concurrent_jobs = 11.times.map do |v|
 
-  future { v }.
+  succeeded_future(v).
       # ask the DB with the `v`, only one at the time, rest is parallel
       then_ask(DB).
       # get size of the string, fails for 11
@@ -246,7 +256,7 @@ end
 
 concurrent_jobs = 11.times.map do |v|
 
-  future { v }.
+  succeeded_future(v).
       # ask the DB_POOL with the `v`, only 5 at the time, rest is parallel
       then_ask(DB_POOL).
       then(&:size).
