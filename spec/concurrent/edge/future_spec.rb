@@ -1,7 +1,5 @@
 require 'concurrent/edge/promises'
 require 'thread'
-require 'pry'
-# require 'pry-stack_explorer'
 
 Concurrent.use_stdlib_logger Logger::DEBUG
 
@@ -440,49 +438,3 @@ describe 'Concurrent::Promises' do
   end
 
 end
-
-# def synchronize
-#   if @__mutex__do_not_use_directly.owned?
-#     yield
-#   else
-#     @__mutex__do_not_use_directly.synchronize { yield }
-#     #   @__mutex__do_not_use_directly.synchronize do
-#     #     locking = (Thread.current[:locking] ||= [])
-#     #     locking.push self
-#     #     puts "locking #{locking.size}" # : #{locking}"
-#     #     begin
-#     #       yield
-#     #     ensure
-#     #       if locking.size > 2
-#     #         # binding.pry
-#     #       end
-#     #       locking.pop
-#     #     end
-#     #   end
-#   end
-# end
-
-__END__
-
-puts '-- connecting existing promises'
-
-source  = Concurrent.delay { 1 }
-promise = Concurrent.promise
-promise.connect_to source
-p promise.future.value # 1
-# or just
-p Concurrent.promise.connect_to(source).value
-
-
-puts '-- using shortcuts'
-
-include Concurrent # includes Future::Shortcuts
-
-# now methods on Concurrent are accessible directly
-
-p delay { 1 }.value, future { 1 }.value # => 1\n1
-
-promise = promise()
-promise.connect_to(future { 3 })
-p promise.future.value # 3
-
