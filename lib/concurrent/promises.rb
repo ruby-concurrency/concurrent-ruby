@@ -1,6 +1,9 @@
-# TODO do not require whole concurrent gem
-require 'concurrent'
+require 'concurrent/synchronization'
+require 'concurrent/atomic/atomic_boolean'
+require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/lock_free_stack'
+require 'concurrent/concern/logging'
+require 'concurrent/errors'
 
 module Concurrent
 
@@ -18,9 +21,12 @@ module Concurrent
     module FactoryMethods
       # User is responsible for completing the event once by {Promises::CompletableEvent#complete}
       # @return [CompletableEvent]
-      def event(default_executor = :io)
+      def completable_event(default_executor = :io)
         CompletableEventPromise.new(default_executor).future
       end
+
+      # TODO (pitr-ch 26-Mar-2016): remove event?, it does not match completable_future
+      alias_method :event, :completable_event
 
       # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
@@ -28,8 +34,8 @@ module Concurrent
         future_on(:io, *args, &task)
       end
 
-      def future_on(executor, *args, &task)
-        ImmediateEventPromise.new(executor).future.then(*args, &task)
+      def future_on(default_executor, *args, &task)
+        ImmediateEventPromise.new(default_executor).future.then(*args, &task)
       end
 
       # User is responsible for completing the future once by {Promises::CompletableFuture#success} or {Promises::CompletableFuture#fail}
@@ -67,8 +73,8 @@ module Concurrent
         delay_on :io, *args, &task
       end
 
-      def delay_on(executor, *args, &task)
-        DelayPromise.new(executor).future.then(*args, &task)
+      def delay_on(default_executor, *args, &task)
+        DelayPromise.new(default_executor).future.then(*args, &task)
       end
 
       # Schedules the block to be executed on executor in given intended_time.
@@ -78,8 +84,8 @@ module Concurrent
         schedule_on :io, intended_time, *args, &task
       end
 
-      def schedule_on(executor, intended_time, *args, &task)
-        ScheduledPromise.new(executor, intended_time).future.then(*args, &task)
+      def schedule_on(default_executor, intended_time, *args, &task)
+        ScheduledPromise.new(default_executor, intended_time).future.then(*args, &task)
       end
 
       # Constructs new {Future} which is completed after all futures_and_or_events are complete. Its value is array
@@ -88,7 +94,11 @@ module Concurrent
       # @param [Event] futures_and_or_events
       # @return [Future]
       def zip_futures(*futures_and_or_events)
-        ZipFuturesPromise.new(futures_and_or_events, :io).future
+        zip_futures_on :io, *futures_and_or_events
+      end
+
+      def zip_futures_on(default_executor, *futures_and_or_events)
+        ZipFuturesPromise.new(futures_and_or_events, default_executor).future
       end
 
       alias_method :zip, :zip_futures
@@ -98,24 +108,44 @@ module Concurrent
       # @param [Event] futures_and_or_events
       # @return [Event]
       def zip_events(*futures_and_or_events)
-        ZipEventsPromise.new(futures_and_or_events, :io).future
+        zip_events_on :io, *futures_and_or_events
+      end
+
+      def zip_events_on(default_executor, *futures_and_or_events)
+        ZipEventsPromise.new(futures_and_or_events, default_executor).future
       end
 
       # Constructs new {Future} which is completed after first of the futures is complete.
       # @param [Event] futures
       # @return [Future]
-      def any_complete(*futures)
-        AnyCompletePromise.new(futures, :io).future
+      def any_complete_future(*futures)
+        any_complete_future_on :io, *futures
       end
 
-      alias_method :any, :any_complete
+      def any_complete_future_on(default_executor, *futures)
+        AnyCompleteFuturePromise.new(futures, default_executor).future
+      end
+
+      alias_method :any, :any_complete_future
 
       # Constructs new {Future} which becomes succeeded after first of the futures succeedes or
       # failed if all futures fail (reason is last error).
       # @param [Event] futures
       # @return [Future]
-      def any_successful(*futures)
-        AnySuccessfulPromise.new(futures, :io).future
+      def any_successful_future(*futures)
+        any_successful_future_on :io, *futures
+      end
+
+      def any_successful_future_on(default_executor, *futures)
+        AnySuccessfulFuturePromise.new(futures, default_executor).future
+      end
+
+      def any_event(*events)
+        any_event_on :io, *events
+      end
+
+      def any_event_on(default_executor, *events)
+        AnyCompletedEventPromise.new(events, default_executor).event
       end
 
       # TODO consider adding first(count, *futures)
@@ -130,7 +160,6 @@ module Concurrent
       public :internal_state
       include Concern::Logging
 
-      # @!visibility private
       class State
         def completed?
           raise NotImplementedError
@@ -141,7 +170,6 @@ module Concurrent
         end
       end
 
-      # @!visibility private
       class Pending < State
         def completed?
           false
@@ -152,7 +180,6 @@ module Concurrent
         end
       end
 
-      # @!visibility private
       class Completed < State
         def completed?
           true
@@ -162,6 +189,8 @@ module Concurrent
           :completed
         end
       end
+
+      private_constant :State, :Pending, :Completed
 
       # @!visibility private
       PENDING   = Pending.new
@@ -267,25 +296,21 @@ module Concurrent
         ZipEventEventPromise.new(self, DelayPromise.new(@DefaultExecutor).event, @DefaultExecutor).event
       end
 
-      # TODO (pitr-ch 20-Mar-2016): fix schedule on event
-      # # Schedules rest of the chain for execution with specified time or on specified time
-      # # @return [Event]
-      # def schedule(intended_time)
-      #   chain do
-      #     ZipEventEventPromise.new(self,
-      #                              ScheduledPromise.new(@DefaultExecutor, intended_time).event,
-      #                              @DefaultExecutor).event
-      #   end.flat
-      # end
+      # Schedules rest of the chain for execution with specified time or on specified time
+      # @return [Event]
+      def schedule(intended_time)
+        ZipEventEventPromise.new(self,
+                                 ScheduledPromise.new(@DefaultExecutor, intended_time).event,
+                                 @DefaultExecutor).event
+      end
 
       # @yield [success, value, reason, *args] executed async on `executor` when completed
       # @return self
       def on_completion(*args, &callback)
-        on_completion_use @DefaultExecutor, *args, &callback
+        on_completion_using @DefaultExecutor, *args, &callback
       end
 
-      def on_completion_use(executor, *args, &callback)
-        # TODO (pitr-ch 21-Mar-2016): maybe remove all async callbacks?, `then` does the same thing
+      def on_completion_using(executor, *args, &callback)
         add_callback :async_callback_on_completion, executor, args, callback
       end
 
@@ -322,7 +347,7 @@ module Concurrent
           call_callbacks
         else
           Concurrent::MultipleAssignmentError.new('Event can be completed only once') if raise_on_reassign
-          return false
+          return nil
         end
         self
       end
@@ -422,7 +447,6 @@ module Concurrent
 
     # Represents a value which will become available in future. May fail with a reason instead.
     class Future < Event
-      # @!visibility private
       class CompletedWithResult < Completed
         def result
           [success?, value, reason]
@@ -535,6 +559,8 @@ module Concurrent
         end
       end
 
+      private_constant :CompletedWithResult
+
       # @!method state
       #   @return [:pending, :success, :failed]
 
@@ -646,7 +672,7 @@ module Concurrent
 
       # @return [Future] which has first completed value from futures
       def any(*futures)
-        AnyCompletePromise.new([self, *futures], @DefaultExecutor).future
+        AnyCompleteFuturePromise.new([self, *futures], @DefaultExecutor).future
       end
 
       # Inserts delay into the chain of Futures making rest of it lazy evaluated.
@@ -688,20 +714,20 @@ module Concurrent
       # @yield [value] executed async on `executor` when success
       # @return self
       def on_success(*args, &callback)
-        on_success_use @DefaultExecutor, *args, &callback
+        on_success_using @DefaultExecutor, *args, &callback
       end
 
-      def on_success_use(executor, *args, &callback)
+      def on_success_using(executor, *args, &callback)
         add_callback :async_callback_on_success, executor, args, callback
       end
 
       # @yield [reason] executed async on `executor` when failed?
       # @return self
       def on_failure(*args, &callback)
-        on_failure_use @DefaultExecutor, *args, &callback
+        on_failure_using @DefaultExecutor, *args, &callback
       end
 
-      def on_failure_use(executor, *args, &callback)
+      def on_failure_using(executor, *args, &callback)
         add_callback :async_callback_on_failure, executor, args, callback
       end
 
@@ -730,8 +756,8 @@ module Concurrent
             log ERROR, 'Promises::Future', state.reason if state.reason
 
             raise(Concurrent::MultipleAssignmentError.new(
-                      "Future can be completed only once. Current result is #{result}, " +
-                          "trying to set #{state.result}"))
+                "Future can be completed only once. Current result is #{result}, " +
+                    "trying to set #{state.result}"))
           end
           return false
         end
@@ -819,7 +845,7 @@ module Concurrent
         complete_with COMPLETED, raise_on_reassign
       end
 
-      def hide_completable
+      def with_hidden_completable
         EventWrapperPromise.new(self, @DefaultExecutor).event
       end
     end
@@ -870,13 +896,12 @@ module Concurrent
         promise.evaluate_to!(*args, block)
       end
 
-      def hide_completable
+      def with_hidden_completable
         FutureWrapperPromise.new(self, @DefaultExecutor).future
       end
     end
 
     # @abstract
-    # @!visibility private
     class AbstractPromise < Synchronization::Object
       safe_initialization!
       include Concern::Logging
@@ -928,14 +953,12 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class CompletableEventPromise < AbstractPromise
       def initialize(default_executor)
         super CompletableEvent.new(self, default_executor)
       end
     end
 
-    # @!visibility private
     class CompletableFuturePromise < AbstractPromise
       def initialize(default_executor)
         super CompletableFuture.new(self, default_executor)
@@ -976,12 +999,10 @@ module Concurrent
     end
 
     # @abstract
-    # @!visibility private
     class InnerPromise < AbstractPromise
     end
 
     # @abstract
-    # @!visibility private
     class BlockedPromise < InnerPromise
       def self.new(*args, &block)
         promise = super(*args, &block)
@@ -1049,7 +1070,6 @@ module Concurrent
     end
 
     # @abstract
-    # @!visibility private
     class BlockedTaskPromise < BlockedPromise
       def initialize(blocked_by_future, default_executor, executor, args, &task)
         raise ArgumentError, 'no block given' unless block_given?
@@ -1064,7 +1084,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ThenPromise < BlockedTaskPromise
       private
 
@@ -1084,7 +1103,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class RescuePromise < BlockedTaskPromise
       private
 
@@ -1103,7 +1121,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ChainPromise < BlockedTaskPromise
       private
 
@@ -1121,22 +1138,19 @@ module Concurrent
     end
 
     # will be immediately completed
-    # @!visibility private
     class ImmediateEventPromise < InnerPromise
       def initialize(default_executor)
         super Event.new(self, default_executor).complete_with(Event::COMPLETED)
       end
     end
 
-    # @!visibility private
     class ImmediateFuturePromise < InnerPromise
       def initialize(default_executor, success, value, reason)
         super Future.new(self, default_executor).
-                  complete_with(success ? Future::Success.new(value) : Future::Failed.new(reason))
+            complete_with(success ? Future::Success.new(value) : Future::Failed.new(reason))
       end
     end
 
-    # @!visibility private
     class FlatPromise < BlockedPromise
 
       # !visibility private
@@ -1195,7 +1209,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ZipEventEventPromise < BlockedPromise
       def initialize(event1, event2, default_executor)
         super Event.new(self, default_executor), [event1, event2], 2
@@ -1206,7 +1219,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ZipFutureEventPromise < BlockedPromise
       def initialize(future, event, default_executor)
         super Future.new(self, default_executor), [future, event], 2
@@ -1218,7 +1230,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ZipFutureFuturePromise < BlockedPromise
       def initialize(future1, future2, default_executor)
         super Future.new(self, default_executor), [future1, future2], 2
@@ -1239,7 +1250,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class EventWrapperPromise < BlockedPromise
       def initialize(event, default_executor)
         super Event.new(self, default_executor), event, 1
@@ -1250,7 +1260,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class FutureWrapperPromise < BlockedPromise
       def initialize(future, default_executor)
         super Future.new(self, default_executor), future, 1
@@ -1261,7 +1270,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ZipFuturesPromise < BlockedPromise
 
       private
@@ -1294,7 +1302,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class ZipEventsPromise < BlockedPromise
 
       private
@@ -1310,8 +1317,7 @@ module Concurrent
       end
     end
 
-    # @!visibility private
-    class AnyCompletePromise < BlockedPromise
+    class AnyCompleteFuturePromise < BlockedPromise
 
       private
 
@@ -1330,8 +1336,24 @@ module Concurrent
       end
     end
 
-    # @!visibility private
-    class AnySuccessfulPromise < BlockedPromise
+    class AnyCompleteEventPromise < BlockedPromise
+
+      private
+
+      def initialize(blocked_by_futures, default_executor)
+        super(Event.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
+      end
+
+      def completable?(countdown, future)
+        true
+      end
+
+      def on_completable(done_future)
+        complete_with Event::COMPLETED, false
+      end
+    end
+
+    class AnySuccessfulFuturePromise < BlockedPromise
 
       private
 
@@ -1350,7 +1372,6 @@ module Concurrent
       end
     end
 
-    # @!visibility private
     class DelayPromise < InnerPromise
       def touch
         @Future.complete_with Event::COMPLETED
@@ -1364,7 +1385,6 @@ module Concurrent
     end
 
     # will be evaluated to task in intended_time
-    # @!visibility private
     class ScheduledPromise < InnerPromise
       def intended_time
         @IntendedTime
@@ -1398,6 +1418,15 @@ module Concurrent
     end
 
     extend FactoryMethods
+
+    private_constant :AbstractPromise, :CompletableEventPromise, :CompletableFuturePromise,
+                     :InnerPromise, :BlockedPromise, :BlockedTaskPromise, :ThenPromise,
+                     :RescuePromise, :ChainPromise, :ImmediateEventPromise,
+                     :ImmediateFuturePromise, :FlatPromise, :ZipEventEventPromise,
+                     :ZipFutureEventPromise, :ZipFutureFuturePromise, :EventWrapperPromise,
+                     :FutureWrapperPromise, :ZipFuturesPromise, :ZipEventsPromise,
+                     :AnyCompleteFuturePromise, :AnySuccessfulFuturePromise, :DelayPromise, :ScheduledPromise
+
   end
 end
 

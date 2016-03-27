@@ -91,6 +91,11 @@ describe 'Concurrent::Promises' do
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be >= 0.09
+
+      scheduled = completed_event.schedule(0.1)
+      expect(scheduled.completed?).to be_falsey
+      scheduled.wait
+      expect(scheduled.completed?).to be_truthy
     end
 
   end
@@ -126,7 +131,7 @@ describe 'Concurrent::Promises' do
       f2 = completable_future
       f3 = completable_future
 
-      any1 = any_complete(f1, f2)
+      any1 = any_complete_future(f1, f2)
       any2 = f2 | f3
 
       f1.success 1
@@ -142,7 +147,7 @@ describe 'Concurrent::Promises' do
       f1 = completable_future
       f2 = completable_future
 
-      any = any_successful(f1, f2)
+      any = any_successful_future(f1, f2)
 
       f1.fail
       f2.success :value
@@ -410,9 +415,9 @@ describe 'Concurrent::Promises' do
       end
 
       expect(future { 2 }.
-                 then_ask(actor).
-                 then { |v| v + 2 }.
-                 value!).to eq 6
+          then_ask(actor).
+          then { |v| v + 2 }.
+          value!).to eq 6
     end
 
     it 'with channel' do
@@ -431,10 +436,6 @@ describe 'Concurrent::Promises' do
           then { |format, (value, channel)| format format, value }
       expect(result.value!).to eq '02'
     end
-  end
-
-  specify do
-    expect(future { :v }.value!).to eq :v
   end
 
 end

@@ -80,7 +80,7 @@ module Concurrent
       # behaves as {#tell} when no future and as {#ask} when future
       def message(message, future = nil)
         core.on_envelope Envelope.new(message, future, Actor.current || Thread.current, self)
-        return future ? future.hide_completable : self
+        return future ? future.with_hidden_completable : self
       end
 
       # @see AbstractContext#dead_letter_routing

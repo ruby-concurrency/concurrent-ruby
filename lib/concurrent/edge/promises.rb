@@ -6,6 +6,7 @@ module Concurrent
       # only proof of concept
       # @return [Future]
       def select(*channels)
+        # TODO (pitr-ch 26-Mar-2016): redo, has to be non-blocking
         future do
           # noinspection RubyArgCount
           Channel.select do |s|

@@ -15,7 +15,7 @@ module Concurrent
         def initialize(core, subsequent, core_options, trapping = false, terminate_children = true)
           super core, subsequent, core_options
           @terminated         = Concurrent::Promises.completable_future
-          @public_terminated  = @terminated.hide_completable
+          @public_terminated  = @terminated.with_hidden_completable
           @trapping           = trapping
           @terminate_children = terminate_children
         end
