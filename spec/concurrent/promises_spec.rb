@@ -438,4 +438,17 @@ describe 'Concurrent::Promises' do
     end
   end
 
+  describe 'Cancellation', edge: true do
+    specify do
+      source, token = Concurrent::Cancellation.create
+
+      futures = Array.new(2) { future(token) { |t| t.loop_until_canceled { Thread.pass }; :done } }
+
+      source.cancel
+      futures.each do |future|
+        expect(future.value!).to eq :done
+      end
+    end
+  end
+
 end

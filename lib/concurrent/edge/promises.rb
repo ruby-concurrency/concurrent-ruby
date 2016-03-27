@@ -70,4 +70,82 @@ module Concurrent
 
     end
   end
+
+  # inspired by https://msdn.microsoft.com/en-us/library/dd537607(v=vs.110).aspx
+  class Cancellation < Synchronization::Object
+    safe_initialization!
+
+    def self.create
+      [(i = new), i.token]
+    end
+
+    private_class_method :new
+
+    def initialize
+      @Cancel = Promises.completable_event
+      @Token  = Token.new @Cancel.with_hidden_completable
+    end
+
+    def token
+      @Token
+    end
+
+    def cancel
+      try_cancel or raise MultipleAssignmentError, 'cannot cancel twice'
+    end
+
+    def try_cancel
+      !!@Cancel.complete(false)
+    end
+
+    def canceled?
+      @Cancel.complete?
+    end
+
+    class Token < Synchronization::Object
+      safe_initialization!
+
+      def initialize(cancel)
+        @Cancel = cancel
+      end
+
+      def event
+        @Cancel
+      end
+
+      def on_cancellation(*args, &block)
+        @Cancel.on_completion *args, &block
+      end
+
+      def then(*args, &block)
+        @Cancel.chain *args, &block
+      end
+
+      def canceled?
+        @Cancel.complete?
+      end
+
+      def loop_until_canceled(&block)
+        until canceled?
+          result = block.call
+        end
+        result
+      end
+
+      def raise_if_canceled
+        raise CancelledOperationError if canceled?
+        self
+      end
+
+      def join(*tokens)
+        Token.new Promises.any_event(@Cancel, *tokens.map(&:event))
+      end
+
+    end
+
+    private_constant :Token
+
+    # TODO (pitr-ch 27-Mar-2016): cooperation with mutex, select etc?
+    # TODO (pitr-ch 27-Mar-2016): examples (scheduled to be cancelled in 10 sec)
+  end
 end

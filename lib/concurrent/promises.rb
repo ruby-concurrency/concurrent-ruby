@@ -1430,7 +1430,5 @@ module Concurrent
   end
 end
 
-# TODO cancelable Futures, will cancel the future but the task will finish anyway
-# TODO task interrupts, how to support?
 # TODO when value is requested the current thread may evaluate the tasks to get the value for performance reasons it may not evaluate :io though
 # TODO try work stealing pool, each thread has it's own queue
