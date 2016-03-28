@@ -28,21 +28,22 @@ module Concurrent
   # When a promise is rejected all its children will be summarily rejected and
   # will receive the reason.
   #
-  # Promises have four possible states: *unscheduled*, *pending*, *rejected*,
-  # and *fulfilled*. A Promise created using `.new` will be *unscheduled*. It is
-  # scheduled by calling the `execute` method. Upon execution the Promise and
-  # all its children will be set to *pending*. When a promise is *pending* it
-  # will remain in that state until processing is complete. A completed Promise
-  # is either *rejected*, indicating that an exception was thrown during
-  # processing, or *fulfilled*, indicating it succeeded. If a Promise is
-  # *fulfilled* its `value` will be updated to reflect the result of the
-  # operation. If *rejected* the `reason` will be updated with a reference to
-  # the thrown exception. The predicate methods `unscheduled?`, `pending?`,
-  # `rejected?`, and `fulfilled?` can be called at any time to obtain the state
-  # of the Promise, as can the `state` method, which returns a symbol. A Promise
-  # created using `.execute` will be *pending*, a Promise created using
-  # `.fulfill(value)` will be *fulfilled* with the given value and a Promise
-  # created using `.reject(reason)` will be *rejected* with the given reason.
+  # Promises have several possible states: *:unscheduled*, *:pending*,
+  # *:processing*, *:rejected*, or *:fulfilled*. These are also aggregated as
+  # `#incomplete?` and `#complete?`. When a Promise is created it is set to
+  # *:unscheduled*. Once the `#execute` method is called the state becomes
+  # *:pending*. Once a job is pulled from the thread pool's queue and is given
+  # to a thread for processing (often immediately upon `#post`) the state
+  # becomes *:processing*. The future will remain in this state until processing
+  # is complete. A future that is in the *:unscheduled*, *:pending*, or
+  # *:processing* is considered `#incomplete?`. A `#complete?` Promise is either
+  # *:rejected*, indicating that an exception was thrown during processing, or
+  # *:fulfilled*, indicating success. If a Promise is *:fulfilled* its `#value`
+  # will be updated to reflect the result of the operation. If *:rejected* the
+  # `reason` will be updated with a reference to the thrown exception. The
+  # predicate methods `#unscheduled?`, `#pending?`, `#rejected?`, and
+  # `#fulfilled?` can be called at any time to obtain the state of the Promise,
+  # as can the `#state` method, which returns a symbol.
   #
   # Retrieving the value of a promise is done through the `value` (alias:
   # `deref`) method. Obtaining the value of a promise is a potentially blocking
