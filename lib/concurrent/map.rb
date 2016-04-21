@@ -149,7 +149,7 @@ module Concurrent
         return true if value.equal?(v)
       end
       false
-    end unless method_defined?(:value?)
+    end
 
     def keys
       arr = []
