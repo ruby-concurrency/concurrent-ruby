@@ -155,7 +155,7 @@ pool = Concurrent::ThreadPoolExecutor.new(
   :fallback_policy => :caller_runs
 )
 
-future = Future.new(:executor => pool).execute do
+future = Future.execute(:executor => pool) do
    #work
 end
 ~~~
