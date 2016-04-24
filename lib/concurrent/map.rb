@@ -149,7 +149,7 @@ module Concurrent
         return true if value.equal?(v)
       end
       false
-    end unless method_defined?(:value?)
+    end
 
     def keys
       arr = []
@@ -201,6 +201,15 @@ module Concurrent
     end
 
     undef :freeze
+
+    # @!visibility private
+    DEFAULT_OBJ_ID_STR_WIDTH = (2**50).class == Fixnum ? 14 : 7 # we want to look "native", 7 for 32-bit, 14 for 64-bit
+    # override default #inspect() method: firstly, we don't want to be spilling our guts (i-vars), secondly, MRI backend's
+    # #inspect() call on its @backend i-var will bump @backend's iter level while possibly yielding GVL
+    def inspect
+      id_str = (object_id << 1).to_s(16).rjust(DEFAULT_OBJ_ID_STR_WIDTH, '0')
+      "#<#{self.class.name}:0x#{id_str} entries=#{size} default_proc=#{@default_proc.inspect}>"
+    end
 
     private
     def raise_fetch_no_key

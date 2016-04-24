@@ -76,10 +76,6 @@ module Concurrent
         @backend.key?(key)
       end
 
-      def value?(value)
-        @backend.value?(value)
-      end
-
       def delete(key)
         @backend.delete(key)
       end

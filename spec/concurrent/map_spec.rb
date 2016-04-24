@@ -826,6 +826,15 @@ module Concurrent
       expect { Marshal.dump(Concurrent::Map.new {}) }.to raise_error(TypeError)
     end
 
+    it '#inspect' do
+      regexp = /\A#<Concurrent::Map:0x[0-9a-f]+ entries=[0-9]+ default_proc=.*>\Z/i
+      expect(Concurrent::Map.new.inspect).to match(regexp)
+      expect((Concurrent::Map.new {}).inspect).to match(regexp)
+      map = Concurrent::Map.new
+      map[:foo] = :bar
+      expect(map.inspect).to match(regexp)
+    end
+
     private
 
     def with_or_without_default_proc(&block)
