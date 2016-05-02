@@ -1,4 +1,11 @@
-## Current Release v1.0.1 (27 February 2016)
+## Current Release v1.0.2 (2 May 2016)
+
+* Fix bug with `Concurrent::Map` MRI backend `#inspect` method
+* Fix bug with `Concurrent::Map` MRI backend using `Hash#value?`
+* Improved documentation and examples
+* Minor updates to Edge
+
+### Release v1.0.1 (27 February 2016)
 
 * Fix "uninitialized constant Concurrent::ReentrantReadWriteLock" error.
 * Better handling of `autoload` vs. `require`.
