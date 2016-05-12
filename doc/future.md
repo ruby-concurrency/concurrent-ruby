@@ -13,7 +13,7 @@ Retrieving the value of a `Future` is done through the `#value` (alias: `#deref`
 
 The constructor can also be given zero or more processing options. Currently the only supported options are those recognized by the [Dereferenceable](Dereferenceable) module.
 
-The `Future` class also includes the behavior of the Ruby standard library [Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html) module, but does so in a thread-safe way. On fulfillment or rejection all observers will be notified according to the normal `Observable` behavior. The observer callback function will be called with three parameters: the `Time` of fulfillment/rejection, the final `value`, and the final `reason`. Observers added after fulfillment/rejection will still be notified as normal. The notification will occur on the global thread pool.
+The `Future` class also includes the behavior of the Ruby standard library [Observable](http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html) module, but does so in a thread-safe way. On fulfillment or rejection all observers will be notified according to the normal `Observable` behavior. The observer callback function will be called with three parameters: the `Time` of fulfillment/rejection, the final `value`, and the final `reason`. Observers added after fulfillment/rejection will still be notified as normal. The notification will occur on the same thread that processed the job.
 
 ### Examples
 
