@@ -151,6 +151,15 @@ module Concurrent
 
         expect(counter.value).to be > 1
       end
+
+      it 'reraises the exception from block' do
+        atom = Atom.new(0)
+        expect do
+          atom.swap do |value|
+            fail 'something went wrong'
+          end
+        end.to raise_error 'something went wrong'
+      end
     end
 
     context '#reset' do
