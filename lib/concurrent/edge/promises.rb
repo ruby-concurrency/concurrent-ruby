@@ -92,12 +92,8 @@ module Concurrent
       @Token
     end
 
-    def cancel
-      try_cancel or raise MultipleAssignmentError, 'cannot cancel twice'
-    end
-
-    def try_cancel
-      !!@Cancel.complete(false)
+    def cancel(raise_on_repeated_call = true)
+      !!@Cancel.complete(*@CompleteArgs, raise_on_repeated_call)
     end
 
     def canceled?
