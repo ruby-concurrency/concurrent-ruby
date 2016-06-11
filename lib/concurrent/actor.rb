@@ -1,7 +1,7 @@
 require 'concurrent/configuration'
 require 'concurrent/executor/serialized_execution'
 require 'concurrent/synchronization'
-require 'concurrent/promises'
+require 'concurrent/edge/promises'
 
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?

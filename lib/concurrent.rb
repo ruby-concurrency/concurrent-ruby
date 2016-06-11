@@ -30,7 +30,6 @@ require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
 require 'concurrent/lock_free_stack'
-require 'concurrent/promises'
 
 require 'concurrent/thread_safe/synchronized_delegator'
 require 'concurrent/thread_safe/util'
