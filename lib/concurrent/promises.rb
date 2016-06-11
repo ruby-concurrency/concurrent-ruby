@@ -145,7 +145,7 @@ module Concurrent
       end
 
       def any_event_on(default_executor, *events)
-        AnyCompletedEventPromise.new(events, default_executor).event
+        AnyCompleteEventPromise.new(events, default_executor).event
       end
 
       # TODO consider adding first(count, *futures)
@@ -170,6 +170,8 @@ module Concurrent
         end
       end
 
+      private_constant :State
+
       class Pending < State
         def completed?
           false
@@ -180,7 +182,9 @@ module Concurrent
         end
       end
 
-      class Completed < State
+      private_constant :Pending
+
+      class CompletedWithResult < State
         def completed?
           true
         end
@@ -188,14 +192,125 @@ module Concurrent
         def to_sym
           :completed
         end
+
+        def result
+          [success?, value, reason]
+        end
+
+        def success?
+          raise NotImplementedError
+        end
+
+        def value
+          raise NotImplementedError
+        end
+
+        def reason
+          raise NotImplementedError
+        end
+
+        def apply
+          raise NotImplementedError
+        end
       end
 
-      private_constant :State, :Pending, :Completed
+      private_constant :CompletedWithResult
+
+      # @!visibility private
+      class Success < CompletedWithResult
+        def initialize(value)
+          @Value = value
+        end
+
+        def success?
+          true
+        end
+
+        def apply(args, block)
+          block.call value, *args
+        end
+
+        def value
+          @Value
+        end
+
+        def reason
+          nil
+        end
+
+        def to_sym
+          :success
+        end
+      end
+
+      # @!visibility private
+      class SuccessArray < Success
+        def apply(args, block)
+          block.call(*value, *args)
+        end
+      end
+
+      # @!visibility private
+      class Failed < CompletedWithResult
+        def initialize(reason)
+          @Reason = reason
+        end
+
+        def success?
+          false
+        end
+
+        def value
+          nil
+        end
+
+        def reason
+          @Reason
+        end
+
+        def to_sym
+          :failed
+        end
+
+        def apply(args, block)
+          block.call reason, *args
+        end
+      end
+
+      # @!visibility private
+      class PartiallyFailed < CompletedWithResult
+        def initialize(value, reason)
+          super()
+          @Value  = value
+          @Reason = reason
+        end
+
+        def success?
+          false
+        end
+
+        def to_sym
+          :failed
+        end
+
+        def value
+          @Value
+        end
+
+        def reason
+          @Reason
+        end
+
+        def apply(args, block)
+          block.call(*reason, *args)
+        end
+      end
+
 
       # @!visibility private
       PENDING   = Pending.new
       # @!visibility private
-      COMPLETED = Completed.new
+      COMPLETED = Success.new(nil)
 
       def initialize(promise, default_executor)
         super()
@@ -284,11 +399,17 @@ module Concurrent
         if other.is?(Future)
           ZipFutureEventPromise.new(other, self, @DefaultExecutor).future
         else
-          ZipEventEventPromise.new(self, other, @DefaultExecutor).future
+          ZipEventEventPromise.new(self, other, @DefaultExecutor).event
         end
       end
 
       alias_method :&, :zip
+
+      def any(future)
+        AnyCompleteEventPromise.new([self, future], @DefaultExecutor).event
+      end
+
+      alias_method :|, :any
 
       # Inserts delay into the chain of Futures making rest of it lazy evaluated.
       # @return [Event]
@@ -447,119 +568,6 @@ module Concurrent
 
     # Represents a value which will become available in future. May fail with a reason instead.
     class Future < Event
-      class CompletedWithResult < Completed
-        def result
-          [success?, value, reason]
-        end
-
-        def success?
-          raise NotImplementedError
-        end
-
-        def value
-          raise NotImplementedError
-        end
-
-        def reason
-          raise NotImplementedError
-        end
-
-        def apply
-          raise NotImplementedError
-        end
-      end
-
-      # @!visibility private
-      class Success < CompletedWithResult
-        def initialize(value)
-          @Value = value
-        end
-
-        def success?
-          true
-        end
-
-        def apply(args, block)
-          block.call value, *args
-        end
-
-        def value
-          @Value
-        end
-
-        def reason
-          nil
-        end
-
-        def to_sym
-          :success
-        end
-      end
-
-      # @!visibility private
-      class SuccessArray < Success
-        def apply(args, block)
-          block.call(*value, *args)
-        end
-      end
-
-      # @!visibility private
-      class Failed < CompletedWithResult
-        def initialize(reason)
-          @Reason = reason
-        end
-
-        def success?
-          false
-        end
-
-        def value
-          nil
-        end
-
-        def reason
-          @Reason
-        end
-
-        def to_sym
-          :failed
-        end
-
-        def apply(args, block)
-          block.call reason, *args
-        end
-      end
-
-      # @!visibility private
-      class PartiallyFailed < CompletedWithResult
-        def initialize(value, reason)
-          super()
-          @Value  = value
-          @Reason = reason
-        end
-
-        def success?
-          false
-        end
-
-        def to_sym
-          :failed
-        end
-
-        def value
-          @Value
-        end
-
-        def reason
-          @Reason
-        end
-
-        def apply(args, block)
-          block.call(*reason, *args)
-        end
-      end
-
-      private_constant :CompletedWithResult
 
       # @!method state
       #   @return [:pending, :success, :failed]
@@ -671,8 +679,8 @@ module Concurrent
       end
 
       # @return [Future] which has first completed value from futures
-      def any(*futures)
-        AnyCompleteFuturePromise.new([self, *futures], @DefaultExecutor).future
+      def any(future)
+        AnyCompleteFuturePromise.new([self, future], @DefaultExecutor).future
       end
 
       # Inserts delay into the chain of Futures making rest of it lazy evaluated.
@@ -1317,13 +1325,17 @@ module Concurrent
       end
     end
 
-    class AnyCompleteFuturePromise < BlockedPromise
+    class AbstractAnyPromise < BlockedPromise
+      def touch
+        blocked_by.each(&:touch) unless @Future.completed?
+      end
+    end
+
+    class AnyCompleteFuturePromise < AbstractAnyPromise
 
       private
 
       def initialize(blocked_by_futures, default_executor)
-        blocked_by_futures.all? { |f| f.is_a? Future } or
-            raise ArgumentError, 'accepts only Futures not Events'
         super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
       end
 
@@ -1336,7 +1348,7 @@ module Concurrent
       end
     end
 
-    class AnyCompleteEventPromise < BlockedPromise
+    class AnyCompleteEventPromise < AbstractAnyPromise
 
       private
 
@@ -1353,22 +1365,12 @@ module Concurrent
       end
     end
 
-    class AnySuccessfulFuturePromise < BlockedPromise
+    class AnySuccessfulFuturePromise < AnyCompleteFuturePromise
 
       private
 
-      def initialize(blocked_by_futures, default_executor)
-        blocked_by_futures.all? { |f| f.is_a? Future } or
-            raise ArgumentError, 'accepts only Futures not Events'
-        super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
-      end
-
       def completable?(countdown, future)
         future.success? || super(countdown, future)
-      end
-
-      def on_completable(done_future)
-        complete_with done_future.internal_state, false
       end
     end
 
