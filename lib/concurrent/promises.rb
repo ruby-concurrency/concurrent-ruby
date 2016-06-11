@@ -854,7 +854,7 @@ module Concurrent
       end
 
       def with_hidden_completable
-        EventWrapperPromise.new(self, @DefaultExecutor).event
+        @with_hidden_completable ||= EventWrapperPromise.new(self, @DefaultExecutor).event
       end
     end
 
@@ -907,7 +907,7 @@ module Concurrent
       end
 
       def with_hidden_completable
-        FutureWrapperPromise.new(self, @DefaultExecutor).future
+        @with_hidden_completable ||= FutureWrapperPromise.new(self, @DefaultExecutor).future
       end
     end
 
