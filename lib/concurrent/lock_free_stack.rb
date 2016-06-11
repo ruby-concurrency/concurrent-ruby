@@ -29,7 +29,7 @@ module Concurrent
       self.head = EMPTY
     end
 
-    def empty?
+    def empty?(head = self.head)
       head.equal? EMPTY
     end
 
@@ -81,6 +81,10 @@ module Concurrent
         return false if current_head == EMPTY
         return true if compare_and_set_head current_head, EMPTY
       end
+    end
+
+    def clear_if(head)
+      compare_and_set_head head, EMPTY
     end
 
     def clear_each(&block)
