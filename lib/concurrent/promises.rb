@@ -25,9 +25,6 @@ module Concurrent
         CompletableEventPromise.new(default_executor).future
       end
 
-      # TODO (pitr-ch 26-Mar-2016): remove event?, it does not match completable_future
-      alias_method :event, :completable_event
-
       # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
       # @return [Future]
       def future(*args, &task)
@@ -63,8 +60,6 @@ module Concurrent
       def completed_event(default_executor = :io)
         ImmediateEventPromise.new(default_executor).event
       end
-
-      alias_method :async, :future
 
       # Constructs new Future which will evaluate to the block after
       # requested by calling `#wait`, `#value`, `#value!`, etc. on it or on any of the chained futures.
