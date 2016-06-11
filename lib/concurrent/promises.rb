@@ -1049,7 +1049,10 @@ module Concurrent
       private
 
       def initialize_blocked_by(blocked_by_futures)
-        @BlockedBy = [blocked_by_futures].flatten
+        unless blocked_by_futures.is_a?(::Array)
+          raise ArgumentError, "has to be array of events/futures: #{blocked_by_futures.inspect}"
+        end
+        @BlockedBy = blocked_by_futures
       end
 
       def clear_blocked_by!
@@ -1076,7 +1079,7 @@ module Concurrent
     class BlockedTaskPromise < BlockedPromise
       def initialize(blocked_by_future, default_executor, executor, args, &task)
         raise ArgumentError, 'no block given' unless block_given?
-        super Future.new(self, default_executor), blocked_by_future, 1
+        super Future.new(self, default_executor), [blocked_by_future], 1
         @Executor = executor
         @Task     = task
         @Args     = args
@@ -1255,7 +1258,7 @@ module Concurrent
 
     class EventWrapperPromise < BlockedPromise
       def initialize(event, default_executor)
-        super Event.new(self, default_executor), event, 1
+        super Event.new(self, default_executor), [event], 1
       end
 
       def on_completable(done_future)
@@ -1265,7 +1268,7 @@ module Concurrent
 
     class FutureWrapperPromise < BlockedPromise
       def initialize(future, default_executor)
-        super Future.new(self, default_executor), future, 1
+        super Future.new(self, default_executor), [future], 1
       end
 
       def on_completable(done_future)
