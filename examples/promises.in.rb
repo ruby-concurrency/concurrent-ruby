@@ -5,7 +5,7 @@ include Concurrent::Promises::FactoryMethods #
 
 ### Simple asynchronous task
 
-future = future { sleep 0.1; 1 + 1 } # evaluation starts immediately
+future = future(0.1) { |duration| sleep duration; :result } # evaluation starts immediately
 future.completed?
 # block until evaluated
 future.value
@@ -20,6 +20,7 @@ future.value! rescue $!
 future.reason
 # re-raising
 raise future rescue $!
+
 
 ### Direct creation of completed futures
 
@@ -120,7 +121,7 @@ scheduled.value # returns after another 0.1sec
 ### Completable Future and Event
 
 future = completable_future
-event  = event()
+event  = completable_event()
 
 # These threads will be blocked until the future and event is completed
 t1     = Thread.new { future.value } #
@@ -205,17 +206,40 @@ zip(*jobs).value
 
 
 # periodic task
-DONE = Concurrent::AtomicBoolean.new false
-
-def schedule_job
-  schedule(1) { do_stuff }.
-      rescue { |e| StandardError === e ? report_error(e) : raise(e) }.
-      then { schedule_job unless DONE.true? }
+def schedule_job(interval, &job)
+  # schedule the first execution and chain restart og the job
+  Concurrent.schedule(interval, &job).chain do |success, continue, reason|
+    if success
+      schedule_job(interval, &job) if continue
+    else
+      # handle error
+      p reason
+      # retry
+      schedule_job(interval, &job)
+    end
+  end
 end
 
-schedule_job
-DONE.make_true
+queue = Queue.new
+count = 0
 
+schedule_job 0.05 do
+  queue.push count
+  count += 1
+  # to continue scheduling return true, false will end the task
+  if count < 4
+    # to continue scheduling return true
+    true
+  else
+    queue.push nil
+    # to end the task return false
+    false
+  end
+end
+
+# read the queue
+arr, v = [], nil; arr << v while (v = queue.pop) #
+arr
 
 # How to limit processing where there are limited resources?
 # By creating an actor managing the resource
