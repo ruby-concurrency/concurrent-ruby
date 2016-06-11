@@ -1374,6 +1374,7 @@ module Concurrent
 
       def completable?(countdown, future)
         future.success? || super(countdown, future)
+            countdown.zero?
       end
     end
 
