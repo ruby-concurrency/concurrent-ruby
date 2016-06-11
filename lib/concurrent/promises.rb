@@ -841,8 +841,13 @@ module Concurrent
       end
     end
 
+    module Completable
+    end
+
     # A Event which can be completed by user.
     class CompletableEvent < Event
+      include Completable
+
       # Complete the Event, `raise` if already completed
       def complete(raise_on_reassign = true)
         complete_with COMPLETED, raise_on_reassign
@@ -855,6 +860,8 @@ module Concurrent
 
     # A Future which can be completed by user.
     class CompletableFuture < Future
+      include Completable
+
       # Complete the future with triplet od `success`, `value`, `reason`
       # `raise` if already completed
       # return [self]
