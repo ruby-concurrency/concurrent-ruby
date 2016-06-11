@@ -31,6 +31,7 @@ module Concurrent
         future_on(:io, *args, &task)
       end
 
+      # As {#future} but takes default_executor as first argument
       def future_on(default_executor, *args, &task)
         ImmediateEventPromise.new(default_executor).future.then(*args, &task)
       end
@@ -68,6 +69,7 @@ module Concurrent
         delay_on :io, *args, &task
       end
 
+      # As {#delay} but takes default_executor as first argument
       def delay_on(default_executor, *args, &task)
         DelayPromise.new(default_executor).future.then(*args, &task)
       end
@@ -79,6 +81,7 @@ module Concurrent
         schedule_on :io, intended_time, *args, &task
       end
 
+      # As {#schedule} but takes default_executor as first argument
       def schedule_on(default_executor, intended_time, *args, &task)
         ScheduledPromise.new(default_executor, intended_time).future.then(*args, &task)
       end
@@ -92,6 +95,7 @@ module Concurrent
         zip_futures_on :io, *futures_and_or_events
       end
 
+      # As {#zip_futures} but takes default_executor as first argument
       def zip_futures_on(default_executor, *futures_and_or_events)
         ZipFuturesPromise.new(futures_and_or_events, default_executor).future
       end
@@ -106,6 +110,7 @@ module Concurrent
         zip_events_on :io, *futures_and_or_events
       end
 
+      # As {#zip_events} but takes default_executor as first argument
       def zip_events_on(default_executor, *futures_and_or_events)
         ZipEventsPromise.new(futures_and_or_events, default_executor).future
       end
@@ -117,6 +122,7 @@ module Concurrent
         any_complete_future_on :io, *futures
       end
 
+      # As {#any_complete_future} but takes default_executor as first argument
       def any_complete_future_on(default_executor, *futures)
         AnyCompleteFuturePromise.new(futures, default_executor).future
       end
@@ -131,14 +137,17 @@ module Concurrent
         any_successful_future_on :io, *futures
       end
 
+      # As {#any_succesful_future} but takes default_executor as first argument
       def any_successful_future_on(default_executor, *futures)
         AnySuccessfulFuturePromise.new(futures, default_executor).future
       end
 
+      # Constructs new {Event} which becomes complete after first if the events completes.
       def any_event(*events)
         any_event_on :io, *events
       end
 
+      # As {#any_event} but takes default_executor as first argument
       def any_event_on(default_executor, *events)
         AnyCompleteEventPromise.new(events, default_executor).event
       end
@@ -147,14 +156,7 @@ module Concurrent
       # TODO consider adding zip_by(slice, *futures) processing futures in slices
     end
 
-    # Represents an event which will happen in future (will be completed). It has to always happen.
-    class Event < Synchronization::Object
-      safe_initialization!
-      private(*attr_atomic(:internal_state))
-      # @!visibility private
-      public :internal_state
-      include Concern::Logging
-
+    module InternalStates
       class State
         def completed?
           raise NotImplementedError
@@ -238,12 +240,16 @@ module Concurrent
         end
       end
 
+      private_constant :Success
+
       # @!visibility private
       class SuccessArray < Success
         def apply(args, block)
           block.call(*value, *args)
         end
       end
+
+      private_constant :SuccessArray
 
       # @!visibility private
       class Failed < CompletedWithResult
@@ -271,6 +277,8 @@ module Concurrent
           block.call reason, *args
         end
       end
+
+      private_constant :Failed
 
       # @!visibility private
       class PartiallyFailed < CompletedWithResult
@@ -301,11 +309,25 @@ module Concurrent
         end
       end
 
+      private_constant :PartiallyFailed
 
-      # @!visibility private
       PENDING   = Pending.new
-      # @!visibility private
       COMPLETED = Success.new(nil)
+
+      private_constant :PENDING, :COMPLETED
+    end
+
+    private_constant :InternalStates
+
+    # Represents an event which will happen in future (will be completed). It has to always happen.
+    class Event < Synchronization::Object
+      safe_initialization!
+      private(*attr_atomic(:internal_state))
+      # @!visibility private
+      public :internal_state
+
+      include Concern::Logging
+      include InternalStates
 
       def initialize(promise, default_executor)
         super()
@@ -913,6 +935,7 @@ module Concurrent
     # @abstract
     class AbstractPromise < Synchronization::Object
       safe_initialization!
+      include InternalStates
       include Concern::Logging
 
       def initialize(future)
@@ -953,12 +976,12 @@ module Concurrent
 
       # @return [Future]
       def evaluate_to(*args, block)
-        complete_with Future::Success.new(block.call(*args))
+        complete_with Success.new(block.call(*args))
       rescue StandardError => error
-        complete_with Future::Failed.new(error)
+        complete_with Failed.new(error)
       rescue Exception => error
         log(ERROR, 'Promises::Future', error)
-        complete_with Future::Failed.new(error)
+        complete_with Failed.new(error)
       end
     end
 
@@ -973,35 +996,24 @@ module Concurrent
         super CompletableFuture.new(self, default_executor)
       end
 
-      # Set the `Future` to a value and wake or notify all threads waiting on it.
-      #
-      # @param [Object] value the value to store in the `Future`
-      # @raise [Concurrent::MultipleAssignmentError] if the `Future` has already been set or otherwise completed
-      # @return [Future]
       def success(value)
-        complete_with Future::Success.new(value)
+        complete_with Success.new(value)
       end
 
       def try_success(value)
-        !!complete_with(Future::Success.new(value), false)
+        !!complete_with(Success.new(value), false)
       end
 
-      # Set the `Future` to failed due to some error and wake or notify all threads waiting on it.
-      #
-      # @param [Object] reason for the failure
-      # @raise [Concurrent::MultipleAssignmentError] if the `Future` has already been set or otherwise completed
-      # @return [Future]
       def fail(reason = StandardError.new)
-        complete_with Future::Failed.new(reason)
+        complete_with Failed.new(reason)
       end
 
       def try_fail(reason = StandardError.new)
-        !!complete_with(Future::Failed.new(reason), false)
+        !!complete_with(Failed.new(reason), false)
       end
 
       public :evaluate_to
 
-      # @return [Future]
       def evaluate_to!(*args, block)
         evaluate_to(*args, block).wait!
       end
@@ -1152,14 +1164,14 @@ module Concurrent
     # will be immediately completed
     class ImmediateEventPromise < InnerPromise
       def initialize(default_executor)
-        super Event.new(self, default_executor).complete_with(Event::COMPLETED)
+        super Event.new(self, default_executor).complete_with(COMPLETED)
       end
     end
 
     class ImmediateFuturePromise < InnerPromise
       def initialize(default_executor, success, value, reason)
         super Future.new(self, default_executor).
-            complete_with(success ? Future::Success.new(value) : Future::Failed.new(reason))
+            complete_with(success ? Success.new(value) : Failed.new(reason))
       end
     end
 
@@ -1226,7 +1238,7 @@ module Concurrent
       end
 
       def on_completable(done_future)
-        complete_with Event::COMPLETED
+        complete_with COMPLETED
       end
     end
 
@@ -1253,9 +1265,9 @@ module Concurrent
         success2, value2, reason2 = @Future2Result.result
         success                   = success1 && success2
         new_state                 = if success
-                                      Future::SuccessArray.new([value1, value2])
+                                      SuccessArray.new([value1, value2])
                                     else
-                                      Future::PartiallyFailed.new([value1, value2], [reason1, reason2])
+                                      PartiallyFailed.new([value1, value2], [reason1, reason2])
                                     end
         complete_with new_state
       end
@@ -1267,7 +1279,7 @@ module Concurrent
       end
 
       def on_completable(done_future)
-        complete_with Event::COMPLETED
+        complete_with COMPLETED
       end
     end
 
@@ -1306,9 +1318,9 @@ module Concurrent
         end
 
         if all_success
-          complete_with Future::SuccessArray.new(values)
+          complete_with SuccessArray.new(values)
         else
-          complete_with Future::PartiallyFailed.new(values, reasons)
+          complete_with PartiallyFailed.new(values, reasons)
         end
       end
     end
@@ -1324,10 +1336,11 @@ module Concurrent
       end
 
       def on_completable(done_future)
-        complete_with Event::COMPLETED
+        complete_with COMPLETED
       end
     end
 
+    # @abstract
     class AbstractAnyPromise < BlockedPromise
       def touch
         blocked_by.each(&:touch) unless @Future.completed?
@@ -1364,7 +1377,7 @@ module Concurrent
       end
 
       def on_completable(done_future)
-        complete_with Event::COMPLETED, false
+        complete_with COMPLETED, false
       end
     end
 
@@ -1373,14 +1386,15 @@ module Concurrent
       private
 
       def completable?(countdown, future)
-        future.success? || super(countdown, future)
+        future.success? ||
+            # inlined super from BlockedPromise
             countdown.zero?
       end
     end
 
     class DelayPromise < InnerPromise
       def touch
-        @Future.complete_with Event::COMPLETED
+        @Future.complete_with COMPLETED
       end
 
       private
@@ -1390,7 +1404,6 @@ module Concurrent
       end
     end
 
-    # will be evaluated to task in intended_time
     class ScheduledPromise < InnerPromise
       def intended_time
         @IntendedTime
@@ -1418,7 +1431,7 @@ module Concurrent
         end
 
         Concurrent.global_timer_set.post(in_seconds) do
-          @Future.complete_with Event::COMPLETED
+          @Future.complete_with COMPLETED
         end
       end
     end
