@@ -9,8 +9,8 @@ describe 'Concurrent::Promises' do
 
   describe 'chain_completable' do
     it 'event' do
-      b = event
-      a = event.chain_completable(b)
+      b = completable_event
+      a = completable_event.chain_completable(b)
       a.complete
       expect(b).to be_completed
     end
@@ -102,7 +102,7 @@ describe 'Concurrent::Promises' do
 
   describe '.event' do
     specify do
-      completable_event = event
+      completable_event = completable_event()
       one               = completable_event.chain { 1 }
       join              = zip(completable_event).chain { 1 }
       expect(one.completed?).to be false
@@ -201,8 +201,8 @@ describe 'Concurrent::Promises' do
 
       expect(future { 1 }.delay).to be_a_kind_of Concurrent::Promises::Future
       expect(future { 1 }.delay.wait!).to be_completed
-      expect(event.complete.delay).to be_a_kind_of Concurrent::Promises::Event
-      expect(event.complete.delay.wait).to be_completed
+      expect(completable_event.complete.delay).to be_a_kind_of Concurrent::Promises::Event
+      expect(completable_event.complete.delay.wait).to be_completed
 
       a = future { 1 }
       b = future { raise 'b' }
@@ -239,7 +239,7 @@ describe 'Concurrent::Promises' do
     it 'waits for all and returns event' do
       a = succeeded_future 1
       b = failed_future :any
-      c = event.complete
+      c = completable_event.complete
 
       z2 = zip_events a, b, c
       z3 = zip_events a
@@ -449,6 +449,38 @@ describe 'Concurrent::Promises' do
         expect(future.value!).to eq :done
       end
     end
+
+    specify do
+      source, token = Concurrent::Cancellation.create
+      source.cancel
+      expect(token.event.complete?).to be_truthy
+
+      cancellable_branch = Concurrent::Promises.delay { 1 }
+      expect((cancellable_branch | token.event).value).to be_nil
+      expect(cancellable_branch.complete?).to be_falsey
+    end
+
+    specify do
+      source, token = Concurrent::Cancellation.create(
+          Concurrent::Promises.completable_future, false, nil, err = StandardError.new('Cancelled'))
+      source.cancel
+      expect(token.future.complete?).to be_truthy
+
+      cancellable_branch = Concurrent::Promises.delay { 1 }
+      expect((cancellable_branch | token.event).reason).to eq err
+      expect(cancellable_branch.complete?).to be_falsey
+    end
+
+
+    specify do
+      source, token = Concurrent::Cancellation.create
+
+      cancellable_branch = Concurrent::Promises.delay { 1 }
+      expect((cancellable_branch | token.event).value).to eq 1
+      expect(cancellable_branch.complete?).to be_truthy
+    end
+  end
+
   end
 
 end
