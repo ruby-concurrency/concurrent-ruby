@@ -148,4 +148,53 @@ module Concurrent
     # TODO (pitr-ch 27-Mar-2016): cooperation with mutex, select etc?
     # TODO (pitr-ch 27-Mar-2016): examples (scheduled to be cancelled in 10 sec)
   end
+
+  class Throttle < Synchronization::Object
+
+    safe_initialization!
+    private *attr_atomic(:can_run)
+
+    def initialize(max)
+      super()
+      self.can_run = max
+      # TODO (pitr-ch 10-Jun-2016): lockfree gueue is needed
+      @Queue       = Queue.new
+    end
+
+    def limit(ready = nil, &block)
+      # TODO (pitr-ch 11-Jun-2016): triggers should allocate resources when they are to be required
+      if block_given?
+        block.call(get_event).on_completion! { done }
+      else
+        get_event
+      end
+    end
+
+    def done
+      while true
+        current_can_run = can_run
+        if compare_and_set_can_run current_can_run, current_can_run + 1
+          @Queue.pop.complete if current_can_run < 0
+          return self
+        end
+      end
+    end
+
+    private
+
+    def get_event
+      while true
+        current_can_run = can_run
+        if compare_and_set_can_run current_can_run, current_can_run - 1
+          if current_can_run > 0
+            return Promises.completed_event
+          else
+            e = Promises.completable_event
+            @Queue.push e
+            return e
+          end
+        end
+      end
+    end
+  end
 end

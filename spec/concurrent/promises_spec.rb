@@ -481,6 +481,21 @@ describe 'Concurrent::Promises' do
     end
   end
 
+  describe 'Throttling' do
+    specify do
+      throttle = Concurrent::Throttle.new 3
+      counter  = Concurrent::AtomicFixnum.new
+      expect(Concurrent::Promises.zip(
+          *12.times.map do |i|
+            throttle.limit do |trigger|
+              trigger.then do
+                counter.increment
+                sleep 0.01
+                counter.decrement
+              end
+            end
+          end).value.all? { |v| v < 3 }).to be_truthy
+    end
   end
 
 end
