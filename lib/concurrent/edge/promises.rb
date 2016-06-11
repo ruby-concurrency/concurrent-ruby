@@ -75,15 +75,17 @@ module Concurrent
   class Cancellation < Synchronization::Object
     safe_initialization!
 
-    def self.create
-      [(i = new), i.token]
+    def self.create(future_or_event = Promises.completable_event, *complete_args)
+      [(i = new(future_or_event, *complete_args)), i.token]
     end
 
     private_class_method :new
 
-    def initialize
-      @Cancel = Promises.completable_event
-      @Token  = Token.new @Cancel.with_hidden_completable
+    def initialize(future, *complete_args)
+      raise ArgumentError, 'future is not Completable' unless future.is_a?(Promises::Completable)
+      @Cancel       = future
+      @Token        = Token.new @Cancel.with_hidden_completable
+      @CompleteArgs = complete_args
     end
 
     def token
@@ -112,6 +114,8 @@ module Concurrent
       def event
         @Cancel
       end
+
+      alias_method :future, :event
 
       def on_cancellation(*args, &block)
         @Cancel.on_completion *args, &block
