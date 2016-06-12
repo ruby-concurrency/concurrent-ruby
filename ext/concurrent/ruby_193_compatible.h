@@ -5,7 +5,7 @@
 
 #define UNLIMITED_ARGUMENTS (-1)
 
-static inline void rb_error_arity(int argc, int min, int max)
+static inline VALUE rb_error_arity(int argc, int min, int max)
 {
   VALUE err_mess = 0;
   if (min == max) {
@@ -17,12 +17,12 @@ static inline void rb_error_arity(int argc, int min, int max)
   else {
     err_mess = rb_sprintf("wrong number of arguments (%d for %d..%d)", argc, min, max);
   }
-  rb_raise(rb_eTypeError, err_mess);
+  return rb_exc_new3(rb_eTypeError, err_mess);
 }
 
 #define rb_check_arity(argc, min, max) do { \
   if (((argc) < (min)) || ((argc) > (max) && (max) != UNLIMITED_ARGUMENTS)) \
-  rb_error_arity(argc, min, max); \
+  rb_exc_raise(rb_error_arity(argc, min, max)); \
 } while(0)
 
 #endif
