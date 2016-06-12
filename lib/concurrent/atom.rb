@@ -158,8 +158,8 @@ module Concurrent
 
       loop do
         old_value = value
+        new_value = yield(old_value, *args)
         begin
-          new_value = yield(old_value, *args)
           break old_value unless valid?(new_value)
           break new_value if compare_and_set(old_value, new_value)
         rescue
