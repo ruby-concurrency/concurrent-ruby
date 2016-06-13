@@ -1,29 +1,57 @@
-# Adds factory methods like: future, event, delay, schedule, zip, ...
-# otherwise they can be called on Promises module
+# Promises Framework
+
+Promises is a new framework unifying former `Concurrent::Future`, `Concurrent::Promise`, `Concurrent::IVar`,
+`Concurrent::Event`, `Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
+synchronization layer to make all the features **non-blocking** and
+**lock-free**, with the exception of obviously blocking operations like
+`#wait`, `#value`. As a result it lowers a danger of deadlocking and offers
+better performance.
+
+## Overview
+
+There are two central classes ... TODO
+
+## Where does it executes?
+
+-   TODO Explain `_on` `_using` sufixes.
+
+## Old examples follow
+
+*TODO rewrite into md with examples*
+
+Adds factory methods like: future, event, delay, schedule, zip, etc. Otherwise
+they can be called on Promises module.
+
+```ruby
+Concurrent::Promises::FactoryMethods.instance_methods false
+
 include Concurrent::Promises::FactoryMethods #
+```
 
+Simple asynchronous task:
 
-### Simple asynchronous task
-
+```ruby
 future = future(0.1) { |duration| sleep duration; :result } # evaluation starts immediately
 future.completed?
 # block until evaluated
 future.value
 future.completed?
+```
 
+Failing asynchronous task
 
-### Failing asynchronous task
-
+```ruby
 future = future { raise 'Boom' }
 future.value
 future.value! rescue $!
 future.reason
 # re-raising
 raise future rescue $!
+```
 
+Direct creation of completed futures
 
-### Direct creation of completed futures
-
+```ruby
 succeeded_future(Object.new)
 failed_future(StandardError.new("boom"))
 
@@ -129,7 +157,7 @@ t2     = Thread.new { event.wait } #
 
 future.success 1
 future.success 1 rescue $!
-future.try_success 2
+future.success 2, false
 event.complete
 
 # The threads can be joined now
@@ -158,7 +186,7 @@ queue.pop
 # executed on :fast executor, only short and non-blocking tasks can go there
 future_on(:fast) { 2 }.
     # executed on executor for blocking and long operations
-    then_on(:io) { File.read __FILE__ }.
+    then_using(:io) { File.read __FILE__ }.
     wait
 
 
@@ -288,3 +316,4 @@ concurrent_jobs = 11.times.map do |v|
 end #
 
 zip(*concurrent_jobs).value!
+```

@@ -66,7 +66,7 @@ We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) an
 #### General-purpose Concurrency Abstractions
 
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to a class. Loosely based on Erlang's [gen_server](http://www.erlang.org/doc/man/gen_server.html).
-* [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises/FutureFactoryMethods.html):
+* [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html):
   Unified implementation of futures and promises which combines features of previous `Future`,
   `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
   new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking

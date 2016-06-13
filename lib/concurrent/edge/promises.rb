@@ -7,149 +7,251 @@ require 'concurrent/errors'
 
 module Concurrent
 
-  # # Promises Framework
-  #
-  # Unified implementation of futures and promises which combines features of previous `Future`,
-  # `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
-  # new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
-  # operations like `#wait`, `#value`. It also offers better performance.
-  #
-  # ## Examples
-  # {include:file:examples/promises.out.rb}
+  # {include:file:doc/promises.out.md}
   module Promises
 
+    # @!macro [new] promises.param.default_executor
+    #   @param [Executor, :io, :fast] default_executor Instance of an executor or a name of the
+    #     global executor. Default executor propagates to chained futures unless overridden with
+    #     executor parameter or changed with {AbstractEventFuture#with_default_executor}.
+    #
+    # @!macro [new] promises.param.executor
+    #   @param [Executor, :io, :fast] executor Instance of an executor or a name of the
+    #     global executor. The task is executed on it, default executor remains unchanged.
+    #
+    # @!macro [new] promises.param.args
+    #   @param [Object] args arguments which are passed to the task when it's executed.
+    #     (It might be prepended with other arguments, see the @yeild section).
+    #
+    # @!macro [new] promises.shortcut.on
+    #   Shortcut of {#$0_on} with default `:io` executor supplied.
+    #   @see #$0_on
+    #
+    # @!macro [new] promises.shortcut.using
+    #   Shortcut of {#$0_using} with default `:io` executor supplied.
+    #   @see #$0_using
+    #
+    # @!macro [new] promise.param.task-future
+    #  @yieldreturn will become result of the returned Future.
+    #     Its returned value becomes {Future#value} succeeding,
+    #     raised exception becomes {Future#reason} failing.
+    #
+    # @!macro [new] promise.param.callback
+    #  @yieldreturn is forgotten.
+
+    # Container of all {Future}, {Event} factory methods. They are never constructed directly with
+    # new.
     module FactoryMethods
-      # User is responsible for completing the event once by {Promises::CompletableEvent#complete}
+
+
+      # @!macro promises.shortcut.on
       # @return [CompletableEvent]
-      def completable_event(default_executor = :io)
+      def completable_event
+        completable_event_on :io
+      end
+
+      # Created completable event, user is responsible for completing the event once by
+      # {Promises::CompletableEvent#complete}.
+      #
+      # @!macro promises.param.default_executor
+      # @return [CompletableEvent]
+      def completable_event_on(default_executor = :io)
         CompletableEventPromise.new(default_executor).future
       end
 
-      # Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.
+      # @!macro promises.shortcut.on
+      # @return [CompletableFuture]
+      def completable_future
+        completable_future_on :io
+      end
+
+      # Creates completable future, user is responsible for completing the future once by
+      # {Promises::CompletableFuture#complete}, {Promises::CompletableFuture#success},
+      # or {Promises::CompletableFuture#fail}
+      #
+      # @!macro promises.param.default_executor
+      # @return [CompletableFuture]
+      def completable_future_on(default_executor = :io)
+        CompletableFuturePromise.new(default_executor).future
+      end
+
+      # @!macro promises.shortcut.on
       # @return [Future]
       def future(*args, &task)
         future_on(:io, *args, &task)
       end
 
-      # As {#future} but takes default_executor as first argument
+      # @!macro [new] promises.future-on1
+      #   Constructs new Future which will be completed after block is evaluated on default executor.
+      # Evaluation begins immediately.
+      #
+      # @!macro [new] promises.future-on2
+      #   @!macro promises.param.default_executor
+      #   @!macro promises.param.args
+      #   @yield [*args] to the task.
+      #   @!macro promise.param.task-future
+      #   @return [Future]
       def future_on(default_executor, *args, &task)
         ImmediateEventPromise.new(default_executor).future.then(*args, &task)
       end
 
-      # User is responsible for completing the future once by {Promises::CompletableFuture#success} or {Promises::CompletableFuture#fail}
-      # @return [CompletableFuture]
-      def completable_future(default_executor = :io)
-        CompletableFuturePromise.new(default_executor).future
-      end
-
-      # @return [Future] which is already completed
+      # Creates completed future with will be either success with the given value or failed with
+      # the given reason.
+      #
+      # @!macro promises.param.default_executor
+      # @return [Future]
       def completed_future(success, value, reason, default_executor = :io)
         ImmediateFuturePromise.new(default_executor, success, value, reason).future
       end
 
-      # @return [Future] which is already completed in success state with value
+      # Creates completed future with will be success with the given value.
+      #
+      # @!macro promises.param.default_executor
+      # @return [Future]
       def succeeded_future(value, default_executor = :io)
         completed_future true, value, nil, default_executor
       end
 
-      # @return [Future] which is already completed in failed state with reason
+      # Creates completed future with will be failed with the given reason.
+      #
+      # @!macro promises.param.default_executor
+      # @return [Future]
       def failed_future(reason, default_executor = :io)
         completed_future false, nil, reason, default_executor
       end
 
-      # @return [Event] which is already completed
+      # Creates completed event.
+      #
+      # @!macro promises.param.default_executor
+      # @return [Event]
       def completed_event(default_executor = :io)
         ImmediateEventPromise.new(default_executor).event
       end
 
-      # Constructs new Future which will evaluate to the block after
-      # requested by calling `#wait`, `#value`, `#value!`, etc. on it or on any of the chained futures.
+      # @!macro promises.shortcut.on
       # @return [Future]
       def delay(*args, &task)
         delay_on :io, *args, &task
       end
 
-      # As {#delay} but takes default_executor as first argument
+      # @!macro promises.future-on1
+      # The task will be evaluated only after the future is touched, see {AbstractEventFuture#touch}
+      #
+      # @!macro promises.future-on2
       def delay_on(default_executor, *args, &task)
         DelayPromise.new(default_executor).future.then(*args, &task)
       end
 
-      # Schedules the block to be executed on executor in given intended_time.
-      # @param [Numeric, Time] intended_time Numeric => run in `intended_time` seconds. Time => eun on time.
+      # @!macro promises.shortcut.on
       # @return [Future]
       def schedule(intended_time, *args, &task)
         schedule_on :io, intended_time, *args, &task
       end
 
-      # As {#schedule} but takes default_executor as first argument
+      # @!macro promises.future-on1
+      # The task is planned for execution in intended_time.
+      #
+      # @!macro promises.future-on2
+      # @!macro [new] promises.param.intended_time
+      #   @param [Numeric, Time] intended_time `Numeric` means to run in `intended_time` seconds.
+      #     `Time` means to run on `intended_time`.
       def schedule_on(default_executor, intended_time, *args, &task)
         ScheduledPromise.new(default_executor, intended_time).future.then(*args, &task)
       end
 
-      # Constructs new {Future} which is completed after all futures_and_or_events are complete. Its value is array
-      # of dependent future values. If there is an error it fails with the first one. Event does not
-      # have a value so it's represented by nil in the array of values.
-      # @param [Event] futures_and_or_events
+      # @!macro promises.shortcut.on
       # @return [Future]
       def zip_futures(*futures_and_or_events)
         zip_futures_on :io, *futures_and_or_events
       end
 
-      # As {#zip_futures} but takes default_executor as first argument
+      # Creates new future which is completed after all futures_and_or_events are complete.
+      # Its value is array of zipped future values. Its reason is array of reasons for failure.
+      # If there is an error it fails.
+      # @!macro [new] promises.event-conversion
+      #   If event is supplied, which does not have value and can be only completed, it's
+      #   represented as `:success` with value `nil`.
+      #
+      # @!macro promises.param.default_executor
+      # @param [AbstractEventFuture] futures_and_or_events
+      # @return [Future]
       def zip_futures_on(default_executor, *futures_and_or_events)
         ZipFuturesPromise.new(futures_and_or_events, default_executor).future
       end
 
       alias_method :zip, :zip_futures
 
-      # Constructs new {Event} which is completed after all futures_and_or_events are complete
-      # (Future is completed when Success or Failed).
-      # @param [Event] futures_and_or_events
+      # @!macro promises.shortcut.on
       # @return [Event]
       def zip_events(*futures_and_or_events)
         zip_events_on :io, *futures_and_or_events
       end
 
-      # As {#zip_events} but takes default_executor as first argument
+      # Creates new event which is completed after all futures_and_or_events are complete.
+      # (Future is complete when successful or failed.)
+      #
+      # @!macro promises.param.default_executor
+      # @param [AbstractEventFuture] futures_and_or_events
+      # @return [Event]
       def zip_events_on(default_executor, *futures_and_or_events)
         ZipEventsPromise.new(futures_and_or_events, default_executor).future
       end
 
-      # Constructs new {Future} which is completed after first of the futures is complete.
-      # @param [Event] futures
+      # @!macro promises.shortcut.on
       # @return [Future]
-      def any_complete_future(*futures)
-        any_complete_future_on :io, *futures
-      end
-
-      # As {#any_complete_future} but takes default_executor as first argument
-      def any_complete_future_on(default_executor, *futures)
-        AnyCompleteFuturePromise.new(futures, default_executor).future
+      def any_complete_future(*futures_and_or_events)
+        any_complete_future_on :io, *futures_and_or_events
       end
 
       alias_method :any, :any_complete_future
 
-      # Constructs new {Future} which becomes succeeded after first of the futures succeedes or
-      # failed if all futures fail (reason is last error).
-      # @param [Event] futures
+      # Creates new future which is completed after first futures_and_or_events is complete.
+      # Its result equals result of the first complete future.
+      # @!macro [new] promises.any-touch
+      #   If complete it does not propagate {AbstractEventFuture#touch}, leaving delayed
+      #   futures un-executed if they are not required any more.
+      # @!macro promises.event-conversion
+      #
+      # @!macro promises.param.default_executor
+      # @param [AbstractEventFuture] futures_and_or_events
       # @return [Future]
-      def any_successful_future(*futures)
-        any_successful_future_on :io, *futures
+      def any_complete_future_on(default_executor, *futures_and_or_events)
+        AnyCompleteFuturePromise.new(futures_and_or_events, default_executor).future
       end
 
-      # As {#any_succesful_future} but takes default_executor as first argument
-      def any_successful_future_on(default_executor, *futures)
-        AnySuccessfulFuturePromise.new(futures, default_executor).future
+      # @!macro promises.shortcut.on
+      # @return [Future]
+      def any_successful_future(*futures_and_or_events)
+        any_successful_future_on :io, *futures_and_or_events
       end
 
-      # Constructs new {Event} which becomes complete after first if the events completes.
-      def any_event(*events)
-        any_event_on :io, *events
+      # Creates new future which is completed after first of futures_and_or_events is successful.
+      # Its result equals result of the first complete future or if all futures_and_or_events fail,
+      # it has reason of the last completed future.
+      # @!macro promises.any-touch
+      # @!macro promises.event-conversion
+      #
+      # @!macro promises.param.default_executor
+      # @param [AbstractEventFuture] futures_and_or_events
+      # @return [Future]
+      def any_successful_future_on(default_executor, *futures_and_or_events)
+        AnySuccessfulFuturePromise.new(futures_and_or_events, default_executor).future
       end
 
-      # As {#any_event} but takes default_executor as first argument
-      def any_event_on(default_executor, *events)
-        AnyCompleteEventPromise.new(events, default_executor).event
+      # @!macro promises.shortcut.on
+      # @return [Future]
+      def any_event(*futures_and_or_events)
+        any_event_on :io, *futures_and_or_events
+      end
+
+      # Creates new event which becomes complete after first of the futures_and_or_events completes.
+      # @!macro promises.any-touch
+      #
+      # @!macro promises.param.default_executor
+      # @param [AbstractEventFuture] futures_and_or_events
+      # @return [Event]
+      def any_event_on(default_executor, *futures_and_or_events)
+        AnyCompleteEventPromise.new(futures_and_or_events, default_executor).event
       end
 
       # TODO consider adding first(count, *futures)
@@ -319,12 +421,9 @@ module Concurrent
 
     private_constant :InternalStates
 
-    # Represents an event which will happen in future (will be completed). It has to always happen.
-    class Event < Synchronization::Object
+    class AbstractEventFuture < Synchronization::Object
       safe_initialization!
-      private(*attr_atomic(:internal_state))
-      # @!visibility private
-      public :internal_state
+      private(*attr_atomic(:internal_state) - [:internal_state])
 
       include Concern::Logging
       include InternalStates
@@ -343,428 +442,179 @@ module Concurrent
         self.internal_state = PENDING
       end
 
-      # @return [:pending, :completed]
+      private :initialize
+
+      # @!macro [new] promises.shortcut.event-future
+      #   @see Event#$0
+      #   @see Future#$0
+
+      # @!macro [new] promises.param.timeout
+      #   @param [Numeric] timeout the maximum time in second to wait.
+
+      # @!macro [new] promises.warn.blocks
+      #   @note This function potentially blocks current thread until the Future is complete.
+      #     Be careful it can deadlock. Try to chain instead.
+
+      # Returns its state.
+      # @return [Symbol]
+      #
+      # @overload an_event.state
+      #   @return [:pending, :completed]
+      # @overload a_future.state
+      #   Both :success, :failed implies :completed.
+      #   @return [:pending, :success, :failed]
       def state
         internal_state.to_sym
       end
 
-      # Is Event/Future pending?
+      # Is it in pending state?
       # @return [Boolean]
       def pending?(state = internal_state)
         !state.completed?
       end
 
-      def unscheduled?
-        raise 'unsupported'
-      end
-
-      alias_method :incomplete?, :pending?
-
-      # Has the Event been completed?
+      # Is it in completed state?
       # @return [Boolean]
       def completed?(state = internal_state)
         state.completed?
       end
 
-      alias_method :complete?, :completed?
-
-      # Wait until Event is #complete?
-      # @param [Numeric] timeout the maximum time in second to wait.
-      # @return [Event, true, false] self or true/false if timeout is used
-      # @!macro [attach] edge.periodical_wait
-      #   @note a thread should wait only once! For repeated checking use faster `completed?` check.
-      #     If thread waits periodically it will dangerously grow the waiters stack.
-      def wait(timeout = nil)
-        touch
-        result = wait_until_complete(timeout)
-        timeout ? result : self
+      # @deprecated
+      def unscheduled?
+        raise 'unsupported'
       end
 
-      # @!visibility private
+      # Propagates touch. Requests all the delayed futures, which it depends on, to be
+      # executed. This method is called by any other method requiring completeness, like {#wait}.
+      # @return [self]
       def touch
         # distribute touch to promise only once
         @Promise.touch if @Touched.make_true
         self
       end
 
-      # @return [Executor] current default executor
+      alias_method :needed, :touch
+
+      # @!macro [new] promises.touches
+      #   Calls {AbstractEventFuture#touch}.
+
+      # @!macro [new] promises.method.wait
+      #   Wait (block the Thread) until receiver is {#completed?}.
+      #   @!macro promises.touches
+      #
+      #   @!macro promises.warn.blocks
+      #   @!macro promises.param.timeout
+      #   @return [Future, true, false] self implies timeout was not used, true implies timeout was used
+      #     and it was completed, false implies it was not completed within timeout.
+      def wait(timeout = nil)
+        touch
+        result = wait_until_complete(timeout)
+        timeout ? result : self
+      end
+
+      # Returns default executor.
+      # @return [Executor] default executor
       # @see #with_default_executor
+      # @see FactoryMethods#future_on
+      # @see FactoryMethods#completable_future
+      # @see FactoryMethods#any_successful_future_on
+      # @see similar
       def default_executor
         @DefaultExecutor
       end
 
-      # @yield [success, value, reason] of the parent
-      def chain(*args, &callback)
-        chain_on @DefaultExecutor, *args, &callback
+      # @!macro promises.shortcut.using
+      # @return [Future]
+      def chain(*args, &task)
+        chain_using @DefaultExecutor, *args, &task
       end
 
-      def chain_on(executor, *args, &callback)
-        ChainPromise.new(self, @DefaultExecutor, executor, args, &callback).future
+      # Chains the task to be executed asynchronously on executor after it is completed.
+      #
+      # @!macro promises.param.executor
+      # @!macro promises.param.args
+      # @return [Future]
+      # @!macro promise.param.task-future
+      #
+      # @overload an_event.chain_using(executor, *args, &task)
+      #   @yield [*args] to the task.
+      # @overload a_future.chain_using(executor, *args, &task)
+      #   @yield [success, value, reason, *args] to the task.
+      def chain_using(executor, *args, &task)
+        ChainPromise.new(self, @DefaultExecutor, executor, args, &task).future
       end
 
-      alias_method :then, :chain
-
-      def chain_completable(completable_event)
-        on_completion! { completable_event.complete_with COMPLETED }
-      end
-
-      alias_method :tangle, :chain_completable
-
-      # Zip with future producing new Future
-      # @return [Event]
-      def zip(other)
-        if other.is?(Future)
-          ZipFutureEventPromise.new(other, self, @DefaultExecutor).future
-        else
-          ZipEventEventPromise.new(self, other, @DefaultExecutor).event
-        end
-      end
-
-      alias_method :&, :zip
-
-      def any(future)
-        AnyCompleteEventPromise.new([self, future], @DefaultExecutor).event
-      end
-
-      alias_method :|, :any
-
-      # Inserts delay into the chain of Futures making rest of it lazy evaluated.
-      # @return [Event]
-      def delay
-        ZipEventEventPromise.new(self, DelayPromise.new(@DefaultExecutor).event, @DefaultExecutor).event
-      end
-
-      # Schedules rest of the chain for execution with specified time or on specified time
-      # @return [Event]
-      def schedule(intended_time)
-        ZipEventEventPromise.new(self,
-                                 ScheduledPromise.new(@DefaultExecutor, intended_time).event,
-                                 @DefaultExecutor).event
-      end
-
-      # @yield [success, value, reason, *args] executed async on `executor` when completed
-      # @return self
-      def on_completion(*args, &callback)
-        on_completion_using @DefaultExecutor, *args, &callback
-      end
-
-      def on_completion_using(executor, *args, &callback)
-        add_callback :async_callback_on_completion, executor, args, callback
-      end
-
-      # @yield [success, value, reason, *args] executed sync when completed
-      # @return self
-      def on_completion!(*args, &callback)
-        add_callback :callback_on_completion, args, callback
-      end
-
-      # Changes default executor for rest of the chain
-      # @return [Event]
-      def with_default_executor(executor)
-        EventWrapperPromise.new(self, executor).future
-      end
-
+      # Short string representation.
+      # @return [String]
       def to_s
         "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state.to_sym}>"
       end
 
+      # Longer string representation.
+      # @return [String]
       def inspect
         "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
       end
 
+      # @deprecated
       def set(*args, &block)
         raise 'Use CompletableEvent#complete or CompletableFuture#complete instead, ' +
-                  'constructed by Concurrent.event or Concurrent.future respectively.'
+                  'constructed by Promises.completable_event or Promises.completable_future respectively.'
       end
 
-      # @!visibility private
-      def complete_with(state, raise_on_reassign = true)
-        if compare_and_set_internal_state(PENDING, state)
-          # go to synchronized block only if there were waiting threads
-          @Lock.synchronize { @Condition.broadcast } unless @Waiters.value == 0
-          call_callbacks
-        else
-          Concurrent::MultipleAssignmentError.new('Event can be completed only once') if raise_on_reassign
-          return nil
-        end
-        self
-      end
-
-      # @!visibility private
-      # just for inspection
-      # @return [Array<AbstractPromise>]
-      def blocks
-        @Callbacks.each_with_object([]) do |callback, promises|
-          promises.push(*(callback.select { |v| v.is_a? AbstractPromise }))
-        end
-      end
-
-      # @!visibility private
-      # just for inspection
-      def callbacks
-        @Callbacks.each.to_a
-      end
-
-      # @!visibility private
-      def add_callback(method, *args)
-        if completed?
-          call_callback method, *args
-        else
-          @Callbacks.push [method, *args]
-          call_callbacks if completed?
-        end
-        self
-      end
-
-      # @!visibility private
-      # only for inspection
-      def promise
-        @Promise
-      end
-
-      # @!visibility private
-      # only for inspection
-      def touched
-        @Touched.value
-      end
-
-      # @!visibility private
-      # only for debugging inspection
-      def waiting_threads
-        @Waiters.each.to_a
-      end
-
-      private
-
-      # @return [true, false]
-      def wait_until_complete(timeout)
-        return true if completed?
-
-        @Lock.synchronize do
-          begin
-            unless completed?
-              @Condition.wait @Lock, timeout
-            end
-          ensure
-            # JRuby may raise ConcurrencyError
-            @Waiters.decrement
-          end
-        end
-        completed?
-      end
-
-      def with_async(executor, *args, &block)
-        Concurrent.executor(executor).post(*args, &block)
-      end
-
-      def async_callback_on_completion(executor, args, callback)
-        with_async(executor) { callback_on_completion args, callback }
-      end
-
-      def callback_on_completion(args, callback)
-        callback.call *args
-      end
-
-      def callback_notify_blocked(promise)
-        promise.on_done self
-      end
-
-      def call_callback(method, *args)
-        self.send method, *args
-      end
-
-      def call_callbacks
-        method, *args = @Callbacks.pop
-        while method
-          call_callback method, *args
-          method, *args = @Callbacks.pop
-        end
-      end
-    end
-
-    # Represents a value which will become available in future. May fail with a reason instead.
-    class Future < Event
-
-      # @!method state
-      #   @return [:pending, :success, :failed]
-
-      # Has Future been success?
-      # @return [Boolean]
-      def success?(state = internal_state)
-        state.completed? && state.success?
-      end
-
-      # Has Future been failed?
-      # @return [Boolean]
-      def failed?(state = internal_state)
-        state.completed? && !state.success?
-      end
-
-      # @return [Object, nil] the value of the Future when success, nil on timeout
-      # @!macro [attach] edge.timeout_nil
-      #   @note If the Future can have value `nil` then it cannot be distinquished from `nil` returned on timeout.
-      #     In this case is better to use first `wait` then `value` (or similar).
-      # @!macro edge.periodical_wait
-      def value(timeout = nil)
-        touch
-        internal_state.value if wait_until_complete timeout
-      end
-
-      # @return [Exception, nil] the reason of the Future's failure
-      # @!macro edge.timeout_nil
-      # @!macro edge.periodical_wait
-      def reason(timeout = nil)
-        touch
-        internal_state.reason if wait_until_complete timeout
-      end
-
-      # @return [Array(Boolean, Object, Exception), nil] triplet of success, value, reason
-      # @!macro edge.timeout_nil
-      # @!macro edge.periodical_wait
-      def result(timeout = nil)
-        touch
-        internal_state.result if wait_until_complete timeout
-      end
-
-      # Wait until Future is #complete?
-      # @param [Numeric] timeout the maximum time in second to wait.
-      # @raise reason on failure
-      # @return [Event, true, false] self or true/false if timeout is used
-      # @!macro edge.periodical_wait
-      def wait!(timeout = nil)
-        touch
-        result = wait_until_complete!(timeout)
-        timeout ? result : self
-      end
-
-      # Wait until Future is #complete?
-      # @param [Numeric] timeout the maximum time in second to wait.
-      # @raise reason on failure
-      # @return [Object, nil]
-      # @!macro edge.timeout_nil
-      # @!macro edge.periodical_wait
-      def value!(timeout = nil)
-        touch
-        internal_state.value if wait_until_complete! timeout
-      end
-
-      # @example allows failed Future to be risen
-      #   raise Concurrent.future.fail
-      def exception(*args)
-        raise 'obligation is not failed' unless failed?
-        reason = internal_state.reason
-        if reason.is_a?(::Array)
-          reason.each { |e| log ERROR, 'Promises::Future', e }
-          Concurrent::Error.new 'multiple exceptions, inspect log'
-        else
-          reason.exception(*args)
-        end
-      end
-
-      # @yield [value, *args] executed only on parent success
-      # @return [Future] new
-      def then(*args, &callback)
-        then_on @DefaultExecutor, *args, &callback
-      end
-
-      def then_on(executor, *args, &callback)
-        ThenPromise.new(self, @DefaultExecutor, executor, args, &callback).future
-      end
-
-      def chain_completable(completable_future)
-        on_completion! { completable_future.complete_with internal_state }
+      # Completes the completable when receiver is completed.
+      #
+      # @param [Completable] completable
+      # @return [self]
+      def chain_completable(completable)
+        on_completion! { completable.complete_with internal_state }
       end
 
       alias_method :tangle, :chain_completable
 
-      # @yield [reason] executed only on parent failure
-      # @return [Future]
-      def rescue(*args, &callback)
-        rescue_on @DefaultExecutor, *args, &callback
+      # @!macro promises.shortcut.using
+      # @return [self]
+      def on_completion(*args, &callback)
+        on_completion_using @DefaultExecutor, *args, &callback
       end
 
-      def rescue_on(executor, *args, &callback)
-        RescuePromise.new(self, @DefaultExecutor, executor, args, &callback).future
+      # Stores the callback to be executed synchronously on completing thread after it is
+      # completed.
+      #
+      # @!macro promises.param.args
+      # @!macro promise.param.callback
+      # @return [self]
+      #
+      # @overload an_event.on_completion!(*args, &callback)
+      #   @yield [*args] to the callback.
+      # @overload a_future.on_completion!(*args, &callback)
+      #   @yield [success, value, reason, *args] to the callback.
+      def on_completion!(*args, &callback)
+        add_callback :callback_on_completion, args, callback
       end
 
-      # zips with the Future in the value
-      # @example
-      #   Concurrent.future { Concurrent.future { 1 } }.flat.vale # => 1
-      def flat(level = 1)
-        FlatPromise.new(self, level, @DefaultExecutor).future
+      # Stores the callback to be executed asynchronously on executor after it is completed.
+      #
+      # @!macro promises.param.executor
+      # @!macro promises.param.args
+      # @!macro promise.param.callback
+      # @return [self]
+      #
+      # @overload an_event.on_completion_using(executor, *args, &callback)
+      #   @yield [*args] to the callback.
+      # @overload a_future.on_completion_using(executor, *args, &callback)
+      #   @yield [success, value, reason, *args] to the callback.
+      def on_completion_using(executor, *args, &callback)
+        add_callback :async_callback_on_completion, executor, args, callback
       end
 
-      # @return [Future] which has first completed value from futures
-      def any(future)
-        AnyCompleteFuturePromise.new([self, future], @DefaultExecutor).future
-      end
-
-      # Inserts delay into the chain of Futures making rest of it lazy evaluated.
-      # @return [Future]
-      def delay
-        ZipFutureEventPromise.new(self, DelayPromise.new(@DefaultExecutor).future, @DefaultExecutor).future
-      end
-
-      # Schedules rest of the chain for execution with specified time or on specified time
-      # @return [Future]
-      def schedule(intended_time)
-        chain do
-          ZipFutureEventPromise.new(self,
-                                    ScheduledPromise.new(@DefaultExecutor, intended_time).event,
-                                    @DefaultExecutor).future
-        end.flat
-      end
-
-      # Changes default executor for rest of the chain
-      # @return [Future]
+      # @!macro [new] promises.method.with_default_executor
+      #   Crates new object with same class with the executor set as its new default executor.
+      #   Any futures depending on it will use the new default executor.
+      # @!macro promises.shortcut.event-future
+      # @abstract
       def with_default_executor(executor)
-        FutureWrapperPromise.new(self, executor).future
-      end
-
-      # Zip with future producing new Future
-      # @return [Future]
-      def zip(other)
-        if other.is_a?(Future)
-          ZipFutureFuturePromise.new(self, other, @DefaultExecutor).future
-        else
-          ZipFutureEventPromise.new(self, other, @DefaultExecutor).future
-        end
-      end
-
-      alias_method :&, :zip
-
-      alias_method :|, :any
-
-      # @yield [value] executed async on `executor` when success
-      # @return self
-      def on_success(*args, &callback)
-        on_success_using @DefaultExecutor, *args, &callback
-      end
-
-      def on_success_using(executor, *args, &callback)
-        add_callback :async_callback_on_success, executor, args, callback
-      end
-
-      # @yield [reason] executed async on `executor` when failed?
-      # @return self
-      def on_failure(*args, &callback)
-        on_failure_using @DefaultExecutor, *args, &callback
-      end
-
-      def on_failure_using(executor, *args, &callback)
-        add_callback :async_callback_on_failure, executor, args, callback
-      end
-
-      # @yield [value] executed sync when success
-      # @return self
-      def on_success!(*args, &callback)
-        add_callback :callback_on_success, args, callback
-      end
-
-      # @yield [reason] executed sync when failed?
-      # @return self
-      def on_failure!(*args, &callback)
-        add_callback :callback_on_failure, args, callback
+        raise NotImplementedError
       end
 
       # @!visibility private
@@ -774,18 +624,42 @@ module Concurrent
           @Lock.synchronize { @Condition.broadcast } unless @Waiters.value == 0
           call_callbacks state
         else
-          if raise_on_reassign
-            # print otherwise hidden error
-            log ERROR, 'Promises::Future', reason if reason
-            log ERROR, 'Promises::Future', state.reason if state.reason
-
-            raise(Concurrent::MultipleAssignmentError.new(
-                "Future can be completed only once. Current result is #{result}, " +
-                    "trying to set #{state.result}"))
-          end
-          return false
+          return failed_complete(raise_on_reassign, state)
         end
         self
+      end
+
+      # For inspection.
+      # @!visibility private
+      # @return [Array<AbstractPromise>]
+      def blocks
+        @Callbacks.each_with_object([]) do |callback, promises|
+          promises.push(*(callback.select { |v| v.is_a? AbstractPromise }))
+        end
+      end
+
+      # For inspection.
+      # @!visibility private
+      def callbacks
+        @Callbacks.each.to_a
+      end
+
+      # For inspection.
+      # @!visibility private
+      def promise
+        @Promise
+      end
+
+      # For inspection.
+      # @!visibility private
+      def touched
+        @Touched.value
+      end
+
+      # For inspection.
+      # @!visibility private
+      def waiting_threads
+        @Waiters.each.to_a
       end
 
       # @!visibility private
@@ -802,17 +676,27 @@ module Concurrent
         self
       end
 
-      # @!visibility private
-      def apply(args, block)
-        internal_state.apply args, block
-      end
-
       private
 
-      def wait_until_complete!(timeout = nil)
-        result = wait_until_complete(timeout)
-        raise self if failed?
-        result
+      # @return [Boolean]
+      def wait_until_complete(timeout)
+        return true if completed?
+
+        @Lock.synchronize do
+          begin
+            unless completed?
+              @Condition.wait @Lock, timeout
+            end
+          ensure
+            # JRuby may raise ConcurrencyError
+            @Waiters.decrement
+          end
+        end
+        completed?
+      end
+
+      def call_callback(method, state, *args)
+        self.send method, state, *args
       end
 
       def call_callbacks(state)
@@ -823,8 +707,395 @@ module Concurrent
         end
       end
 
-      def call_callback(method, state, *args)
-        self.send method, state, *args
+      def with_async(executor, *args, &block)
+        Concurrent.executor(executor).post(*args, &block)
+      end
+
+      def async_callback_on_completion(state, executor, args, callback)
+        with_async(executor, state, args, callback) do |st, ar, cb|
+          callback_on_completion st, ar, cb
+        end
+      end
+
+      def callback_notify_blocked(state, promise)
+        promise.on_done self
+      end
+    end
+
+    # Represents an event which will happen in future (will be completed). The event is either
+    # pending or completed. It should be always completed. Use {Future} to communicate failures and
+    # cancellation.
+    class Event < AbstractEventFuture
+
+      alias_method :then, :chain
+
+
+      # @!macro [new] promises.method.zip
+      #   Creates a new event or a future which will be completed when receiver and other are.
+      #   Returns an event if receiver and other are events, otherwise returns a future.
+      #   If just one of the parties is Future then the result
+      #   of the returned future is equal to the result of the supplied future. If both are futures
+      #   then the result is as described in {FactoryMethods#zip_futures_on}.
+      #
+      # @return [Future, Event]
+      def zip(other)
+        if other.is?(Future)
+          ZipFutureEventPromise.new(other, self, @DefaultExecutor).future
+        else
+          ZipEventEventPromise.new(self, other, @DefaultExecutor).event
+        end
+      end
+
+      alias_method :&, :zip
+
+      # Creates a new event which will be completed when the first of receiver, `event_or_future`
+      # completes.
+      #
+      # @return [Event]
+      def any(event_or_future)
+        AnyCompleteEventPromise.new([self, event_or_future], @DefaultExecutor).event
+      end
+
+      alias_method :|, :any
+
+      # Creates new event dependent on receiver which will not evaluate until touched, see {#touch}.
+      # In other words, it inserts delay into the chain of Futures making rest of it lazy evaluated.
+      #
+      # @return [Event]
+      def delay
+        ZipEventEventPromise.new(self,
+                                 DelayPromise.new(@DefaultExecutor).event,
+                                 @DefaultExecutor).event
+      end
+
+      # @!macro [new] promise.method.schedule
+      #   Creates new event dependent on receiver scheduled to execute on/in intended_time.
+      #   In time is interpreted from the moment the receiver is completed, therefore it inserts
+      #   delay into the chain.
+      #
+      #   @!macro promises.param.intended_time
+      # @return [Event]
+      def schedule(intended_time)
+        chain do
+          ZipEventEventPromise.new(self,
+                                   ScheduledPromise.new(@DefaultExecutor, intended_time).event,
+                                   @DefaultExecutor).event
+        end.flat_event
+      end
+
+      # TODO (pitr-ch 12-Jun-2016): add to_event, to_future
+
+      # @!macro promises.method.with_default_executor
+      # @return [Event]
+      def with_default_executor(executor)
+        EventWrapperPromise.new(self, executor).future
+      end
+
+      private
+
+      def failed_complete(raise_on_reassign, state)
+        Concurrent::MultipleAssignmentError.new('Event can be completed only once') if raise_on_reassign
+        return false
+      end
+
+      def callback_on_completion(state, args, callback)
+        callback.call *args
+      end
+    end
+
+    # Represents a value which will become available in future. May fail with a reason instead,
+    # e.g. when the tasks raises an exception.
+    class Future < AbstractEventFuture
+
+      # Is it in success state?
+      # @return [Boolean]
+      def success?(state = internal_state)
+        state.completed? && state.success?
+      end
+
+      # Is it in failed state?
+      # @return [Boolean]
+      def failed?(state = internal_state)
+        state.completed? && !state.success?
+      end
+
+      # @!macro [new] promises.warn.nil
+      #   @note Make sure returned `nil` is not confused with timeout, no value when failed,
+      #     no reason when success, etc.
+      #     Use more exact methods if needed, like {#wait}, {#value!}, {#result}, etc.
+
+      # @!macro [new] promises.method.value
+      #   Return value of the future.
+      #   @!macro promises.touches
+      #
+      #   @!macro promises.warn.blocks
+      #   @!macro promises.warn.nil
+      #   @!macro promises.param.timeout
+      # @return [Object, nil] the value of the Future when success, nil on timeout or failure.
+      def value(timeout = nil)
+        touch
+        internal_state.value if wait_until_complete timeout
+      end
+
+      # Returns reason of future's failure.
+      # @!macro promises.touches
+      #
+      # @!macro promises.warn.blocks
+      # @!macro promises.warn.nil
+      # @!macro promises.param.timeout
+      # @return [Exception, nil] nil on timeout or success.
+      def reason(timeout = nil)
+        touch
+        internal_state.reason if wait_until_complete timeout
+      end
+
+      # Returns triplet success?, value, reason.
+      # @!macro promises.touches
+      #
+      # @!macro promises.warn.blocks
+      # @!macro promises.param.timeout
+      # @return [Array(Boolean, Object, Exception), nil] triplet of success, value, reason, or nil
+      #   on timeout.
+      def result(timeout = nil)
+        touch
+        internal_state.result if wait_until_complete timeout
+      end
+
+      # @!macro promises.method.wait
+      # @raise [Exception] {#reason} on failure
+      def wait!(timeout = nil)
+        touch
+        result = wait_until_complete!(timeout)
+        timeout ? result : self
+      end
+
+      # @!macro promises.method.value
+      # @return [Object, nil] the value of the Future when success, nil on timeout.
+      # @raise [Exception] {#reason} on failure
+      def value!(timeout = nil)
+        touch
+        internal_state.value if wait_until_complete! timeout
+      end
+
+      # Allows failed Future to be risen with `raise` method.
+      # @example
+      #   raise Promises.failed_future(StandardError.new("boom"))
+      # @raise [StandardError] when raising not failed future
+      def exception(*args)
+        raise Concurrent::Error, 'it is not failed' unless failed?
+        reason = internal_state.reason
+        if reason.is_a?(::Array)
+          # TODO (pitr-ch 12-Jun-2016): remove logging!, how?
+          reason.each { |e| log ERROR, 'Promises::Future', e }
+          Concurrent::Error.new 'multiple exceptions, inspect log'
+        else
+          reason.exception(*args)
+        end
+      end
+
+      # @!macro promises.shortcut.using
+      # @return [Future]
+      def then(*args, &task)
+        then_using @DefaultExecutor, *args, &task
+      end
+
+      # Chains the task to be executed asynchronously on executor after it succeeds. Does not run
+      # the task if it fails. It will complete though, triggering any dependent futures.
+      #
+      # @!macro promises.param.executor
+      # @!macro promises.param.args
+      # @!macro promise.param.task-future
+      # @return [Future]
+      # @yield [value, *args] to the task.
+      def then_using(executor, *args, &task)
+        ThenPromise.new(self, @DefaultExecutor, executor, args, &task).future
+      end
+
+      # @!macro promises.shortcut.using
+      # @return [Future]
+      def rescue(*args, &task)
+        rescue_using @DefaultExecutor, *args, &task
+      end
+
+      # Chains the task to be executed asynchronously on executor after it fails. Does not run
+      # the task if it succeeds. It will complete though, triggering any dependent futures.
+      #
+      # @!macro promises.param.executor
+      # @!macro promises.param.args
+      # @!macro promise.param.task-future
+      # @return [Future]
+      # @yield [reason, *args] to the task.
+      def rescue_using(executor, *args, &task)
+        RescuePromise.new(self, @DefaultExecutor, executor, args, &task).future
+      end
+
+      # @!macro promises.method.zip
+      # @return [Future]
+      def zip(other)
+        if other.is_a?(Future)
+          ZipFutureFuturePromise.new(self, other, @DefaultExecutor).future
+        else
+          ZipFutureEventPromise.new(self, other, @DefaultExecutor).future
+        end
+      end
+
+      alias_method :&, :zip
+
+      # Creates a new event which will be completed when the first of receiver, `event_or_future`
+      # completes. Returning future will have value nil if event_or_future is event and completes
+      # first.
+      #
+      # @return [Future]
+      def any(event_or_future)
+        AnyCompleteFuturePromise.new([self, event_or_future], @DefaultExecutor).future
+      end
+
+      alias_method :|, :any
+
+      # Creates new future dependent on receiver which will not evaluate until touched, see {#touch}.
+      # In other words, it inserts delay into the chain of Futures making rest of it lazy evaluated.
+      #
+      # @return [Future]
+      def delay
+        ZipFutureEventPromise.new(self,
+                                  DelayPromise.new(@DefaultExecutor).future,
+                                  @DefaultExecutor).future
+      end
+
+      # @!macro promise.method.schedule
+      # @return [Future]
+      def schedule(intended_time)
+        chain do
+          ZipFutureEventPromise.new(self,
+                                    ScheduledPromise.new(@DefaultExecutor, intended_time).event,
+                                    @DefaultExecutor).future
+        end.flat
+      end
+
+      # @!macro promises.method.with_default_executor
+      # @return [Future]
+      def with_default_executor(executor)
+        FutureWrapperPromise.new(self, executor).future
+      end
+
+      # Creates new future which will have result of the future returned by receiver. If receiver
+      # fails it will have its failure.
+      #
+      # @param [Integer] level how many levels of futures should flatten
+      # @return [Future]
+      def flat_future(level = 1)
+        FlatFuturePromise.new(self, level, @DefaultExecutor).future
+      end
+
+      alias_method :flat, :flat_future
+
+      # Creates new event which will be completed when the returned event by receiver is.
+      # Be careful if the receiver fails it will just complete since Event does not hold reason.
+      #
+      # @return [Event]
+      def flat_event
+        FlatEventPromise.new(self, @DefaultExecutor).event
+      end
+
+      # @!macro promises.shortcut.using
+      # @return [self]
+      def on_success(*args, &callback)
+        on_success_using @DefaultExecutor, *args, &callback
+      end
+
+      # Stores the callback to be executed synchronously on completing thread after it is
+      # successful. Does nothing on failure.
+      #
+      # @!macro promises.param.args
+      # @!macro promise.param.callback
+      # @return [self]
+      # @yield [value *args] to the callback.
+      def on_success!(*args, &callback)
+        add_callback :callback_on_success, args, callback
+      end
+
+      # Stores the callback to be executed asynchronously on executor after it is
+      # successful. Does nothing on failure.
+      #
+      # @!macro promises.param.executor
+      # @!macro promises.param.args
+      # @!macro promise.param.callback
+      # @return [self]
+      # @yield [value *args] to the callback.
+      def on_success_using(executor, *args, &callback)
+        add_callback :async_callback_on_success, executor, args, callback
+      end
+
+      # @!macro promises.shortcut.using
+      # @return [self]
+      def on_failure(*args, &callback)
+        on_failure_using @DefaultExecutor, *args, &callback
+      end
+
+      # Stores the callback to be executed synchronously on completing thread after it is
+      # failed. Does nothing on success.
+      #
+      # @!macro promises.param.args
+      # @!macro promise.param.callback
+      # @return [self]
+      # @yield [reason *args] to the callback.
+      def on_failure!(*args, &callback)
+        add_callback :callback_on_failure, args, callback
+      end
+
+      # Stores the callback to be executed asynchronously on executor after it is
+      # failed. Does nothing on success.
+      #
+      # @!macro promises.param.executor
+      # @!macro promises.param.args
+      # @!macro promise.param.callback
+      # @return [self]
+      # @yield [reason *args] to the callback.
+      def on_failure_using(executor, *args, &callback)
+        add_callback :async_callback_on_failure, executor, args, callback
+      end
+
+      # Allows to use futures as green threads. The receiver has to evaluate to a future which
+      # represents what should be done next. It basically flattens indefinitely until non Future
+      # values is returned which becomes result of the returned future. Any ancountered exception
+      # will become reason of the returned future.
+      #
+      # @return [Future]
+      # @example
+      #   body = lambda do |v|
+      #    v += 1
+      #    v < 5 ? future(v, &body) : v
+      #   end
+      #   future(0, &body).run.value! # => 5
+      def run
+        RunFuturePromise.new(self, @DefaultExecutor).future
+      end
+
+      # @!visibility private
+      def apply(args, block)
+        internal_state.apply args, block
+      end
+
+      private
+
+      def failed_complete(raise_on_reassign, state)
+        if raise_on_reassign
+          # TODO (pitr-ch 12-Jun-2016): remove logging?!
+          # print otherwise hidden error
+          log ERROR, 'Promises::Future', reason if reason
+          log ERROR, 'Promises::Future', state.reason if state.reason
+
+          raise(Concurrent::MultipleAssignmentError.new(
+              "Future can be completed only once. Current result is #{result}, " +
+                  "trying to set #{state.result}"))
+        end
+        return false
+      end
+
+      def wait_until_complete!(timeout = nil)
+        result = wait_until_complete(timeout)
+        raise self if failed?
+        result
       end
 
       def async_callback_on_success(state, executor, args, callback)
@@ -851,17 +1122,9 @@ module Concurrent
         callback.call state.result, *args
       end
 
-      def callback_notify_blocked(state, promise)
-        super(promise)
-      end
-
-      def async_callback_on_completion(state, executor, args, callback)
-        with_async(executor, state, args, callback) do |st, ar, cb|
-          callback_on_completion st, ar, cb
-        end
-      end
     end
 
+    # Marker module of Future, Event completed manually by user.
     module Completable
     end
 
@@ -869,11 +1132,26 @@ module Concurrent
     class CompletableEvent < Event
       include Completable
 
-      # Complete the Event, `raise` if already completed
+
+      # @!macro [new] raise_on_reassign
+      # @raise [MultipleAssignmentError] when already completed and raise_on_reassign is true.
+
+      # @!macro [new] promise.param.raise_on_reassign
+      #   @param [Boolean] raise_on_reassign should method raise exception if already completed
+      #   @return [self, false] false is returner when raise_on_reassign is false and the receiver
+      #     is already completed.
+      #
+
+      # Makes the event complete, which triggers all dependent futures.
+      #
+      # @!macro promise.param.raise_on_reassign
       def complete(raise_on_reassign = true)
         complete_with COMPLETED, raise_on_reassign
       end
 
+      # Creates new event wrapping receiver, effectively hiding the complete method.
+      #
+      # @return [Event]
       def with_hidden_completable
         @with_hidden_completable ||= EventWrapperPromise.new(self, @DefaultExecutor).event
       end
@@ -883,50 +1161,53 @@ module Concurrent
     class CompletableFuture < Future
       include Completable
 
-      # Complete the future with triplet od `success`, `value`, `reason`
-      # `raise` if already completed
-      # return [self]
+      # Makes the future complete with result of triplet `success`, `value`, `reason`,
+      # which triggers all dependent futures.
+      #
+      # @!macro promise.param.raise_on_reassign
       def complete(success, value, reason, raise_on_reassign = true)
         complete_with(success ? Success.new(value) : Failed.new(reason), raise_on_reassign)
       end
 
-      # Complete the future with value
-      # return [self]
-      def success(value)
-        promise.success(value)
+      # Makes the future successful with `value`,
+      # which triggers all dependent futures.
+      #
+      # @!macro promise.param.raise_on_reassign
+      def success(value, raise_on_reassign = true)
+        promise.success(value, raise_on_reassign)
       end
 
-      # Try to complete the future with value
-      # return [self]
-      def try_success(value)
-        promise.try_success(value)
+      # Makes the future failed with `reason`,
+      # which triggers all dependent futures.
+      #
+      # @!macro promise.param.raise_on_reassign
+      def fail(reason, raise_on_reassign = true)
+        promise.fail(reason, raise_on_reassign)
       end
 
-      # Fail the future with reason
-      # return [self]
-      def fail(reason = StandardError.new)
-        promise.fail(reason)
-      end
-
-      # Try to fail the future with reason
-      # return [self]
-      def try_fail(reason = StandardError.new)
-        promise.try_fail(reason)
-      end
-
-      # Evaluate the future to value if there is an exception the future fails with it
-      # return [self]
+      # Evaluates the block and sets its result as future's value succeeding, if the block raises
+      # an exception the future fails with it.
+      # @yield [*args] to the block.
+      # @yieldreturn [Object] value
+      # @return [self]
       def evaluate_to(*args, &block)
+        # TODO (pitr-ch 13-Jun-2016): add raise_on_reassign
         promise.evaluate_to(*args, block)
       end
 
-      # Evaluate the future to value if there is an exception the future fails with it
-      # @raise the exception
-      # return [self]
+      # Evaluates the block and sets its result as future's value succeeding, if the block raises
+      # an exception the future fails with it.
+      # @yield [*args] to the block.
+      # @yieldreturn [Object] value
+      # @return [self]
+      # @raise [Exception] also raise reason on failure.
       def evaluate_to!(*args, &block)
         promise.evaluate_to!(*args, block)
       end
 
+      # Creates new future wrapping receiver, effectively hiding the complete method and similar.
+      #
+      # @return [Future]
       def with_hidden_completable
         @with_hidden_completable ||= FutureWrapperPromise.new(self, @DefaultExecutor).future
       end
@@ -980,6 +1261,7 @@ module Concurrent
       rescue StandardError => error
         complete_with Failed.new(error)
       rescue Exception => error
+        # TODO (pitr-ch 12-Jun-2016): remove logging?
         log(ERROR, 'Promises::Future', error)
         complete_with Failed.new(error)
       end
@@ -996,20 +1278,12 @@ module Concurrent
         super CompletableFuture.new(self, default_executor)
       end
 
-      def success(value)
-        complete_with Success.new(value)
+      def success(value, raise_on_reassign)
+        complete_with Success.new(value), raise_on_reassign
       end
 
-      def try_success(value)
-        !!complete_with(Success.new(value), false)
-      end
-
-      def fail(reason = StandardError.new)
-        complete_with Failed.new(reason)
-      end
-
-      def try_fail(reason = StandardError.new)
-        !!complete_with(Failed.new(reason), false)
+      def fail(reason, raise_on_reassign)
+        complete_with Failed.new(reason), raise_on_reassign
       end
 
       public :evaluate_to
@@ -1051,6 +1325,7 @@ module Concurrent
       end
 
       def touch
+        # TODO (pitr-ch 13-Jun-2016): track if it has lazy parent if it's needed avoids CASes!
         blocked_by.each(&:touch)
       end
 
@@ -1175,14 +1450,73 @@ module Concurrent
       end
     end
 
-    class FlatPromise < BlockedPromise
-
+    class AbstractFlatPromise < BlockedPromise
       # !visibility private
       def blocked_by
         @BlockedBy.each.to_a
       end
 
       private
+
+      def initialize_blocked_by(blocked_by_future)
+        @BlockedBy = LockFreeStack.new.push(blocked_by_future)
+      end
+
+      def on_completable(done_future)
+        complete_with done_future.internal_state
+      end
+
+      def clear_blocked_by!
+        @BlockedBy.clear
+        nil
+      end
+
+      def completable?(countdown, future)
+        !@Future.internal_state.completed? && super(countdown, future)
+      end
+    end
+
+    class FlatEventPromise < AbstractFlatPromise
+
+      private
+
+      def initialize(blocked_by_future, default_executor)
+        super Event.new(self, default_executor), blocked_by_future, 2
+      end
+
+      def process_on_done(future)
+        countdown = super(future)
+        if countdown.nonzero?
+          internal_state = future.internal_state
+
+          unless internal_state.success?
+            complete_with COMPLETED
+            return countdown
+          end
+
+          value = internal_state.value
+          case value
+          when Future, Event
+            @BlockedBy.push value
+            value.add_callback :callback_notify_blocked, self
+            @Countdown.value
+          else
+            complete_with COMPLETED
+          end
+        end
+        countdown
+      end
+
+    end
+
+    class FlatFuturePromise < AbstractFlatPromise
+
+      private
+
+      def initialize(blocked_by_future, levels, default_executor)
+        raise ArgumentError, 'levels has to be higher than 0' if levels < 1
+        super Future.new(self, default_executor), blocked_by_future, 1 + levels
+      end
 
       def process_on_done(future)
         countdown = super(future)
@@ -1209,26 +1543,34 @@ module Concurrent
         countdown
       end
 
-      def initialize(blocked_by_future, levels, default_executor)
-        raise ArgumentError, 'levels has to be higher than 0' if levels < 1
-        super Future.new(self, default_executor), blocked_by_future, 1 + levels
+    end
+
+    class RunFuturePromise < AbstractFlatPromise
+
+      private
+
+      def initialize(blocked_by_future, default_executor)
+        super Future.new(self, default_executor), blocked_by_future, 1
       end
 
-      def initialize_blocked_by(blocked_by_future)
-        @BlockedBy = LockFreeStack.new.push(blocked_by_future)
-      end
+      def process_on_done(future)
+        internal_state = future.internal_state
 
-      def on_completable(done_future)
-        complete_with done_future.internal_state
-      end
+        unless internal_state.success?
+          complete_with internal_state
+          return 0
+        end
 
-      def clear_blocked_by!
-        @BlockedBy.clear
-        nil
-      end
+        value = internal_state.value
+        case value
+        when Future
+          # @BlockedBy.push value
+          value.add_callback :callback_notify_blocked, self
+        else
+          complete_with internal_state
+        end
 
-      def completable?(countdown, future)
-        !@Future.internal_state.completed? && super(countdown, future)
+        1
       end
     end
 
@@ -1438,25 +1780,48 @@ module Concurrent
 
     extend FactoryMethods
 
-    private_constant :AbstractPromise, :CompletableEventPromise, :CompletableFuturePromise,
-                     :InnerPromise, :BlockedPromise, :BlockedTaskPromise, :ThenPromise,
-                     :RescuePromise, :ChainPromise, :ImmediateEventPromise,
-                     :ImmediateFuturePromise, :FlatPromise, :ZipEventEventPromise,
-                     :ZipFutureEventPromise, :ZipFutureFuturePromise, :EventWrapperPromise,
-                     :FutureWrapperPromise, :ZipFuturesPromise, :ZipEventsPromise,
-                     :AnyCompleteFuturePromise, :AnySuccessfulFuturePromise, :DelayPromise, :ScheduledPromise
+    private_constant :AbstractPromise,
+                     :CompletableEventPromise,
+                     :CompletableFuturePromise,
+                     :InnerPromise,
+                     :BlockedPromise,
+                     :BlockedTaskPromise,
+                     :ThenPromise,
+                     :RescuePromise,
+                     :ChainPromise,
+                     :ImmediateEventPromise,
+                     :ImmediateFuturePromise,
+                     :AbstractFlatPromise,
+                     :FlatFuturePromise,
+                     :FlatEventPromise,
+                     :RunFuturePromise,
+                     :ZipEventEventPromise,
+                     :ZipFutureEventPromise,
+                     :ZipFutureFuturePromise,
+                     :EventWrapperPromise,
+                     :FutureWrapperPromise,
+                     :ZipFuturesPromise,
+                     :ZipEventsPromise,
+                     :AbstractAnyPromise,
+                     :AnyCompleteFuturePromise,
+                     :AnySuccessfulFuturePromise,
+                     :AnyCompleteEventPromise,
+                     :DelayPromise,
+                     :ScheduledPromise
+
 
   end
 end
 
-# TODO when value is requested the current thread may evaluate the tasks to get the value for performance reasons it may not evaluate :io though
-# TODO try work stealing pool, each thread has it's own queue
+# TODO try stealing pool, each thread has it's own queue
 
-# Experimental features follow
-
+### Experimental features follow
 module Concurrent
   module Promises
     module FactoryMethods
+
+      # @!visibility private
+
       # only proof of concept
       # @return [Future]
       def select(*channels)
@@ -1472,7 +1837,10 @@ module Concurrent
       end
     end
 
-    class Future < Event
+    class Future < AbstractEventFuture
+
+      # @!visibility private
+
       # Zips with selected value form the suplied channels
       # @return [Future]
       def then_select(*channels)
@@ -1489,21 +1857,6 @@ module Concurrent
       # @return [Future] new future with the response form the actor
       def then_ask(actor)
         self.then { |v| actor.ask(v) }.flat
-      end
-
-      # TODO (pitr-ch 14-Mar-2016): document, and move to core
-      def run(terminated = Promises.future)
-        on_completion do |success, value, reason|
-          if success
-            if value.is_a?(Future)
-              value.run terminated
-            else
-              terminated.success value
-            end
-          else
-            terminated.fail reason
-          end
-        end
       end
 
       include Enumerable
@@ -1551,7 +1904,7 @@ module Concurrent
     end
 
     def canceled?
-      @Cancel.complete?
+      @Cancel.completed?
     end
 
     class Token < Synchronization::Object
@@ -1576,7 +1929,7 @@ module Concurrent
       end
 
       def canceled?
-        @Cancel.complete?
+        @Cancel.completed?
       end
 
       def loop_until_canceled(&block)

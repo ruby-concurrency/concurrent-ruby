@@ -69,13 +69,13 @@ describe 'Concurrent::Promises' do
 
       start  = Time.now.to_f
       queue  = Queue.new
-      future = succeeded_future(1).
+      future = completed_event.
           schedule(0.1).
-          then { |v| v + 1 }.
+          then { 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
       expect(future.value!).to eq queue
-      expect(queue.pop).to eq 2
+      expect(queue.pop).to eq 1
       expect(queue.pop).to be >= 0.09
     end
 
@@ -103,7 +103,7 @@ describe 'Concurrent::Promises' do
   describe '.event' do
     specify do
       completable_event = completable_event()
-      one               = completable_event.chain { 1 }
+      one               = completable_event.chain(1) { |arg| arg }
       join              = zip(completable_event).chain { 1 }
       expect(one.completed?).to be false
       completable_event.complete
@@ -135,7 +135,7 @@ describe 'Concurrent::Promises' do
       any2 = f2 | f3
 
       f1.success 1
-      f2.fail
+      f2.fail StandardError.new
 
       expect(any1.value!).to eq 1
       expect(any2.reason).to be_a_kind_of StandardError
@@ -149,7 +149,7 @@ describe 'Concurrent::Promises' do
 
       any = any_successful_future(f1, f2)
 
-      f1.fail
+      f1.fail StandardError.new
       f2.success :value
 
       expect(any.value!).to eq :value
@@ -298,7 +298,7 @@ describe 'Concurrent::Promises' do
 
     it 'chains' do
       future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
-      future1 = future0.then_on(:fast) { raise 'boo' } # executed on IO_EXECUTOR
+      future1 = future0.then_using(:fast) { raise 'boo' } # executed on IO_EXECUTOR
       future2 = future1.then { |v| v + 1 } # will fail with 'boo' error, executed on default FAST_EXECUTOR
       future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
@@ -406,6 +406,20 @@ describe 'Concurrent::Promises' do
       expect(f).to be_failed
       expect { f.value! }.to raise_error(Exception, 'fail')
     end
+
+    it 'runs' do
+      body = lambda do |v|
+        v += 1
+        v < 5 ? future(v, &body) : v
+      end
+      expect(future(0, &body).run.value!).to eq 5
+
+      body = lambda do |v|
+        v += 1
+        v < 5 ? future(v, &body) : raise(v.to_s)
+      end
+      expect(future(0, &body).run.reason.message).to eq '5'
+    end
   end
 
   describe 'interoperability' do
@@ -453,31 +467,30 @@ describe 'Concurrent::Promises' do
     specify do
       source, token = Concurrent::Cancellation.create
       source.cancel
-      expect(token.event.complete?).to be_truthy
+      expect(token.event.completed?).to be_truthy
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
       expect((cancellable_branch | token.event).value).to be_nil
-      expect(cancellable_branch.complete?).to be_falsey
+      expect(cancellable_branch.completed?).to be_falsey
+    end
+
+    specify do
+      source, token = Concurrent::Cancellation.create
+
+      cancellable_branch = Concurrent::Promises.delay { 1 }
+      expect(any_complete_future(cancellable_branch, token.event).value).to eq 1
+      expect(cancellable_branch.completed?).to be_truthy
     end
 
     specify do
       source, token = Concurrent::Cancellation.create(
           Concurrent::Promises.completable_future, false, nil, err = StandardError.new('Cancelled'))
       source.cancel
-      expect(token.future.complete?).to be_truthy
+      expect(token.future.completed?).to be_truthy
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.event).reason).to eq err
-      expect(cancellable_branch.complete?).to be_falsey
-    end
-
-
-    specify do
-      source, token = Concurrent::Cancellation.create
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.event).value).to eq 1
-      expect(cancellable_branch.complete?).to be_truthy
+      expect((cancellable_branch | token.future).reason).to eq err
+      expect(cancellable_branch.completed?).to be_falsey
     end
   end
 
