@@ -9,10 +9,6 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT)
 [![Gitter chat](https://img.shields.io/badge/IRC%20(gitter)-devs%20%26%20users-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
-<img src="https://pbs.twimg.com/media/ClXc0vkWgAA3cP6.jpg:large"/>
-
----
-
 <table>
   <tr>
     <td align="left" valign="top">
