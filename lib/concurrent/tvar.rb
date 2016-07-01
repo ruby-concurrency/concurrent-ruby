@@ -151,7 +151,7 @@ module Concurrent
     raise Transaction::AbortError.new
   end
 
-  # Leave a transaction without commiting or aborting - see `Concurrent::atomically`.
+  # Leave a transaction without committing or aborting - see `Concurrent::atomically`.
   def leave_transaction
     raise Transaction::LeaveError.new
   end
