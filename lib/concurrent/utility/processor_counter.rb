@@ -28,6 +28,7 @@ module Concurrent
       # processor", which taked into account hyperthreading.
       #
       # * AIX: /usr/sbin/pmcycles (AIX 5+), /usr/sbin/lsdev
+      # * Alpha: /usr/bin/nproc (/proc/cpuinfo exists but cannot be used)
       # * BSD: /sbin/sysctl
       # * Cygwin: /proc/cpuinfo
       # * Darwin: /usr/bin/hwprefs, /usr/sbin/sysctl
@@ -84,6 +85,8 @@ module Concurrent
             result = WIN32OLE.connect("winmgmts://").ExecQuery(
               "select NumberOfLogicalProcessors from Win32_Processor")
             result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
+          elsif File.executable?("/usr/bin/nproc")
+            IO.popen("/usr/bin/nproc --all").read.to_i
           elsif File.readable?("/proc/cpuinfo")
             IO.read("/proc/cpuinfo").scan(/^processor/).size
           elsif File.executable?("/usr/bin/hwprefs")

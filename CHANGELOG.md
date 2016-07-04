@@ -1,3 +1,5 @@
+* Support Alpha with `Concurrent::processor_count`
+
 ## Current Release v1.0.2 (2 May 2016)
 
 * Fix bug with `Concurrent::Map` MRI backend `#inspect` method
