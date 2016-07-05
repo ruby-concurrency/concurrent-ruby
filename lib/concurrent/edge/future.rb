@@ -659,7 +659,7 @@ module Concurrent
 
       # zips with the Future in the value
       # @example
-      #   Concurrent.future { Concurrent.future { 1 } }.flat.vale # => 1
+      #   Concurrent.future { Concurrent.future { 1 } }.flat.value # => 1
       def flat(level = 1)
         FlatPromise.new(self, level, @DefaultExecutor).future
       end
