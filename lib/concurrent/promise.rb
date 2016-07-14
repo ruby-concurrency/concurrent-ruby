@@ -102,7 +102,7 @@ module Concurrent
   # - if parent is *rejected* the child will be *pending* (but will ultimately be *rejected*)
   #
   # Promises are executed asynchronously from the main thread. By the time a
-  # child Promise finishes nitialization it may be in a different state that its
+  # child Promise finishes intialization it may be in a different state than its
   # parent (by the time a child is created its parent may have completed
   # execution and changed state). Despite being asynchronous, however, the order
   # of execution of Promise objects in a chain (or tree) is strictly defined.
