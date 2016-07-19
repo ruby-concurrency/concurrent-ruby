@@ -1,7 +1,7 @@
 shared_examples :semaphore do
   let(:semaphore) { described_class.new(3) }
 
-  context '#initialize' do
+  describe '#initialize' do
     it 'raises an exception if the initial count is not an integer' do
       expect {
         described_class.new('foo')
@@ -102,7 +102,7 @@ shared_examples :semaphore do
 
     it 'reduces permits below zero' do
       semaphore.reduce_permits 1003
-      expect(semaphore.available_permits).to eq -1000
+      expect(semaphore.available_permits).to eq(-1000)
     end
 
     it 'reduces permits' do
