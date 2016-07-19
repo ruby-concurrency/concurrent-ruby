@@ -112,6 +112,28 @@ shared_examples :semaphore do
       expect(semaphore.available_permits).to eq 0
     end
   end
+
+  describe '#release' do
+    it 'increases the number of available permits by one' do
+      semaphore.release
+      expect(semaphore.available_permits).to eq 4
+    end
+
+    context 'when a number of permits is specified' do
+      it 'increases the number of available permits by the specified value' do
+        semaphore.release(2)
+        expect(semaphore.available_permits).to eq 5
+      end
+
+      context 'when permits is set to zero' do
+        it do
+          expect {
+            semaphore.release(0)
+          }.to raise_error(ArgumentError)
+        end
+      end
+    end
+  end
 end
 
 module Concurrent
