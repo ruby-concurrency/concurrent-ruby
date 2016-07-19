@@ -7,6 +7,14 @@ shared_examples :semaphore do
         described_class.new('foo')
       }.to raise_error(ArgumentError)
     end
+
+    context 'when initializing with 0' do
+      let(:semaphore) { described_class.new(0) }
+
+      it do
+        expect(semaphore).to_not be nil
+      end
+    end
   end
 
   describe '#acquire' do
@@ -110,6 +118,11 @@ shared_examples :semaphore do
       expect(semaphore.available_permits).to eq 2
       semaphore.reduce_permits 2
       expect(semaphore.available_permits).to eq 0
+    end
+
+    it 'reduces zero permits' do
+      semaphore.reduce_permits 0
+      expect(semaphore.available_permits).to eq 3
     end
   end
 
