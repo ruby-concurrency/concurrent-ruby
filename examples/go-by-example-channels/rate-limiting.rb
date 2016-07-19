@@ -6,42 +6,48 @@ require 'time'
 
 Channel = Concurrent::Channel
 
-## Go by Example: Rate Limiting
-# https://gobyexample.com/tickers
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
 
-requests = Channel.new(buffer: :buffered, capacity: 5)
+## Go by Example: Rate Limiting
+# https://gobyexample.com/rate-limiting
+
+requests = Channel.new(5)
 (1..5).each do |i|
   requests << i
 end
 requests.close
 
-limiter = Channel.ticker(0.2)
+limiter = Channel::Ticker.tick(0.2)
+
 requests.each do |req|
-  print "request #{req} #{Channel::Tick.new}\n" if ~limiter
+  print "request #{req} #{Time.now}\n" if limiter.recv
 end
 print "\n"
 
-bursty_limiter = Channel.new(buffer: :buffered, capacity: 3)
+bursty_limiter = Channel.new(3)
 (1..3).each do
-  bursty_limiter << Channel::Tick.new
+  bursty_limiter << Time.now
 end
 
-ticker = Channel.ticker(0.2)
-Channel.go do
+ticker = Channel::Ticker.tick(0.2)
+
+go(lambda do
   ticker.each do |t|
     bursty_limiter << t
   end
-end
+end)
 
-bursty_requests = Channel.new(buffer: :buffered, capacity: 5)
+bursty_requests = Channel.new(5)
 (1..5).each do |i|
   bursty_requests << i
 end
 bursty_requests.close
 
 bursty_requests.each do |req|
-  ~bursty_limiter
-  print "request #{req} #{Channel::Tick.new}\n"
+  bursty_limiter.recv
+  print "request #{req} #{Time.now}\n"
 end
 
 limiter.close
