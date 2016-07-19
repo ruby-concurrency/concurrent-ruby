@@ -4,6 +4,10 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## A Tour of Go: Channels
 # https://tour.golang.org/concurrency/2
 
@@ -16,9 +20,9 @@ a = [7, 2, 8, -9, 4, 0]
 l = a.length / 2
 c = Channel.new
 
-Channel.go { sum(a[-l, l], c) }
-Channel.go { sum(a[0, l], c) }
-x, y = ~c, ~c # `~` is an alias for `take` or `receive`
+go -> { sum(a[-l, l], c) }
+go -> { sum(a[0, l], c) }
+x, y = c.recv, c.recv # `~` is an alias for `take` or `receive`
 
 puts [x, y, x+y].join(' ')
 

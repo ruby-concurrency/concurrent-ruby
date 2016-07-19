@@ -4,35 +4,38 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## Go by Example: Closing Channels
 # https://gobyexample.com/closing-channels
 
-validator = ->(v){ v.is_a? Numeric }
-jobs = Channel.new(buffer: :buffered, capacity: 5,
-                   validator: validator)
-done = Channel.new(buffer: :unbuffered)
+jobs = Channel.new(5)
+done = Channel.new
 
-Channel.go_loop do
-  j, more = jobs.next
-  if more
-    print "received job #{j}\n"
-    true # loop again
-  else
-    print "received all jobs\n"
-    done << true
-    false # exit the loop
+go lambda {
+  loop do
+    begin
+      j = jobs.recv
+    rescue Channel::Closed
+      puts 'received all jobs'
+      done << true
+      return
+    else
+      puts "received job #{j}"
+    end
   end
-end
+}
 
-(1..3).each do |i|
-  jobs << i
-  print "sent job #{i}\n"
-  Thread.pass # give the worker a chance to run
+1.upto 3 do |j|
+  jobs << j
+  puts "sent job #{j}"
 end
-
 jobs.close
-print "sent all jobs\n"
-~done
+puts 'sent all jobs'
+
+done.recv
 
 __END__
 sent job 1

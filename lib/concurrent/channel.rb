@@ -1,297 +1,193 @@
-require 'forwardable'
-
-require 'concurrent/channel/buffer'
-require 'concurrent/channel/selector'
-
-require 'concurrent/maybe'
-require 'concurrent/executor/cached_thread_pool'
+require 'concurrent/channel/runtime'
 
 module Concurrent
 
   # {include:file:doc/channel.md}
   class Channel
-    extend Forwardable
-    include Enumerable
+    class Closed < StandardError; end
 
-    # NOTE: Move to global IO pool once stable
-    GOROUTINES = Concurrent::CachedThreadPool.new(auto_terminate: true)
-    private_constant :GOROUTINES
+    def initialize(size = nil)
+      @q = size ? SizedQueue.new(size) : Queue.new
+      @closed = false
+      @mutex = Mutex.new
+      @waiting = []
+    end
 
-    BUFFER_TYPES = {
-      unbuffered: Buffer::Unbuffered,
-      buffered: Buffer::Buffered,
-      dropping: Buffer::Dropping,
-      sliding: Buffer::Sliding
-    }.freeze
-    private_constant :BUFFER_TYPES
+    private def lock!(&block)
+      @mutex.synchronize(&block)
+    end
 
-    DEFAULT_VALIDATOR = ->(value){ true }
-    private_constant :DEFAULT_VALIDATOR
+    private def wait!
+      @waiting << Thread.current
+      @mutex.sleep
+    end
 
-    Error = Class.new(StandardError)
-
-    class ValidationError < Error
-      def initialize(message = nil)
-        message ||= 'invalid value'
+    private def next!
+      loop do
+        thr = @waiting.shift
+        break if thr.nil?
+        next unless thr.alive?
+        break thr.wakeup
       end
     end
 
-    def_delegators :buffer,
-      :size, :capacity, :close, :closed?,
-      :blocking?, :empty?, :full?
+    private def all!
+      @waiting.dup.each { next! }
+    end
 
-    alias_method :length, :size
-    alias_method :stop, :close
-
-    def initialize(opts = {})
-      # undocumented -- for internal use only
-      if opts.is_a? Buffer::Base
-        self.buffer = opts
-        return
+    def recv
+      lock! do
+        loop do
+          closed! if closed? && @q.empty?
+          wait! && next if @q.empty?
+          break @q.pop
+        end
       end
+    end
+    alias_method :pop, :recv
 
-      capacity = opts[:capacity] || opts[:size]
-      buffer = opts[:buffer]
-
-      if capacity && buffer == :unbuffered
-        raise ArgumentError.new('unbuffered channels cannot have a capacity')
-      elsif capacity.nil? && buffer.nil?
-        self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif capacity == 0 && buffer == :buffered
-        self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif buffer == :unbuffered
-        self.buffer = BUFFER_TYPES[:unbuffered].new
-      elsif capacity.nil? || capacity < 1
-        raise ArgumentError.new('capacity must be at least 1 for this buffer type')
-      else
-        buffer ||= :buffered
-        self.buffer = BUFFER_TYPES[buffer].new(capacity)
+    def send(val)
+      lock! do
+        fail Closed if closed?
+        @q << val
+        next!
       end
-
-      self.validator = opts.fetch(:validator, DEFAULT_VALIDATOR)
     end
+    alias_method :push, :send
+    alias_method :<<, :push
 
-    def put(item)
-      return false unless validate(item, false, false)
-      do_put(item)
-    end
-    alias_method :send, :put
-    alias_method :<<, :put
-
-    def put!(item)
-      validate(item, false, true)
-      ok = do_put(item)
-      raise Error if !ok
-      ok
-    end
-
-    def put?(item)
-      if !validate(item, true, false)
-        Concurrent::Maybe.nothing('invalid value')
-      elsif do_put(item)
-        Concurrent::Maybe.just(true)
-      else
-        Concurrent::Maybe.nothing
+    def close
+      lock! do
+        return if closed?
+        @closed = true
+        all!
       end
     end
 
-    def offer(item)
-      return false unless validate(item, false, false)
-      do_offer(item)
+    def closed?
+      @closed
     end
 
-    def offer!(item)
-      validate(item, false, true)
-      ok = do_offer(item)
-      raise Error if !ok
-      ok
-    end
-
-    def offer?(item)
-      if !validate(item, true, false)
-        Concurrent::Maybe.nothing('invalid value')
-      elsif do_offer(item)
-        Concurrent::Maybe.just(true)
-      else
-        Concurrent::Maybe.nothing
-      end
-    end
-
-    def take
-      item = do_take
-      item == Concurrent::NULL ? nil : item
-    end
-    alias_method :receive, :take
-    alias_method :~, :take
-
-    def take!
-      item = do_take
-      raise Error if item == Concurrent::NULL
-      item
-    end
-
-    def take?
-      item = do_take
-      item = if item == Concurrent::NULL
-               Concurrent::Maybe.nothing
-             else
-               Concurrent::Maybe.just(item)
-             end
-      item
-    end
-
-    # @example
-    #
-    #   jobs = Channel.new
-    #
-    #   Channel.go do
-    #     loop do
-    #       j, more = jobs.next
-    #       if more
-    #         print "received job #{j}\n"
-    #       else
-    #         print "received all jobs\n"
-    #         break
-    #       end
-    #     end
-    #   end
-    def next
-      item, more = do_next
-      item = nil if item == Concurrent::NULL
-      return item, more
-    end
-
-    def next?
-      item, more = do_next
-      item = if item == Concurrent::NULL
-               Concurrent::Maybe.nothing
-             else
-               Concurrent::Maybe.just(item)
-             end
-      return item, more
-    end
-
-    def poll
-      (item = do_poll) == Concurrent::NULL ? nil : item
-    end
-
-    def poll!
-      item = do_poll
-      raise Error if item == Concurrent::NULL
-      item
-    end
-
-    def poll?
-      if (item = do_poll) == Concurrent::NULL
-        Concurrent::Maybe.nothing
-      else
-        Concurrent::Maybe.just(item)
-      end
+    private def closed!
+      fail Closed
     end
 
     def each
-      raise ArgumentError.new('no block given') unless block_given?
+      return enum_for(:each) unless block_given?
+
       loop do
-        item, more = do_next
-        if item != Concurrent::NULL
-          yield(item)
-        elsif !more
-          break
+        begin
+          e = recv
+        rescue Channel::Closed
+          return
+        else
+          yield e
         end
       end
     end
+
+    def receive_only!
+      ReceiveOnly.new(self)
+    end
+    alias_method :r!, :receive_only!
+
+    def send_only!
+      SendOnly.new(self)
+    end
+    alias_method :s!, :send_only!
 
     class << self
-      def timer(seconds)
-        Channel.new(Buffer::Timer.new(seconds))
-      end
-      alias_method :after, :timer
-
-      def ticker(interval)
-        Channel.new(Buffer::Ticker.new(interval))
-      end
-      alias_method :tick, :ticker
-
-      def select(*args)
-        raise ArgumentError.new('no block given') unless block_given?
-        selector = Selector.new
-        yield(selector, *args)
-        selector.execute
-      end
-      alias_method :alt, :select
-
-      def go(*args, &block)
-        go_via(GOROUTINES, *args, &block)
-      end
-
-      def go_via(executor, *args, &block)
-        raise ArgumentError.new('no block given') unless block_given?
-        executor.post(*args, &block)
-      end
-
-      def go_loop(*args, &block)
-        go_loop_via(GOROUTINES, *args, &block)
-      end
-
-      def go_loop_via(executor, *args, &block)
-        raise ArgumentError.new('no block given') unless block_given?
-        executor.post(block, *args) do
-          loop do
-            break unless block.call(*args)
-          end
+      def select(*channels)
+        selector = new
+        threads = channels.map do |c|
+          Thread.new { selector << [c.recv, c] }
         end
+        yield selector.recv
+      ensure
+        selector.close
+        threads.each(&:kill).each(&:join)
       end
     end
 
-    private
+    class Direction < StandardError; end
+    class Conversion < StandardError; end
 
-    def validator
-      @validator
-    end
-
-    def validator=(value)
-      @validator = value
-    end
-
-    def buffer
-      @buffer
-    end
-
-    def buffer=(value)
-      @buffer = value
-    end
-
-    def validate(value, allow_nil, raise_error)
-      if !allow_nil && value.nil?
-        raise_error ? raise(ValidationError.new('nil is not a valid value')) : false
-      elsif !validator.call(value)
-        raise_error ? raise(ValidationError) : false
-      else
-        true
+    class ReceiveOnly
+      def initialize(channel)
+        @channel = channel
       end
-    rescue => ex
-      # the validator raised an exception
-      return raise_error ? raise(ex) : false
+
+      def recv
+        @channel.recv
+      end
+      alias_method :pop, :recv
+
+      def send(_)
+        fail Direction, 'receive only'
+      end
+      alias_method :push, :send
+      alias_method :<<, :push
+
+      def close
+        @channel.close
+      end
+
+      def closed?
+        @channel.closed?
+      end
+
+      def receive_only!
+        self
+      end
+      alias_method :r!, :receive_only!
+
+      def send_only!
+        fail Conversion, 'receive only'
+      end
+      alias_method :s!, :send_only!
+
+      def hash
+        @channel.hash
+      end
     end
 
-    def do_put(item)
-      buffer.put(item)
-    end
+    class SendOnly
+      def initialize(channel)
+        @channel = channel
+      end
 
-    def do_offer(item)
-      buffer.offer(item)
-    end
+      def recv
+        fail Direction, 'send only'
+      end
+      alias_method :pop, :recv
 
-    def do_take
-      buffer.take
-    end
+      def send(val)
+        @channel.send(val)
+      end
+      alias_method :push, :send
+      alias_method :<<, :push
 
-    def do_next
-      buffer.next
-    end
+      def close
+        @channel.close
+      end
 
-    def do_poll
-      buffer.poll
+      def closed?
+        @channel.closed?
+      end
+
+      def receive_only!
+        fail Conversion, 'send only'
+      end
+      alias_method :r!, :receive_only!
+
+      def send_only!
+        self
+      end
+      alias_method :s!, :send_only!
+
+      def hash
+        @channel.hash
+      end
     end
   end
 end

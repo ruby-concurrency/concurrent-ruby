@@ -4,16 +4,18 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## Go by Example: Unbuffered Channel
 # https://gobyexample.com/channels
 
-messages = Channel.new # unbuffered
+messages = Channel.new
 
-Channel.go do
-  messages.put 'ping'
-end
+go -> { messages << 'ping' }
 
-msg = messages.take
+msg = messages.recv
 puts msg
 
 __END__

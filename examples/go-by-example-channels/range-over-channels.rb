@@ -7,14 +7,12 @@ Channel = Concurrent::Channel
 ## Go by Example: Range over Channels
 # https://gobyexample.com/range-over-channels
 
-queue = Channel.new(capacity: 2) # buffered
+queue = Channel.new(2)
 queue << 'one'
 queue << 'two'
 queue.close
 
-queue.each do |elem|
-  print "#{elem}\n"
-end
+queue.each { |e| puts e }
 
 __END__
 one

@@ -4,6 +4,10 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## Go by Example: Go by Example: Worker Pools
 # https://gobyexample.com/tickers
 
@@ -15,11 +19,11 @@ def worker(id, jobs, results)
   end
 end
 
-jobs    = Channel.new(buffer: :buffered, capacity: 100)
-results = Channel.new(buffer: :buffered, capacity: 100)
+jobs    = Channel.new(100)
+results = Channel.new(100)
 
 (1..3).each do |w|
-  Channel.go { worker(w, jobs, results) }
+  go -> { worker(w, jobs, results) }
 end
 
 (1..9).each do |j|
@@ -28,7 +32,7 @@ end
 jobs.close
 
 (1..9).each do
-  ~results
+  results.recv
 end
 
 __END__

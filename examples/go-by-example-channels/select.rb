@@ -4,26 +4,32 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## Go by Example: Select
 # https://gobyexample.com/select
 
-c1 = Channel.new # unbuffered
-c2 = Channel.new # unbuffered
+c1 = Channel.new
+c2 = Channel.new
 
-Channel.go do
+go lambda {
   sleep(1)
   c1 << 'one'
-end
+}
 
-Channel.go do
+go lambda {
   sleep(2)
-  c1 << 'two'
-end
+  c2 << 'two'
+}
 
 2.times do
-  Channel.select do |s|
-    s.take(c1) { |msg| print "received #{msg}\n" }
-    s.take(c2) { |msg| print "received #{msg}\n" }
+  Channel.select(c1, c2) do |msg, c|
+    case c
+    when c1 then puts "received #{msg}"
+    when c2 then puts "received #{msg}"
+    end
   end
 end
 

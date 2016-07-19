@@ -4,15 +4,19 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## Go by Example: Tickers
 # https://gobyexample.com/tickers
 
-ticker = Channel.ticker(0.5)
-Channel.go do
-  ticker.each do |tick|
+ticker = Channel::Ticker.new(0.5)
+go(lambda do
+  ticker.channel.each do |tick|
     print "Tick at #{tick}\n" if tick
   end
-end
+end)
 
 sleep(1.6)
 ticker.stop

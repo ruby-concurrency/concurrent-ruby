@@ -4,21 +4,24 @@ $: << File.expand_path('../../../lib', __FILE__)
 require 'concurrent-edge'
 Channel = Concurrent::Channel
 
+def go(prc, *args)
+  Channel::Runtime.go(prc, *args)
+end
+
 ## Go by Example: Channel Synchronizatio
 # https://gobyexample.com/channel-synchronization
 
-def worker(done_channel)
-  print "working...\n"
-  sleep(1)
-  print "done\n"
-
-  done_channel << true # alias for `#put`
+def worker(done)
+  $stdout.write 'working...'
+  sleep 1
+  puts 'done'
+  done << true
 end
 
-done = Channel.new(capacity: 1) # buffered
-Channel.go{ worker(done) }
+done = Channel.new(1)
+go -> { worker(done) }
 
-~done # alias for `#take`
+done.recv
 
 __END__
 working...

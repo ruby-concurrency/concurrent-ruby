@@ -7,25 +7,23 @@ Channel = Concurrent::Channel
 ## Go by Example: Channel Direction
 # https://gobyexample.com/channel-directions
 
-# we can't force a channel to go only one direction w/i a function
-# but we can replicate the actual functionality from the example
-
 def ping(pings, msg)
+  pings = pings.send_only!
   pings << msg
 end
 
 def pong(pings, pongs)
-  msg = ~pings
+  pings = pings.receive_only!
+  pongs = pongs.send_only!
+  msg = pings.recv
   pongs << msg
 end
 
-pings = Channel.new(capacity: 1) # buffered
-pongs = Channel.new(capacity: 1) # buffered
-
+pings = Channel.new(1)
+pongs = Channel.new(1)
 ping(pings, 'passed message')
 pong(pings, pongs)
-
-puts ~pongs
+puts pongs.recv
 
 __END__
 passed message
