@@ -27,6 +27,14 @@ shared_examples :semaphore do
         expect(semaphore.available_permits).to eq 0
       end
     end
+
+    context 'when acquiring zero permits' do
+      it do
+        expect {
+          semaphore.acquire(0)
+        }.to raise_error(ArgumentError)
+      end
+    end
   end
 
   describe '#drain_permits' do
@@ -53,6 +61,14 @@ shared_examples :semaphore do
       it 'returns false immediately in no permits are available' do
         result = semaphore.try_acquire(20)
         expect(result).to be_falsey
+      end
+
+      context 'when trying to acquire zero permits' do
+        it do
+          expect {
+            semaphore.try_acquire(0)
+          }.to raise_error(ArgumentError)
+        end
       end
     end
 
