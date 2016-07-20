@@ -1,11 +1,19 @@
 shared_examples :semaphore do
   let(:semaphore) { described_class.new(3) }
 
-  context '#initialize' do
+  describe '#initialize' do
     it 'raises an exception if the initial count is not an integer' do
       expect {
         described_class.new('foo')
       }.to raise_error(ArgumentError)
+    end
+
+    context 'when initializing with 0' do
+      let(:semaphore) { described_class.new(0) }
+
+      it do
+        expect(semaphore).to_not be nil
+      end
     end
   end
 
@@ -25,6 +33,14 @@ shared_examples :semaphore do
         result = semaphore.acquire
         expect(result).to be_nil
         expect(semaphore.available_permits).to eq 0
+      end
+    end
+
+    context 'when acquiring zero permits' do
+      it do
+        expect {
+          semaphore.acquire(0)
+        }.to raise_error(ArgumentError)
       end
     end
   end
@@ -53,6 +69,14 @@ shared_examples :semaphore do
       it 'returns false immediately in no permits are available' do
         result = semaphore.try_acquire(20)
         expect(result).to be_falsey
+      end
+
+      context 'when trying to acquire zero permits' do
+        it do
+          expect {
+            semaphore.try_acquire(0)
+          }.to raise_error(ArgumentError)
+        end
       end
     end
 
@@ -86,7 +110,7 @@ shared_examples :semaphore do
 
     it 'reduces permits below zero' do
       semaphore.reduce_permits 1003
-      expect(semaphore.available_permits).to eq -1000
+      expect(semaphore.available_permits).to eq(-1000)
     end
 
     it 'reduces permits' do
@@ -94,6 +118,33 @@ shared_examples :semaphore do
       expect(semaphore.available_permits).to eq 2
       semaphore.reduce_permits 2
       expect(semaphore.available_permits).to eq 0
+    end
+
+    it 'reduces zero permits' do
+      semaphore.reduce_permits 0
+      expect(semaphore.available_permits).to eq 3
+    end
+  end
+
+  describe '#release' do
+    it 'increases the number of available permits by one' do
+      semaphore.release
+      expect(semaphore.available_permits).to eq 4
+    end
+
+    context 'when a number of permits is specified' do
+      it 'increases the number of available permits by the specified value' do
+        semaphore.release(2)
+        expect(semaphore.available_permits).to eq 5
+      end
+
+      context 'when permits is set to zero' do
+        it do
+          expect {
+            semaphore.release(0)
+          }.to raise_error(ArgumentError)
+        end
+      end
     end
   end
 end

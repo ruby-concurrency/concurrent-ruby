@@ -40,13 +40,13 @@ public class JavaSemaphoreLibrary {
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context, IRubyObject value) {
-            this.semaphore = new JRubySemaphore(rubyFixnumToInt(value, "count"));
+            this.semaphore = new JRubySemaphore(rubyFixnumToNonNegativeInt(value, "count"));
             return context.nil;
         }
 
         @JRubyMethod
         public IRubyObject acquire(ThreadContext context, IRubyObject value) throws InterruptedException {
-            this.semaphore.acquire(rubyFixnumToInt(value, "permits"));
+            this.semaphore.acquire(rubyFixnumToPositiveInt(value, "permits"));
             return context.nil;
         }
 
@@ -73,14 +73,14 @@ public class JavaSemaphoreLibrary {
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context, IRubyObject permits) throws InterruptedException {
-           return getRuntime().newBoolean(semaphore.tryAcquire(rubyFixnumToInt(permits, "permits")));
+           return getRuntime().newBoolean(semaphore.tryAcquire(rubyFixnumToPositiveInt(permits, "permits")));
         }
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context, IRubyObject permits, IRubyObject timeout) throws InterruptedException {
              return getRuntime().newBoolean(
                         semaphore.tryAcquire(
-                                rubyFixnumToInt(permits, "permits"),
+                                rubyFixnumToPositiveInt(permits, "permits"),
                                 rubyNumericToLong(timeout, "timeout"),
                                 java.util.concurrent.TimeUnit.SECONDS)
                 );
@@ -94,22 +94,31 @@ public class JavaSemaphoreLibrary {
 
         @JRubyMethod
         public IRubyObject release(ThreadContext context, IRubyObject value) {
-            this.semaphore.release(rubyFixnumToInt(value, "permits"));
+            this.semaphore.release(rubyFixnumToPositiveInt(value, "permits"));
             return getRuntime().newBoolean(true);
         }
 
         @JRubyMethod(name = "reduce_permits")
         public IRubyObject reducePermits(ThreadContext context, IRubyObject reduction) throws InterruptedException {
-            this.semaphore.publicReducePermits(rubyFixnumToInt(reduction, "reduction"));
+            this.semaphore.publicReducePermits(rubyFixnumToNonNegativeInt(reduction, "reduction"));
             return context.nil;
         }
 
-        private int rubyFixnumToInt(IRubyObject value, String paramName) {
+        private int rubyFixnumToNonNegativeInt(IRubyObject value, String paramName) {
+            if (value instanceof RubyFixnum && ((RubyFixnum) value).getLongValue() >= 0) {
+                RubyFixnum fixNum = (RubyFixnum) value;
+                return (int) fixNum.getLongValue();
+            } else {
+                throw getRuntime().newArgumentError(paramName + " must be a non-negative integer");
+            }
+        }
+
+        private int rubyFixnumToPositiveInt(IRubyObject value, String paramName) {
             if (value instanceof RubyFixnum && ((RubyFixnum) value).getLongValue() > 0) {
                 RubyFixnum fixNum = (RubyFixnum) value;
                 return (int) fixNum.getLongValue();
             } else {
-                throw getRuntime().newArgumentError(paramName + " must be in integer greater than zero");
+                throw getRuntime().newArgumentError(paramName + " must be an integer greater than zero");
             }
         }
 
@@ -118,7 +127,7 @@ public class JavaSemaphoreLibrary {
                 RubyNumeric fixNum = (RubyNumeric) value;
                 return fixNum.getLongValue();
             } else {
-                throw getRuntime().newArgumentError(paramName + " must be in float greater than zero");
+                throw getRuntime().newArgumentError(paramName + " must be a float greater than zero");
             }
         }
 
