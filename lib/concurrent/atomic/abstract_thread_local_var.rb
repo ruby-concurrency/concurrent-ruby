@@ -8,8 +8,17 @@ module Concurrent
   class AbstractThreadLocalVar
 
     # @!macro thread_local_var_method_initialize
-    def initialize(default = nil)
-      @default = default
+    def initialize(default = nil, &default_block)
+      if default && block_given?
+        raise ArgumentError, "Cannot use both value and block as default value"
+      end
+
+      if block_given?
+        @default_block = default_block
+      else
+        @default = default
+      end
+
       allocate_storage
     end
 
@@ -41,6 +50,15 @@ module Concurrent
     # @!visibility private
     def allocate_storage
       raise NotImplementedError
+    end
+
+    # @!visibility private
+    def default
+      if @default_block
+        self.value = @default_block.call
+      else
+        @default
+      end
     end
   end
 end

@@ -11,6 +11,8 @@ module Concurrent
   #   Creates a thread local variable.
   #
   #   @param [Object] default the default value when otherwise unset
+  #   @param [Proc] block Optional block that gets called to obtain the
+  #     default value for each thread
 
   # @!macro [new] thread_local_var_method_get
   #

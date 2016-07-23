@@ -35,6 +35,17 @@ module Concurrent
           expect(described_class.ancestors).to include(Concurrent::RubyThreadLocalVar)
         end
       end
+
+      it 'can set a block to be called to get the initial value' do
+        v = described_class.new { 14 }
+        expect(v.value).to eq 14
+      end
+
+      context 'when attempting to set both an initial value and a block' do
+        it do
+          expect { described_class.new(14) { 14 } }.to raise_error(ArgumentError)
+        end
+      end
     end
 
     context '#value' do
@@ -47,6 +58,36 @@ module Concurrent
       it 'returns the value after modification' do
         v.value = 2
         expect(v.value).to eq 2
+      end
+
+      context 'when using a block to initialize the value' do
+        it 'calls the block to initialize the value' do
+          block = proc { }
+
+          expect(block).to receive(:call)
+
+          v = described_class.new(&block)
+          v.value
+        end
+
+        it 'sets the block return value as the current value' do
+          value = 13
+
+          v = described_class.new { value += 1 }
+
+          v.value
+          expect(v.value).to be 14
+        end
+
+        it 'calls the block to initialize the value for each thread' do
+          block = proc { }
+
+          expect(block).to receive(:call).twice
+
+          v = described_class.new(&block)
+          Thread.new { v.value }.join
+          Thread.new { v.value }.join
+        end
       end
     end
 

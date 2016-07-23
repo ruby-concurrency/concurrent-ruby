@@ -13,7 +13,7 @@ if Concurrent.on_jruby?
         value = @var.get
 
         if value.nil?
-          @default
+          default
         elsif value == NULL
           nil
         else

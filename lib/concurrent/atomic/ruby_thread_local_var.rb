@@ -40,14 +40,14 @@ module Concurrent
       if array = get_threadlocal_array
         value = array[@index]
         if value.nil?
-          @default
+          default
         elsif value.equal?(NULL)
           nil
         else
           value
         end
       else
-        @default
+        default
       end
     end
 
@@ -135,12 +135,20 @@ module Concurrent
       if array = get_threadlocal_array(thread)
         value = array[@index]
         if value.nil?
-          @default
+          default_for(thread)
         elsif value.equal?(NULL)
           nil
         else
           value
         end
+      else
+        default_for(thread)
+      end
+    end
+
+    def default_for(thread)
+      if @default_block
+        raise "Cannot use default_for with default block"
       else
         @default
       end
