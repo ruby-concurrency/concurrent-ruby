@@ -142,7 +142,7 @@ module Concurrent
   # practice is to read the instance variable into a local variable at the start
   # of the method then update the instance variable at the *end* of the method.
   # This way, should an exception be raised during method execution the internal
-  # state of the boject will not have been changed.
+  # state of the object will not have been changed.
   #
   # ### Reader Attributes
   #
