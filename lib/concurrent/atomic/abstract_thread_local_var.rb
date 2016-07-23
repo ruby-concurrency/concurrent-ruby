@@ -25,7 +25,15 @@ module Concurrent
 
     # @!macro thread_local_var_method_bind
     def bind(value, &block)
-      raise NotImplementedError
+      if block_given?
+        old_value = self.value
+        begin
+          self.value = value
+          yield
+        ensure
+          self.value = old_value
+        end
+      end
     end
 
     protected
