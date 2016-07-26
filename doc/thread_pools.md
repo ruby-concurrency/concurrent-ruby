@@ -62,7 +62,7 @@ pool = Concurrent::ThreadPoolExecutor.new(
 )
 ~~~
 
-If you wants to provide a maximum queue size, you may also consider the `fallback_policy` which defines what will happen if work is posted to a pool when the queue of waiting work has reached the maximum size and no new threads can be created. Available policies:
+If you want to provide a maximum queue size, you may also consider the `fallback_policy` which defines what will happen if work is posted to a pool when the queue of waiting work has reached the maximum size and no new threads can be created. Available policies:
 
 * abort: Raise a `Concurrent::RejectedExecutionError` exception and discard the task. (default policy)
 * discard: Silently discard the task and return nil as the task result.
