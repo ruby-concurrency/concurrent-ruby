@@ -18,7 +18,7 @@ describe 'Concurrent::Promises' do
     it 'future' do
       b = completable_future
       a = completable_future.chain_completable(b)
-      a.success :val
+      a.succeed :val
       expect(b).to be_completed
       expect(b.value).to eq :val
     end
@@ -29,7 +29,7 @@ describe 'Concurrent::Promises' do
       future = future { 1 + 1 }
       expect(future.value!).to eq 2
 
-      future = succeeded_future(1).then { |v| v + 1 }
+      future = successful_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
 
@@ -37,7 +37,7 @@ describe 'Concurrent::Promises' do
       future = future(1, 2, &:+)
       expect(future.value!).to eq 3
 
-      future = succeeded_future(1).then(1) { |v, a| v + 1 }
+      future = successful_future(1).then(1) { |v, a| v + 1 }
       expect(future.value!).to eq 2
     end
   end
@@ -51,9 +51,9 @@ describe 'Concurrent::Promises' do
 
     specify do
       behaves_as_delay delay { 1 + 1 }, 2
-      behaves_as_delay succeeded_future(1).delay.then { |v| v + 1 }, 2
+      behaves_as_delay successful_future(1).delay.then { |v| v + 1 }, 2
       behaves_as_delay delay(1) { |a| a + 1 }, 2
-      behaves_as_delay succeeded_future(1).delay.then { |v| v + 1 }, 2
+      behaves_as_delay successful_future(1).delay.then { |v| v + 1 }, 2
     end
   end
 
@@ -118,7 +118,7 @@ describe 'Concurrent::Promises' do
       one                = completable_future.then(&:succ)
       join               = zip_futures(completable_future).then { |v| v }
       expect(one.completed?).to be false
-      completable_future.success 0
+      completable_future.succeed 0
       expect(one.value!).to eq 1
       expect(join.wait!.completed?).to be true
       expect(join.value!).to eq 0
@@ -134,7 +134,7 @@ describe 'Concurrent::Promises' do
       any1 = any_complete_future(f1, f2)
       any2 = f2 | f3
 
-      f1.success 1
+      f1.succeed 1
       f2.fail StandardError.new
 
       expect(any1.value!).to eq 1
@@ -150,7 +150,7 @@ describe 'Concurrent::Promises' do
       any = any_successful_future(f1, f2)
 
       f1.fail StandardError.new
-      f2.success :value
+      f2.succeed :value
 
       expect(any.value!).to eq :value
     end
@@ -229,15 +229,15 @@ describe 'Concurrent::Promises' do
 
   describe '.each' do
     specify do
-      expect(succeeded_future(nil).each.map(&:inspect)).to eq ['nil']
-      expect(succeeded_future(1).each.map(&:inspect)).to eq ['1']
-      expect(succeeded_future([1, 2]).each.map(&:inspect)).to eq ['1', '2']
+      expect(successful_future(nil).each.map(&:inspect)).to eq ['nil']
+      expect(successful_future(1).each.map(&:inspect)).to eq ['1']
+      expect(successful_future([1, 2]).each.map(&:inspect)).to eq ['1', '2']
     end
   end
 
   describe '.zip_events' do
     it 'waits for all and returns event' do
-      a = succeeded_future 1
+      a = successful_future 1
       b = failed_future :any
       c = completable_event.complete
 

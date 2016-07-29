@@ -197,7 +197,7 @@ module Concurrent
         schedule_execution do
           begin
             build_context
-            initialized.success reference if initialized
+            initialized.succeed reference if initialized
             log DEBUG, 'spawned'
           rescue => ex
             log ERROR, ex

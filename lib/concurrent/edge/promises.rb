@@ -66,7 +66,7 @@ module Concurrent
       end
 
       # Creates completable future, user is responsible for completing the future once by
-      # {Promises::CompletableFuture#complete}, {Promises::CompletableFuture#success},
+      # {Promises::CompletableFuture#complete}, {Promises::CompletableFuture#succeed},
       # or {Promises::CompletableFuture#fail}
       #
       # @!macro promises.param.default_executor
@@ -95,7 +95,7 @@ module Concurrent
         ImmediateEventPromise.new(default_executor).future.then(*args, &task)
       end
 
-      # Creates completed future with will be either success with the given value or failed with
+      # Creates completed future with will be either success with the given value or failure with
       # the given reason.
       #
       # @!macro promises.param.default_executor
@@ -108,7 +108,7 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def succeeded_future(value, default_executor = :io)
+      def successful_future(value, default_executor = :io)
         completed_future true, value, nil, default_executor
       end
 
@@ -821,7 +821,7 @@ module Concurrent
 
       # @!macro [new] promises.warn.nil
       #   @note Make sure returned `nil` is not confused with timeout, no value when failed,
-      #     no reason when success, etc.
+      #     no reason when successful, etc.
       #     Use more exact methods if needed, like {#wait}, {#value!}, {#result}, etc.
 
       # @!macro [new] promises.method.value
@@ -831,7 +831,7 @@ module Concurrent
       #   @!macro promises.warn.blocks
       #   @!macro promises.warn.nil
       #   @!macro promises.param.timeout
-      # @return [Object, nil] the value of the Future when success, nil on timeout or failure.
+      # @return [Object, nil] the value of the Future when successful, nil on timeout or failure.
       def value(timeout = nil)
         touch
         internal_state.value if wait_until_complete timeout
@@ -854,7 +854,7 @@ module Concurrent
       #
       # @!macro promises.warn.blocks
       # @!macro promises.param.timeout
-      # @return [Array(Boolean, Object, Exception), nil] triplet of success, value, reason, or nil
+      # @return [Array(Boolean, Object, Exception), nil] triplet of success?, value, reason, or nil
       #   on timeout.
       def result(timeout = nil)
         touch
@@ -870,7 +870,7 @@ module Concurrent
       end
 
       # @!macro promises.method.value
-      # @return [Object, nil] the value of the Future when success, nil on timeout.
+      # @return [Object, nil] the value of the Future when successful, nil on timeout.
       # @raise [Exception] {#reason} on failure
       def value!(timeout = nil)
         touch
@@ -1173,8 +1173,8 @@ module Concurrent
       # which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def success(value, raise_on_reassign = true)
-        promise.success(value, raise_on_reassign)
+      def succeed(value, raise_on_reassign = true)
+        promise.succeed(value, raise_on_reassign)
       end
 
       # Makes the future failed with `reason`,
@@ -1278,7 +1278,7 @@ module Concurrent
         super CompletableFuture.new(self, default_executor)
       end
 
-      def success(value, raise_on_reassign)
+      def succeed(value, raise_on_reassign)
         complete_with Success.new(value), raise_on_reassign
       end
 
@@ -1325,7 +1325,7 @@ module Concurrent
       end
 
       def touch
-        # TODO (pitr-ch 13-Jun-2016): track if it has lazy parent if it's needed avoids CASes!
+        # TODO (pitr-ch 13-Jun-2016): on construction pass down references of delays to be touched, avoids extra casses
         blocked_by.each(&:touch)
       end
 
@@ -1964,7 +1964,7 @@ module Concurrent
     def initialize(max)
       super()
       self.can_run = max
-      # TODO (pitr-ch 10-Jun-2016): lockfree gueue is needed
+      # TODO (pitr-ch 10-Jun-2016): lock-free queue is needed
       @Queue       = Queue.new
     end
 
