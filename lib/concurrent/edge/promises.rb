@@ -498,8 +498,6 @@ module Concurrent
         self
       end
 
-      alias_method :needed, :touch
-
       # @!macro [new] promises.touches
       #   Calls {AbstractEventFuture#touch}.
 
@@ -512,7 +510,6 @@ module Concurrent
       #   @return [Future, true, false] self implies timeout was not used, true implies timeout was used
       #     and it was completed, false implies it was not completed within timeout.
       def wait(timeout = nil)
-        touch
         result = wait_until_complete(timeout)
         timeout ? result : self
       end
@@ -657,7 +654,7 @@ module Concurrent
 
       # For inspection.
       # @!visibility private
-      def touched
+      def touched?
         @Touched.value
       end
 
@@ -686,6 +683,8 @@ module Concurrent
       # @return [Boolean]
       def wait_until_complete(timeout)
         return true if completed?
+
+        touch
 
         @Lock.synchronize do
           begin
@@ -838,7 +837,6 @@ module Concurrent
       #   @!macro promises.param.timeout
       # @return [Object, nil] the value of the Future when successful, nil on timeout or failure.
       def value(timeout = nil)
-        touch
         internal_state.value if wait_until_complete timeout
       end
 
@@ -850,7 +848,6 @@ module Concurrent
       # @!macro promises.param.timeout
       # @return [Exception, nil] nil on timeout or success.
       def reason(timeout = nil)
-        touch
         internal_state.reason if wait_until_complete timeout
       end
 
@@ -862,14 +859,12 @@ module Concurrent
       # @return [Array(Boolean, Object, Exception), nil] triplet of success?, value, reason, or nil
       #   on timeout.
       def result(timeout = nil)
-        touch
         internal_state.result if wait_until_complete timeout
       end
 
       # @!macro promises.method.wait
       # @raise [Exception] {#reason} on failure
       def wait!(timeout = nil)
-        touch
         result = wait_until_complete!(timeout)
         timeout ? result : self
       end
@@ -878,7 +873,6 @@ module Concurrent
       # @return [Object, nil] the value of the Future when successful, nil on timeout.
       # @raise [Exception] {#reason} on failure
       def value!(timeout = nil)
-        touch
         internal_state.value if wait_until_complete! timeout
       end
 
