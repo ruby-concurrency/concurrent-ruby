@@ -259,6 +259,7 @@ module Concurrent
     end
 
     module InternalStates
+      # @private
       class State
         def completed?
           raise NotImplementedError
@@ -271,6 +272,7 @@ module Concurrent
 
       private_constant :State
 
+      # @private
       class Pending < State
         def completed?
           false
@@ -283,6 +285,7 @@ module Concurrent
 
       private_constant :Pending
 
+      # @private
       class CompletedWithResult < State
         def completed?
           true
@@ -315,8 +318,9 @@ module Concurrent
 
       private_constant :CompletedWithResult
 
-      # @!visibility private
+      # @private
       class Success < CompletedWithResult
+
         def initialize(value)
           @Value = value
         end
@@ -344,7 +348,7 @@ module Concurrent
 
       private_constant :Success
 
-      # @!visibility private
+      # @private
       class SuccessArray < Success
         def apply(args, block)
           block.call(*value, *args)
@@ -353,7 +357,7 @@ module Concurrent
 
       private_constant :SuccessArray
 
-      # @!visibility private
+      # @private
       class Failed < CompletedWithResult
         def initialize(reason)
           @Reason = reason
@@ -382,7 +386,7 @@ module Concurrent
 
       private_constant :Failed
 
-      # @!visibility private
+      # @private
       class PartiallyFailed < CompletedWithResult
         def initialize(value, reason)
           super()
@@ -421,6 +425,7 @@ module Concurrent
 
     private_constant :InternalStates
 
+    # Common ancestor of {Event} and {Future} classes
     class AbstractEventFuture < Synchronization::Object
       safe_initialization!
       private(*attr_atomic(:internal_state) - [:internal_state])
@@ -1214,6 +1219,7 @@ module Concurrent
     end
 
     # @abstract
+    # @private
     class AbstractPromise < Synchronization::Object
       safe_initialization!
       include InternalStates
@@ -1278,16 +1284,20 @@ module Concurrent
         super CompletableFuture.new(self, default_executor)
       end
 
+      # @!visibility private
       def succeed(value, raise_on_reassign)
         complete_with Success.new(value), raise_on_reassign
       end
 
+      # @!visibility private
       def fail(reason, raise_on_reassign)
         complete_with Failed.new(reason), raise_on_reassign
       end
 
+      # @!visibility private
       public :evaluate_to
 
+      # @!visibility private
       def evaluate_to!(*args, block)
         evaluate_to(*args, block).wait!
       end
@@ -1299,6 +1309,7 @@ module Concurrent
 
     # @abstract
     class BlockedPromise < InnerPromise
+      # @!visibility private
       def self.new(*args, &block)
         promise = super(*args, &block)
         promise.blocked_by.each { |f| f.add_callback :callback_notify_blocked, promise }
@@ -1311,7 +1322,7 @@ module Concurrent
         @Countdown = AtomicFixnum.new countdown
       end
 
-      # @api private
+      # @!visibility private
       def on_done(future)
         countdown   = process_on_done(future)
         completable = completable?(countdown, future)
@@ -1324,6 +1335,7 @@ module Concurrent
         end
       end
 
+      # @!visibility private
       def touch
         # TODO (pitr-ch 13-Jun-2016): on construction pass down references of delays to be touched, avoids extra casses
         blocked_by.each(&:touch)
@@ -1335,6 +1347,7 @@ module Concurrent
         @BlockedBy
       end
 
+      # @!visibility private
       def inspect
         "#{to_s[0..-2]} blocked_by:[#{ blocked_by.map(&:to_s).join(', ')}]>"
       end
@@ -1378,6 +1391,7 @@ module Concurrent
         @Args     = args
       end
 
+      # @!visibility private
       def executor
         @Executor
       end
@@ -1579,6 +1593,8 @@ module Concurrent
         super Event.new(self, default_executor), [event1, event2], 2
       end
 
+      private
+
       def on_completable(done_future)
         complete_with COMPLETED
       end
@@ -1589,6 +1605,8 @@ module Concurrent
         super Future.new(self, default_executor), [future, event], 2
         @FutureResult = future
       end
+
+      private
 
       def on_completable(done_future)
         complete_with @FutureResult.internal_state
@@ -1601,6 +1619,8 @@ module Concurrent
         @Future1Result = future1
         @Future2Result = future2
       end
+
+      private
 
       def on_completable(done_future)
         success1, value1, reason1 = @Future1Result.result
@@ -1620,6 +1640,8 @@ module Concurrent
         super Event.new(self, default_executor), [event], 1
       end
 
+      private
+
       def on_completable(done_future)
         complete_with COMPLETED
       end
@@ -1629,6 +1651,8 @@ module Concurrent
       def initialize(future, default_executor)
         super Future.new(self, default_executor), [future], 1
       end
+
+      private
 
       def on_completable(done_future)
         complete_with done_future.internal_state
@@ -1684,6 +1708,7 @@ module Concurrent
 
     # @abstract
     class AbstractAnyPromise < BlockedPromise
+      # @!visibility private
       def touch
         blocked_by.each(&:touch) unless @Future.completed?
       end
@@ -1735,6 +1760,7 @@ module Concurrent
     end
 
     class DelayPromise < InnerPromise
+      # @!visibility private
       def touch
         @Future.complete_with COMPLETED
       end
@@ -1747,10 +1773,12 @@ module Concurrent
     end
 
     class ScheduledPromise < InnerPromise
+      # @!visibility private
       def intended_time
         @IntendedTime
       end
 
+      # @!visibility private
       def inspect
         "#{to_s[0..-2]} intended_time:[#{@IntendedTime}}>"
       end
@@ -1816,6 +1844,7 @@ end
 # TODO try stealing pool, each thread has it's own queue
 
 ### Experimental features follow
+
 module Concurrent
   module Promises
     module FactoryMethods
