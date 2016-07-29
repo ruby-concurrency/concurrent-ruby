@@ -399,10 +399,14 @@ module Concurrent
 
         @Lock.synchronize do
           @Waiters.increment
-          unless completed?
-            @Condition.wait @Lock, timeout
+          begin
+            unless completed?
+              @Condition.wait @Lock, timeout
+            end
+          ensure
+            # JRuby may raise ConcurrencyError
+            @Waiters.decrement
           end
-          @Waiters.decrement
         end
         completed?
       end
