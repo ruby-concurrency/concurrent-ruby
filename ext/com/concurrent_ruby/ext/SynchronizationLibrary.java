@@ -189,15 +189,13 @@ public class SynchronizationLibrary implements Library {
                 }
             }
             if (Thread.interrupted()) {
-                // do nothing ns_wait is allowed to wake up spuriously
-                return this;
+                throw runtime.newConcurrencyError("thread interrupted");
             }
-
             boolean success = false;
             try {
                 success = context.getThread().wait_timeout(this, timeout);
             } catch (InterruptedException ie) {
-                // do nothing ns_wait is allowed to wake up spuriously
+                throw runtime.newConcurrencyError(ie.getLocalizedMessage());
             } finally {
                 // An interrupt or timeout may have caused us to miss
                 // a notify that we consumed, so do another notify in
