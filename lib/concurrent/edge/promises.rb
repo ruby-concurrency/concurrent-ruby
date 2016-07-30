@@ -2,7 +2,6 @@ require 'concurrent/synchronization'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/lock_free_stack'
-require 'concurrent/concern/logging'
 require 'concurrent/errors'
 
 module Concurrent
@@ -469,7 +468,6 @@ module Concurrent
       safe_initialization!
       private(*attr_atomic(:internal_state) - [:internal_state])
 
-      include Concern::Logging
       include InternalStates
 
       def initialize(promise, default_executor)
@@ -924,9 +922,7 @@ module Concurrent
         raise Concurrent::Error, 'it is not rejected' unless rejected?
         reason = internal_state.reason
         if reason.is_a?(::Array)
-          # TODO (pitr-ch 12-Jun-2016): remove logging!, how?
-          reason.each { |e| log ERROR, 'Promises::Future', e }
-          Concurrent::Error.new 'multiple exceptions, inspect log'
+          Concurrent::MultipleErrors.new reason
         else
           reason.exception(*args)
         end
@@ -1119,14 +1115,9 @@ module Concurrent
 
       def rejected_resolution(raise_on_reassign, state)
         if raise_on_reassign
-          # TODO (pitr-ch 12-Jun-2016): remove logging?!
-          # print otherwise hidden error
-          log ERROR, 'Promises::Future', reason if reason
-          log ERROR, 'Promises::Future', state.reason if state.reason
-
-          raise(Concurrent::MultipleAssignmentError.new(
-              "Future can be resolved only once. Current result is #{result}, " +
-                  "trying to set #{state.result}"))
+          raise Concurrent::MultipleAssignmentError.new(
+              "Future can be resolved only once. It's #{result}, trying to set #{state.result}.",
+              current_result: result, new_result: state.result)
         end
         return false
       end
@@ -1257,7 +1248,6 @@ module Concurrent
     class AbstractPromise < Synchronization::Object
       safe_initialization!
       include InternalStates
-      include Concern::Logging
 
       def initialize(future)
         super()
@@ -1282,7 +1272,7 @@ module Concurrent
       end
 
       def to_s
-        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state}>"
+        format '<#%s:0x%x %s>', self.class, object_id << 1, state
       end
 
       def inspect
@@ -1298,11 +1288,8 @@ module Concurrent
       # @return [Future]
       def evaluate_to(*args, block)
         resolve_with Fulfilled.new(block.call(*args))
-      rescue StandardError => error
-        resolve_with Rejected.new(error)
+        # TODO (pitr-ch 30-Jul-2016): figure out what should be rescued, there is an issue about it
       rescue Exception => error
-        # TODO (pitr-ch 12-Jun-2016): remove logging?
-        log(ERROR, 'Promises::Future', error)
         resolve_with Rejected.new(error)
       end
     end
