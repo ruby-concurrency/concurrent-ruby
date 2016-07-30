@@ -127,6 +127,46 @@ module Concurrent
         ImmediateEventPromise.new(default_executor).event
       end
 
+      # General constructor. Behaves differently based on the argument's type. It's provided for convenience
+      # but it's better to be explicit.
+      #
+      # @see rejected_future, resolved_event, fulfilled_future
+      # @!macro promises.param.default_executor
+      # @return [Event, Future]
+      #
+      # @overload create(nil, default_executor = :io)
+      #   @param [nil] nil
+      #   @return [Event] resolved event.
+      #
+      # @overload create(a_future = nil, default_executor = :io)
+      #   @param [Future] a_future
+      #   @return [Future] a future which will be resolved when a_future is.
+      #
+      # @overload create(an_event = nil, default_executor = :io)
+      #   @param [Event] an_event
+      #   @return [Event] an event which will be resolved when an_event is.
+      #
+      # @overload create(exception = nil, default_executor = :io)
+      #   @param [Exception] exception
+      #   @return [Future] a rejected future with the exception as its reason.
+      #
+      # @overload create(value = nil, default_executor = :io)
+      #   @param [Object] value when none of the above overloads fits
+      #   @return [Future] a fulfilled future with the value.
+      def create(argument = nil, default_executor = :io)
+        case argument
+        when AbstractEventFuture
+          # returning wrapper would change nothing
+          argument
+        when Exception
+          rejected_future argument, default_executor
+        when nil
+          resolved_event default_executor
+        else
+          fulfilled_future argument, default_executor
+        end
+      end
+
       # @!macro promises.shortcut.on
       # @return [Future]
       def delay(*args, &task)
@@ -252,8 +292,6 @@ module Concurrent
       def any_event_on(default_executor, *futures_and_or_events)
         AnyResolvedEventPromise.new(futures_and_or_events, default_executor).event
       end
-
-      # TODO (pitr-ch 30-Jul-2016): add general constructor behaving based on argument type
 
       # TODO consider adding first(count, *futures)
       # TODO consider adding zip_by(slice, *futures) processing futures in slices
