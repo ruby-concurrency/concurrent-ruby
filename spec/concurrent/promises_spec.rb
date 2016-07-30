@@ -496,19 +496,26 @@ describe 'Concurrent::Promises' do
 
   describe 'Throttling' do
     specify do
-      throttle = Concurrent::Throttle.new 3
+      max_tree = Concurrent::Throttle.new 3
       counter  = Concurrent::AtomicFixnum.new
+      testing  = -> do
+        counter.increment
+        sleep 0.01
+        # returns less then 3 since it's throttled
+        counter.decrement
+      end
+
       expect(Concurrent::Promises.zip(
           *12.times.map do |i|
-            throttle.limit do |trigger|
-              trigger.then do
-                counter.increment
-                sleep 0.01
-                counter.decrement
-              end
-            end
+            max_tree.limit { |trigger| trigger.then &testing }
+          end).value.all? { |v| v < 3 }).to be_truthy
+
+      expect(Concurrent::Promises.zip(
+          *12.times.map do |i|
+            Concurrent::Promises.
+                fulfilled_future(i).
+                throttle(max_tree) { |trigger| trigger.then &testing }
           end).value.all? { |v| v < 3 }).to be_truthy
     end
   end
-
 end

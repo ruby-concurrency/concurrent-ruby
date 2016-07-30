@@ -2031,10 +2031,12 @@ module Concurrent
       @Queue       = Queue.new
     end
 
-    def limit(ready = nil, &block)
+    def limit(future = nil, &block)
       # TODO (pitr-ch 11-Jun-2016): triggers should allocate resources when they are to be required
+      trigger = future ? future & get_event : get_event
+
       if block_given?
-        block.call(get_event).on_resolution! { done }
+        block.call(trigger).on_resolution! { done }
       else
         get_event
       end
@@ -2066,5 +2068,13 @@ module Concurrent
         end
       end
     end
+  end
+
+  class Promises::AbstractEventFuture < Synchronization::Object
+
+    def throttle(throttle, &throttled_future)
+      throttle.limit(self, &throttled_future)
+    end
+
   end
 end
