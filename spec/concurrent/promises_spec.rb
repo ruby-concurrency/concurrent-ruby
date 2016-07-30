@@ -498,7 +498,7 @@ describe 'Concurrent::Promises' do
     specify do
       max_tree = Concurrent::Throttle.new 3
       counter  = Concurrent::AtomicFixnum.new
-      testing  = -> do
+      testing  = -> *args do
         counter.increment
         sleep 0.01
         # returns less then 3 since it's throttled
