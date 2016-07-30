@@ -1,5 +1,3 @@
-# Promises Framework
-
 Promises is a new framework unifying former `Concurrent::Future`,
 `Concurrent::Promise`, `Concurrent::IVar`, `Concurrent::Event`,
 `Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
@@ -8,8 +6,6 @@ with the exception of obviously blocking operations like
 `#wait`, `#value`, etc. As a result it lowers a danger of deadlocking and offers
 better performance.
 
-## Overview
-
 *TODO*
 
 -   What is it?
@@ -17,7 +13,7 @@ better performance.
 -   Main classes {Future}, {Event}
 -   Explain pool usage :io vs :fast, and `_on` `_using` suffixes.
 
-## Old examples follow
+# Old examples
 
 *TODO review pending*
 
@@ -219,7 +215,7 @@ Factory methods are taking names of the global executors
 # executed on :fast executor, only short and non-blocking tasks can go there
 future_on(:fast) { 2 }.
     # executed on executor for blocking and long operations
-    then_using(:io) { File.read __FILE__ }.
+    then_on(:io) { File.read __FILE__ }.
     wait
 ```
 
@@ -239,22 +235,22 @@ future { 2 }.
 actor.ask(2).then(&:succ).value
 ```
 
-### Common use-cases Examples
+# Common use-cases Examples
 
-#### simple background processing
+## simple background processing
   
 ```ruby
 future { do_stuff }
 ```
 
-#### parallel background processing
+## parallel background processing
 
 ```ruby
 jobs = 10.times.map { |i| future { i } } #
 zip(*jobs).value
 ```
 
-#### periodic task
+## periodic task
 
 ```ruby
 def schedule_job(interval, &job)
@@ -295,7 +291,7 @@ arr, v = [], nil; arr << v while (v = queue.pop) #
 # arr has the results from the executed scheduled tasks
 arr
 ```
-#### How to limit processing where there are limited resources?
+## How to limit processing where there are limited resources?
 
 By creating an actor managing the resource
 
@@ -347,4 +343,42 @@ concurrent_jobs = 11.times.map do |v|
 end #
 
 zip(*concurrent_jobs).value!
+```
+
+# Experimental
+
+## Cancellation
+
+```ruby
+source, token = Concurrent::Cancellation.create
+
+futures = Array.new(2) do
+  future(token) do |token| 
+    token.loop_until_canceled { Thread.pass }
+    :done
+  end
+end
+
+sleep 0.05
+source.cancel
+futures.map(&:value!)
+```
+
+## Throttling
+
+```ruby
+data = (0..10).to_a
+max_tree = Concurrent::Throttle.new 3
+
+futures = data.map do |data|
+  future(data) do |data| 
+    # un-throttled
+    data + 1 
+  end.throttle(max_tree) do |trigger|
+    # throttled, imagine it uses DB connections or other limited resource
+    trigger.then { |v| v * 2 * 2 }  
+  end
+end #
+
+futures.map(&:value!)
 ```
