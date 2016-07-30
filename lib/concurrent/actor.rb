@@ -35,7 +35,7 @@ module Concurrent
     end
 
     @root = Concurrent::Promises.delay do
-      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent::Promises.completable_future).reference.tap do
+      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent::Promises.resolvable_future).reference.tap do
         future.wait!
       end
     end
@@ -74,7 +74,7 @@ module Concurrent
 
     # as {.spawn} but it'll block until actor is initialized or it'll raise exception on error
     def self.spawn!(*args, &block)
-      spawn(to_spawn_options(*args).merge(initialized: future = Concurrent::Promises.completable_future), &block).tap { future.wait! }
+      spawn(to_spawn_options(*args).merge(initialized: future = Concurrent::Promises.resolvable_future), &block).tap { future.wait! }
     end
 
     # @overload to_spawn_options(context_class, name, *args)

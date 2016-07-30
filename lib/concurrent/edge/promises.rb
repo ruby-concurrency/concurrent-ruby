@@ -33,8 +33,8 @@ module Concurrent
     #
     # @!macro [new] promise.param.task-future
     #  @yieldreturn will become result of the returned Future.
-    #     Its returned value becomes {Future#value} succeeding,
-    #     raised exception becomes {Future#reason} failing.
+    #     Its returned value becomes {Future#value} fulfilling it,
+    #     raised exception becomes {Future#reason} rejecting it.
     #
     # @!macro [new] promise.param.callback
     #  @yieldreturn is forgotten.
@@ -43,36 +43,35 @@ module Concurrent
     # new.
     module FactoryMethods
 
-
       # @!macro promises.shortcut.on
-      # @return [CompletableEvent]
-      def completable_event
-        completable_event_on :io
+      # @return [ResolvableEvent]
+      def resolvable_event
+        resolvable_event_on :io
       end
 
-      # Created completable event, user is responsible for completing the event once by
-      # {Promises::CompletableEvent#complete}.
+      # Created resolvable event, user is responsible for resolving the event once by
+      # {Promises::ResolvableEvent#resolve}.
       #
       # @!macro promises.param.default_executor
-      # @return [CompletableEvent]
-      def completable_event_on(default_executor = :io)
-        CompletableEventPromise.new(default_executor).future
+      # @return [ResolvableEvent]
+      def resolvable_event_on(default_executor = :io)
+        ResolvableEventPromise.new(default_executor).future
       end
 
       # @!macro promises.shortcut.on
-      # @return [CompletableFuture]
-      def completable_future
-        completable_future_on :io
+      # @return [ResolvableFuture]
+      def resolvable_future
+        resolvable_future_on :io
       end
 
-      # Creates completable future, user is responsible for completing the future once by
-      # {Promises::CompletableFuture#complete}, {Promises::CompletableFuture#succeed},
-      # or {Promises::CompletableFuture#fail}
+      # Creates resolvable future, user is responsible for resolving the future once by
+      # {Promises::ResolvableFuture#resolve}, {Promises::ResolvableFuture#fulfill},
+      # or {Promises::ResolvableFuture#reject}
       #
       # @!macro promises.param.default_executor
-      # @return [CompletableFuture]
-      def completable_future_on(default_executor = :io)
-        CompletableFuturePromise.new(default_executor).future
+      # @return [ResolvableFuture]
+      def resolvable_future_on(default_executor = :io)
+        ResolvableFuturePromise.new(default_executor).future
       end
 
       # @!macro promises.shortcut.on
@@ -82,7 +81,7 @@ module Concurrent
       end
 
       # @!macro [new] promises.future-on1
-      #   Constructs new Future which will be completed after block is evaluated on default executor.
+      #   Constructs new Future which will be resolved after block is evaluated on default executor.
       # Evaluation begins immediately.
       #
       # @!macro [new] promises.future-on2
@@ -95,36 +94,36 @@ module Concurrent
         ImmediateEventPromise.new(default_executor).future.then(*args, &task)
       end
 
-      # Creates completed future with will be either success with the given value or failure with
+      # Creates resolved future with will be either fulfilled with the given value or rejection with
       # the given reason.
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def completed_future(success, value, reason, default_executor = :io)
-        ImmediateFuturePromise.new(default_executor, success, value, reason).future
+      def resolved_future(fulfilled, value, reason, default_executor = :io)
+        ImmediateFuturePromise.new(default_executor, fulfilled, value, reason).future
       end
 
-      # Creates completed future with will be success with the given value.
+      # Creates resolved future with will be fulfilled with the given value.
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def successful_future(value, default_executor = :io)
-        completed_future true, value, nil, default_executor
+      def fulfilled_future(value, default_executor = :io)
+        resolved_future true, value, nil, default_executor
       end
 
-      # Creates completed future with will be failed with the given reason.
+      # Creates resolved future with will be rejected with the given reason.
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def failed_future(reason, default_executor = :io)
-        completed_future false, nil, reason, default_executor
+      def rejected_future(reason, default_executor = :io)
+        resolved_future false, nil, reason, default_executor
       end
 
-      # Creates completed event.
+      # Creates resolved event.
       #
       # @!macro promises.param.default_executor
       # @return [Event]
-      def completed_event(default_executor = :io)
+      def resolved_event(default_executor = :io)
         ImmediateEventPromise.new(default_executor).event
       end
 
@@ -165,12 +164,12 @@ module Concurrent
         zip_futures_on :io, *futures_and_or_events
       end
 
-      # Creates new future which is completed after all futures_and_or_events are complete.
-      # Its value is array of zipped future values. Its reason is array of reasons for failure.
-      # If there is an error it fails.
+      # Creates new future which is resolved after all futures_and_or_events are resolved.
+      # Its value is array of zipped future values. Its reason is array of reasons for rejection.
+      # If there is an error it rejects.
       # @!macro [new] promises.event-conversion
-      #   If event is supplied, which does not have value and can be only completed, it's
-      #   represented as `:success` with value `nil`.
+      #   If event is supplied, which does not have value and can be only resolved, it's
+      #   represented as `:fulfilled` with value `nil`.
       #
       # @!macro promises.param.default_executor
       # @param [AbstractEventFuture] futures_and_or_events
@@ -187,8 +186,8 @@ module Concurrent
         zip_events_on :io, *futures_and_or_events
       end
 
-      # Creates new event which is completed after all futures_and_or_events are complete.
-      # (Future is complete when successful or failed.)
+      # Creates new event which is resolved after all futures_and_or_events are resolved.
+      # (Future is resolved when fulfilled or rejected.)
       #
       # @!macro promises.param.default_executor
       # @param [AbstractEventFuture] futures_and_or_events
@@ -199,43 +198,43 @@ module Concurrent
 
       # @!macro promises.shortcut.on
       # @return [Future]
-      def any_complete_future(*futures_and_or_events)
-        any_complete_future_on :io, *futures_and_or_events
+      def any_resolved_future(*futures_and_or_events)
+        any_resolved_future_on :io, *futures_and_or_events
       end
 
-      alias_method :any, :any_complete_future
+      alias_method :any, :any_resolved_future
 
-      # Creates new future which is completed after first futures_and_or_events is complete.
-      # Its result equals result of the first complete future.
+      # Creates new future which is resolved after first futures_and_or_events is resolved.
+      # Its result equals result of the first resolved future.
       # @!macro [new] promises.any-touch
-      #   If complete it does not propagate {AbstractEventFuture#touch}, leaving delayed
+      #   If resolved it does not propagate {AbstractEventFuture#touch}, leaving delayed
       #   futures un-executed if they are not required any more.
       # @!macro promises.event-conversion
       #
       # @!macro promises.param.default_executor
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Future]
-      def any_complete_future_on(default_executor, *futures_and_or_events)
-        AnyCompleteFuturePromise.new(futures_and_or_events, default_executor).future
+      def any_resolved_future_on(default_executor, *futures_and_or_events)
+        AnyResolvedFuturePromise.new(futures_and_or_events, default_executor).future
       end
 
       # @!macro promises.shortcut.on
       # @return [Future]
-      def any_successful_future(*futures_and_or_events)
-        any_successful_future_on :io, *futures_and_or_events
+      def any_fulfilled_future(*futures_and_or_events)
+        any_fulfilled_future_on :io, *futures_and_or_events
       end
 
-      # Creates new future which is completed after first of futures_and_or_events is successful.
-      # Its result equals result of the first complete future or if all futures_and_or_events fail,
-      # it has reason of the last completed future.
+      # Creates new future which is resolved after first of futures_and_or_events is fulfilled.
+      # Its result equals result of the first resolved future or if all futures_and_or_events reject,
+      # it has reason of the last resolved future.
       # @!macro promises.any-touch
       # @!macro promises.event-conversion
       #
       # @!macro promises.param.default_executor
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Future]
-      def any_successful_future_on(default_executor, *futures_and_or_events)
-        AnySuccessfulFuturePromise.new(futures_and_or_events, default_executor).future
+      def any_fulfilled_future_on(default_executor, *futures_and_or_events)
+        AnyFulfilledFuturePromise.new(futures_and_or_events, default_executor).future
       end
 
       # @!macro promises.shortcut.on
@@ -244,15 +243,17 @@ module Concurrent
         any_event_on :io, *futures_and_or_events
       end
 
-      # Creates new event which becomes complete after first of the futures_and_or_events completes.
+      # Creates new event which becomes resolved after first of the futures_and_or_events resolves.
       # @!macro promises.any-touch
       #
       # @!macro promises.param.default_executor
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Event]
       def any_event_on(default_executor, *futures_and_or_events)
-        AnyCompleteEventPromise.new(futures_and_or_events, default_executor).event
+        AnyResolvedEventPromise.new(futures_and_or_events, default_executor).event
       end
+
+      # TODO (pitr-ch 30-Jul-2016): add general constructor behaving based on argument type
 
       # TODO consider adding first(count, *futures)
       # TODO consider adding zip_by(slice, *futures) processing futures in slices
@@ -261,7 +262,7 @@ module Concurrent
     module InternalStates
       # @private
       class State
-        def completed?
+        def resolved?
           raise NotImplementedError
         end
 
@@ -274,7 +275,7 @@ module Concurrent
 
       # @private
       class Pending < State
-        def completed?
+        def resolved?
           false
         end
 
@@ -286,20 +287,20 @@ module Concurrent
       private_constant :Pending
 
       # @private
-      class CompletedWithResult < State
-        def completed?
+      class ResolvedWithResult < State
+        def resolved?
           true
         end
 
         def to_sym
-          :completed
+          :resolved
         end
 
         def result
-          [success?, value, reason]
+          [fulfilled?, value, reason]
         end
 
-        def success?
+        def fulfilled?
           raise NotImplementedError
         end
 
@@ -316,16 +317,16 @@ module Concurrent
         end
       end
 
-      private_constant :CompletedWithResult
+      private_constant :ResolvedWithResult
 
       # @private
-      class Success < CompletedWithResult
+      class Fulfilled < ResolvedWithResult
 
         def initialize(value)
           @Value = value
         end
 
-        def success?
+        def fulfilled?
           true
         end
 
@@ -342,28 +343,28 @@ module Concurrent
         end
 
         def to_sym
-          :success
+          :fulfilled
         end
       end
 
-      private_constant :Success
+      private_constant :Fulfilled
 
       # @private
-      class SuccessArray < Success
+      class FulfilledArray < Fulfilled
         def apply(args, block)
           block.call(*value, *args)
         end
       end
 
-      private_constant :SuccessArray
+      private_constant :FulfilledArray
 
       # @private
-      class Failed < CompletedWithResult
+      class Rejected < ResolvedWithResult
         def initialize(reason)
           @Reason = reason
         end
 
-        def success?
+        def fulfilled?
           false
         end
 
@@ -376,7 +377,7 @@ module Concurrent
         end
 
         def to_sym
-          :failed
+          :rejected
         end
 
         def apply(args, block)
@@ -384,22 +385,22 @@ module Concurrent
         end
       end
 
-      private_constant :Failed
+      private_constant :Rejected
 
       # @private
-      class PartiallyFailed < CompletedWithResult
+      class PartiallyRejected < ResolvedWithResult
         def initialize(value, reason)
           super()
           @Value  = value
           @Reason = reason
         end
 
-        def success?
+        def fulfilled?
           false
         end
 
         def to_sym
-          :failed
+          :rejected
         end
 
         def value
@@ -415,12 +416,12 @@ module Concurrent
         end
       end
 
-      private_constant :PartiallyFailed
+      private_constant :PartiallyRejected
 
-      PENDING   = Pending.new
-      COMPLETED = Success.new(nil)
+      PENDING  = Pending.new
+      RESOLVED = Fulfilled.new(nil)
 
-      private_constant :PENDING, :COMPLETED
+      private_constant :PENDING, :RESOLVED
     end
 
     private_constant :InternalStates
@@ -457,17 +458,17 @@ module Concurrent
       #   @param [Numeric] timeout the maximum time in second to wait.
 
       # @!macro [new] promises.warn.blocks
-      #   @note This function potentially blocks current thread until the Future is complete.
+      #   @note This function potentially blocks current thread until the Future is resolved.
       #     Be careful it can deadlock. Try to chain instead.
 
       # Returns its state.
       # @return [Symbol]
       #
       # @overload an_event.state
-      #   @return [:pending, :completed]
+      #   @return [:pending, :resolved]
       # @overload a_future.state
-      #   Both :success, :failed implies :completed.
-      #   @return [:pending, :success, :failed]
+      #   Both :fulfilled, :rejected implies :resolved.
+      #   @return [:pending, :fulfilled, :rejected]
       def state
         internal_state.to_sym
       end
@@ -475,13 +476,13 @@ module Concurrent
       # Is it in pending state?
       # @return [Boolean]
       def pending?(state = internal_state)
-        !state.completed?
+        !state.resolved?
       end
 
-      # Is it in completed state?
+      # Is it in resolved state?
       # @return [Boolean]
-      def completed?(state = internal_state)
-        state.completed?
+      def resolved?(state = internal_state)
+        state.resolved?
       end
 
       # @deprecated
@@ -490,7 +491,7 @@ module Concurrent
       end
 
       # Propagates touch. Requests all the delayed futures, which it depends on, to be
-      # executed. This method is called by any other method requiring completeness, like {#wait}.
+      # executed. This method is called by any other method requiring resolved state, like {#wait}.
       # @return [self]
       def touch
         # distribute touch to promise only once
@@ -502,15 +503,15 @@ module Concurrent
       #   Calls {AbstractEventFuture#touch}.
 
       # @!macro [new] promises.method.wait
-      #   Wait (block the Thread) until receiver is {#completed?}.
+      #   Wait (block the Thread) until receiver is {#resolved?}.
       #   @!macro promises.touches
       #
       #   @!macro promises.warn.blocks
       #   @!macro promises.param.timeout
       #   @return [Future, true, false] self implies timeout was not used, true implies timeout was used
-      #     and it was completed, false implies it was not completed within timeout.
+      #     and it was resolved, false implies it was not resolved within timeout.
       def wait(timeout = nil)
-        result = wait_until_complete(timeout)
+        result = wait_until_resolved(timeout)
         timeout ? result : self
       end
 
@@ -518,8 +519,8 @@ module Concurrent
       # @return [Executor] default executor
       # @see #with_default_executor
       # @see FactoryMethods#future_on
-      # @see FactoryMethods#completable_future
-      # @see FactoryMethods#any_successful_future_on
+      # @see FactoryMethods#resolvable_future
+      # @see FactoryMethods#any_fulfilled_future_on
       # @see similar
       def default_executor
         @DefaultExecutor
@@ -531,7 +532,7 @@ module Concurrent
         chain_using @DefaultExecutor, *args, &task
       end
 
-      # Chains the task to be executed asynchronously on executor after it is completed.
+      # Chains the task to be executed asynchronously on executor after it is resolved.
       #
       # @!macro promises.param.executor
       # @!macro promises.param.args
@@ -541,7 +542,7 @@ module Concurrent
       # @overload an_event.chain_using(executor, *args, &task)
       #   @yield [*args] to the task.
       # @overload a_future.chain_using(executor, *args, &task)
-      #   @yield [success, value, reason, *args] to the task.
+      #   @yield [fulfilled?, value, reason, *args] to the task.
       def chain_using(executor, *args, &task)
         ChainPromise.new(self, @DefaultExecutor, executor, args, &task).future
       end
@@ -560,54 +561,54 @@ module Concurrent
 
       # @deprecated
       def set(*args, &block)
-        raise 'Use CompletableEvent#complete or CompletableFuture#complete instead, ' +
-                  'constructed by Promises.completable_event or Promises.completable_future respectively.'
+        raise 'Use ResolvableEvent#resolve or ResolvableFuture#resolve instead, ' +
+                  'constructed by Promises.resolvable_event or Promises.resolvable_future respectively.'
       end
 
-      # Completes the completable when receiver is completed.
+      # Resolves the resolvable when receiver is resolved.
       #
-      # @param [Completable] completable
+      # @param [Resolvable] resolvable
       # @return [self]
-      def chain_completable(completable)
-        on_completion! { completable.complete_with internal_state }
+      def chain_resolvable(resolvable)
+        on_resolution! { resolvable.resolve_with internal_state }
       end
 
-      alias_method :tangle, :chain_completable
+      alias_method :tangle, :chain_resolvable
 
       # @!macro promises.shortcut.using
       # @return [self]
-      def on_completion(*args, &callback)
-        on_completion_using @DefaultExecutor, *args, &callback
+      def on_resolution(*args, &callback)
+        on_resolution_using @DefaultExecutor, *args, &callback
       end
 
-      # Stores the callback to be executed synchronously on completing thread after it is
-      # completed.
+      # Stores the callback to be executed synchronously on resolving thread after it is
+      # resolved.
       #
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
       #
-      # @overload an_event.on_completion!(*args, &callback)
+      # @overload an_event.on_resolution!(*args, &callback)
       #   @yield [*args] to the callback.
-      # @overload a_future.on_completion!(*args, &callback)
-      #   @yield [success, value, reason, *args] to the callback.
-      def on_completion!(*args, &callback)
-        add_callback :callback_on_completion, args, callback
+      # @overload a_future.on_resolution!(*args, &callback)
+      #   @yield [fulfilled?, value, reason, *args] to the callback.
+      def on_resolution!(*args, &callback)
+        add_callback :callback_on_resolution, args, callback
       end
 
-      # Stores the callback to be executed asynchronously on executor after it is completed.
+      # Stores the callback to be executed asynchronously on executor after it is resolved.
       #
       # @!macro promises.param.executor
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
       #
-      # @overload an_event.on_completion_using(executor, *args, &callback)
+      # @overload an_event.on_resolution_using(executor, *args, &callback)
       #   @yield [*args] to the callback.
-      # @overload a_future.on_completion_using(executor, *args, &callback)
-      #   @yield [success, value, reason, *args] to the callback.
-      def on_completion_using(executor, *args, &callback)
-        add_callback :async_callback_on_completion, executor, args, callback
+      # @overload a_future.on_resolution_using(executor, *args, &callback)
+      #   @yield [fulfilled?, value, reason, *args] to the callback.
+      def on_resolution_using(executor, *args, &callback)
+        add_callback :async_callback_on_resolution, executor, args, callback
       end
 
       # @!macro [new] promises.method.with_default_executor
@@ -620,13 +621,13 @@ module Concurrent
       end
 
       # @!visibility private
-      def complete_with(state, raise_on_reassign = true)
+      def resolve_with(state, raise_on_reassign = true)
         if compare_and_set_internal_state(PENDING, state)
           # go to synchronized block only if there were waiting threads
           @Lock.synchronize { @Condition.broadcast } unless @Waiters.value == 0
           call_callbacks state
         else
-          return failed_complete(raise_on_reassign, state)
+          return rejected_resolution(raise_on_reassign, state)
         end
         self
       end
@@ -667,13 +668,13 @@ module Concurrent
       # @!visibility private
       def add_callback(method, *args)
         state = internal_state
-        if completed?(state)
+        if resolved?(state)
           call_callback method, state, *args
         else
           @Callbacks.push [method, *args]
           state = internal_state
-          # take back if it was completed in the meanwhile
-          call_callbacks state if completed?(state)
+          # take back if it was resolved in the meanwhile
+          call_callbacks state if resolved?(state)
         end
         self
       end
@@ -681,14 +682,15 @@ module Concurrent
       private
 
       # @return [Boolean]
-      def wait_until_complete(timeout)
-        return true if completed?
+      def wait_until_resolved(timeout)
+        return true if resolved?
 
         touch
 
         @Lock.synchronize do
+          @Waiters.increment
           begin
-            unless completed?
+            unless resolved?
               @Condition.wait @Lock, timeout
             end
           ensure
@@ -696,7 +698,7 @@ module Concurrent
             @Waiters.decrement
           end
         end
-        completed?
+        resolved?
       end
 
       def call_callback(method, state, *args)
@@ -715,19 +717,19 @@ module Concurrent
         Concurrent.executor(executor).post(*args, &block)
       end
 
-      def async_callback_on_completion(state, executor, args, callback)
+      def async_callback_on_resolution(state, executor, args, callback)
         with_async(executor, state, args, callback) do |st, ar, cb|
-          callback_on_completion st, ar, cb
+          callback_on_resolution st, ar, cb
         end
       end
 
       def callback_notify_blocked(state, promise)
-        promise.on_done self
+        promise.on_resolution self
       end
     end
 
-    # Represents an event which will happen in future (will be completed). The event is either
-    # pending or completed. It should be always completed. Use {Future} to communicate failures and
+    # Represents an event which will happen in future (will be resolved). The event is either
+    # pending or resolved. It should be always resolved. Use {Future} to communicate rejections and
     # cancellation.
     class Event < AbstractEventFuture
 
@@ -735,7 +737,7 @@ module Concurrent
 
 
       # @!macro [new] promises.method.zip
-      #   Creates a new event or a future which will be completed when receiver and other are.
+      #   Creates a new event or a future which will be resolved when receiver and other are.
       #   Returns an event if receiver and other are events, otherwise returns a future.
       #   If just one of the parties is Future then the result
       #   of the returned future is equal to the result of the supplied future. If both are futures
@@ -752,12 +754,12 @@ module Concurrent
 
       alias_method :&, :zip
 
-      # Creates a new event which will be completed when the first of receiver, `event_or_future`
-      # completes.
+      # Creates a new event which will be resolved when the first of receiver, `event_or_future`
+      # resolves.
       #
       # @return [Event]
       def any(event_or_future)
-        AnyCompleteEventPromise.new([self, event_or_future], @DefaultExecutor).event
+        AnyResolvedEventPromise.new([self, event_or_future], @DefaultExecutor).event
       end
 
       alias_method :|, :any
@@ -774,7 +776,7 @@ module Concurrent
 
       # @!macro [new] promise.method.schedule
       #   Creates new event dependent on receiver scheduled to execute on/in intended_time.
-      #   In time is interpreted from the moment the receiver is completed, therefore it inserts
+      #   In time is interpreted from the moment the receiver is resolved, therefore it inserts
       #   delay into the chain.
       #
       #   @!macro promises.param.intended_time
@@ -797,35 +799,35 @@ module Concurrent
 
       private
 
-      def failed_complete(raise_on_reassign, state)
-        Concurrent::MultipleAssignmentError.new('Event can be completed only once') if raise_on_reassign
+      def rejected_resolution(raise_on_reassign, state)
+        Concurrent::MultipleAssignmentError.new('Event can be resolved only once') if raise_on_reassign
         return false
       end
 
-      def callback_on_completion(state, args, callback)
+      def callback_on_resolution(state, args, callback)
         callback.call *args
       end
     end
 
-    # Represents a value which will become available in future. May fail with a reason instead,
+    # Represents a value which will become available in future. May reject with a reason instead,
     # e.g. when the tasks raises an exception.
     class Future < AbstractEventFuture
 
-      # Is it in success state?
+      # Is it in fulfilled state?
       # @return [Boolean]
-      def success?(state = internal_state)
-        state.completed? && state.success?
+      def fulfilled?(state = internal_state)
+        state.resolved? && state.fulfilled?
       end
 
-      # Is it in failed state?
+      # Is it in rejected state?
       # @return [Boolean]
-      def failed?(state = internal_state)
-        state.completed? && !state.success?
+      def rejected?(state = internal_state)
+        state.resolved? && !state.fulfilled?
       end
 
       # @!macro [new] promises.warn.nil
-      #   @note Make sure returned `nil` is not confused with timeout, no value when failed,
-      #     no reason when successful, etc.
+      #   @note Make sure returned `nil` is not confused with timeout, no value when rejected,
+      #     no reason when fulfilled, etc.
       #     Use more exact methods if needed, like {#wait}, {#value!}, {#result}, etc.
 
       # @!macro [new] promises.method.value
@@ -835,53 +837,53 @@ module Concurrent
       #   @!macro promises.warn.blocks
       #   @!macro promises.warn.nil
       #   @!macro promises.param.timeout
-      # @return [Object, nil] the value of the Future when successful, nil on timeout or failure.
+      # @return [Object, nil] the value of the Future when fulfilled, nil on timeout or rejection.
       def value(timeout = nil)
-        internal_state.value if wait_until_complete timeout
+        internal_state.value if wait_until_resolved timeout
       end
 
-      # Returns reason of future's failure.
+      # Returns reason of future's rejection.
       # @!macro promises.touches
       #
       # @!macro promises.warn.blocks
       # @!macro promises.warn.nil
       # @!macro promises.param.timeout
-      # @return [Exception, nil] nil on timeout or success.
+      # @return [Exception, nil] nil on timeout or fulfillment.
       def reason(timeout = nil)
-        internal_state.reason if wait_until_complete timeout
+        internal_state.reason if wait_until_resolved timeout
       end
 
-      # Returns triplet success?, value, reason.
+      # Returns triplet fulfilled?, value, reason.
       # @!macro promises.touches
       #
       # @!macro promises.warn.blocks
       # @!macro promises.param.timeout
-      # @return [Array(Boolean, Object, Exception), nil] triplet of success?, value, reason, or nil
+      # @return [Array(Boolean, Object, Exception), nil] triplet of fulfilled?, value, reason, or nil
       #   on timeout.
       def result(timeout = nil)
-        internal_state.result if wait_until_complete timeout
+        internal_state.result if wait_until_resolved timeout
       end
 
       # @!macro promises.method.wait
-      # @raise [Exception] {#reason} on failure
+      # @raise [Exception] {#reason} on rejection
       def wait!(timeout = nil)
-        result = wait_until_complete!(timeout)
+        result = wait_until_resolved!(timeout)
         timeout ? result : self
       end
 
       # @!macro promises.method.value
-      # @return [Object, nil] the value of the Future when successful, nil on timeout.
-      # @raise [Exception] {#reason} on failure
+      # @return [Object, nil] the value of the Future when fulfilled, nil on timeout.
+      # @raise [Exception] {#reason} on rejection
       def value!(timeout = nil)
-        internal_state.value if wait_until_complete! timeout
+        internal_state.value if wait_until_resolved! timeout
       end
 
-      # Allows failed Future to be risen with `raise` method.
+      # Allows rejected Future to be risen with `raise` method.
       # @example
-      #   raise Promises.failed_future(StandardError.new("boom"))
-      # @raise [StandardError] when raising not failed future
+      #   raise Promises.rejected_future(StandardError.new("boom"))
+      # @raise [StandardError] when raising not rejected future
       def exception(*args)
-        raise Concurrent::Error, 'it is not failed' unless failed?
+        raise Concurrent::Error, 'it is not rejected' unless rejected?
         reason = internal_state.reason
         if reason.is_a?(::Array)
           # TODO (pitr-ch 12-Jun-2016): remove logging!, how?
@@ -898,8 +900,8 @@ module Concurrent
         then_using @DefaultExecutor, *args, &task
       end
 
-      # Chains the task to be executed asynchronously on executor after it succeeds. Does not run
-      # the task if it fails. It will complete though, triggering any dependent futures.
+      # Chains the task to be executed asynchronously on executor after it fulfills. Does not run
+      # the task if it rejects. It will resolve though, triggering any dependent futures.
       #
       # @!macro promises.param.executor
       # @!macro promises.param.args
@@ -916,8 +918,8 @@ module Concurrent
         rescue_using @DefaultExecutor, *args, &task
       end
 
-      # Chains the task to be executed asynchronously on executor after it fails. Does not run
-      # the task if it succeeds. It will complete though, triggering any dependent futures.
+      # Chains the task to be executed asynchronously on executor after it rejects. Does not run
+      # the task if it fulfills. It will resolve though, triggering any dependent futures.
       #
       # @!macro promises.param.executor
       # @!macro promises.param.args
@@ -940,13 +942,13 @@ module Concurrent
 
       alias_method :&, :zip
 
-      # Creates a new event which will be completed when the first of receiver, `event_or_future`
-      # completes. Returning future will have value nil if event_or_future is event and completes
+      # Creates a new event which will be resolved when the first of receiver, `event_or_future`
+      # resolves. Returning future will have value nil if event_or_future is event and resolves
       # first.
       #
       # @return [Future]
       def any(event_or_future)
-        AnyCompleteFuturePromise.new([self, event_or_future], @DefaultExecutor).future
+        AnyResolvedFuturePromise.new([self, event_or_future], @DefaultExecutor).future
       end
 
       alias_method :|, :any
@@ -978,7 +980,7 @@ module Concurrent
       end
 
       # Creates new future which will have result of the future returned by receiver. If receiver
-      # fails it will have its failure.
+      # rejects it will have its rejection.
       #
       # @param [Integer] level how many levels of futures should flatten
       # @return [Future]
@@ -988,8 +990,8 @@ module Concurrent
 
       alias_method :flat, :flat_future
 
-      # Creates new event which will be completed when the returned event by receiver is.
-      # Be careful if the receiver fails it will just complete since Event does not hold reason.
+      # Creates new event which will be resolved when the returned event by receiver is.
+      # Be careful if the receiver rejects it will just resolve since Event does not hold reason.
       #
       # @return [Event]
       def flat_event
@@ -998,65 +1000,65 @@ module Concurrent
 
       # @!macro promises.shortcut.using
       # @return [self]
-      def on_success(*args, &callback)
-        on_success_using @DefaultExecutor, *args, &callback
+      def on_fulfillment(*args, &callback)
+        on_fulfillment_using @DefaultExecutor, *args, &callback
       end
 
-      # Stores the callback to be executed synchronously on completing thread after it is
-      # successful. Does nothing on failure.
+      # Stores the callback to be executed synchronously on resolving thread after it is
+      # fulfilled. Does nothing on rejection.
       #
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
       # @yield [value *args] to the callback.
-      def on_success!(*args, &callback)
-        add_callback :callback_on_success, args, callback
+      def on_fulfillment!(*args, &callback)
+        add_callback :callback_on_fulfillment, args, callback
       end
 
       # Stores the callback to be executed asynchronously on executor after it is
-      # successful. Does nothing on failure.
+      # fulfilled. Does nothing on rejection.
       #
       # @!macro promises.param.executor
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
       # @yield [value *args] to the callback.
-      def on_success_using(executor, *args, &callback)
-        add_callback :async_callback_on_success, executor, args, callback
+      def on_fulfillment_using(executor, *args, &callback)
+        add_callback :async_callback_on_fulfillment, executor, args, callback
       end
 
       # @!macro promises.shortcut.using
       # @return [self]
-      def on_failure(*args, &callback)
-        on_failure_using @DefaultExecutor, *args, &callback
+      def on_rejection(*args, &callback)
+        on_rejection_using @DefaultExecutor, *args, &callback
       end
 
-      # Stores the callback to be executed synchronously on completing thread after it is
-      # failed. Does nothing on success.
+      # Stores the callback to be executed synchronously on resolving thread after it is
+      # rejected. Does nothing on fulfillment.
       #
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
       # @yield [reason *args] to the callback.
-      def on_failure!(*args, &callback)
-        add_callback :callback_on_failure, args, callback
+      def on_rejection!(*args, &callback)
+        add_callback :callback_on_rejection, args, callback
       end
 
       # Stores the callback to be executed asynchronously on executor after it is
-      # failed. Does nothing on success.
+      # rejected. Does nothing on fulfillment.
       #
       # @!macro promises.param.executor
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
       # @yield [reason *args] to the callback.
-      def on_failure_using(executor, *args, &callback)
-        add_callback :async_callback_on_failure, executor, args, callback
+      def on_rejection_using(executor, *args, &callback)
+        add_callback :async_callback_on_rejection, executor, args, callback
       end
 
       # Allows to use futures as green threads. The receiver has to evaluate to a future which
       # represents what should be done next. It basically flattens indefinitely until non Future
-      # values is returned which becomes result of the returned future. Any ancountered exception
+      # values is returned which becomes result of the returned future. Any encountered exception
       # will become reason of the returned future.
       #
       # @return [Future]
@@ -1077,7 +1079,7 @@ module Concurrent
 
       private
 
-      def failed_complete(raise_on_reassign, state)
+      def rejected_resolution(raise_on_reassign, state)
         if raise_on_reassign
           # TODO (pitr-ch 12-Jun-2016): remove logging?!
           # print otherwise hidden error
@@ -1085,107 +1087,107 @@ module Concurrent
           log ERROR, 'Promises::Future', state.reason if state.reason
 
           raise(Concurrent::MultipleAssignmentError.new(
-              "Future can be completed only once. Current result is #{result}, " +
+              "Future can be resolved only once. Current result is #{result}, " +
                   "trying to set #{state.result}"))
         end
         return false
       end
 
-      def wait_until_complete!(timeout = nil)
-        result = wait_until_complete(timeout)
-        raise self if failed?
+      def wait_until_resolved!(timeout = nil)
+        result = wait_until_resolved(timeout)
+        raise self if rejected?
         result
       end
 
-      def async_callback_on_success(state, executor, args, callback)
+      def async_callback_on_fulfillment(state, executor, args, callback)
         with_async(executor, state, args, callback) do |st, ar, cb|
-          callback_on_success st, ar, cb
+          callback_on_fulfillment st, ar, cb
         end
       end
 
-      def async_callback_on_failure(state, executor, args, callback)
+      def async_callback_on_rejection(state, executor, args, callback)
         with_async(executor, state, args, callback) do |st, ar, cb|
-          callback_on_failure st, ar, cb
+          callback_on_rejection st, ar, cb
         end
       end
 
-      def callback_on_success(state, args, callback)
-        state.apply args, callback if state.success?
+      def callback_on_fulfillment(state, args, callback)
+        state.apply args, callback if state.fulfilled?
       end
 
-      def callback_on_failure(state, args, callback)
-        state.apply args, callback unless state.success?
+      def callback_on_rejection(state, args, callback)
+        state.apply args, callback unless state.fulfilled?
       end
 
-      def callback_on_completion(state, args, callback)
+      def callback_on_resolution(state, args, callback)
         callback.call state.result, *args
       end
 
     end
 
-    # Marker module of Future, Event completed manually by user.
-    module Completable
+    # Marker module of Future, Event resolved manually by user.
+    module Resolvable
     end
 
-    # A Event which can be completed by user.
-    class CompletableEvent < Event
-      include Completable
+    # A Event which can be resolved by user.
+    class ResolvableEvent < Event
+      include Resolvable
 
 
       # @!macro [new] raise_on_reassign
-      # @raise [MultipleAssignmentError] when already completed and raise_on_reassign is true.
+      # @raise [MultipleAssignmentError] when already resolved and raise_on_reassign is true.
 
       # @!macro [new] promise.param.raise_on_reassign
-      #   @param [Boolean] raise_on_reassign should method raise exception if already completed
+      #   @param [Boolean] raise_on_reassign should method raise exception if already resolved
       #   @return [self, false] false is returner when raise_on_reassign is false and the receiver
-      #     is already completed.
+      #     is already resolved.
       #
 
-      # Makes the event complete, which triggers all dependent futures.
+      # Makes the event resolved, which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def complete(raise_on_reassign = true)
-        complete_with COMPLETED, raise_on_reassign
+      def resolve(raise_on_reassign = true)
+        resolve_with RESOLVED, raise_on_reassign
       end
 
-      # Creates new event wrapping receiver, effectively hiding the complete method.
+      # Creates new event wrapping receiver, effectively hiding the resolve method.
       #
       # @return [Event]
-      def with_hidden_completable
-        @with_hidden_completable ||= EventWrapperPromise.new(self, @DefaultExecutor).event
+      def with_hidden_resolvable
+        @with_hidden_resolvable ||= EventWrapperPromise.new(self, @DefaultExecutor).event
       end
     end
 
-    # A Future which can be completed by user.
-    class CompletableFuture < Future
-      include Completable
+    # A Future which can be resolved by user.
+    class ResolvableFuture < Future
+      include Resolvable
 
-      # Makes the future complete with result of triplet `success`, `value`, `reason`,
+      # Makes the future resolved with result of triplet `fulfilled?`, `value`, `reason`,
       # which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def complete(success, value, reason, raise_on_reassign = true)
-        complete_with(success ? Success.new(value) : Failed.new(reason), raise_on_reassign)
+      def resolve(fulfilled, value, reason, raise_on_reassign = true)
+        resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason), raise_on_reassign)
       end
 
-      # Makes the future successful with `value`,
+      # Makes the future fulfilled with `value`,
       # which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def succeed(value, raise_on_reassign = true)
-        promise.succeed(value, raise_on_reassign)
+      def fulfill(value, raise_on_reassign = true)
+        promise.fulfill(value, raise_on_reassign)
       end
 
-      # Makes the future failed with `reason`,
+      # Makes the future rejected with `reason`,
       # which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def fail(reason, raise_on_reassign = true)
-        promise.fail(reason, raise_on_reassign)
+      def reject(reason, raise_on_reassign = true)
+        promise.reject(reason, raise_on_reassign)
       end
 
-      # Evaluates the block and sets its result as future's value succeeding, if the block raises
-      # an exception the future fails with it.
+      # Evaluates the block and sets its result as future's value fulfilling, if the block raises
+      # an exception the future rejects with it.
       # @yield [*args] to the block.
       # @yieldreturn [Object] value
       # @return [self]
@@ -1194,21 +1196,21 @@ module Concurrent
         promise.evaluate_to(*args, block)
       end
 
-      # Evaluates the block and sets its result as future's value succeeding, if the block raises
-      # an exception the future fails with it.
+      # Evaluates the block and sets its result as future's value fulfilling, if the block raises
+      # an exception the future rejects with it.
       # @yield [*args] to the block.
       # @yieldreturn [Object] value
       # @return [self]
-      # @raise [Exception] also raise reason on failure.
+      # @raise [Exception] also raise reason on rejection.
       def evaluate_to!(*args, &block)
         promise.evaluate_to!(*args, block)
       end
 
-      # Creates new future wrapping receiver, effectively hiding the complete method and similar.
+      # Creates new future wrapping receiver, effectively hiding the resolve method and similar.
       #
       # @return [Future]
-      def with_hidden_completable
-        @with_hidden_completable ||= FutureWrapperPromise.new(self, @DefaultExecutor).future
+      def with_hidden_resolvable
+        @with_hidden_resolvable ||= FutureWrapperPromise.new(self, @DefaultExecutor).future
       end
     end
 
@@ -1251,41 +1253,41 @@ module Concurrent
 
       private
 
-      def complete_with(new_state, raise_on_reassign = true)
-        @Future.complete_with(new_state, raise_on_reassign)
+      def resolve_with(new_state, raise_on_reassign = true)
+        @Future.resolve_with(new_state, raise_on_reassign)
       end
 
       # @return [Future]
       def evaluate_to(*args, block)
-        complete_with Success.new(block.call(*args))
+        resolve_with Fulfilled.new(block.call(*args))
       rescue StandardError => error
-        complete_with Failed.new(error)
+        resolve_with Rejected.new(error)
       rescue Exception => error
         # TODO (pitr-ch 12-Jun-2016): remove logging?
         log(ERROR, 'Promises::Future', error)
-        complete_with Failed.new(error)
+        resolve_with Rejected.new(error)
       end
     end
 
-    class CompletableEventPromise < AbstractPromise
+    class ResolvableEventPromise < AbstractPromise
       def initialize(default_executor)
-        super CompletableEvent.new(self, default_executor)
+        super ResolvableEvent.new(self, default_executor)
       end
     end
 
-    class CompletableFuturePromise < AbstractPromise
+    class ResolvableFuturePromise < AbstractPromise
       def initialize(default_executor)
-        super CompletableFuture.new(self, default_executor)
+        super ResolvableFuture.new(self, default_executor)
       end
 
       # @!visibility private
-      def succeed(value, raise_on_reassign)
-        complete_with Success.new(value), raise_on_reassign
+      def fulfill(value, raise_on_reassign)
+        resolve_with Fulfilled.new(value), raise_on_reassign
       end
 
       # @!visibility private
-      def fail(reason, raise_on_reassign)
-        complete_with Failed.new(reason), raise_on_reassign
+      def reject(reason, raise_on_reassign)
+        resolve_with Rejected.new(reason), raise_on_reassign
       end
 
       # @!visibility private
@@ -1317,14 +1319,14 @@ module Concurrent
       end
 
       # @!visibility private
-      def on_done(future)
-        countdown   = process_on_done(future)
-        completable = completable?(countdown, future)
+      def on_resolution(future)
+        countdown  = process_on_resolution(future)
+        resolvable = resolvable?(countdown, future)
 
-        if completable
-          on_completable(future)
+        if resolvable
+          on_resolvable(future)
           # futures could be deleted from blocked_by one by one here, but that would be too expensive,
-          # it's done once when all are done to free the reference
+          # it's done once when all are resolved to free their references
           clear_blocked_by!
         end
       end
@@ -1361,16 +1363,16 @@ module Concurrent
         nil
       end
 
-      # @return [true,false] if completable
-      def completable?(countdown, future)
+      # @return [true,false] if resolvable
+      def resolvable?(countdown, future)
         countdown.zero?
       end
 
-      def process_on_done(future)
+      def process_on_resolution(future)
         @Countdown.decrement
       end
 
-      def on_completable(done_future)
+      def on_resolvable(resolved_future)
         raise NotImplementedError
       end
     end
@@ -1399,13 +1401,13 @@ module Concurrent
         super blocked_by_future, default_executor, executor, args, &task
       end
 
-      def on_completable(done_future)
-        if done_future.success?
-          Concurrent.executor(@Executor).post(done_future, @Args, @Task) do |future, args, task|
+      def on_resolvable(resolved_future)
+        if resolved_future.fulfilled?
+          Concurrent.executor(@Executor).post(resolved_future, @Args, @Task) do |future, args, task|
             evaluate_to lambda { future.apply args, task }
           end
         else
-          complete_with done_future.internal_state
+          resolve_with resolved_future.internal_state
         end
       end
     end
@@ -1417,13 +1419,13 @@ module Concurrent
         super blocked_by_future, default_executor, executor, args, &task
       end
 
-      def on_completable(done_future)
-        if done_future.failed?
-          Concurrent.executor(@Executor).post(done_future, @Args, @Task) do |future, args, task|
+      def on_resolvable(resolved_future)
+        if resolved_future.rejected?
+          Concurrent.executor(@Executor).post(resolved_future, @Args, @Task) do |future, args, task|
             evaluate_to lambda { future.apply args, task }
           end
         else
-          complete_with done_future.internal_state
+          resolve_with resolved_future.internal_state
         end
       end
     end
@@ -1431,9 +1433,9 @@ module Concurrent
     class ChainPromise < BlockedTaskPromise
       private
 
-      def on_completable(done_future)
-        if Future === done_future
-          Concurrent.executor(@Executor).post(done_future, @Args, @Task) do |future, args, task|
+      def on_resolvable(resolved_future)
+        if Future === resolved_future
+          Concurrent.executor(@Executor).post(resolved_future, @Args, @Task) do |future, args, task|
             evaluate_to(*future.result, *args, task)
           end
         else
@@ -1444,17 +1446,17 @@ module Concurrent
       end
     end
 
-    # will be immediately completed
+    # will be immediately resolved
     class ImmediateEventPromise < InnerPromise
       def initialize(default_executor)
-        super Event.new(self, default_executor).complete_with(COMPLETED)
+        super Event.new(self, default_executor).resolve_with(RESOLVED)
       end
     end
 
     class ImmediateFuturePromise < InnerPromise
-      def initialize(default_executor, success, value, reason)
+      def initialize(default_executor, fulfilled, value, reason)
         super Future.new(self, default_executor).
-            complete_with(success ? Success.new(value) : Failed.new(reason))
+            resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason))
       end
     end
 
@@ -1470,8 +1472,8 @@ module Concurrent
         @BlockedBy = LockFreeStack.new.push(blocked_by_future)
       end
 
-      def on_completable(done_future)
-        complete_with done_future.internal_state
+      def on_resolvable(resolved_future)
+        resolve_with resolved_future.internal_state
       end
 
       def clear_blocked_by!
@@ -1479,8 +1481,8 @@ module Concurrent
         nil
       end
 
-      def completable?(countdown, future)
-        !@Future.internal_state.completed? && super(countdown, future)
+      def resolvable?(countdown, future)
+        !@Future.internal_state.resolved? && super(countdown, future)
       end
     end
 
@@ -1492,13 +1494,13 @@ module Concurrent
         super Event.new(self, default_executor), blocked_by_future, 2
       end
 
-      def process_on_done(future)
+      def process_on_resolution(future)
         countdown = super(future)
         if countdown.nonzero?
           internal_state = future.internal_state
 
-          unless internal_state.success?
-            complete_with COMPLETED
+          unless internal_state.fulfilled?
+            resolve_with RESOLVED
             return countdown
           end
 
@@ -1509,7 +1511,7 @@ module Concurrent
             value.add_callback :callback_notify_blocked, self
             @Countdown.value
           else
-            complete_with COMPLETED
+            resolve_with RESOLVED
           end
         end
         countdown
@@ -1526,13 +1528,13 @@ module Concurrent
         super Future.new(self, default_executor), blocked_by_future, 1 + levels
       end
 
-      def process_on_done(future)
+      def process_on_resolution(future)
         countdown = super(future)
         if countdown.nonzero?
           internal_state = future.internal_state
 
-          unless internal_state.success?
-            complete_with internal_state
+          unless internal_state.fulfilled?
+            resolve_with internal_state
             return countdown
           end
 
@@ -1561,11 +1563,11 @@ module Concurrent
         super Future.new(self, default_executor), blocked_by_future, 1
       end
 
-      def process_on_done(future)
+      def process_on_resolution(future)
         internal_state = future.internal_state
 
-        unless internal_state.success?
-          complete_with internal_state
+        unless internal_state.fulfilled?
+          resolve_with internal_state
           return 0
         end
 
@@ -1575,7 +1577,7 @@ module Concurrent
           # @BlockedBy.push value
           value.add_callback :callback_notify_blocked, self
         else
-          complete_with internal_state
+          resolve_with internal_state
         end
 
         1
@@ -1589,8 +1591,8 @@ module Concurrent
 
       private
 
-      def on_completable(done_future)
-        complete_with COMPLETED
+      def on_resolvable(resolved_future)
+        resolve_with RESOLVED
       end
     end
 
@@ -1602,8 +1604,8 @@ module Concurrent
 
       private
 
-      def on_completable(done_future)
-        complete_with @FutureResult.internal_state
+      def on_resolvable(resolved_future)
+        resolve_with @FutureResult.internal_state
       end
     end
 
@@ -1616,16 +1618,16 @@ module Concurrent
 
       private
 
-      def on_completable(done_future)
-        success1, value1, reason1 = @Future1Result.result
-        success2, value2, reason2 = @Future2Result.result
-        success                   = success1 && success2
-        new_state                 = if success
-                                      SuccessArray.new([value1, value2])
-                                    else
-                                      PartiallyFailed.new([value1, value2], [reason1, reason2])
-                                    end
-        complete_with new_state
+      def on_resolvable(resolved_future)
+        fulfilled1, value1, reason1 = @Future1Result.result
+        fulfilled2, value2, reason2 = @Future2Result.result
+        fulfilled                   = fulfilled1 && fulfilled2
+        new_state                   = if fulfilled
+                                        FulfilledArray.new([value1, value2])
+                                      else
+                                        PartiallyRejected.new([value1, value2], [reason1, reason2])
+                                      end
+        resolve_with new_state
       end
     end
 
@@ -1636,8 +1638,8 @@ module Concurrent
 
       private
 
-      def on_completable(done_future)
-        complete_with COMPLETED
+      def on_resolvable(resolved_future)
+        resolve_with RESOLVED
       end
     end
 
@@ -1648,8 +1650,8 @@ module Concurrent
 
       private
 
-      def on_completable(done_future)
-        complete_with done_future.internal_state
+      def on_resolvable(resolved_future)
+        resolve_with resolved_future.internal_state
       end
     end
 
@@ -1660,27 +1662,27 @@ module Concurrent
       def initialize(blocked_by_futures, default_executor)
         super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
 
-        on_completable nil if blocked_by_futures.empty?
+        on_resolvable nil if blocked_by_futures.empty?
       end
 
-      def on_completable(done_future)
-        all_success = true
-        values      = Array.new(blocked_by.size)
-        reasons     = Array.new(blocked_by.size)
+      def on_resolvable(resolved_future)
+        all_fulfilled = true
+        values        = Array.new(blocked_by.size)
+        reasons       = Array.new(blocked_by.size)
 
         blocked_by.each_with_index do |future, i|
           if future.is_a?(Future)
-            success, values[i], reasons[i] = future.result
-            all_success                    &&= success
+            fulfilled, values[i], reasons[i] = future.result
+            all_fulfilled                    &&= fulfilled
           else
             values[i] = reasons[i] = nil
           end
         end
 
-        if all_success
-          complete_with SuccessArray.new(values)
+        if all_fulfilled
+          resolve_with FulfilledArray.new(values)
         else
-          complete_with PartiallyFailed.new(values, reasons)
+          resolve_with PartiallyRejected.new(values, reasons)
         end
       end
     end
@@ -1692,11 +1694,11 @@ module Concurrent
       def initialize(blocked_by_futures, default_executor)
         super(Event.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
 
-        on_completable nil if blocked_by_futures.empty?
+        on_resolvable nil if blocked_by_futures.empty?
       end
 
-      def on_completable(done_future)
-        complete_with COMPLETED
+      def on_resolvable(resolved_future)
+        resolve_with RESOLVED
       end
     end
 
@@ -1704,11 +1706,11 @@ module Concurrent
     class AbstractAnyPromise < BlockedPromise
       # @!visibility private
       def touch
-        blocked_by.each(&:touch) unless @Future.completed?
+        blocked_by.each(&:touch) unless @Future.resolved?
       end
     end
 
-    class AnyCompleteFuturePromise < AbstractAnyPromise
+    class AnyResolvedFuturePromise < AbstractAnyPromise
 
       private
 
@@ -1716,16 +1718,16 @@ module Concurrent
         super(Future.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
       end
 
-      def completable?(countdown, future)
+      def resolvable?(countdown, future)
         true
       end
 
-      def on_completable(done_future)
-        complete_with done_future.internal_state, false
+      def on_resolvable(resolved_future)
+        resolve_with resolved_future.internal_state, false
       end
     end
 
-    class AnyCompleteEventPromise < AbstractAnyPromise
+    class AnyResolvedEventPromise < AbstractAnyPromise
 
       private
 
@@ -1733,21 +1735,21 @@ module Concurrent
         super(Event.new(self, default_executor), blocked_by_futures, blocked_by_futures.size)
       end
 
-      def completable?(countdown, future)
+      def resolvable?(countdown, future)
         true
       end
 
-      def on_completable(done_future)
-        complete_with COMPLETED, false
+      def on_resolvable(resolved_future)
+        resolve_with RESOLVED, false
       end
     end
 
-    class AnySuccessfulFuturePromise < AnyCompleteFuturePromise
+    class AnyFulfilledFuturePromise < AnyResolvedFuturePromise
 
       private
 
-      def completable?(countdown, future)
-        future.success? ||
+      def resolvable?(countdown, future)
+        future.fulfilled? ||
             # inlined super from BlockedPromise
             countdown.zero?
       end
@@ -1756,7 +1758,7 @@ module Concurrent
     class DelayPromise < InnerPromise
       # @!visibility private
       def touch
-        @Future.complete_with COMPLETED
+        @Future.resolve_with RESOLVED
       end
 
       private
@@ -1795,7 +1797,7 @@ module Concurrent
         end
 
         Concurrent.global_timer_set.post(in_seconds) do
-          @Future.complete_with COMPLETED
+          @Future.resolve_with RESOLVED
         end
       end
     end
@@ -1803,8 +1805,8 @@ module Concurrent
     extend FactoryMethods
 
     private_constant :AbstractPromise,
-                     :CompletableEventPromise,
-                     :CompletableFuturePromise,
+                     :ResolvableEventPromise,
+                     :ResolvableFuturePromise,
                      :InnerPromise,
                      :BlockedPromise,
                      :BlockedTaskPromise,
@@ -1825,9 +1827,9 @@ module Concurrent
                      :ZipFuturesPromise,
                      :ZipEventsPromise,
                      :AbstractAnyPromise,
-                     :AnyCompleteFuturePromise,
-                     :AnySuccessfulFuturePromise,
-                     :AnyCompleteEventPromise,
+                     :AnyResolvedFuturePromise,
+                     :AnyFulfilledFuturePromise,
+                     :AnyResolvedEventPromise,
                      :DelayPromise,
                      :ScheduledPromise
 
@@ -1873,7 +1875,7 @@ module Concurrent
       # @note may block
       # @note only proof of concept
       def then_put(channel)
-        on_success(:io) { |value| channel.put value }
+        on_fulfillment(:io) { |value| channel.put value }
       end
 
       # Asks the actor with its value.
@@ -1905,17 +1907,17 @@ module Concurrent
   class Cancellation < Synchronization::Object
     safe_initialization!
 
-    def self.create(future_or_event = Promises.completable_event, *complete_args)
-      [(i = new(future_or_event, *complete_args)), i.token]
+    def self.create(future_or_event = Promises.resolvable_event, *resolve_args)
+      [(i = new(future_or_event, *resolve_args)), i.token]
     end
 
     private_class_method :new
 
-    def initialize(future, *complete_args)
-      raise ArgumentError, 'future is not Completable' unless future.is_a?(Promises::Completable)
-      @Cancel       = future
-      @Token        = Token.new @Cancel.with_hidden_completable
-      @CompleteArgs = complete_args
+    def initialize(future, *resolve_args)
+      raise ArgumentError, 'future is not Resolvable' unless future.is_a?(Promises::Resolvable)
+      @Cancel      = future
+      @Token       = Token.new @Cancel.with_hidden_resolvable
+      @ResolveArgs = resolve_args
     end
 
     def token
@@ -1923,11 +1925,11 @@ module Concurrent
     end
 
     def cancel(raise_on_repeated_call = true)
-      !!@Cancel.complete(*@CompleteArgs, raise_on_repeated_call)
+      !!@Cancel.resolve(*@ResolveArgs, raise_on_repeated_call)
     end
 
     def canceled?
-      @Cancel.completed?
+      @Cancel.resolved?
     end
 
     class Token < Synchronization::Object
@@ -1944,7 +1946,7 @@ module Concurrent
       alias_method :future, :event
 
       def on_cancellation(*args, &block)
-        @Cancel.on_completion *args, &block
+        @Cancel.on_resolution *args, &block
       end
 
       def then(*args, &block)
@@ -1952,7 +1954,7 @@ module Concurrent
       end
 
       def canceled?
-        @Cancel.completed?
+        @Cancel.resolved?
       end
 
       def loop_until_canceled(&block)
@@ -1994,7 +1996,7 @@ module Concurrent
     def limit(ready = nil, &block)
       # TODO (pitr-ch 11-Jun-2016): triggers should allocate resources when they are to be required
       if block_given?
-        block.call(get_event).on_completion! { done }
+        block.call(get_event).on_resolution! { done }
       else
         get_event
       end
@@ -2004,7 +2006,7 @@ module Concurrent
       while true
         current_can_run = can_run
         if compare_and_set_can_run current_can_run, current_can_run + 1
-          @Queue.pop.complete if current_can_run < 0
+          @Queue.pop.resolve if current_can_run < 0
           return self
         end
       end
@@ -2017,9 +2019,9 @@ module Concurrent
         current_can_run = can_run
         if compare_and_set_can_run current_can_run, current_can_run - 1
           if current_can_run > 0
-            return Promises.completed_event
+            return Promises.resolved_event
           else
-            e = Promises.completable_event
+            e = Promises.resolvable_event
             @Queue.push e
             return e
           end

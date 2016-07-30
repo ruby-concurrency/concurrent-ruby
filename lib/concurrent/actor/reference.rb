@@ -51,7 +51,7 @@ module Concurrent
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask(1).value # => 2
       #   adder.ask(nil).wait.reason # => #<NoMethodError: undefined method `+' for nil:NilClass>
-      def ask(message, future = Concurrent::Promises.completable_future)
+      def ask(message, future = Concurrent::Promises.resolvable_future)
         message message, future
       end
 
@@ -65,11 +65,11 @@ module Concurrent
       # @param [Object] message
       # @param [Promises::Future] future to be fulfilled be message's processing result
       # @return [Object] message's processing result
-      # @raise [Exception] future.reason if future is #failed?
+      # @raise [Exception] future.reason if future is #rejected?
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask!(1) # => 2
-      def ask!(message, future = Concurrent::Promises.completable_future)
+      def ask!(message, future = Concurrent::Promises.resolvable_future)
         ask(message, future).value!
       end
 
@@ -80,7 +80,7 @@ module Concurrent
       # behaves as {#tell} when no future and as {#ask} when future
       def message(message, future = nil)
         core.on_envelope Envelope.new(message, future, Actor.current || Thread.current, self)
-        return future ? future.with_hidden_completable : self
+        return future ? future.with_hidden_resolvable : self
       end
 
       # @see AbstractContext#dead_letter_routing

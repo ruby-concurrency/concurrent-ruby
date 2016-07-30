@@ -16,7 +16,7 @@ module Concurrent
 
       def initialize(message, future, sender, address)
         @message = message
-        @future  = Type! future, Promises::CompletableFuture, NilClass
+        @future  = Type! future, Promises::ResolvableFuture, NilClass
         @sender  = Type! sender, Reference, Thread
         @address = Type! address, Reference
       end
@@ -34,7 +34,7 @@ module Concurrent
       end
 
       def reject!(error)
-        future.fail error unless future.nil?
+        future.reject error unless future.nil?
       end
     end
   end

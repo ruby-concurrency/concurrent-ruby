@@ -78,7 +78,7 @@ module Concurrent
 
         it 'terminates on failed initialization' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { raise }
-          expect(a.ask(nil).wait.failed?).to be_truthy
+          expect(a.ask(nil).wait.rejected?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
 
@@ -90,7 +90,7 @@ module Concurrent
 
         it 'terminates on failed message processing' do
           a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { -> _ { raise } }
-          expect(a.ask(nil).wait.failed?).to be_truthy
+          expect(a.ask(nil).wait.rejected?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
       end
@@ -133,7 +133,7 @@ module Concurrent
           envelope = subject.ask!('a')
           expect(envelope).to be_a_kind_of Envelope
           expect(envelope.message).to eq 'a'
-          expect(envelope.future).to be_completed
+          expect(envelope.future).to be_resolved
           expect(envelope.future.value).to eq envelope
           expect(envelope.sender).to eq Thread.current
           terminate_actors subject

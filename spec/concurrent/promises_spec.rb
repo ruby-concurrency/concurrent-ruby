@@ -7,19 +7,19 @@ describe 'Concurrent::Promises' do
 
   include Concurrent::Promises::FactoryMethods
 
-  describe 'chain_completable' do
+  describe 'chain_resolvable' do
     it 'event' do
-      b = completable_event
-      a = completable_event.chain_completable(b)
-      a.complete
-      expect(b).to be_completed
+      b = resolvable_event
+      a = resolvable_event.chain_resolvable(b)
+      a.resolve
+      expect(b).to be_resolved
     end
 
     it 'future' do
-      b = completable_future
-      a = completable_future.chain_completable(b)
-      a.succeed :val
-      expect(b).to be_completed
+      b = resolvable_future
+      a = resolvable_future.chain_resolvable(b)
+      a.fulfill :val
+      expect(b).to be_resolved
       expect(b.value).to eq :val
     end
   end
@@ -29,7 +29,7 @@ describe 'Concurrent::Promises' do
       future = future { 1 + 1 }
       expect(future.value!).to eq 2
 
-      future = successful_future(1).then { |v| v + 1 }
+      future = fulfilled_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
 
@@ -37,7 +37,7 @@ describe 'Concurrent::Promises' do
       future = future(1, 2, &:+)
       expect(future.value!).to eq 3
 
-      future = successful_future(1).then(1) { |v, a| v + 1 }
+      future = fulfilled_future(1).then(1) { |v, a| v + 1 }
       expect(future.value!).to eq 2
     end
   end
@@ -45,15 +45,15 @@ describe 'Concurrent::Promises' do
   describe '.delay' do
 
     def behaves_as_delay(delay, value)
-      expect(delay.completed?).to eq false
+      expect(delay.resolved?).to eq false
       expect(delay.value!).to eq value
     end
 
     specify do
       behaves_as_delay delay { 1 + 1 }, 2
-      behaves_as_delay successful_future(1).delay.then { |v| v + 1 }, 2
+      behaves_as_delay fulfilled_future(1).delay.then { |v| v + 1 }, 2
       behaves_as_delay delay(1) { |a| a + 1 }, 2
-      behaves_as_delay successful_future(1).delay.then { |v| v + 1 }, 2
+      behaves_as_delay fulfilled_future(1).delay.then { |v| v + 1 }, 2
     end
   end
 
@@ -69,7 +69,7 @@ describe 'Concurrent::Promises' do
 
       start  = Time.now.to_f
       queue  = Queue.new
-      future = completed_event.
+      future = resolved_event.
           schedule(0.1).
           then { 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
@@ -92,65 +92,65 @@ describe 'Concurrent::Promises' do
       expect(queue.pop).to eq 2
       expect(queue.pop).to be >= 0.09
 
-      scheduled = completed_event.schedule(0.1)
-      expect(scheduled.completed?).to be_falsey
+      scheduled = resolved_event.schedule(0.1)
+      expect(scheduled.resolved?).to be_falsey
       scheduled.wait
-      expect(scheduled.completed?).to be_truthy
+      expect(scheduled.resolved?).to be_truthy
     end
 
   end
 
   describe '.event' do
     specify do
-      completable_event = completable_event()
-      one               = completable_event.chain(1) { |arg| arg }
-      join              = zip(completable_event).chain { 1 }
-      expect(one.completed?).to be false
-      completable_event.complete
+      resolvable_event = resolvable_event()
+      one              = resolvable_event.chain(1) { |arg| arg }
+      join             = zip(resolvable_event).chain { 1 }
+      expect(one.resolved?).to be false
+      resolvable_event.resolve
       expect(one.value!).to eq 1
-      expect(join.wait.completed?).to be true
+      expect(join.wait.resolved?).to be true
     end
   end
 
   describe '.future without block' do
     specify do
-      completable_future = completable_future()
-      one                = completable_future.then(&:succ)
-      join               = zip_futures(completable_future).then { |v| v }
-      expect(one.completed?).to be false
-      completable_future.succeed 0
+      resolvable_future = resolvable_future()
+      one               = resolvable_future.then(&:succ)
+      join              = zip_futures(resolvable_future).then { |v| v }
+      expect(one.resolved?).to be false
+      resolvable_future.fulfill 0
       expect(one.value!).to eq 1
-      expect(join.wait!.completed?).to be true
+      expect(join.wait!.resolved?).to be true
       expect(join.value!).to eq 0
     end
   end
 
-  describe '.any_complete' do
+  describe '.any_resolved' do
     it 'continues on first result' do
-      f1 = completable_future
-      f2 = completable_future
-      f3 = completable_future
+      f1 = resolvable_future
+      f2 = resolvable_future
+      f3 = resolvable_future
 
-      any1 = any_complete_future(f1, f2)
+      any1 = any_resolved_future(f1, f2)
       any2 = f2 | f3
 
-      f1.succeed 1
-      f2.fail StandardError.new
+      f1.fulfill 1
+      f2.reject StandardError.new
 
       expect(any1.value!).to eq 1
       expect(any2.reason).to be_a_kind_of StandardError
     end
   end
 
-  describe '.any_successful' do
+  describe '.any_fulfilled' do
     it 'continues on first result' do
-      f1 = completable_future
-      f2 = completable_future
+      f1 = resolvable_future
+      f2 = resolvable_future
 
-      any = any_successful_future(f1, f2)
+      any = any_fulfilled_future(f1, f2)
 
-      f1.fail StandardError.new
-      f2.succeed :value
+      f1.reject StandardError.new
+      f2.fulfill :value
 
       expect(any.value!).to eq :value
     end
@@ -200,9 +200,9 @@ describe 'Concurrent::Promises' do
       expect(z2.then { |a, b, c| a+b+c }.value!).to eq 6
 
       expect(future { 1 }.delay).to be_a_kind_of Concurrent::Promises::Future
-      expect(future { 1 }.delay.wait!).to be_completed
-      expect(completable_event.complete.delay).to be_a_kind_of Concurrent::Promises::Event
-      expect(completable_event.complete.delay.wait).to be_completed
+      expect(future { 1 }.delay.wait!).to be_resolved
+      expect(resolvable_event.resolve.delay).to be_a_kind_of Concurrent::Promises::Event
+      expect(resolvable_event.resolve.delay.wait).to be_resolved
 
       a = future { 1 }
       b = future { raise 'b' }
@@ -229,25 +229,25 @@ describe 'Concurrent::Promises' do
 
   describe '.each' do
     specify do
-      expect(successful_future(nil).each.map(&:inspect)).to eq ['nil']
-      expect(successful_future(1).each.map(&:inspect)).to eq ['1']
-      expect(successful_future([1, 2]).each.map(&:inspect)).to eq ['1', '2']
+      expect(fulfilled_future(nil).each.map(&:inspect)).to eq ['nil']
+      expect(fulfilled_future(1).each.map(&:inspect)).to eq ['1']
+      expect(fulfilled_future([1, 2]).each.map(&:inspect)).to eq ['1', '2']
     end
   end
 
   describe '.zip_events' do
     it 'waits for all and returns event' do
-      a = successful_future 1
-      b = failed_future :any
-      c = completable_event.complete
+      a = fulfilled_future 1
+      b = rejected_future :any
+      c = resolvable_event.resolve
 
       z2 = zip_events a, b, c
       z3 = zip_events a
       z4 = zip_events
 
-      expect(z2.completed?).to be_truthy
-      expect(z3.completed?).to be_truthy
-      expect(z4.completed?).to be_truthy
+      expect(z2.resolved?).to be_truthy
+      expect(z3.resolved?).to be_truthy
+      expect(z4.resolved?).to be_truthy
     end
   end
 
@@ -255,26 +255,26 @@ describe 'Concurrent::Promises' do
     it 'has sync and async callbacks' do
       callbacks_tester = ->(future) do
         queue = Queue.new
-        future.on_completion(:io) { |result| queue.push("async on_completion #{ result.inspect }") }
-        future.on_completion! { |result| queue.push("sync on_completion #{ result.inspect }") }
-        future.on_success(:io) { |value| queue.push("async on_success #{ value.inspect }") }
-        future.on_success! { |value| queue.push("sync on_success #{ value.inspect }") }
-        future.on_failure(:io) { |reason| queue.push("async on_failure #{ reason.inspect }") }
-        future.on_failure! { |reason| queue.push("sync on_failure #{ reason.inspect }") }
+        future.on_resolution_using(:io) { |result| queue.push("async on_resolution #{ result.inspect }") }
+        future.on_resolution! { |result| queue.push("sync on_resolution #{ result.inspect }") }
+        future.on_fulfillment_using(:io) { |value| queue.push("async on_fulfillment #{ value.inspect }") }
+        future.on_fulfillment! { |value| queue.push("sync on_fulfillment #{ value.inspect }") }
+        future.on_rejection_using(:io) { |reason| queue.push("async on_rejection #{ reason.inspect }") }
+        future.on_rejection! { |reason| queue.push("sync on_rejection #{ reason.inspect }") }
         future.wait
         [queue.pop, queue.pop, queue.pop, queue.pop].sort
       end
       callback_results = callbacks_tester.call(future { :value })
-      expect(callback_results).to eq ["async on_completion [true, :value, nil]",
-                                      "async on_success :value",
-                                      "sync on_completion [true, :value, nil]",
-                                      "sync on_success :value"]
+      expect(callback_results).to eq ["async on_fulfillment :value",
+                                      "async on_resolution [true, :value, nil]",
+                                      "sync on_fulfillment :value",
+                                      "sync on_resolution [true, :value, nil]"]
 
       callback_results = callbacks_tester.call(future { raise 'error' })
-      expect(callback_results).to eq ["async on_completion [false, nil, #<RuntimeError: error>]",
-                                      "async on_failure #<RuntimeError: error>",
-                                      "sync on_completion [false, nil, #<RuntimeError: error>]",
-                                      "sync on_failure #<RuntimeError: error>"]
+      expect(callback_results).to eq ["async on_rejection #<RuntimeError: error>",
+                                      "async on_resolution [false, nil, #<RuntimeError: error>]",
+                                      "sync on_rejection #<RuntimeError: error>",
+                                      "sync on_resolution [false, nil, #<RuntimeError: error>]"]
     end
 
     [:wait, :wait!, :value, :value!, :reason, :result].each do |method_with_timeout|
@@ -289,7 +289,7 @@ describe 'Concurrent::Promises' do
 
         start_latch.wait(1)
         future.send(method_with_timeout, 0.1)
-        expect(future).not_to be_completed
+        expect(future).not_to be_resolved
         end_latch.count_down
         future.wait
       end
@@ -299,19 +299,19 @@ describe 'Concurrent::Promises' do
     it 'chains' do
       future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
       future1 = future0.then_using(:fast) { raise 'boo' } # executed on IO_EXECUTOR
-      future2 = future1.then { |v| v + 1 } # will fail with 'boo' error, executed on default FAST_EXECUTOR
+      future2 = future1.then { |v| v + 1 } # will reject with 'boo' error, executed on default FAST_EXECUTOR
       future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
-      future5 = future3.with_default_executor(:fast) # connects new future with different executor, the new future is completed when future3 is
+      future5 = future3.with_default_executor(:fast) # connects new future with different executor, the new future is resolved when future3 is
       future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
       future7 = future0 & future3
-      future8 = future0.rescue { raise 'never happens' } # future0 succeeds so future8'll have same value as future 0
+      future8 = future0.rescue { raise 'never happens' } # future0 fulfills so future8'll have same value as future 0
 
       futures = [future0, future1, future2, future3, future4, future5, future6, future7, future8]
       futures.each &:wait
 
       table = futures.each_with_index.map do |f, i|
-        '%5i %7s %10s %6s %4s %6s' % [i, f.success?, f.value, f.reason,
+        '%5i %7s %10s %6s %4s %6s' % [i, f.fulfilled?, f.value, f.reason,
                                       (f.promise.executor if f.promise.respond_to?(:executor)),
                                       f.default_executor]
       end.unshift('index success      value reason pool d.pool')
@@ -343,7 +343,7 @@ describe 'Concurrent::Promises' do
 
       # evaluates only up to three, four is left unevaluated
       expect(three.value!).to eq 3
-      expect(four).not_to be_completed
+      expect(four).not_to be_resolved
 
       expect(four.value!).to eq 4
 
@@ -362,8 +362,8 @@ describe 'Concurrent::Promises' do
           (branch1 & branch2).then { |b1, b2| b1 + b2 }]
 
       sleep 0.1
-      expect(branch1).to be_completed
-      expect(branch2).not_to be_completed
+      expect(branch1).to be_resolved
+      expect(branch2).not_to be_resolved
 
       expect(results.map(&:value)).to eq [5, 5, 5]
       expect(zip(branch1, branch2).value!).to eq [2, 3]
@@ -375,22 +375,22 @@ describe 'Concurrent::Promises' do
         expect(f.value!).to eq 2
       end
 
-      it 'propagates failure of inner future' do
+      it 'propagates rejection of inner future' do
         err = StandardError.new('boo')
-        f   = future { failed_future(err) }.flat
+        f   = future { rejected_future(err) }.flat
         expect(f.reason).to eq err
       end
 
-      it 'it propagates failure of the future which was suppose to provide inner future' do
+      it 'it propagates rejection of the future which was suppose to provide inner future' do
         f = future { raise 'boo' }.flat
         expect(f.reason.message).to eq 'boo'
       end
 
-      it 'fails if inner value is not a future' do
+      it 'rejects if inner value is not a future' do
         f = future { 'boo' }.flat
         expect(f.reason).to be_an_instance_of TypeError
 
-        f = future { completed_event }.flat
+        f = future { resolved_event }.flat
         expect(f.reason).to be_an_instance_of TypeError
       end
 
@@ -399,12 +399,12 @@ describe 'Concurrent::Promises' do
       end
     end
 
-    it 'completes future when Exception raised' do
-      f = future { raise Exception, 'fail' }
+    it 'resolves future when Exception raised' do
+      f = future { raise Exception, 'reject' }
       f.wait 1
-      expect(f).to be_completed
-      expect(f).to be_failed
-      expect { f.value! }.to raise_error(Exception, 'fail')
+      expect(f).to be_resolved
+      expect(f).to be_rejected
+      expect { f.value! }.to raise_error(Exception, 'reject')
     end
 
     it 'runs' do
@@ -467,30 +467,30 @@ describe 'Concurrent::Promises' do
     specify do
       source, token = Concurrent::Cancellation.create
       source.cancel
-      expect(token.event.completed?).to be_truthy
+      expect(token.event.resolved?).to be_truthy
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
       expect((cancellable_branch | token.event).value).to be_nil
-      expect(cancellable_branch.completed?).to be_falsey
+      expect(cancellable_branch.resolved?).to be_falsey
     end
 
     specify do
       source, token = Concurrent::Cancellation.create
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect(any_complete_future(cancellable_branch, token.event).value).to eq 1
-      expect(cancellable_branch.completed?).to be_truthy
+      expect(any_resolved_future(cancellable_branch, token.event).value).to eq 1
+      expect(cancellable_branch.resolved?).to be_truthy
     end
 
     specify do
       source, token = Concurrent::Cancellation.create(
-          Concurrent::Promises.completable_future, false, nil, err = StandardError.new('Cancelled'))
+          Concurrent::Promises.resolvable_future, false, nil, err = StandardError.new('Cancelled'))
       source.cancel
-      expect(token.future.completed?).to be_truthy
+      expect(token.future.resolved?).to be_truthy
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
       expect((cancellable_branch | token.future).reason).to eq err
-      expect(cancellable_branch.completed?).to be_falsey
+      expect(cancellable_branch.resolved?).to be_falsey
     end
   end
 
