@@ -298,7 +298,7 @@ describe 'Concurrent::Promises' do
 
     it 'chains' do
       future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
-      future1 = future0.then_using(:fast) { raise 'boo' } # executed on IO_EXECUTOR
+      future1 = future0.then_on(:fast) { raise 'boo' } # executed on IO_EXECUTOR
       future2 = future1.then { |v| v + 1 } # will reject with 'boo' error, executed on default FAST_EXECUTOR
       future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
       future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR

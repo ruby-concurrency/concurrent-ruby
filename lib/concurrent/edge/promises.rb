@@ -567,7 +567,7 @@ module Concurrent
       # @!macro promises.shortcut.using
       # @return [Future]
       def chain(*args, &task)
-        chain_using @DefaultExecutor, *args, &task
+        chain_on @DefaultExecutor, *args, &task
       end
 
       # Chains the task to be executed asynchronously on executor after it is resolved.
@@ -577,11 +577,11 @@ module Concurrent
       # @return [Future]
       # @!macro promise.param.task-future
       #
-      # @overload an_event.chain_using(executor, *args, &task)
+      # @overload an_event.chain_on(executor, *args, &task)
       #   @yield [*args] to the task.
-      # @overload a_future.chain_using(executor, *args, &task)
+      # @overload a_future.chain_on(executor, *args, &task)
       #   @yield [fulfilled?, value, reason, *args] to the task.
-      def chain_using(executor, *args, &task)
+      def chain_on(executor, *args, &task)
         ChainPromise.new(self, @DefaultExecutor, executor, args, &task).future
       end
 
@@ -935,7 +935,7 @@ module Concurrent
       # @!macro promises.shortcut.using
       # @return [Future]
       def then(*args, &task)
-        then_using @DefaultExecutor, *args, &task
+        then_on @DefaultExecutor, *args, &task
       end
 
       # Chains the task to be executed asynchronously on executor after it fulfills. Does not run
@@ -946,14 +946,14 @@ module Concurrent
       # @!macro promise.param.task-future
       # @return [Future]
       # @yield [value, *args] to the task.
-      def then_using(executor, *args, &task)
+      def then_on(executor, *args, &task)
         ThenPromise.new(self, @DefaultExecutor, executor, args, &task).future
       end
 
       # @!macro promises.shortcut.using
       # @return [Future]
       def rescue(*args, &task)
-        rescue_using @DefaultExecutor, *args, &task
+        rescue_on @DefaultExecutor, *args, &task
       end
 
       # Chains the task to be executed asynchronously on executor after it rejects. Does not run
@@ -964,7 +964,7 @@ module Concurrent
       # @!macro promise.param.task-future
       # @return [Future]
       # @yield [reason, *args] to the task.
-      def rescue_using(executor, *args, &task)
+      def rescue_on(executor, *args, &task)
         RescuePromise.new(self, @DefaultExecutor, executor, args, &task).future
       end
 
