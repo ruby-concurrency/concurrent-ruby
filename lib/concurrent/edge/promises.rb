@@ -1729,10 +1729,6 @@ module Concurrent
 
     # @abstract
     class AbstractAnyPromise < BlockedPromise
-      # @!visibility private
-      def touch
-        blocked_by.each(&:touch) unless @Future.resolved?
-      end
     end
 
     class AnyResolvedFuturePromise < AbstractAnyPromise
