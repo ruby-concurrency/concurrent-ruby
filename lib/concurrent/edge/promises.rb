@@ -564,7 +564,7 @@ module Concurrent
         @DefaultExecutor
       end
 
-      # @!macro promises.shortcut.using
+      # @!macro promises.shortcut.on
       # @return [Future]
       def chain(*args, &task)
         chain_on @DefaultExecutor, *args, &task
@@ -932,7 +932,7 @@ module Concurrent
         end
       end
 
-      # @!macro promises.shortcut.using
+      # @!macro promises.shortcut.on
       # @return [Future]
       def then(*args, &task)
         then_on @DefaultExecutor, *args, &task
@@ -950,7 +950,7 @@ module Concurrent
         ThenPromise.new(self, @DefaultExecutor, executor, args, &task).future
       end
 
-      # @!macro promises.shortcut.using
+      # @!macro promises.shortcut.on
       # @return [Future]
       def rescue(*args, &task)
         rescue_on @DefaultExecutor, *args, &task
