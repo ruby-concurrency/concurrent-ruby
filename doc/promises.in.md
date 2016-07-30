@@ -3,8 +3,8 @@
 Promises is a new framework unifying former `Concurrent::Future`,
 `Concurrent::Promise`, `Concurrent::IVar`, `Concurrent::Event`,
 `Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
-synchronization layer to make all the features *non-blocking* and
-*lock-free*, with the exception of obviously blocking operations like
+synchronization layer to make all the features *lock-free*, 
+with the exception of obviously blocking operations like
 `#wait`, `#value`, etc. As a result it lowers a danger of deadlocking and offers
 better performance.
 
@@ -15,11 +15,11 @@ better performance.
 -   What is it?
 -   What is it for?
 -   Main classes {Future}, {Event}
--   Explain `_on` `_using` suffixes.
+-   Explain pool usage :io vs :fast, and `_on` `_using` suffixes.
 
 ## Old examples follow
 
-*TODO rewrite into md with examples*
+*TODO review pending*
 
 Constructors are not accessible, instead there are many constructor methods in
 FactoryMethods.
@@ -65,7 +65,7 @@ future.value
 future.resolved?
 ```
 
-Rejecting asynchronous task
+Rejecting asynchronous task:
 
 ```ruby
 future = future { raise 'Boom' }
@@ -76,14 +76,16 @@ future.reason
 raise future rescue $!
 ```
 
-Direct creation of resolved futures
+Direct creation of resolved futures:
 
 ```ruby
 fulfilled_future(Object.new)
 rejected_future(StandardError.new("boom"))
+```
 
-### Chaining of futures
+Chaining of futures:
 
+```ruby
 head    = fulfilled_future 1 #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
@@ -96,19 +98,19 @@ zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # pick only first resolved
 any(branch1, branch2).value!
 (branch1 | branch2).value!
+```
 
+Any supplied arguments are passed to the block, promises ensure that they are visible to the block:
 
-### Arguments
-
-# any supplied arguments are passed to the block, promises ensure that they are visible to the block
-
+```ruby
 future('3') { |s| s.to_i }.then(2) { |a, b| a + b }.value
 fulfilled_future(1).then(2, &:+).value
 fulfilled_future(1).chain(2) { |fulfilled, value, reason, arg| value + arg }.value
+```
 
+Error handling:
 
-### Error handling
-
+```ruby
 fulfilled_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
 fulfilled_future(Object.new).then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
 fulfilled_future(1).then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
@@ -118,18 +120,18 @@ rejected_zip.result
 rejected_zip.then { |v| 'never happens' }.result
 rejected_zip.rescue { |a, b| (a || b).message }.value
 rejected_zip.chain { |fulfilled, values, reasons| [fulfilled, values.compact, reasons.compact] }.value
+```
 
+Delay will not evaluate until asked by #value or other method requiring resolution.
 
-### Delay
-
-# will not evaluate until asked by #value or other method requiring resolution
+``` ruby
 future = delay { 'lazy' }
 sleep 0.1 #
 future.resolved?
 future.value
-
-# propagates trough chain allowing whole or partial lazy chains
-
+```
+It propagates trough chain allowing whole or partial lazy chains.
+```ruby
 head    = delay { 1 }
 branch1 = head.then(&:succ)
 branch2 = head.delay.then(&:succ)
@@ -144,11 +146,11 @@ sleep 0.1 # forces only head to resolve, branch 2 stays pending
 
 join.value
 [head, branch1, branch2, join].map(&:resolved?)
+```
 
+When flatting, it waits for inner future. Only the last call to value blocks thread.
 
-### Flatting
-
-# waits for inner future, only the last call to value blocks thread
+```ruby
 future { future { 1+1 } }.flat.value
 
 # more complicated example
@@ -156,9 +158,11 @@ future { future { future { 1 + 1 } } }.
     flat(1).
     then { |f| f.then(&:succ) }.
     flat(1).value
+```
 
+Scheduling of asynchronous tasks:
 
-### Schedule
+```ruby
 
 # it'll be executed after 0.1 seconds
 scheduled = schedule(0.1) { 1 }
@@ -171,9 +175,11 @@ scheduled = delay { 1 }.schedule(0.1).then(&:succ)
 # will not be scheduled until value is requested
 sleep 0.1 #
 scheduled.value # returns after another 0.1sec
+```
 
+Resolvable Future and Event:
 
-### Resolvable Future and Event
+```ruby
 
 future = resolvable_future
 event  = resolvable_event()
@@ -189,10 +195,11 @@ event.resolve
 
 # The threads can be joined now
 [t1, t2].each &:join #
+```
 
+Callbacks:
 
-### Callbacks
-
+```ruby
 queue  = Queue.new
 future = delay { 1 + 1 }
 
@@ -203,22 +210,22 @@ queue.empty?
 future.value
 queue.pop
 queue.pop
+```
 
+Factory methods are taking names of the global executors
+(or instances of custom executors).
 
-### Thread-pools
-
-# Factory methods are taking names of the global executors
-# (ot instances of custom executors)
-
+```ruby
 # executed on :fast executor, only short and non-blocking tasks can go there
 future_on(:fast) { 2 }.
     # executed on executor for blocking and long operations
     then_using(:io) { File.read __FILE__ }.
     wait
+```
 
+Interoperability with actors:
 
-### Interoperability with actors
-
+```ruby
 actor = Concurrent::Actor::Utils::AdHoc.spawn :square do
   -> v { v ** 2 }
 end
@@ -230,37 +237,26 @@ future { 2 }.
     value
 
 actor.ask(2).then(&:succ).value
-
-
-### Interoperability with channels
-
-ch1 = Concurrent::Channel.new
-ch2 = Concurrent::Channel.new
-
-result = select(ch1, ch2)
-ch1.put 1
-result.value!
-
-
-future { 1+1 }.
-    then_put(ch1)
-result = future { '%02d' }.
-    then_select(ch1, ch2).
-    then { |format, (value, channel)| format format, value }
-result.value!
-
+```
 
 ### Common use-cases Examples
 
-# simple background processing
+#### simple background processing
+  
+```ruby
 future { do_stuff }
+```
 
-# parallel background processing
+#### parallel background processing
+
+```ruby
 jobs = 10.times.map { |i| future { i } } #
 zip(*jobs).value
+```
 
+#### periodic task
 
-# periodic task
+```ruby
 def schedule_job(interval, &job)
   # schedule the first execution and chain restart og the job
   Concurrent.schedule(interval, &job).chain do |fulfilled, continue, reason|
@@ -269,16 +265,17 @@ def schedule_job(interval, &job)
     else
       # handle error
       p reason
-      # retry
-      schedule_job(interval, &job)
+      # retry sooner
+      schedule_job(interval / 10, &job)
     end
   end
 end
 
 queue = Queue.new
 count = 0
+interval = 0.05 # small just not to delay execution of this example
 
-schedule_job 0.05 do
+schedule_job interval do
   queue.push count
   count += 1
   # to continue scheduling return true, false will end the task
@@ -286,6 +283,7 @@ schedule_job 0.05 do
     # to continue scheduling return true
     true
   else
+    # close the queue with nil to simplify reading it
     queue.push nil
     # to end the task return false
     false
@@ -294,10 +292,14 @@ end
 
 # read the queue
 arr, v = [], nil; arr << v while (v = queue.pop) #
+# arr has the results from the executed scheduled tasks
 arr
+```
+#### How to limit processing where there are limited resources?
 
-# How to limit processing where there are limited resources?
-# By creating an actor managing the resource
+By creating an actor managing the resource
+
+```ruby
 DB = Concurrent::Actor::Utils::AdHoc.spawn :db do
   data = Array.new(10) { |i| '*' * i }
   lambda do |message|
@@ -317,9 +319,11 @@ concurrent_jobs = 11.times.map do |v|
 end #
 
 zip(*concurrent_jobs).value!
+```
 
+In reality there is often a pool though:
 
-# In reality there is often a pool though:
+```ruby
 data      = Array.new(10) { |i| '*' * i }
 pool_size = 5
 

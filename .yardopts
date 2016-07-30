@@ -5,6 +5,7 @@
 --title=Concurrent Ruby
 --template default
 --template-path ./yard-template
+--default-return undocumented
 
 ./lib/**/*.rb
 ./ext/concurrent_ruby_ext/**/*.c

@@ -16,6 +16,7 @@ group :development do
   # TODO (pitr-ch 15-Oct-2016): does not work on 1.9.3 anymore
   gem 'inch', '~> 0.6.3', :platforms => :mri, :require => false
   gem 'redcarpet', '~> 3.3.2', platforms: :mri # understands github markdown
+  gem 'md-ruby-eval'
 end
 
 group :testing do
