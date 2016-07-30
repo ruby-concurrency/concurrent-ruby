@@ -1,44 +1,71 @@
 # Promises Framework
 
-Promises is a new framework unifying former `Concurrent::Future`, `Concurrent::Promise`, `Concurrent::IVar`,
-`Concurrent::Event`, `Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
-synchronization layer to make all the features **non-blocking** and
-**lock-free**, with the exception of obviously blocking operations like
-`#wait`, `#value`. As a result it lowers a danger of deadlocking and offers
+Promises is a new framework unifying former `Concurrent::Future`,
+`Concurrent::Promise`, `Concurrent::IVar`, `Concurrent::Event`,
+`Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
+synchronization layer to make all the features *non-blocking* and
+*lock-free*, with the exception of obviously blocking operations like
+`#wait`, `#value`, etc. As a result it lowers a danger of deadlocking and offers
 better performance.
 
 ## Overview
 
-There are two central classes ... TODO
+*TODO*
 
-## Where does it executes?
-
--   TODO Explain `_on` `_using` sufixes.
+-   What is it?
+-   What is it for?
+-   Main classes {Future}, {Event}
+-   Explain `_on` `_using` suffixes.
 
 ## Old examples follow
 
 *TODO rewrite into md with examples*
 
-Adds factory methods like: future, event, delay, schedule, zip, etc. Otherwise
-they can be called on Promises module.
+Constructors are not accessible, instead there are many constructor methods in
+FactoryMethods.
 
 ```ruby
 Concurrent::Promises::FactoryMethods.instance_methods false
+```
 
+The module can be included or extended where needed.
+
+```ruby
+Class.new do
+  include Concurrent::Promises::FactoryMethods
+
+  def a_method
+    resolvable_event
+  end
+end.new.a_method
+
+Module.new { extend Concurrent::Promises::FactoryMethods }.resolvable_event
+```
+The module is already extended into {Promises} for convenience.
+
+```ruby
+Concurrent::Promises.resolvable_event
+```
+
+For this guide we include the module into `main` so we can call the factory
+methods in following examples directly.
+
+```ruby
 include Concurrent::Promises::FactoryMethods #
+resolvable_event
 ```
 
 Simple asynchronous task:
 
 ```ruby
 future = future(0.1) { |duration| sleep duration; :result } # evaluation starts immediately
-future.completed?
+future.resolved?
 # block until evaluated
 future.value
-future.completed?
+future.resolved?
 ```
 
-Failing asynchronous task
+Rejecting asynchronous task
 
 ```ruby
 future = future { raise 'Boom' }
@@ -49,15 +76,15 @@ future.reason
 raise future rescue $!
 ```
 
-Direct creation of completed futures
+Direct creation of resolved futures
 
 ```ruby
-succeeded_future(Object.new)
-failed_future(StandardError.new("boom"))
+fulfilled_future(Object.new)
+rejected_future(StandardError.new("boom"))
 
 ### Chaining of futures
 
-head    = succeeded_future 1 #
+head    = fulfilled_future 1 #
 branch1 = head.then(&:succ) #
 branch2 = head.then(&:succ).then(&:succ) #
 branch1.zip(branch2).value!
@@ -66,7 +93,7 @@ branch1.zip(branch2).value!
 (branch1 & branch2).then(&:+).value!
 # or a class method zip from FactoryMethods can be used to zip multiple futures
 zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
-# pick only first completed
+# pick only first resolved
 any(branch1, branch2).value!
 (branch1 | branch2).value!
 
@@ -76,29 +103,29 @@ any(branch1, branch2).value!
 # any supplied arguments are passed to the block, promises ensure that they are visible to the block
 
 future('3') { |s| s.to_i }.then(2) { |a, b| a + b }.value
-succeeded_future(1).then(2, &:+).value
-succeeded_future(1).chain(2) { |success, value, reason, arg| value + arg }.value
+fulfilled_future(1).then(2, &:+).value
+fulfilled_future(1).chain(2) { |fulfilled, value, reason, arg| value + arg }.value
 
 
 ### Error handling
 
-succeeded_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
-succeeded_future(Object.new).then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
-succeeded_future(1).then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
+fulfilled_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
+fulfilled_future(Object.new).then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
+fulfilled_future(1).then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
 
-failing_zip = succeeded_future(1) & failed_future(StandardError.new('boom'))
-failing_zip.result
-failing_zip.then { |v| 'never happens' }.result
-failing_zip.rescue { |a, b| (a || b).message }.value
-failing_zip.chain { |success, values, reasons| [success, values.compact, reasons.compactß] }.value
+rejected_zip = fulfilled_future(1) & rejected_future(StandardError.new('boom'))
+rejected_zip.result
+rejected_zip.then { |v| 'never happens' }.result
+rejected_zip.rescue { |a, b| (a || b).message }.value
+rejected_zip.chain { |fulfilled, values, reasons| [fulfilled, values.compact, reasons.compact] }.value
 
 
 ### Delay
 
-# will not evaluate until asked by #value or other method requiring completion
+# will not evaluate until asked by #value or other method requiring resolution
 future = delay { 'lazy' }
 sleep 0.1 #
-future.completed?
+future.resolved?
 future.value
 
 # propagates trough chain allowing whole or partial lazy chains
@@ -108,15 +135,15 @@ branch1 = head.then(&:succ)
 branch2 = head.delay.then(&:succ)
 join    = branch1 & branch2
 
-sleep 0.1 # nothing will complete
-[head, branch1, branch2, join].map(&:completed?)
+sleep 0.1 # nothing will resolve
+[head, branch1, branch2, join].map(&:resolved?)
 
 branch1.value
-sleep 0.1 # forces only head to complete, branch 2 stays incomplete
-[head, branch1, branch2, join].map(&:completed?)
+sleep 0.1 # forces only head to resolve, branch 2 stays pending
+[head, branch1, branch2, join].map(&:resolved?)
 
 join.value
-[head, branch1, branch2, join].map(&:completed?)
+[head, branch1, branch2, join].map(&:resolved?)
 
 
 ### Flatting
@@ -136,7 +163,7 @@ future { future { future { 1 + 1 } } }.
 # it'll be executed after 0.1 seconds
 scheduled = schedule(0.1) { 1 }
 
-scheduled.completed?
+scheduled.resolved?
 scheduled.value # available after 0.1sec
 
 # and in chain
@@ -146,19 +173,19 @@ sleep 0.1 #
 scheduled.value # returns after another 0.1sec
 
 
-### Completable Future and Event
+### Resolvable Future and Event
 
-future = completable_future
-event  = completable_event()
+future = resolvable_future
+event  = resolvable_event()
 
-# These threads will be blocked until the future and event is completed
+# These threads will be blocked until the future and event is resolved
 t1     = Thread.new { future.value } #
 t2     = Thread.new { event.wait } #
 
-future.success 1
-future.success 1 rescue $!
-future.success 2, false
-event.complete
+future.fulfill 1
+future.fulfill 1 rescue $!
+future.fulfill 2, false
+event.resolve
 
 # The threads can be joined now
 [t1, t2].each &:join #
@@ -169,8 +196,8 @@ event.complete
 queue  = Queue.new
 future = delay { 1 + 1 }
 
-future.on_success { queue << 1 } # evaluated asynchronously
-future.on_success! { queue << 2 } # evaluated on completing thread
+future.on_fulfillment { queue << 1 } # evaluated asynchronously
+future.on_fulfillment! { queue << 2 } # evaluated on resolving thread
 
 queue.empty?
 future.value
@@ -236,8 +263,8 @@ zip(*jobs).value
 # periodic task
 def schedule_job(interval, &job)
   # schedule the first execution and chain restart og the job
-  Concurrent.schedule(interval, &job).chain do |success, continue, reason|
-    if success
+  Concurrent.schedule(interval, &job).chain do |fulfilled, continue, reason|
+    if fulfilled
       schedule_job(interval, &job) if continue
     else
       # handle error
@@ -281,10 +308,10 @@ end
 
 concurrent_jobs = 11.times.map do |v|
 
-  succeeded_future(v).
+  fulfilled_future(v).
       # ask the DB with the `v`, only one at the time, rest is parallel
       then_ask(DB).
-      # get size of the string, fails for 11
+      # get size of the string, rejects for 11
       then(&:size).
       rescue { |reason| reason.message } # translate error to value (exception, message)
 end #
@@ -308,7 +335,7 @@ end
 
 concurrent_jobs = 11.times.map do |v|
 
-  succeeded_future(v).
+  fulfilled_future(v).
       # ask the DB_POOL with the `v`, only 5 at the time, rest is parallel
       then_ask(DB_POOL).
       then(&:size).

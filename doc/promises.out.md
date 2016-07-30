@@ -1,39 +1,42 @@
 # Promises Framework
 
-Promises is a new framework unifying former `Concurrent::Future`, `Concurrent::Promise`, `Concurrent::IVar`,
-`Concurrent::Event`, `Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
-synchronization layer to make all the features **non-blocking** and
-**lock-free**, with the exception of obviously blocking operations like
-`#wait`, `#value`. As a result it lowers a danger of deadlocking and offers
+Promises is a new framework unifying former `Concurrent::Future`,
+`Concurrent::Promise`, `Concurrent::IVar`, `Concurrent::Event`,
+`Concurrent.dataflow`, `Delay`, and `TimerTask`. It extensively uses the new
+synchronization layer to make all the features *non-blocking* and
+*lock-free*, with the exception of obviously blocking operations like
+`#wait`, `#value`, etc. As a result it lowers a danger of deadlocking and offers
 better performance.
 
 ## Overview
 
-There are two central classes ... TODO
+*TODO*
 
-## Where does it executes?
-
--   TODO Explain `_on` `_using` sufixes.
+-   What is it?
+-   What is it for?
+-   Main classes {Future}, {Event}
+-   Explain `_on` `_using` suffixes.
 
 ## Old examples follow
 
 *TODO rewrite into md with examples*
 
-Adds factory methods like: future, event, delay, schedule, zip, etc. Otherwise
-they can be called on Promises module.
+Constructors are not accessible, instead there are many constructor methods in
+FactoryMethods.
 
 ```ruby
 Concurrent::Promises::FactoryMethods.instance_methods false
-# => [:completable_event,
-#     :completable_event_on,
-#     :completable_future,
-#     :completable_future_on,
+# => [:resolvable_event,
+#     :resolvable_event_on,
+#     :resolvable_future,
+#     :resolvable_future_on,
 #     :future,
 #     :future_on,
-#     :completed_future,
-#     :succeeded_future,
-#     :failed_future,
-#     :completed_event,
+#     :resolved_future,
+#     :fulfilled_future,
+#     :rejected_future,
+#     :resolved_event,
+#     :create,
 #     :delay,
 #     :delay_on,
 #     :schedule,
@@ -43,33 +46,62 @@ Concurrent::Promises::FactoryMethods.instance_methods false
 #     :zip,
 #     :zip_events,
 #     :zip_events_on,
-#     :any_complete_future,
+#     :any_resolved_future,
 #     :any,
-#     :any_complete_future_on,
-#     :any_successful_future,
-#     :any_successful_future_on,
+#     :any_resolved_future_on,
+#     :any_fulfilled_future,
+#     :any_fulfilled_future_on,
 #     :any_event,
 #     :any_event_on,
 #     :select]
+```
 
-include Concurrent::Promises::FactoryMethods #
+The module can be included or extended where needed.
+
+```ruby
+Class.new do
+  include Concurrent::Promises::FactoryMethods
+
+  def a_method
+    resolvable_event
+  end
+end.new.a_method
+# => <#Concurrent::Promises::ResolvableEvent:0x7ff23c2ece18 pending blocks:[]>
+
+Module.new { extend Concurrent::Promises::FactoryMethods }.resolvable_event
+# => <#Concurrent::Promises::ResolvableEvent:0x7ff23c2e6ea0 pending blocks:[]>
+```
+The module is already extended into {Promises} for convenience.
+
+```ruby
+Concurrent::Promises.resolvable_event
+# => <#Concurrent::Promises::ResolvableEvent:0x7ff23c2d7cc0 pending blocks:[]>
+```
+
+For this guide we include the module into `main` so we can call the factory
+methods in following examples directly.
+
+```ruby
+include Concurrent::Promises::FactoryMethods 
+resolvable_event
+# => <#Concurrent::Promises::ResolvableEvent:0x7ff23c2d4e08 pending blocks:[]>
 ```
 
 Simple asynchronous task:
 
 ```ruby
 future = future(0.1) { |duration| sleep duration; :result } # evaluation starts immediately
-future.completed?                        # => false
+future.resolved?                         # => false
 # block until evaluated
 future.value                             # => :result
-future.completed?                        # => true
+future.resolved?                         # => true
 ```
 
-Failing asynchronous task
+Rejecting asynchronous task
 
 ```ruby
 future = future { raise 'Boom' }
-# => <#Concurrent::Promises::Future:0x7f90a7886578 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c2be428 pending blocks:[]>
 future.value                             # => nil
 future.value! rescue $!                  # => #<RuntimeError: Boom>
 future.reason                            # => #<RuntimeError: Boom>
@@ -77,19 +109,19 @@ future.reason                            # => #<RuntimeError: Boom>
 raise future rescue $!                   # => #<RuntimeError: Boom>
 ```
 
-Direct creation of completed futures
+Direct creation of resolved futures
 
 ```ruby
-succeeded_future(Object.new)
-# => <#Concurrent::Promises::Future:0x7f90a699edd0 success blocks:[]>
-failed_future(StandardError.new("boom"))
-# => <#Concurrent::Promises::Future:0x7f90a699d408 failed blocks:[]>
+fulfilled_future(Object.new)
+# => <#Concurrent::Promises::Future:0x7ff23c10e920 fulfilled blocks:[]>
+rejected_future(StandardError.new("boom"))
+# => <#Concurrent::Promises::Future:0x7ff23c106090 rejected blocks:[]>
 
 ### Chaining of futures
 
-head    = succeeded_future 1 #
-branch1 = head.then(&:succ) #
-branch2 = head.then(&:succ).then(&:succ) #
+head    = fulfilled_future 1 
+branch1 = head.then(&:succ) 
+branch2 = head.then(&:succ).then(&:succ) 
 branch1.zip(branch2).value!              # => [2, 3]
 # zip is aliased as &
 (branch1 & branch2).then { |a, b| a + b }.value!
@@ -98,7 +130,7 @@ branch1.zip(branch2).value!              # => [2, 3]
 # or a class method zip from FactoryMethods can be used to zip multiple futures
 zip(branch1, branch2, branch1).then { |*values| values.reduce &:+ }.value!
 # => 7
-# pick only first completed
+# pick only first resolved
 any(branch1, branch2).value!             # => 2
 (branch1 | branch2).value!               # => 2
 
@@ -109,60 +141,60 @@ any(branch1, branch2).value!             # => 2
 
 future('3') { |s| s.to_i }.then(2) { |a, b| a + b }.value
 # => 5
-succeeded_future(1).then(2, &:+).value   # => 3
-succeeded_future(1).chain(2) { |success, value, reason, arg| value + arg }.value
+fulfilled_future(1).then(2, &:+).value   # => 3
+fulfilled_future(1).chain(2) { |fulfilled, value, reason, arg| value + arg }.value
 # => 3
 
 
 ### Error handling
 
-succeeded_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
-succeeded_future(Object.new).then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
-succeeded_future(1).then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
+fulfilled_future(Object.new).then(&:succ).then(&:succ).rescue { |e| e.class }.value # error propagates
+fulfilled_future(Object.new).then(&:succ).rescue { 1 }.then(&:succ).value # rescued and replaced with 1
+fulfilled_future(1).then(&:succ).rescue { |e| e.message }.then(&:succ).value # no error, rescue not applied
 
-failing_zip = succeeded_future(1) & failed_future(StandardError.new('boom'))
-# => <#Concurrent::Promises::Future:0x7f90a6947918 failed blocks:[]>
-failing_zip.result
+rejected_zip = fulfilled_future(1) & rejected_future(StandardError.new('boom'))
+# => <#Concurrent::Promises::Future:0x7ff23c08f350 rejected blocks:[]>
+rejected_zip.result
 # => [false, [1, nil], [nil, #<StandardError: boom>]]
-failing_zip.then { |v| 'never happens' }.result
+rejected_zip.then { |v| 'never happens' }.result
 # => [false, [1, nil], [nil, #<StandardError: boom>]]
-failing_zip.rescue { |a, b| (a || b).message }.value
+rejected_zip.rescue { |a, b| (a || b).message }.value
 # => "boom"
-failing_zip.chain { |success, values, reasons| [success, values.compact, reasons.compactß] }.value
-# => nil
+rejected_zip.chain { |fulfilled, values, reasons| [fulfilled, values.compact, reasons.compact] }.value
+# => [false, [1], [#<StandardError: boom>]]
 
 
 ### Delay
 
-# will not evaluate until asked by #value or other method requiring completion
+# will not evaluate until asked by #value or other method requiring resolution
 future = delay { 'lazy' }
-# => <#Concurrent::Promises::Future:0x7f90a690d718 pending blocks:[]>
-sleep 0.1 #
-future.completed?                        # => false
+# => <#Concurrent::Promises::Future:0x7ff23c064e70 pending blocks:[]>
+sleep 0.1 
+future.resolved?                         # => false
 future.value                             # => "lazy"
 
 # propagates trough chain allowing whole or partial lazy chains
 
 head    = delay { 1 }
-# => <#Concurrent::Promises::Future:0x7f90a68edcb0 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c054408 pending blocks:[]>
 branch1 = head.then(&:succ)
-# => <#Concurrent::Promises::Future:0x7f90a68d7460 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c044a30 pending blocks:[]>
 branch2 = head.delay.then(&:succ)
-# => <#Concurrent::Promises::Future:0x7f90a68d5368 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c036840 pending blocks:[]>
 join    = branch1 & branch2
-# => <#Concurrent::Promises::Future:0x7f90a68b7e30 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c034e78 pending blocks:[]>
 
-sleep 0.1 # nothing will complete
-[head, branch1, branch2, join].map(&:completed?)
+sleep 0.1 # nothing will resolve
+[head, branch1, branch2, join].map(&:resolved?)
 # => [false, false, false, false]
 
 branch1.value                            # => 2
-sleep 0.1 # forces only head to complete, branch 2 stays incomplete
-[head, branch1, branch2, join].map(&:completed?)
+sleep 0.1 # forces only head to resolve, branch 2 stays pending
+[head, branch1, branch2, join].map(&:resolved?)
 # => [true, true, false, false]
 
 join.value                               # => [2, 2]
-[head, branch1, branch2, join].map(&:completed?)
+[head, branch1, branch2, join].map(&:resolved?)
 # => [true, true, true, true]
 
 
@@ -182,50 +214,50 @@ future { future { future { 1 + 1 } } }.
 
 # it'll be executed after 0.1 seconds
 scheduled = schedule(0.1) { 1 }
-# => <#Concurrent::Promises::Future:0x7f90a4243ab0 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23d005aa0 pending blocks:[]>
 
-scheduled.completed?                     # => false
+scheduled.resolved?                      # => false
 scheduled.value # available after 0.1sec
 
 # and in chain
 scheduled = delay { 1 }.schedule(0.1).then(&:succ)
-# => <#Concurrent::Promises::Future:0x7f90a4228d00 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23b990b58 pending blocks:[]>
 # will not be scheduled until value is requested
-sleep 0.1 #
+sleep 0.1 
 scheduled.value # returns after another 0.1sec
 
 
-### Completable Future and Event
+### Resolvable Future and Event
 
-future = completable_future
-# => <#Concurrent::Promises::CompletableFuture:0x7f90a6075dd0 pending blocks:[]>
-event  = completable_event()
-# => <#Concurrent::Promises::CompletableEvent:0x7f90a60741d8 pending blocks:[]>
+future = resolvable_future
+# => <#Concurrent::Promises::ResolvableFuture:0x7ff23b95a2b0 pending blocks:[]>
+event  = resolvable_event()
+# => <#Concurrent::Promises::ResolvableEvent:0x7ff23b9528f8 pending blocks:[]>
 
-# These threads will be blocked until the future and event is completed
-t1     = Thread.new { future.value } #
-t2     = Thread.new { event.wait } #
+# These threads will be blocked until the future and event is resolved
+t1     = Thread.new { future.value } 
+t2     = Thread.new { event.wait } 
 
-future.success 1
-# => <#Concurrent::Promises::CompletableFuture:0x7f90a6075dd0 success blocks:[]>
-future.success 1 rescue $!
-# => #<Concurrent::MultipleAssignmentError: Future can be completed only once. Current result is [true, 1, nil], trying to set [true, 1, nil]>
-future.success 2, false                  # => false
-event.complete
-# => <#Concurrent::Promises::CompletableEvent:0x7f90a60741d8 success blocks:[]>
+future.fulfill 1
+# => <#Concurrent::Promises::ResolvableFuture:0x7ff23b95a2b0 fulfilled blocks:[]>
+future.fulfill 1 rescue $!
+# => #<Concurrent::MultipleAssignmentError: Future can be resolved only once. Current result is [true, 1, nil], trying to set [true, 1, nil]>
+future.fulfill 2, false                  # => false
+event.resolve
+# => <#Concurrent::Promises::ResolvableEvent:0x7ff23b9528f8 fulfilled blocks:[]>
 
 # The threads can be joined now
-[t1, t2].each &:join #
+[t1, t2].each &:join 
 
 
 ### Callbacks
 
-queue  = Queue.new                       # => #<Thread::Queue:0x007f90a495ea48>
+queue  = Queue.new                       # => #<Thread::Queue:0x007ff23b922e28>
 future = delay { 1 + 1 }
-# => <#Concurrent::Promises::Future:0x7f90a4954f70 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23b9203f8 pending blocks:[]>
 
-future.on_success { queue << 1 } # evaluated asynchronously
-future.on_success! { queue << 2 } # evaluated on completing thread
+future.on_fulfillment { queue << 1 } # evaluated asynchronously
+future.on_fulfillment! { queue << 2 } # evaluated on resolving thread
 
 queue.empty?                             # => true
 future.value                             # => 2
@@ -250,7 +282,7 @@ future_on(:fast) { 2 }.
 actor = Concurrent::Actor::Utils::AdHoc.spawn :square do
   -> v { v ** 2 }
 end
-# => #<Concurrent::Actor::Reference:0x7f90a41da290 /square (Concurrent::Actor::Utils::AdHoc)>
+# => #<Concurrent::Actor::Reference:0x7ff23b8af568 /square (Concurrent::Actor::Utils::AdHoc)>
 
 
 future { 2 }.
@@ -264,11 +296,11 @@ actor.ask(2).then(&:succ).value          # => 5
 ### Interoperability with channels
 
 ch1 = Concurrent::Channel.new
-# => #<Concurrent::Channel:0x007f90a41aa1f8
+# => #<Concurrent::Channel:0x007ff23b85cef8
 #     @buffer=
-#      #<Concurrent::Channel::Buffer::Unbuffered:0x007f90a41aa0b8
-#       @__condition__=#<Thread::ConditionVariable:0x007f90a41a9f78>,
-#       @__lock__=#<Mutex:0x007f90a41a9ff0>,
+#      #<Concurrent::Channel::Buffer::Unbuffered:0x007ff23b85ce58
+#       @__condition__=#<Thread::ConditionVariable:0x007ff23b85cca0>,
+#       @__lock__=#<Mutex:0x007ff23b85cd18>,
 #       @buffer=nil,
 #       @capacity=1,
 #       @closed=false,
@@ -276,13 +308,13 @@ ch1 = Concurrent::Channel.new
 #       @size=0,
 #       @taking=[]>,
 #     @validator=
-#      #<Proc:0x007f90a6907200@/Users/pitr/Workspace/public/concurrent-ruby/lib/concurrent/channel.rb:28 (lambda)>>
+#      #<Proc:0x007ff23c3968f0@/Users/pitr/Workspace/public/concurrent-ruby/lib/concurrent/channel.rb:28 (lambda)>>
 ch2 = Concurrent::Channel.new
-# => #<Concurrent::Channel:0x007f90a491e448
+# => #<Concurrent::Channel:0x007ff23b0814b8
 #     @buffer=
-#      #<Concurrent::Channel::Buffer::Unbuffered:0x007f90a491e3a8
-#       @__condition__=#<Thread::ConditionVariable:0x007f90a491e308>,
-#       @__lock__=#<Mutex:0x007f90a491e330>,
+#      #<Concurrent::Channel::Buffer::Unbuffered:0x007ff23b0813c8
+#       @__condition__=#<Thread::ConditionVariable:0x007ff23b081120>,
+#       @__lock__=#<Mutex:0x007ff23b0812b0>,
 #       @buffer=nil,
 #       @capacity=1,
 #       @closed=false,
@@ -290,18 +322,18 @@ ch2 = Concurrent::Channel.new
 #       @size=0,
 #       @taking=[]>,
 #     @validator=
-#      #<Proc:0x007f90a6907200@/Users/pitr/Workspace/public/concurrent-ruby/lib/concurrent/channel.rb:28 (lambda)>>
+#      #<Proc:0x007ff23c3968f0@/Users/pitr/Workspace/public/concurrent-ruby/lib/concurrent/channel.rb:28 (lambda)>>
 
 result = select(ch1, ch2)
-# => <#Concurrent::Promises::Future:0x7f90a4180a60 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23b05a980 pending blocks:[]>
 ch1.put 1                                # => true
 result.value!
 # => [1,
-#     #<Concurrent::Channel:0x007f90a41aa1f8
+#     #<Concurrent::Channel:0x007ff23b85cef8
 #      @buffer=
-#       #<Concurrent::Channel::Buffer::Unbuffered:0x007f90a41aa0b8
-#        @__condition__=#<Thread::ConditionVariable:0x007f90a41a9f78>,
-#        @__lock__=#<Mutex:0x007f90a41a9ff0>,
+#       #<Concurrent::Channel::Buffer::Unbuffered:0x007ff23b85ce58
+#        @__condition__=#<Thread::ConditionVariable:0x007ff23b85cca0>,
+#        @__lock__=#<Mutex:0x007ff23b85cd18>,
 #        @buffer=nil,
 #        @capacity=1,
 #        @closed=false,
@@ -309,16 +341,16 @@ result.value!
 #        @size=0,
 #        @taking=[]>,
 #      @validator=
-#       #<Proc:0x007f90a6907200@/Users/pitr/Workspace/public/concurrent-ruby/lib/concurrent/channel.rb:28 (lambda)>>]
+#       #<Proc:0x007ff23c3968f0@/Users/pitr/Workspace/public/concurrent-ruby/lib/concurrent/channel.rb:28 (lambda)>>]
 
 
 future { 1+1 }.
     then_put(ch1)
-# => <#Concurrent::Promises::Future:0x7f90a6064918 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23ba19250 pending blocks:[]>
 result = future { '%02d' }.
     then_select(ch1, ch2).
     then { |format, (value, channel)| format format, value }
-# => <#Concurrent::Promises::Future:0x7f90a4142cb0 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c3569f8 pending blocks:[]>
 result.value!                            # => "02"
 
 
@@ -326,18 +358,18 @@ result.value!                            # => "02"
 
 # simple background processing
 future { do_stuff }
-# => <#Concurrent::Promises::Future:0x7f90a4129a08 pending blocks:[]>
+# => <#Concurrent::Promises::Future:0x7ff23c336928 pending blocks:[]>
 
 # parallel background processing
-jobs = 10.times.map { |i| future { i } } #
+jobs = 10.times.map { |i| future { i } } 
 zip(*jobs).value                         # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 # periodic task
 def schedule_job(interval, &job)
   # schedule the first execution and chain restart og the job
-  Concurrent.schedule(interval, &job).chain do |success, continue, reason|
-    if success
+  Concurrent.schedule(interval, &job).chain do |fulfilled, continue, reason|
+    if fulfilled
       schedule_job(interval, &job) if continue
     else
       # handle error
@@ -348,7 +380,7 @@ def schedule_job(interval, &job)
   end
 end
 
-queue = Queue.new                        # => #<Thread::Queue:0x007f90a40f8598>
+queue = Queue.new                        # => #<Thread::Queue:0x007ff23d0ae808>
 count = 0                                # => 0
 
 schedule_job 0.05 do
@@ -366,7 +398,7 @@ schedule_job 0.05 do
 end
 
 # read the queue
-arr, v = [], nil; arr << v while (v = queue.pop) #
+arr, v = [], nil; arr << v while (v = queue.pop) 
 arr                                      # => [0, 1, 2, 3]
 
 # How to limit processing where there are limited resources?
@@ -381,13 +413,13 @@ end
 
 concurrent_jobs = 11.times.map do |v|
 
-  succeeded_future(v).
+  fulfilled_future(v).
       # ask the DB with the `v`, only one at the time, rest is parallel
       then_ask(DB).
-      # get size of the string, fails for 11
+      # get size of the string, rejects for 11
       then(&:size).
       rescue { |reason| reason.message } # translate error to value (exception, message)
-end #
+end 
 
 zip(*concurrent_jobs).value!
 # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "undefined method `size' for nil:NilClass"]
@@ -419,12 +451,12 @@ end
 
 concurrent_jobs = 11.times.map do |v|
 
-  succeeded_future(v).
+  fulfilled_future(v).
       # ask the DB_POOL with the `v`, only 5 at the time, rest is parallel
       then_ask(DB_POOL).
       then(&:size).
       rescue { |reason| reason.message }
-end #
+end 
 
 zip(*concurrent_jobs).value!
 # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "undefined method `size' for nil:NilClass"]
