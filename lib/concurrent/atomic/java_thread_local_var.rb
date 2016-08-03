@@ -13,7 +13,7 @@ if Concurrent.on_jruby?
         value = @var.get
 
         if value.nil?
-          @default
+          default
         elsif value == NULL
           nil
         else
@@ -24,19 +24,6 @@ if Concurrent.on_jruby?
       # @!macro thread_local_var_method_set
       def value=(value)
         @var.set(value)
-      end
-
-      # @!macro thread_local_var_method_bind
-      def bind(value, &block)
-        if block_given?
-          old_value = @var.get
-          begin
-            @var.set(value)
-            yield
-          ensure
-            @var.set(old_value)
-          end
-        end
       end
 
       protected

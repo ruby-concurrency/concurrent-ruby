@@ -35,29 +35,19 @@ module Concurrent
     @@next = 0
     private_constant :FREE, :LOCK, :ARRAYS
 
-    # @!macro [attach] thread_local_var_method_initialize
-    #
-    #   Creates a thread local variable.
-    #
-    #   @param [Object] default the default value when otherwise unset
-    def initialize(default = nil)
-      @default = default
-      allocate_storage
-    end
-
     # @!macro thread_local_var_method_get
     def value
       if array = get_threadlocal_array
         value = array[@index]
         if value.nil?
-          @default
+          default
         elsif value.equal?(NULL)
           nil
         else
           value
         end
       else
-        @default
+        default
       end
     end
 
@@ -74,19 +64,6 @@ module Concurrent
       end
       array[@index] = (value.nil? ? NULL : value)
       value
-    end
-
-    # @!macro thread_local_var_method_bind
-    def bind(value, &block)
-      if block_given?
-        old_value = self.value
-        begin
-          self.value = value
-          yield
-        ensure
-          self.value = old_value
-        end
-      end
     end
 
     protected
@@ -158,12 +135,20 @@ module Concurrent
       if array = get_threadlocal_array(thread)
         value = array[@index]
         if value.nil?
-          @default
+          default_for(thread)
         elsif value.equal?(NULL)
           nil
         else
           value
         end
+      else
+        default_for(thread)
+      end
+    end
+
+    def default_for(thread)
+      if @default_block
+        raise "Cannot use default_for with default block"
       else
         @default
       end
