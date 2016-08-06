@@ -630,12 +630,12 @@ module Concurrent
 
         h = {}
         @cache.each_pair { |k, v| h[k] = v }
-        expect({:a => 1}).to eq h
+        expect({a: 1}).to eq h
 
         @cache[:b] = 2
         h = {}
         @cache.each_pair { |k, v| h[k] = v }
-        expect({:a => 1, :b => 2}).to eq h
+        expect({a: 1, b: 2}).to eq h
       end
 
       it 'pair iterator' do

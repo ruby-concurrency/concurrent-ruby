@@ -16,11 +16,11 @@ end
 Thread.abort_on_exception = true
 
 $conf = {
-  :lock => "atomic",
-  :num_threads => 100,
-  :count => 100_000,
-  :count_per_thread => nil,
-  :slow => nil,
+  lock: "atomic",
+  num_threads: 100,
+  count: 100_000,
+  count_per_thread: nil,
+  slow: nil,
 }
 
 OptionParser.new do |opts|

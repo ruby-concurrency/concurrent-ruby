@@ -5,8 +5,8 @@
 require 'optparse'
 
 conf = {
-  :vary => "threads",
-  :lock => "atomic"
+  vary: "threads",
+  lock: "atomic"
 }
 
 OptionParser.new do |opts|
