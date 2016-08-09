@@ -1,5 +1,7 @@
 language: ruby
 
+cache: bundler
+
 rvm:
   - 2.3.1
   - 2.2.3
@@ -40,8 +42,11 @@ matrix:
       jdk: oraclejdk8
       env: TRUFFLE=1
 
+env:
+  global:
+    - JAVA_OPTS=-Xmx1024m
+
 before_script:
   - "echo $JAVA_OPTS"
-  - "export JAVA_OPTS=-Xmx1024m"
 
 script: if [[ -v TRUFFLE ]]; then support/test-truffle.sh; else RUBYOPT=-w bundle exec rake ci; fi
