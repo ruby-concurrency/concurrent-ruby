@@ -525,7 +525,7 @@ module Concurrent
     # @!visibility private
     def realize(task)
       @executor.post do
-        success, value, reason = SafeTaskExecutor.new(task).execute(*@args)
+        success, value, reason = SafeTaskExecutor.new(task, rescue_exception: true).execute(*@args)
         complete(success, value, reason)
       end
     end

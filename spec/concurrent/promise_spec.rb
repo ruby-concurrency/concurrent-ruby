@@ -620,6 +620,11 @@ module Concurrent
         expect(p.reason).to be_a ArgumentError
       end
 
+      it 'rejects on Exception' do
+        p = Promise.new(executor: :immediate){ raise Exception }.execute
+        expect(p).to be_rejected
+      end
+
     end
 
     context 'aliases' do
