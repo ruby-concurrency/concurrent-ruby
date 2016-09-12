@@ -79,7 +79,7 @@ module Concurrent
   # ```
   #
   # Promises can be chained using the `then` method. The `then` method accepts a
-  # block, to be executed on fulfillment, and a callable argument to be executed
+  # block and an executor, to be executed on fulfillment, and a callable argument to be executed
   # on rejection. The result of the each promise is passed as the block argument
   # to chained promises.
   #
@@ -93,7 +93,7 @@ module Concurrent
   # p = Concurrent::Promise.fulfill(20).
   #     then{|result| result - 10 }.
   #     then{|result| result * 3 }.
-  #     then{|result| result % 5 }.execute
+  #     then(executor: different_executor){|result| result % 5 }.execute
   # ```
   #
   # The initial state of a newly created Promise depends on the state of its parent:
@@ -301,15 +301,18 @@ module Concurrent
     # @param [Proc] rescuer An optional rescue block to be executed if the
     #   promise is rejected.
     #
+    # @param [ThreadPool] executor An optional thread pool executor to be used
+    # in the new Promise
+    #
     # @yield The block operation to be performed asynchronously.
     #
     # @return [Promise] the new promise
-    def then(rescuer = nil, &block)
+    def then(rescuer = nil, executor = @executor, &block)
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
       block = Proc.new { |result| result } unless block_given?
       child = Promise.new(
         parent: self,
-        executor: @executor,
+        executor: executor,
         on_fulfill: block,
         on_reject: rescuer
       )
