@@ -78,6 +78,7 @@ module Concurrent
       @task_executor  = Options.executor_from_options(opts) || Concurrent.global_io_executor
       @timer_executor = SingleThreadExecutor.new
       @condition      = Event.new
+      @ruby_pid       = $$ # detects if Ruby has forked
       self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
 
@@ -95,6 +96,7 @@ module Concurrent
     # @!visibility private
     def ns_post_task(task)
       return false unless ns_running?
+      ns_reset_if_forked
       if (task.initial_delay) <= 0.01
         task.executor.post{ task.process_task }
       else
@@ -121,9 +123,18 @@ module Concurrent
     #
     # @!visibility private
     def ns_shutdown_execution
+      ns_reset_if_forked
       @queue.clear
       @timer_executor.kill
       stopped_event.set
+    end
+
+    def ns_reset_if_forked
+      if $$ != @ruby_pid
+        @queue.clear
+        @condition.reset
+        @ruby_pid = $$
+      end
     end
 
     # Run a loop and execute tasks in the scheduled order and at the approximate
