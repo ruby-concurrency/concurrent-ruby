@@ -65,13 +65,13 @@ require 'concurrent/options'
 #   Object references in Ruby are mutable. This can lead to serious
 #   problems when the {#value} of an object is a mutable reference. Which
 #   is always the case unless the value is a `Fixnum`, `Symbol`, or similar
-#   "primative" data type. Each instance can be configured with a few
+#   "primitive" data type. Each instance can be configured with a few
 #   options that can help protect the program from potentially dangerous
-#   operations. Each of these options can be optionally set when the oject
+#   operations. Each of these options can be optionally set when the object
 #   instance is created:
 #
 #   * `:dup_on_deref` When true the object will call the `#dup` method on
-#     the `value` object every time the `#value` methid is called
+#     the `value` object every time the `#value` method is called
 #     (default: false)
 #   * `:freeze_on_deref` When true the object will call the `#freeze`
 #     method on the `value` object every time the `#value` method is called
