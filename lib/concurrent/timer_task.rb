@@ -41,7 +41,7 @@ module Concurrent
   #
   # The `TimerTask` class includes the `Dereferenceable` mixin module so the
   # result of the last execution is always available via the `#value` method.
-  # Derefencing options can be passed to the `TimerTask` during construction or
+  # Dereferencing options can be passed to the `TimerTask` during construction or
   # at any later time using the `#set_deref_options` method.
   #
   # `TimerTask` supports notification through the Ruby standard library
