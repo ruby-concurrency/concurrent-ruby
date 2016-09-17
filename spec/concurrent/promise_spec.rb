@@ -218,6 +218,13 @@ module Concurrent
         expect(child).not_to be empty_root
       end
 
+      it 'returns a new promise when a block, rescuer and executor are passed' do
+        new_executor = Concurrent::SingleThreadExecutor.new
+        child = empty_root.then(Proc.new{}, new_executor) { nil }
+        expect(child).to be_a Promise
+        expect(child).not_to be empty_root
+        expect(child.instance_variable_get(:@executor)).to be(new_executor)
+      end
       it 'should have block or rescuers' do
         expect { empty_root.then }.to raise_error(ArgumentError)
       end
