@@ -479,6 +479,7 @@ module Concurrent
         unless completed.empty? || completed.send(method){|promise| promise.fulfilled? }
           raise PromiseExecutionError
         end
+        completed
       end
       composite
     end
