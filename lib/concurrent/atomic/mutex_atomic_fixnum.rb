@@ -77,8 +77,8 @@ module Concurrent
 
     # @!visibility private
     def range_check!(value)
-      if !value.is_a?(Fixnum)
-        raise ArgumentError.new('value value must be a Fixnum')
+      if !value.is_a?(Integer)
+        raise ArgumentError.new('value must be an Integer')
       elsif value > MAX_VALUE
         raise RangeError.new("#{value} is greater than the maximum value of #{MAX_VALUE}")
       elsif value < MIN_VALUE

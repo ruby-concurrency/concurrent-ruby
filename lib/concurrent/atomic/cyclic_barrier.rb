@@ -18,7 +18,7 @@ module Concurrent
     #
     # @raise [ArgumentError] if `parties` is not an integer or is less than zero
     def initialize(parties, &block)
-      if !parties.is_a?(Fixnum) || parties < 1
+      if !parties.is_a?(Integer) || parties < 1
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
       super(&nil)

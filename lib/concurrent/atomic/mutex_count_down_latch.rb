@@ -9,7 +9,7 @@ module Concurrent
 
     # @!macro count_down_latch_method_initialize
     def initialize(count = 1)
-      unless count.is_a?(Fixnum) && count >= 0
+      unless count.is_a?(Integer) && count >= 0
         raise ArgumentError.new('count must be in integer greater than or equal zero')
       end
       super()

@@ -9,7 +9,7 @@ module Concurrent
 
     # @!macro semaphore_method_initialize
     def initialize(count)
-      unless count.is_a?(Fixnum) && count >= 0
+      unless count.is_a?(Integer) && count >= 0
         fail ArgumentError, 'count must be an non-negative integer'
       end
       super()
@@ -18,7 +18,7 @@ module Concurrent
 
     # @!macro semaphore_method_acquire
     def acquire(permits = 1)
-      unless permits.is_a?(Fixnum) && permits > 0
+      unless permits.is_a?(Integer) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
       synchronize do
@@ -45,7 +45,7 @@ module Concurrent
 
     # @!macro semaphore_method_try_acquire
     def try_acquire(permits = 1, timeout = nil)
-      unless permits.is_a?(Fixnum) && permits > 0
+      unless permits.is_a?(Integer) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
       synchronize do
@@ -59,7 +59,7 @@ module Concurrent
 
     # @!macro semaphore_method_release
     def release(permits = 1)
-      unless permits.is_a?(Fixnum) && permits > 0
+      unless permits.is_a?(Integer) && permits > 0
         fail ArgumentError, 'permits must be an integer greater than zero'
       end
       synchronize do
@@ -81,7 +81,7 @@ module Concurrent
     #
     # @!visibility private
     def reduce_permits(reduction)
-      unless reduction.is_a?(Fixnum) && reduction >= 0
+      unless reduction.is_a?(Integer) && reduction >= 0
         fail ArgumentError, 'reduction must be an non-negative integer'
       end
       synchronize { @free -= reduction }
