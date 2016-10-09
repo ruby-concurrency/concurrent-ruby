@@ -235,8 +235,8 @@ The best practice is to depend on `concurrent-ruby` and let users to decide if t
 
 ## Maintainers
 
+* [Petr Chalupa](https://github.com/pitr-ch) (lead maintainer)
 * [Jerry D'Antonio](https://github.com/jdantonio) (creator)
-* [Petr Chalupa](https://github.com/pitr-ch)
 * [Michele Della Torre](https://github.com/mighe)
 * [Chris Seaton](https://github.com/chrisseaton)
 * [Paweł Obrok](https://github.com/obrok)
