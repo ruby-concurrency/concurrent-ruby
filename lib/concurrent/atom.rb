@@ -61,7 +61,7 @@ module Concurrent
   #   set + [set[-2..-1].reduce{|sum,x| sum + x }]
   # end
   #
-  # # create an atom with aninitial value
+  # # create an atom with an initial value
   # atom = Concurrent::Atom.new(next_fibonacci)
   #
   # # send a few update requests
@@ -144,7 +144,7 @@ module Concurrent
     # @param [Object] args Zero or more arguments passed to the block.
     #
     # @yield [value, args] Calculates a new value for the atom based on the
-    #   current value and any supplied agruments.
+    #   current value and any supplied arguments.
     # @yieldparam value [Object] The current value of the atom.
     # @yieldparam args [Object] All arguments passed to the function, in order.
     # @yieldreturn [Object] The intended new value of the atom.
