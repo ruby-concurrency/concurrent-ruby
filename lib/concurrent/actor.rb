@@ -46,7 +46,7 @@ module Concurrent
     end
 
     # Spawns a new actor. {Concurrent::Actor::AbstractContext.spawn} allows to omit class parameter.
-    # To see the list of avaliable options see {Core#initialize}
+    # To see the list of available options see {Core#initialize}
     # @see Concurrent::Actor::AbstractContext.spawn
     # @see Core#initialize
     # @example by class and name

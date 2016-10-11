@@ -34,7 +34,7 @@ module Concurrent
   # When an Erlang module implements the `gen_server` behavior it becomes
   # inherently asynchronous. The `start` or `start_link` function spawns a
   # process (similar to a thread but much more lightweight and efficient) and
-  # reurns the ID of the process. Using the process ID, other processes can
+  # returns the ID of the process. Using the process ID, other processes can
   # send messages to the `gen_server` via the `cast` and `call` methods. Unlike
   # Erlang's `gen_server`, however, `Async` classes do not support linking or
   # supervision trees.
