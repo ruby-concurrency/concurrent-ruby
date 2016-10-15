@@ -3,19 +3,22 @@ language: ruby
 cache: bundler
 
 rvm:
+  # start with the latest
   - 2.3.1
-  - 2.2.3
-  - 2.2.2
-  - 2.1.5
-  - 2.0.0
+  - jruby-9.1.5.0
+
+  # older versions
+  - 2.2
+  - 2.1
+  - 2.0
   - 1.9.3
-  - ruby-head
-  - jruby-1.7.19
-  - jruby-9.0.1.0
-  - jruby-9.0.3.0
+
   - jruby-9.0.5.0
+  - jruby-1.7.26
+
+  - ruby-head
   - jruby-head
-  - rbx-2
+
   - rbx
 
 jdk:
@@ -29,6 +32,9 @@ branches:
 
 matrix:
   include:
+    - rvm: 2.3.1
+      jdk: oraclejdk8
+      env: COVERAGE=1
     - rvm: jruby-head
       jdk: oraclejdk8
       env: TRUFFLE=1
@@ -36,7 +42,6 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
-    - rvm: rbx-2
     - rvm: rbx
     - rvm: jruby-head
       jdk: oraclejdk8
