@@ -13,6 +13,7 @@ group :development do
   # documentation
   gem 'countloc', '~> 0.4.0', :platforms => :mri, :require => false
   gem 'yard', '~> 0.8.7.6', :require => false
+  # TODO (pitr-ch 15-Oct-2016): does not work on 1.9.3 anymore
   gem 'inch', '~> 0.6.3', :platforms => :mri, :require => false
   gem 'redcarpet', '~> 3.3.2', platforms: :mri # understands github markdown
 end
