@@ -1,26 +1,23 @@
 $VERBOSE = nil # suppress our deprecation warnings
 
-# we can't use our helpers here because we need to load the gem _after_ simplecov
-unless RUBY_ENGINE == 'jruby' && 0 == (JRUBY_VERSION =~ /^9\.0\.0\.0/)
-  if (ENV['COVERAGE'] || ENV['CI'] || ENV['TRAVIS']) && !ENV['NO_COVERAGE']
-    require 'simplecov'
-    require 'coveralls'
+if ENV['COVERAGE']
+  require 'simplecov'
+  require 'coveralls'
 
-    if ENV['TRAVIS']
-      SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+  if ENV['TRAVIS']
+    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
         SimpleCov::Formatter::HTMLFormatter,
         Coveralls::SimpleCov::Formatter
-      ]
-    else
-      SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-    end
+    ]
+  else
+    SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+  end
 
-    SimpleCov.start do
-      project_name 'concurrent-ruby'
-      add_filter '/build-tests/'
-      add_filter '/examples/'
-      add_filter '/spec/'
-    end
+  SimpleCov.start do
+    project_name 'concurrent-ruby'
+    add_filter '/build-tests/'
+    add_filter '/examples/'
+    add_filter '/spec/'
   end
 end
 

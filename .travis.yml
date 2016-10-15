@@ -29,6 +29,9 @@ branches:
 
 matrix:
   include:
+    - rvm: 2.3.1
+      jdk: oraclejdk8
+      env: COVERAGE=1
     - rvm: jruby-head
       jdk: oraclejdk8
       env: TRUFFLE=1
