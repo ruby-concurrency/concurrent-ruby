@@ -8,7 +8,7 @@ module Concurrent
       end
 
       def on_jruby_9000?
-        on_jruby? && 0 == (JRUBY_VERSION =~ /^9\.0\.0\.0/)
+        on_jruby? && ruby_version(:>=, 9, 0, 0, JRUBY_VERSION)
       end
 
       def on_cruby?
