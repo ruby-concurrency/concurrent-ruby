@@ -1,4 +1,5 @@
 require 'concurrent/synchronization'
+require 'concurrent/utility/native_integer'
 
 module Concurrent
 
@@ -18,9 +19,9 @@ module Concurrent
     #
     # @raise [ArgumentError] if `parties` is not an integer or is less than zero
     def initialize(parties, &block)
-      if !parties.is_a?(Integer) || parties < 1
-        raise ArgumentError.new('count must be in integer greater than or equal zero')
-      end
+      Utility::NativeInteger.ensure_integer_and_bounds parties
+      Utility::NativeInteger.ensure_positive_and_no_zero parties
+
       super(&nil)
       synchronize { ns_initialize parties, &block }
     end

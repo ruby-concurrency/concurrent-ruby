@@ -202,7 +202,7 @@ describe 'Concurrent::Edge futures', edge: true do
       c = Concurrent.future { raise 'c' }
 
       Concurrent.zip(a, b, c).chain { |*args| q << args }
-      expect(q.pop.flatten.map(&:class)).to eq [FalseClass, 1.class, NilClass, NilClass, NilClass, RuntimeError, RuntimeError]
+      expect(q.pop.flatten.map(&:class)).to eq [FalseClass, 0.class, NilClass, NilClass, NilClass, RuntimeError, RuntimeError]
       Concurrent.zip(a, b, c).rescue { |*args| q << args }
       expect(q.pop.map(&:class)).to eq [NilClass, RuntimeError, RuntimeError]
 
