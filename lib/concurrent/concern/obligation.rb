@@ -138,6 +138,7 @@ module Concurrent
       # @!visibility private
       def init_obligation
         @event = Event.new
+        @value = @reason = nil
       end
 
       # @!visibility private
