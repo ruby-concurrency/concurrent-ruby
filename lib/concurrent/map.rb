@@ -171,6 +171,8 @@ module Concurrent
       each_pair {|k, v| yield v}
     end unless method_defined?(:each_value)
 
+    alias_method :each, :each_pair unless method_defined?(:each)
+
     def key(value)
       each_pair {|k, v| return k if v == value}
       nil

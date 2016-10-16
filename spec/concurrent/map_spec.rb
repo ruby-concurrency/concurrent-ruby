@@ -1,3 +1,4 @@
+require_relative 'collection_each_shared'
 Thread.abort_on_exception = true
 
 module Concurrent
@@ -623,48 +624,14 @@ module Concurrent
     end
 
     describe '#each_pair' do
-      it 'common' do
-        @cache.each_pair { |k, v| fail }
-        expect(@cache).to eq @cache.each_pair {}
-        @cache[:a] = 1
-
-        h = {}
-        @cache.each_pair { |k, v| h[k] = v }
-        expect({:a => 1}).to eq h
-
-        @cache[:b] = 2
-        h = {}
-        @cache.each_pair { |k, v| h[k] = v }
-        expect({:a => 1, :b => 2}).to eq h
+      it_should_behave_like :collection_each do
+        let(:method) { :each_pair }
       end
+    end
 
-      it 'pair iterator' do
-        @cache[:a] = 1
-        @cache[:b] = 2
-        i = 0
-        r = @cache.each_pair do |k, v|
-          if i == 0
-            i += 1
-            next
-            fail
-          elsif i == 1
-            break :breaked
-          end
-        end
-
-        expect(:breaked).to eq r
-      end
-
-      it 'allows modification' do
-        @cache[:a] = 1
-        @cache[:b] = 1
-        @cache[:c] = 1
-
-        expect_size_change(1) do
-          @cache.each_pair do |k, v|
-            @cache[:z] = 1
-          end
-        end
+    describe '#each' do
+      it_should_behave_like :collection_each do
+        let(:method) { :each }
       end
     end
 
