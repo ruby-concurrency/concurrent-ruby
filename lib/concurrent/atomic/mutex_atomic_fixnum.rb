@@ -1,4 +1,5 @@
 require 'concurrent/synchronization'
+require 'concurrent/utility/native_integer'
 
 module Concurrent
 
@@ -6,10 +7,6 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   class MutexAtomicFixnum < Synchronization::LockableObject
-
-    # http://stackoverflow.com/questions/535721/ruby-max-integer
-    MIN_VALUE = -(2**(0.size * 8 - 2))
-    MAX_VALUE = (2**(0.size * 8 - 2) - 1)
 
     # @!macro atomic_fixnum_method_initialize
     def initialize(initial = 0)
@@ -71,21 +68,8 @@ module Concurrent
 
     # @!visibility private
     def ns_set(value)
-      range_check!(value)
+      Utility::NativeInteger.ensure_integer_and_bounds value
       @value = value
-    end
-
-    # @!visibility private
-    def range_check!(value)
-      if !value.is_a?(Fixnum)
-        raise ArgumentError.new('value value must be a Fixnum')
-      elsif value > MAX_VALUE
-        raise RangeError.new("#{value} is greater than the maximum value of #{MAX_VALUE}")
-      elsif value < MIN_VALUE
-        raise RangeError.new("#{value} is less than the maximum value of #{MIN_VALUE}")
-      else
-        value
-      end
     end
   end
 end

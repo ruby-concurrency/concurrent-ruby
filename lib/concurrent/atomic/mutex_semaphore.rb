@@ -1,4 +1,5 @@
 require 'concurrent/synchronization'
+require 'concurrent/utility/native_integer'
 
 module Concurrent
 
@@ -9,18 +10,18 @@ module Concurrent
 
     # @!macro semaphore_method_initialize
     def initialize(count)
-      unless count.is_a?(Fixnum) && count >= 0
-        fail ArgumentError, 'count must be an non-negative integer'
-      end
+      Utility::NativeInteger.ensure_integer_and_bounds count
+      Utility::NativeInteger.ensure_positive count
+
       super()
       synchronize { ns_initialize count }
     end
 
     # @!macro semaphore_method_acquire
     def acquire(permits = 1)
-      unless permits.is_a?(Fixnum) && permits > 0
-        fail ArgumentError, 'permits must be an integer greater than zero'
-      end
+      Utility::NativeInteger.ensure_integer_and_bounds permits
+      Utility::NativeInteger.ensure_positive_and_no_zero permits
+
       synchronize do
         try_acquire_timed(permits, nil)
         nil
@@ -45,9 +46,9 @@ module Concurrent
 
     # @!macro semaphore_method_try_acquire
     def try_acquire(permits = 1, timeout = nil)
-      unless permits.is_a?(Fixnum) && permits > 0
-        fail ArgumentError, 'permits must be an integer greater than zero'
-      end
+      Utility::NativeInteger.ensure_integer_and_bounds permits
+      Utility::NativeInteger.ensure_positive_and_no_zero permits
+
       synchronize do
         if timeout.nil?
           try_acquire_now(permits)
@@ -59,9 +60,9 @@ module Concurrent
 
     # @!macro semaphore_method_release
     def release(permits = 1)
-      unless permits.is_a?(Fixnum) && permits > 0
-        fail ArgumentError, 'permits must be an integer greater than zero'
-      end
+      Utility::NativeInteger.ensure_integer_and_bounds permits
+      Utility::NativeInteger.ensure_positive_and_no_zero permits
+
       synchronize do
         @free += permits
         permits.times { ns_signal }
@@ -81,9 +82,9 @@ module Concurrent
     #
     # @!visibility private
     def reduce_permits(reduction)
-      unless reduction.is_a?(Fixnum) && reduction >= 0
-        fail ArgumentError, 'reduction must be an non-negative integer'
-      end
+      Utility::NativeInteger.ensure_integer_and_bounds reduction
+      Utility::NativeInteger.ensure_positive reduction
+
       synchronize { @free -= reduction }
       nil
     end

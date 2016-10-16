@@ -203,7 +203,7 @@ module Concurrent
     undef :freeze
 
     # @!visibility private
-    DEFAULT_OBJ_ID_STR_WIDTH = (2**50).class == Fixnum ? 14 : 7 # we want to look "native", 7 for 32-bit, 14 for 64-bit
+    DEFAULT_OBJ_ID_STR_WIDTH = 0.size == 4 ? 7 : 14 # we want to look "native", 7 for 32-bit, 14 for 64-bit
     # override default #inspect() method: firstly, we don't want to be spilling our guts (i-vars), secondly, MRI backend's
     # #inspect() call on its @backend i-var will bump @backend's iter level while possibly yielding GVL
     def inspect
@@ -227,8 +227,8 @@ module Concurrent
     end
 
     def validate_options_hash!(options)
-      if (initial_capacity = options[:initial_capacity]) && (!initial_capacity.kind_of?(Fixnum) || initial_capacity < 0)
-        raise ArgumentError, ":initial_capacity must be a positive Fixnum"
+      if (initial_capacity = options[:initial_capacity]) && (!initial_capacity.kind_of?(Integer) || initial_capacity < 0)
+        raise ArgumentError, ":initial_capacity must be a positive Integer"
       end
       if (load_factor = options[:load_factor]) && (!load_factor.kind_of?(Numeric) || load_factor <= 0 || load_factor > 1)
         raise ArgumentError, ":load_factor must be a number between 0 and 1"
