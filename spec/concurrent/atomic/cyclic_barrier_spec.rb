@@ -57,7 +57,7 @@ module Concurrent
 
     describe 'reset' do
       it 'should release all waiting threads', buggy: true do
-        start_latch = CountDownLatch.new(1)
+        start_latch    = CountDownLatch.new(1)
         continue_latch = CountDownLatch.new(1)
 
         Thread.new do
@@ -120,7 +120,7 @@ module Concurrent
           expect(latch.wait(1)).to be_truthy
         end
 
-        it 'return false if barrier has been reset' do
+        it 'return false if barrier has been reset', buggy: true do
           latch = CountDownLatch.new(1)
 
           t = Thread.new { latch.count_down if barrier.wait == false }
@@ -230,7 +230,7 @@ module Concurrent
 
       it 'should resist to spurious wake ups without timeout' do
         @expected = false
-        t = Thread.new { barrier.wait; @expected = true }
+        t         = Thread.new { barrier.wait; @expected = true }
         t.join(0.1)
 
         barrier.simulate_spurious_wake_up
@@ -241,7 +241,7 @@ module Concurrent
 
       it 'should resist to spurious wake ups with timeout' do
         @expected = false
-        t = Thread.new { barrier.wait(0.5); @expected = true }
+        t         = Thread.new { barrier.wait(0.5); @expected = true }
 
         t.join(0.1)
         barrier.simulate_spurious_wake_up

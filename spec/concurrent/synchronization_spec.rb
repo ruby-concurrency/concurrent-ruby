@@ -144,6 +144,7 @@ module Concurrent
           expect { Timeout.timeout(3) do
             t = Thread.new { subject.wait }
             sleep 0.1
+            # TODO (pitr-ch 15-Oct-2016): https://travis-ci.org/pitr-ch/concurrent-ruby/jobs/167933569
             expect(t.status).to eq 'sleep'
             subject.synchronize {} # we will deadlock here if #wait doesn't release lock
           end }.not_to raise_error

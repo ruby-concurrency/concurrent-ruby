@@ -89,6 +89,7 @@ shared_examples :channel_buffer do
       end
       t.join(0.1)
 
+      # TODO (pitr-ch 15-Oct-2016): fails on JRuby https://travis-ci.org/pitr-ch/concurrent-ruby/jobs/167937038
       expect(subject.poll).to eq 42
     end
 

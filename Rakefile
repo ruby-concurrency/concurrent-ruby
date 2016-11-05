@@ -6,9 +6,9 @@ require 'concurrent/version'
 require 'concurrent/utility/native_extension_loader'
 
 ## load the gemspec files
-CORE_GEMSPEC = Gem::Specification.load('concurrent-ruby.gemspec')
-EXT_GEMSPEC  = Gem::Specification.load('concurrent-ruby-ext.gemspec')
-EDGE_GEMSPEC = Gem::Specification.load('concurrent-ruby-edge.gemspec')
+CORE_GEMSPEC  = Gem::Specification.load('concurrent-ruby.gemspec')
+EXT_GEMSPEC   = Gem::Specification.load('concurrent-ruby-ext.gemspec')
+EDGE_GEMSPEC  = Gem::Specification.load('concurrent-ruby-edge.gemspec')
 
 ## constants used for compile/build tasks
 
@@ -18,7 +18,7 @@ EDGE_NAME     = 'edge'
 JAVA_EXT_NAME = 'concurrent_ruby_ext'
 
 if Concurrent.on_jruby?
-  CORE_GEM   = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
+  CORE_GEM = "#{GEM_NAME}-#{Concurrent::VERSION}-java.gem"
 else
   CORE_GEM   = "#{GEM_NAME}-#{Concurrent::VERSION}.gem"
   EXT_GEM    = "#{GEM_NAME}-ext-#{Concurrent::VERSION}.gem"
@@ -66,17 +66,17 @@ elsif Concurrent.allow_c_extensions?
   require 'rake/extensiontask'
 
   Rake::ExtensionTask.new(EXT_NAME, EXT_GEMSPEC) do |ext|
-    ext.ext_dir = 'ext/concurrent'
-    ext.lib_dir = 'lib/concurrent'
+    ext.ext_dir        = 'ext/concurrent'
+    ext.lib_dir        = 'lib/concurrent'
     ext.source_pattern = '*.{c,h}'
-    ext.cross_compile = true
+    ext.cross_compile  = true
     ext.cross_platform = ['x86-mingw32', 'x64-mingw32']
   end
 
   ENV['RUBY_CC_VERSION'].to_s.split(':').each do |ruby_version|
     platforms = {
-      'x86-mingw32' => 'i686-w64-mingw32',
-      'x64-mingw32' => 'x86_64-w64-mingw32'
+        'x86-mingw32' => 'i686-w64-mingw32',
+        'x64-mingw32' => 'x86_64-w64-mingw32'
     }
     platforms.each do |platform, prefix|
       task "copy:#{EXT_NAME}:#{platform}:#{ruby_version}" do |t|
@@ -177,23 +177,20 @@ begin
 
   RSpec::Core::RakeTask.new(:spec)
 
+  options = %w[ --color
+                --backtrace
+                --seed 1
+                --format documentation
+                --tag ~unfinished
+                --tag ~notravis
+                --tag ~buggy ]
+
   RSpec::Core::RakeTask.new(:travis) do |t|
-    t.rspec_opts = '--color ' \
-                   '--backtrace ' \
-                   '--tag ~unfinished ' \
-                   '--seed 1 ' \
-                   '--format documentation ' \
-                   '--tag ~notravis ' \
-                   '--tag ~buggy'
+    t.rspec_opts = ['--color', *options].join(' ')
   end
 
   RSpec::Core::RakeTask.new(:appveyor) do |t|
-    t.rspec_opts = '--backtrace ' \
-                   '--tag ~unfinished ' \
-                   '--seed 1 ' \
-                   '--format documentation ' \
-                   '--tag ~notravis ' \
-                   '--tag ~buggy'
+    t.rspec_opts = [*options].join(' ')
   end
 
   if Concurrent.on_windows?
