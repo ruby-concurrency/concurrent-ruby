@@ -361,7 +361,7 @@ describe 'Concurrent::Promises' do
           branch1.zip(branch2).then { |b1, b2| b1 + b2 },
           (branch1 & branch2).then { |b1, b2| b1 + b2 }]
 
-      sleep 0.1
+      Thread.pass until branch1.resolved?
       expect(branch1).to be_resolved
       expect(branch2).not_to be_resolved
 
@@ -496,7 +496,7 @@ describe 'Concurrent::Promises' do
 
   describe 'Throttling' do
     specify do
-      max_tree = Concurrent::Throttle.new 3
+      max_tree = Concurrent::Promises::Throttle.new 3
       counter  = Concurrent::AtomicFixnum.new
       testing  = -> *args do
         counter.increment
@@ -508,14 +508,43 @@ describe 'Concurrent::Promises' do
       expect(Concurrent::Promises.zip(
           *12.times.map do |i|
             max_tree.limit { |trigger| trigger.then &testing }
-          end).value.all? { |v| v < 3 }).to be_truthy
+          end).value!.all? { |v| v < 3 }).to be_truthy
 
       expect(Concurrent::Promises.zip(
           *12.times.map do |i|
             Concurrent::Promises.
                 fulfilled_future(i).
                 throttle(max_tree) { |trigger| trigger.then &testing }
-          end).value.all? { |v| v < 3 }).to be_truthy
+          end).value!.all? { |v| v < 3 }).to be_truthy
+    end
+
+    specify do
+      max_five = Concurrent::Promises::Throttle.new 5
+      jobs     = 20.times.map do |i|
+        max_five.limit do |trigger|
+          # trigger is an event, has same chain-able capabilities as current promise
+          trigger.then do
+            # at any given time there max 5 simultaneous executions of this block
+            the_work = i * 2
+          end
+        end
+      end
+      result   = Concurrent::Promises.zip_futures(*jobs)
+      p result.value!
+      # => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
+    end
+
+    specify do
+      max_five = Concurrent::Promises::Throttle.new 5
+      jobs     = 20.times.map do |i|
+        max_five.then_limit do
+          # at any given time there max 5 simultaneous executions of this block
+          the_work = i * 2
+        end # returns promise
+      end
+      result   = Concurrent::Promises.zip_futures(*jobs)
+      p result.value!
+      # => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
     end
   end
 end
