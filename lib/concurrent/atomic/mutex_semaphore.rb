@@ -11,7 +11,6 @@ module Concurrent
     # @!macro semaphore_method_initialize
     def initialize(count)
       Utility::NativeInteger.ensure_integer_and_bounds count
-      Utility::NativeInteger.ensure_positive count
 
       super()
       synchronize { ns_initialize count }
@@ -20,7 +19,7 @@ module Concurrent
     # @!macro semaphore_method_acquire
     def acquire(permits = 1)
       Utility::NativeInteger.ensure_integer_and_bounds permits
-      Utility::NativeInteger.ensure_positive_and_no_zero permits
+      Utility::NativeInteger.ensure_positive permits
 
       synchronize do
         try_acquire_timed(permits, nil)
@@ -47,7 +46,7 @@ module Concurrent
     # @!macro semaphore_method_try_acquire
     def try_acquire(permits = 1, timeout = nil)
       Utility::NativeInteger.ensure_integer_and_bounds permits
-      Utility::NativeInteger.ensure_positive_and_no_zero permits
+      Utility::NativeInteger.ensure_positive permits
 
       synchronize do
         if timeout.nil?
@@ -61,7 +60,7 @@ module Concurrent
     # @!macro semaphore_method_release
     def release(permits = 1)
       Utility::NativeInteger.ensure_integer_and_bounds permits
-      Utility::NativeInteger.ensure_positive_and_no_zero permits
+      Utility::NativeInteger.ensure_positive permits
 
       synchronize do
         @free += permits

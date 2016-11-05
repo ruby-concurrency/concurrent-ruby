@@ -15,6 +15,15 @@ shared_examples :semaphore do
         expect(semaphore).to_not be nil
       end
     end
+
+    context 'when initializing with -1' do
+      let(:semaphore) { described_class.new(-1) }
+
+      it do
+        semaphore.release
+        expect(semaphore.available_permits).to eq 0
+      end
+    end
   end
 
   describe '#acquire' do
@@ -36,10 +45,10 @@ shared_examples :semaphore do
       end
     end
 
-    context 'when acquiring zero permits' do
+    context 'when acquiring negative permits' do
       it do
         expect {
-          semaphore.acquire(0)
+          semaphore.acquire(-1)
         }.to raise_error(ArgumentError)
       end
     end
@@ -71,10 +80,10 @@ shared_examples :semaphore do
         expect(result).to be_falsey
       end
 
-      context 'when trying to acquire zero permits' do
+      context 'when trying to acquire negative permits' do
         it do
           expect {
-            semaphore.try_acquire(0)
+            semaphore.try_acquire(-1)
           }.to raise_error(ArgumentError)
         end
       end
@@ -138,10 +147,10 @@ shared_examples :semaphore do
         expect(semaphore.available_permits).to eq 5
       end
 
-      context 'when permits is set to zero' do
+      context 'when permits is set to negative number' do
         it do
           expect {
-            semaphore.release(0)
+            semaphore.release(-1)
           }.to raise_error(ArgumentError)
         end
       end

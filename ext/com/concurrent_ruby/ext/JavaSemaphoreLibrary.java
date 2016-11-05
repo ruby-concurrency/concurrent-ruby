@@ -40,7 +40,7 @@ public class JavaSemaphoreLibrary {
 
         @JRubyMethod
         public IRubyObject initialize(ThreadContext context, IRubyObject value) {
-            this.semaphore = new JRubySemaphore(rubyFixnumToNonNegativeInt(value, "count"));
+            this.semaphore = new JRubySemaphore(rubyFixnumInt(value, "count"));
             return context.nil;
         }
 
@@ -102,6 +102,15 @@ public class JavaSemaphoreLibrary {
         public IRubyObject reducePermits(ThreadContext context, IRubyObject reduction) throws InterruptedException {
             this.semaphore.publicReducePermits(rubyFixnumToNonNegativeInt(reduction, "reduction"));
             return context.nil;
+        }
+
+        private int rubyFixnumInt(IRubyObject value, String paramName) {
+            if (value instanceof RubyFixnum) {
+                RubyFixnum fixNum = (RubyFixnum) value;
+                return (int) fixNum.getLongValue();
+            } else {
+                throw getRuntime().newArgumentError(paramName + " must be integer");
+            }
         }
 
         private int rubyFixnumToNonNegativeInt(IRubyObject value, String paramName) {
