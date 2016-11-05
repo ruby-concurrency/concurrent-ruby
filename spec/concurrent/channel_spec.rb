@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Channel, edge: true do
+  describe Channel, edge: true, buggy: true do
 
     context 'initialization' do
 
