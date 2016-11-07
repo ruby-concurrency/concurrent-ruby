@@ -85,10 +85,10 @@ module Concurrent
             result = WIN32OLE.connect("winmgmts://").ExecQuery(
               "select NumberOfLogicalProcessors from Win32_Processor")
             result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
+          elsif File.readable?("/proc/cpuinfo") && (cpuinfo_count = IO.read("/proc/cpuinfo").scan(/^processor/).size) > 0
+            cpuinfo_count
           elsif File.executable?("/usr/bin/nproc")
             IO.popen("/usr/bin/nproc --all", &:read).to_i
-          elsif File.readable?("/proc/cpuinfo")
-            IO.read("/proc/cpuinfo").scan(/^processor/).size
           elsif File.executable?("/usr/bin/hwprefs")
             IO.popen("/usr/bin/hwprefs thread_count", &:read).to_i
           elsif File.executable?("/usr/sbin/psrinfo")
