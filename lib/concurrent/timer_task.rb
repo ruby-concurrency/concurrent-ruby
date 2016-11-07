@@ -23,7 +23,7 @@ module Concurrent
   # execution interval. The `TimerTask` thread does not perform the task,
   # however. Instead, the TimerTask launches the task on a separate thread.
   # Should the task experience an unrecoverable crash only the task thread will
-  # crash. This makes the `TimerTask` very fault tolerant Additionally, the
+  # crash. This makes the `TimerTask` very fault tolerant. Additionally, the
   # `TimerTask` thread can respond to the success or failure of the task,
   # performing logging or ancillary operations. `TimerTask` can also be
   # configured with a timeout value allowing it to kill a task that runs too
