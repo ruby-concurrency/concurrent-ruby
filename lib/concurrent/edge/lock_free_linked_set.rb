@@ -67,7 +67,7 @@ module Concurrent
       #
       #   @param [Object] item the item you wish to insert
       #
-      #   @return [Oject] the set on which the :<< method was invoked
+      #   @return [Object] the set on which the :<< method was invoked
       def <<(item)
         add item
         self
