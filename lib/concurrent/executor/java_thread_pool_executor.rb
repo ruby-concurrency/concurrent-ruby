@@ -1,5 +1,6 @@
 if Concurrent.on_jruby?
 
+  require 'concurrent/concern/deprecation'
   require 'concurrent/executor/java_executor_service'
 
   module Concurrent
@@ -8,6 +9,7 @@ if Concurrent.on_jruby?
     # @!macro thread_pool_options
     # @!visibility private
     class JavaThreadPoolExecutor < JavaExecutorService
+      include Concern::Deprecation
 
       # @!macro thread_pool_executor_constant_default_max_pool_size
       DEFAULT_MAX_POOL_SIZE = java.lang.Integer::MAX_VALUE # 2147483647
@@ -34,29 +36,39 @@ if Concurrent.on_jruby?
         @max_queue != 0
       end
 
-      # @!macro thread_pool_executor_attr_reader_min_length
-      def min_length
+      # @!macro thread_pool_executor_attr_reader_min_threads
+      def min_threads
         @executor.getCorePoolSize
       end
 
-      # @!macro thread_pool_executor_attr_writer_min_length
-      def min_length=(num)
+      def min_length
+        deprecated_method 'min_length', 'min_threads'
+        min_threads
+      end
+
+      # @!macro thread_pool_executor_attr_writer_min_threads
+      def min_threads=(num)
         num = num.to_i
         raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if num < DEFAULT_MIN_POOL_SIZE
-        raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if num > max_length
+        raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if num > max_threads
 
         @executor.setCorePoolSize(num)
       end
 
-      # @!macro thread_pool_executor_attr_reader_max_length
-      def max_length
+      # @!macro thread_pool_executor_attr_reader_max_threads
+      def max_threads
         @executor.getMaximumPoolSize
       end
 
-      # @!macro thread_pool_executor_attr_reader_max_length
-      def max_length=(num)
+      def max_length
+        deprecated_method 'max_length', 'max_threads'
+        max_threads
+      end
+
+      # @!macro thread_pool_executor_attr_reader_max_threads
+      def max_threads=(num)
         num = num.to_i
-        raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_length
+        raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_threads
         raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if num > DEFAULT_MAX_POOL_SIZE
 
         @executor.setMaximumPoolSize(num)

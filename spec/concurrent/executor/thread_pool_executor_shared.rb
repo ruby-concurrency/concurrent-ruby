@@ -11,13 +11,12 @@ shared_examples :thread_pool_executor do
 
     subject { described_class.new }
 
-    it 'defaults :min_length to DEFAULT_MIN_POOL_SIZE' do
-      expect(subject.min_length).to eq described_class::DEFAULT_MIN_POOL_SIZE
+    it 'defaults :min_threads to DEFAULT_MIN_POOL_SIZE' do
+      expect(subject.min_threads).to eq described_class::DEFAULT_MIN_POOL_SIZE
     end
 
-
-    it 'defaults :max_length to DEFAULT_MAX_POOL_SIZE' do
-      expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
+    it 'defaults :max_threads to DEFAULT_MAX_POOL_SIZE' do
+      expect(subject.max_threads).to eq described_class::DEFAULT_MAX_POOL_SIZE
     end
 
     it 'defaults :idletime to DEFAULT_THREAD_IDLETIMEOUT' do
@@ -36,11 +35,11 @@ shared_examples :thread_pool_executor do
   context "#initialize explicit values" do
 
     it "sets :min_threads" do
-      expect(described_class.new(min_threads: 2).min_length).to eq 2
+      expect(described_class.new(min_threads: 2).min_threads).to eq 2
     end
 
     it "sets :max_threads" do
-      expect(described_class.new(max_threads: 2).max_length).to eq 2
+      expect(described_class.new(max_threads: 2).max_threads).to eq 2
     end
 
     it "sets :idletime" do
@@ -172,11 +171,11 @@ shared_examples :thread_pool_executor do
       expect(executor.remaining_capacity).to eq -1
     end
 
-    it 'returns :max_length on creation' do
+    it 'returns :max_threads on creation' do
       expect(subject.remaining_capacity).to eq expected_max
     end
 
-    it 'returns :max_length when stopped' do
+    it 'returns :max_threads when stopped' do
       100.times{ subject.post{ nil } }
       subject.shutdown
       subject.wait_for_termination(1)
@@ -539,63 +538,63 @@ shared_examples :thread_pool_executor do
     end
   end
 
-  context '#max_length= invalid value' do
+  context '#max_threads= invalid value' do
 
     subject { described_class.new }
 
-    it 'raises an exception if max_length is less than zero' do
+    it 'raises an exception if max_threads is less than zero' do
       expect {
-        subject.max_length = -1
+        subject.max_threads = -1
       }.to raise_error(ArgumentError)
     end
 
-    it 'raises an exception if max_length greater than the max allowable' do
+    it 'raises an exception if max_threads greater than the max allowable' do
       expect {
-        subject.max_length = (described_class::DEFAULT_MAX_POOL_SIZE + 1)
+        subject.max_threads = (described_class::DEFAULT_MAX_POOL_SIZE + 1)
       }.to raise_error(ArgumentError)
     end
 
-    it 'raises an exception if max_length is less than min_length' do
+    it 'raises an exception if max_threads is less than min_threads' do
       expect {
-        subject.max_length = (subject.min_length - 1)
+        subject.max_threads = (subject.min_threads - 1)
       }.to raise_error(ArgumentError)
     end
   end
 
-  context '#max_length= valid value' do
+  context '#max_threads= valid value' do
 
     subject { described_class.new }
 
-    it "sets max_length" do
-      subject.max_length = 17
-      expect(subject.max_length).to eq 17
+    it "sets max_threads" do
+      subject.max_threads = 17
+      expect(subject.max_threads).to eq 17
     end
   end
 
-  context '#min_length= invalid value' do
+  context '#min_threads= invalid value' do
 
     subject { described_class.new }
 
-    it 'raises an exception if min_length is less than the min allowable' do
+    it 'raises an exception if min_threads is less than the min allowable' do
       expect {
-        subject.min_length = (described_class::DEFAULT_MIN_POOL_SIZE - 1)
+        subject.min_threads = (described_class::DEFAULT_MIN_POOL_SIZE - 1)
       }.to raise_error(ArgumentError)
     end
 
-    it 'raises an exception if min_length is greater than max_length' do
+    it 'raises an exception if min_threads is greater than max_threads' do
       expect {
-        subject.min_length = (subject.max_length + 1)
+        subject.min_threads = (subject.max_threads + 1)
       }.to raise_error(ArgumentError)
     end
   end
 
-  context '#min_length= valid value' do
+  context '#min_threads= valid value' do
 
     subject { described_class.new(max_threads: 10) }
 
-    it "sets min_length" do
-      subject.min_length = 9
-      expect(subject.min_length).to eq 9
+    it "sets min_threads" do
+      subject.min_threads = 9
+      expect(subject.min_threads).to eq 9
     end
   end
 

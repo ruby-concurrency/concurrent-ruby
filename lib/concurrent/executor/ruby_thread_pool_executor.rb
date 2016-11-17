@@ -3,6 +3,7 @@ require 'concurrent/atomic/event'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/concern/deprecation'
 
 module Concurrent
 
@@ -10,6 +11,7 @@ module Concurrent
   # @!macro thread_pool_options
   # @!visibility private
   class RubyThreadPoolExecutor < RubyExecutorService
+    include Concern::Deprecation
 
     # @!macro thread_pool_executor_constant_default_max_pool_size
     DEFAULT_MAX_POOL_SIZE      = 2_147_483_647 # java.lang.Integer::MAX_VALUE
@@ -34,32 +36,42 @@ module Concurrent
       super(opts)
     end
 
-    # @!macro thread_pool_executor_attr_reader_min_length
-    def min_length
-      synchronize { @min_length }
+    # @!macro thread_pool_executor_attr_reader_min_threads
+    def min_threads
+      synchronize { @min_threads }
     end
 
-    # @!macro thread_pool_executor_attr_writer_min_length
-    def min_length=(num)
+    def min_length
+      deprecated_method 'min_length', 'min_threads'
+      min_threads
+    end
+
+    # @!macro thread_pool_executor_attr_writer_min_threads
+    def min_threads=(num)
       num = num.to_i
       raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if num < DEFAULT_MIN_POOL_SIZE
-      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if num > max_length
+      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if num > max_threads
 
-      synchronize { @min_length = num }
+      synchronize { @min_threads = num }
     end
 
-    # @!macro thread_pool_executor_attr_reader_max_length
+    # @!macro thread_pool_executor_attr_reader_max_threads
+    def max_threads
+      synchronize { @max_threads }
+    end
+
     def max_length
-      synchronize { @max_length }
+      deprecated_method 'max_length', 'max_threads'
+      max_threads
     end
 
-    # @!macro thread_pool_executor_attr_writer_max_length
-    def max_length=(num)
+    # @!macro thread_pool_executor_attr_writer_max_threads
+    def max_threads=(num)
       num = num.to_i
-      raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_length
+      raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_threads
       raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if num > DEFAULT_MAX_POOL_SIZE
 
-      synchronize { @max_length = num }
+      synchronize { @max_threads = num }
     end
 
     # @!macro thread_pool_executor_attr_reader_largest_length
@@ -132,17 +144,17 @@ module Concurrent
 
     # @!visibility private
     def ns_initialize(opts)
-      @min_length      = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
-      @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+      @min_threads     = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+      @max_threads     = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
       @fallback_policy = opts.fetch(:fallback_policy, :abort)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
 
-      raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @max_length < DEFAULT_MIN_POOL_SIZE
-      raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if @max_length > DEFAULT_MAX_POOL_SIZE
-      raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @min_length < DEFAULT_MIN_POOL_SIZE
-      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if @min_length > @max_length
+      raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @max_threads < DEFAULT_MIN_POOL_SIZE
+      raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if @max_threads > DEFAULT_MAX_POOL_SIZE
+      raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @min_threads < DEFAULT_MIN_POOL_SIZE
+      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if @min_threads > @max_threads
 
       self.auto_terminate = opts.fetch(:auto_terminate, true)
 
@@ -207,7 +219,7 @@ module Concurrent
     # @!visibility private
     def ns_assign_worker(*args, &task)
       # keep growing if the pool is not at the minimum yet
-      worker = (@ready.pop if @pool.size >= min_length) || ns_add_busy_worker
+      worker = (@ready.pop if @pool.size >= min_threads) || ns_add_busy_worker
       if worker
         worker << [task, args]
         true
@@ -244,7 +256,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_add_busy_worker
-      return if @pool.size >= max_length
+      return if @pool.size >= max_threads
 
       @pool << (worker = Worker.new(self))
       @largest_length = @pool.length if @pool.length > @largest_length
@@ -290,7 +302,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_prune_pool
-      return if @pool.size <= min_length
+      return if @pool.size <= min_threads
 
       last_used = @ready.shift
       last_used << :idle_test if last_used
