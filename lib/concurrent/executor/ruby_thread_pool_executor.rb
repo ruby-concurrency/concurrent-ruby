@@ -23,12 +23,6 @@ module Concurrent
     # @!macro thread_pool_executor_constant_default_thread_timeout
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
-    # @!macro thread_pool_executor_attr_reader_max_length
-    attr_reader :max_length
-
-    # @!macro thread_pool_executor_attr_reader_min_length
-    attr_reader :min_length
-
     # @!macro thread_pool_executor_attr_reader_idletime
     attr_reader :idletime
 
@@ -38,6 +32,34 @@ module Concurrent
     # @!macro thread_pool_executor_method_initialize
     def initialize(opts = {})
       super(opts)
+    end
+
+    # @!macro thread_pool_executor_attr_reader_min_length
+    def min_length
+      synchronize { @min_length }
+    end
+
+    # @!macro thread_pool_executor_attr_writer_min_length
+    def min_length=(num)
+      num = num.to_i
+      raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if num < DEFAULT_MIN_POOL_SIZE
+      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if num > max_length
+
+      synchronize { @min_length = num }
+    end
+
+    # @!macro thread_pool_executor_attr_reader_max_length
+    def max_length
+      synchronize { @max_length }
+    end
+
+    # @!macro thread_pool_executor_attr_writer_max_length
+    def max_length=(num)
+      num = num.to_i
+      raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_length
+      raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if num > DEFAULT_MAX_POOL_SIZE
+
+      synchronize { @max_length = num }
     end
 
     # @!macro thread_pool_executor_attr_reader_largest_length

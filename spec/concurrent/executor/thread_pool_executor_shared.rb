@@ -538,4 +538,65 @@ shared_examples :thread_pool_executor do
       end
     end
   end
+
+  context '#max_length= invalid value' do
+
+    subject { described_class.new }
+
+    it 'raises an exception if max_length is less than zero' do
+      expect {
+        subject.max_length = -1
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises an exception if max_length greater than the max allowable' do
+      expect {
+        subject.max_length = (described_class::DEFAULT_MAX_POOL_SIZE + 1)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises an exception if max_length is less than min_length' do
+      expect {
+        subject.max_length = (subject.min_length - 1)
+      }.to raise_error(ArgumentError)
+    end
+  end
+
+  context '#max_length= valid value' do
+
+    subject { described_class.new }
+
+    it "sets max_length" do
+      subject.max_length = 17
+      expect(subject.max_length).to eq 17
+    end
+  end
+
+  context '#min_length= invalid value' do
+
+    subject { described_class.new }
+
+    it 'raises an exception if min_length is less than the min allowable' do
+      expect {
+        subject.min_length = (described_class::DEFAULT_MIN_POOL_SIZE - 1)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'raises an exception if min_length is greater than max_length' do
+      expect {
+        subject.min_length = (subject.max_length + 1)
+      }.to raise_error(ArgumentError)
+    end
+  end
+
+  context '#min_length= valid value' do
+
+    subject { described_class.new(max_threads: 10) }
+
+    it "sets min_length" do
+      subject.min_length = 9
+      expect(subject.min_length).to eq 9
+    end
+  end
+
 end

@@ -21,9 +21,6 @@ if Concurrent.on_jruby?
       # @!macro thread_pool_executor_constant_default_thread_timeout
       DEFAULT_THREAD_IDLETIMEOUT = 60
 
-      # @!macro thread_pool_executor_attr_reader_max_length
-      attr_reader :max_length
-
       # @!macro thread_pool_executor_attr_reader_max_queue
       attr_reader :max_queue
 
@@ -42,9 +39,27 @@ if Concurrent.on_jruby?
         @executor.getCorePoolSize
       end
 
+      # @!macro thread_pool_executor_attr_writer_min_length
+      def min_length=(num)
+        num = num.to_i
+        raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if num < DEFAULT_MIN_POOL_SIZE
+        raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if num > max_length
+
+        @executor.setCorePoolSize(num)
+      end
+
       # @!macro thread_pool_executor_attr_reader_max_length
       def max_length
         @executor.getMaximumPoolSize
+      end
+
+      # @!macro thread_pool_executor_attr_reader_max_length
+      def max_length=(num)
+        num = num.to_i
+        raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_length
+        raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if num > DEFAULT_MAX_POOL_SIZE
+
+        @executor.setMaximumPoolSize(num)
       end
 
       # @!macro thread_pool_executor_attr_reader_length
