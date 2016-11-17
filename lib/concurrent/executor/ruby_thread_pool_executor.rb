@@ -142,7 +142,7 @@ module Concurrent
       raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @max_length < DEFAULT_MIN_POOL_SIZE
       raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if @max_length > DEFAULT_MAX_POOL_SIZE
       raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @min_length < DEFAULT_MIN_POOL_SIZE
-      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if min_length > max_length
+      raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if @min_length > @max_length
 
       self.auto_terminate = opts.fetch(:auto_terminate, true)
 
@@ -207,7 +207,7 @@ module Concurrent
     # @!visibility private
     def ns_assign_worker(*args, &task)
       # keep growing if the pool is not at the minimum yet
-      worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
+      worker = (@ready.pop if @pool.size >= min_length) || ns_add_busy_worker
       if worker
         worker << [task, args]
         true
@@ -244,7 +244,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_add_busy_worker
-      return if @pool.size >= @max_length
+      return if @pool.size >= max_length
 
       @pool << (worker = Worker.new(self))
       @largest_length = @pool.length if @pool.length > @largest_length
@@ -290,7 +290,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_prune_pool
-      return if @pool.size <= @min_length
+      return if @pool.size <= min_length
 
       last_used = @ready.shift
       last_used << :idle_test if last_used
