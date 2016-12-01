@@ -9,7 +9,7 @@ require 'concurrent/scheduled_task'
 
 module Concurrent
 
-  # A very common currency pattern is to run a thread that performs a task at
+  # A very common concurrency pattern is to run a thread that performs a task at
   # regular intervals. The thread that performs the task sleeps for the given
   # interval then wakes up and performs the task. Lather, rinse, repeat... This
   # pattern causes two problems. First, it is difficult to test the business
