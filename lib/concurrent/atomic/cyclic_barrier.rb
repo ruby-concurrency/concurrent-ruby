@@ -5,6 +5,25 @@ module Concurrent
 
   # A synchronization aid that allows a set of threads to all wait for each
   # other to reach a common barrier point.
+  # @example
+  #   barrier = Concurrent::CyclicBarrier.new(3)
+  #   jobs    = Array.new(3) { |i| -> { sleep i; p done: i } }
+  #   process = -> (i) do
+  #     # waiting to start at the same time
+  #     barrier.wait
+  #     # execute job
+  #     jobs[i].call
+  #     # wait for others to finish
+  #     barrier.wait
+  #   end
+  #   threads = 2.times.map do |i|
+  #     Thread.new(i, &process)
+  #   end
+  #
+  #   # use main as well
+  #   process.call 2
+  #
+  #   # here we can be sure that all jobs are processed  
   class CyclicBarrier < Synchronization::LockableObject
 
     # @!visibility private
