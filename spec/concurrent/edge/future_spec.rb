@@ -1,5 +1,6 @@
 require 'concurrent-edge'
 require 'thread'
+require 'timeout'
 
 describe 'Concurrent::Edge futures', edge: true do
 
@@ -39,6 +40,17 @@ describe 'Concurrent::Edge futures', edge: true do
       future = Concurrent.succeeded_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
     end
+
+    it 'timeoutable' do
+      future = Concurrent.timeoutable(1) { sleep(2) }
+      expect { future.value!(3) }.to raise_error(Timeout::Error)
+      expect(future.failed?).to be_truthy
+
+      future1 = Concurrent.timeoutable(1) { 1 + 1 }
+      expect(future1.value!).to eq 2
+      expect(future1.success?).to be_truthy
+    end
+
   end
 
   describe '.delay' do

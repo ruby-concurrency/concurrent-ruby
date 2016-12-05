@@ -29,4 +29,5 @@ Please see http://concurrent-ruby.com for more information.
   s.required_ruby_version = '>= 1.9.3'
 
   s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION}"
+  s.add_dependency 'timeout', "~> 0.0.1"
 end
