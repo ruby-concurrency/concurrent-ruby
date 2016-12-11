@@ -378,6 +378,10 @@ describe 'Concurrent::Edge futures', edge: true do
         f = Concurrent.future { Concurrent.completed_event }.flat
         expect(f.reason).to be_an_instance_of TypeError
       end
+
+      it 'propagates requests for values to delayed futures' do
+        expect(Concurrent.future { Concurrent.delay { 1 } }.flat.value!(0.1)).to eq 1
+      end
     end
 
     it 'completes future when Exception raised' do

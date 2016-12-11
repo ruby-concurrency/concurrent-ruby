@@ -1180,6 +1180,7 @@ module Concurrent
           value = internal_state.value
           case value
           when Future
+            value.touch if self.future.touched
             @BlockedBy.push value
             value.add_callback :callback_notify_blocked, self
             @Countdown.value
