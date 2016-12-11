@@ -106,6 +106,7 @@ module Concurrent
           elsif File.executable?("/sbin/sysctl")
             IO.popen("/sbin/sysctl -n hw.ncpu", &:read).to_i
           else
+            # TODO (pitr-ch 05-Nov-2016): warn about failures
             1
           end
         end

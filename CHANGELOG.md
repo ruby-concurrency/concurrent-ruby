@@ -1,4 +1,16 @@
+* Trigger execution of flattened delayed futures
+* Avoid forking for processor_count if possible
+* Semaphore Mutex and JRuby parity
+* Adds Map#each as alias to Map#each_pair
+* Fix uninitialized instance variables
+* Make Fixnum, Bignum merger ready
+* Allows Promise#then to receive an executor
+* TimerSet now survives a fork
+* Reject promise on any exception
+* Allow ThreadLocalVar to be initialized with a block
 * Support Alpha with `Concurrent::processor_count`
+* Fixes format-security error when compiling ruby_193_compatible.h
+* Concurrent::Atom#swap fixed: reraise the exceptions from block
 
 ## Current Release v1.0.2 (2 May 2016)
 
