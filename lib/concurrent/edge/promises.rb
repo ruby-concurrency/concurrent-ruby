@@ -1,7 +1,7 @@
 require 'concurrent/synchronization'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
-require 'concurrent/lock_free_stack'
+require 'concurrent/edge/lock_free_stack'
 require 'concurrent/errors'
 
 module Concurrent
@@ -781,7 +781,7 @@ module Concurrent
       #
       # @return [Future, Event]
       def zip(other)
-        if other.is?(Future)
+        if other.is_a?(Future)
           ZipFutureEventPromise.new(other, self, @DefaultExecutor).future
         else
           ZipEventEventPromise.new(self, other, @DefaultExecutor).event
@@ -825,7 +825,20 @@ module Concurrent
         end.flat_event
       end
 
-      # TODO (pitr-ch 12-Jun-2016): add to_event, to_future
+      # Converts event to a future. The future is fulfilled when the event is resolved, the future may never fail.
+      #
+      # @return [Future]
+      def to_future
+        future = Promises.resolvable_future
+      ensure
+        chain_resolvable(future)
+      end
+
+      # Returns self, since this is event
+      # @return [Event]
+      def to_event
+        self
+      end
 
       # @!macro promises.method.with_default_executor
       # @return [Event]
@@ -1111,6 +1124,21 @@ module Concurrent
         internal_state.apply args, block
       end
 
+      # Converts future to event which is resolved when future is resolved by fulfillment or rejection.
+      #
+      # @return [Event]
+      def to_event
+        event = Promises.resolvable_event
+      ensure
+        chain_resolvable(event)
+      end
+
+      # Returns self, since this is a future
+      # @return [Future]
+      def to_future
+        self
+      end
+
       private
 
       def rejected_resolution(raise_on_reassign, state)
@@ -1195,7 +1223,8 @@ module Concurrent
       # which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def resolve(fulfilled, value, reason, raise_on_reassign = true)
+      def resolve(fulfilled = true, value = nil, reason = nil, raise_on_reassign = true)
+        # TODO (pitr-ch 25-Sep-2016): should the defaults be kept to match event resolve api?
         resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason), raise_on_reassign)
       end
 
@@ -1288,8 +1317,8 @@ module Concurrent
       # @return [Future]
       def evaluate_to(*args, block)
         resolve_with Fulfilled.new(block.call(*args))
-        # TODO (pitr-ch 30-Jul-2016): figure out what should be rescued, there is an issue about it
       rescue Exception => error
+        # TODO (pitr-ch 30-Jul-2016): figure out what should be rescued, there is an issue about it
         resolve_with Rejected.new(error)
       end
     end
@@ -1358,7 +1387,7 @@ module Concurrent
 
       # @!visibility private
       def touch
-        # TODO (pitr-ch 13-Jun-2016): on construction pass down references of delays to be touched, avoids extra casses
+        # TODO (pitr-ch 13-Jun-2016): on construction pass down references of delays to be touched, avoids extra CASses
         blocked_by.each(&:touch)
       end
 
@@ -1506,6 +1535,11 @@ module Concurrent
         nil
       end
 
+      def blocked_by_add(future)
+        @BlockedBy.push future
+        future.touch if self.future.touched?
+      end
+
       def resolvable?(countdown, future)
         !@Future.internal_state.resolved? && super(countdown, future)
       end
@@ -1532,7 +1566,7 @@ module Concurrent
           value = internal_state.value
           case value
           when Future, Event
-            @BlockedBy.push value
+            blocked_by_add value
             value.add_callback :callback_notify_blocked, self
             @Countdown.value
           else
@@ -1566,7 +1600,7 @@ module Concurrent
           value = internal_state.value
           case value
           when Future
-            @BlockedBy.push value
+            blocked_by_add value
             value.add_callback :callback_notify_blocked, self
             @Countdown.value
           when Event
@@ -1599,7 +1633,8 @@ module Concurrent
         value = internal_state.value
         case value
         when Future
-          # @BlockedBy.push value
+          # FIXME (pitr-ch 08-Dec-2016): will accumulate the completed futures
+          blocked_by_add value
           value.add_callback :callback_notify_blocked, self
         else
           resolve_with internal_state
@@ -1871,7 +1906,7 @@ module Concurrent
       # only proof of concept
       # @return [Future]
       def select(*channels)
-        # TODO (pitr-ch 26-Mar-2016): redo, has to be non-blocking
+        # TODO (pitr-ch 26-Mar-2016): re-do, has to be non-blocking
         future do
           # noinspection RubyArgCount
           Channel.select do |s|
@@ -1924,12 +1959,14 @@ module Concurrent
     end
   end
 
+  # TODO example: parallel jobs, cancell them all when one fails, clean-up in zip
   # inspired by https://msdn.microsoft.com/en-us/library/dd537607(v=vs.110).aspx
   class Cancellation < Synchronization::Object
     safe_initialization!
 
     def self.create(future_or_event = Promises.resolvable_event, *resolve_args)
-      [(i = new(future_or_event, *resolve_args)), i.token]
+      cancellation = new(future_or_event, *resolve_args)
+      [cancellation, cancellation.token]
     end
 
     private_class_method :new
@@ -1960,18 +1997,16 @@ module Concurrent
         @Cancel = cancel
       end
 
-      def event
-        @Cancel
+      def to_event
+        @Cancel.to_event
       end
 
-      alias_method :future, :event
+      def to_future
+        @Cancel.to_future
+      end
 
       def on_cancellation(*args, &block)
         @Cancel.on_resolution *args, &block
-      end
-
-      def then(*args, &block)
-        @Cancel.chain *args, &block
       end
 
       def canceled?
@@ -1985,13 +2020,14 @@ module Concurrent
         result
       end
 
-      def raise_if_canceled
-        raise CancelledOperationError if canceled?
+      def raise_if_canceled(error = CancelledOperationError)
+        raise error if canceled?
         self
       end
 
-      def join(*tokens)
-        Token.new Promises.any_event(@Cancel, *tokens.map(&:event))
+      def join(*tokens, &block)
+        block ||= -> tokens { Promises.any_event(*tokens.map(&:to_event)) }
+        self.class.new block.call([@Cancel, *tokens])
       end
 
     end
@@ -2002,7 +2038,7 @@ module Concurrent
     # TODO (pitr-ch 27-Mar-2016): examples (scheduled to be cancelled in 10 sec)
   end
 
-  class Throttle < Synchronization::Object
+  class Promises::Throttle < Synchronization::Object
 
     safe_initialization!
     private *attr_atomic(:can_run)
@@ -2015,14 +2051,21 @@ module Concurrent
     end
 
     def limit(future = nil, &block)
-      # TODO (pitr-ch 11-Jun-2016): triggers should allocate resources when they are to be required
-      trigger = future ? future & get_event : get_event
-
-      if block_given?
-        block.call(trigger).on_resolution! { done }
+      if future
+        # future.chain { block.call(new_trigger & future).on_resolution! { done } }.flat
+        block.call(new_trigger & future).on_resolution! { done }
       else
-        get_event
+        if block_given?
+          block.call(new_trigger).on_resolution! { done }
+        else
+          new_trigger
+        end
       end
+    end
+
+    # TODO (pitr-ch 10-Oct-2016): maybe just then?
+    def then_limit(&block)
+      limit { |trigger| trigger.then &block }
     end
 
     def done
@@ -2037,7 +2080,7 @@ module Concurrent
 
     private
 
-    def get_event
+    def new_trigger
       while true
         current_can_run = can_run
         if compare_and_set_can_run current_can_run, current_can_run - 1
@@ -2059,5 +2102,18 @@ module Concurrent
       throttle.limit(self, &throttled_future)
     end
 
+    def then_throttle(throttle, &block)
+      throttle(throttle) { |trigger| trigger.then &block }
+    end
+
+  end
+
+  module Promises::FactoryMethods
+
+    # @!visibility private
+
+    def throttle(count)
+      Promises::Throttle.new count
+    end
   end
 end

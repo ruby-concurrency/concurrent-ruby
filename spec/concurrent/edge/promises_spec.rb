@@ -395,7 +395,7 @@ describe 'Concurrent::Promises' do
       end
 
       it 'propagates requests for values to delayed futures' do
-        expect(Concurrent.future { Concurrent.delay { 1 } }.flat.value!(0.1)).to eq 1
+        expect(future { delay { 1 } }.flat.value!(0.1)).to eq 1
       end
     end
 
@@ -467,10 +467,10 @@ describe 'Concurrent::Promises' do
     specify do
       source, token = Concurrent::Cancellation.create
       source.cancel
-      expect(token.event.resolved?).to be_truthy
+      expect(token.canceled?).to be_truthy
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.event).value).to be_nil
+      expect((cancellable_branch | token.to_event).value).to be_nil
       expect(cancellable_branch.resolved?).to be_falsey
     end
 
@@ -478,7 +478,7 @@ describe 'Concurrent::Promises' do
       source, token = Concurrent::Cancellation.create
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect(any_resolved_future(cancellable_branch, token.event).value).to eq 1
+      expect(any_resolved_future(cancellable_branch, token.to_event).value).to eq 1
       expect(cancellable_branch.resolved?).to be_truthy
     end
 
@@ -486,10 +486,10 @@ describe 'Concurrent::Promises' do
       source, token = Concurrent::Cancellation.create(
           Concurrent::Promises.resolvable_future, false, nil, err = StandardError.new('Cancelled'))
       source.cancel
-      expect(token.future.resolved?).to be_truthy
+      expect(token.canceled?).to be_truthy
 
       cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.future).reason).to eq err
+      expect((cancellable_branch | token.to_future).reason).to eq err
       expect(cancellable_branch.resolved?).to be_falsey
     end
   end
