@@ -84,7 +84,7 @@ then
 
     # Tags
     git tag "v${version}"
-    git tag "v${edge_version}"
+    git tag "edge-v${edge_version}"
     git push --tags
 
     # TODO (pitr-ch 16-Dec-2016): Release
