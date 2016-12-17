@@ -105,12 +105,12 @@ then
     #    "https://api.github.com/repos/pitr-ch/concurrent-ruby/releases"
 
     # Push to rubygems
-    gem push pkg/concurrent-ruby-1.0.3.gem
-    gem push pkg/concurrent-ruby-1.0.3-java.gem
-    gem push pkg/concurrent-ruby-edge-0.2.3.gem
-    gem push pkg/concurrent-ruby-ext-1.0.3.gem
-    gem push pkg/concurrent-ruby-ext-1.0.3-x64-mingw32.gem
-    gem push pkg/concurrent-ruby-ext-1.0.3-x86-mingw32.gem
+    gem push pkg/concurrent-ruby-${version}.gem
+    gem push pkg/concurrent-ruby-${version}-java.gem
+    gem push pkg/concurrent-ruby-edge-${edge_version}.gem
+    gem push pkg/concurrent-ruby-ext-${version}.gem
+    gem push pkg/concurrent-ruby-ext-${version}-x64-mingw32.gem
+    gem push pkg/concurrent-ruby-ext-${version}-x86-mingw32.gem
 
     # TODO (pitr-ch 17-Dec-2016): send email
 fi
