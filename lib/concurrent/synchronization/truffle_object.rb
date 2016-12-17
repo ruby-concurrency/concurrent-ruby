@@ -14,8 +14,7 @@ module Concurrent
       end
 
       def full_memory_barrier
-        # Rubinius instance variables are not volatile so we need to insert barrier
-        Rubinius.memory_barrier
+        Truffle::System.full_memory_barrier
       end
     end
 
