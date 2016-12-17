@@ -1967,39 +1967,36 @@ module Concurrent
     def initialize(max)
       super()
       self.can_run = max
-      # TODO (pitr-ch 10-Jun-2016): lock-free queue is needed
-      @Queue       = Queue.new
+      @Queue       = LockFreeQueue.new
     end
 
-    def limit(future = nil, &block)
-      if future
-        # future.chain { block.call(new_trigger & future).on_resolution! { done } }.flat
-        block.call(new_trigger & future).on_resolution! { done }
+    def throttle(future = nil, &throttled_future)
+      if block_given?
+        trigger = future ? (new_trigger & future) : new_trigger
+        throttled_future.call(trigger).on_resolution! { done }
       else
-        if block_given?
-          block.call(new_trigger).on_resolution! { done }
-        else
-          new_trigger
-        end
+        new_trigger
       end
     end
 
-    # TODO (pitr-ch 10-Oct-2016): maybe just then?
-    def then_limit(&block)
-      limit { |trigger| trigger.then &block }
+    def then_throttle(&task)
+      throttle { |trigger| trigger.then &task }
     end
+
+    private
 
     def done
       while true
         current_can_run = can_run
         if compare_and_set_can_run current_can_run, current_can_run + 1
-          @Queue.pop.resolve if current_can_run < 0
+          if current_can_run <= 0
+            Thread.pass until (trigger = @Queue.pop)
+            trigger.resolve
+          end
           return self
         end
       end
     end
-
-    private
 
     def new_trigger
       while true
@@ -2008,9 +2005,9 @@ module Concurrent
           if current_can_run > 0
             return Promises.resolved_event
           else
-            e = Promises.resolvable_event
-            @Queue.push e
-            return e
+            event = Promises.resolvable_event
+            @Queue.push event
+            return event
           end
         end
       end
@@ -2020,7 +2017,7 @@ module Concurrent
   class Promises::AbstractEventFuture < Synchronization::Object
 
     def throttle(throttle, &throttled_future)
-      throttle.limit(self, &throttled_future)
+      throttle.throttle(self, &throttled_future)
     end
 
     def then_throttle(throttle, &block)

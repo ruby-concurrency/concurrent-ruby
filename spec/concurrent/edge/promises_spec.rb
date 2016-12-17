@@ -507,21 +507,21 @@ describe 'Concurrent::Promises' do
 
       expect(Concurrent::Promises.zip(
           *12.times.map do |i|
-            max_tree.limit { |trigger| trigger.then &testing }
-          end).value!.all? { |v| v < 3 }).to be_truthy
+            max_tree.throttle { |trigger| trigger.then &testing }
+          end).value!.all? { |v| v <= 3 }).to be_truthy
 
       expect(Concurrent::Promises.zip(
           *12.times.map do |i|
             Concurrent::Promises.
                 fulfilled_future(i).
                 throttle(max_tree) { |trigger| trigger.then &testing }
-          end).value!.all? { |v| v < 3 }).to be_truthy
+          end).value!.all? { |v| v <= 3 }).to be_truthy
     end
 
     specify do
       max_five = Concurrent::Promises::Throttle.new 5
       jobs     = 20.times.map do |i|
-        max_five.limit do |trigger|
+        max_five.throttle do |trigger|
           # trigger is an event, has same chain-able capabilities as current promise
           trigger.then do
             # at any given time there max 5 simultaneous executions of this block
@@ -537,7 +537,7 @@ describe 'Concurrent::Promises' do
     specify do
       max_five = Concurrent::Promises::Throttle.new 5
       jobs     = 20.times.map do |i|
-        max_five.then_limit do
+        max_five.then_throttle do
           # at any given time there max 5 simultaneous executions of this block
           the_work = i * 2
         end # returns promise
