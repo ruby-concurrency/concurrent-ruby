@@ -1,3 +1,5 @@
+## Current Release v1.0.3 (17 Dec 2016)
+
 * Trigger execution of flattened delayed futures
 * Avoid forking for processor_count if possible
 * Semaphore Mutex and JRuby parity
@@ -12,7 +14,7 @@
 * Fixes format-security error when compiling ruby_193_compatible.h
 * Concurrent::Atom#swap fixed: reraise the exceptions from block
 
-## Current Release v1.0.2 (2 May 2016)
+## Release v1.0.2 (2 May 2016)
 
 * Fix bug with `Concurrent::Map` MRI backend `#inspect` method
 * Fix bug with `Concurrent::Map` MRI backend using `Hash#value?`
