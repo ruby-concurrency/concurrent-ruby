@@ -214,7 +214,7 @@ module Concurrent
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Future]
       def zip_futures_on(default_executor, *futures_and_or_events)
-        ZipFuturesPromise.new(futures_and_or_events, default_executor).future
+        ZipFuturesPromise.new_blocked(futures_and_or_events, futures_and_or_events, default_executor).future
       end
 
       alias_method :zip, :zip_futures
@@ -232,7 +232,7 @@ module Concurrent
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Event]
       def zip_events_on(default_executor, *futures_and_or_events)
-        ZipEventsPromise.new(futures_and_or_events, default_executor).future
+        ZipEventsPromise.new_blocked(futures_and_or_events, futures_and_or_events, default_executor).future
       end
 
       # @!macro promises.shortcut.on
@@ -254,7 +254,7 @@ module Concurrent
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Future]
       def any_resolved_future_on(default_executor, *futures_and_or_events)
-        AnyResolvedFuturePromise.new(futures_and_or_events, default_executor).future
+        AnyResolvedFuturePromise.new_blocked(futures_and_or_events, futures_and_or_events, default_executor).future
       end
 
       # @!macro promises.shortcut.on
@@ -273,7 +273,7 @@ module Concurrent
       # @param [AbstractEventFuture] futures_and_or_events
       # @return [Future]
       def any_fulfilled_future_on(default_executor, *futures_and_or_events)
-        AnyFulfilledFuturePromise.new(futures_and_or_events, default_executor).future
+        AnyFulfilledFuturePromise.new_blocked(futures_and_or_events, futures_and_or_events, default_executor).future
       end
 
       # @!macro promises.shortcut.on
@@ -580,7 +580,7 @@ module Concurrent
       # @overload a_future.chain_on(executor, *args, &task)
       #   @yield [fulfilled?, value, reason, *args] to the task.
       def chain_on(executor, *args, &task)
-        ChainPromise.new(self, @DefaultExecutor, executor, args, &task).future
+        ChainPromise.new_blocked([self], self, @DefaultExecutor, executor, args, &task).future
       end
 
       # Short string representation.
@@ -782,9 +782,9 @@ module Concurrent
       # @return [Future, Event]
       def zip(other)
         if other.is_a?(Future)
-          ZipFutureEventPromise.new(other, self, @DefaultExecutor).future
+          ZipFutureEventPromise.new_blocked([other, self], other, self, @DefaultExecutor).future
         else
-          ZipEventEventPromise.new(self, other, @DefaultExecutor).event
+          ZipEventEventPromise.new_blocked([self, other], self, other, @DefaultExecutor).event
         end
       end
 
@@ -795,7 +795,7 @@ module Concurrent
       #
       # @return [Event]
       def any(event_or_future)
-        AnyResolvedEventPromise.new([self, event_or_future], @DefaultExecutor).event
+        AnyResolvedEventPromise.new_blocked([self, event_or_future], [self, event_or_future], @DefaultExecutor).event
       end
 
       alias_method :|, :any
@@ -805,9 +805,11 @@ module Concurrent
       #
       # @return [Event]
       def delay
-        ZipEventEventPromise.new(self,
-                                 DelayPromise.new(@DefaultExecutor).event,
-                                 @DefaultExecutor).event
+        event = DelayPromise.new(@DefaultExecutor).event
+        ZipEventEventPromise.new_blocked([self, event],
+                                         self,
+                                         event,
+                                         @DefaultExecutor).event
       end
 
       # @!macro [new] promise.method.schedule
@@ -819,9 +821,11 @@ module Concurrent
       # @return [Event]
       def schedule(intended_time)
         chain do
-          ZipEventEventPromise.new(self,
-                                   ScheduledPromise.new(@DefaultExecutor, intended_time).event,
-                                   @DefaultExecutor).event
+          event = ScheduledPromise.new(@DefaultExecutor, intended_time).event
+          ZipEventEventPromise.new_blocked([self, event],
+                                           self,
+                                           event,
+                                           @DefaultExecutor).event
         end.flat_event
       end
 
@@ -956,7 +960,7 @@ module Concurrent
       # @return [Future]
       # @yield [value, *args] to the task.
       def then_on(executor, *args, &task)
-        ThenPromise.new(self, @DefaultExecutor, executor, args, &task).future
+        ThenPromise.new_blocked([self], self, @DefaultExecutor, executor, args, &task).future
       end
 
       # @!macro promises.shortcut.on
@@ -974,16 +978,16 @@ module Concurrent
       # @return [Future]
       # @yield [reason, *args] to the task.
       def rescue_on(executor, *args, &task)
-        RescuePromise.new(self, @DefaultExecutor, executor, args, &task).future
+        RescuePromise.new_blocked([self], self, @DefaultExecutor, executor, args, &task).future
       end
 
       # @!macro promises.method.zip
       # @return [Future]
       def zip(other)
         if other.is_a?(Future)
-          ZipFutureFuturePromise.new(self, other, @DefaultExecutor).future
+          ZipFutureFuturePromise.new_blocked([self, other], self, other, @DefaultExecutor).future
         else
-          ZipFutureEventPromise.new(self, other, @DefaultExecutor).future
+          ZipFutureEventPromise.new_blocked([self, other], self, other, @DefaultExecutor).future
         end
       end
 
@@ -995,7 +999,7 @@ module Concurrent
       #
       # @return [Future]
       def any(event_or_future)
-        AnyResolvedFuturePromise.new([self, event_or_future], @DefaultExecutor).future
+        AnyResolvedFuturePromise.new_blocked([self, event_or_future], [self, event_or_future], @DefaultExecutor).future
       end
 
       alias_method :|, :any
@@ -1005,25 +1009,29 @@ module Concurrent
       #
       # @return [Future]
       def delay
-        ZipFutureEventPromise.new(self,
-                                  DelayPromise.new(@DefaultExecutor).future,
-                                  @DefaultExecutor).future
+        future = DelayPromise.new(@DefaultExecutor).future
+        ZipFutureEventPromise.new_blocked([self, future],
+                                          self,
+                                          future,
+                                          @DefaultExecutor).future
       end
 
       # @!macro promise.method.schedule
       # @return [Future]
       def schedule(intended_time)
         chain do
-          ZipFutureEventPromise.new(self,
-                                    ScheduledPromise.new(@DefaultExecutor, intended_time).event,
-                                    @DefaultExecutor).future
+          event = ScheduledPromise.new(@DefaultExecutor, intended_time).event
+          ZipFutureEventPromise.new_blocked([self, event],
+                                            self,
+                                            event,
+                                            @DefaultExecutor).future
         end.flat
       end
 
       # @!macro promises.method.with_default_executor
       # @return [Future]
       def with_default_executor(executor)
-        FutureWrapperPromise.new(self, executor).future
+        FutureWrapperPromise.new_blocked([self], self, executor).future
       end
 
       # Creates new future which will have result of the future returned by receiver. If receiver
@@ -1032,7 +1040,7 @@ module Concurrent
       # @param [Integer] level how many levels of futures should flatten
       # @return [Future]
       def flat_future(level = 1)
-        FlatFuturePromise.new(self, level, @DefaultExecutor).future
+        FlatFuturePromise.new_blocked([self], self, level, @DefaultExecutor).future
       end
 
       alias_method :flat, :flat_future
@@ -1042,7 +1050,7 @@ module Concurrent
       #
       # @return [Event]
       def flat_event
-        FlatEventPromise.new(self, @DefaultExecutor).event
+        FlatEventPromise.new_blocked([self], self, @DefaultExecutor).event
       end
 
       # @!macro promises.shortcut.using
@@ -1116,7 +1124,7 @@ module Concurrent
       #   end
       #   future(0, &body).run.value! # => 5
       def run
-        RunFuturePromise.new(self, @DefaultExecutor).future
+        RunFuturePromise.new_blocked([self], self, @DefaultExecutor).future
       end
 
       # @!visibility private
@@ -1211,7 +1219,7 @@ module Concurrent
       #
       # @return [Event]
       def with_hidden_resolvable
-        @with_hidden_resolvable ||= EventWrapperPromise.new(self, @DefaultExecutor).event
+        @with_hidden_resolvable ||= EventWrapperPromise.new_blocked([self], self, @DefaultExecutor).event
       end
     end
 
@@ -1224,7 +1232,6 @@ module Concurrent
       #
       # @!macro promise.param.raise_on_reassign
       def resolve(fulfilled = true, value = nil, reason = nil, raise_on_reassign = true)
-        # TODO (pitr-ch 25-Sep-2016): should the defaults be kept to match event resolve api?
         resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason), raise_on_reassign)
       end
 
@@ -1268,7 +1275,7 @@ module Concurrent
       #
       # @return [Future]
       def with_hidden_resolvable
-        @with_hidden_resolvable ||= FutureWrapperPromise.new(self, @DefaultExecutor).future
+        @with_hidden_resolvable ||= FutureWrapperPromise.new_blocked([self], self, @DefaultExecutor).future
       end
     end
 
@@ -1360,10 +1367,13 @@ module Concurrent
     # @abstract
     class BlockedPromise < InnerPromise
       # @!visibility private
-      def self.new(*args, &block)
-        promise = super(*args, &block)
-        promise.blocked_by.each { |f| f.add_callback :callback_notify_blocked, promise }
-        promise
+
+      private_class_method :new
+
+      def self.new_blocked(blockers, *args, &block)
+        promise = new(*args, &block)
+      ensure
+        blockers.each { |f| f.add_callback :callback_notify_blocked, promise }
       end
 
       def initialize(future, blocked_by_futures, countdown)
@@ -1925,7 +1935,8 @@ module Concurrent
       # Zips with selected value form the suplied channels
       # @return [Future]
       def then_select(*channels)
-        ZipFuturesPromise.new([self, Concurrent::Promises.select(*channels)], @DefaultExecutor).future
+        future = Concurrent::Promises.select(*channels)
+        ZipFuturesPromise.new_blocked([self, future], [self, future], @DefaultExecutor).future
       end
 
       # @note may block
