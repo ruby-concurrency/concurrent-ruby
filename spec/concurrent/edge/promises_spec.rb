@@ -227,13 +227,6 @@ describe 'Concurrent::Promises' do
     end
   end
 
-  describe '.each' do
-    specify do
-      expect(fulfilled_future(nil).each.map(&:inspect)).to eq ['nil']
-      expect(fulfilled_future(1).each.map(&:inspect)).to eq ['1']
-      expect(fulfilled_future([1, 2]).each.map(&:inspect)).to eq ['1', '2']
-    end
-  end
 
   describe '.zip_events' do
     it 'waits for all and returns event' do
