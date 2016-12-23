@@ -757,12 +757,12 @@ pool of size 3. We create throttle with the same size
 ```ruby
 DB_INTERNAL_POOL = Concurrent::Array.new data 
 
-max_tree = Promises.throttle 3
+max_tree = Promises::Throttle.new 3
 
 futures = 11.times.map do |i|
   max_tree.
       # throttled tasks, at most 3 simultaneous calls of [] on the database
-      then_throttle { DB_INTERNAL_POOL[i] }.
+      then_throttled { DB_INTERNAL_POOL[i] }.
       # un-throttled tasks, unlimited concurrency
       then { |starts| starts.size }.
       rescue { |reason| reason.message }

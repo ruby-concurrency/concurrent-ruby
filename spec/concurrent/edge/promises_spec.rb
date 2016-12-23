@@ -227,7 +227,6 @@ describe 'Concurrent::Promises' do
     end
   end
 
-
   describe '.zip_events' do
     it 'waits for all and returns event' do
       a = fulfilled_future 1
@@ -489,55 +488,40 @@ describe 'Concurrent::Promises' do
 
   describe 'Throttling' do
     specify do
-      max_tree = Concurrent::Promises::Throttle.new 3
+      limit = 4
+      throttle = Concurrent::Promises::Throttle.new limit
       counter  = Concurrent::AtomicFixnum.new
       testing  = -> *args do
         counter.increment
-        sleep 0.01
+        sleep rand * 0.1 + 0.1
         # returns less then 3 since it's throttled
-        counter.decrement
+        v = counter.decrement + 1
+        v
       end
 
-      expect(Concurrent::Promises.zip(
-          *12.times.map do |i|
-            max_tree.throttle { |trigger| trigger.then &testing }
-          end).value!.all? { |v| v <= 3 }).to be_truthy
+      expect(p(Concurrent::Promises.zip(
+          *20.times.map do |i|
+            throttle.throttled { |trigger| trigger.then(throttle, &testing) }
+          end).value!).all? { |v| v <= limit }).to be_truthy
 
-      expect(Concurrent::Promises.zip(
-          *12.times.map do |i|
+      expect(p(Concurrent::Promises.zip(
+          *20.times.map do |i|
+            throttle.then_throttled(throttle, &testing)
+          end).value!).all? { |v| v <= limit }).to be_truthy
+
+      expect(p(Concurrent::Promises.zip(
+          *20.times.map do |i|
             Concurrent::Promises.
                 fulfilled_future(i).
-                throttle(max_tree) { |trigger| trigger.then &testing }
-          end).value!.all? { |v| v <= 3 }).to be_truthy
-    end
+                throttled_by(throttle) { |trigger| trigger.then(throttle, &testing) }
+          end).value!).all? { |v| v <= limit }).to be_truthy
 
-    specify do
-      max_five = Concurrent::Promises::Throttle.new 5
-      jobs     = 20.times.map do |i|
-        max_five.throttle do |trigger|
-          # trigger is an event, has same chain-able capabilities as current promise
-          trigger.then do
-            # at any given time there max 5 simultaneous executions of this block
-            the_work = i * 2
-          end
-        end
-      end
-      result   = Concurrent::Promises.zip_futures(*jobs)
-      p result.value!
-      # => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
-    end
-
-    specify do
-      max_five = Concurrent::Promises::Throttle.new 5
-      jobs     = 20.times.map do |i|
-        max_five.then_throttle do
-          # at any given time there max 5 simultaneous executions of this block
-          the_work = i * 2
-        end # returns promise
-      end
-      result   = Concurrent::Promises.zip_futures(*jobs)
-      p result.value!
-      # => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
+      expect(p(Concurrent::Promises.zip(
+          *20.times.map do |i|
+            Concurrent::Promises.
+                fulfilled_future(i).
+                then_throttled_by(throttle, throttle, &testing)
+          end).value!).all? { |v| v <= limit }).to be_truthy
     end
   end
 end
