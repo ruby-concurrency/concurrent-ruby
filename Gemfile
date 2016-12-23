@@ -4,18 +4,19 @@ gemspec name: 'concurrent-ruby'
 gemspec name: 'concurrent-ruby-edge'
 
 group :development do
-  gem 'rake', '~> 10.4.2'
+  gem 'rake', '~> 10.0'
   gem 'rake-compiler', '~> 0.9.5'
   gem 'rake-compiler-dock', '~> 0.4.3'
   gem 'gem-compiler', '~> 0.3.0'
-  gem 'benchmark-ips', '~> 2.2.0'
+  gem 'benchmark-ips', '~> 2.7'
 
   # documentation
   gem 'countloc', '~> 0.4.0', :platforms => :mri, :require => false
-  gem 'yard', '~> 0.8.7.6', :require => false
+  gem 'yard', '~> 0.8.0', :require => false
   # TODO (pitr-ch 15-Oct-2016): does not work on 1.9.3 anymore
-  gem 'inch', '~> 0.6.3', :platforms => :mri, :require => false
-  gem 'redcarpet', '~> 3.3.2', platforms: :mri # understands github markdown
+  # TODO remove, reports private classes as undocumented
+  gem 'inch', '~> 0.7.0', :platforms => :mri, :require => false
+  gem 'redcarpet', '~> 3.3', platforms: :mri # understands github markdown
   gem 'md-ruby-eval'
 end
 
