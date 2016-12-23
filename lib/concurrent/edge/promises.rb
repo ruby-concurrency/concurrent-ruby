@@ -1358,14 +1358,15 @@ module Concurrent
       def self.new_blocked2(blocker1, blocker2, *args, &block)
         blocker_delayed1 = blocker1.promise.delayed
         blocker_delayed2 = blocker2.promise.delayed
+        # TODO (pitr-ch 23-Dec-2016): use arrays when we know it will not grow (only flat adds delay)
         delayed          = if blocker_delayed1
                              if blocker_delayed2
-                               LockFreeStack.new2(blocker_delayed1, blocker_delayed2)
+                               LockFreeStack.of2(blocker_delayed1, blocker_delayed2)
                              else
-                               LockFreeStack.new1(blocker_delayed1)
+                               LockFreeStack.of1(blocker_delayed1)
                              end
                            else
-                             blocker_delayed2 ? LockFreeStack.new1(blocker_delayed2) : nil
+                             blocker_delayed2 ? LockFreeStack.of1(blocker_delayed2) : nil
                            end
         promise          = new(delayed, 2, *args, &block)
       ensure
@@ -1384,7 +1385,7 @@ module Concurrent
         blocker_delayed = blocker.promise.delayed
         if blocker_delayed
           delayed = unless delayed
-                      LockFreeStack.new1(blocker_delayed)
+                      LockFreeStack.of1(blocker_delayed)
                     else
                       delayed.push(blocker_delayed)
                     end

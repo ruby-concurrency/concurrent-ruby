@@ -4,7 +4,11 @@ module Concurrent
     safe_initialization!
 
     class Node
+      # TODO (pitr-ch 20-Dec-2016): Could be unified with Stack class?
+
       attr_reader :value, :next_node
+      # allow to nil-ify to free GC when the entry is no longer relevant, not synchronised
+      attr_writer :value
 
       def initialize(value, next_node)
         @value     = value
@@ -24,9 +28,17 @@ module Concurrent
 
     private(*attr_atomic(:head))
 
-    def initialize
+    def self.of1(value)
+      new Node[value, EMPTY]
+    end
+
+    def self.of2(value1, value2)
+      new Node[value1, Node[value2, EMPTY]]
+    end
+
+    def initialize(head = EMPTY)
       super()
-      self.head = EMPTY
+      self.head = head
     end
 
     def empty?(head = self.head)
@@ -85,6 +97,10 @@ module Concurrent
 
     def clear_if(head)
       compare_and_set_head head, EMPTY
+    end
+
+    def replace_if(head, new_head)
+      compare_and_set_head head, new_head
     end
 
     def clear_each(&block)
