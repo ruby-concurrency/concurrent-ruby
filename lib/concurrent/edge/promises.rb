@@ -6,7 +6,12 @@ require 'concurrent/errors'
 
 module Concurrent
 
-  # {include:file:doc/promises.out.md}
+
+  # # Guide
+  #
+  # The guide is best place to start with promises, see {file:doc/promises.out.md}.
+  #
+  # {include:file:doc/promises-main.md}
   module Promises
 
     # @!macro [new] promises.param.default_executor
@@ -137,19 +142,19 @@ module Concurrent
       #   @param [nil] nil
       #   @return [Event] resolved event.
       #
-      # @overload create(a_future = nil, default_executor = :io)
+      # @overload create(a_future, default_executor = :io)
       #   @param [Future] a_future
       #   @return [Future] a future which will be resolved when a_future is.
       #
-      # @overload create(an_event = nil, default_executor = :io)
+      # @overload create(an_event, default_executor = :io)
       #   @param [Event] an_event
       #   @return [Event] an event which will be resolved when an_event is.
       #
-      # @overload create(exception = nil, default_executor = :io)
+      # @overload create(exception, default_executor = :io)
       #   @param [Exception] exception
       #   @return [Future] a rejected future with the exception as its reason.
       #
-      # @overload create(value = nil, default_executor = :io)
+      # @overload create(value, default_executor = :io)
       #   @param [Object] value when none of the above overloads fits
       #   @return [Future] a fulfilled future with the value.
       def create(argument = nil, default_executor = :io)
@@ -662,7 +667,6 @@ module Concurrent
       # @!visibility private
       # @return [Array<AbstractPromise>]
       def blocks
-        # TODO (pitr-ch 18-Dec-2016): add macro noting that debug methods may change api without warning
         @Callbacks.each_with_object([]) do |(method, args), promises|
           promises.push(args[0]) if method == :callback_notify_blocked
         end
@@ -1099,10 +1103,10 @@ module Concurrent
       # @return [Future]
       # @example
       #   body = lambda do |v|
-      #    v += 1
-      #    v < 5 ? future(v, &body) : v
+      #     v += 1
+      #     v < 5 ? Promises.future(v, &body) : v
       #   end
-      #   future(0, &body).run.value! # => 5
+      #   Promises.future(0, &body).run.value! # => 5
       def run
         RunFuturePromise.new_blocked1(self, @DefaultExecutor).future
       end
@@ -1237,7 +1241,7 @@ module Concurrent
       # @yieldreturn [Object] value
       # @return [self]
       def evaluate_to(*args, &block)
-        # TODO (pitr-ch 13-Jun-2016): add raise_on_reassign
+        # FIXME (pitr-ch 13-Jun-2016): add raise_on_reassign
         promise.evaluate_to(*args, block)
       end
 
@@ -1323,20 +1327,16 @@ module Concurrent
         super ResolvableFuture.new(self, default_executor)
       end
 
-      # @!visibility private
       def fulfill(value, raise_on_reassign)
         resolve_with Fulfilled.new(value), raise_on_reassign
       end
 
-      # @!visibility private
       def reject(reason, raise_on_reassign)
         resolve_with Rejected.new(reason), raise_on_reassign
       end
 
-      # @!visibility private
       public :evaluate_to
 
-      # @!visibility private
       def evaluate_to!(*args, block)
         evaluate_to(*args, block).wait!
       end
@@ -1348,7 +1348,6 @@ module Concurrent
 
     # @abstract
     class BlockedPromise < InnerPromise
-      # @!visibility private
 
       private_class_method :new
 
@@ -1405,7 +1404,6 @@ module Concurrent
         @Countdown = AtomicFixnum.new blockers_count
       end
 
-      # @!visibility private
       def on_blocker_resolution(future, index)
         countdown  = process_on_blocker_resolution(future, index)
         resolvable = resolvable?(countdown, future, index)
@@ -1421,11 +1419,23 @@ module Concurrent
         clear_propagate_touch if @Touched.make_true
       end
 
+      def touched?
+        @Touched.value
+      end
+
+      # for inspection only
+      def blocked_by
+        blocked_by = []
+        ObjectSpace.each_object(AbstractEventFuture) { |o| blocked_by.push o if o.blocks.include? self }
+        blocked_by
+      end
+
+      private
+
       def clear_propagate_touch
         @Delayed.clear_each { |o| propagate_touch o } if @Delayed
       end
 
-      # @!visibility private
       def propagate_touch(stack_or_element = @Delayed)
         if stack_or_element.is_a? LockFreeStack
           stack_or_element.each { |element| propagate_touch element }
@@ -1433,27 +1443,6 @@ module Concurrent
           stack_or_element.touch unless stack_or_element.nil? # if still present
         end
       end
-
-      def touched?
-        @Touched.value
-      end
-
-      # !visibility private # TODO (pitr-ch 20-Dec-2016): does it have to be at promise methods?
-      # for inspection only
-      def blocked_by
-        # TODO (pitr-ch 18-Dec-2016): doc macro debug method
-
-        blocked_by = []
-        ObjectSpace.each_object(AbstractEventFuture) { |o| blocked_by.push o if o.blocks.include? self }
-        blocked_by
-      end
-
-      # @!visibility private
-      def inspect
-        "#{to_s[0..-2]} blocked_by:[#{ blocked_by.map(&:to_s).join(', ')}]>"
-      end
-
-      private
 
       # @return [true,false] if resolvable
       def resolvable?(countdown, future, index)
@@ -1479,7 +1468,6 @@ module Concurrent
         @Args     = args
       end
 
-      # @!visibility private
       def executor
         @Executor
       end
@@ -1742,7 +1730,7 @@ module Concurrent
       end
 
       def process_on_blocker_resolution(future, index)
-        # TODO (pitr-ch 18-Dec-2016): Can we assume that array will never break under parallel access when never resized?
+        # TODO (pitr-ch 18-Dec-2016): Can we assume that array will never break under parallel access when never re-sized?
         @Resolutions[index] = future.internal_state # has to be set before countdown in super
         super future, index
       end
@@ -1849,14 +1837,12 @@ module Concurrent
     end
 
     class ScheduledPromise < InnerPromise
-      # @!visibility private
       def intended_time
         @IntendedTime
       end
 
-      # @!visibility private
       def inspect
-        "#{to_s[0..-2]} intended_time:[#{@IntendedTime}}>"
+        "#{to_s[0..-2]} intended_time: #{@IntendedTime}>"
       end
 
       private
@@ -1917,6 +1903,8 @@ module Concurrent
 end
 
 # TODO try stealing pool, each thread has it's own queue
+# TODO (pitr-ch 18-Dec-2016): doc macro debug method
+# TODO (pitr-ch 18-Dec-2016): add macro noting that debug methods may change api without warning
 
 ### Experimental features follow
 

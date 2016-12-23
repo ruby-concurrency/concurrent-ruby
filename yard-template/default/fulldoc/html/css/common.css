@@ -4,6 +4,16 @@ body {
     line-height: 18px;
 }
 
+.docstring h1:before {
+    content: '# ';
+    color: silver;
+}
+
+.docstring h2:before {
+    content: '## ';
+    color: silver;
+}
+
 .docstring code, .docstring .object_link a, #filecontents code {
     padding: 0px 3px 1px 3px;
     border: 1px solid #eef;
