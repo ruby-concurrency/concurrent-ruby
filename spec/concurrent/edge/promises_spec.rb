@@ -221,7 +221,7 @@ describe 'Concurrent::Promises' do
       let(:a_future) { future { raise 'error' } }
 
       it 'raises a concurrent error' do
-        expect { zip(a_future).value! }.to raise_error(Concurrent::Error)
+        expect { zip(a_future).value! }.to raise_error(StandardError)
       end
 
     end
