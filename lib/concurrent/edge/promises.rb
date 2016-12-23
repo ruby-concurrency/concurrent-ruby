@@ -920,13 +920,14 @@ module Concurrent
       # @example
       #   raise Promises.rejected_future(StandardError.new("boom"))
       # @raise [StandardError] when raising not rejected future
+      # @return [Exception]
       def exception(*args)
         raise Concurrent::Error, 'it is not rejected' unless rejected?
-        reason = internal_state.reason
-        if reason.is_a?(::Array)
+        reason = Array(internal_state.reason).compact
+        if reason.size > 1
           Concurrent::MultipleErrors.new reason
         else
-          reason.exception(*args)
+          reason[0].exception(*args)
         end
       end
 
