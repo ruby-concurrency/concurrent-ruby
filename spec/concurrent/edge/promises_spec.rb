@@ -489,39 +489,39 @@ describe 'Concurrent::Promises' do
   describe 'Throttling' do
     specify do
       limit = 4
-      throttle = Concurrent::Promises::Throttle.new limit
+      throttle = Concurrent::Throttle.new limit
       counter  = Concurrent::AtomicFixnum.new
       testing  = -> *args do
         counter.increment
-        sleep rand * 0.1 + 0.1
+        sleep rand * 0.02 + 0.02
         # returns less then 3 since it's throttled
         v = counter.decrement + 1
         v
       end
 
-      expect(p(Concurrent::Promises.zip(
+      expect(Concurrent::Promises.zip(
           *20.times.map do |i|
             throttle.throttled { |trigger| trigger.then(throttle, &testing) }
-          end).value!).all? { |v| v <= limit }).to be_truthy
+          end).value!.all? { |v| v <= limit }).to be_truthy
 
-      expect(p(Concurrent::Promises.zip(
+      expect(Concurrent::Promises.zip(
           *20.times.map do |i|
             throttle.then_throttled(throttle, &testing)
-          end).value!).all? { |v| v <= limit }).to be_truthy
+          end).value!.all? { |v| v <= limit }).to be_truthy
 
-      expect(p(Concurrent::Promises.zip(
+      expect(Concurrent::Promises.zip(
           *20.times.map do |i|
             Concurrent::Promises.
                 fulfilled_future(i).
                 throttled_by(throttle) { |trigger| trigger.then(throttle, &testing) }
-          end).value!).all? { |v| v <= limit }).to be_truthy
+          end).value!.all? { |v| v <= limit }).to be_truthy
 
-      expect(p(Concurrent::Promises.zip(
+      expect(Concurrent::Promises.zip(
           *20.times.map do |i|
             Concurrent::Promises.
                 fulfilled_future(i).
                 then_throttled_by(throttle, throttle, &testing)
-          end).value!).all? { |v| v <= limit }).to be_truthy
+          end).value!.all? { |v| v <= limit }).to be_truthy
     end
   end
 end
