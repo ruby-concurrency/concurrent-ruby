@@ -580,17 +580,12 @@ module Concurrent
         ChainPromise.new_blocked1(self, @DefaultExecutor, executor, args, &task).future
       end
 
-      # Short string representation.
-      # @return [String]
+      # @return [String] Short string representation.
       def to_s
-        "<##{self.class}:0x#{'%x' % (object_id << 1)} #{state.to_sym}>"
+        format '<#%s:0x%x %s>', self.class, object_id << 1, state
       end
 
-      # Longer string representation.
-      # @return [String]
-      def inspect
-        "#{to_s[0..-2]} blocks:[#{blocks.map(&:to_s).join(', ')}]>"
-      end
+      alias_method :inspect, :to_s
 
       # Resolves the resolvable when receiver is resolved.
       #
@@ -1288,12 +1283,10 @@ module Concurrent
       end
 
       def to_s
-        format '<#%s:0x%x %s>', self.class, object_id << 1, state
+        format '<#%s:0x%x>', self.class, object_id << 1
       end
 
-      def inspect
-        to_s
-      end
+      alias_method :inspect, :to_s
 
       def delayed
         nil
