@@ -12,3 +12,4 @@ require 'concurrent/edge/lock_free_queue'
 
 require 'concurrent/edge/promises'
 require 'concurrent/edge/cancellation'
+require 'concurrent/edge/throttle'

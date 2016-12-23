@@ -614,7 +614,10 @@ module Concurrent
       # @overload an_event.chain_on(executor, *args, &task)
       #   @yield [*args] to the task.
       # @overload a_future.chain_on(executor, *args, &task)
-      #   @yield [fulfilled?, value, reason, *args] to the task.
+      #   @yield [fulfilled, value, reason, *args] to the task.
+      #   @yieldparam [true, false] fulfilled
+      #   @yieldparam [Object] value
+      #   @yieldparam [Exception] reason
       def chain_on(executor, *args, &task)
         ChainPromise.new_blocked_by1(self, @DefaultExecutor, executor, args, &task).future
       end
@@ -652,7 +655,10 @@ module Concurrent
       # @overload an_event.on_resolution!(*args, &callback)
       #   @yield [*args] to the callback.
       # @overload a_future.on_resolution!(*args, &callback)
-      #   @yield [fulfilled?, value, reason, *args] to the callback.
+      #   @yield [fulfilled, value, reason, *args] to the callback.
+      #   @yieldparam [true, false] fulfilled
+      #   @yieldparam [Object] value
+      #   @yieldparam [Exception] reason
       def on_resolution!(*args, &callback)
         add_callback :callback_on_resolution, args, callback
       end
@@ -667,7 +673,10 @@ module Concurrent
       # @overload an_event.on_resolution_using(executor, *args, &callback)
       #   @yield [*args] to the callback.
       # @overload a_future.on_resolution_using(executor, *args, &callback)
-      #   @yield [fulfilled?, value, reason, *args] to the callback.
+      #   @yield [fulfilled, value, reason, *args] to the callback.
+      #   @yieldparam [true, false] fulfilled
+      #   @yieldparam [Object] value
+      #   @yieldparam [Exception] reason
       def on_resolution_using(executor, *args, &callback)
         add_callback :async_callback_on_resolution, executor, args, callback
       end
@@ -1080,7 +1089,7 @@ module Concurrent
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
-      # @yield [value *args] to the callback.
+      # @yield [value, *args] to the callback.
       def on_fulfillment!(*args, &callback)
         add_callback :callback_on_fulfillment, args, callback
       end
@@ -1109,7 +1118,7 @@ module Concurrent
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
-      # @yield [reason *args] to the callback.
+      # @yield [reason, *args] to the callback.
       def on_rejection!(*args, &callback)
         add_callback :callback_on_rejection, args, callback
       end
@@ -1121,7 +1130,7 @@ module Concurrent
       # @!macro promises.param.args
       # @!macro promise.param.callback
       # @return [self]
-      # @yield [reason *args] to the callback.
+      # @yield [reason, *args] to the callback.
       def on_rejection_using(executor, *args, &callback)
         add_callback :async_callback_on_rejection, executor, args, callback
       end

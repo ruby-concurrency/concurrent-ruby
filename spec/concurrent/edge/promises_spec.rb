@@ -501,12 +501,12 @@ describe 'Concurrent::Promises' do
 
       expect(Concurrent::Promises.zip(
           *20.times.map do |i|
-            throttle.throttled { |trigger| trigger.then(throttle, &testing) }
+            throttle.throttled_future_chain { |trigger| trigger.then(throttle, &testing) }
           end).value!.all? { |v| v <= limit }).to be_truthy
 
       expect(Concurrent::Promises.zip(
           *20.times.map do |i|
-            throttle.then_throttled(throttle, &testing)
+            throttle.throttled_future(throttle, &testing)
           end).value!.all? { |v| v <= limit }).to be_truthy
 
       expect(Concurrent::Promises.zip(
