@@ -129,5 +129,9 @@ module Concurrent
   #
   # @!macro atomic_fixnum_public_api
   class AtomicFixnum < AtomicFixnumImplementation
+    # @return [String] Short string representation.
+    def to_s
+      format '<#%s:0x%x value:%s>', self.class, object_id << 1, get
+    end
   end
 end
