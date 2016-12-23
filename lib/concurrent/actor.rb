@@ -65,10 +65,14 @@ module Concurrent
     # @param args see {.to_spawn_options}
     # @return [Reference] never the actual actor
     def self.spawn(*args, &block)
+      options = to_spawn_options(*args)
+      if options[:executor] && options[:executor].is_a?(ImmediateExecutor)
+        raise ArgumentError, 'ImmediateExecutor is not supported'
+      end
       if Actor.current
-        Core.new(to_spawn_options(*args).merge(parent: Actor.current), &block).reference
+        Core.new(options.merge(parent: Actor.current), &block).reference
       else
-        root.ask([:spawn, to_spawn_options(*args), block]).value!
+        root.ask([:spawn, options, block]).value!
       end
     end
 

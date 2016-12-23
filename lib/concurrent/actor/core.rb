@@ -172,7 +172,6 @@ module Concurrent
         allocate_context
 
         @executor = Type! opts.fetch(:executor, @context.default_executor), Concurrent::AbstractExecutorService
-        raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
 
         @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
         @name      = (Type! opts.fetch(:name), String, Symbol).to_s
