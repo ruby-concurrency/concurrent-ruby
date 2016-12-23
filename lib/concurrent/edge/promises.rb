@@ -458,6 +458,10 @@ module Concurrent
       PENDING  = Pending.new
       RESOLVED = Fulfilled.new(nil)
 
+      def RESOLVED.to_sym
+        :resolved
+      end
+
       private_constant :PENDING, :RESOLVED
     end
 
