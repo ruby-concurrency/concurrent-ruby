@@ -229,7 +229,7 @@ module Concurrent
       #   @param [Numeric, Time] intended_time `Numeric` means to run in `intended_time` seconds.
       #     `Time` means to run on `intended_time`.
       def schedule_on(default_executor, intended_time, *args, &task)
-        ScheduledPromise.new(default_executor, intended_time).future.then(*args, &task)
+        ScheduledPromise.new(default_executor, intended_time).event.chain(*args, &task)
       end
 
       # @!macro promises.shortcut.on

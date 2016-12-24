@@ -136,6 +136,8 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 *Why are these not in core?*
 
+- **Promises Framework** - They are being finalized to be able to be moved to core. They'll deprecate old 
+  implementation.
 - **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
 - **Channel** - Brand new implementation; partial documentation and tests; stability is good.
 - **LazyRegister** - Missing documentation and tests.

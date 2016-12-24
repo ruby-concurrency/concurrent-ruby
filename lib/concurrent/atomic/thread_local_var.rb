@@ -11,7 +11,7 @@ module Concurrent
   #   Creates a thread local variable.
   #
   #   @param [Object] default the default value when otherwise unset
-  #   @param [Proc] block Optional block that gets called to obtain the
+  #   @param [Proc] default_block Optional block that gets called to obtain the
   #     default value for each thread
 
   # @!macro [new] thread_local_var_method_get
@@ -72,28 +72,28 @@ module Concurrent
   #   the current thread will ever see that change.
   #
   #   @!macro thread_safe_variable_comparison
-  #   
+  #
   #   @example
   #     v = ThreadLocalVar.new(14)
   #     v.value #=> 14
   #     v.value = 2
   #     v.value #=> 2
-  #   
+  #
   #   @example
   #     v = ThreadLocalVar.new(14)
-  #   
+  #
   #     t1 = Thread.new do
   #       v.value #=> 14
   #       v.value = 1
   #       v.value #=> 1
   #     end
-  #   
+  #
   #     t2 = Thread.new do
   #       v.value #=> 14
   #       v.value = 2
   #       v.value #=> 2
   #     end
-  #   
+  #
   #     v.value #=> 14
   #
   #   @see https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html Java ThreadLocal
