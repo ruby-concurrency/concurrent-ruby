@@ -1,7 +1,6 @@
 require 'concurrent/edge/promises'
 require 'thread'
 
-Concurrent.use_stdlib_logger Logger::DEBUG
 
 describe 'Concurrent::Promises' do
 
