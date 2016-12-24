@@ -24,7 +24,7 @@ module Concurrent
         def on_message(message)
           case message
           when :child
-            AdHoc.spawn(:pong, @queue) { |queue| -> m { queue << m } }
+            AdHoc.spawn!(:pong, @queue) { |queue| -> m { queue << m } }
           else
             @queue << message
             message
@@ -33,16 +33,16 @@ module Concurrent
       end
 
       it 'forbids Immediate executor' do
-        expect { Utils::AdHoc.spawn name: 'test', executor: ImmediateExecutor.new }.to raise_error
+        expect { Utils::AdHoc.spawn! name: 'test', executor: ImmediateExecutor.new }.to raise_error
       end
 
       describe 'spawning' do
-        describe 'Actor#spawn' do
+        describe 'Actor#spawn!' do
           behaviour = -> v { -> _ { v } }
-          subjects  = { spawn:                 -> { Actor.spawn(AdHoc, :ping, 'arg', &behaviour) },
-                        context_spawn:         -> { AdHoc.spawn(:ping, 'arg', &behaviour) },
-                        spawn_by_hash:         -> { Actor.spawn(class: AdHoc, name: :ping, args: ['arg'], &behaviour) },
-                        context_spawn_by_hash: -> { AdHoc.spawn(name: :ping, args: ['arg'], &behaviour) } }
+          subjects  = { spawn:                 -> { Actor.spawn!(AdHoc, :ping, 'arg', &behaviour) },
+                        context_spawn:         -> { AdHoc.spawn!(:ping, 'arg', &behaviour) },
+                        spawn_by_hash:         -> { Actor.spawn!(class: AdHoc, name: :ping, args: ['arg'], &behaviour) },
+                        context_spawn_by_hash: -> { AdHoc.spawn!(name: :ping, args: ['arg'], &behaviour) } }
 
           subjects.each do |desc, subject_definition|
             describe desc do
@@ -89,14 +89,14 @@ module Concurrent
         end
 
         it 'terminates on failed message processing' do
-          a = AdHoc.spawn(name: :fail, logger: Concurrent::NULL_LOGGER) { -> _ { raise } }
+          a = AdHoc.spawn!(name: :fail, logger: Concurrent::NULL_LOGGER) { -> _ { raise } }
           expect(a.ask(nil).wait.rejected?).to be_truthy
           expect(a.ask!(:terminated?)).to be_truthy
         end
       end
 
       describe 'messaging' do
-        subject { AdHoc.spawn(:add) { c = 0; -> v { c = c + v } } }
+        subject { AdHoc.spawn!(:add) { c = 0; -> v { c = c + v } } }
         specify do
           subject.tell(1).tell(1)
           subject << 1 << 1
@@ -107,10 +107,10 @@ module Concurrent
 
       describe 'children' do
         let(:parent) do
-          AdHoc.spawn(:parent) do
+          AdHoc.spawn!(:parent) do
             -> message do
               if message == :child
-                AdHoc.spawn(:child) { -> _ { parent } }
+                AdHoc.spawn!(:child) { -> _ { parent } }
               else
                 children
               end
@@ -128,7 +128,7 @@ module Concurrent
       end
 
       describe 'envelope' do
-        subject { AdHoc.spawn(:subject) { -> _ { envelope } } }
+        subject { AdHoc.spawn!(:subject) { -> _ { envelope } } }
         specify do
           envelope = subject.ask!('a')
           expect(envelope).to be_a_kind_of Envelope
@@ -142,8 +142,8 @@ module Concurrent
 
       describe 'termination' do
         subject do
-          AdHoc.spawn(:parent) do
-            child = AdHoc.spawn(:child) { -> v { v } }
+          AdHoc.spawn!(:parent) do
+            child = AdHoc.spawn!(:child) { -> v { v } }
             -> v { child }
           end
         end
@@ -171,8 +171,8 @@ module Concurrent
 
       describe 'message redirecting' do
         let(:parent) do
-          AdHoc.spawn(:parent) do
-            child = AdHoc.spawn(:child) { -> m { m+1 } }
+          AdHoc.spawn!(:parent) do
+            child = AdHoc.spawn!(:child) { -> m { m+1 } }
             -> message do
               if message == :child
                 child
@@ -192,9 +192,9 @@ module Concurrent
         queue   = Queue.new
         failure = nil
         # FIXME this leads to weird message processing ordering
-        # failure = AdHoc.spawn(:failure) { -> m { terminate! } }
+        # failure = AdHoc.spawn!(:failure) { -> m { terminate! } }
         monitor = AdHoc.spawn!(:monitor) do
-          failure = AdHoc.spawn(:failure) { -> m { m } }
+          failure = AdHoc.spawn!(:failure) { -> m { m } }
           failure << :link
           -> m { queue << [m, envelope.sender] }
         end
@@ -209,7 +209,7 @@ module Concurrent
         queue   = Queue.new
         failure = nil
         monitor = AdHoc.spawn!(:monitor) do
-          failure = AdHoc.spawn(name: :failure, link: true) { -> m { m } }
+          failure = AdHoc.spawn!(name: :failure, link: true) { -> m { m } }
           -> m { queue << [m, envelope.sender] }
         end
 
@@ -225,8 +225,8 @@ module Concurrent
           queue              = Queue.new
           resuming_behaviour = Behaviour.restarting_behaviour_definition(:resume!)
 
-          test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
-            actor = AdHoc.spawn name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
+          test = AdHoc.spawn! name: :tester, behaviour_definition: resuming_behaviour do
+            actor = AdHoc.spawn! name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
@@ -248,8 +248,8 @@ module Concurrent
 
         it 'pauses on error and resets' do
           queue = Queue.new
-          test  = AdHoc.spawn name: :tester, behaviour_definition: Behaviour.restarting_behaviour_definition do
-            actor = AdHoc.spawn name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
+          test  = AdHoc.spawn! name: :tester, behaviour_definition: Behaviour.restarting_behaviour_definition do
+            actor = AdHoc.spawn! name: :pausing, behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :object_id ? self.object_id : pass }
             end
@@ -284,9 +284,9 @@ module Concurrent
             end
           end
 
-          test = AdHoc.spawn name: :tester, behaviour_definition: resuming_behaviour do
+          test = AdHoc.spawn! name: :tester, behaviour_definition: resuming_behaviour do
 
-            actor = AdHoc.spawn name:                 :pausing,
+            actor = AdHoc.spawn! name:                 :pausing,
                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
@@ -316,7 +316,7 @@ module Concurrent
         it 'supports asks', buggy: true do
           children = Queue.new
           pool     = Concurrent::Actor::Utils::Pool.spawn! 'pool', 5 do |index|
-            worker = Concurrent::Actor::Utils::AdHoc.spawn name: "worker-#{index}", supervised: true do
+            worker = Concurrent::Actor::Utils::AdHoc.spawn! name: "worker-#{index}", supervised: true do
               lambda do |message|
                 fail if message == :fail
                 5 + message
