@@ -1,6 +1,7 @@
 require 'concurrent' # TODO do not require whole concurrent gem
 require 'concurrent/concern/deprecation'
 require 'concurrent/edge/lock_free_stack'
+require 'concurrent/utility/system_exceptions_handler'
 
 
 # @note different name just not to collide for now
@@ -949,7 +950,7 @@ module Concurrent
       rescue StandardError => error
         complete_with Future::Failed.new(error)
       rescue Exception => error
-        log(ERROR, 'Edge::Future', error)
+        Utility::SystemExceptionsHandler.handle(error, 'Edge::Future')
         complete_with Future::Failed.new(error)
       end
     end

@@ -23,8 +23,9 @@ module Concurrent
         begin
           value   = @task.call(*args)
           success = true
-        rescue @exception_class => ex
-          reason  = ex
+        rescue @exception_class => error
+          Utility::SystemExceptionsHandler.handle(error, 'Task error')
+          reason  = error
           success = false
         end
 
