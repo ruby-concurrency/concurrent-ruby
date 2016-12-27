@@ -10,46 +10,46 @@ require 'concurrent/utility/processor_counter'
 module Concurrent
   extend Concern::Logging
 
-  autoload :Options,            'concurrent/options'
-  autoload :TimerSet,           'concurrent/executor/timer_set'
+  autoload :Options, 'concurrent/options'
+  autoload :TimerSet, 'concurrent/executor/timer_set'
   autoload :ThreadPoolExecutor, 'concurrent/executor/thread_pool_executor'
 
   # @return [Logger] Logger with provided level and output.
-  def self.create_stdlib_logger(level = Logger::FATAL, output = $stderr)
-    logger           = Logger.new(output)
-    logger.level     = level
-    logger.formatter = lambda do |severity, datetime, progname, msg|
-      formatted_message = case msg
+  def self.create_simple_logger(level = Logger::FATAL, output = $stderr)
+    # TODO (pitr-ch 24-Dec-2016): figure out why it had to be replaced, stdlogger was deadlocking
+    lambda do |severity, progname, message = nil, &block|
+      return false if severity < level
+
+      message           = block ? block.call : message
+      formatted_message = case message
                           when String
-                            msg
+                            message
                           when Exception
                             format "%s (%s)\n%s",
-                              msg.message, msg.class, (msg.backtrace || []).join("\n")
+                                   message.message, message.class, (message.backtrace || []).join("\n")
                           else
-                            msg.inspect
+                            message.inspect
                           end
-      format "[%s] %5s -- %s: %s\n",
-        datetime.strftime('%Y-%m-%d %H:%M:%S.%L'),
-        severity,
-        progname,
-        formatted_message
-    end
 
-    lambda do |loglevel, progname, message = nil, &block|
-    logger.add loglevel, message, progname, &block
+      output.print format "[%s] %5s -- %s: %s\n",
+                          Time.now.strftime('%Y-%m-%d %H:%M:%S.%L'),
+                          Logger::SEV_LABEL[severity],
+                          progname,
+                          formatted_message
+      true
     end
   end
 
-  # Use logger created by #create_stdlib_logger to log concurrent-ruby messages.
-  def self.use_stdlib_logger(level = Logger::FATAL, output = $stderr)
-    Concurrent.global_logger = create_stdlib_logger level, output
+  # Use logger created by #create_simple_logger to log concurrent-ruby messages.
+  def self.use_simple_logger(level = Logger::FATAL, output = $stderr)
+    Concurrent.global_logger = create_simple_logger level, output
   end
 
   # Suppresses all output when used for logging.
   NULL_LOGGER   = lambda { |level, progname, message = nil, &block| }
 
   # @!visibility private
-  GLOBAL_LOGGER = AtomicReference.new(create_stdlib_logger(Logger::WARN))
+  GLOBAL_LOGGER = AtomicReference.new(create_simple_logger(Logger::WARN))
   private_constant :GLOBAL_LOGGER
 
   def self.global_logger
@@ -131,23 +131,23 @@ module Concurrent
 
   def self.new_fast_executor(opts = {})
     FixedThreadPool.new(
-      [2, Concurrent.processor_count].max,
-      auto_terminate:  opts.fetch(:auto_terminate, true),
-      idletime:        60, # 1 minute
-      max_queue:       0, # unlimited
-      fallback_policy: :abort # shouldn't matter -- 0 max queue
+        [2, Concurrent.processor_count].max,
+        auto_terminate:  opts.fetch(:auto_terminate, true),
+        idletime:        60, # 1 minute
+        max_queue:       0, # unlimited
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
 
   def self.new_io_executor(opts = {})
     ThreadPoolExecutor.new(
-      min_threads:     [2, Concurrent.processor_count].max,
-      max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-      # max_threads:     1000,
-      auto_terminate:  opts.fetch(:auto_terminate, true),
-      idletime:        60, # 1 minute
-      max_queue:       0, # unlimited
-      fallback_policy: :abort # shouldn't matter -- 0 max queue
+        min_threads:     [2, Concurrent.processor_count].max,
+        max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
+        # max_threads:     1000,
+        auto_terminate:  opts.fetch(:auto_terminate, true),
+        idletime:        60, # 1 minute
+        max_queue:       0, # unlimited
+        fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
 end

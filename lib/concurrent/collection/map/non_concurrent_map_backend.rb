@@ -95,6 +95,7 @@ module Concurrent
       end
 
       def each_pair
+        return enum_for :each_pair unless block_given?
         dupped_backend.each_pair do |k, v|
           yield k, v
         end

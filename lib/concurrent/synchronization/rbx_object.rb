@@ -30,6 +30,7 @@ module Concurrent
 
       def full_memory_barrier
         # Rubinius instance variables are not volatile so we need to insert barrier
+        # TODO (pitr 26-Nov-2015): check comments like ^
         Rubinius.memory_barrier
       end
     end

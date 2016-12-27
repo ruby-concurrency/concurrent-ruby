@@ -9,39 +9,28 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT)
 [![Gitter chat](https://img.shields.io/badge/IRC%20(gitter)-devs%20%26%20users-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
-<table>
-  <tr>
-    <td align="left" valign="top">
-      <p>
-        Modern concurrency tools for Ruby. Inspired by
-        <a href="http://www.erlang.org/doc/reference_manual/processes.html">Erlang</a>,
-        <a href="http://clojure.org/concurrent_programming">Clojure</a>,
-        <a href="http://akka.io/">Scala</a>,
-        <a href="http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell">Haskell</a>,
-        <a href="http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx">F#</a>,
-        <a href="http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx">C#</a>,
-        <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html">Java</a>,
-        and classic concurrency patterns.
-      </p>
-      <p>
-        The design goals of this gem are:
-        <ul>
-          <li>Be an 'unopinionated' toolbox that provides useful utilities without debating which is better or why</li>
-          <li>Remain free of external gem dependencies</li>
-          <li>Stay true to the spirit of the languages providing inspiration</li>
-          <li>But implement in a way that makes sense for Ruby</li>
-          <li>Keep the semantics as idiomatic Ruby as possible</li>
-          <li>Support features that make sense in Ruby</li>
-          <li>Exclude features that don't make sense in Ruby</li>
-          <li>Be small, lean, and loosely coupled</li>
-        </ul>
-      </p>
-    </td>
-    <td align="right" valign="top">
-      <img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png"/>
-    </td>
-  </tr>
-</table>
+Modern concurrency tools for Ruby. Inspired by
+[Erlang](http://www.erlang.org/doc/reference_manual/processes.html),
+[Clojure](http://clojure.org/concurrent_programming),
+[Scala](http://akka.io/),
+[Haskell](http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell),
+[F#](http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx),
+[C#](http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx),
+[Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html),
+and classic concurrency patterns.
+
+<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
+
+The design goals of this gem are:
+
+* Be an 'unopinionated' toolbox that provides useful utilities without debating which is better or why
+* Remain free of external gem dependencies
+* Stay true to the spirit of the languages providing inspiration
+* But implement in a way that makes sense for Ruby
+* Keep the semantics as idiomatic Ruby as possible
+* Support features that make sense in Ruby
+* Exclude features that don't make sense in Ruby
+* Be small, lean, and loosely coupled
 
 ### Supported Ruby versions
 
@@ -127,13 +116,13 @@ These features are under active development and may change frequently. They are 
 keep backward compatibility (there may also lack tests and documentation). Semantic versions will
 be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to `concurrent-ruby` when final.
 
-* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
-  Implements the Actor Model, where concurrent actors exchange messages.
-* [New Future Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/FutureShortcuts.html):
+* [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html):
   Unified implementation of futures and promises which combines features of previous `Future`,
   `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
   new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
   operations like `#wait`, `#value`. It also offers better performance.
+* [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
+  Implements the Actor Model, where concurrent actors exchange messages.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
   Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
   Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
@@ -141,15 +130,16 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
-* [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeStack.html)
+* [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
 
 #### Statuses:
 
 *Why are these not in core?*
 
+- **Promises Framework** - They are being finalized to be able to be moved to core. They'll deprecate old 
+  implementation.
 - **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
 - **Channel** - Brand new implementation; partial documentation and tests; stability is good.
-- **Future/Promise Framework** - API changes; partial documentation and tests; stability is good.
 - **LazyRegister** - Missing documentation and tests.
 - **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing.
 

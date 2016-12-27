@@ -124,7 +124,7 @@ module Concurrent
       #
       #   An iterator to loop through the set.
       #
-      #   @yield [Object] each item in the set
+      #   @yield [item] each item in the set
       #   @yieldparam [Object] item the item you to remove from the set
       #
       #   @return [Object] self: the linked set on which each was called

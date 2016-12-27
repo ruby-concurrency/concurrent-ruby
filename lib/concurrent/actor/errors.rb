@@ -20,7 +20,7 @@ module Concurrent
 
       def initialize(envelope)
         @envelope = Type! envelope, Envelope
-        super envelope.message.inspect
+        super "#{envelope.message.inspect} from #{envelope.sender_path}"
       end
     end
   end

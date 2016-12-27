@@ -45,13 +45,13 @@ module Concurrent
       #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
       #   global_io_executor.
       # @param [Object] message
-      # @param [Edge::Future] future to be fulfilled be message's processing result
-      # @return [Edge::Future] supplied future
+      # @param [Promises::Future] future to be fulfilled be message's processing result
+      # @return [Promises::Future] supplied future
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask(1).value # => 2
       #   adder.ask(nil).wait.reason # => #<NoMethodError: undefined method `+' for nil:NilClass>
-      def ask(message, future = Concurrent.future)
+      def ask(message, future = Concurrent::Promises.resolvable_future)
         message message, future
       end
 
@@ -63,13 +63,13 @@ module Concurrent
       #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
       #   global_io_executor.
       # @param [Object] message
-      # @param [Edge::Future] future to be fulfilled be message's processing result
+      # @param [Promises::Future] future to be fulfilled be message's processing result
       # @return [Object] message's processing result
-      # @raise [Exception] future.reason if future is #failed?
+      # @raise [Exception] future.reason if future is #rejected?
       # @example
       #   adder = AdHoc.spawn('adder') { -> message { message + 1 } }
       #   adder.ask!(1) # => 2
-      def ask!(message, future = Concurrent.future)
+      def ask!(message, future = Concurrent::Promises.resolvable_future)
         ask(message, future).value!
       end
 
@@ -80,7 +80,7 @@ module Concurrent
       # behaves as {#tell} when no future and as {#ask} when future
       def message(message, future = nil)
         core.on_envelope Envelope.new(message, future, Actor.current || Thread.current, self)
-        return future ? future.hide_completable : self
+        return future ? future.with_hidden_resolvable : self
       end
 
       # @see AbstractContext#dead_letter_routing

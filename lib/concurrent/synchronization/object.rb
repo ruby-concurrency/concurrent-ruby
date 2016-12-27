@@ -70,8 +70,8 @@ module Concurrent
       # any instance variables with CamelCase names and isn't {.safe_initialization?}.
       def self.ensure_safe_initialization_when_final_fields_are_present
         Object.class_eval do
-          def self.new(*)
-            object = super
+          def self.new(*args, &block)
+            object = super(*args, &block)
           ensure
             has_final_field = object.instance_variables.any? { |v| v.to_s =~ /^@[A-Z]/ }
             if has_final_field && !safe_initialization?

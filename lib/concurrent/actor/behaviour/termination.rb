@@ -14,8 +14,8 @@ module Concurrent
 
         def initialize(core, subsequent, core_options, trapping = false, terminate_children = true)
           super core, subsequent, core_options
-          @terminated         = Concurrent.future
-          @public_terminated  = @terminated.hide_completable
+          @terminated         = Concurrent::Promises.resolvable_future
+          @public_terminated  = @terminated.with_hidden_resolvable
           @trapping           = trapping
           @terminate_children = terminate_children
         end
@@ -23,7 +23,7 @@ module Concurrent
         # @note Actor rejects envelopes when terminated.
         # @return [true, false] if actor is terminated
         def terminated?
-          @terminated.completed?
+          @terminated.resolved?
         end
 
         def trapping?
@@ -62,15 +62,15 @@ module Concurrent
         def terminate!(reason = nil, envelope = nil)
           return true if terminated?
 
-          self_termination = Concurrent.completed_future(reason.nil?, reason.nil? || nil, reason)
+          self_termination = Concurrent::Promises.resolved_future(reason.nil?, reason.nil? || nil, reason)
           all_terminations = if @terminate_children
-                               Concurrent.zip(*children.map { |ch| ch.ask(:terminate!) }, self_termination)
+                               Concurrent::Promises.zip(*children.map { |ch| ch.ask(:terminate!) }, self_termination)
                              else
                                self_termination
                              end
 
-          all_terminations.chain_completable(@terminated)
-          all_terminations.chain_completable(envelope.future) if envelope && envelope.future
+          all_terminations.chain_resolvable(@terminated)
+          all_terminations.chain_resolvable(envelope.future) if envelope && envelope.future
 
           broadcast(true, [:terminated, reason]) # TODO do not end up in Dead Letter Router
           parent << :remove_child if parent

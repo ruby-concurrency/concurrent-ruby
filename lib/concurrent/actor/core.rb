@@ -42,7 +42,7 @@ module Concurrent
       # @option opts [Class] reference a custom descendant of {Reference} to use
       # @option opts [Array<Array(Behavior::Abstract, Array<Object>)>] behaviour_definition, array of pairs
       #   where each pair is behaviour class and its args, see {Behaviour.basic_behaviour_definition}
-      # @option opts [CompletableFuture, nil] initialized, if present it'll be set or failed after {Context} initialization
+      # @option opts [ResolvableFuture, nil] initialized, if present it'll be set or failed after {Context} initialization
       # @option opts [Reference, nil] parent **private api** parent of the actor (the one spawning )
       # @option opts [Proc, nil] logger a proc accepting (level, progname, message = nil, &block) params,
       #   can be used to hook actor instance to any logging system, see {Concurrent::Concern::Logging}
@@ -172,7 +172,6 @@ module Concurrent
         allocate_context
 
         @executor = Type! opts.fetch(:executor, @context.default_executor), Concurrent::AbstractExecutorService
-        raise ArgumentError, 'ImmediateExecutor is not supported' if @executor.is_a? ImmediateExecutor
 
         @reference = (Child! opts[:reference_class] || @context.default_reference_class, Reference).new self
         @name      = (Type! opts.fetch(:name), String, Symbol).to_s
@@ -192,17 +191,17 @@ module Concurrent
 
         @args       = opts.fetch(:args, [])
         @block      = block
-        initialized = Type! opts[:initialized], Edge::CompletableFuture, NilClass
+        initialized = Type! opts[:initialized], Promises::ResolvableFuture, NilClass
 
         schedule_execution do
           begin
             build_context
-            initialized.success reference if initialized
+            initialized.fulfill reference if initialized
             log DEBUG, 'spawned'
           rescue => ex
             log ERROR, ex
             @first_behaviour.terminate!
-            initialized.fail ex if initialized
+            initialized.reject ex if initialized
           end
         end
       end

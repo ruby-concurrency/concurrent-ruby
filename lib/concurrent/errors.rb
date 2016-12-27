@@ -30,7 +30,18 @@ module Concurrent
 
   # Raised when an attempt is made to modify an immutable object
   # (such as an `IVar`) after its final state has been set.
-  MultipleAssignmentError = Class.new(Error)
+  class MultipleAssignmentError < Error
+    attr_reader :inspection_data
+
+    def initialize(message = nil, inspection_data = nil)
+      @inspection_data = inspection_data
+      super message
+    end
+
+    def inspect
+      format '%s %s>', super[0..-2], @inspection_data.inspect
+    end
+  end
 
   # Raised by an `Executor` when it is unable to process a given task,
   # possibly because of a reject policy or other internal error.
@@ -42,5 +53,17 @@ module Concurrent
 
   # Raised when an operation times out.
   TimeoutError = Class.new(Error)
+
+  # Aggregates multiple exceptions.
+  class MultipleErrors < Error
+    attr_reader :errors
+
+    def initialize(errors, message = "#{errors.size} errors")
+      @errors = errors
+      super [*message,
+             *errors.map { |e| [format('%s (%s)', e.message, e.class), *e.backtrace] }.flatten(1)
+            ].join("\n")
+    end
+  end
 
 end

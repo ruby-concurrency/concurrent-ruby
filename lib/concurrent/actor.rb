@@ -1,7 +1,7 @@
 require 'concurrent/configuration'
 require 'concurrent/executor/serialized_execution'
 require 'concurrent/synchronization'
-require 'concurrent/edge/future'
+require 'concurrent/edge/promises'
 
 module Concurrent
   # TODO https://github.com/celluloid/celluloid/wiki/Supervision-Groups ?
@@ -34,8 +34,8 @@ module Concurrent
       Thread.current[:__current_actor__]
     end
 
-    @root = Concurrent.delay do
-      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent.future).reference.tap do
+    @root = Concurrent::Promises.delay do
+      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent::Promises.resolvable_future).reference.tap do
         future.wait!
       end
     end
@@ -65,16 +65,20 @@ module Concurrent
     # @param args see {.to_spawn_options}
     # @return [Reference] never the actual actor
     def self.spawn(*args, &block)
+      options = to_spawn_options(*args)
+      if options[:executor] && options[:executor].is_a?(ImmediateExecutor)
+        raise ArgumentError, 'ImmediateExecutor is not supported'
+      end
       if Actor.current
-        Core.new(to_spawn_options(*args).merge(parent: Actor.current), &block).reference
+        Core.new(options.merge(parent: Actor.current), &block).reference
       else
-        root.ask([:spawn, to_spawn_options(*args), block]).value!
+        root.ask([:spawn, options, block]).value!
       end
     end
 
     # as {.spawn} but it'll block until actor is initialized or it'll raise exception on error
     def self.spawn!(*args, &block)
-      spawn(to_spawn_options(*args).merge(initialized: future = Concurrent.future), &block).tap { future.wait! }
+      spawn(to_spawn_options(*args).merge(initialized: future = Concurrent::Promises.resolvable_future), &block).tap { future.wait! }
     end
 
     # @overload to_spawn_options(context_class, name, *args)
