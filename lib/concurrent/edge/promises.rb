@@ -7,10 +7,6 @@ require 'concurrent/errors'
 module Concurrent
 
 
-  # # Guide
-  #
-  # The guide is **best place** to start with promises, see {file:doc/promises.out.md}.
-  #
   # {include:file:doc/promises-main.md}
   module Promises
 
@@ -502,7 +498,7 @@ module Concurrent
 
     private_constant :InternalStates
 
-    # Common ancestor of {Event} and {Future} classes
+    # Common ancestor of {Event} and {Future} classes, many shared methods are defined here.
     class AbstractEventFuture < Synchronization::Object
       safe_initialization!
       private(*attr_atomic(:internal_state) - [:internal_state])
@@ -556,11 +552,6 @@ module Concurrent
       # @return [Boolean]
       def resolved?(state = internal_state)
         state.resolved?
-      end
-
-      # @deprecated
-      def unscheduled?
-        raise 'unsupported'
       end
 
       # Propagates touch. Requests all the delayed futures, which it depends on, to be
@@ -1331,10 +1322,6 @@ module Concurrent
       def touch
       end
 
-      def to_s
-        format '<#%s:0x%x>', self.class, object_id << 1
-      end
-
       alias_method :inspect, :to_s
 
       def delayed
@@ -1439,8 +1426,10 @@ module Concurrent
 
       def initialize(delayed, blockers_count, future)
         super(future)
+        # noinspection RubyArgCount
         @Touched   = AtomicBoolean.new false
         @Delayed   = delayed
+        # noinspection RubyArgCount
         @Countdown = AtomicFixnum.new blockers_count
       end
 

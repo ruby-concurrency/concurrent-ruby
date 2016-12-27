@@ -7,7 +7,7 @@ FactoryMethods. They are not designed for inheritance but rather for
 composition.
 
 ```ruby
-Concurrent::Promises::FactoryMethods.instance_methods false
+Concurrent::Promises::FactoryMethods.instance_methods
 ```
 
 The module can be included or extended where needed.
@@ -438,6 +438,27 @@ future.fulfill 1 rescue $!
 future.fulfill 2, false
 ```
 
+## How are promises executed?
+
+Promises use global pools to execute the tasks. Therefore each task may run on
+different thread which implies that users have to be careful not to depend on
+Thread local variables (or they have to set at the begging of the task and
+cleaned up at the end of the task).
+
+Since the tasks are running on may different threads of the thread pool, it's
+better to follow following rules:
+
+-   Use only data passed in through arguments or values of parent futures, to 
+    have better control over what are futures accessing.
+-   The data passed in and out of futures are easier to deal with if they are 
+    immutable or at least treated as such.
+-   Any mutable and mutated object accessed by more than one threads or futures 
+    must be thread safe, see {Concurrent::Array}, {Concurrent::Hash}, and 
+    {Concurrent::Map}. (Value of a future may be consumed by many futures.)
+-   Futures can access outside objects, but they has to be thread-safe.
+
+> *TODO: This part to be extended*
+
 # Advanced
 
 ## Callbacks
@@ -470,6 +491,25 @@ Promises.future_on(:fast) { 2 }.
     value.size
 ```
 
+## Run (simulated process)
+
+Similar to flatting is running. When `run` is called on a future it will flat
+indefinitely as long the future fulfils into a `Future` value. It can be used
+to simulate a thread like processing without actually occupying the thread.
+
+```ruby
+count = lambda do |v|
+  v += 1
+  v < 5 ? Promises.future_on(:fast, v, &count) : v
+end
+400.times.
+    map { Promises.future_on(:fast, 0, &count).run.value! }.
+    all? { |v| v == 5 }
+```
+
+Therefore the above example finished fine on the the `:fast` thread pool even
+though it has much less threads than there is the simulated process.
+
 # Interoperability
 
 ## Actors
@@ -500,10 +540,47 @@ The `ask` method returns future.
 ```ruby
 actor.ask(2).then(&:succ).value!
 ```
+## ProcessingActor
 
-## Channels
+> *TODO: Documentation to be added in few days*
 
-> *TODO: To be added*
+## Channel
+
+There is an implementation of channel as well. Lets start by creating a
+channel with capacity 2 messages.
+
+```ruby
+ch1 = Concurrent::Promises::Channel.new 2
+```
+
+We push 3 messages, it can be observed that the last future representing the
+push is not fulfilled since the capacity prevents it. When the work which fills
+the channel depends on the futures created by push it can be used to create
+back pressure – the filling work is delayed until the channel has space for
+more messages.
+
+```ruby
+pushes = 3.times.map { |i| ch1.push i }
+ch1.pop.value!
+pushes
+```
+
+A selection over channels can be created with select_channel factory method. It
+will be fulfilled with a first message available in any of the channels. It
+returns a pair to be able to find out which channel had the message available.
+
+```ruby
+ch2    = Concurrent::Promises::Channel.new 2
+result = Concurrent::Promises.select_channel(ch1, ch2)
+result.value!
+
+Promises.future { 1+1 }.then_push_channel(ch1)
+result = (
+    Concurrent::Promises.fulfilled_future('%02d') &      
+        Concurrent::Promises.select_channel(ch1, ch2)).
+    then { |format, (channel, value)| format format, value }
+result.value!
+```
 
 # Use-cases
 
@@ -573,7 +650,7 @@ results = 3.times.map { computer.ask [:run, -> { sleep 0.1; :result }] }
 computer.ask(:status).value!
 results.map(&:value!)
 ```
-## Too many threads / fibers
+## Solving the Thread count limit by thread simulation
 
 Sometimes an application requires to process a lot of tasks concurrently. If
 the number of concurrent tasks is high enough than it is not possible to create
@@ -606,7 +683,7 @@ Promises.future(0, &body).run.value! # => 5
 
 This solution works well an any Ruby implementation.
 
-> TODO add more complete example
+> *TODO: More examples to be added.*
 
 ## Cancellation
 
@@ -771,55 +848,116 @@ end #
 futures.map(&:value!)
 ```
 
-## Long stream of tasks
+## Long stream of tasks, applying back pressure
 
-> TODO Channel
-
-## Parallel enumerable ?
-
-> TODO
-
-## Periodic task
-
-> TODO revisit, use cancellation, add to library
+Lets assume that we queuing an API for a data and the queries can be faster
+than we are able to process them. This example shows how to use channel as a
+buffer and how to apply back pressure to slow down the queries. 
 
 ```ruby
-def schedule_job(interval, &job)
-  # schedule the first execution and chain restart of the job
-  Promises.schedule(interval, &job).chain do |fulfilled, continue, reason|
-    if fulfilled
-      schedule_job(interval, &job) if continue
-    else
-      # handle error
-      reason
-      # retry sooner
-      schedule_job(interval, &job)
+require 'json' #
+
+channel       = Promises::Channel.new 6
+source, token = Concurrent::Cancellation.create
+
+def query_random_text(token, channel)
+  Promises.future do
+    # for simplicity the query is omitted
+    # url = 'some api'
+    # Net::HTTP.get(URI(url))
+    sleep 0.1
+    { 'message' => 
+        'Lorem ipsum rhoncus scelerisque vulputate diam inceptos' 
+    }.to_json
+  end.then(token) do |value, token|
+    # The push to channel is fulfilled only after the message is successfully
+    # published to the channel, therefore it will not continue querying until 
+    # current message is pushed.
+    channel.push(value) | 
+        # It could wait on the push indefinitely if the token is not checked 
+        # here with `or` (the pipe).
+        token.to_future
+  end.flat_future.then(token) do |_, token|
+    # query again after the message is pushed to buffer
+    query_random_text(token, channel) unless token.canceled?
+  end
+end
+
+words          = []
+words_throttle = Concurrent::Throttle.new 1
+
+def count_words_in_random_text(token, channel, words, words_throttle)
+  channel.pop.then do |response|
+    string = JSON.load(response)['message']
+    # processing is slower than querying
+    sleep 0.2
+    words_count = string.scan(/\w+/).size
+  end.then_throttled_by(words_throttle, words) do |words_count, words|
+    # safe since throttled to only 1 task at a time
+    words << words_count
+  end.then(token) do |_, token|
+    # count words in next message
+    unless token.canceled?
+      count_words_in_random_text(token, channel, words, words_throttle)
     end
   end
 end
 
-queue = Queue.new
-count = 0
-interval = 0.05 # small just not to delay execution of this example
+query_processes = 3.times.map do
+  Promises.future(token, channel, &method(:query_random_text)).run
+end
 
-schedule_job interval do
-  queue.push count
-  count += 1
-  # to continue scheduling return true, false will end the task
-  if count < 4
-    # to continue scheduling return true
-    true
-  else
-    # close the queue with nil to simplify reading it
-    queue.push nil
-    # to end the task return false
-    false
+word_counter_processes = 2.times.map do
+  Promises.future(token, channel, words, words_throttle, 
+      &method(:count_words_in_random_text)).run
+end
+
+sleep 0.5
+```
+
+Let it run for a while then cancel it and ensure that the runs all fulfilled
+(therefore ended) after the cancellation. Finally print the result.
+
+```ruby
+source.cancel
+query_processes.map(&:wait!) 
+word_counter_processes.map(&:wait!)
+words
+```
+
+Compared to using threads directly this is highly configurable and compostable
+solution.
+
+
+## Periodic task
+
+By combining `schedule`, `run` and `Cancellation` periodically executed task
+can be easily created.
+
+```ruby
+repeating_scheduled_task = -> interval, token, task do
+  Promises.
+      # Schedule the task.
+      schedule(interval, token, &task).
+      # If successful schedule again. 
+      # Alternatively use chain to schedule always.
+      then { repeating_scheduled_task.call(interval, token, task) }
+end
+
+cancellation, token = Concurrent::Cancellation.create
+
+task = -> token do
+  5.times do
+    token.raise_if_canceled
+    # do stuff
+    print '.'
+    sleep 0.01
   end
 end
 
-  # read the queue
-arr, v = [], nil; arr << v while (v = queue.pop) #
-  # arr has the results from the executed scheduled tasks
-arr
+result = Promises.future(0.1, token, task, &repeating_scheduled_task).run
+sleep 0.2
+cancellation.cancel
+result.result
 ```
 
