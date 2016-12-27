@@ -1951,57 +1951,128 @@ module Concurrent
       include ActorIntegration
     end
 
-    ### Experimental features follow
+    class Channel < Concurrent::Synchronization::Object
+      safe_initialization!
 
-    module FactoryMethods
+      # Default size of the Channel, makes it accept unlimited number of messages.
+      UNLIMITED = Object.new
+      UNLIMITED.singleton_class.class_eval do
+        include Comparable
 
-      # @!visibility private
+        def <=>(other)
+          1
+        end
 
-      module ChannelIntegration
+        def to_s
+          'unlimited'
+        end
+      end
 
-        # @!visibility private
+      # A channel to pass messages between promises. The size is limited to support back pressure.
+      # @param [Integer, UNLIMITED] size the maximum number of messages stored in the channel.
+      def initialize(size = UNLIMITED)
+        super()
+        @Size        = size
+        # TODO (pitr-ch 26-Dec-2016): replace with lock-free implementation
+        @Mutex       = Mutex.new
+        @Probes      = []
+        @Messages    = []
+        @PendingPush = []
+      end
 
-        # only proof of concept
-        # @return [Future]
-        def select(*channels)
-          # TODO (pitr-ch 26-Mar-2016): re-do, has to be non-blocking
-          future do
-            # noinspection RubyArgCount
-            Channel.select do |s|
-              channels.each do |ch|
-                s.take(ch) { |value| [value, ch] }
+
+      # Returns future which will fulfill when the message is added to the channel. Its value is the message.
+      # @param [Object] message
+      # @return [Future]
+      def push(message)
+        @Mutex.synchronize do
+          while true
+            if @Probes.empty?
+              if @Size > @Messages.size
+                @Messages.push message
+                return Promises.fulfilled_future message
+              else
+                pushed = Promises.resolvable_future
+                @PendingPush.push [message, pushed]
+                return pushed.with_hidden_resolvable
+              end
+            else
+              probe = @Probes.shift
+              if probe.fulfill [self, message], false
+                return Promises.fulfilled_future(message)
               end
             end
           end
         end
       end
 
-      include ChannelIntegration
+      # Returns a future witch will become fulfilled with a value from the channel when one is available.
+      # @param [ResolvableFuture] probe the future which will be fulfilled with a channel value
+      # @return [Future] the probe, its value will be the message when available.
+      def pop(probe = Concurrent::Promises.resolvable_future)
+        # TODO (pitr-ch 26-Dec-2016): improve performance
+        pop_for_select(probe).then(&:last)
+      end
+
+      # @!visibility private
+      def pop_for_select(probe = Concurrent::Promises.resolvable_future)
+        @Mutex.synchronize do
+          if @Messages.empty?
+            @Probes.push probe
+          else
+            message = @Messages.shift
+            probe.fulfill [self, message]
+
+            unless @PendingPush.empty?
+              message, pushed = @PendingPush.shift
+              @Messages.push message
+              pushed.fulfill message
+            end
+          end
+        end
+        probe
+      end
+
+      # @return [String] Short string representation.
+      def to_s
+        format '<#%s:0x%x size:%s>', self.class, object_id << 1, @Size
+      end
+
+      alias_method :inspect, :to_s
     end
 
     class Future < AbstractEventFuture
+      module NewChannelIntegration
 
-      # @!visibility private
-
-      module ChannelIntegration
-
-        # @!visibility private
-
-        # Zips with selected value form the suplied channels
-        # @return [Future]
-        def then_select(*channels)
-          future = Concurrent::Promises.select(*channels)
-          ZipFuturesPromise.new_blocked_by2(self, future, @DefaultExecutor).future
+        # @param [Channel] channel to push to.
+        # @return [Future] a future which is fulfilled after the message is pushed to the channel.
+        #   May take a moment if the channel is full.
+        def then_push_channel(channel)
+          self.then { |value| channel.push value }.flat_future
         end
 
-        # @note may block
-        # @note only proof of concept
-        def then_put(channel)
-          on_fulfillment_using(:io, channel) { |value, channel| channel.put value }
+        # TODO (pitr-ch 26-Dec-2016): does it make sense to have rescue an chain variants as well, check other integrations as well
+      end
+
+      include NewChannelIntegration
+    end
+
+    module FactoryMethods
+
+      module NewChannelIntegration
+
+        # Selects a channel which is ready to be read from.
+        # @param [Channel] channels
+        # @return [Future] a future which is fulfilled with pair [channel, message] when one of the channels is
+        #   available for reading
+        def select_channel(*channels)
+          probe = Promises.resolvable_future
+          channels.each { |ch| ch.pop_for_select probe }
+          probe
         end
       end
 
-      include ChannelIntegration
+      include NewChannelIntegration
     end
 
   end

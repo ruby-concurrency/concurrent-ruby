@@ -426,19 +426,17 @@ describe 'Concurrent::Promises' do
     end
 
     it 'with channel' do
-      ch1 = Concurrent::Channel.new
-      ch2 = Concurrent::Channel.new
+      ch1 = Concurrent::Promises::Channel.new
+      ch2 = Concurrent::Promises::Channel.new
 
-      result = Concurrent::Promises.select(ch1, ch2)
-      ch1.put 1
-      expect(result.value!).to eq [1, ch1]
+      result = Concurrent::Promises.select_channel(ch1, ch2)
+      ch1.push 1
+      expect(result.value!).to eq [ch1, 1]
 
 
-      future { 1+1 }.
-          then_put(ch1)
-      result = future { '%02d' }.
-          then_select(ch1, ch2).
-          then { |format, (value, channel)| format format, value }
+      future { 1+1 }.then_push_channel(ch1)
+      result = (Concurrent::Promises.future { '%02d' } & Concurrent::Promises.select_channel(ch1, ch2)).
+          then { |format, (channel, value)| format format, value }
       expect(result.value!).to eq '02'
     end
   end
@@ -487,7 +485,7 @@ describe 'Concurrent::Promises' do
 
   describe 'Throttling' do
     specify do
-      limit = 4
+      limit    = 4
       throttle = Concurrent::Throttle.new limit
       counter  = Concurrent::AtomicFixnum.new
       testing  = -> *args do
@@ -521,6 +519,77 @@ describe 'Concurrent::Promises' do
                 fulfilled_future(i).
                 then_throttled_by(throttle, throttle, &testing)
           end).value!.all? { |v| v <= limit }).to be_truthy
+    end
+  end
+
+  describe 'Promises::Channel' do
+    specify do
+      channel = Concurrent::Promises::Channel.new 1
+
+      pushed1 = channel.push 1
+      expect(pushed1.resolved?).to be_truthy
+      expect(pushed1.value!).to eq 1
+
+      pushed2 = channel.push 2
+      expect(pushed2.resolved?).to be_falsey
+
+      popped = channel.pop
+      expect(pushed1.value!).to eq 1
+      expect(pushed2.resolved?).to be_truthy
+      expect(pushed2.value!).to eq 2
+      expect(popped.value!).to eq 1
+
+      popped = channel.pop
+      expect(popped.value!).to eq 2
+
+      popped = channel.pop
+      expect(popped.resolved?).to be_falsey
+
+      pushed3 = channel.push 3
+      expect(popped.value!).to eq 3
+      expect(pushed3.resolved?).to be_truthy
+      expect(pushed3.value!).to eq 3
+    end
+
+    specify do
+      ch1 = Concurrent::Promises::Channel.new
+      ch2 = Concurrent::Promises::Channel.new
+      ch3 = Concurrent::Promises::Channel.new
+
+      add = -> do
+        (ch1.pop & ch2.pop).then do |a, b|
+          if a == :done && b == :done
+            :done
+          else
+            ch3.push a + b
+            add.call
+          end
+        end
+      end
+
+      ch1.push 1
+      ch2.push 2
+      ch1.push 'a'
+      ch2.push 'b'
+      ch1.push nil
+      ch2.push true
+
+      result = Concurrent::Promises.future(&add).run.result
+      expect(result[0..1]).to eq [false, nil]
+      expect(result[2]).to be_a_kind_of(NoMethodError)
+      expect(ch3.pop.value!).to eq 3
+      expect(ch3.pop.value!).to eq 'ab'
+
+      ch1.push 1
+      ch2.push 2
+      ch1.push 'a'
+      ch2.push 'b'
+      ch1.push :done
+      ch2.push :done
+
+      expect(Concurrent::Promises.future(&add).run.result).to eq [true, :done, nil]
+      expect(ch3.pop.value!).to eq 3
+      expect(ch3.pop.value!).to eq 'ab'
     end
   end
 end
