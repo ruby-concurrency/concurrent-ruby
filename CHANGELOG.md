@@ -1,4 +1,16 @@
-## Current Release v1.0.3 (17 Dec 2016)
+## Current Release v1.0.4 (27 Dec 2016)
+
+concurrent-ruby:
+
+* Nothing
+
+concurrent-ruby-edge:
+
+* New promises' API renamed, lots of improvements, edge bumped to 0.3.0
+  * **Incompatible** with previous 0.2.3 version
+  * see https://github.com/ruby-concurrency/concurrent-ruby/pull/522
+
+## Release v1.0.3 (17 Dec 2016)
 
 * Trigger execution of flattened delayed futures
 * Avoid forking for processor_count if possible
@@ -21,7 +33,7 @@
 * Improved documentation and examples
 * Minor updates to Edge
 
-### Release v1.0.1 (27 February 2016)
+## Release v1.0.1 (27 February 2016)
 
 * Fix "uninitialized constant Concurrent::ReentrantReadWriteLock" error.
 * Better handling of `autoload` vs. `require`.
@@ -34,7 +46,7 @@
 * Improved documentation.
 * Updated README and CONTRIBUTING.
 
-### Release v1.0.0 (13 November 2015)
+## Release v1.0.0 (13 November 2015)
 
 * Rename `attr_volatile_with_cas` to `attr_atomic`
 * Add `clear_each` to `LockFreeStack`
@@ -82,7 +94,7 @@
 * Many improved tests
 * Some internal reorganization
 
-### Release v0.9.1 (09 August 2015)
+## Release v0.9.1 (09 August 2015)
 
 * Fixed a Rubiniux bug in synchronization object
 * Fixed all interpreter warnings (except circular references)
@@ -96,7 +108,7 @@
 * `ThreadLocalVar#bind` method is now public
 * Refactored many tests
 
-### Release v0.9.0 (10 July 2015)
+## Release v0.9.0 (10 July 2015)
 
 * Updated `AtomicReference`
   - `AtomicReference#try_update` now simply returns instead of raising exception
@@ -195,14 +207,14 @@
 * Removed brute-force killing of threads in tests
 * Fixed a thread pool bug when the operating system cannot allocate more threads
 
-### Release v0.8.0 (25 January 2015)
+## Release v0.8.0 (25 January 2015)
 
 * C extension for MRI have been extracted into the `concurrent-ruby-ext` companion gem.
   Please see the README for more detail.
 * Better variable isolation in `Promise` and `Future` via an `:args` option
 * Continued to update intermittently failing tests
 
-### Release v0.7.2 (24 January 2015)
+## Release v0.7.2 (24 January 2015)
 
 * New `Semaphore` class based on [java.util.concurrent.Semaphore](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html)
 * New `Promise.all?` and `Promise.any?` class methods
@@ -219,7 +231,7 @@
 * Tests now run on new Travis build environment
 * Multiple documentation updates
 
-### Release v0.7.1 (4 December 2014)
+## Release v0.7.1 (4 December 2014)
 
 Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/issues/142) for more information on the next planned release.
 
@@ -240,7 +252,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Removed confusing warning when not using native extenstions
 * Improved documentation
 
-### Release v0.7.0 (13 August 2014)
+## Release v0.7.0 (13 August 2014)
 
 * Merge the [atomic](https://github.com/ruby-concurrency/atomic) gem
   - Pure Ruby `MutexAtomic` atomic reference class
@@ -273,14 +285,14 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Removed deprecated `Actor` class
 * Better support for Rubinius
 
-### Release v0.6.1 (14 June 2014)
+## Release v0.6.1 (14 June 2014)
 
 * Many improvements to `Concurrent::Actress`
 * Bug fixes to `Concurrent::RubyThreadPoolExecutor`
 * Fixed several brittle tests
 * Moved documentation to http://ruby-concurrency.github.io/concurrent-ruby/frames.html
 
-### Release v0.6.0 (25 May 2014)
+## Release v0.6.0 (25 May 2014)
 
 * Added `Concurrent::Observable` to encapsulate our thread safe observer sets
 * Improvements to new `Channel`
@@ -319,7 +331,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * First implementation of [new, high-performance](https://github.com/ruby-concurrency/concurrent-ruby/pull/49) `Channel`
 * `Actor` is deprecated in favor of new experimental actor implementation [#73](https://github.com/ruby-concurrency/concurrent-ruby/pull/73). To avoid namespace collision it is living in `Actress` namespace until `Actor` is removed in next release.
 
-### Release v0.5.0
+## Release v0.5.0
 
 This is the most significant release of this gem since its inception. This release includes many improvements and optimizations. It also includes several bug fixes. The major areas of focus for this release were:
 

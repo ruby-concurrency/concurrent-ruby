@@ -37,6 +37,7 @@ require 'concurrent/synchronization'
 #     *coordinated*, *synchronous*, change of *many* stated. Used when multiple
 #     value must change together, in an all-or-nothing transaction.
 
+
 module Concurrent
 
   # Atoms provide a way to manage shared, synchronous, independent state.

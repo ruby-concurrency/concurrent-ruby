@@ -9,8 +9,8 @@ then
 fi
 
 
-version=$(ruby -r concurrent/version -e 'puts Concurrent::VERSION')
-edge_version=$(ruby -r concurrent/version -e 'puts Concurrent::EDGE_VERSION')
+version=$(ruby -r ./lib/concurrent/version -e 'puts Concurrent::VERSION')
+edge_version=$(ruby -r ./lib/concurrent/version -e 'puts Concurrent::EDGE_VERSION')
 (echo ${version} | grep pre) && prerelease='true' || prerelease='false'
 
 echo "concurrent-ruby:      $version"
@@ -20,7 +20,7 @@ echo "prerelease:           $prerelease"
 set -x
 
 mriVersion="2.3.1"
-jrubyVersion="jruby-9.1.5.0"
+jrubyVersion="jruby-9.1.6.0"
 
 if [[ "$@" =~ 'build' || $@ =~ 'all' ]]
 then
@@ -113,6 +113,8 @@ then
     gem push pkg/concurrent-ruby-ext-${version}-x86-mingw32.gem
 
     # TODO (pitr-ch 17-Dec-2016): send email
+
+    # TODO (pitr-ch 17-Dec-2016): update documentation
 fi
 
 
