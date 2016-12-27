@@ -45,6 +45,41 @@ module Concurrent
     Concurrent.global_logger = create_simple_logger level, output
   end
 
+  # @return [Logger] Logger with provided level and output.
+  # @deprecated
+  def self.create_stdlib_logger(level = Logger::FATAL, output = $stderr)
+    logger           = Logger.new(output)
+    logger.level     = level
+    logger.formatter = lambda do |severity, datetime, progname, msg|
+      formatted_message = case msg
+                          when String
+                            msg
+                          when Exception
+                            format "%s (%s)\n%s",
+                                   msg.message, msg.class, (msg.backtrace || []).join("\n")
+                          else
+                            msg.inspect
+                          end
+      format "[%s] %5s -- %s: %s\n",
+             datetime.strftime('%Y-%m-%d %H:%M:%S.%L'),
+             severity,
+             progname,
+             formatted_message
+    end
+
+    lambda do |loglevel, progname, message = nil, &block|
+      logger.add loglevel, message, progname, &block
+    end
+  end
+
+  # Use logger created by #create_stdlib_logger to log concurrent-ruby messages.
+  # @deprecated
+  def self.use_stdlib_logger(level = Logger::FATAL, output = $stderr)
+    Concurrent.global_logger = create_stdlib_logger level, output
+  end
+
+  # TODO (pitr-ch 27-Dec-2016): remove deadlocking stdlib_logger methods
+
   # Suppresses all output when used for logging.
   NULL_LOGGER   = lambda { |level, progname, message = nil, &block| }
 
