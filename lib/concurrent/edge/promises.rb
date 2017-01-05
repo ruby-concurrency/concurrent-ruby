@@ -962,7 +962,9 @@ module Concurrent
         if reason.size > 1
           Concurrent::MultipleErrors.new reason
         else
-          reason[0].exception(*args)
+          ex = reason[0].exception(*args)
+          ex.set_backtrace ex.backtrace + caller
+          ex
         end
       end
 
@@ -1382,8 +1384,8 @@ module Concurrent
         blocker_delayed = blocker.promise.delayed
         delayed         = blocker_delayed ? LockFreeStack.new.push(blocker_delayed) : nil
         promise         = new(delayed, 1, *args, &block)
-      ensure
         blocker.add_callback :callback_notify_blocked, promise, 0
+        promise
       end
 
       def self.new_blocked_by2(blocker1, blocker2, *args, &block)
@@ -1400,16 +1402,16 @@ module Concurrent
                              blocker_delayed2 ? LockFreeStack.of1(blocker_delayed2) : nil
                            end
         promise          = new(delayed, 2, *args, &block)
-      ensure
         blocker1.add_callback :callback_notify_blocked, promise, 0
         blocker2.add_callback :callback_notify_blocked, promise, 1
+        promise
       end
 
       def self.new_blocked_by(blockers, *args, &block)
         delayed = blockers.reduce(nil, &method(:add_delayed))
         promise = new(delayed, blockers.size, *args, &block)
-      ensure
         blockers.each_with_index { |f, i| f.add_callback :callback_notify_blocked, promise, i }
+        promise
       end
 
       def self.add_delayed(delayed, blocker)
