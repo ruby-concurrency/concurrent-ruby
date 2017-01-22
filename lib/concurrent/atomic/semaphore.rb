@@ -134,11 +134,11 @@ module Concurrent
   #
   #   [t1, t2, t3, t4].each(&:join)
   #
-  #   outputs
-  #   "Thread 3 acquired semaphore"
-  #   "Thread 2 acquired semaphore"
-  #   "Thread 4 releasing semaphore"
-  #   "Thread 1 acquired semaphore"
+  #   # prints:
+  #   # Thread 3 acquired semaphore
+  #   # Thread 2 acquired semaphore
+  #   # Thread 4 releasing semaphore
+  #   # Thread 1 acquired semaphore
   #
   class Semaphore < SemaphoreImplementation
   end
