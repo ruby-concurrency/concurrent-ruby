@@ -1,7 +1,5 @@
 language: ruby
 
-cache: bundler
-
 rvm:
   # start with the latest
   - 2.4.0
@@ -9,9 +7,9 @@ rvm:
 
   # older versions
   - 2.3.3
-  - 2.2
-  - 2.1
-  - 2.0
+  - 2.2.6
+  - 2.1.9
+  - 2.0.0
   - 1.9.3
 
   - jruby-9.0.5.0
@@ -52,7 +50,8 @@ env:
   global:
     - JAVA_OPTS=-Xmx1024m
 
-before_script:
+before_install:
   - "echo $JAVA_OPTS"
+  - bundle update # temporary fix, not sure why it helps
 
 script: if [[ -v TRUFFLE ]]; then support/test-truffle.sh; else RUBYOPT=-w bundle exec rake ci; fi
