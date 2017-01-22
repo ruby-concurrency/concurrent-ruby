@@ -108,6 +108,38 @@ module Concurrent
   #   count of the number available and acts accordingly.
   #
   # @!macro semaphore_public_api
+  # @example
+  #   semaphore = Concurrent::Semaphore.new(2)
+  #
+  #   t1 = Thread.new do
+  #     semaphore.acquire
+  #     puts "Thread 1 acquired semaphore"
+  #   end
+  #
+  #   t2 = Thread.new do
+  #     semaphore.acquire
+  #     puts "Thread 2 acquired semaphore"
+  #   end
+  #
+  #   t3 = Thread.new do
+  #     semaphore.acquire
+  #     puts "Thread 3 acquired semaphore"
+  #   end
+  #
+  #   t4 = Thread.new do
+  #     sleep(2)
+  #     puts "Thread 4 releasing semaphore"
+  #     semaphore.release
+  #   end
+  #
+  #   [t1, t2, t3, t4].each(&:join)
+  #
+  #   # prints:
+  #   # Thread 3 acquired semaphore
+  #   # Thread 2 acquired semaphore
+  #   # Thread 4 releasing semaphore
+  #   # Thread 1 acquired semaphore
+  #
   class Semaphore < SemaphoreImplementation
   end
 end
