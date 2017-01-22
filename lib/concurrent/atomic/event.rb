@@ -13,6 +13,26 @@ module Concurrent
   # `#reset` at any time once it has been set.
   #
   # @see http://msdn.microsoft.com/en-us/library/windows/desktop/ms682655.aspx
+  # @example
+  #   event = Concurrent::Event.new
+  #
+  #   t1 = Thread.new do
+  #     puts "t1 is waiting"
+  #     event.wait(1)
+  #     puts "event ocurred"
+  #   end
+  #
+  #   t2 = Thread.new do
+  #     puts "t2 calling set"
+  #     event.set
+  #   end
+  #
+  #   [t1, t2].each(&:join)
+  #
+  #   # prints:
+  #   # t2 calling set
+  #   # t1 is waiting
+  #   # event ocurred
   class Event < Synchronization::LockableObject
 
     # Creates a new `Event` in the unset state. Threads calling `#wait` on the
