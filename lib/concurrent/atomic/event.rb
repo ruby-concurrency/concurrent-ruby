@@ -29,11 +29,10 @@ module Concurrent
   #
   #   [t1, t2].each(&:join)
   #
-  #   outputs
-  #   "t2 calling set"
-  #   "t1 is waiting"
-  #   "event ocurred"
-  #
+  #   # prints:
+  #   # t2 calling set
+  #   # t1 is waiting
+  #   # event ocurred
   class Event < Synchronization::LockableObject
 
     # Creates a new `Event` in the unset state. Threads calling `#wait` on the
