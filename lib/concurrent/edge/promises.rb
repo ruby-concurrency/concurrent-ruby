@@ -727,7 +727,18 @@ module Concurrent
         @Waiters.each.to_a
       end
 
+      # # @!visibility private
+      def add_callback_notify_blocked(promise, index)
+        add_callback :callback_notify_blocked, promise, index
+      end
+
       # @!visibility private
+      def add_callback_clear_delayed_node(node)
+        add_callback(:callback_clear_delayed_node, node)
+      end
+
+      private
+
       def add_callback(method, *args)
         state = internal_state
         if resolved?(state)
@@ -741,7 +752,9 @@ module Concurrent
         self
       end
 
-      private
+      def callback_clear_delayed_node(state, node)
+        node.value = nil
+      end
 
       # @return [Boolean]
       def wait_until_resolved(timeout)
@@ -1202,7 +1215,7 @@ module Concurrent
       end
 
       def callback_on_resolution(state, args, callback)
-        callback.call state.result, *args
+        callback.call *state.result, *args
       end
 
     end
@@ -1326,7 +1339,7 @@ module Concurrent
 
       alias_method :inspect, :to_s
 
-      def delayed
+      def delayed_because
         nil
       end
 
@@ -1381,55 +1394,45 @@ module Concurrent
       private_class_method :new
 
       def self.new_blocked_by1(blocker, *args, &block)
-        blocker_delayed = blocker.promise.delayed
-        delayed         = blocker_delayed ? LockFreeStack.new.push(blocker_delayed) : nil
-        promise         = new(delayed, 1, *args, &block)
-        blocker.add_callback :callback_notify_blocked, promise, 0
+        blocker_delayed = blocker.promise.delayed_because
+        promise         = new(blocker_delayed, 1, *args, &block)
+        blocker.add_callback_notify_blocked promise, 0
         promise
       end
 
       def self.new_blocked_by2(blocker1, blocker2, *args, &block)
-        blocker_delayed1 = blocker1.promise.delayed
-        blocker_delayed2 = blocker2.promise.delayed
-        # TODO (pitr-ch 23-Dec-2016): use arrays when we know it will not grow (only flat adds delay)
-        delayed          = if blocker_delayed1
-                             if blocker_delayed2
-                               LockFreeStack.of2(blocker_delayed1, blocker_delayed2)
-                             else
-                               LockFreeStack.of1(blocker_delayed1)
-                             end
+        blocker_delayed1 = blocker1.promise.delayed_because
+        blocker_delayed2 = blocker2.promise.delayed_because
+        delayed          = if blocker_delayed1 && blocker_delayed2
+                             # TODO (pitr-ch 23-Dec-2016): use arrays when we know it will not grow (only flat adds delay)
+                             LockFreeStack.of2(blocker_delayed1, blocker_delayed2)
                            else
-                             blocker_delayed2 ? LockFreeStack.of1(blocker_delayed2) : nil
+                             blocker_delayed1 || blocker_delayed2
                            end
         promise          = new(delayed, 2, *args, &block)
-        blocker1.add_callback :callback_notify_blocked, promise, 0
-        blocker2.add_callback :callback_notify_blocked, promise, 1
+        blocker1.add_callback_notify_blocked promise, 0
+        blocker2.add_callback_notify_blocked promise, 1
         promise
       end
 
       def self.new_blocked_by(blockers, *args, &block)
-        delayed = blockers.reduce(nil, &method(:add_delayed))
+        delayed = blockers.reduce(nil) { |d, f| add_delayed d, f.promise.delayed_because }
         promise = new(delayed, blockers.size, *args, &block)
-        blockers.each_with_index { |f, i| f.add_callback :callback_notify_blocked, promise, i }
+        blockers.each_with_index { |f, i| f.add_callback_notify_blocked promise, i }
         promise
       end
 
-      def self.add_delayed(delayed, blocker)
-        blocker_delayed = blocker.promise.delayed
-        if blocker_delayed
-          delayed = unless delayed
-                      LockFreeStack.of1(blocker_delayed)
-                    else
-                      delayed.push(blocker_delayed)
-                    end
+      def self.add_delayed(delayed1, delayed2)
+        if delayed1 && delayed2
+          delayed1.push delayed2
+          delayed1
+        else
+          delayed1 || delayed2
         end
-        delayed
       end
 
       def initialize(delayed, blockers_count, future)
         super(future)
-        # noinspection RubyArgCount
-        @Touched   = AtomicBoolean.new false
         @Delayed   = delayed
         # noinspection RubyArgCount
         @Countdown = AtomicFixnum.new blockers_count
@@ -1442,16 +1445,12 @@ module Concurrent
         on_resolvable(future, index) if resolvable
       end
 
-      def delayed
+      def delayed_because
         @Delayed
       end
 
       def touch
-        clear_propagate_touch if @Touched.make_true
-      end
-
-      def touched?
-        @Touched.value
+        clear_and_propagate_touch
       end
 
       # for inspection only
@@ -1463,13 +1462,11 @@ module Concurrent
 
       private
 
-      def clear_propagate_touch
-        @Delayed.clear_each { |o| propagate_touch o } if @Delayed
-      end
+      def clear_and_propagate_touch(stack_or_element = @Delayed)
+        return if stack_or_element.nil?
 
-      def propagate_touch(stack_or_element = @Delayed)
         if stack_or_element.is_a? LockFreeStack
-          stack_or_element.each { |element| propagate_touch element }
+          stack_or_element.clear_each { |element| clear_and_propagate_touch element }
         else
           stack_or_element.touch unless stack_or_element.nil? # if still present
         end
@@ -1572,7 +1569,27 @@ module Concurrent
 
     class AbstractFlatPromise < BlockedPromise
 
+      def initialize(delayed_because, blockers_count, event_or_future)
+        delayed = LockFreeStack.of1(self)
+        super(delayed, blockers_count, event_or_future)
+        # noinspection RubyArgCount
+        @Touched        = AtomicBoolean.new false
+        @DelayedBecause = delayed_because || LockFreeStack.new
+
+        event_or_future.add_callback_clear_delayed_node delayed.peek
+      end
+
+      def touch
+        if @Touched.make_true
+          clear_and_propagate_touch @DelayedBecause
+        end
+      end
+
       private
+
+      def touched?
+        @Touched.value
+      end
 
       def on_resolvable(resolved_future, index)
         resolve_with resolved_future.internal_state
@@ -1583,11 +1600,12 @@ module Concurrent
       end
 
       def add_delayed_of(future)
+        delayed = future.promise.delayed_because
         if touched?
-          propagate_touch future.promise.delayed
+          clear_and_propagate_touch delayed
         else
-          BlockedPromise.add_delayed @Delayed, future
-          clear_propagate_touch if touched?
+          BlockedPromise.add_delayed @DelayedBecause, delayed
+          clear_and_propagate_touch @DelayedBecause if touched?
         end
       end
 
@@ -1615,7 +1633,7 @@ module Concurrent
           case value
           when Future, Event
             add_delayed_of value
-            value.add_callback :callback_notify_blocked, self, nil
+            value.add_callback_notify_blocked self, nil
             countdown
           else
             resolve_with RESOLVED
@@ -1651,7 +1669,7 @@ module Concurrent
           case value
           when Future
             add_delayed_of value
-            value.add_callback :callback_notify_blocked, self, nil
+            value.add_callback_notify_blocked self, nil
             countdown
           when Event
             evaluate_to(lambda { raise TypeError, 'cannot flatten to Event' })
@@ -1684,7 +1702,7 @@ module Concurrent
         case value
         when Future
           add_delayed_of value
-          value.add_callback :callback_notify_blocked, self, nil
+          value.add_callback_notify_blocked self, nil
         else
           resolve_with internal_state
         end
@@ -1851,17 +1869,17 @@ module Concurrent
     class DelayPromise < InnerPromise
 
       def initialize(default_executor)
-        super event = Event.new(self, default_executor)
-        @Delayed = LockFreeStack.new.push self
-        # TODO (pitr-ch 20-Dec-2016): implement directly without callback?
-        event.on_resolution!(@Delayed.peek) { |stack_node| stack_node.value = nil }
+        event    = Event.new(self, default_executor)
+        @Delayed = LockFreeStack.of1(self)
+        super event
+        event.add_callback_clear_delayed_node @Delayed.peek
       end
 
       def touch
         @Future.resolve_with RESOLVED
       end
 
-      def delayed
+      def delayed_because
         @Delayed
       end
 

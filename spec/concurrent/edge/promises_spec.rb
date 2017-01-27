@@ -244,28 +244,71 @@ describe 'Concurrent::Promises' do
 
   describe 'Future' do
     it 'has sync and async callbacks' do
-      callbacks_tester = ->(future) do
-        queue = Queue.new
-        future.on_resolution_using(:io) { |result| queue.push("async on_resolution #{ result.inspect }") }
-        future.on_resolution! { |result| queue.push("sync on_resolution #{ result.inspect }") }
-        future.on_fulfillment_using(:io) { |value| queue.push("async on_fulfillment #{ value.inspect }") }
-        future.on_fulfillment! { |value| queue.push("sync on_fulfillment #{ value.inspect }") }
-        future.on_rejection_using(:io) { |reason| queue.push("async on_rejection #{ reason.inspect }") }
-        future.on_rejection! { |reason| queue.push("sync on_rejection #{ reason.inspect }") }
-        future.wait
-        [queue.pop, queue.pop, queue.pop, queue.pop].sort
-      end
-      callback_results = callbacks_tester.call(future { :value })
-      expect(callback_results).to eq ["async on_fulfillment :value",
-                                      "async on_resolution [true, :value, nil]",
-                                      "sync on_fulfillment :value",
-                                      "sync on_resolution [true, :value, nil]"]
+      callbacks_tester = ->(event_or_future) do
+        queue     = Queue.new
+        push_args = -> *args { queue.push args }
 
-      callback_results = callbacks_tester.call(future { raise 'error' })
-      expect(callback_results).to eq ["async on_rejection #<RuntimeError: error>",
-                                      "async on_resolution [false, nil, #<RuntimeError: error>]",
-                                      "sync on_rejection #<RuntimeError: error>",
-                                      "sync on_resolution [false, nil, #<RuntimeError: error>]"]
+        event_or_future.on_resolution! &push_args
+        event_or_future.on_resolution!(1, &push_args)
+        if event_or_future.is_a? Concurrent::Promises::Future
+          event_or_future.on_fulfillment! &push_args
+          event_or_future.on_fulfillment!(2, &push_args)
+          event_or_future.on_rejection! &push_args
+          event_or_future.on_rejection!(3, &push_args)
+        end
+
+        event_or_future.on_resolution &push_args
+        event_or_future.on_resolution(4, &push_args)
+        if event_or_future.is_a? Concurrent::Promises::Future
+          event_or_future.on_fulfillment &push_args
+          event_or_future.on_fulfillment(5, &push_args)
+          event_or_future.on_rejection &push_args
+          event_or_future.on_rejection(6, &push_args)
+        end
+        event_or_future.on_resolution_using(:io, &push_args)
+        event_or_future.on_resolution_using(:io, 7, &push_args)
+        if event_or_future.is_a? Concurrent::Promises::Future
+          event_or_future.on_fulfillment_using(:io, &push_args)
+          event_or_future.on_fulfillment_using(:io, 8, &push_args)
+          event_or_future.on_rejection_using(:io, &push_args)
+          event_or_future.on_rejection_using(:io, 9, &push_args)
+        end
+
+        event_or_future.wait
+        Array.new(event_or_future.is_a?(Concurrent::Promises::Future) ? 12 : 6) { queue.pop }
+      end
+
+      callback_results = callbacks_tester.call(fulfilled_future(:v))
+      expect(callback_results).to contain_exactly([true, :v, nil],
+                                                  [true, :v, nil, 1],
+                                                  [:v],
+                                                  [:v, 2],
+                                                  [true, :v, nil],
+                                                  [true, :v, nil, 4],
+                                                  [:v],
+                                                  [:v, 5],
+                                                  [true, :v, nil],
+                                                  [true, :v, nil, 7],
+                                                  [:v],
+                                                  [:v, 8])
+
+      err              = StandardError.new 'boo'
+      callback_results = callbacks_tester.call(rejected_future(err))
+      expect(callback_results).to contain_exactly([false, nil, err],
+                                                  [false, nil, err, 1],
+                                                  [err],
+                                                  [err, 3],
+                                                  [false, nil, err],
+                                                  [false, nil, err, 4],
+                                                  [err],
+                                                  [err, 6],
+                                                  [false, nil, err],
+                                                  [false, nil, err, 7],
+                                                  [err],
+                                                  [err, 9])
+
+      callback_results = callbacks_tester.call(resolved_event)
+      expect(callback_results).to contain_exactly([], [1], [], [4], [], [7])
     end
 
     [:wait, :wait!, :value, :value!, :reason, :result].each do |method_with_timeout|
@@ -387,6 +430,8 @@ describe 'Concurrent::Promises' do
 
       it 'propagates requests for values to delayed futures' do
         expect(future { delay { 1 } }.flat.value!(0.1)).to eq 1
+        expect(Array.new(3) { |i| Concurrent::Promises.delay { i } }.
+            inject { |a, b| a.then { b }.flat }.value!(0.2)).to eq 2
       end
     end
 
