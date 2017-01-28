@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Concurrent::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jerry D'Antonio", 'The Ruby Concurrency Team']
-  s.email       = ['jerry.dantonio@gmail.com', 'concurrent-ruby@googlegroups.com']
+  s.email       = 'concurrent-ruby@googlegroups.com'
   s.homepage    = 'http://www.concurrent-ruby.com'
   s.summary     = 'C extensions to optimize concurrent-ruby under MRI.'
   s.license     = 'MIT'

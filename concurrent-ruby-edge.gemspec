@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.version          = Concurrent::EDGE_VERSION
   s.platform         = Gem::Platform::RUBY
   s.authors          = ["Jerry D'Antonio", 'Petr Chalupa', 'The Ruby Concurrency Team']
-  s.email            = ['jerry.dantonio@gmail.com', 'concurrent-ruby@googlegroups.com']
+  s.email            = 'concurrent-ruby@googlegroups.com'
   s.homepage         = 'http://www.concurrent-ruby.com'
   s.summary          = 'Edge features and additions to the concurrent-ruby gem.'
   s.license          = 'MIT'
