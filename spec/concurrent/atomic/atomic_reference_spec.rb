@@ -147,6 +147,14 @@ module Concurrent
 
   describe AtomicReference do
     it_should_behave_like :atomic_reference
+
+    describe '#to_s and #inspect' do
+      it 'includes the value' do
+        subject = described_class.new('kajhsd')
+        expect(subject.to_s).to include('kajhsd')
+        expect(subject.inspect).to include('kajhsd')
+      end
+    end
   end
 
   describe MutexAtomicReference do

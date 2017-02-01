@@ -174,5 +174,13 @@ module Concurrent
         expect(AtomicBoolean.ancestors).to include(MutexAtomicBoolean)
       end
     end
+
+    describe '#to_s and #inspect' do
+      it 'includes the value' do
+        subject = described_class.new(true)
+        expect(subject.to_s).to include('true')
+        expect(subject.inspect).to include('true')
+      end
+    end
   end
 end

@@ -131,7 +131,9 @@ module Concurrent
   class AtomicFixnum < AtomicFixnumImplementation
     # @return [String] Short string representation.
     def to_s
-      format '<#%s:0x%x value:%s>', self.class, object_id << 1, get
+      format '<#%s:0x%x value:%s>', self.class, object_id << 1, value
     end
+
+    alias_method :inspect, :to_s
   end
 end
