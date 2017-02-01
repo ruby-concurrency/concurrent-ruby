@@ -10,6 +10,11 @@ module Concurrent
   #         end
   #       end
   #     end
+  # @!macro [new] throttle.example.throttled_future
+  #   @example
+  #     throttle.throttled_future(1) do |arg|
+  #       arg.succ
+  #     end
   # @!macro [new] throttle.example.throttled_future_chain
   #   @example
   #     throttle.throttled_future_chain do |trigger|
@@ -40,6 +45,7 @@ module Concurrent
   # A tool manage concurrency level of future tasks.
   #
   # @!macro throttle.example.then_throttled_by
+  # @!macro throttle.example.throttled_future
   # @!macro throttle.example.throttled_future_chain
   # @!macro throttle.example.throttled_block
   class Throttle < Synchronization::Object
@@ -132,6 +138,7 @@ module Concurrent
       # Behaves as {Promises::FactoryMethods#future} but the future is throttled.
       # @return [Promises::Future]
       # @see Promises::FactoryMethods#future
+      # @!macro throttle.example.throttled_future
       def throttled_future(*args, &task)
         trigger.chain(*args, &task).on_resolution! { release }
       end

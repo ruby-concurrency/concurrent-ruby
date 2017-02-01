@@ -14,3 +14,5 @@ require 'concurrent/edge/lock_free_stack'
 require 'concurrent/edge/promises'
 require 'concurrent/edge/cancellation'
 require 'concurrent/edge/throttle'
+
+require 'concurrent/edge/processing_actor'

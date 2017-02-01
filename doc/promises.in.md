@@ -540,9 +540,6 @@ The `ask` method returns future.
 ```ruby
 actor.ask(2).then(&:succ).value!
 ```
-## ProcessingActor
-
-> *TODO: Documentation to be added in few days*
 
 ## Channel
 
@@ -581,6 +578,86 @@ result = (
     then { |format, (channel, value)| format format, value }
 result.value!
 ```
+
+## ProcessingActor
+
+There is also a new implementation of actors based on the Channel and the
+ability of promises to simulate process. The actor runs as a process but also
+does not occupy a thread per actor as previous Concurrent::Actor
+implementation. This implementation is close to Erlang actors, therefore OTP
+can be ported for this actors (and it's planned).
+
+The simplest actor is a one which just computes without even receiving a
+message.
+
+```ruby
+actor = Concurrent::ProcessingActor.act(an_argument = 2) do |actor, number|
+  number ** 3
+end
+actor.termination.value!
+```
+Let's receive some messages though.
+
+```ruby
+add_2_messages = Concurrent::ProcessingActor.act do |actor|
+  # Receive two messages then terminate normally with the sum.
+  (actor.receive & actor.receive).then do |a, b|
+    a + b
+  end
+end
+add_2_messages.tell 1
+add_2_messages.termination.resolved?
+add_2_messages.tell 3
+add_2_messages.termination.value!
+```
+
+Actors can also be used to apply back pressure to a producer. Let's start by
+defining an actor which a mailbox of size 2.
+
+```ruby
+slow_counter = -> (actor, count) do
+  actor.receive.then do |command, number|
+    sleep 0.1
+    case command
+    when :add
+      slow_counter.call actor, count + number
+    when :done
+      # terminate
+      count
+    end
+  end
+end
+
+actor = Concurrent::ProcessingActor.act_listening( 
+    Concurrent::Promises::Channel.new(2), 
+    0,
+    &slow_counter)
+```
+
+Now we can create a producer which will push messages only when there is a
+space available in the mailbox. We use promises to free a thread during waiting
+on a free space in the mailbox.
+
+```ruby
+produce = -> receiver, i do
+  if i < 10
+    receiver.
+        # send a message to the actor, resolves only after the message is 
+        # accepted by the actor's mailbox
+        tell([:add, i]).
+        # send incremented message when the above message is accepted 
+        then(i+1, &produce)
+  else
+    receiver.tell(:done)
+    # do not continue 
+  end
+end
+
+Concurrent::Promises.future(actor, 0, &produce).run.wait!
+
+actor.termination.value!
+```
+
 
 # Use-cases
 

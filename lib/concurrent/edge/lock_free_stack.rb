@@ -1,4 +1,6 @@
 module Concurrent
+
+  # @!visibility private
   class LockFreeStack < Synchronization::Object
 
     safe_initialization!
