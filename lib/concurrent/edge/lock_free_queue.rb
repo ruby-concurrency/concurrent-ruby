@@ -1,5 +1,6 @@
 module Concurrent
 
+  # @!visibility private
   class LockFreeQueue < Synchronization::Object
 
     class Node < Synchronization::Object

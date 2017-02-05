@@ -1,14 +1,15 @@
 module Concurrent
 
   # Provides tools for cooperative cancellation.
-  # Inspired by https://msdn.microsoft.com/en-us/library/dd537607(v=vs.110).aspx
+  # Inspired by <https://msdn.microsoft.com/en-us/library/dd537607(v=vs.110).aspx>
+  #
   # @example
   #   # Create new cancellation. `cancellation` is used for cancelling, `token` is passed down to
   #   # tasks for cooperative cancellation
   #   cancellation, token = Concurrent::Cancellation.create
   #   Thread.new(token) do |token|
-  #     # Count 1+1 (simulating some other meaningful work) repeatedly until the token is cancelled through
-  #     # cancellation.
+  #     # Count 1+1 (simulating some other meaningful work) repeatedly
+  #     # until the token is cancelled through cancellation.
   #     token.loop_until_canceled { 1+1 }
   #   end
   #   sleep 0.1
