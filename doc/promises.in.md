@@ -7,7 +7,7 @@ FactoryMethods. They are not designed for inheritance but rather for
 composition.
 
 ```ruby
-Concurrent::Promises::FactoryMethods.instance_methods
+Concurrent::Promises::FactoryMethods.instance_methods(false)
 ```
 
 The module can be included or extended where needed.
@@ -21,21 +21,31 @@ Class.new do
   end
 end.new.a_method
 
-Module.new { extend Concurrent::Promises::FactoryMethods }.resolvable_event
+mod = Module.new do
+  extend Concurrent::Promises::FactoryMethods
+end #
+mod.resolvable_event
 ```
+
+The default executor can be changed by overriding `default_executor` method
+inherited from `Concurrent::Promises::FactoryMethods`.
+
+```ruby
+mod = Module.new do
+  extend Concurrent::Promises::FactoryMethods
+  def self.default_executor
+    :fast
+  end
+end #
+mod.future { 1 }.default_executor
+Concurrent::Promises.future { 1 }.default_executor
+```
+
 
 The module is already extended into {Concurrent::Promises} for convenience.
 
 ```ruby
 Concurrent::Promises.resolvable_event
-```
-
-For this guide we introduce a shortcut in `main` so we can call the factory
-methods in following examples by using `Promisses` directly.
-
-```ruby
-Promises = Concurrent::Promises #
-Promises.resolvable_event
 ```
 
 ## Asynchronous task
@@ -47,7 +57,7 @@ be executed on an internal thread pool.
 Arguments of `future` are passed to the block and evaluation starts immediately.
 
 ```ruby
-future = Promises.future(0.1) do |duration|
+future = Concurrent::Promises.future(0.1) do |duration|
   sleep duration
   :result
 end
@@ -70,7 +80,7 @@ future.resolved?
 If the task fails we talk about the future being rejected.
 
 ```ruby
-future = Promises.future { raise 'Boom' }
+future = Concurrent::Promises.future { raise 'Boom' }
 ```
 
 There is no result, the future was rejected with a reason.
@@ -112,7 +122,7 @@ end #
 Event has `pending` and `resolved` state. 
 
 ```ruby
-event = Promises.resolvable_event #
+event = Concurrent::Promises.resolvable_event #
 inspect_methods(:state, :pending?, :resolved?, of: event)
 
 event.resolve #
@@ -122,7 +132,7 @@ inspect_methods(:state, :pending?, :resolved?, of: event)
 Future's `resolved` state is further specified to be `fulfilled` or `rejected`.
 
 ```ruby
-future = Promises.resolvable_future #
+future = Concurrent::Promises.resolvable_future #
 inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?, 
     of: future)
 
@@ -130,7 +140,7 @@ future.fulfill :value #
 inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?,
     :result, :value, :reason, of: future)
 
-future = Promises.rejected_future StandardError.new #
+future = Concurrent::Promises.rejected_future StandardError.new #
 inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?, 
     :result, :value, :reason, of: future)
 ```
@@ -141,16 +151,16 @@ When an existing value has to wrapped in a future it does not have to go
 through evaluation as follows.
 
 ```ruby
-Promises.future { :value }
+Concurrent::Promises.future { :value }
 ```
 
 Instead it can be created directly.
 
 ```ruby
-Promises.fulfilled_future(:value)
-Promises.rejected_future(StandardError.new('Ups'))
-Promises.resolved_future(true, :value, nil)
-Promises.resolved_future(false, nil, StandardError.new('Ups'))
+Concurrent::Promises.fulfilled_future(:value)
+Concurrent::Promises.rejected_future(StandardError.new('Ups'))
+Concurrent::Promises.resolved_future(true, :value, nil)
+Concurrent::Promises.resolved_future(false, nil, StandardError.new('Ups'))
 ```
 
 ## Chaining
@@ -159,7 +169,7 @@ Big advantage of promises is ability to chain tasks together without blocking
 current thread.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     future(2) { |v| v.succ }.
     then(&:succ).
     value!
@@ -170,16 +180,16 @@ supplied arguments are passed to the block, and the library ensures that they
 are visible to the block.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     future('3') { |s| s.to_i }.
     then(2) { |v, arg| v + arg }.
     value
-Promises.
+Concurrent::Promises.
     fulfilled_future('3').
     then(&:to_i).
     then(2, &:+).
     value
-Promises.
+Concurrent::Promises.
     fulfilled_future(1).
     chain(2) { |fulfilled, value, reason, arg| value + arg }.
     value
@@ -191,7 +201,7 @@ do_stuff arg }`) is **required**, both following examples may break.
 ```ruby
 arg = 1
 Thread.new { do_stuff arg }
-Promises.future { do_stuff arg }
+Concurrent::Promises.future { do_stuff arg }
 ```
 
 ## Branching, and zipping
@@ -199,7 +209,7 @@ Promises.future { do_stuff arg }
 Besides chaining it can also be branched.
 
 ```ruby
-head    = Promises.fulfilled_future -1 #
+head    = Concurrent::Promises.fulfilled_future -1 #
 branch1 = head.then(&:abs) #
 branch2 = head.then(&:succ).then(&:succ) #
 
@@ -217,7 +227,7 @@ branch1.zip(branch2).value!
 (branch1 & branch2).
     then(&:+).
     value!
-Promises.
+Concurrent::Promises.
     zip(branch1, branch2, branch1).
     then { |*values| values.reduce(&:+) }.
     value!
@@ -226,7 +236,7 @@ Promises.
 Instead of zipping only the first one can be taken if needed.
 
 ```ruby
-Promises.any(branch1, branch2).value!
+Concurrent::Promises.any(branch1, branch2).value!
 (branch1 | branch2).value!
 ```
 
@@ -246,7 +256,7 @@ When one of the tasks in the chain fails, the rejection propagates down the
 chain without executing the tasks created with `then`.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     fulfilled_future(Object.new).
     then(&:succ).
     then(&:succ).
@@ -260,7 +270,7 @@ It can be used to recover from rejection.
 Using rescue to fulfill to 0 instead of the error.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     fulfilled_future(Object.new).
     then(&:succ).
     then(&:succ).
@@ -271,7 +281,7 @@ Promises.
 Rescue not executed when there is no rejection.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     fulfilled_future(1).
     then(&:succ).
     then(&:succ).
@@ -282,11 +292,11 @@ Promises.
 Tasks added with `chain` are evaluated always.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     fulfilled_future(1).
     chain { |fulfilled, value, reason| fulfilled ? value : reason }.
     value!
-Promises.
+Concurrent::Promises.
     rejected_future(StandardError.new('Ups')).
     chain { |fulfilled, value, reason| fulfilled ? value : reason }.
     value!
@@ -295,9 +305,9 @@ Promises.
 Zip is rejected if any of the zipped futures is.
 
 ```ruby
-rejected_zip = Promises.zip(
-    Promises.fulfilled_future(1),
-    Promises.rejected_future(StandardError.new('Ups')))
+rejected_zip = Concurrent::Promises.zip(
+    Concurrent::Promises.fulfilled_future(1),
+    Concurrent::Promises.rejected_future(StandardError.new('Ups')))
 rejected_zip.result
 rejected_zip.
     rescue { |reason1, reason2| (reason1 || reason2).message }.
@@ -310,7 +320,7 @@ Delayed futures will not evaluate until asked by `touch` or other method
 requiring resolution. 
 
 ```ruby
-future = Promises.delay { sleep 0.1; 'lazy' }
+future = Concurrent::Promises.delay { sleep 0.1; 'lazy' }
 sleep 0.1 #
 future.resolved?
 future.touch
@@ -321,13 +331,13 @@ future.resolved?
 All blocking methods like `wait`, `value` call `touch` and trigger evaluation.
 
 ```ruby
-Promises.delay { :value }.value
+Concurrent::Promises.delay { :value }.value
 ```
 
 It propagates trough chain up allowing whole or partial lazy chains.
 
 ```ruby
-head    = Promises.delay { 1 } #
+head    = Concurrent::Promises.delay { 1 } #
 branch1 = head.then(&:succ) #
 branch2 = head.delay.then(&:succ) #
 join    = branch1 & branch2 #
@@ -359,19 +369,19 @@ join.value
 ## Flatting
 
 Sometimes it is needed to wait for a inner future. Apparent solution is to wait
-inside the future `Promises.future { Promises.future { 1+1 }.value }.value`
+inside the future `Concurrent::Promises.future { Concurrent::Promises.future { 1+1 }.value }.value`
 however as mentioned before, `value` calls should be **avoided** to avoid
 blocking threads. Therefore there is a flat method which is a correct solution
 in this situation and does not block any thread.
 
 ```ruby
-Promises.future { Promises.future { 1+1 } }.flat.value!
+Concurrent::Promises.future { Concurrent::Promises.future { 1+1 } }.flat.value!
 ```
 
 A more complicated example.
 ```ruby
-Promises.
-    future { Promises.future { Promises.future { 1 + 1 } } }.
+Concurrent::Promises.
+    future { Concurrent::Promises.future { Concurrent::Promises.future { 1 + 1 } } }.
     flat(1).
     then { |future| future.then(&:succ) }.
     flat(1).
@@ -385,7 +395,7 @@ Tasks can be planned to be executed with a time delay.
 Schedule task to be executed in 0.1 seconds.
 
 ```ruby
-scheduled = Promises.schedule(0.1) { 1 }
+scheduled = Concurrent::Promises.schedule(0.1) { 1 }
 scheduled.resolved?
 ```
 
@@ -399,7 +409,7 @@ It can be used in the chain as well, where the delay is counted form a moment
 its parent resolves. Therefore following future will be resolved in 0.2 seconds.
 
 ```ruby
-future = Promises.
+future = Concurrent::Promises.
     future { sleep 0.1; :result }.
     schedule(0.1).
     then(&:to_s).
@@ -409,7 +419,7 @@ future = Promises.
 Time can be used as well.
 
 ```ruby
-Promises.schedule(Time.now + 10) { :val }
+Concurrent::Promises.schedule(Time.now + 10) { :val }
 ```
 
 ## Resolvable Future and Event:
@@ -420,7 +430,7 @@ Sometimes it is required to resolve a future externally, in these cases
 {Concurrent::Promises::ResolvableEvent}.
 
 ```ruby
-future = Promises.resolvable_future
+future = Concurrent::Promises.resolvable_future
 ```
 
 The thread will be blocked until the future is resolved
@@ -465,7 +475,7 @@ better to follow following rules:
 
 ```ruby
 queue  = Queue.new
-future = Promises.delay { 1 + 1 }
+future = Concurrent::Promises.delay { 1 + 1 }
 
 future.on_fulfillment { queue << 1 } # evaluated asynchronously
 future.on_fulfillment! { queue << 2 } # evaluated on resolving thread
@@ -486,7 +496,7 @@ two global pools in concurrent-ruby. `fast` for short and non-blocking tasks
 and `:io` for blocking and long tasks.
 
 ```ruby
-Promises.future_on(:fast) { 2 }.
+Concurrent::Promises.future_on(:fast) { 2 }.
     then_on(:io) { File.read __FILE__ }.
     value.size
 ```
@@ -500,10 +510,10 @@ to simulate a thread like processing without actually occupying the thread.
 ```ruby
 count = lambda do |v|
   v += 1
-  v < 5 ? Promises.future_on(:fast, v, &count) : v
+  v < 5 ? Concurrent::Promises.future_on(:fast, v, &count) : v
 end
 400.times.
-    map { Promises.future_on(:fast, 0, &count).run.value! }.
+    map { Concurrent::Promises.future_on(:fast, 0, &count).run.value! }.
     all? { |v| v == 5 }
 ```
 
@@ -526,7 +536,7 @@ Send result of `1+1` to the actor, and add 2 to the result send back from the
 actor.
 
 ```ruby
-Promises.
+Concurrent::Promises.
     future { 1 + 1 }.
     then_ask(actor).
     then { |v| v + 2 }.
@@ -571,7 +581,7 @@ ch2    = Concurrent::Promises::Channel.new 2
 result = Concurrent::Promises.select_channel(ch1, ch2)
 result.value!
 
-Promises.future { 1+1 }.then_push_channel(ch1)
+Concurrent::Promises.future { 1+1 }.then_push_channel(ch1)
 result = (
     Concurrent::Promises.fulfilled_future('%02d') &      
         Concurrent::Promises.select_channel(ch1, ch2)).
@@ -664,14 +674,14 @@ actor.termination.value!
 ## Simple background processing
   
 ```ruby
-Promises.future { do_stuff }
+Concurrent::Promises.future { do_stuff }
 ```
 
 ## Parallel background processing
 
 ```ruby
-tasks = 4.times.map { |i| Promises.future(i) { |i| i*2 } }
-Promises.zip(*tasks).value!
+tasks = 4.times.map { |i| Concurrent::Promises.future(i) { |i| i*2 } }
+Concurrent::Promises.zip(*tasks).value!
 ```
 
 ## Actor background processing
@@ -749,13 +759,13 @@ body = lambda do |v|
   if new_v < 5
     # Continue computing with new value, does not have to be recursive.
     # It just has to return a future.
-    Promises.future(new_v, &body)
+    Concurrent::Promises.future(new_v, &body)
   else
     # The process is finished, fulfill the final value with `new_v`.
     new_v
   end
 end
-Promises.future(0, &body).run.value! # => 5
+Concurrent::Promises.future(0, &body).run.value! # => 5
 ```
 
 This solution works well an any Ruby implementation.
@@ -775,12 +785,12 @@ count_until_cancelled = -> token, count do
   if token.canceled?
     count
   else
-    Promises.future token, count+1, &count_until_cancelled
+    Concurrent::Promises.future token, count+1, &count_until_cancelled
   end
 end #
 
 futures = Array.new(2) do
-  Promises.future(token, 0, &count_until_cancelled).run
+  Concurrent::Promises.future(token, 0, &count_until_cancelled).run
 end
 
 sleep 0.01 #
@@ -805,7 +815,7 @@ tasks share a cancellation, when one of them fails it cancels the others.
 ```ruby
 source, token = Concurrent::Cancellation.create
 tasks = 4.times.map do |i|
-  Promises.future(source, token, i) do |source, token, i|
+  Concurrent::Promises.future(source, token, i) do |source, token, i|
     count = 0
     1000.times do
       break count = :cancelled if token.canceled?
@@ -819,7 +829,7 @@ tasks = 4.times.map do |i|
     end
   end
 end
-Promises.zip(*tasks).result
+Concurrent::Promises.zip(*tasks).result
 ```
 
 Without the randomly failing part it produces following.
@@ -827,7 +837,7 @@ Without the randomly failing part it produces following.
 ```ruby
 source, token = Concurrent::Cancellation.create
 tasks = 4.times.map do |i|
-  Promises.future(source, token, i) do |source, token, i|
+  Concurrent::Promises.future(source, token, i) do |source, token, i|
     count = 0
     1000.times do
       break count = :cancelled if token.canceled?
@@ -841,7 +851,7 @@ tasks = 4.times.map do |i|
     count
   end
 end
-Promises.zip(*tasks).result
+Concurrent::Promises.zip(*tasks).result
 ```
 
 ## Throttling concurrency
@@ -868,7 +878,7 @@ concurrent_jobs = 11.times.map do |v|
       rescue { |reason| reason.message } 
 end #
 
-Promises.zip(*concurrent_jobs).value!
+Concurrent::Promises.zip(*concurrent_jobs).value!
 ```
 
 Often there is more then one DB connections, then the pool can be used.
@@ -898,7 +908,7 @@ concurrent_jobs = 11.times.map do |v|
       rescue { |reason| reason.message } 
 end #
 
-Promises.zip(*concurrent_jobs).value!
+Concurrent::Promises.zip(*concurrent_jobs).value!
 ```
 
 In other cases the DB adapter maintains its internal connection pool and we
@@ -934,11 +944,11 @@ buffer and how to apply back pressure to slow down the queries.
 ```ruby
 require 'json' #
 
-channel       = Promises::Channel.new 6
+channel       = Concurrent::Promises::Channel.new 6
 source, token = Concurrent::Cancellation.create
 
 def query_random_text(token, channel)
-  Promises.future do
+  Concurrent::Promises.future do
     # for simplicity the query is omitted
     # url = 'some api'
     # Net::HTTP.get(URI(url))
@@ -981,11 +991,11 @@ def count_words_in_random_text(token, channel, words, words_throttle)
 end
 
 query_processes = 3.times.map do
-  Promises.future(token, channel, &method(:query_random_text)).run
+  Concurrent::Promises.future(token, channel, &method(:query_random_text)).run
 end
 
 word_counter_processes = 2.times.map do
-  Promises.future(token, channel, words, words_throttle, 
+  Concurrent::Promises.future(token, channel, words, words_throttle, 
       &method(:count_words_in_random_text)).run
 end
 
@@ -1013,7 +1023,7 @@ can be easily created.
 
 ```ruby
 repeating_scheduled_task = -> interval, token, task do
-  Promises.
+  Concurrent::Promises.
       # Schedule the task.
       schedule(interval, token, &task).
       # If successful schedule again. 
@@ -1032,7 +1042,7 @@ task = -> token do
   end
 end
 
-result = Promises.future(0.1, token, task, &repeating_scheduled_task).run
+result = Concurrent::Promises.future(0.1, token, task, &repeating_scheduled_task).run
 sleep 0.2
 cancellation.cancel
 result.result

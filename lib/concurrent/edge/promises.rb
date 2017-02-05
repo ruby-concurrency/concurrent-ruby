@@ -73,10 +73,21 @@ module Concurrent
     module FactoryMethods
       extend ReInclude
 
+      module Configuration
+        # @return [Executor, :io, :fast] the executor which is used when none is supplied
+        #   to a factory method. The method can be overridden in the receivers of
+        #   `include FactoryMethod`
+        def default_executor
+          :io
+        end
+      end
+
+      include Configuration
+
       # @!macro promises.shortcut.on
       # @return [ResolvableEvent]
       def resolvable_event
-        resolvable_event_on :io
+        resolvable_event_on default_executor
       end
 
       # Created resolvable event, user is responsible for resolving the event once by
@@ -84,14 +95,14 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [ResolvableEvent]
-      def resolvable_event_on(default_executor = :io)
+      def resolvable_event_on(default_executor = self.default_executor)
         ResolvableEventPromise.new(default_executor).future
       end
 
       # @!macro promises.shortcut.on
       # @return [ResolvableFuture]
       def resolvable_future
-        resolvable_future_on :io
+        resolvable_future_on default_executor
       end
 
       # Creates resolvable future, user is responsible for resolving the future once by
@@ -100,14 +111,14 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [ResolvableFuture]
-      def resolvable_future_on(default_executor = :io)
+      def resolvable_future_on(default_executor = self.default_executor)
         ResolvableFuturePromise.new(default_executor).future
       end
 
       # @!macro promises.shortcut.on
       # @return [Future]
       def future(*args, &task)
-        future_on(:io, *args, &task)
+        future_on(default_executor, *args, &task)
       end
 
       # @!macro [new] promises.future-on1
@@ -129,7 +140,7 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def resolved_future(fulfilled, value, reason, default_executor = :io)
+      def resolved_future(fulfilled, value, reason, default_executor = self.default_executor)
         ImmediateFuturePromise.new(default_executor, fulfilled, value, reason).future
       end
 
@@ -137,7 +148,7 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def fulfilled_future(value, default_executor = :io)
+      def fulfilled_future(value, default_executor = self.default_executor)
         resolved_future true, value, nil, default_executor
       end
 
@@ -145,7 +156,7 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [Future]
-      def rejected_future(reason, default_executor = :io)
+      def rejected_future(reason, default_executor = self.default_executor)
         resolved_future false, nil, reason, default_executor
       end
 
@@ -153,7 +164,7 @@ module Concurrent
       #
       # @!macro promises.param.default_executor
       # @return [Event]
-      def resolved_event(default_executor = :io)
+      def resolved_event(default_executor = self.default_executor)
         ImmediateEventPromise.new(default_executor).event
       end
 
@@ -164,26 +175,26 @@ module Concurrent
       # @!macro promises.param.default_executor
       # @return [Event, Future]
       #
-      # @overload create(nil, default_executor = :io)
+      # @overload create(nil, default_executor = self.default_executor)
       #   @param [nil] nil
       #   @return [Event] resolved event.
       #
-      # @overload create(a_future, default_executor = :io)
+      # @overload create(a_future, default_executor = self.default_executor)
       #   @param [Future] a_future
       #   @return [Future] a future which will be resolved when a_future is.
       #
-      # @overload create(an_event, default_executor = :io)
+      # @overload create(an_event, default_executor = self.default_executor)
       #   @param [Event] an_event
       #   @return [Event] an event which will be resolved when an_event is.
       #
-      # @overload create(exception, default_executor = :io)
+      # @overload create(exception, default_executor = self.default_executor)
       #   @param [Exception] exception
       #   @return [Future] a rejected future with the exception as its reason.
       #
-      # @overload create(value, default_executor = :io)
+      # @overload create(value, default_executor = self.default_executor)
       #   @param [Object] value when none of the above overloads fits
       #   @return [Future] a fulfilled future with the value.
-      def create(argument = nil, default_executor = :io)
+      def create(argument = nil, default_executor = self.default_executor)
         case argument
         when AbstractEventFuture
           # returning wrapper would change nothing
@@ -200,7 +211,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Future]
       def delay(*args, &task)
-        delay_on :io, *args, &task
+        delay_on default_executor, *args, &task
       end
 
       # @!macro promises.future-on1
@@ -214,7 +225,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Future]
       def schedule(intended_time, *args, &task)
-        schedule_on :io, intended_time, *args, &task
+        schedule_on default_executor, intended_time, *args, &task
       end
 
       # @!macro promises.future-on1
@@ -231,7 +242,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Future]
       def zip_futures(*futures_and_or_events)
-        zip_futures_on :io, *futures_and_or_events
+        zip_futures_on default_executor, *futures_and_or_events
       end
 
       # Creates new future which is resolved after all futures_and_or_events are resolved.
@@ -253,7 +264,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Event]
       def zip_events(*futures_and_or_events)
-        zip_events_on :io, *futures_and_or_events
+        zip_events_on default_executor, *futures_and_or_events
       end
 
       # Creates new event which is resolved after all futures_and_or_events are resolved.
@@ -269,7 +280,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Future]
       def any_resolved_future(*futures_and_or_events)
-        any_resolved_future_on :io, *futures_and_or_events
+        any_resolved_future_on default_executor, *futures_and_or_events
       end
 
       alias_method :any, :any_resolved_future
@@ -291,7 +302,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Future]
       def any_fulfilled_future(*futures_and_or_events)
-        any_fulfilled_future_on :io, *futures_and_or_events
+        any_fulfilled_future_on default_executor, *futures_and_or_events
       end
 
       # Creates new future which is resolved after first of futures_and_or_events is fulfilled.
@@ -310,7 +321,7 @@ module Concurrent
       # @!macro promises.shortcut.on
       # @return [Future]
       def any_event(*futures_and_or_events)
-        any_event_on :io, *futures_and_or_events
+        any_event_on default_executor, *futures_and_or_events
       end
 
       # Creates new event which becomes resolved after first of the futures_and_or_events resolves.
