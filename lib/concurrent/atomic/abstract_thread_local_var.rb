@@ -15,7 +15,9 @@ module Concurrent
 
       if block_given?
         @default_block = default_block
+        @default = nil
       else
+        @default_block = nil
         @default = default
       end
 
