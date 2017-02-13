@@ -1,5 +1,3 @@
-$VERBOSE = nil # suppress our deprecation warnings
-
 if ENV['COVERAGE']
   require 'simplecov'
   require 'coveralls'
