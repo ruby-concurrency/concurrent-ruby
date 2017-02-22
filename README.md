@@ -84,7 +84,7 @@ Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/St
 
 Thread-safe variables:
 
-* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A way to manage shared, mutable, *asynchronous*, independent, state. Based on Clojure's [Agent](http://clojure.org/agents).
+* [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A way to manage shared, mutable, *asynchronous*, independent state. Based on Clojure's [Agent](http://clojure.org/agents).
 * [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage shared, mutable, *synchronous*, independent state. Based on Clojure's [Atom](http://clojure.org/atoms).
 * [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html) A boolean value that can be updated atomically.
 * [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html) A numeric value that can be updated atomically.
