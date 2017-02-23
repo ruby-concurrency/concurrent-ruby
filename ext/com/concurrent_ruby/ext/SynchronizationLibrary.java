@@ -102,7 +102,7 @@ public class SynchronizationLibrary implements Library {
                 final ThreadContext oldContext = threadContext;
                 threadContext = context;
             } else {
-                UnsafeHolder.fullFence();
+                UnsafeHolder.U.fullFence();
             }
             return context.nil;
         }
@@ -115,7 +115,7 @@ public class SynchronizationLibrary implements Library {
                 final ThreadContext oldContext = threadContext;
                 return ((RubyBasicObject)self).instance_variable_get(context, name);
             } else {
-                UnsafeHolder.loadFence();
+                UnsafeHolder.U.loadFence();
                 return ((RubyBasicObject)self).instance_variable_get(context, name);
             }
         }
