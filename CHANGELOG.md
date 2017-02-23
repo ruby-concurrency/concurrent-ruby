@@ -1,4 +1,20 @@
-## Current Release v1.0.4 (27 Dec 2016)
+## Release v1.0.5, edge v0.3.1 (1 Feb 2017)
+
+concurrent-ruby:
+
+* Documentation for Event and Semaphore
+* Use Unsafe#fullFence and #loadFence directly since the shortcuts were removed in JRuby
+* Do not depend on org.jruby.util.unsafe.UnsafeHolder
+
+concurrent-ruby-edge:
+
+* (#620) Actors on Pool raise an error
+* (#624) Delayed promises did not interact correctly with flatting
+  * Fix arguments yielded by callback methods
+* Overridable default executor in promises factory methods
+* Asking actor to terminate will always resolve to `true`
+
+## Release v1.0.4, edge v0.3.0 (27 Dec 2016)
 
 concurrent-ruby:
 
