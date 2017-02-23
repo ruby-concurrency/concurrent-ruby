@@ -1,21 +1,22 @@
 package com.concurrent_ruby.ext;
 
-import java.io.IOException;
-
 import org.jruby.Ruby;
+import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
-import org.jruby.RubyBasicObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import org.jruby.runtime.Block;
-import org.jruby.runtime.Visibility;
-import org.jruby.runtime.ThreadContext;
 import org.jruby.util.unsafe.UnsafeHolder;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
 
 public class SynchronizationLibrary implements Library {
 
@@ -84,9 +85,27 @@ public class SynchronizationLibrary implements Library {
     // - writes depend on UnsafeHolder.U, null -> SynchronizedVariableAccessor, !null -> StampedVariableAccessor
     //   SynchronizedVariableAccessor wraps with synchronized block, StampedVariableAccessor uses fullFence or
     //   volatilePut
+    // TODO (pitr 16-Sep-2015): what do we do in Java 9 ?
 
     // module JRubyAttrVolatile
     public static class JRubyAttrVolatile {
+
+        private static boolean supportsFences() {
+            if(UnsafeHolder.U == null) {
+                return false;
+            } else {
+                try {
+                    Method m = UnsafeHolder.U.getClass().getDeclaredMethod("fullFence", new Class[0]);
+                    if(m != null) {
+                        return true;
+                    }
+                } catch (Exception var1) {
+                    // nothing
+                }
+
+                return false;
+            }
+        }
 
         // volatile threadContext is used as a memory barrier per the JVM memory model happens-before semantic
         // on volatile fields. any volatile field could have been used but using the thread context is an
@@ -96,9 +115,10 @@ public class SynchronizationLibrary implements Library {
         @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PUBLIC)
         public static IRubyObject fullMemoryBarrier(ThreadContext context, IRubyObject self) {
             // Prevent reordering of ivar writes with publication of this instance
-            if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
+            if (!supportsFences()) {
                 // Assuming that following volatile read and write is not eliminated it simulates fullFence.
                 // If it's eliminated it'll cause problems only on non-x86 platforms.
+                // http://shipilev.net/blog/2014/jmm-pragmatics/#_happens_before_test_your_understanding
                 final ThreadContext oldContext = threadContext;
                 threadContext = context;
             } else {
@@ -110,7 +130,7 @@ public class SynchronizationLibrary implements Library {
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PUBLIC)
         public static IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject self, IRubyObject name) {
             // Ensure we ses latest value with loadFence
-            if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
+            if (!supportsFences()) {
                 // piggybacking on volatile read, simulating loadFence
                 final ThreadContext oldContext = threadContext;
                 return ((RubyBasicObject)self).instance_variable_get(context, name);
@@ -123,7 +143,7 @@ public class SynchronizationLibrary implements Library {
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PUBLIC)
         public static IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject self, IRubyObject name, IRubyObject value) {
             // Ensure we make last update visible
-            if (UnsafeHolder.U == null || !UnsafeHolder.SUPPORTS_FENCES) {
+            if (!supportsFences()) {
                 // piggybacking on volatile write, simulating storeFence
                 final IRubyObject result = ((RubyBasicObject)self).instance_variable_set(name, value);
                 threadContext = context;
