@@ -46,6 +46,7 @@ namespace :yard do
 
   cmd = lambda do |command|
     puts ">> executing: #{command}"
+    puts ">>        in: #{Dir.pwd}"
     system command or raise "#{command} failed"
   end
 
