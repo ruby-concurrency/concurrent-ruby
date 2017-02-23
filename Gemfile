@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
-gemspec name: 'concurrent-ruby'
-gemspec name: 'concurrent-ruby-edge'
+gem 'concurrent-ruby', path: '.'
+gem 'concurrent-ruby-edge', path: '.'
+gem 'concurrent-ruby-ext', path: '.', platform: :mri
 
 group :development do
   gem 'rake', '~> 10.0'
