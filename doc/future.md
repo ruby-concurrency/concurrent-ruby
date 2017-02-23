@@ -40,7 +40,7 @@ price.value(0) #=> nil (does not block)
 
 sleep(1)    # do other stuff
 
-price.value #=> 63.65 (after blocking if neccesary)
+price.value #=> 63.65 (after blocking if necessary)
 price.state #=> :fulfilled
 price.fulfilled? #=> true
 price.value #=> 63.65
