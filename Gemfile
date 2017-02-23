@@ -5,7 +5,7 @@ gem 'concurrent-ruby-edge', path: '.'
 gem 'concurrent-ruby-ext', path: '.', platform: :mri
 
 group :development do
-  gem 'rake', '~> 10.0'
+  gem 'rake', '~> 11.0'
   gem 'rake-compiler', '~> 0.9.5'
   gem 'rake-compiler-dock', '~> 0.4.3'
   gem 'gem-compiler', '~> 0.3.0'
