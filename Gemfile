@@ -13,9 +13,6 @@ group :development do
   # documentation
   gem 'countloc', '~> 0.4.0', :platforms => :mri, :require => false
   gem 'yard', '~> 0.8.0', :require => false
-  # TODO (pitr-ch 15-Oct-2016): does not work on 1.9.3 anymore
-  # TODO remove, reports private classes as undocumented
-  gem 'inch', '~> 0.7.0', :platforms => :mri, :require => false
   gem 'redcarpet', '~> 3.3', platforms: :mri # understands github markdown
   gem 'md-ruby-eval'
 end
