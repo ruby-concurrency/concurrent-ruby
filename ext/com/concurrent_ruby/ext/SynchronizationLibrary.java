@@ -13,12 +13,45 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import org.jruby.util.unsafe.UnsafeHolder;
+import sun.misc.Unsafe;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class SynchronizationLibrary implements Library {
+
+    private static final Unsafe UNSAFE = loadUnsafe();
+
+    private static Unsafe loadUnsafe() {
+        try {
+            Class ncdfe = Class.forName("sun.misc.Unsafe");
+            Field f = ncdfe.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            return (Unsafe) f.get((java.lang.Object) null);
+        } catch (Exception var2) {
+            return null;
+        } catch (NoClassDefFoundError var3) {
+            return null;
+        }
+    }
+
+    private static boolean supportsFences() {
+        if (UNSAFE == null) {
+            return false;
+        } else {
+            try {
+                Method m = UNSAFE.getClass().getDeclaredMethod("fullFence", new Class[0]);
+                if (m != null) {
+                    return true;
+                }
+            } catch (Exception var1) {
+                // nothing
+            }
+
+            return false;
+        }
+    }
 
     private static final ObjectAllocator JRUBY_OBJECT_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
@@ -65,8 +98,13 @@ public class SynchronizationLibrary implements Library {
                 JRubyLockableObject.class, JRUBY_LOCKABLE_OBJECT_ALLOCATOR);
     }
 
-    private RubyClass defineClass(Ruby runtime, RubyModule namespace, String parentName, String name,
-                                  Class javaImplementation, ObjectAllocator allocator) {
+    private RubyClass defineClass(
+            Ruby runtime,
+            RubyModule namespace,
+            String parentName,
+            String name,
+            Class javaImplementation,
+            ObjectAllocator allocator) {
         final RubyClass parentClass = namespace.getClass(parentName);
 
         if (parentClass == null) {
@@ -90,23 +128,6 @@ public class SynchronizationLibrary implements Library {
     // module JRubyAttrVolatile
     public static class JRubyAttrVolatile {
 
-        private static boolean supportsFences() {
-            if(UnsafeHolder.U == null) {
-                return false;
-            } else {
-                try {
-                    Method m = UnsafeHolder.U.getClass().getDeclaredMethod("fullFence", new Class[0]);
-                    if(m != null) {
-                        return true;
-                    }
-                } catch (Exception var1) {
-                    // nothing
-                }
-
-                return false;
-            }
-        }
-
         // volatile threadContext is used as a memory barrier per the JVM memory model happens-before semantic
         // on volatile fields. any volatile field could have been used but using the thread context is an
         // attempt to avoid code elimination.
@@ -122,37 +143,44 @@ public class SynchronizationLibrary implements Library {
                 final ThreadContext oldContext = threadContext;
                 threadContext = context;
             } else {
-                UnsafeHolder.U.fullFence();
+                UNSAFE.fullFence();
             }
             return context.nil;
         }
 
         @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PUBLIC)
-        public static IRubyObject instanceVariableGetVolatile(ThreadContext context, IRubyObject self, IRubyObject name) {
+        public static IRubyObject instanceVariableGetVolatile(
+                ThreadContext context,
+                IRubyObject self,
+                IRubyObject name) {
             // Ensure we ses latest value with loadFence
             if (!supportsFences()) {
                 // piggybacking on volatile read, simulating loadFence
                 final ThreadContext oldContext = threadContext;
-                return ((RubyBasicObject)self).instance_variable_get(context, name);
+                return ((RubyBasicObject) self).instance_variable_get(context, name);
             } else {
-                UnsafeHolder.U.loadFence();
-                return ((RubyBasicObject)self).instance_variable_get(context, name);
+                UNSAFE.loadFence();
+                return ((RubyBasicObject) self).instance_variable_get(context, name);
             }
         }
 
         @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PUBLIC)
-        public static IRubyObject InstanceVariableSetVolatile(ThreadContext context, IRubyObject self, IRubyObject name, IRubyObject value) {
+        public static IRubyObject InstanceVariableSetVolatile(
+                ThreadContext context,
+                IRubyObject self,
+                IRubyObject name,
+                IRubyObject value) {
             // Ensure we make last update visible
             if (!supportsFences()) {
                 // piggybacking on volatile write, simulating storeFence
-                final IRubyObject result = ((RubyBasicObject)self).instance_variable_set(name, value);
+                final IRubyObject result = ((RubyBasicObject) self).instance_variable_set(name, value);
                 threadContext = context;
                 return result;
             } else {
                 // JRuby uses StampedVariableAccessor which calls fullFence
                 // so no additional steps needed.
                 // See https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/runtime/ivars/StampedVariableAccessor.java#L151-L159
-                return ((RubyBasicObject)self).instance_variable_set(name, value);
+                return ((RubyBasicObject) self).instance_variable_set(name, value);
             }
         }
     }
