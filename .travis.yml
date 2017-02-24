@@ -34,17 +34,11 @@ matrix:
     - rvm: 2.3.1
       jdk: oraclejdk8
       env: COVERAGE=1
-    - rvm: jruby-head
-      jdk: oraclejdk8
-      env: TRUFFLE=1
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
     - rvm: rbx
-    - rvm: jruby-head
-      jdk: oraclejdk8
-      env: TRUFFLE=1
 
 env:
   global:
@@ -53,4 +47,4 @@ env:
 before_install:
   - "echo JAVA_OPTS: $JAVA_OPTS"
 
-script: if [[ -v TRUFFLE ]]; then support/test-truffle.sh; else RUBYOPT=-w bundle exec rake ci; fi
+script: RUBYOPT=-w bundle exec rake ci
