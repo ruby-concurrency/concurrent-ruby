@@ -51,7 +51,6 @@ env:
     - JAVA_OPTS=-Xmx1024m
 
 before_install:
-  - "echo $JAVA_OPTS"
-  - bundle update # temporary fix, not sure why it helps
+  - "echo JAVA_OPTS: $JAVA_OPTS"
 
 script: if [[ -v TRUFFLE ]]; then support/test-truffle.sh; else RUBYOPT=-w bundle exec rake ci; fi
