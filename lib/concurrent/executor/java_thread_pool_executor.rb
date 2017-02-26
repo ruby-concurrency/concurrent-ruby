@@ -36,17 +36,18 @@ if Concurrent.on_jruby?
         @max_queue != 0
       end
 
-      # @!macro thread_pool_executor_attr_reader_min_threads
+      # @!macro thread_pool_executor_min_threads
       def min_threads
         @executor.getCorePoolSize
       end
 
+      # @see #min_threads
       def min_length
         deprecated_method 'min_length', 'min_threads'
         min_threads
       end
 
-      # @!macro thread_pool_executor_attr_writer_min_threads
+      # @!macro thread_pool_executor_min_threads=
       def min_threads=(num)
         num = num.to_i
         raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if num < DEFAULT_MIN_POOL_SIZE
@@ -55,17 +56,18 @@ if Concurrent.on_jruby?
         @executor.setCorePoolSize(num)
       end
 
-      # @!macro thread_pool_executor_attr_reader_max_threads
+      # @!macro thread_pool_executor_max_threads
       def max_threads
         @executor.getMaximumPoolSize
       end
 
+      # @see #max_threads
       def max_length
         deprecated_method 'max_length', 'max_threads'
         max_threads
       end
 
-      # @!macro thread_pool_executor_attr_reader_max_threads
+      # @!macro thread_pool_executor_max_threads=
       def max_threads=(num)
         num = num.to_i
         raise ArgumentError.new("`max_threads` cannot be less than `min_threads`") if num < min_threads

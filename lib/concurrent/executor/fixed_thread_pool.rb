@@ -16,13 +16,21 @@ module Concurrent
   #   Default maximum number of seconds a thread in the pool may remain idle
   #   before being reclaimed.
 
-  # @!macro [new] thread_pool_executor_attr_reader_max_length
+  # @!macro [new] thread_pool_executor_max_threads
   #   The maximum number of threads that may be created in the pool.
   #   @return [Integer] The maximum number of threads that may be created in the pool.
 
-  # @!macro [new] thread_pool_executor_attr_reader_min_length
-  #   The minimum number of threads that may be retained in the pool.
-  #   @return [Integer] The minimum number of threads that may be retained in the pool.
+  # @!macro [new] thread_pool_executor_max_threads=
+  #   Sets the maximum number of threads that may be created in the pool.
+  #   @return [Integer] The maximum number of threads that may be created in the pool.
+
+  # @!macro [new] thread_pool_executor_min_threads
+  #   The minimum number of threads that is retained in the pool.
+  #   @return [Integer] The minimum number of threads that is retained in the pool.
+
+  # @!macro [new] thread_pool_executor_min_threads=
+  #   Sets the minimum number of threads that is retained in the pool.
+  #   @return [Integer] The minimum number of threads that is retained in the pool.
 
   # @!macro [new] thread_pool_executor_attr_reader_largest_length
   #   The largest number of threads that have been created in the pool since construction.
@@ -72,11 +80,11 @@ module Concurrent
   #
   #   @!macro abstract_executor_service_public_api
   #
-  #   @!attribute [r] max_length
-  #     @!macro thread_pool_executor_attr_reader_max_length
+  #   @!attribute [rw] max_threads
+  #     @!macro thread_pool_executor_max_threads
   #
-  #   @!attribute [r] min_length
-  #     @!macro thread_pool_executor_attr_reader_min_length
+  #   @!attribute [rw] min_threads
+  #     @!macro thread_pool_executor_min_threads
   #
   #   @!attribute [r] largest_length
   #     @!macro thread_pool_executor_attr_reader_largest_length
