@@ -1,10 +1,11 @@
 source 'https://rubygems.org'
 
-gemspec name: 'concurrent-ruby'
-gemspec name: 'concurrent-ruby-edge'
+gem 'concurrent-ruby', path: '.'
+gem 'concurrent-ruby-edge', path: '.'
+gem 'concurrent-ruby-ext', path: '.', platform: :mri
 
 group :development do
-  gem 'rake', '~> 10.0'
+  gem 'rake', '~> 11.0'
   gem 'rake-compiler', '~> 0.9.5'
   gem 'rake-compiler-dock', '~> 0.4.3'
   gem 'gem-compiler', '~> 0.3.0'
@@ -13,11 +14,9 @@ group :development do
   # documentation
   gem 'countloc', '~> 0.4.0', :platforms => :mri, :require => false
   gem 'yard', '~> 0.8.0', :require => false
-  # TODO (pitr-ch 15-Oct-2016): does not work on 1.9.3 anymore
-  # TODO remove, reports private classes as undocumented
-  gem 'inch', '~> 0.7.0', :platforms => :mri, :require => false
   gem 'redcarpet', '~> 3.3', platforms: :mri # understands github markdown
   gem 'md-ruby-eval'
+  gem 'pry' # needed by md-ruby-eval
 end
 
 group :testing do

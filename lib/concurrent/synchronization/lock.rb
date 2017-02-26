@@ -1,5 +1,6 @@
 module Concurrent
   module Synchronization
+    # TODO (pitr-ch 04-Dec-2016): should be in edge
     class Lock < LockableObject
       # TODO use JavaReentrantLock on JRuby
 

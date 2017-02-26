@@ -1,6 +1,7 @@
 require 'yard'
 require 'md_ruby_eval'
 
+# TODO (pitr-ch 23-Feb-2017): find a proper place
 module YARD
   module Templates::Helpers
     # The helper module for HTML templates.
@@ -38,22 +39,20 @@ end
 
 root = File.expand_path File.join(File.dirname(__FILE__), '..')
 
-task yard: %w(yard:preprocess yard:doc)
+cmd = lambda do |command|
+  puts ">> executing: #{command}"
+  puts ">>        in: #{Dir.pwd}"
+  system command or raise "#{command} failed"
+end
+
+yard_doc = YARD::Rake::YardocTask.new(:yard)
+yard_doc.before = -> do
+  Dir.chdir File.join(__dir__, '..', 'doc') do
+    cmd.call 'bundle exec md-ruby-eval --auto' or raise
+  end
+end
 
 namespace :yard do
-
-  YARD::Rake::YardocTask.new(:doc)
-
-  cmd = lambda do |command|
-    puts ">> executing: #{command}"
-    system command or raise "#{command} failed"
-  end
-
-  task :preprocess do
-    Dir.chdir File.join(__dir__, '..', 'doc') do
-      cmd.call 'bundle exec md-ruby-eval --auto' or raise
-    end
-  end
 
   desc 'Pushes generated documentation to github pages: http://ruby-concurrency.github.io/concurrent-ruby/'
   task :push => [:setup, :yard] do

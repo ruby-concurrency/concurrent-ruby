@@ -2,30 +2,34 @@
 
 set -e
 
+log() {
+    echo "[release] $@"
+}
+
 if [[ pitr != $(whoami) ]]
 then
-    echo "!!! This script takes a lot of assumptions based on @pitr-ch's environment."
-    echo "!!! Use it at your own risk."
+    log "!!! This script takes a lot of assumptions based on @pitr-ch's environment."
+    log "!!! Use it at your own risk."
 fi
-
 
 version=$(ruby -r ./lib/concurrent/version -e 'puts Concurrent::VERSION')
 edge_version=$(ruby -r ./lib/concurrent/version -e 'puts Concurrent::EDGE_VERSION')
 (echo ${version} | grep pre) && prerelease='true' || prerelease='false'
 
-echo "concurrent-ruby:      $version"
-echo "concurrent-ruby-edge: $edge_version"
-echo "prerelease:           $prerelease"
+log "concurrent-ruby:      $version"
+log "concurrent-ruby-edge: $edge_version"
+log "prerelease:           $prerelease"
 
 set -x
 
-mriVersion="2.3.1"
-jrubyVersion="jruby-9.1.6.0"
+mriVersion="2.4.0"
+jrubyVersion="jruby-9.1.7.0"
 
 if [[ "$@" =~ 'build' || $@ =~ 'all' ]]
 then
-    echo Building
+    log Building
 
+    rbenv versions | grep $mriVersion
     export RBENV_VERSION=$mriVersion
     docker-machine status | grep Running || docker-machine start
     eval $(docker-machine env --shell sh default)
@@ -35,6 +39,7 @@ then
     bundle exec rake build
     docker-machine stop
 
+    rbenv versions | grep $jrubyVersion
     export RBENV_VERSION=$jrubyVersion
     rbenv version
     rm Gemfile.lock || true
@@ -43,8 +48,11 @@ then
     bundle exec rake build
 fi
 
-if [[ "$@" =~ "test" || $@ =~ 'all' ]]
+if [[ "$@" =~ "test" ]] #|| $@ =~ 'all' ]]
 then
+    log Testing
+    # TODO (pitr-ch 24-Feb-2017): fix it's unreliable
+
     cd ..
     # TODO (pitr-ch 17-Dec-2016): dry: duplicates rake task
     rspec_options='--color --backtrace --seed 1 --format documentation --tag ~unfinished --tag ~notravis --tag ~buggy'
@@ -62,7 +70,7 @@ then
 
     # Install and test JRuby version
     export RBENV_VERSION=$jrubyVersion
-    gem push concurrent-ruby/pkg/concurrent-ruby-${version}-java.gem
+    gem install concurrent-ruby/pkg/concurrent-ruby-${version}-java.gem
     gem install concurrent-ruby/pkg/concurrent-ruby-edge-${edge_version}.gem
     ruby -r concurrent-edge -S rspec concurrent-ruby/spec ${rspec_options}
     gem uninstall concurrent-ruby-edge --version ${edge_version}
@@ -75,7 +83,7 @@ fi
 
 if [[ "$@" =~ "push" || $@ =~ 'all' ]]
 then
-    echo Pushing
+    log Pushing
 
     # Test that we are on pushed commit
     git fetch
@@ -87,7 +95,43 @@ then
     git tag "edge-v${edge_version}"
     git push --tags
 
+    # Push to rubygems
+    gem push pkg/concurrent-ruby-${version}.gem
+    gem push pkg/concurrent-ruby-${version}-java.gem
+    gem push pkg/concurrent-ruby-edge-${edge_version}.gem
+    gem push pkg/concurrent-ruby-ext-${version}.gem
+    gem push pkg/concurrent-ruby-ext-${version}-x64-mingw32.gem
+    gem push pkg/concurrent-ruby-ext-${version}-x86-mingw32.gem
+fi
+
+if [[ "$@" =~ "notify" || $@ =~ 'all' ]]
+then
+
+    log "Notifying"
+
+    log "TODO: create release"
+
     # TODO (pitr-ch 16-Dec-2016): Release
+    # Patch release.
+    #
+    # concurrent-ruby:
+    #
+    # - Nothing
+    #
+    # concurrent-ruby-edge:
+    #
+    # - New promises' API renamed, lots of improvements, edge bumped to 0.3.0
+    # - Incompatible with previous 0.2.3 version
+
+    log "TODO: send email same as release"
+
+    # TODO (pitr-ch 17-Dec-2016): send email
+    # same as release
+
+    # Update documentation
+    # TODO (pitr-ch 24-Feb-2017): check
+    bundle exec rake yard:push
+
     # https://developer.github.com/v3/repos/releases/#create-a-release
     # token=$(cat .githubtoken)
     #curl -X POST \
@@ -104,18 +148,4 @@ then
     #        }" \
     #    "https://api.github.com/repos/pitr-ch/concurrent-ruby/releases"
 
-    # Push to rubygems
-    gem push pkg/concurrent-ruby-${version}.gem
-    gem push pkg/concurrent-ruby-${version}-java.gem
-    gem push pkg/concurrent-ruby-edge-${edge_version}.gem
-    gem push pkg/concurrent-ruby-ext-${version}.gem
-    gem push pkg/concurrent-ruby-ext-${version}-x64-mingw32.gem
-    gem push pkg/concurrent-ruby-ext-${version}-x86-mingw32.gem
-
-    # TODO (pitr-ch 17-Dec-2016): send email
-
-    # TODO (pitr-ch 17-Dec-2016): update documentation
 fi
-
-
-

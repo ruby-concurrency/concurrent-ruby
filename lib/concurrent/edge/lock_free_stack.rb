@@ -1,4 +1,6 @@
 module Concurrent
+
+  # @!visibility private
   class LockFreeStack < Synchronization::Object
 
     safe_initialization!
@@ -118,5 +120,7 @@ module Concurrent
     def to_s
       format '<#%s:0x%x %s>', self.class, object_id << 1, to_a.to_s
     end
+
+    alias_method :inspect, :to_s
   end
 end

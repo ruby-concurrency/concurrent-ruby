@@ -6,9 +6,8 @@ module Concurrent
     #   An atomic reference which maintains an object reference along with a mark bit
     #   that can be updated atomically.
     #
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicMarkableReference.html java.util.concurrent.atomic.AtomicMarkableReference
-    #
-    #   @api Edge
+    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicMarkableReference.html
+    #     java.util.concurrent.atomic.AtomicMarkableReference
     class AtomicMarkableReference < ::Concurrent::Synchronization::Object
 
       private(*attr_atomic(:reference))

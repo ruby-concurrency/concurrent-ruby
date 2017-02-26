@@ -15,10 +15,6 @@ module Concurrent
   # features should remain in this module until merged into the core gem. This
   # will prevent namespace collisions.
   #
-  # This file should *never* be used as a global `require` for all files within
-  # the edge gem. Because these features are experimental users should always
-  # explicitly require only what they need.
-  #
   # @!macro [attach] edge_warning
   #   @api Edge
   #   @note **Edge Feature:** Edge features are under active development and may change frequently. They are expected not to

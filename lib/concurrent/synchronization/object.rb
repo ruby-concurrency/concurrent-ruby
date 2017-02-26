@@ -22,6 +22,7 @@ module Concurrent
     # - volatile instance variables see {Object.attr_volatile}
     # - volatile instance variables see {Object.attr_atomic}
     class Object < ObjectImplementation
+      # TODO make it a module if possible
 
       # @!method self.attr_volatile(*names)
       #   Creates methods for reading and writing (as `attr_accessor` does) to a instance variable with

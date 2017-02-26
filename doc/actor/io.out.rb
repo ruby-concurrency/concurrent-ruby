@@ -16,7 +16,7 @@ class ActorDoingIO < Concurrent::Actor::RestartingContext
 end 
 
 actor_doing_io = ActorDoingIO.spawn :actor_doing_io
-    # => #<Concurrent::Actor::Reference:0x7ff3ab176b40 /actor_doing_io (ActorDoingIO)>
+    # => #<Concurrent::Actor::Reference:0x7fbedc146e80 /actor_doing_io (ActorDoingIO)>
 actor_doing_io.executor == Concurrent.global_io_executor
     # => true
 
@@ -37,10 +37,10 @@ end
 pool = Concurrent::Actor::Utils::Pool.spawn('pool', 2) do |index|
   IOWorker.spawn(name: "worker-#{index}")
 end
-    # => #<Concurrent::Actor::Reference:0x7ff3abaac5c0 /pool (Concurrent::Actor::Utils::Pool)>
+    # => #<Concurrent::Actor::Reference:0x7fbedba83378 /pool (Concurrent::Actor::Utils::Pool)>
 
 pool << 1 << 2 << 3 << 4 << 5 << 6
-    # => #<Concurrent::Actor::Reference:0x7ff3abaac5c0 /pool (Concurrent::Actor::Utils::Pool)>
+    # => #<Concurrent::Actor::Reference:0x7fbedba83378 /pool (Concurrent::Actor::Utils::Pool)>
 
 # prints two lines each second
 # /pool/worker-0 second:1414677666 message:1

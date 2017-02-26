@@ -24,13 +24,13 @@ class Calculator < Concurrent::Actor::RestartingContext
 end 
 
 calculator = Calculator.spawn('calculator')
-    # => #<Concurrent::Actor::Reference:0x7ff3ab0c4f80 /calculator (Calculator)>
+    # => #<Concurrent::Actor::Reference:0x7fbedba52d90 /calculator (Calculator)>
 addition = calculator.ask Add[1, 2]
-    # => <#Concurrent::Edge::Future:0x7ff3ab08e188 pending blocks:[]>
+    # => <#Concurrent::Promises::Future:0x7fbedc05f7b0 pending>
 substraction = calculator.ask Subtract[1, 0.5]
-    # => <#Concurrent::Edge::Future:0x7ff3ab9de940 pending blocks:[]>
+    # => <#Concurrent::Promises::Future:0x7fbedd891388 pending>
 results = (addition & substraction)
-    # => <#Concurrent::Edge::Future:0x7ff3aa0b1b48 pending blocks:[]>
+    # => <#Concurrent::Promises::Future:0x7fbedc04eeb0 pending>
 results.value!                                     # => [3, 0.5]
 
 calculator.ask! :terminate!                        # => true

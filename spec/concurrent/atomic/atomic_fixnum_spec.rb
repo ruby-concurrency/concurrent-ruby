@@ -234,5 +234,14 @@ module Concurrent
         expect(AtomicFixnum.ancestors).to include(MutexAtomicFixnum)
       end
     end
+
+    describe '#to_s and #inspect' do
+      it 'includes the value' do
+        subject = described_class.new(42)
+        expect(subject.to_s).to include('42')
+        expect(subject.inspect).to include('42')
+      end
+    end
+
   end
 end
