@@ -219,7 +219,7 @@ module Concurrent
     # @!visibility private
     def ns_assign_worker(*args, &task)
       # keep growing if the pool is not at the minimum yet
-      worker = (@ready.pop if @pool.size >= min_threads) || ns_add_busy_worker
+      worker = (@ready.pop if @pool.size >= @min_threads) || ns_add_busy_worker
       if worker
         worker << [task, args]
         true
@@ -256,7 +256,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_add_busy_worker
-      return if @pool.size >= max_threads
+      return if @pool.size >= @max_threads
 
       @pool << (worker = Worker.new(self))
       @largest_length = @pool.length if @pool.length > @largest_length
@@ -302,7 +302,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_prune_pool
-      return if @pool.size <= min_threads
+      return if @pool.size <= @min_threads
 
       last_used = @ready.shift
       last_used << :idle_test if last_used
