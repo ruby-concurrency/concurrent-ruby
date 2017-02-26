@@ -5,7 +5,7 @@ require 'concurrent-edge'
 Channel = Concurrent::Channel
 
 ## Go by Example: Go by Example: Worker Pools
-# https://gobyexample.com/tickers
+# https://gobyexample.com/worker-pools
 
 def worker(id, jobs, results)
   jobs.each do |j|
