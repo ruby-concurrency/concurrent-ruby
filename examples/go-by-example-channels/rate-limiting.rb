@@ -7,7 +7,7 @@ require 'time'
 Channel = Concurrent::Channel
 
 ## Go by Example: Rate Limiting
-# https://gobyexample.com/tickers
+# https://gobyexample.com/rate-limiting
 
 requests = Channel.new(buffer: :buffered, capacity: 5)
 (1..5).each do |i|
