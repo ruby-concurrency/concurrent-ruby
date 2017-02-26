@@ -1,4 +1,4 @@
-## Release v1.0.5, edge v0.3.1 (1 Feb 2017)
+## Release v1.0.5, edge v0.3.1 (26 Feb 2017)
 
 concurrent-ruby:
 
