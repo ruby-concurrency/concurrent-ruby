@@ -16,6 +16,7 @@ group :development do
   gem 'yard', '~> 0.8.0', :require => false
   gem 'redcarpet', '~> 3.3', platforms: :mri # understands github markdown
   gem 'md-ruby-eval'
+  gem 'pry' # needed by md-ruby-eval
 end
 
 group :testing do
