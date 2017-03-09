@@ -113,7 +113,7 @@ module Concurrent
       # @param [Token] tokens to combine
       # @return [Token] new token
       def join(*tokens, &block)
-        block ||= -> tokens { Promises.any_event(*tokens.map(&:to_event)) }
+        block ||= -> token_list { Promises.any_event(*token_list.map(&:to_event)) }
         self.class.new block.call([@Cancel, *tokens])
       end
 

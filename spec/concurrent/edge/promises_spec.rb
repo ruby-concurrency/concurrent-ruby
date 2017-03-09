@@ -175,28 +175,28 @@ describe 'Concurrent::Promises' do
       z1.then { |*args| q << args }
       expect(q.pop).to eq [1, 2]
 
-      z1.then { |a, b, c| q << [a, b, c] }
+      z1.then { |a1, b1, c1| q << [a1, b1, c1] }
       expect(q.pop).to eq [1, 2, nil]
 
-      z2.then { |a, b, c| q << [a, b, c] }
+      z2.then { |a1, b1, c1| q << [a1, b1, c1] }
       expect(q.pop).to eq [1, 2, 3]
 
-      z3.then { |a| q << a }
+      z3.then { |a1| q << a1 }
       expect(q.pop).to eq 1
 
-      z3.then { |*a| q << a }
+      z3.then { |*as| q << as }
       expect(q.pop).to eq [1]
 
-      z4.then { |a| q << a }
+      z4.then { |a1| q << a1 }
       expect(q.pop).to eq nil
 
-      z4.then { |*a| q << a }
+      z4.then { |*as| q << as }
       expect(q.pop).to eq []
 
-      expect(z1.then { |a, b| a+b }.value!).to eq 3
-      expect(z1.then { |a, b| a+b }.value!).to eq 3
+      expect(z1.then { |a1, b1| a1 + b1 }.value!).to eq 3
+      expect(z1.then { |a1, b1| a1 + b1 }.value!).to eq 3
       expect(z1.then(&:+).value!).to eq 3
-      expect(z2.then { |a, b, c| a+b+c }.value!).to eq 6
+      expect(z2.then { |a1, b1, c1| a1 + b1 + c1 }.value!).to eq 6
 
       expect(future { 1 }.delay).to be_a_kind_of Concurrent::Promises::Future
       expect(future { 1 }.delay.wait!).to be_resolved
@@ -248,21 +248,21 @@ describe 'Concurrent::Promises' do
         queue     = Queue.new
         push_args = -> *args { queue.push args }
 
-        event_or_future.on_resolution! &push_args
+        event_or_future.on_resolution!(&push_args)
         event_or_future.on_resolution!(1, &push_args)
         if event_or_future.is_a? Concurrent::Promises::Future
-          event_or_future.on_fulfillment! &push_args
+          event_or_future.on_fulfillment!(&push_args)
           event_or_future.on_fulfillment!(2, &push_args)
-          event_or_future.on_rejection! &push_args
+          event_or_future.on_rejection!(&push_args)
           event_or_future.on_rejection!(3, &push_args)
         end
 
-        event_or_future.on_resolution &push_args
+        event_or_future.on_resolution(&push_args)
         event_or_future.on_resolution(4, &push_args)
         if event_or_future.is_a? Concurrent::Promises::Future
-          event_or_future.on_fulfillment &push_args
+          event_or_future.on_fulfillment(&push_args)
           event_or_future.on_fulfillment(5, &push_args)
-          event_or_future.on_rejection &push_args
+          event_or_future.on_rejection(&push_args)
           event_or_future.on_rejection(6, &push_args)
         end
         event_or_future.on_resolution_using(:io, &push_args)
@@ -342,7 +342,7 @@ describe 'Concurrent::Promises' do
       future8 = future0.rescue { raise 'never happens' } # future0 fulfills so future8'll have same value as future 0
 
       futures = [future0, future1, future2, future3, future4, future5, future6, future7, future8]
-      futures.each &:wait
+      futures.each(&:wait)
 
       table = futures.each_with_index.map do |f, i|
         '%5i %7s %10s %6s %4s %6s' % [i, f.fulfilled?, f.value, f.reason,
@@ -371,7 +371,7 @@ describe 'Concurrent::Promises' do
       four  = three.delay.then(&:succ)
 
       # meaningful to_s and inspect defined for Future and Promise
-      expect(head.to_s).to match /<#Concurrent::Promises::Future:0x[\da-f]+ pending>/
+      expect(head.to_s).to match(/<#Concurrent::Promises::Future:0x[\da-f]+ pending>/)
       expect(head.inspect).to(
           match(/<#Concurrent::Promises::Future:0x[\da-f]+ pending>/))
 
@@ -641,8 +641,8 @@ end
 
 describe Concurrent::ProcessingActor do
   specify do
-    actor = Concurrent::ProcessingActor.act do |actor|
-      actor.receive.then do |message|
+    actor = Concurrent::ProcessingActor.act do |the_actor|
+      the_actor.receive.then do |message|
         # the actor ends with message
         message
       end
@@ -677,8 +677,8 @@ describe Concurrent::ProcessingActor do
     expect(counter.tell!(2).ask(:count).value!).to eq 2
     expect(counter.tell!(3).tell!(:done).termination.value!).to eq 5
 
-    add_once_actor = Concurrent::ProcessingActor.act do |actor|
-      actor.receive.then do |(a, b), answer|
+    add_once_actor = Concurrent::ProcessingActor.act do |the_actor|
+      the_actor.receive.then do |(a, b), answer|
         result = a + b
         answer.fulfill result
         # terminate with result value

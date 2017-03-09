@@ -902,7 +902,7 @@ module Concurrent
       end
 
       def callback_on_resolution(state, args, callback)
-        callback.call *args
+        callback.call(*args)
       end
     end
 
@@ -1226,7 +1226,7 @@ module Concurrent
       end
 
       def callback_on_resolution(state, args, callback)
-        callback.call *state.result, *args
+        callback.call(*state.result, *args)
       end
 
     end
@@ -1558,7 +1558,7 @@ module Concurrent
           end
         else
           Concurrent.executor(@Executor).post(@Args, @Task) do |args, task|
-            evaluate_to *args, task
+            evaluate_to(*args, task)
           end
         end
       end

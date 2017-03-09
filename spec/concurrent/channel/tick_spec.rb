@@ -27,7 +27,7 @@ module Concurrent
       end
 
       specify '#to_s formats as a time', :truffle_bug => true do
-        expect(subject.to_s).to match /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} \+\d{4} UTC/
+        expect(subject.to_s).to match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6} \+\d{4} UTC/)
       end
 
       context 'comparison' do

@@ -71,7 +71,7 @@ module Concurrent
 
           all_terminations.chain_resolvable(@terminated)
           if envelope && envelope.future
-            all_terminations.chain { |fulfilled, _, reason| envelope.future.resolve fulfilled, true, reason }
+            all_terminations.chain { |fulfilled, _, t_reason| envelope.future.resolve fulfilled, true, t_reason }
           end
 
           broadcast(true, [:terminated, reason]) # TODO do not end up in Dead Letter Router

@@ -169,7 +169,7 @@ shared_examples :thread_pool_executor do
 
     it 'returns -1 when :max_queue is set to zero' do
       executor = described_class.new(max_queue: 0)
-      expect(executor.remaining_capacity).to eq -1
+      expect(executor.remaining_capacity).to eq(-1)
     end
 
     it 'returns :max_length on creation' do
