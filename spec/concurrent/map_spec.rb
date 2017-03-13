@@ -423,7 +423,7 @@ module Concurrent
           expect(nil).to   eq @cache.delete(:a)
         end
         @cache[:a] = 1
-        expect_size_change -1 do
+        expect_size_change(-1) do
           expect(1).to     eq @cache.delete(:a)
         end
         expect_no_size_change do

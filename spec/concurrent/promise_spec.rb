@@ -445,7 +445,7 @@ module Concurrent
 
           latch.wait(1)
 
-          expect(counter.value).to eq -1
+          expect(counter.value).to eq(-1)
           end
       end
 
@@ -500,7 +500,7 @@ module Concurrent
 
           latch.wait(1)
 
-          expect(counter.value).to eq -1
+          expect(counter.value).to eq(-1)
           end
       end
     end

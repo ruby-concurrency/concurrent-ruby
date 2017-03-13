@@ -52,7 +52,7 @@ module Concurrent
     # TODO (pitr-ch 21-Dec-2016): consider using sized channel for implementation instead when available
 
     safe_initialization!
-    private *attr_atomic(:can_run)
+    private(*attr_atomic(:can_run))
 
     # New throttle.
     # @param [Integer] limit

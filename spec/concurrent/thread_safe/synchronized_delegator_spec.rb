@@ -16,10 +16,10 @@ module Concurrent
     it 'synchronizes access' do
       t1_continue, t2_continue = false, false
 
-      hash = ::Hash.new do |hash, key|
+      hash = ::Hash.new do |the_hash, key|
         t2_continue = true
-        unless hash.find { |e| e[1] == key.to_s } # just to do something
-          hash[key] = key.to_s
+        unless the_hash.find { |e| e[1] == key.to_s } # just to do something
+          the_hash[key] = key.to_s
           Thread.pass until t1_continue
         end
       end

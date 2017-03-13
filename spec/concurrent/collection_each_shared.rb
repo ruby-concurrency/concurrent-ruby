@@ -23,7 +23,6 @@ shared_examples :collection_each do
       if i == 0
         i += 1
         next
-        fail
       elsif i == 1
         break :breaked
       end
