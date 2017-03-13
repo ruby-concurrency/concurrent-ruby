@@ -201,3 +201,71 @@ begin
 rescue LoadError
   puts 'Error loading Rspec rake tasks, probably building the gem...'
 end
+
+unless defined?(JRUBY_VERSION)
+
+  desc 'Display LOC (lines of code) report'
+  task :loc do
+    puts `countloc -r lib`
+  end
+
+  desc 'Display code quality analysis report'
+  task :critic do
+    sh 'rubycritic lib --path critic'
+  end
+end
+
+require 'yard'
+require 'md_ruby_eval'
+require_relative 'support/yard_full_types'
+
+root = File.expand_path File.dirname(__FILE__)
+
+cmd = lambda do |command|
+  puts ">> executing: #{command}"
+  puts ">>        in: #{Dir.pwd}"
+  system command or raise "#{command} failed"
+end
+
+yard_doc = YARD::Rake::YardocTask.new(:yard)
+yard_doc.before = -> do
+  Dir.chdir File.join(root, 'doc') do
+    cmd.call 'bundle exec md-ruby-eval --auto' or raise
+  end
+end
+
+namespace :yard do
+
+  desc 'Pushes generated documentation to github pages: http://ruby-concurrency.github.io/concurrent-ruby/'
+  task :push => [:setup, :yard] do
+
+    message = Dir.chdir(root) do
+      `git log -n 1 --oneline`.strip
+    end
+    puts "Generating commit: #{message}"
+
+    Dir.chdir "#{root}/yardoc" do
+      cmd.call "git add -A"
+      cmd.call "git commit -m '#{message}'"
+      cmd.call 'git push origin gh-pages'
+    end
+
+  end
+
+  desc 'Setups second clone in ./yardoc dir for pushing doc to github'
+  task :setup do
+
+    unless File.exist? "#{root}/yardoc/.git"
+      cmd.call "rm -rf #{root}/yardoc" if File.exist?("#{root}/yardoc")
+      Dir.chdir "#{root}" do
+        cmd.call 'git clone --single-branch --branch gh-pages git@github.com:ruby-concurrency/concurrent-ruby.git ./yardoc'
+      end
+    end
+    Dir.chdir "#{root}/yardoc" do
+      cmd.call 'git fetch origin'
+      cmd.call 'git reset --hard origin/gh-pages'
+    end
+
+  end
+
+end
