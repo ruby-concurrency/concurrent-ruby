@@ -3,40 +3,12 @@ require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/collection/lock_free_stack'
 require 'concurrent/errors'
+require 'concurrent/re_include'
 
 module Concurrent
 
   # {include:file:doc/promises-main.md}
   module Promises
-
-    # TODO (pitr-ch 23-Dec-2016): move out
-    # @!visibility private
-    module ReInclude
-      def included(base)
-        included_into << [:include, base]
-        super(base)
-      end
-
-      def extended(base)
-        included_into << [:extend, base]
-        super(base)
-      end
-
-      def include(*modules)
-        super(*modules)
-        modules.reverse.each do |module_being_included|
-          included_into.each do |method, mod|
-            mod.send method, module_being_included
-          end
-        end
-      end
-
-      private
-
-      def included_into
-        @included_into ||= []
-      end
-    end
 
     # @!macro [new] promises.param.default_executor
     #   @param [Executor, :io, :fast] default_executor Instance of an executor or a name of the
