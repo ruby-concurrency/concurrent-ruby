@@ -1,5 +1,4 @@
 require_relative 'lib/concurrent/version'
-require_relative 'support/file_map'
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
@@ -13,9 +12,9 @@ Gem::Specification.new do |s|
   s.summary          = 'Edge features and additions to the concurrent-ruby gem.'
   s.license          = 'MIT'
   s.date             = Time.now.strftime('%Y-%m-%d')
-  s.files            = FileMap::MAP.fetch(:edge)
+  s.files            = Dir['lib-edge/**/*.rb'] & git_files
   s.extra_rdoc_files = Dir['README*', 'LICENSE*']
-  s.require_paths    = ['lib']
+  s.require_paths    = ['lib-edge']
   s.description      = <<-TXT
 These features are under active development and may change frequently. They are expected not to
 keep backward compatibility (there may also lack tests and documentation). Semantic versions will
