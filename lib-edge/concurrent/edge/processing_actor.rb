@@ -135,7 +135,7 @@ module Concurrent
       ).chain do |fulfilled, (which, value), (_, reason)|
         # TODO (pitr-ch 20-Jan-2017): we have to know which future was resolved
         # TODO (pitr-ch 20-Jan-2017): make the combinator programmable, so anyone can create what is needed
-        # TODO (pitr-ch 19-Jan-2017): ensure no callbacks are accumulated on @Terminated
+        # FIXME (pitr-ch 19-Jan-2017): ensure no callbacks are accumulated on @Terminated
         if which == :termination
           raise reason.nil? ? format('actor terminated normally before answering with a value: %s', value) : reason
         else

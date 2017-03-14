@@ -1,8 +1,4 @@
 # TODO try stealing pool, each thread has it's own queue
-# TODO (pitr-ch 18-Dec-2016): doc macro debug method
-# TODO (pitr-ch 18-Dec-2016): add macro noting that debug methods may change api without warning
-
-# FIXME (pitr-ch 23-Feb-2017): documentation has to clearly explain what is an edge method and what is not
 
 require 'concurrent/promises'
 
@@ -122,7 +118,6 @@ module Concurrent
           self.then { |value| channel.push value }.flat_future
         end
 
-        # TODO (pitr-ch 26-Dec-2016): does it make sense to have rescue an chain variants as well, check other integrations as well
       end
 
       include NewChannelIntegration

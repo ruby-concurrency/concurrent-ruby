@@ -3,7 +3,6 @@
 [![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby)
 [![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby)
 [![Build status](https://ci.appveyor.com/api/projects/status/iq8aboyuu3etad4w?svg=true)](https://ci.appveyor.com/project/rubyconcurrency/concurrent-ruby)
-[![Inline docs](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg)](http://inch-ci.org/github/ruby-concurrency/concurrent-ruby)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT)
 [![Gitter chat](https://img.shields.io/badge/IRC%20(gitter)-devs%20%26%20users-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
@@ -52,11 +51,19 @@ We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) an
 #### General-purpose Concurrency Abstractions
 
 * [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): A mixin module that provides simple asynchronous behavior to a class. Loosely based on Erlang's [gen_server](http://www.erlang.org/doc/man/gen_server.html).
-* [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.
-  * [Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
-* [Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.
 * [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html): Like a Future scheduled for a specific future time.
 * [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): A Thread that periodically wakes up to perform work at regular intervals.
+* [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html):
+  Unified implementation of futures and promises which combines features of previous `Future`,
+  `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and (partially) `TimerTask` into a single framework. It extensively uses the
+  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
+  operations like `#wait`, `#value`. It also offers better performance.
+
+Deprecated:
+  
+* ~~[Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): An asynchronous operation that produces a value.~~
+  * ~~[Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.~~
+* ~~[Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar to Futures, with more features.~~
 
 #### Thread-safe Value Objects, Structures, and Collections
 
@@ -115,13 +122,6 @@ These features are under active development and may change frequently. They are 
 keep backward compatibility (there may also lack tests and documentation). Semantic versions will
 be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to `concurrent-ruby` when final.
 
-* [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html):
-  Unified implementation of futures and promises which combines features of previous `Future`,
-  `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
-  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of 
-  obviously blocking operations like `#wait`, `#value`. It also offers better performance. 
-  Status: The framework is being finalized so it can be moved to core. It will eventually replace old implementations 
-  it replaces.
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
   Status: Partial documentation and tests; depends on new future/promise framework; stability is good.

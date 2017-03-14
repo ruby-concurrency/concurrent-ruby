@@ -48,6 +48,7 @@ module Concurrent
   # @!macro throttle.example.throttled_future
   # @!macro throttle.example.throttled_future_chain
   # @!macro throttle.example.throttled_block
+  # @!macro edge_warning
   class Throttle < Synchronization::Object
     # TODO (pitr-ch 21-Dec-2016): consider using sized channel for implementation instead when available
 

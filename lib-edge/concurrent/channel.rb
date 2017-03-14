@@ -9,6 +9,7 @@ require 'concurrent/executor/cached_thread_pool'
 module Concurrent
 
   # {include:file:doc/channel.md}
+  # @!macro edge_warning
   class Channel
     extend Forwardable
     include Enumerable

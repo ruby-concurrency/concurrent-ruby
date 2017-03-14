@@ -8,6 +8,7 @@
 --default-return undocumented
 
 ./lib/**/*.rb
+./lib-edge/**/*.rb
 ./ext/concurrent_ruby_ext/**/*.c
 -
 doc/thread_pools.md

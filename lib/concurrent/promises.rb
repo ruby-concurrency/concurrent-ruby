@@ -307,6 +307,7 @@ module Concurrent
 
       # TODO consider adding first(count, *futures)
       # TODO consider adding zip_by(slice, *futures) processing futures in slices
+      # TODO or rather a generic aggregator taking a function
     end
 
     module InternalStates
@@ -709,7 +710,7 @@ module Concurrent
         @Waiters.each.to_a
       end
 
-      # # @!visibility private
+      # @!visibility private
       def add_callback_notify_blocked(promise, index)
         add_callback :callback_notify_blocked, promise, index
       end
@@ -1269,7 +1270,6 @@ module Concurrent
       # @yieldreturn [Object] value
       # @return [self]
       def evaluate_to(*args, &block)
-        # FIXME (pitr-ch 13-Jun-2016): add raise_on_reassign
         promise.evaluate_to(*args, block)
       end
 
@@ -1317,6 +1317,10 @@ module Concurrent
       end
 
       def touch
+      end
+
+      def to_s
+        format '<#%s:0x%x of %s>', self.class, object_id << 1, @Future
       end
 
       alias_method :inspect, :to_s
@@ -1755,7 +1759,7 @@ module Concurrent
 
       def initialize(delayed, blockers_count, default_executor)
         super(delayed, blockers_count, Future.new(self, default_executor))
-        @Resolutions = ::Array.new(blockers_count)
+        @Resolutions = ::Array.new(blockers_count, nil)
 
         on_resolvable nil, nil if blockers_count == 0
       end

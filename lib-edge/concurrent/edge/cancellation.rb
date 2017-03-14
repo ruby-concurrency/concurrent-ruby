@@ -14,6 +14,7 @@ module Concurrent
   #   end
   #   sleep 0.1
   #   cancellation.cancel # Stop the thread by cancelling
+  # @!macro edge_warning
   class Cancellation < Synchronization::Object
     safe_initialization!
 
