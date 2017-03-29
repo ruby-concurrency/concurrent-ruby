@@ -255,6 +255,10 @@ module Concurrent
     end
 
     it 'updates dont block reads' do
+      if defined?(Concurrent::Collection::SynchronizedMapBackend) && described_class <= Concurrent::Collection::SynchronizedMapBackend
+        skip("Test does not apply to #{Concurrent::Collection::SynchronizedMapBackend}")
+      end
+
       getters_count = 20
       key_klass     = Concurrent::ThreadSafe::Test::HashCollisionKey
       keys          = [key_klass.new(1, 100), 
