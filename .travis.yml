@@ -29,6 +29,7 @@ sudo: false
 branches:
   only:
     - master
+    - edge-v0.2
 
 matrix:
   include:
