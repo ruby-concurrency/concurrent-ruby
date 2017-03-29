@@ -171,6 +171,11 @@ module Concurrent
       each_pair {|k, v| yield v}
     end unless method_defined?(:each_value)
 
+    def each_pair
+      return enum_for :each_pair unless block_given?
+      super
+    end
+
     alias_method :each, :each_pair unless method_defined?(:each)
 
     def key(value)
