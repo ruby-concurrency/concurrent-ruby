@@ -2,12 +2,12 @@ language: ruby
 
 rvm:
   # start with the latest
-  - 2.4.0
+  - 2.4.1
   - jruby-9.1.8.0
 
   # older versions
-  - 2.3.3
-  - 2.2.6
+  - 2.3.4
+  - 2.2.7
   - 2.1.9
   - 2.0.0
   - 1.9.3
@@ -31,7 +31,7 @@ branches:
 
 matrix:
   include:
-    - rvm: 2.3.1
+    - rvm: 2.3.4
       jdk: oraclejdk8
       env: COVERAGE=1
   allow_failures:
