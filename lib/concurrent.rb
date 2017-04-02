@@ -109,9 +109,9 @@ require 'concurrent/options'
 #   @param [Hash] opts the options used to define the behavior at update and deref
 #     and to specify the executor on which to perform actions
 #   @option opts [Executor] :executor when set use the given `Executor` instance.
-#     Three special values are also supported: `:task` returns the global task pool,
-#     `:operation` returns the global operation pool, and `:immediate` returns a new
-#     `ImmediateExecutor` object.
+#     Three special values are also supported: `:io` returns the global pool for
+#     long, blocking (IO) tasks, `:fast` returns the global pool for short, fast
+#     operations, and `:immediate` returns the global `ImmediateExecutor` object.
 #   @!macro deref_options
 
 # Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
