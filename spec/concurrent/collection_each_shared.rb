@@ -42,4 +42,20 @@ shared_examples :collection_each do
       end
     end
   end
+
+  context 'when no block is given' do
+    it 'returns an enumerator' do
+      @cache[:a] = 1
+      @cache[:b] = 2
+
+      expect(@cache.send(method)).to be_a Enumerator
+    end
+
+    it 'returns an object which is enumerable' do
+      @cache[:a] = 1
+      @cache[:b] = 2
+
+      expect(@cache.send(method).to_a).to contain_exactly([:a, 1], [:b, 2])
+    end
+  end
 end
