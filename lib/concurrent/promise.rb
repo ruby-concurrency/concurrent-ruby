@@ -443,6 +443,46 @@ module Concurrent
       aggregate(:any?, *promises)
     end
 
+    # Aggregates a collection of promises, and completes as soon as the first
+    # aggregated promise completes, with the same state (fulfilled or rejected)
+    # and reason/value.
+    #
+    #   @param [Array] promises Zero or more promises to aggregate
+    #   @return [Promise] an unscheduled (not executed) promise that aggregates
+    #     the promises given as arguments
+    def self.race(*promises)
+      return Promise.fulfilled if promises.empty?
+
+      Promise.new do
+        latch = Concurrent::CountDownLatch.new(1)
+        finished = Concurrent::AtomicBoolean.new(false)
+        value_and_reason = Concurrent::AtomicReference.new
+
+        promises.each do |promise|
+          promise.execute if promise.unscheduled?
+
+          promise.then do |value|
+            if finished.make_true
+              value_and_reason.set([value, nil])
+              latch.count_down
+            end
+          end
+
+          promise.rescue do |reason|
+            if finished.make_true
+              value_and_reason.set([nil, reason])
+              latch.count_down
+            end
+          end
+        end
+
+        latch.wait
+        value, reason = value_and_reason.get
+        raise reason if reason
+        value
+      end
+    end
+
     protected
 
     def ns_initialize(value, opts)
