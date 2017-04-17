@@ -323,21 +323,29 @@ RSpec.describe 'Concurrent::Promises' do
       expect(callback_results).to contain_exactly([], [1], [], [4], [], [7])
     end
 
-    [:wait, :wait!, :value, :value!, :reason, :result].each do |method_with_timeout|
+    methods_with_timeout = { wait:   false,
+                             wait!:  false,
+                             value:  nil,
+                             value!: nil,
+                             reason: nil,
+                             result: nil }
+    methods_with_timeout.each do |method_with_timeout, timeout_value|
       it "#{ method_with_timeout } supports setting timeout" do
         start_latch = Concurrent::CountDownLatch.new
         end_latch   = Concurrent::CountDownLatch.new
 
         future = future do
           start_latch.count_down
-          end_latch.wait(1)
+          end_latch.wait(0.2)
         end
 
-        start_latch.wait(1)
-        future.send(method_with_timeout, 0.1)
+        expect(start_latch.wait(0.1)).to eq true
         expect(future).not_to be_resolved
+        expect(future.send(method_with_timeout, 0.01)).to eq timeout_value
+        expect(future).not_to be_resolved
+
         end_latch.count_down
-        future.wait
+        expect(future.value!).to eq true
       end
     end
 
