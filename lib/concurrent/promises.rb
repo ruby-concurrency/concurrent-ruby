@@ -958,7 +958,9 @@ module Concurrent
         raise Concurrent::Error, 'it is not rejected' unless rejected?
         reason = Array(internal_state.reason).flatten.compact
         if reason.size > 1
-          Concurrent::MultipleErrors.new reason
+          ex = Concurrent::MultipleErrors.new reason
+          ex.set_backtrace(caller)
+          ex
         else
           ex = reason[0].clone.exception(*args)
           ex.set_backtrace Array(ex.backtrace) + caller

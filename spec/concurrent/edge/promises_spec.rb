@@ -468,6 +468,25 @@ RSpec.describe 'Concurrent::Promises' do
       end
       expect(future(0, &body).run.reason.message).to eq '5'
     end
+
+    it 'can be risen when rejected' do
+      future    = rejected_future TypeError.new
+      backtrace = caller; exception = raise future rescue $!
+      expect(exception).to be_a TypeError
+      expect(exception.backtrace[2..-1]).to eq backtrace
+
+      exception = TypeError.new
+      exception.set_backtrace(first_backtrace = %W[/a /b /c])
+      future    = rejected_future exception
+      backtrace = caller; exception = raise future rescue $!
+      expect(exception).to be_a TypeError
+      expect(exception.backtrace - exception.backtrace[3..4]).to eq(first_backtrace + backtrace)
+
+      future    = rejected_future(TypeError.new) & rejected_future(TypeError.new)
+      backtrace = caller; exception = raise future rescue $!
+      expect(exception).to be_a Concurrent::MultipleErrors
+      expect(exception.backtrace[2..-1]).to eq backtrace
+    end
   end
 
   describe 'interoperability' do
