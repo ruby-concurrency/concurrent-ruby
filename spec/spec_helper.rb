@@ -21,6 +21,7 @@ end
 
 require 'concurrent'
 require 'concurrent-edge'
+require 'rspec'
 
 Concurrent.use_simple_logger Logger::FATAL
 
