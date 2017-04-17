@@ -960,7 +960,7 @@ module Concurrent
         if reason.size > 1
           Concurrent::MultipleErrors.new reason
         else
-          ex = reason[0].exception(*args)
+          ex = reason[0].clone.exception(*args)
           ex.set_backtrace Array(ex.backtrace) + caller
           ex
         end
