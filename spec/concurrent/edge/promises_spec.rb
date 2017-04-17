@@ -349,7 +349,6 @@ RSpec.describe 'Concurrent::Promises' do
       end
     end
 
-
     it 'chains' do
       future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
       future1 = future0.then_on(:fast) { raise 'boo' } # executed on IO_EXECUTOR
@@ -490,22 +489,28 @@ RSpec.describe 'Concurrent::Promises' do
     end
 
     it 'can be risen when rejected' do
+      strip_methods = -> backtrace do
+        backtrace.map do |line|
+          /^.*:\d+:in/.match(line)[0] rescue line
+        end
+      end
+
       future    = rejected_future TypeError.new
-      backtrace = caller; exception = raise future rescue $!
+      backtrace = caller; exception = (raise future rescue $!)
       expect(exception).to be_a TypeError
-      expect(exception.backtrace[2..-1]).to eq backtrace
+      expect(strip_methods[backtrace] - strip_methods[exception.backtrace]).to be_empty
 
       exception = TypeError.new
       exception.set_backtrace(first_backtrace = %W[/a /b /c])
       future    = rejected_future exception
-      backtrace = caller; exception = raise future rescue $!
+      backtrace = caller; exception = (raise future rescue $!)
       expect(exception).to be_a TypeError
-      expect(exception.backtrace - exception.backtrace[3..4]).to eq(first_backtrace + backtrace)
+      expect(strip_methods[first_backtrace + backtrace] - strip_methods[exception.backtrace]).to be_empty
 
       future    = rejected_future(TypeError.new) & rejected_future(TypeError.new)
-      backtrace = caller; exception = raise future rescue $!
+      backtrace = caller; exception = (raise future rescue $!)
       expect(exception).to be_a Concurrent::MultipleErrors
-      expect(exception.backtrace[2..-1]).to eq backtrace
+      expect(strip_methods[backtrace] - strip_methods[exception.backtrace]).to be_empty
     end
   end
 
