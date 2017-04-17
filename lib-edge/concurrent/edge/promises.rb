@@ -16,6 +16,32 @@ module Concurrent
       end
 
       include ActorIntegration
+
+      # @!macro warn.edge
+      module FlatShortcuts
+
+        def then_flat_future(*args, &block)
+          self.then(*args, &block).flat_future
+        end
+
+        alias_method :then_flat, :then_flat_future
+
+        def then_flat_future_on(executor, *args, &block)
+          self.then_on(executor, *args, &block).flat_future
+        end
+
+        alias_method :then_flat_on, :then_flat_future_on
+
+        def then_flat_event(*args, &block)
+          self.then(*args, &block).flat_event
+        end
+
+        def then_flat_event_on(executor, *args, &block)
+          self.then_on(executor, *args, &block).flat_event
+        end
+      end
+
+      include FlatShortcuts
     end
 
     class Channel < Concurrent::Synchronization::Object

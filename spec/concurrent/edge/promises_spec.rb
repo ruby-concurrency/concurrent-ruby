@@ -445,6 +445,12 @@ RSpec.describe 'Concurrent::Promises' do
         expect(::Array.new(3) { |i| Concurrent::Promises.delay { i } }.
             inject { |a, b| a.then { b }.flat }.value!(0.2)).to eq 2
       end
+
+      it 'has shortcuts' do
+        expect(fulfilled_future(1).then_flat { |v| future(v) { v + 1 } }.value!).to eq 2
+        expect(fulfilled_future(1).then_flat_event { |v| resolved_event }.wait.resolved?).to eq true
+        expect(fulfilled_future(1).then_flat_on(:fast) { |v| future(v) { v + 1 } }.value!).to eq 2
+      end
     end
 
     it 'resolves future when Exception raised' do
