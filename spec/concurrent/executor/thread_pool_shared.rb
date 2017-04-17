@@ -93,6 +93,23 @@ shared_examples :thread_pool do
     end
   end
 
+  context '#failed_task_count' do
+
+    it 'returns zero on creation' do
+      expect(subject.failed_task_count).to eq 0
+    end
+
+    unless Concurrent.on_jruby?
+
+      it 'returns the approximate number of tasks that have failed thus far' do
+        5.times{ subject.post{ raise StandardError } }
+        subject.post { latch.count_down }
+        latch.wait(1)
+        expect(subject.failed_task_count).to be > 0
+      end
+    end
+  end
+
   context '#shutdown' do
 
     it 'allows threads to exit normally' do

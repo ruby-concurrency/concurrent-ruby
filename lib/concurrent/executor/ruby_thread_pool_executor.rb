@@ -55,6 +55,11 @@ module Concurrent
       synchronize { @completed_task_count }
     end
 
+    # @!macro thread_pool_executor_attr_reader_failed_task_count
+    def failed_task_count
+      synchronize { @failed_task_count }
+    end
+
     # @!macro executor_service_method_can_overflow_question
     def can_overflow?
       synchronize { ns_limited_queue? }
@@ -106,6 +111,11 @@ module Concurrent
       synchronize { @completed_task_count += 1 }
     end
 
+    # @!visibility private
+    def worker_task_failed
+      synchronize { @failed_task_count += 1 }
+    end
+
     private
 
     # @!visibility private
@@ -130,6 +140,7 @@ module Concurrent
       # @ready or @queue is empty at all times
       @scheduled_task_count = 0
       @completed_task_count = 0
+      @failed_task_count    = 0
       @largest_length       = 0
       @ruby_pid             = $$ # detects if Ruby has forked
 
@@ -350,8 +361,10 @@ module Concurrent
       rescue => ex
         # let it fail
         log DEBUG, ex
+        pool.worker_task_failed
       rescue Exception => ex
         log ERROR, ex
+        pool.worker_task_failed
         pool.worker_died(self)
         throw :stop
       end
