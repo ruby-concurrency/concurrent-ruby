@@ -13,7 +13,7 @@ module Concurrent
   #     values = actors.map(&:termination).map(&:value)
   #     values[0,5]                                        # => [1, 2, 3, 4, 5]
   #     values[-5, 5]                                      # => [49996, 49997, 49998, 49999, 50000]
-  # @!macro edge_warning
+  # @!macro warn.edge
   class ProcessingActor < Synchronization::Object
     # TODO (pitr-ch 18-Dec-2016): (un)linking, bidirectional, sends special message, multiple link calls has no effect,
     # TODO (pitr-ch 21-Dec-2016): Make terminated a cancellation token?

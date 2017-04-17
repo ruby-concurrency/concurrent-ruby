@@ -15,7 +15,7 @@ module Concurrent
   # features should remain in this module until merged into the core gem. This
   # will prevent namespace collisions.
   #
-  # @!macro [attach] edge_warning
+  # @!macro [attach] warn.edge
   #   @api Edge
   #   @note **Edge Features** are under active development and may change frequently.
   #

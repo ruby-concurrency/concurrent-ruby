@@ -20,8 +20,8 @@ and classic concurrency patterns.
 
 The design goals of this gem are:
 
-*   Be an 'unopinionated' toolbox that provides useful utilities without
-    debating which is better or why
+*   Be an 'unopinionated' toolbox that provides useful utilities without debating which is better 
+    or why
 *   Remain free of external gem dependencies
 *   Stay true to the spirit of the languages providing inspiration
 *   But implement in a way that makes sense for Ruby
@@ -29,11 +29,14 @@ The design goals of this gem are:
 *   Support features that make sense in Ruby
 *   Exclude features that don't make sense in Ruby
 *   Be small, lean, and loosely coupled
+*   Thread-safety
+*   Backward compatibility
 
 ## Contributing
 
-**This gem depends on contributions and we appreciate your help. Would you like to contribute? 
-Great! Have a look at 
+**This gem depends on 
+[contributions](https://github.com/ruby-concurrency/concurrent-ruby/graphs/contributors) and we 
+appreciate your help. Would you like to contribute? Great! Have a look at 
 [issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).**
 
 ## Thread Safety
@@ -55,6 +58,10 @@ other Ruby library, many of which support the mantra of
 Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and
 immutable variable types and data structures.
 
+We've also initiated discussion to document [memory model](doc/synchronization.md) of Ruby which 
+would provide consistent behaviour and guarantees on all three of the main Ruby interpreters 
+(MRI/CRuby, JRuby, Rubinius, TruffleRuby).
+
 ## Features & Documentation
 
 **The primary site for documentation is the automatically generated 
@@ -62,8 +69,20 @@ immutable variable types and data structures.
 date with latest release.** This readme matches the master so may contain new stuff not yet 
 released.
 
-We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) 
-and [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
+We also have a [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
+
+### Versioning
+
+*   `concurrent-ruby` uses [Semantic Versioning](http://semver.org/)
+*   `concurrent-ruby-ext` has always same version as `concurrent-ruby`
+*   `concurrent-ruby-edge` will always be 0.y.z therefore following 
+    [point 4](http://semver.org/#spec-item-4) applies *"Major version zero 
+    (0.y.z) is for initial development. Anything may change at any time. The 
+    public API should not be considered stable."* However we additionally use 
+    following rules:
+    *   Minor version increment means incompatible changes were made
+    *   Patch version increment means only compatible changes were made
+
 
 #### General-purpose Concurrency Abstractions
 
@@ -191,17 +210,17 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 *   [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements 
     the Actor Model, where concurrent actors exchange messages.
-    Status: Partial documentation and tests; depends on new future/promise framework; stability is good.
+    *Status: Partial documentation and tests; depends on new future/promise framework; stability is good.*
 *   [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
     Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
     Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
     inspiration from Clojure [core.async](https://clojure.github.io/core.async/).
-    Status: Partial documentation and tests.
+    *Status: Partial documentation and tests.*
 *   [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 *   [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
-    Status: will be moved to core soon.
+    *Status: will be moved to core soon.*
 *   [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
-    Status: missing documentation and tests.
+    *Status: missing documentation and tests.*
 
 ## Supported Ruby versions
 
@@ -219,6 +238,8 @@ Everything within this gem can be loaded simply by requiring it:
 ```ruby
 require 'concurrent'
 ```
+
+*Requiring only specific abstractions from Concurrent Ruby is not yet supported.*
 
 To use the tools in the Edge gem it must be required separately:
 
@@ -295,18 +316,21 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 ## Maintainers
 
-*   [**Petr Chalupa**](https://github.com/pitr-ch) (lead maintainer)
+*   [Petr Chalupa](https://github.com/pitr-ch) (lead maintainer, point-of-contact)
 *   [Jerry D'Antonio](https://github.com/jdantonio) (creator)
-*   [Michele Della Torre](https://github.com/mighe)
 *   [Chris Seaton](https://github.com/chrisseaton)
-*   [Paweł Obrok](https://github.com/obrok)
-*   [Lucas Allan](https://github.com/lucasallan)
 
 ### Special Thanks
 
 *   [Brian Durand](https://github.com/bdurand) for the `ref` gem
 *   [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
 *   [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
+
+### Maintainer of the past
+
+*   [Michele Della Torre](https://github.com/mighe)
+*   [Paweł Obrok](https://github.com/obrok)
+*   [Lucas Allan](https://github.com/lucasallan)
 
 ## License and Copyright
 

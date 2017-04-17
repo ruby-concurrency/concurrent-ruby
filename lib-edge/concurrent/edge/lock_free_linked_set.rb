@@ -18,7 +18,7 @@ module Concurrent
     #
     # This algorithm is a variation of the Nonblocking Linked Set found in
     # 'The Art of Multiprocessor Programming' by Herlihy and Shavit.
-    # @!macro edge_warning
+    # @!macro warn.edge
     class LockFreeLinkedSet
       include Enumerable
 
