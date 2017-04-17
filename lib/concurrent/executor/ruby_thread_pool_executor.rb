@@ -70,6 +70,11 @@ module Concurrent
       synchronize { @queue.length }
     end
 
+    # @!macro thread_pool_executor_attr_reader_ready_length
+    def ready_length
+      synchronize { @ready.length }
+    end
+
     # @!macro thread_pool_executor_attr_reader_remaining_capacity
     def remaining_capacity
       synchronize do
