@@ -527,14 +527,14 @@ module Concurrent
 
       # Is it in pending state?
       # @return [Boolean]
-      def pending?(state = internal_state)
-        !state.resolved?
+      def pending?
+        !internal_state.resolved?
       end
 
       # Is it in resolved state?
       # @return [Boolean]
-      def resolved?(state = internal_state)
-        state.resolved?
+      def resolved?
+        internal_state.resolved?
       end
 
       # Propagates touch. Requests all the delayed futures, which it depends on, to be
@@ -724,13 +724,13 @@ module Concurrent
 
       def add_callback(method, *args)
         state = internal_state
-        if resolved?(state)
+        if state.resolved?
           call_callback method, state, args
         else
           @Callbacks.push [method, args]
           state = internal_state
           # take back if it was resolved in the meanwhile
-          call_callbacks state if resolved?(state)
+          call_callbacks state if state.resolved?
         end
         self
       end
@@ -884,13 +884,15 @@ module Concurrent
 
       # Is it in fulfilled state?
       # @return [Boolean]
-      def fulfilled?(state = internal_state)
+      def fulfilled?
+        state = internal_state
         state.resolved? && state.fulfilled?
       end
 
       # Is it in rejected state?
       # @return [Boolean]
-      def rejected?(state = internal_state)
+      def rejected?
+        state = internal_state
         state.resolved? && !state.fulfilled?
       end
 
