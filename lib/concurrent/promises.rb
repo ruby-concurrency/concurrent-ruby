@@ -1284,7 +1284,7 @@ module Concurrent
       # @return [self]
       # @raise [Exception] also raise reason on rejection.
       def evaluate_to!(*args, &block)
-        promise.evaluate_to!(*args, block)
+        promise.evaluate_to(*args, block).wait!
       end
 
       # Creates new future wrapping receiver, effectively hiding the resolve method and similar.
@@ -1343,8 +1343,8 @@ module Concurrent
       def evaluate_to(*args, block)
         resolve_with Fulfilled.new(block.call(*args))
       rescue Exception => error
-        # TODO (pitr-ch 30-Jul-2016): figure out what should be rescued, there is an issue about it
         resolve_with Rejected.new(error)
+        raise error unless error.is_a?(StandardError)
       end
     end
 
@@ -1368,10 +1368,6 @@ module Concurrent
       end
 
       public :evaluate_to
-
-      def evaluate_to!(*args, block)
-        evaluate_to(*args, block).wait!
-      end
     end
 
     # @abstract

@@ -448,11 +448,17 @@ RSpec.describe 'Concurrent::Promises' do
     end
 
     it 'resolves future when Exception raised' do
-      f = future { raise Exception, 'reject' }
-      f.wait 1
-      expect(f).to be_resolved
-      expect(f).to be_rejected
-      expect { f.value! }.to raise_error(Exception, 'reject')
+      message = 'reject by an Exception'
+      future  = future { raise Exception, message }
+      expect(future.wait(0.1)).to eq true
+      future.wait
+      expect(future).to be_resolved
+      expect(future).to be_rejected
+
+      expect(future.reason).to be_instance_of Exception
+      expect(future.result).to be_instance_of Array
+      expect(future.value).to be_nil
+      expect { future.value! }.to raise_error(Exception, message)
     end
 
     it 'runs' do
