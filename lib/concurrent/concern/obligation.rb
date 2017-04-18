@@ -49,6 +49,7 @@ module Concurrent
       def complete?
         [:fulfilled, :rejected].include? state
       end
+      alias_method :settled?, :complete?
 
       # Is the obligation still awaiting completion of processing?
       #
