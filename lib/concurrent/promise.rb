@@ -387,7 +387,7 @@ module Concurrent
     #
     # @return [Promise<Array>]
     def self.zip(*promises)
-      zero = fulfill([], executor: ImmediateExecutor.new)
+      zero = Promise.new(executor: ImmediateExecutor.new) { [] }
 
       promises.reduce(zero) do |p1, p2|
         p1.flat_map do |results|

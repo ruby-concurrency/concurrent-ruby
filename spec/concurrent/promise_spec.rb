@@ -357,6 +357,12 @@ module Concurrent
       let(:promise2) { Promise.new(executor: :immediate) { 2 } }
       let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
+      it 'does not execute the returned Promise' do
+        composite = promise1.zip(promise2, promise3)
+
+        expect(composite).to be_unscheduled
+      end
+
       it 'yields the results as an array' do
         composite = promise1.zip(promise2, promise3).execute.wait
 
@@ -374,6 +380,12 @@ module Concurrent
       let(:promise1) { Promise.new(executor: :immediate) { 1 } }
       let(:promise2) { Promise.new(executor: :immediate) { 2 } }
       let(:promise3) { Promise.new(executor: :immediate) { [3] } }
+
+      it 'does not execute the returned Promise' do
+        composite = Promise.zip(promise1, promise2, promise3)
+
+        expect(composite).to be_unscheduled
+      end
 
       it 'yields the results as an array' do
         composite = Promise.zip(promise1, promise2, promise3).execute.wait
