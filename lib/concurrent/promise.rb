@@ -387,7 +387,9 @@ module Concurrent
     #
     # @return [Promise<Array>]
     def self.zip(*promises)
-      zero = Promise.new(executor: ImmediateExecutor.new) { [] }
+      opts = promises.last.is_a?(::Hash) ? promises.pop : {}
+      opts[:executor] ||= ImmediateExecutor.new
+      zero = Promise.new(opts) { [] }
 
       promises.reduce(zero) do |p1, p2|
         p1.flat_map do |results|

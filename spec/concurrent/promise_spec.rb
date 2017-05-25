@@ -363,6 +363,14 @@ module Concurrent
         expect(composite).to be_unscheduled
       end
 
+      it 'allows setting executor for Promise chain' do
+        new_executor = Concurrent::SingleThreadExecutor.new
+        promise = promise1.zip(promise2, promise3, executor: new_executor)
+
+        promise = promise.instance_variable_get(:@parent) until promise.send(:root?)
+        expect(promise.instance_variable_get(:@executor)).to be(new_executor)
+      end
+
       it 'yields the results as an array' do
         composite = promise1.zip(promise2, promise3).execute.wait
 
@@ -385,6 +393,14 @@ module Concurrent
         composite = Promise.zip(promise1, promise2, promise3)
 
         expect(composite).to be_unscheduled
+      end
+
+      it 'allows setting executor for Promise chain' do
+        new_executor = Concurrent::SingleThreadExecutor.new
+        promise = Promise.zip(promise1, promise2, promise3, executor: new_executor)
+
+        promise = promise.instance_variable_get(:@parent) until promise.send(:root?)
+        expect(promise.instance_variable_get(:@executor)).to be(new_executor)
       end
 
       it 'yields the results as an array' do
