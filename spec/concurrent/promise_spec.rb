@@ -368,6 +368,27 @@ module Concurrent
 
         expect(composite).to be_rejected
       end
+
+      it 'preserves ordering of the executed promises' do
+        promise1 = Promise.execute do
+          # resolves after the second promise
+          sleep 0.2
+          'one'
+        end
+
+        promise2 = Promise.execute do
+          sleep 0.1
+          'two'
+        end
+
+        promise3 = Promise.execute do
+          'three'
+        end
+
+        result = promise1.zip(promise2, promise3).value
+
+        expect(result).to eql(['one', 'two', 'three'])
+      end
     end
 
     describe '.zip' do
@@ -385,6 +406,27 @@ module Concurrent
         composite = Promise.zip(promise1, promise2, rejected_subject, promise3).execute.wait
 
         expect(composite).to be_rejected
+      end
+
+      it 'preserves ordering of the executed promises' do
+        promise1 = Promise.execute do
+          # resolves after the second promise
+          sleep 0.2
+          'one'
+        end
+
+        promise2 = Promise.execute do
+          sleep 0.1
+          'two'
+        end
+
+        promise3 = Promise.execute do
+          'three'
+        end
+
+        result = Promise.zip(promise1, promise2, promise3).value
+
+        expect(result).to eql(['one', 'two', 'three'])
       end
     end
 
