@@ -74,7 +74,7 @@ Value objects inspired by other languages:
 
 * [Maybe](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Maybe.html) A thread-safe, immutable object representing an optional value, based on
   [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
-* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation of a block yielding an immutable result. Based on Clojure's [delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html).
+* [Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation of a block yielding an immutable result. Based on Clojure's [delay](https://clojuredocs.org/clojure.core/delay).
 
 Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 
