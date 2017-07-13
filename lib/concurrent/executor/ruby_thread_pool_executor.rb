@@ -115,6 +115,7 @@ module Concurrent
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
       @fallback_policy = opts.fetch(:fallback_policy, :abort)
+      @sorted          = opts.fetch(:sorted, false)
       raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
 
       raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @max_length < DEFAULT_MIN_POOL_SIZE
@@ -204,6 +205,7 @@ module Concurrent
     def ns_enqueue(*args, &task)
       if !ns_limited_queue? || @queue.size < @max_queue
         @queue << [task, args]
+        @queue.sort! { |a, b| a[1] <=> b[1] } if @sorted
         true
       else
         false

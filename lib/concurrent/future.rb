@@ -49,7 +49,8 @@ module Concurrent
     #   future.state #=> :pending
     def execute
       if compare_and_set_state(:pending, :unscheduled)
-        @executor.post{ safe_execute(@task, @args) }
+        # Note: need to pass @args to :post method because @executor might use them
+        @executor.post(*@args) { |args| safe_execute(@task, args) }
         self
       end
     end
