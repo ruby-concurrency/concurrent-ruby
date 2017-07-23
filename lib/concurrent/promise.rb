@@ -161,10 +161,10 @@ module Concurrent
   # receive the rejection `reason` as the rejection callable parameter:
   #
   # ```ruby
-  # p = [ Concurrent::Promise.execute{ Thread.pass; raise StandardError } ]
+  # p = Concurrent::Promise.execute{ Thread.pass; raise StandardError }
   #
-  # c1 = p.then(Proc.new{ |reason| 42 })
-  # c2 = p.then(Proc.new{ |reason| raise 'Boom!' })
+  # c1 = p.then { |reason| 42 }
+  # c2 = p.then { |reason| raise 'Boom!' }
   #
   # sleep(0.1)
   #
