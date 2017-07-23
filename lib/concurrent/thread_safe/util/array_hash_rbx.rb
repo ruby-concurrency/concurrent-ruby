@@ -18,11 +18,22 @@ module Concurrent
         end
 
         klass.superclass.instance_methods(false).each do |method|
-          klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def #{method}(*args)
-              @_monitor.synchronize { super }
-            end
-          RUBY
+          case method
+          when :new_range, :new_reserved
+            klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method}(*args)
+                obj = super
+                obj.send(:_mon_initialize)
+                obj
+              end
+            RUBY
+          else
+            klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method}(*args)
+                @_monitor.synchronize { super }
+              end
+            RUBY
+          end
         end
       end
     end
