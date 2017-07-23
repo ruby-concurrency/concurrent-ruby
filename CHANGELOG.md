@@ -1,3 +1,9 @@
+## Current
+
+concurrent-ruby-edge:
+
+* (#659) Edge promises fail during error handling
+
 ## Release v1.0.5, edge v0.3.1 (26 Feb 2017)
 
 concurrent-ruby:

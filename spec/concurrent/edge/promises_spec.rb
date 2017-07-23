@@ -220,9 +220,14 @@ describe 'Concurrent::Promises' do
       let(:a_future) { future { raise 'error' } }
 
       it 'raises a concurrent error' do
-        expect { zip(a_future).value! }.to raise_error(StandardError)
+        expect { zip(a_future).value! }.to raise_error(StandardError, 'error')
       end
 
+      context 'when deeply nested' do
+        it 'raises the original error' do
+          expect { zip(zip(a_future)).value! }.to raise_error(StandardError, 'error')
+        end
+      end
     end
   end
 
@@ -239,6 +244,13 @@ describe 'Concurrent::Promises' do
       expect(z2.resolved?).to be_truthy
       expect(z3.resolved?).to be_truthy
       expect(z4.resolved?).to be_truthy
+    end
+  end
+
+  describe '.rejected_future' do
+    it 'raises the correct error when passed an unraised error' do
+      f = rejected_future(StandardError.new('boom'))
+      expect { f.value! }.to raise_error(StandardError, 'boom')
     end
   end
 
