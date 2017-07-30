@@ -357,8 +357,20 @@ module Concurrent
       let(:promise2) { Promise.new(executor: :immediate) { 2 } }
       let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
-      it 'does not execute the returned Promise' do
+      it 'executes the returned Promise by default' do
         composite = promise1.zip(promise2, promise3)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'executes the returned Promise when execute is true' do
+        composite = promise1.zip(promise2, promise3, execute: true)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'does not execute the returned Promise when execute is false' do
+        composite = promise1.zip(promise2, promise3, execute: false)
 
         expect(composite).to be_unscheduled
       end
@@ -389,8 +401,20 @@ module Concurrent
       let(:promise2) { Promise.new(executor: :immediate) { 2 } }
       let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
-      it 'does not execute the returned Promise' do
+      it 'executes the returned Promise by default' do
         composite = Promise.zip(promise1, promise2, promise3)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'executes the returned Promise when execute is true' do
+        composite = Promise.zip(promise1, promise2, promise3, execute: true)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'does not execute the returned Promise when execute is false' do
+        composite = Promise.zip(promise1, promise2, promise3, execute: false)
 
         expect(composite).to be_unscheduled
       end
