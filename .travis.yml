@@ -18,7 +18,7 @@ rvm:
   - ruby-head
   - jruby-head
 
-  - rbx
+  - rbx-3
 
 jdk:
   - oraclejdk8
@@ -38,7 +38,7 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
-    - rvm: rbx
+    - rvm: rbx-3
 
 env:
   global:
