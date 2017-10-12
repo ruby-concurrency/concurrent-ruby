@@ -2,7 +2,7 @@ language: ruby
 
 rvm:
   # start with the latest
-  - 2.4.1
+  - 2.4.3
   - jruby-9.1.15.0
 
   # older versions
