@@ -370,24 +370,38 @@ module Concurrent
       end
 
       it 'preserves ordering of the executed promises' do
-        promise1 = Promise.execute do
-          # resolves after the second promise
-          sleep 0.2
-          'one'
+        10.times do
+          running = Mutex.new
+          cond = ConditionVariable.new
+          cond2 = ConditionVariable.new
+          executor = SimpleExecutorService.new
+
+          p1 = Concurrent::Promise.execute(executor: executor) do
+            running.synchronize do
+              cond.wait(running)
+              'one'
+            end
+          end
+
+          p2 = Concurrent::Promise.execute(executor: executor) do
+            running.synchronize do
+              cond2.wait(running)
+              'two'
+            end
+          end
+
+          p3 = Concurrent::Promise.execute(executor: executor) do
+            running.synchronize do
+              'three'
+            end
+          end
+
+          cond2.signal
+          cond.signal
+
+          result = Concurrent::Promise.zip(p1, p2, p3).value
+          expect(result) .to eq(['one', 'two', 'three'])
         end
-
-        promise2 = Promise.execute do
-          sleep 0.1
-          'two'
-        end
-
-        promise3 = Promise.execute do
-          'three'
-        end
-
-        result = promise1.zip(promise2, promise3).value
-
-        expect(result).to eql(['one', 'two', 'three'])
       end
     end
 
