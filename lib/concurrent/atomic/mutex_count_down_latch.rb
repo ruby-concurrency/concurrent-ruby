@@ -1,4 +1,5 @@
 require 'concurrent/synchronization'
+require 'concurrent/utility/native_integer'
 
 module Concurrent
 
