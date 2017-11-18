@@ -1,4 +1,4 @@
-shared_examples :atomic_fixnum do
+RSpec.shared_examples :atomic_fixnum do
 
   context 'construction' do
 
@@ -153,7 +153,7 @@ end
 
 module Concurrent
 
-  describe MutexAtomicFixnum do
+  RSpec.describe MutexAtomicFixnum do
 
     it_should_behave_like :atomic_fixnum
 
@@ -202,19 +202,19 @@ module Concurrent
 
   if defined? Concurrent::CAtomicFixnum
 
-    describe CAtomicFixnum, ext: true do
+    RSpec.describe CAtomicFixnum, ext: true do
       it_should_behave_like :atomic_fixnum
     end
   end
 
   if Concurrent.on_jruby?
 
-    describe JavaAtomicFixnum do
+    RSpec.describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
     end
   end
 
-  describe AtomicFixnum do
+  RSpec.describe AtomicFixnum do
     if RUBY_ENGINE != 'ruby'
       it 'does not load the C extension' do
         expect(defined?(Concurrent::CAtomicFixnum)).to be_falsey

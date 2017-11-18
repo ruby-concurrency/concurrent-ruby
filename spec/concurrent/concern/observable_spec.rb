@@ -1,7 +1,7 @@
 module Concurrent
   module Concern
 
-    describe Observable do
+    RSpec.describe Observable do
 
       let (:described_class) do
         Class.new do

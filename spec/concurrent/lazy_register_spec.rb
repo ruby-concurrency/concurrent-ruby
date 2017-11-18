@@ -1,5 +1,5 @@
 module Concurrent
-  describe LazyRegister do
+  RSpec.describe LazyRegister do
 
     pending
 

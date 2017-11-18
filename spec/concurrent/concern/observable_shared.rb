@@ -1,4 +1,4 @@
-shared_examples :observable do
+RSpec.shared_examples :observable do
 
   let(:observer_set) do
     subject.instance_variable_get(:@observers)

@@ -2,7 +2,7 @@ require_relative 'thread_pool_shared'
 
 module Concurrent
 
-  describe CachedThreadPool do
+  RSpec.describe CachedThreadPool do
 
     subject do
       described_class.new(fallback_policy: :discard)

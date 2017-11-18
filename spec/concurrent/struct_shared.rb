@@ -1,4 +1,4 @@
-shared_examples :struct do
+RSpec.shared_examples :struct do
 
   context 'definition' do
 
@@ -430,7 +430,7 @@ shared_examples :struct do
   end
 end
 
-shared_examples :mergeable_struct do
+RSpec.shared_examples :mergeable_struct do
 
   let(:this){ described_class.new(:foo, :bar, :baz).new('foo', nil, nil)}
   let(:other){ {baz: 42} }

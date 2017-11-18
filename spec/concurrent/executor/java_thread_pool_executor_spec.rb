@@ -4,7 +4,7 @@ if Concurrent.on_jruby?
 
   module Concurrent
 
-    describe JavaThreadPoolExecutor, :type => :jruby do
+    RSpec.describe JavaThreadPoolExecutor, :type => :jruby do
 
       after(:each) do
         subject.kill

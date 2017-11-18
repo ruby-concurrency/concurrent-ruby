@@ -1,6 +1,6 @@
 require_relative 'base_shared'
 
-shared_examples :channel_timing_buffer do
+RSpec.shared_examples :channel_timing_buffer do
 
   specify do
     expect(subject).to be_blocking

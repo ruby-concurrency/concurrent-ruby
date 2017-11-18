@@ -2,9 +2,9 @@ require 'timeout'
 
 module Concurrent
 
-  describe Synchronization do
+  RSpec.describe Synchronization do
 
-    shared_examples :attr_volatile do
+    RSpec.shared_examples :attr_volatile do
 
       specify 'older writes are always visible' do
         # store              = BClass.new
@@ -33,7 +33,7 @@ module Concurrent
       end
     end
 
-    describe Synchronization::Object do
+   describe Synchronization::Object do
       class AAClass < Synchronization::Object
       end
 
@@ -78,9 +78,9 @@ module Concurrent
 
       let(:store) { VolatileFieldClass.new }
       it_should_behave_like :attr_volatile
-    end
+   end
 
-    describe Synchronization::LockableObject do
+   describe Synchronization::LockableObject do
 
       class BClass < Synchronization::LockableObject
         safe_initialization!
@@ -183,7 +183,7 @@ module Concurrent
 
       let(:store) { BClass.new }
       it_should_behave_like :attr_volatile
-    end
+   end
 
     describe 'Concurrent::Synchronization::Volatile module' do
       class BareClass

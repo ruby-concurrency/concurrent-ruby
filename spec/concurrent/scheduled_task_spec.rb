@@ -5,7 +5,7 @@ require_relative 'concern/observable_shared'
 
 module Concurrent
 
-  describe ScheduledTask do
+  RSpec.describe ScheduledTask do
 
     context 'behavior' do
 

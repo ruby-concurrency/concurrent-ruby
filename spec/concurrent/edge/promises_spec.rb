@@ -2,7 +2,7 @@ require 'concurrent/edge/promises'
 require 'thread'
 
 
-describe 'Concurrent::Promises' do
+RSpec.describe 'Concurrent::Promises' do
 
   include Concurrent::Promises::FactoryMethods
 
@@ -651,7 +651,7 @@ describe 'Concurrent::Promises' do
   end
 end
 
-describe Concurrent::ProcessingActor do
+RSpec.describe Concurrent::ProcessingActor do
   specify do
     actor = Concurrent::ProcessingActor.act do |the_actor|
       the_actor.receive.then do |message|

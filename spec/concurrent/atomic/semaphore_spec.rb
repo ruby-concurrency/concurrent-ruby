@@ -1,4 +1,4 @@
-shared_examples :semaphore do
+RSpec.shared_examples :semaphore do
   let(:semaphore) { described_class.new(3) }
 
   describe '#initialize' do
@@ -159,17 +159,17 @@ shared_examples :semaphore do
 end
 
 module Concurrent
-  describe MutexSemaphore do
+  RSpec.describe MutexSemaphore do
     it_should_behave_like :semaphore
   end
 
   if Concurrent.on_jruby?
-    describe JavaSemaphore do
+    RSpec.describe JavaSemaphore do
       it_should_behave_like :semaphore
     end
   end
 
-  describe Semaphore do
+  RSpec.describe Semaphore do
     if Concurrent.on_jruby?
       it 'inherits from JavaSemaphore' do
         expect(Semaphore.ancestors).to include(JavaSemaphore)

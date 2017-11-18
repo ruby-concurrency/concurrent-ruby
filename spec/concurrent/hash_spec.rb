@@ -1,5 +1,5 @@
 module Concurrent
-  describe Hash do 
+  RSpec.describe Hash do
     let!(:hsh) { described_class.new }
 
     it 'concurrency' do

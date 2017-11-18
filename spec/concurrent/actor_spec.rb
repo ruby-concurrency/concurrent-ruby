@@ -6,7 +6,7 @@ module Concurrent
 
     # FIXME better tests!
 
-    describe 'Concurrent::Actor', edge: true, if: !defined?(JRUBY_VERSION) do
+    RSpec.describe 'Concurrent::Actor', edge: true, if: !defined?(JRUBY_VERSION) do
 
       def terminate_actors(*actors)
         actors.each do |actor|

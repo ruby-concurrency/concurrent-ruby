@@ -1,4 +1,4 @@
-shared_examples :count_down_latch do
+RSpec.shared_examples :count_down_latch do
 
   let(:latch) { described_class.new(3) }
   let(:zero_count_latch) { described_class.new(0) }
@@ -88,7 +88,7 @@ end
 
 module Concurrent
 
-  describe MutexCountDownLatch do
+  RSpec.describe MutexCountDownLatch do
 
     it_should_behave_like :count_down_latch
 
@@ -150,13 +150,13 @@ module Concurrent
 
   if Concurrent.on_jruby?
 
-    describe JavaCountDownLatch do
+    RSpec.describe JavaCountDownLatch do
 
       it_should_behave_like :count_down_latch
     end
   end
 
-  describe CountDownLatch do
+  RSpec.describe CountDownLatch do
     if Concurrent.on_jruby?
       it 'inherits from JavaCountDownLatch' do
         expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)

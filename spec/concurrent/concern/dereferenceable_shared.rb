@@ -1,4 +1,4 @@
-shared_examples :dereferenceable do
+RSpec.shared_examples :dereferenceable do
 
   it 'defaults :dup_on_deref to false' do
     value = 'value'

@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Options do
+  RSpec.describe Options do
 
     context '.executor_from_options' do
 

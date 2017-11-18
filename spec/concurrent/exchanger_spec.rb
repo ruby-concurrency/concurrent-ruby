@@ -1,4 +1,4 @@
-shared_examples 'exchanger method with indefinite timeout' do
+RSpec.shared_examples 'exchanger method with indefinite timeout' do
 
   before(:each) do
     subject # ensure proper initialization
@@ -64,7 +64,7 @@ shared_examples 'exchanger method with indefinite timeout' do
   end
 end
 
-shared_examples 'exchanger method with finite timeout' do
+RSpec.shared_examples 'exchanger method with finite timeout' do
 
   it 'blocks until timeout' do
     duration = Concurrent::TestHelpers.monotonic_interval do
@@ -121,7 +121,7 @@ shared_examples 'exchanger method with finite timeout' do
   end
 end
 
-shared_examples 'exchanger method cross-thread interactions' do
+RSpec.shared_examples 'exchanger method cross-thread interactions' do
 
   it 'when first, waits for a second' do
     first_value = nil
@@ -182,7 +182,7 @@ shared_examples 'exchanger method cross-thread interactions' do
   end
 end
 
-shared_examples :exchanger do
+RSpec.shared_examples :exchanger do
 
   context '#exchange' do
     let!(:method) { :exchange }
@@ -211,7 +211,7 @@ end
 
 module Concurrent
 
-  describe RubyExchanger do
+  RSpec.describe RubyExchanger do
 
     it_behaves_like :exchanger
 
@@ -253,12 +253,12 @@ module Concurrent
 
   if defined? JavaExchanger
 
-    describe JavaExchanger do
+    RSpec.describe JavaExchanger do
       it_behaves_like :exchanger
     end
   end
 
-  describe Exchanger do
+  RSpec.describe Exchanger do
 
     context 'class hierarchy'  do
 

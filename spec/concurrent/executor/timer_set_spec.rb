@@ -2,7 +2,7 @@ require 'timecop'
 
 module Concurrent
 
-  describe TimerSet do
+  RSpec.describe TimerSet do
 
     let(:executor){ Concurrent::ImmediateExecutor.new }
     subject{ TimerSet.new(executor: executor) }

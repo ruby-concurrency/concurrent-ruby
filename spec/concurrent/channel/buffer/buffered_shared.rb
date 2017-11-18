@@ -1,6 +1,6 @@
 require_relative 'base_shared'
 
-shared_examples :channel_buffered_buffer do
+RSpec.shared_examples :channel_buffered_buffer do
 
   it_behaves_like :channel_buffer
 

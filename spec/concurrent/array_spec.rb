@@ -1,5 +1,5 @@
 module Concurrent
-  describe Array do
+  RSpec.describe Array do
     let!(:ary) { described_class.new }
 
     it 'concurrency' do

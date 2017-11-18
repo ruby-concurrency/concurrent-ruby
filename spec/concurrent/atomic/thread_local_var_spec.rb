@@ -4,7 +4,7 @@ module Concurrent
 
   require 'concurrent/atomic/thread_local_var'
 
-  describe ThreadLocalVar do
+  RSpec.describe ThreadLocalVar do
 
     context '#initialize' do
 

@@ -2,7 +2,7 @@ require 'concurrent'
 require 'concurrent/edge'
 require 'securerandom'
 
-describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
+RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
   subject { described_class.new }
 
   describe '.new' do

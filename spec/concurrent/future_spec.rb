@@ -3,7 +3,7 @@ require_relative 'thread_arguments_shared'
 
 module Concurrent
 
-  describe Future do
+  RSpec.describe Future do
 
     let!(:value) { 10 }
     let(:executor) { SimpleExecutorService.new }

@@ -2,7 +2,7 @@ Thread.abort_on_exception = true
 
 module Concurrent
 
-  describe 'MapTorture', stress: true, notravis: true do
+  RSpec.describe 'MapTorture', stress: true, notravis: true do
     THREAD_COUNT  = 40
     KEY_COUNT     = (((2**13) - 2) * 0.75).to_i # get close to the doubling cliff
     LOW_KEY_COUNT = (((2**8 ) - 2) * 0.75).to_i # get close to the doubling cliff

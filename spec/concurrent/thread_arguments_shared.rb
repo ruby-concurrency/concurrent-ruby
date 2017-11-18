@@ -1,5 +1,5 @@
 
-shared_examples :thread_arguments do
+RSpec.shared_examples :thread_arguments do
 
   it 'passes an empty array when opts is not given' do
     future = get_ivar_from_no_args

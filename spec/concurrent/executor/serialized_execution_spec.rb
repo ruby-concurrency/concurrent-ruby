@@ -2,7 +2,7 @@ require_relative 'executor_service_shared'
 
 module Concurrent
 
-  describe SerializedExecutionDelegator do
+  RSpec.describe SerializedExecutionDelegator do
 
     subject { SerializedExecutionDelegator.new(ImmediateExecutor.new) }
 

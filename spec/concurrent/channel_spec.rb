@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Channel, edge: true, buggy: true do
+ RSpec.describe Channel, edge: true, buggy: true do
 
     context 'initialization' do
 
@@ -657,5 +657,5 @@ module Concurrent
         Channel.select { |s| s.error {  } }
       end
     end
-  end
+ end
 end

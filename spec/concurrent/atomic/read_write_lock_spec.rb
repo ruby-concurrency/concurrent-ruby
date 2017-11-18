@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe ReadWriteLock do
+  RSpec.describe ReadWriteLock do
 
     context '#write_locked?' do
 

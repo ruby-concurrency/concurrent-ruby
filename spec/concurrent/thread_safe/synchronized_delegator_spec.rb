@@ -1,7 +1,7 @@
 require 'concurrent/thread_safe/synchronized_delegator.rb'
 
 module Concurrent
-  describe SynchronizedDelegator do 
+  RSpec.describe SynchronizedDelegator do
     it 'wraps array' do
       array = ::Array.new
       sync_array = described_class.new(array)

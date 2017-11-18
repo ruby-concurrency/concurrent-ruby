@@ -2,7 +2,7 @@ require_relative 'base_shared'
 
 module Concurrent::Channel::Buffer
 
-  describe Unbuffered, edge: true do
+  RSpec.describe Unbuffered, edge: true do
 
     subject { described_class.new }
 

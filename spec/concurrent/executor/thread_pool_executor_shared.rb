@@ -1,6 +1,6 @@
 require_relative 'thread_pool_shared'
 
-shared_examples :thread_pool_executor do
+RSpec.shared_examples :thread_pool_executor do
 
   after(:each) do
     subject.kill

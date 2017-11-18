@@ -1,4 +1,4 @@
-shared_examples :collection_each do
+RSpec.shared_examples :collection_each do
 
   it 'common' do
     @cache.send(method) { |k, v| fail }

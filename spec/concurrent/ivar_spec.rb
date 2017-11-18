@@ -2,7 +2,7 @@ require_relative 'ivar_shared'
 
 module Concurrent
 
-  describe IVar do
+  RSpec.describe IVar do
 
     let!(:value) { 10 }
 

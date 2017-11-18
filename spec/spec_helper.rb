@@ -31,4 +31,6 @@ RSpec.configure do |config|
   #config.raise_errors_for_deprecations!
   config.filter_run_excluding stress: true
   config.order = 'random'
+  config.disable_monkey_patching!
+  config.example_status_persistence_file_path = 'spec/examples.txt'
 end
