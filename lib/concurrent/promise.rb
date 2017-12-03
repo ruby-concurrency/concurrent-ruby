@@ -161,15 +161,15 @@ module Concurrent
   # receive the rejection `reason` as the rejection callable parameter:
   #
   # ```ruby
-  # p = [ Concurrent::Promise.execute{ Thread.pass; raise StandardError } ]
+  # p = Concurrent::Promise.execute { Thread.pass; raise StandardError }
   #
-  # c1 = p.then(Proc.new{ |reason| 42 })
-  # c2 = p.then(Proc.new{ |reason| raise 'Boom!' })
+  # c1 = p.then(-> reason { 42 })
+  # c2 = p.then(-> reason { raise 'Boom!' })
   #
-  # sleep(0.1)
-  #
-  # c1.state  #=> :rejected
-  # c2.state  #=> :rejected
+  # c1.wait.state  #=> :fulfilled
+  # c1.value       #=> 45
+  # c2.wait.state  #=> :rejected
+  # c2.reason      #=> #<RuntimeError: Boom!>
   # ```
   #
   # Once a promise is rejected it will continue to accept children that will
