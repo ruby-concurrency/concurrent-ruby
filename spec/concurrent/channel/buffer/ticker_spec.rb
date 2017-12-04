@@ -2,7 +2,7 @@ require_relative 'timing_buffer_shared'
 
 module Concurrent::Channel::Buffer
 
-  describe Ticker, edge: true do
+  describe Ticker, edge: true, notravis: true do
 
     let(:delay) { 0.1 }
     subject { described_class.new(delay) }

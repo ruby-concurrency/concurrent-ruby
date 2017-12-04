@@ -2,7 +2,7 @@ require_relative 'buffered_shared'
 
 module Concurrent::Channel::Buffer
 
-  describe Sliding, edge: true do
+  describe Sliding, edge: true, notravis: true do
 
     subject { described_class.new(10) }
 
