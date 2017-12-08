@@ -13,7 +13,7 @@ shared_examples :atomic_fixnum do
     it 'raises an exception if the initial value is not a Fixnum' do
       expect {
         described_class.new(10.01)
-      }.to raise_error
+      }.to raise_error(ArgumentError)
     end
   end
 
@@ -46,7 +46,7 @@ shared_examples :atomic_fixnum do
       atomic = described_class.new(0)
       expect {
         atomic.value = 'foo'
-      }.to raise_error
+      }.to raise_error(ArgumentError)
     end
   end
 
@@ -161,14 +161,14 @@ module Concurrent
 
       it 'raises an exception if the initial value is too big' do
         expect {
-          described_class.new(described_class::MAX_VALUE + 1)
-        }.to raise_error
+          described_class.new(Utility::NativeInteger::MAX_VALUE + 1)
+        }.to raise_error(RangeError)
       end
 
       it 'raises an exception if the initial value is too small' do
         expect {
-          described_class.new(described_class::MIN_VALUE - 1)
-        }.to raise_error
+          described_class.new(Utility::NativeInteger::MIN_VALUE - 1)
+        }.to raise_error(RangeError)
       end
     end
 
