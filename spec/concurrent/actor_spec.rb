@@ -36,7 +36,7 @@ module Concurrent
         expect { Utils::AdHoc.spawn! name: 'test', executor: ImmediateExecutor.new }.to raise_error
       end
 
-      describe 'spawning' do
+      describe 'spawning', if: !defined?(JRUBY_VERSION) do
         describe 'Actor#spawn!' do
           behaviour = -> v { -> _ { v } }
           subjects  = { spawn:                 -> { Actor.spawn!(AdHoc, :ping, 'arg', &behaviour) },
