@@ -410,7 +410,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
 
-          composite = Promise.all?(promise1, promise2, promise3).
+          Promise.all?(promise1, promise2, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
           execute
@@ -418,13 +418,13 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
 
-          composite = Promise.all?.
+          Promise.all?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
           execute
@@ -432,13 +432,13 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #rescue handler if even one component fails' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
 
-          composite = Promise.all?(promise1, promise2, rejected_subject, promise3).
+          Promise.all?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
           execute
@@ -446,7 +446,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq(-1)
-          end
+        end
       end
 
       describe '.any?' do
@@ -465,7 +465,7 @@ module Concurrent
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
 
-          composite = Promise.any?(promise1, promise2, rejected_subject, promise3).
+          Promise.any?(promise1, promise2, rejected_subject, promise3).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
           execute
@@ -473,13 +473,13 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
 
-          composite = Promise.any?.
+          Promise.any?.
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
           execute
@@ -487,13 +487,13 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #rescue handler if all componenst fail' do
           counter = Concurrent::AtomicFixnum.new(0)
           latch = Concurrent::CountDownLatch.new(1)
 
-          composite = Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
+          Promise.any?(rejected_subject, rejected_subject, rejected_subject, rejected_subject).
             then { counter.up; latch.count_down }.
             rescue { counter.down; latch.count_down }.
           execute
@@ -501,7 +501,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq(-1)
-          end
+        end
       end
     end
 
