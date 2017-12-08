@@ -11,9 +11,9 @@ shared_examples :atomic_fixnum do
     end
 
     it 'raises an exception if the initial value is not a Fixnum' do
-      expect {
-        described_class.new(10.01)
-      }.to raise_error(ArgumentError)
+      expect { described_class.new(10.01) }.to(raise_error { |error|
+        expect(error.class).to be(ArgumentError).or(be(TypeError))
+      })
     end
   end
 
@@ -46,7 +46,9 @@ shared_examples :atomic_fixnum do
       atomic = described_class.new(0)
       expect {
         atomic.value = 'foo'
-      }.to raise_error(ArgumentError)
+      }.to(raise_error { |error|
+        expect(error.class).to be(ArgumentError).or(be(TypeError))
+      })
     end
   end
 
