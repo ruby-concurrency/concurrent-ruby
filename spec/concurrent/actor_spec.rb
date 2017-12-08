@@ -33,7 +33,7 @@ module Concurrent
       end
 
       it 'forbids Immediate executor' do
-        expect { Utils::AdHoc.spawn! name: 'test', executor: ImmediateExecutor.new }.to raise_error
+        expect { Utils::AdHoc.spawn! name: 'test', executor: ImmediateExecutor.new }.to raise_error(ArgumentError)
       end
 
       describe 'spawning' do
