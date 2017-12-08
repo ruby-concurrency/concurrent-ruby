@@ -129,7 +129,7 @@ module Concurrent
       it 'raises an exception if no block given' do
         expect {
           Concurrent::TimerTask.execute
-        }.to raise_error
+        }.to raise_error(ArgumentError)
       end
 
       specify '#execution_interval is writeable' do
