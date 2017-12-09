@@ -6,7 +6,7 @@ module Concurrent
 
     # FIXME better tests!
 
-    describe 'Concurrent::Actor', edge: true do
+    describe 'Concurrent::Actor', edge: true, if: !defined?(JRUBY_VERSION) do
 
       def terminate_actors(*actors)
         actors.each do |actor|
@@ -36,7 +36,7 @@ module Concurrent
         expect { Utils::AdHoc.spawn! name: 'test', executor: ImmediateExecutor.new }.to raise_error
       end
 
-      describe 'spawning', if: !defined?(JRUBY_VERSION) do
+      describe 'spawning' do
         describe 'Actor#spawn!' do
           behaviour = -> v { -> _ { v } }
           subjects  = { spawn:                 -> { Actor.spawn!(AdHoc, :ping, 'arg', &behaviour) },
