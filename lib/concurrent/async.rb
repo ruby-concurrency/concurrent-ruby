@@ -159,7 +159,7 @@ module Concurrent
   #
   # To get the state *at the current* time, irrespective of an enqueued method
   # calls, a reader method must be called directly. This is inherently unsafe
-  # unless the instance variable is itself thread-safe, preferrably using one
+  # unless the instance variable is itself thread-safe, preferably using one
   # of the thread-safe classes within this library. Because the thread-safe
   # classes within this library are internally-locking or non-locking, they can
   # be safely used from within asynchronous methods without causing deadlocks.
@@ -188,7 +188,7 @@ module Concurrent
   #
   # Class variables should be avoided. Class variables represent shared state.
   # Shared state is anathema to concurrency. Should there be a need to share
-  # state using class variables they *must* be thread-safe, preferrably
+  # state using class variables they *must* be thread-safe, preferably
   # using the thread-safe classes within this library. When updating class
   # variables, never assign a new value/object to the variable itself. Assignment
   # is not thread-safe in Ruby. Instead, use the thread-safe update functions

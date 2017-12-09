@@ -289,7 +289,7 @@ module Concurrent
                   end
                 end
               elsif cas_hash(my_hash, my_hash | WAITING)
-                force_aquire_lock(table, i)
+                force_acquire_lock(table, i)
                 break
               end
             end
@@ -330,7 +330,7 @@ module Concurrent
         end
 
         private
-        def force_aquire_lock(table, i)
+        def force_acquire_lock(table, i)
           cheap_synchronize do
             if equal?(table.volatile_get(i)) && (hash & WAITING) == WAITING
               cheap_wait

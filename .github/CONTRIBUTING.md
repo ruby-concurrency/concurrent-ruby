@@ -56,7 +56,7 @@ There are a few very strong guidelines which we follow when adding features. Sub
 
 * **No downstream dependencies:** Concurrent Ruby is a foundational library used by major projects like [Rails](http://rubyonrails.org/). Our downstream dependencies become everyone's dependencies. Because we cannot guarantee that downstream projects meet our development standards, it's best for everyone if we simply aviod dependencies.
 * **Do not monkey patch Ruby:** Changing Ruby for our convenience affects every gem in every project that uses Concurrent Ruby. Monkey patching Ruby may change the behavior of other libraries in unexpected ways and destabilize projects which depend on us.
-* **Do not polute the global namespace:** Putting all our code within the `Concurrent` module guarantees that there will be no namespace collisions with other gems or the projects which depend on us.
+* **Do not pollute the global namespace:** Putting all our code within the `Concurrent` module guarantees that there will be no namespace collisions with other gems or the projects which depend on us.
 * **No global varaibles:** Global state should be kept to an absolute minimum. When it's necessary, add it to the global gem configuration.
 * **Minimize per-object configuration:** Ruby makes programmers happy. One of Ruby's charms is its simplicity. Concurrent Ruby aims to mirror this simplicity. Advanced configuration options are encouraged when they provide value, but every abstraction should have reasonable defaults that meet the needs of most users.
 * **Provide explicit behavior and guarantees:** Our APIs should be concrete and clearly define what they do (and don't do). Users of Concurrent Ruby should never be surprised by unexpected behavior or be given guarantees we cannot keep.

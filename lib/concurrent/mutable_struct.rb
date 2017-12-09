@@ -108,7 +108,7 @@ module Concurrent
     #
     #   Attribute Reference
     #
-    #   @param [Symbol, String, Integer] member the string or symbol name of the memeber
+    #   @param [Symbol, String, Integer] member the string or symbol name of the member
     #     for which to obtain the value or the member's index
     #
     #   @return [Object] the value of the given struct member or the member at the given index.
@@ -175,7 +175,7 @@ module Concurrent
     #
     #   Sets the value of the given struct member or the member at the given index.
     #
-    #   @param [Symbol, String, Integer] member the string or symbol name of the memeber
+    #   @param [Symbol, String, Integer] member the string or symbol name of the member
     #     for which to obtain the value or the member's index
     #
     #   @return [Object] the value of the given struct member or the member at the given index.

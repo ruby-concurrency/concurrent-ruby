@@ -793,7 +793,7 @@ module Concurrent
       expect(1).to eq new_cache.size
     end
 
-    it 'marshal dump doesnt work with default proc' do
+    it 'marshal dump does not work with default proc' do
       expect { Marshal.dump(Concurrent::Map.new {}) }.to raise_error(TypeError)
     end
 

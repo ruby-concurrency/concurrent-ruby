@@ -27,9 +27,9 @@ calculator = Calculator.spawn('calculator')
     # => #<Concurrent::Actor::Reference:0x7fbedba52d90 /calculator (Calculator)>
 addition = calculator.ask Add[1, 2]
     # => <#Concurrent::Promises::Future:0x7fbedc05f7b0 pending>
-substraction = calculator.ask Subtract[1, 0.5]
+subtraction = calculator.ask Subtract[1, 0.5]
     # => <#Concurrent::Promises::Future:0x7fbedd891388 pending>
-results = (addition & substraction)
+results = (addition & subtraction)
     # => <#Concurrent::Promises::Future:0x7fbedc04eeb0 pending>
 results.value!                                     # => [3, 0.5]
 
