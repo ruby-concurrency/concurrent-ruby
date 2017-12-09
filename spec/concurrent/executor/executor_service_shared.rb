@@ -167,7 +167,7 @@ shared_examples :executor_service do
       expect(subject.wait_for_termination(1)).to be_truthy
     end
 
-    it 'returns true when shutdown sucessfully completes before timeout' do
+    it 'returns true when shutdown successfully completes before timeout' do
       subject.post{ sleep(0.5) }
       sleep(0.1)
       subject.shutdown
