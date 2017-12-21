@@ -383,7 +383,14 @@ module Concurrent
     # Builds a promise that produces the result of promises in an Array
     # and fails if any of them fails.
     #
-    # @param [Array<Promise>] promises
+    # @overload zip(*promises)
+    #   @param [Array<Promise>] promises
+    #
+    # @overload zip(*promises, opts)
+    #   @param [Array<Promise>] promises
+    #   @param [Hash] opts the configuration options
+    #   @option opts [Executor] :executor (ImmediateExecutor.new) when set use the given `Executor` instance.
+    #   @option opts [Boolean] :execute (true) execute promise before returning
     #
     # @return [Promise<Array>]
     def self.zip(*promises)
@@ -407,7 +414,14 @@ module Concurrent
     # Builds a promise that produces the result of self and others in an Array
     # and fails if any of them fails.
     #
-    # @param [Array<Promise>] others
+    # @overload zip(*promises)
+    #   @param [Array<Promise>] others
+    #
+    # @overload zip(*promises, opts)
+    #   @param [Array<Promise>] others
+    #   @param [Hash] opts the configuration options
+    #   @option opts [Executor] :executor (ImmediateExecutor.new) when set use the given `Executor` instance.
+    #   @option opts [Boolean] :execute (true) execute promise before returning
     #
     # @return [Promise<Array>]
     def zip(*others)
