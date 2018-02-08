@@ -20,7 +20,7 @@ module Concurrent
       end
 
       def on_truffle?
-        ruby_engine == 'jruby+truffle'
+        ruby_engine == 'truffleruby'
       end
 
       def on_windows?
