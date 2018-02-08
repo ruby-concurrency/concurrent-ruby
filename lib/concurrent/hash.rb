@@ -31,6 +31,6 @@ module Concurrent
     class Hash < ::Hash
     end
 
-    ThreadSafe::Util.make_synchronized_on_rbx Hash
+    ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Hash
   end
 end
