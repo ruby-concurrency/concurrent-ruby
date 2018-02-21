@@ -2,7 +2,7 @@ require_relative 'buffered_shared'
 
 module Concurrent::Channel::Buffer
 
-  describe Buffered, edge: true do
+  describe Buffered, edge: true, notravis: true do
 
     let(:capacity) { 10 }
     subject { described_class.new(capacity) }
