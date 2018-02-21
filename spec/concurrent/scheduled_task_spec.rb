@@ -133,7 +133,7 @@ module Concurrent
         expected = [1, 2, 3]
         actual = nil
         latch = Concurrent::CountDownLatch.new
-        task = ScheduledTask.execute(0, args: expected) do |*args|
+        ScheduledTask.execute(0, args: expected) do |*args|
           actual = args
           latch.count_down
         end
@@ -145,7 +145,7 @@ module Concurrent
         latch = Concurrent::CountDownLatch.new
         executor = Concurrent::ImmediateExecutor.new
         expect(executor).to receive(:post).once.with(any_args).and_call_original
-        task = ScheduledTask.execute(0, executor: executor) do
+        ScheduledTask.execute(0, executor: executor) do
           latch.count_down
         end
         latch.wait(2)
