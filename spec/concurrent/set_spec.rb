@@ -1,18 +1,20 @@
-require 'set' 
+require 'set'
 module Concurrent
-  describe Set do 
+  RSpec.describe Set do
     let!(:set) { described_class.new }
 
     it 'concurrency' do
       (1..THREADS).map do |i|
         Thread.new do
-           1000.times do |j|
-            set << i 
-            set.empty?
-            set.delete(i)
-           end
+          1000.times do
+            v = i
+            set << v
+            expect(set).not_to be_empty
+            set.delete(v)
+          end
         end
       end.map(&:join)
+      expect(set).to be_empty
     end
   end
-end 
+end
