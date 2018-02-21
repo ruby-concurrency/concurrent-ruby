@@ -23,7 +23,7 @@ Every code example in the channel chapters of both [A Tour of Go](https://tour.g
 
 ## Goroutines
 
-The Go programming languages uses "goroutines" as the core concurrency mechanism. A goroutine is little more than an independently executing function, multiplexed with all other goroutines onto a thread pool managed by the runtime. Ruby has a very different runtime so true goroutines are not possible. Instread, a {.go} method is provided for running a block asynchronously, multiplexed onto a special thread pool reserved just for `Channel` operations. This is similar to what Clojure does with the `go` function from the [core.async](https://clojure.github.io/core.async/#clojure.core.async/go) library.
+The Go programming language uses "goroutines" as the core concurrency mechanism. A goroutine is little more than an independently executing function, multiplexed with all other goroutines onto a thread pool managed by the runtime. Ruby has a very different runtime so true goroutines are not possible. Instead, a {.go} method is provided for running a block asynchronously, multiplexed onto a special thread pool reserved just for `Channel` operations. This is similar to what Clojure does with the `go` function from the [core.async](https://clojure.github.io/core.async/#clojure.core.async/go) library.
 
 ```ruby
 puts "Main thread: #{Thread.current}"
