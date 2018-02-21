@@ -54,7 +54,7 @@ module Concurrent
     # Short string representation.
     # @return [String]
     def to_s
-      format '<#%s:0x%x canceled:%s>', self.class, object_id << 1, canceled?
+      format '%s canceled:%s>', super[0..-2], canceled?
     end
 
     alias_method :inspect, :to_s
@@ -120,7 +120,7 @@ module Concurrent
       # Short string representation.
       # @return [String]
       def to_s
-        format '<#%s:0x%x canceled:%s>', self.class, object_id << 1, canceled?
+        format '%s canceled:%s>', super[0..-2], canceled?
       end
 
       alias_method :inspect, :to_s
