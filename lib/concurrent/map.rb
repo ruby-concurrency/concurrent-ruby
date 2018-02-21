@@ -15,7 +15,7 @@ module Concurrent
                         when Concurrent.on_cruby?
                           require 'concurrent/collection/map/mri_map_backend'
                           MriMapBackend
-                        when Concurrent.on_rbx? || Concurrent.on_truffle?
+                        when Concurrent.on_rbx? || Concurrent.on_truffleruby?
                           require 'concurrent/collection/map/atomic_reference_map_backend'
                           AtomicReferenceMapBackend
                         else

@@ -25,7 +25,7 @@ module Concurrent
       MriAttrVolatile
     when Concurrent.on_jruby?
       JRubyAttrVolatile
-    when Concurrent.on_rbx? || Concurrent.on_truffle?
+    when Concurrent.on_rbx? || Concurrent.on_truffleruby?
       RbxAttrVolatile
     else
       MriAttrVolatile

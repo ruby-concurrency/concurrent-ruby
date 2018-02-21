@@ -5,7 +5,7 @@ FutureImplementation = case
                        when Concurrent.on_cruby?
                          require 'gvl_future'
                          GVLFuture
-                       when Concurrent.on_rbx? || Concurrent.on_truffle?
+                       when Concurrent.on_rbx? || Concurrent.on_truffleruby?
                          require 'rbx_future'
                          RBXFuture
                        when Concurrent.on_jruby?

@@ -76,7 +76,7 @@ module Concurrent
       def compute_processor_count
         if Concurrent.on_jruby?
           java.lang.Runtime.getRuntime.availableProcessors
-        elsif Concurrent.on_truffle?
+        elsif Concurrent.on_truffleruby?
           Truffle::Primitive.logical_processors
         else
           os_name = RbConfig::CONFIG["target_os"]

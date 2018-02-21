@@ -19,7 +19,7 @@ module Concurrent
         ruby_engine == 'rbx'
       end
 
-      def on_truffle?
+      def on_truffleruby?
         ruby_engine == 'truffleruby'
       end
 

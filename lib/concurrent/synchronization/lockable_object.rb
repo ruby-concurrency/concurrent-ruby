@@ -12,7 +12,7 @@ module Concurrent
                                      JRubyLockableObject
                                    when Concurrent.on_rbx?
                                      RbxLockableObject
-                                   when Concurrent.on_truffle?
+                                   when Concurrent.on_truffleruby?
                                      MriMutexLockableObject
                                    else
                                      warn 'Possibly unsupported Ruby implementation'
