@@ -2,7 +2,7 @@ require_relative 'concern/dereferenceable_shared'
 
 module Concurrent
 
-  describe MVar do
+  RSpec.describe MVar do
 
     context 'behavior' do
 

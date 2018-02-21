@@ -1,6 +1,6 @@
 require_relative 'global_thread_pool_shared'
 
-shared_examples :executor_service do
+RSpec.shared_examples :executor_service do
 
   after(:each) do
     subject.kill

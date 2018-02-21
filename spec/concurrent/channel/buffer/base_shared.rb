@@ -1,4 +1,4 @@
-shared_examples :channel_buffer do
+RSpec.shared_examples :channel_buffer do
 
   specify do
     expect(subject).to respond_to(:blocking?)

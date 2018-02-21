@@ -2,7 +2,7 @@ require_relative 'thread_pool_shared'
 
 module Concurrent
 
-  describe FixedThreadPool do
+  RSpec.describe FixedThreadPool do
 
     let!(:num_threads){ 5 }
     subject { described_class.new(num_threads) }

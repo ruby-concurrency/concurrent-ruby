@@ -2,7 +2,7 @@ require_relative 'concern/observable_shared'
 
 module Concurrent
 
-  describe Atom do
+  RSpec.describe Atom do
 
     context 'construction' do
 

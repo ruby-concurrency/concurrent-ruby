@@ -2,7 +2,7 @@ require_relative 'concern/observable_shared'
 
 module Concurrent
 
-  describe Agent do
+  RSpec.describe Agent do
 
     let!(:immediate) { Concurrent::ImmediateExecutor.new }
     let!(:executor) { Concurrent::SingleThreadExecutor.new }

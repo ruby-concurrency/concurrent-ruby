@@ -2,7 +2,7 @@ require_relative 'executor_service_shared'
 
 module Concurrent
 
-  describe ImmediateExecutor do
+  RSpec.describe ImmediateExecutor do
 
     subject { ImmediateExecutor.new }
 

@@ -1,4 +1,4 @@
-shared_examples "an observer set" do
+RSpec.shared_examples "an observer set" do
 
   let (:observer_set) { described_class.new }
   let (:observer) { double('observer') }

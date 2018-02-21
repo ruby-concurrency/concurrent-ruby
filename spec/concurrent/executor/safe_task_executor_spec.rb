@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe SafeTaskExecutor do
+  RSpec.describe SafeTaskExecutor do
 
     describe '#execute' do
 

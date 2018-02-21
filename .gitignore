@@ -24,3 +24,5 @@ tmtags
 # junk
 .DS_Store
 .githubtoken
+
+spec/examples.txt

@@ -1,4 +1,4 @@
-shared_examples :atomic_boolean do
+RSpec.shared_examples :atomic_boolean do
 
   describe 'construction' do
 
@@ -104,7 +104,7 @@ end
 
 module Concurrent
 
-  describe MutexAtomicBoolean do
+  RSpec.describe MutexAtomicBoolean do
 
     it_should_behave_like :atomic_boolean
 
@@ -142,19 +142,19 @@ module Concurrent
 
   if defined? Concurrent::CAtomicBoolean
 
-    describe CAtomicBoolean, ext: true do
+    RSpec.describe CAtomicBoolean, ext: true do
       it_should_behave_like :atomic_boolean
     end
   end
 
   if Concurrent.on_jruby?
 
-    describe JavaAtomicBoolean do
+    RSpec.describe JavaAtomicBoolean do
       it_should_behave_like :atomic_boolean
     end
   end
 
-  describe AtomicBoolean do
+  RSpec.describe AtomicBoolean do
     if RUBY_ENGINE != 'ruby'
       it 'does not load the C extension' do
         expect(defined?(Concurrent::CAtomicBoolean)).to be_falsey

@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Maybe do
+  RSpec.describe Maybe do
 
     context 'construction' do
 

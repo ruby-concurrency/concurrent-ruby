@@ -72,7 +72,7 @@ unless Concurrent.on_jruby?
 
     # *******************************************************
 
-    describe ReentrantReadWriteLock do
+    RSpec.describe ReentrantReadWriteLock do
 
       let(:lock) { RRWL.new }
 

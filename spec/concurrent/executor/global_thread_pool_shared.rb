@@ -1,4 +1,4 @@
-shared_examples :global_thread_pool do
+RSpec.shared_examples :global_thread_pool do
 
   context '#post' do
 

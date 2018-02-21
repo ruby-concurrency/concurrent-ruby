@@ -2,7 +2,7 @@ require_relative 'collection_each_shared'
 Thread.abort_on_exception = true
 
 module Concurrent
-  describe Map do
+  RSpec.describe Map do
     before(:each) do
       @cache = described_class.new
     end

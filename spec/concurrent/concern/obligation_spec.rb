@@ -1,7 +1,7 @@
 module Concurrent
   module Concern
 
-    describe Obligation do
+    RSpec.describe Obligation do
 
       let (:obligation_class) do
 
@@ -15,7 +15,7 @@ module Concurrent
       let (:obligation) { obligation_class.new }
       let (:event) { double 'event' }
 
-      shared_examples :incomplete do
+      RSpec.shared_examples :incomplete do
 
         it 'should be not completed' do
           expect(obligation).not_to be_complete

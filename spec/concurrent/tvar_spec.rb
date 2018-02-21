@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe TVar do
+  RSpec.describe TVar do
 
     context '#initialize' do
 
@@ -32,7 +32,7 @@ module Concurrent
 
   end
 
-  describe '#atomically' do
+  RSpec.describe '#atomically' do
 
     it 'raises an exception when no block given' do
       expect { Concurrent::atomically }.to raise_error(ArgumentError)
@@ -185,7 +185,7 @@ module Concurrent
 
   end
 
-  describe '#abort_transaction' do
+  RSpec.describe '#abort_transaction' do
 
     it 'raises an exception outside an #atomically block' do
       expect { Concurrent::abort_transaction }.to raise_error(Concurrent::Transaction::AbortError)
@@ -193,7 +193,7 @@ module Concurrent
 
   end
 
-  describe '#leave_transaction' do
+  RSpec.describe '#leave_transaction' do
 
     it 'raises an exception outside an #atomically block' do
       expect { Concurrent::leave_transaction }.to raise_error(Concurrent::Transaction::LeaveError)

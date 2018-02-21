@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe 'configuration', notravis: true do
+   RSpec.describe 'configuration', notravis: true do
 
     before(:all) do
       reset_gem_configuration
@@ -35,5 +35,5 @@ module Concurrent
         Concurrent::AtExit.run
       end
     end
-  end
+   end
 end

@@ -20,7 +20,7 @@ group :development do
 end
 
 group :testing do
-  gem 'rspec', '~> 3.3.0'
+  gem 'rspec', '~> 3.7'
   gem 'timecop', '~> 0.7.4'
 end
 

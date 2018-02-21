@@ -2,7 +2,7 @@ require_relative 'concern/dereferenceable_shared'
 require_relative 'concern/obligation_shared'
 require_relative 'concern/observable_shared'
 
-shared_examples :ivar do
+RSpec.shared_examples :ivar do
 
   it_should_behave_like :obligation
   it_should_behave_like :dereferenceable

@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Async do
+  RSpec.describe Async do
 
     let(:async_class) do
       Class.new do

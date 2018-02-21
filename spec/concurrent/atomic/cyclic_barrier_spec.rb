@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe CyclicBarrier do
+  RSpec.describe CyclicBarrier do
 
     let(:parties) { 3 }
     let!(:barrier) { described_class.new(3) }

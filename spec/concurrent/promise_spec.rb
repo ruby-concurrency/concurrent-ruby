@@ -3,7 +3,7 @@ require_relative 'thread_arguments_shared'
 
 module Concurrent
 
-  describe Promise do
+  RSpec.describe Promise do
 
     let!(:value) { 10 }
     let(:executor) { SimpleExecutorService.new }
@@ -418,7 +418,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -432,7 +432,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #rescue handler if even one component fails' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -446,7 +446,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq(-1)
-          end
+        end
       end
 
       describe '.any?' do
@@ -473,7 +473,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #then condition when no promises are given' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -487,7 +487,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq 1
-          end
+        end
 
         it 'executes the #rescue handler if all componenst fail' do
           counter = Concurrent::AtomicFixnum.new(0)
@@ -501,7 +501,7 @@ module Concurrent
           latch.wait(1)
 
           expect(counter.value).to eq(-1)
-          end
+        end
       end
     end
 

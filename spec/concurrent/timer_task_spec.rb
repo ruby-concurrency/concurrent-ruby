@@ -3,7 +3,7 @@ require_relative 'concern/observable_shared'
 
 module Concurrent
 
-  describe TimerTask do
+  RSpec.describe TimerTask do
 
     context :dereferenceable do
 

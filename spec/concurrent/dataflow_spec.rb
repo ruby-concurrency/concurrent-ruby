@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe 'dataflow' do
+  RSpec.describe 'dataflow' do
 
     let(:executor) { ImmediateExecutor.new }
     let(:root_executor) { SimpleExecutorService.new }

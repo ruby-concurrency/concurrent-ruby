@@ -3,7 +3,7 @@ require_relative 'concern/obligation_shared'
 
 module Concurrent
 
-  describe Delay do
+  RSpec.describe Delay do
 
     context 'behavior' do
 

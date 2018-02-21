@@ -1,6 +1,6 @@
 module Concurrent
 
-  describe Event do
+  RSpec.describe Event do
 
     subject{ Event.new }
 

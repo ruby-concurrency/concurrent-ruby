@@ -1,4 +1,4 @@
-shared_examples :obligation do
+RSpec.shared_examples :obligation do
 
   context '#state' do
 
