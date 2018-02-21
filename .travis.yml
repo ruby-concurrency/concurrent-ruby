@@ -3,7 +3,7 @@ language: ruby
 rvm:
   # start with the latest
   - 2.4.1
-  - jruby-9.1.12.0
+  - jruby-9.1.15.0
 
   # older versions
   - 2.3.4
@@ -18,7 +18,7 @@ rvm:
   - ruby-head
   - jruby-head
 
-  - rbx
+  - rbx-3
 
 jdk:
   - oraclejdk8
@@ -30,6 +30,7 @@ branches:
     - master
 
 matrix:
+  fast_finish: true
   include:
     - rvm: 2.3.4
       jdk: oraclejdk8
@@ -38,7 +39,7 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: 1.9.3
-    - rvm: rbx
+    - rvm: rbx-3
 
 env:
   global:

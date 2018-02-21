@@ -471,7 +471,7 @@ describe 'Concurrent::Promises' do
   end
 
   describe 'interoperability' do
-    it 'with actor' do
+    it 'with actor', if: !defined?(JRUBY_VERSION) do
       actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
         -> v { v * 2 }
       end
