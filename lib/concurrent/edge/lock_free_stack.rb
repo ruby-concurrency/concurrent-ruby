@@ -118,7 +118,7 @@ module Concurrent
 
     # @return [String] Short string representation.
     def to_s
-      format '<#%s:0x%x %s>', self.class, object_id << 1, to_a.to_s
+      format '%s %s>', super[0..-2], to_a.to_s
     end
 
     alias_method :inspect, :to_s

@@ -626,7 +626,7 @@ module Concurrent
 
       # @return [String] Short string representation.
       def to_s
-        format '<#%s:0x%x %s>', self.class, object_id << 1, state
+        format '%s %s>', super[0..-2], state
       end
 
       alias_method :inspect, :to_s
@@ -2067,7 +2067,7 @@ module Concurrent
 
       # @return [String] Short string representation.
       def to_s
-        format '<#%s:0x%x size:%s>', self.class, object_id << 1, @Size
+        format '%s size:%s>', super[0..-2], @Size
       end
 
       alias_method :inspect, :to_s

@@ -383,9 +383,9 @@ RSpec.describe 'Concurrent::Promises' do
       four  = three.delay.then(&:succ)
 
       # meaningful to_s and inspect defined for Future and Promise
-      expect(head.to_s).to match(/<#Concurrent::Promises::Future:0x[\da-f]+ pending>/)
+      expect(head.to_s).to match(/#<Concurrent::Promises::Future:0x[\da-f]+ pending>/)
       expect(head.inspect).to(
-          match(/<#Concurrent::Promises::Future:0x[\da-f]+ pending>/))
+          match(/#<Concurrent::Promises::Future:0x[\da-f]+ pending>/))
 
       # evaluates only up to three, four is left unevaluated
       expect(three.value!).to eq 3

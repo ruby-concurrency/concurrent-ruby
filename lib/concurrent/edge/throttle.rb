@@ -117,7 +117,7 @@ module Concurrent
 
     # @return [String] Short string representation.
     def to_s
-      format '<#%s:0x%x limit:%s can_run:%d>', self.class, object_id << 1, @Limit, can_run
+      format '%s limit:%s can_run:%d>', super[0..-2], @Limit, can_run
     end
 
     alias_method :inspect, :to_s
