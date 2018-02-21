@@ -71,17 +71,16 @@ module Concurrent
       expect { Concurrent::dataflow_with(root_executor, nil, Future.execute{0}) }.to raise_error(ArgumentError)
     end
 
-    it 'doesn\'t raises exceptions from dependencies, unless called with !' do
+    it 'doesn\'t raise exceptions from dependencies, unless called with !' do
+      d1 = Concurrent::dataflow { raise 'd1 error' }
+      d2 = Concurrent::dataflow { raise 'd2 error' }
+      f = Concurrent::dataflow!(d1, d2) { |d1v, d2v| [d1v, d2v] }
+      expect { f.value! }.to raise_error(RuntimeError).with_message('d1 error')
 
-      d1 = Concurrent::dataflow(){raise}
-      d2 = Concurrent::dataflow(){raise}
-      f = Concurrent::dataflow!(d1, d2){|d1v, d2v| [d1v,d2v]}
-      expect{f.value!}.to raise_error
-
-      d1 = Concurrent::dataflow(){raise}
-      d2 = Concurrent::dataflow(){raise}
-      f = Concurrent::dataflow(d1, d2){|d1v, d2v| [d1v,d2v]}
-      expect{f.value!}.to_not raise_error
+      d1 = Concurrent::dataflow { raise 'd1 error' }
+      d2 = Concurrent::dataflow { raise 'd2 error' }
+      f = Concurrent::dataflow(d1, d2) { |d1v, d2v| [d1v, d2v] }
+      expect { f.value! }.to_not raise_error
     end
 
     it 'returns a Future' do

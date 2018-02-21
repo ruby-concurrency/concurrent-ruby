@@ -208,7 +208,7 @@ module Concurrent
             end
           end
           latch.wait(1)
-        }.to raise_error
+        }.to raise_error(RejectedExecutionError)
       end
 
       # On discard, we'd expect no error, but also not all five results
