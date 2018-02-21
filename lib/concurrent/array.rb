@@ -40,7 +40,7 @@ module Concurrent
     class Array < ::Array
     end
 
-    ThreadSafe::Util.make_synchronized_on_rbx Array
+    ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Array
   end
 end
 

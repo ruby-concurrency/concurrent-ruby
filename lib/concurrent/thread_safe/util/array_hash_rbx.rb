@@ -10,7 +10,7 @@ module Concurrent
             @_monitor = Monitor.new unless @_monitor # avoid double initialisation
           end
 
-          def self.allocate
+          def self.new
             obj = super
             obj.send(:_mon_initialize)
             obj
