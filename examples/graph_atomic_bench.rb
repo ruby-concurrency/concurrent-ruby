@@ -23,13 +23,13 @@ result = File.open("results_#{conf[:lock]}_#{conf[:vary]}.csv", "w")
 
 
 if conf[:vary] == "threads"
-  # Vary the number of concurrent threads that update the value.
+  # Varies the number of concurrent threads that update the value.
   #
   # There is a total count of 1mio updates that is distributed
   # between the number of threads.
   #
-  # A pair number of threads is used so that even add and odd substract 1.
-  # This avoid creating instances for Bignum since the number should
+  # A doubled number of threads is used so that even adds 1 and odd subtracts 1.
+  # This avoids creating instances for Bignum since the number should
   # stay in the Fixnum range.
   #
   (1..100).each do |i|

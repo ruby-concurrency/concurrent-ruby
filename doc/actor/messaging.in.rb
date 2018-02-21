@@ -25,8 +25,8 @@ end #
 
 calculator = Calculator.spawn('calculator')
 addition = calculator.ask Add[1, 2]
-substraction = calculator.ask Subtract[1, 0.5]
-results = (addition & substraction)
+subtraction = calculator.ask Subtract[1, 0.5]
+results = (addition & subtraction)
 results.value!
 
 calculator.ask! :terminate!

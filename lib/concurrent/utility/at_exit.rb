@@ -16,7 +16,7 @@ module Concurrent
     end
 
     # Add a handler to be run at `Kernel#at_exit`
-    # @param [Object] handler_id optionally provide an id, if allready present, handler is replaced
+    # @param [Object] handler_id optionally provide an id, if already present, handler is replaced
     # @yield the handler
     # @return id of the handler
     def add(handler_id = nil, &handler)

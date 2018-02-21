@@ -218,7 +218,7 @@ module Concurrent
       # node's initial value. It never changes. It's what the fulfiller returns on
       # success. The occupier's hole is where the fulfiller put its item. It's the
       # item that the occupier returns on success. The latch is used for synchronization.
-      # Becuase a thread may act as either an occupier or fulfiller (or possibly
+      # Because a thread may act as either an occupier or fulfiller (or possibly
       # both in periods of high contention) every thread creates a node when
       # the exchange method is first called.
       #
