@@ -3,10 +3,10 @@ language: ruby
 rvm:
   # start with the latest
   - 2.5.0
-  - 2.4.3
   - jruby-9.1.15.0
 
   # older versions
+  - 2.4.3
   - 2.3.4
   - 2.2.7
   - 2.1.9
