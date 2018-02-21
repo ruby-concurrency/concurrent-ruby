@@ -2,6 +2,7 @@ language: ruby
 
 rvm:
   # start with the latest
+  - 2.5.0
   - 2.4.3
   - jruby-9.1.15.0
 
@@ -44,8 +45,9 @@ matrix:
 env:
   global:
     - JAVA_OPTS=-Xmx1024m
+    - RUBYOPT=-w
 
 before_install:
   - "echo JAVA_OPTS: $JAVA_OPTS"
 
-script: RUBYOPT=-w bundle exec rake ci
+script: bundle exec rake ci
