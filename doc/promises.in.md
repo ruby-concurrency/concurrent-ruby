@@ -70,14 +70,14 @@ sleep call.
 future.resolved?
 ```
 
-Retrieving the value will block until the future is resolved.
+Retrieving the value will block until the future is **resolved**.
 
 ```ruby
 future.value
 future.resolved?
 ```
 
-If the task fails we talk about the future being rejected.
+If the task fails, we talk about the future being **rejected**.
 
 ```ruby
 future = Concurrent::Promises.future { raise 'Boom' }
@@ -111,7 +111,7 @@ raise future rescue $!
 
 ## States
 
-Lets define a inspection helper for methods.
+Let's define an inspection helper for methods.
 
 ```ruby
 def inspect_methods(*methods, of:)
@@ -119,7 +119,7 @@ def inspect_methods(*methods, of:)
 end #
 ```
 
-Event has `pending` and `resolved` state. 
+Event has a `pending` and a `resolved` state. 
 
 ```ruby
 event = Concurrent::Promises.resolvable_event #
@@ -147,14 +147,14 @@ inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?,
 
 ## Direct creation of resolved futures
 
-When an existing value has to wrapped in a future it does not have to go
+When an existing value has to be wrapped in a future it does not have to go
 through evaluation as follows.
 
 ```ruby
 Concurrent::Promises.future { :value }
 ```
 
-Instead it can be created directly.
+Instead, it can be created directly as already-resolved:
 
 ```ruby
 Concurrent::Promises.fulfilled_future(:value)
@@ -165,8 +165,8 @@ Concurrent::Promises.resolved_future(false, nil, StandardError.new('Ups'))
 
 ## Chaining
 
-Big advantage of promises is ability to chain tasks together without blocking
-current thread.
+A big advantage of promises is the ability to chain tasks together without blocking
+the current thread.
 
 ```ruby
 Concurrent::Promises.
@@ -175,7 +175,7 @@ Concurrent::Promises.
     value!
 ```
 
-As `future` factory method takes argument, `then` method takes as well. Any
+As `future` factory method takes an argument, so does the `then` method. Any
 supplied arguments are passed to the block, and the library ensures that they
 are visible to the block.
 
@@ -196,7 +196,7 @@ Concurrent::Promises.
 ```
 
 Passing the arguments in (similarly as for a thread `Thread.new(arg) { |arg|
-do_stuff arg }`) is **required**, both following examples may break.
+do_stuff arg }`) is **required**. Both of the following bad examples may break:
 
 ```ruby
 arg = 1
@@ -233,7 +233,7 @@ Concurrent::Promises.
     value!
 ```
 
-Instead of zipping only the first one can be taken if needed.
+Instead of zipping only the first one can be taken, if needed.
 
 ```ruby
 Concurrent::Promises.any(branch1, branch2).value!
@@ -248,11 +248,11 @@ chaining.
 
 If they need to be used (e.g. when integrating with threads), `value!` is a
 better option over `value` when rejections are not dealt with differently.
-Otherwise the rejection are not handled and probably silently forgotten.
+Otherwise the rejections are not handled and probably silently forgotten.
 
 ## Error handling
 
-When one of the tasks in the chain fails, the rejection propagates down the
+When a task in the chain fails, the rejection propagates down the
 chain without executing the tasks created with `then`.
 
 ```ruby
@@ -289,7 +289,7 @@ Concurrent::Promises.
     result
 ```
 
-Tasks added with `chain` are evaluated always.
+Tasks added with `chain` are always evaluated.
 
 ```ruby
 Concurrent::Promises.
@@ -334,7 +334,7 @@ All blocking methods like `wait`, `value` call `touch` and trigger evaluation.
 Concurrent::Promises.delay { :value }.value
 ```
 
-It propagates trough chain up allowing whole or partial lazy chains.
+It propagates up through the chain, allowing whole or partial lazy chains.
 
 ```ruby
 head    = Concurrent::Promises.delay { 1 } #
@@ -368,10 +368,10 @@ join.value
 
 ## Flatting
 
-Sometimes it is needed to wait for a inner future. Apparent solution is to wait
-inside the future `Concurrent::Promises.future { Concurrent::Promises.future { 1+1 }.value }.value`
-however as mentioned before, `value` calls should be **avoided** to avoid
-blocking threads. Therefore there is a flat method which is a correct solution
+Sometimes it is needed to wait for an inner future. An apparent solution is to wait
+inside the future `Concurrent::Promises.future { Concurrent::Promises.future { 1+1 }.value }.value`.
+However, as mentioned before, `value` calls should be **avoided** to avoid
+blocking threads. Therefore there is a `#flat` method which is a correct solution
 in this situation and does not block any thread.
 
 ```ruby
@@ -379,6 +379,7 @@ Concurrent::Promises.future { Concurrent::Promises.future { 1+1 } }.flat.value!
 ```
 
 A more complicated example.
+
 ```ruby
 Concurrent::Promises.
     future { Concurrent::Promises.future { Concurrent::Promises.future { 1 + 1 } } }.
@@ -405,8 +406,8 @@ Value will become available after 0.1 seconds.
 scheduled.value
 ```
 
-It can be used in the chain as well, where the delay is counted form a moment
-its parent resolves. Therefore following future will be resolved in 0.2 seconds.
+It can be used in the chain as well, where the delay is counted from the moment
+its parent resolves. Therefore, the following future will be resolved in 0.2 seconds.
 
 ```ruby
 future = Concurrent::Promises.
@@ -425,7 +426,7 @@ Concurrent::Promises.schedule(Time.now + 10) { :val }
 ## Resolvable Future and Event:
 
 Sometimes it is required to resolve a future externally, in these cases
-`resolvable_future` and `resolvable_event` factory methods can be uses. See
+`resolvable_future` and `resolvable_event` factory methods can be used. See
 {Concurrent::Promises::ResolvableFuture} and
 {Concurrent::Promises::ResolvableEvent}.
 
@@ -441,7 +442,7 @@ future.fulfill 1
 thread.value
 ```
 
-Future can be resolved only once.
+A future can be resolved only once.
 
 ```ruby
 future.fulfill 1 rescue $!
@@ -451,21 +452,21 @@ future.fulfill 2, false
 ## How are promises executed?
 
 Promises use global pools to execute the tasks. Therefore each task may run on
-different thread which implies that users have to be careful not to depend on
-Thread local variables (or they have to set at the begging of the task and
+different threads which implies that users have to be careful not to depend on
+Thread-local variables (or they have to be set at the beginning of the task and
 cleaned up at the end of the task).
 
 Since the tasks are running on may different threads of the thread pool, it's
 better to follow following rules:
 
--   Use only data passed in through arguments or values of parent futures, to 
+-   Use only data passed via arguments or values of parent futures, to 
     have better control over what are futures accessing.
--   The data passed in and out of futures are easier to deal with if they are 
+-   The data passed in and out of futures is easier to deal with if it is 
     immutable or at least treated as such.
--   Any mutable and mutated object accessed by more than one threads or futures 
-    must be thread safe, see {Concurrent::Array}, {Concurrent::Hash}, and 
-    {Concurrent::Map}. (Value of a future may be consumed by many futures.)
--   Futures can access outside objects, but they has to be thread-safe.
+-   Any mutable and mutated object accessed by more than one thread or future 
+    must be thread-safe, see {Concurrent::Array}, {Concurrent::Hash}, and 
+    {Concurrent::Map}. (The value of a future may be consumed by many futures.)
+-   Futures can access outside objects, but they have to be thread-safe.
 
 > *TODO: This part to be extended*
 
@@ -488,12 +489,12 @@ queue.pop
 
 ## Using executors
 
-Factory methods, chain, and callback methods have all other version of them
-which takes executor argument.
+Factory methods, chain, and callback methods all have other versions of them
+which takes an executor argument.
 
-It takes an instance of an executor or a symbol which is a shortcuts for the
-two global pools in concurrent-ruby. `fast` for short and non-blocking tasks
-and `:io` for blocking and long tasks.
+It takes an instance of an executor, or a symbol which is a shortcut for the
+two global pools in concurrent-ruby. `:fast` for short and non-blocking tasks
+and `:io` for long-running and blocking tasks.
 
 ```ruby
 Concurrent::Promises.future_on(:fast) { 2 }.
@@ -505,7 +506,7 @@ Concurrent::Promises.future_on(:fast) { 2 }.
 
 Similar to flatting is running. When `run` is called on a future it will flat
 indefinitely as long the future fulfils into a `Future` value. It can be used
-to simulate a thread like processing without actually occupying the thread.
+to simulate a thread-like processing without actually occupying the thread.
 
 ```ruby
 count = lambda do |v|
@@ -518,7 +519,7 @@ end
 ```
 
 Therefore the above example finished fine on the the `:fast` thread pool even
-though it has much less threads than there is the simulated process.
+though it has much fewer threads than are simulated in the simulated process.
 
 # Interoperability
 
@@ -532,7 +533,7 @@ actor = Concurrent::Actor::Utils::AdHoc.spawn :square do
 end
 ```
 
-Send result of `1+1` to the actor, and add 2 to the result send back from the
+Send result of `1+1` to the actor, and add 2 to the result sent back from the
 actor.
 
 ```ruby
@@ -553,8 +554,8 @@ actor.ask(2).then(&:succ).value!
 
 ## Channel
 
-There is an implementation of channel as well. Lets start by creating a
-channel with capacity 2 messages.
+There is an implementation of channel as well. Let's start by creating a
+channel with a capacity of 2 messages.
 
 ```ruby
 ch1 = Concurrent::Promises::Channel.new 2
@@ -563,7 +564,7 @@ ch1 = Concurrent::Promises::Channel.new 2
 We push 3 messages, it can be observed that the last future representing the
 push is not fulfilled since the capacity prevents it. When the work which fills
 the channel depends on the futures created by push it can be used to create
-back pressure – the filling work is delayed until the channel has space for
+backpressure – the filling work is delayed until the channel has space for
 more messages.
 
 ```ruby
@@ -572,7 +573,7 @@ ch1.pop.value!
 pushes
 ```
 
-A selection over channels can be created with select_channel factory method. It
+A selection over channels can be created with the `.select_channel` factory method. It
 will be fulfilled with a first message available in any of the channels. It
 returns a pair to be able to find out which channel had the message available.
 
@@ -592,12 +593,12 @@ result.value!
 ## ProcessingActor
 
 There is also a new implementation of actors based on the Channel and the
-ability of promises to simulate process. The actor runs as a process but also
-does not occupy a thread per actor as previous Concurrent::Actor
+ability of promises to simulate processes. The actor runs as a process but also
+does not occupy a thread per actor as the previously-described Concurrent::Actor
 implementation. This implementation is close to Erlang actors, therefore OTP
 can be ported for this actors (and it's planned).
 
-The simplest actor is a one which just computes without even receiving a
+The simplest actor is one which just computes without even receiving a
 message.
 
 ```ruby
@@ -621,7 +622,7 @@ add_2_messages.tell 3
 add_2_messages.termination.value!
 ```
 
-Actors can also be used to apply back pressure to a producer. Let's start by
+Actors can also be used to apply backpressure to a producer. Let's start by
 defining an actor which a mailbox of size 2.
 
 ```ruby
@@ -935,11 +936,11 @@ end #
 futures.map(&:value!)
 ```
 
-## Long stream of tasks, applying back pressure
+## Long stream of tasks, applying backpressure
 
-Lets assume that we queuing an API for a data and the queries can be faster
+Let's assume that we are querying an API for data and the queries can be faster
 than we are able to process them. This example shows how to use channel as a
-buffer and how to apply back pressure to slow down the queries. 
+buffer and how to apply backpressure to slow down the queries. 
 
 ```ruby
 require 'json' #
@@ -1002,8 +1003,8 @@ end
 sleep 0.5
 ```
 
-Let it run for a while then cancel it and ensure that the runs all fulfilled
-(therefore ended) after the cancellation. Finally print the result.
+Let it run for a while, then cancel it, and ensure that the runs were all fulfilled
+(therefore ended) after the cancellation. Finally, print the result.
 
 ```ruby
 source.cancel
@@ -1012,14 +1013,13 @@ word_counter_processes.map(&:wait!)
 words
 ```
 
-Compared to using threads directly this is highly configurable and compostable
+Compared to using threads directly, this is highly configurable and composable
 solution.
 
 
 ## Periodic task
 
-By combining `schedule`, `run` and `Cancellation` periodically executed task
-can be easily created.
+A periodically executed task can be creating by combining `schedule`, `run` and `Cancellation`.
 
 ```ruby
 repeating_scheduled_task = -> interval, token, task do
