@@ -210,12 +210,8 @@ module Concurrent
     undef :freeze
 
     # @!visibility private
-    DEFAULT_OBJ_ID_STR_WIDTH = 0.size == 4 ? 7 : 14 # we want to look "native", 7 for 32-bit, 14 for 64-bit
-    # override default #inspect() method: firstly, we don't want to be spilling our guts (i-vars), secondly, MRI backend's
-    # #inspect() call on its @backend i-var will bump @backend's iter level while possibly yielding GVL
     def inspect
-      id_str = (object_id << 1).to_s(16).rjust(DEFAULT_OBJ_ID_STR_WIDTH, '0')
-      "#<#{self.class.name}:0x#{id_str} entries=#{size} default_proc=#{@default_proc.inspect}>"
+      format '%s entries=%d default_proc=%s>', to_s[0..-2], size.to_s, @default_proc.inspect
     end
 
     private

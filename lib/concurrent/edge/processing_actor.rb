@@ -146,7 +146,7 @@ module Concurrent
 
     # @return [String] string representation.
     def inspect
-      format '<#%s:0x%x termination:%s>', self.class, object_id << 1, termination.state
+      format '%s termination:%s>', super[0..-2], termination.state
     end
 
     private
