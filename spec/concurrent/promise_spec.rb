@@ -371,36 +371,19 @@ module Concurrent
 
       it 'preserves ordering of the executed promises' do
         10.times do
-          running = Mutex.new
-          cond = ConditionVariable.new
-          cond2 = ConditionVariable.new
+          latch1 = CountDownLatch.new
+          latch2 = CountDownLatch.new
           executor = SimpleExecutorService.new
 
-          p1 = Concurrent::Promise.execute(executor: executor) do
-            running.synchronize do
-              cond.wait(running)
-              'one'
-            end
-          end
+          p1 = Concurrent::Promise.execute(executor: executor) { latch1.wait; 'one' }
+          p2 = Concurrent::Promise.execute(executor: executor) { latch2.wait; 'two' }
+          p3 = Concurrent::Promise.execute(executor: executor) { 'three' }
 
-          p2 = Concurrent::Promise.execute(executor: executor) do
-            running.synchronize do
-              cond2.wait(running)
-              'two'
-            end
-          end
+          latch1.count_down
+          latch2.count_down
 
-          p3 = Concurrent::Promise.execute(executor: executor) do
-            running.synchronize do
-              'three'
-            end
-          end
-
-          cond2.signal
-          cond.signal
-
-          result = Concurrent::Promise.zip(p1, p2, p3).value
-          expect(result) .to eq(['one', 'two', 'three'])
+          result = Concurrent::Promise.zip(p1, p2, p3).value!
+          expect(result).to eq(['one', 'two', 'three'])
         end
       end
     end
