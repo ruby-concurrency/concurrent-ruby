@@ -357,6 +357,32 @@ module Concurrent
       let(:promise2) { Promise.new(executor: :immediate) { 2 } }
       let(:promise3) { Promise.new(executor: :immediate) { [3] } }
 
+      it 'executes the returned Promise by default' do
+        composite = promise1.zip(promise2, promise3)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'executes the returned Promise when execute is true' do
+        composite = promise1.zip(promise2, promise3, execute: true)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'does not execute the returned Promise when execute is false' do
+        composite = promise1.zip(promise2, promise3, execute: false)
+
+        expect(composite).to be_unscheduled
+      end
+
+      it 'allows setting executor for Promise chain' do
+        new_executor = Concurrent::SingleThreadExecutor.new
+        promise = promise1.zip(promise2, promise3, executor: new_executor)
+
+        promise = promise.instance_variable_get(:@parent) until promise.send(:root?)
+        expect(promise.instance_variable_get(:@executor)).to be(new_executor)
+      end
+
       it 'yields the results as an array' do
         composite = promise1.zip(promise2, promise3).execute.wait
 
@@ -374,6 +400,32 @@ module Concurrent
       let(:promise1) { Promise.new(executor: :immediate) { 1 } }
       let(:promise2) { Promise.new(executor: :immediate) { 2 } }
       let(:promise3) { Promise.new(executor: :immediate) { [3] } }
+
+      it 'executes the returned Promise by default' do
+        composite = Promise.zip(promise1, promise2, promise3)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'executes the returned Promise when execute is true' do
+        composite = Promise.zip(promise1, promise2, promise3, execute: true)
+
+        expect(composite).to be_fulfilled
+      end
+
+      it 'does not execute the returned Promise when execute is false' do
+        composite = Promise.zip(promise1, promise2, promise3, execute: false)
+
+        expect(composite).to be_unscheduled
+      end
+
+      it 'allows setting executor for Promise chain' do
+        new_executor = Concurrent::SingleThreadExecutor.new
+        promise = Promise.zip(promise1, promise2, promise3, executor: new_executor)
+
+        promise = promise.instance_variable_get(:@parent) until promise.send(:root?)
+        expect(promise.instance_variable_get(:@executor)).to be(new_executor)
+      end
 
       it 'yields the results as an array' do
         composite = Promise.zip(promise1, promise2, promise3).execute.wait
