@@ -67,6 +67,7 @@ Collection classes that were originally part of the (deprecated) `thread_safe` g
 
 * [Array](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Array.html) A thread-safe subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
 * [Hash](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html) A thread-safe subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
+* [Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Set.html) A thread-safe subclass of Ruby's standard [Set](http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html).
 * [Map](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Map.html) A hash-like object that should have much better performance characteristics, especially under high concurrency, than `Concurrent::Hash`.
 * [Tuple](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Tuple.html) A fixed size array with volatile (synchronized, thread safe) getters/setters.
 

@@ -611,7 +611,7 @@ module Concurrent
           latch.wait(10)
           expect(actual).to eq expected
         end
-      end
+      end 
 
       context '.go_loop_via' do
 

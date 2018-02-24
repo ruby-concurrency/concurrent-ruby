@@ -13,6 +13,7 @@ module Concurrent
           end
         end
       end.map(&:join)
+      expect(ary).to be_empty
     end
 
     describe '#slice' do

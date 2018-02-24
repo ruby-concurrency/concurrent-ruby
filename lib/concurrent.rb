@@ -12,6 +12,7 @@ require 'concurrent/agent'
 require 'concurrent/atom'
 require 'concurrent/array'
 require 'concurrent/hash'
+require 'concurrent/set'
 require 'concurrent/map'
 require 'concurrent/tuple'
 require 'concurrent/async'
@@ -126,5 +127,4 @@ require 'concurrent/options'
 # * Exclude features that don't make sense in Ruby
 # * Be small, lean, and loosely coupled
 module Concurrent
-
 end

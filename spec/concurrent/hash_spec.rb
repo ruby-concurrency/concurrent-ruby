@@ -7,11 +7,12 @@ module Concurrent
         Thread.new do
           1000.times do |j|
             hsh[i * 1000 + j] = i
-            hsh[i * 1000 + j]
-            hsh.delete(i * 1000 + j)
+            expect(hsh[i * 1000 + j]).to eq(i)
+            expect(hsh.delete(i * 1000 + j)).to eq(i)
           end
         end
       end.map(&:join)
+      expect(hsh).to be_empty
     end
   end
 end
