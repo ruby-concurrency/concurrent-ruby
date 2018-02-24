@@ -394,6 +394,24 @@ module Concurrent
 
         expect(composite).to be_rejected
       end
+
+      it 'preserves ordering of the executed promises' do
+        10.times do
+          latch1 = CountDownLatch.new
+          latch2 = CountDownLatch.new
+          executor = SimpleExecutorService.new
+
+          p1 = Concurrent::Promise.execute(executor: executor) { latch1.wait; 'one' }
+          p2 = Concurrent::Promise.execute(executor: executor) { latch2.wait; 'two' }
+          p3 = Concurrent::Promise.execute(executor: executor) { 'three' }
+
+          latch1.count_down
+          latch2.count_down
+
+          result = Concurrent::Promise.zip(p1, p2, p3).value!
+          expect(result).to eq(['one', 'two', 'three'])
+        end
+      end
     end
 
     describe '.zip' do
@@ -437,6 +455,27 @@ module Concurrent
         composite = Promise.zip(promise1, promise2, rejected_subject, promise3).execute.wait
 
         expect(composite).to be_rejected
+      end
+
+      it 'preserves ordering of the executed promises' do
+        promise1 = Promise.execute do
+          # resolves after the second promise
+          sleep 0.2
+          'one'
+        end
+
+        promise2 = Promise.execute do
+          sleep 0.1
+          'two'
+        end
+
+        promise3 = Promise.execute do
+          'three'
+        end
+
+        result = Promise.zip(promise1, promise2, promise3).value
+
+        expect(result).to eql(['one', 'two', 'three'])
       end
     end
 
