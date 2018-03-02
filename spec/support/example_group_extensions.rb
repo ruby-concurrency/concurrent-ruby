@@ -19,22 +19,6 @@ module Concurrent
       Concurrent.allow_c_extensions?
     end
 
-    GLOBAL_EXECUTORS = [
-      [:GLOBAL_FAST_EXECUTOR, -> { Delay.new { Concurrent.new_fast_executor(auto_terminate: true) } }],
-      [:GLOBAL_IO_EXECUTOR, -> { Delay.new { Concurrent.new_io_executor(auto_terminate: true) } }],
-      [:GLOBAL_TIMER_SET, -> { Delay.new { Concurrent::TimerSet.new(auto_terminate: true) } }],
-    ]
-
-    def reset_gem_configuration
-      GLOBAL_EXECUTORS.each do |var, factory|
-        executor = Concurrent.const_get(var).value!
-        executor.shutdown
-        executor.wait_for_termination(0.2)
-        executor.kill
-        Concurrent.const_set(var, factory.call)
-      end
-    end
-
     def monotonic_interval
       raise ArgumentError.new('no block given') unless block_given?
       start_time = GLOBAL_MONOTONIC_CLOCK.get_time
