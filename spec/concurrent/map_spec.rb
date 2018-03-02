@@ -8,7 +8,7 @@ module Concurrent
     end
 
     it 'concurrency' do
-      (1..THREADS).map do |i|
+      (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
         Thread.new do
           1000.times do |j|
             key = i * 1000 + j
