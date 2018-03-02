@@ -76,8 +76,8 @@ module Concurrent
         getter_threads_count             = 5
         compute_started = Concurrent::CountDownLatch.new(1)
         compute_proceed = Concurrent::CountDownLatch.new(
-          late_compute_threads_count + 
-          late_put_if_absent_threads_count + 
+          late_compute_threads_count +
+          late_put_if_absent_threads_count +
           getter_threads_count
         )
         block_until_compute_started = lambda do |name|
@@ -120,8 +120,8 @@ module Concurrent
               1
             end
           end.join
-          (late_compute_threads + 
-           late_put_if_absent_threads + 
+          (late_compute_threads +
+           late_put_if_absent_threads +
            getter_threads).each(&:join)
         end
       end
@@ -168,7 +168,7 @@ module Concurrent
       it 'with return' do
         with_or_without_default_proc do
           @cache[:a] = 1
-          expect_handles_return_lambda(:compute_if_present, :a) 
+          expect_handles_return_lambda(:compute_if_present, :a)
         end
       end
 
@@ -261,8 +261,8 @@ module Concurrent
 
       getters_count = 20
       key_klass     = Concurrent::ThreadSafe::Test::HashCollisionKey
-      keys          = [key_klass.new(1, 100), 
-                       key_klass.new(2, 100), 
+      keys          = [key_klass.new(1, 100),
+                       key_klass.new(2, 100),
                        key_klass.new(3, 100)] # hash colliding keys
       inserted_keys = []
 
@@ -304,7 +304,7 @@ module Concurrent
           end
         end
 
-        (getter_threads << computer_thread).map do |t| 
+        (getter_threads << computer_thread).map do |t|
           expect(t.join(2)).to be_truthy
         end # asserting no deadlocks
         inserted_keys << key
@@ -482,8 +482,8 @@ module Concurrent
 
     describe '#fetch' do
       it 'common' do
-        with_or_without_default_proc do |default_proc_set| 
-          expect_no_size_change do 
+        with_or_without_default_proc do |default_proc_set|
+          expect_no_size_change do
             expect(1).to     eq @cache.fetch(:a, 1)
             expect(1).to     eq @cache.fetch(:a) { 1 }
             expect(false).to eq @cache.key?(:a)
@@ -841,7 +841,7 @@ module Concurrent
       expect { Concurrent::Map.new(options) }.to raise_error(ArgumentError)
     end
 
-    def expect_no_size_change(cache = @cache, &block) 
+    def expect_no_size_change(cache = @cache, &block)
       expect_size_change(0, cache, &block)
     end
 
@@ -896,8 +896,8 @@ module Concurrent
         size = keys.size
         while i < size
           k = keys[i]
-          expect(k.key == @cache.delete(k) && 
-                 !@cache.key?(k) && 
+          expect(k.key == @cache.delete(k) &&
+                 !@cache.key?(k) &&
                  (@cache[k] = k.key; @cache[k] == k.key)).to be_truthy
           i += 10
         end
