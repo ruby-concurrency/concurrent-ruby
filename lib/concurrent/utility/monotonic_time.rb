@@ -46,8 +46,8 @@ module Concurrent
   #
   #   Returns the current time a tracked by the application monotonic clock.
   #
-  #   @return [Float] The current monotonic time when `since` not given else
-  #     the elapsed monotonic time between `since` and the current time
+  #   @return [Float] The current monotonic time since some unspecified
+  #     starting point
   #
   #   @!macro monotonic_clock_warning
   def monotonic_time
