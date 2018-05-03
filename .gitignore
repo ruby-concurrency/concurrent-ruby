@@ -25,4 +25,4 @@ tmtags
 .DS_Store
 .githubtoken
 
-spec/examples.txt
+lib/concurrent/extension.so
