@@ -9,6 +9,26 @@
 
 #include "atomic_reference.h"
 
+#if (defined(__i386__) || defined(__i386)) && (defined(__GNUC__) || defined(__INTEL_COMPILER))
+#define memory_barrier() \
+  __asm__ __volatile__ ("lock; addl $0,0(%%esp)" : : : "memory", "cc")
+#elif defined(__x86_64__) && (defined(__GNUC__) || defined(__INTEL_COMPILER))
+#define memory_barrier() \
+  __asm__ __volatile__ ("lock; addl $0,0(%%rsp)" : : : "memory", "cc")
+#elif defined(HAVE_GCC__ATOMIC_INT32_CAS)
+#define memory_barrier() \
+  __atomic_thread_fence(__ATOMIC_SEQ_CST)
+#elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))
+#define memory_barrier() \
+  __sync_synchronize();
+#elif defined _MSC_VER
+#define memory_barrier() \
+  MemoryBarrier();
+#elif __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#define memory_barrier() \
+  OSMemoryBarrier();
+#endif
+
 void ir_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);
 }
@@ -27,25 +47,13 @@ VALUE ir_initialize(int argc, VALUE* argv, VALUE self) {
 }
 
 VALUE ir_get(VALUE self) {
-#if HAVE_GCC_SYNC
-  __sync_synchronize();
-#elif defined _MSC_VER
-  MemoryBarrier();
-#elif __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
-  OSMemoryBarrier();
-#endif
+  memory_barrier();
   return (VALUE) DATA_PTR(self);
 }
 
 VALUE ir_set(VALUE self, VALUE new_value) {
   DATA_PTR(self) = (void *) new_value;
-#if HAVE_GCC_SYNC
-  __sync_synchronize();
-#elif defined _MSC_VER
-  MemoryBarrier();
-#elif __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
-  OSMemoryBarrier();
-#endif
+  memory_barrier();
   return new_value;
 }
 
