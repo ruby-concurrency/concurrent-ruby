@@ -25,4 +25,10 @@ tmtags
 .DS_Store
 .githubtoken
 
+# Rspec created files
 spec/examples.txt
+
+# Compiled files
+lib/concurrent_ruby_ext.jar
+lib/concurrent/extension.so
+lib/concurrent/extension.bundle

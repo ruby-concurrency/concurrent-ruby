@@ -21,13 +21,12 @@ VALUE method_atomic_boolean_initialize(int argc, VALUE* argv, VALUE self) {
 }
 
 VALUE method_atomic_boolean_value(VALUE self) {
-  return (VALUE) DATA_PTR(self);
+  return(ir_get(self));
 }
 
 VALUE method_atomic_boolean_value_set(VALUE self, VALUE value) {
   VALUE new_value = TRUTHY(value);
-  DATA_PTR(self) = (void *) new_value;
-  return(new_value);
+  return(ir_set(self, new_value));
 }
 
 VALUE method_atomic_boolean_true_question(VALUE self) {
