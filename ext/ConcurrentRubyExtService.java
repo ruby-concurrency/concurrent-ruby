@@ -2,7 +2,6 @@ import java.io.IOException;
 
 import org.jruby.Ruby;
 import org.jruby.runtime.load.BasicLibraryService;
-import com.concurrent_ruby.ext.JRubyMapBackendLibrary;
 
 public class ConcurrentRubyExtService implements BasicLibraryService {
     public boolean basicLoad(final Ruby runtime) throws IOException {
