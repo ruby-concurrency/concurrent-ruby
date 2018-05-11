@@ -35,9 +35,13 @@ module Concurrent
     end
 
     @root = Concurrent::Promises.delay do
-      Core.new(parent: nil, name: '/', class: Root, initialized: future = Concurrent::Promises.resolvable_future).reference.tap do
-        future.wait!
-      end
+      Core.
+        new(parent:      nil,
+            name:        '/',
+            class:       Root,
+            initialized: future = Concurrent::Promises.resolvable_future).
+        reference.
+        tap { future.wait! }
     end
 
     # A root actor, a default parent of all actors spawned outside an actor

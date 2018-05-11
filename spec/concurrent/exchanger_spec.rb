@@ -21,9 +21,9 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
   end
 
   it 'receives the other value' do
-    first_value = nil
+    first_value  = nil
     second_value = nil
-    latch = Concurrent::CountDownLatch.new(2)
+    latch        = Concurrent::CountDownLatch.new(2)
 
     threads = [
       Thread.new { first_value = subject.send(method, 2); latch.count_down },
@@ -35,14 +35,14 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     expect(get_value(first_value)).to eq 4
     expect(get_value(second_value)).to eq 2
 
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
   end
 
   it 'can be reused' do
-    first_value = nil
+    first_value  = nil
     second_value = nil
-    latch_1 = Concurrent::CountDownLatch.new(2)
-    latch_2 = Concurrent::CountDownLatch.new(2)
+    latch_1      = Concurrent::CountDownLatch.new(2)
+    latch_2      = Concurrent::CountDownLatch.new(2)
 
     threads = [
       Thread.new { first_value = subject.send(method, 1); latch_1.count_down },
@@ -50,7 +50,7 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     ]
 
     latch_1.wait(1)
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
 
     threads = [
       Thread.new { first_value = subject.send(method, 10); latch_2.count_down },
@@ -60,7 +60,7 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     latch_2.wait(1)
     expect(get_value(first_value)).to eq 12
     expect(get_value(second_value)).to eq 10
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
   end
 end
 
@@ -78,9 +78,9 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
   end
 
   it 'receives the other value' do
-    first_value = nil
+    first_value  = nil
     second_value = nil
-    latch = Concurrent::CountDownLatch.new(2)
+    latch        = Concurrent::CountDownLatch.new(2)
 
     threads = [
       Thread.new { first_value = subject.send(method, 2, 1); latch.count_down },
@@ -92,14 +92,14 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     expect(get_value(first_value)).to eq 4
     expect(get_value(second_value)).to eq 2
 
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
   end
 
   it 'can be reused' do
-    first_value = nil
+    first_value  = nil
     second_value = nil
-    latch_1 = Concurrent::CountDownLatch.new(2)
-    latch_2 = Concurrent::CountDownLatch.new(2)
+    latch_1      = Concurrent::CountDownLatch.new(2)
+    latch_2      = Concurrent::CountDownLatch.new(2)
 
     threads = [
       Thread.new { first_value = subject.send(method, 1, 1); latch_1.count_down },
@@ -107,7 +107,7 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     ]
 
     latch_1.wait(1)
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
 
     threads = [
       Thread.new { first_value = subject.send(method, 10, 1); latch_2.count_down },
@@ -117,16 +117,16 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     latch_2.wait(1)
     expect(get_value(first_value)).to eq 12
     expect(get_value(second_value)).to eq 10
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
   end
 end
 
 RSpec.shared_examples 'exchanger method cross-thread interactions' do
 
   it 'when first, waits for a second' do
-    first_value = nil
+    first_value  = nil
     second_value = nil
-    latch = Concurrent::CountDownLatch.new(1)
+    latch        = Concurrent::CountDownLatch.new(1)
 
     t1 = Thread.new do
       first_value = subject.send(method, :foo, 1)
@@ -144,10 +144,10 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
   end
 
   it 'allows multiple firsts to cancel if necessary', buggy: true do
-    first_value = nil
-    second_value = nil
-    cancels = 3
-    cancel_latch = Concurrent::CountDownLatch.new(cancels)
+    first_value   = nil
+    second_value  = nil
+    cancels       = 3
+    cancel_latch  = Concurrent::CountDownLatch.new(cancels)
     success_latch = Concurrent::CountDownLatch.new(1)
 
     threads = cancels.times.collect do
@@ -162,7 +162,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
       end
     end
 
-    threads.each {|t| t.join(1) }
+    threads.each { |t| t.join(1) }
     cancel_latch.wait(1)
 
     t1 = Thread.new do
@@ -178,7 +178,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     expect(get_value(second_value)).to eq :bar
 
     t1.kill
-    threads.each {|t| t.kill }
+    threads.each { |t| t.kill }
   end
 end
 
@@ -186,7 +186,11 @@ RSpec.shared_examples :exchanger do
 
   context '#exchange' do
     let!(:method) { :exchange }
-    def get_value(result) result end
+
+    def get_value(result)
+      result
+    end
+
     it_behaves_like 'exchanger method with indefinite timeout'
     it_behaves_like 'exchanger method with finite timeout'
     it_behaves_like 'exchanger method cross-thread interactions'
@@ -194,7 +198,11 @@ RSpec.shared_examples :exchanger do
 
   context '#exchange!' do
     let!(:method) { :exchange! }
-    def get_value(result) result end
+
+    def get_value(result)
+      result
+    end
+
     it_behaves_like 'exchanger method with indefinite timeout'
     it_behaves_like 'exchanger method with finite timeout'
     it_behaves_like 'exchanger method cross-thread interactions'
@@ -202,7 +210,11 @@ RSpec.shared_examples :exchanger do
 
   context '#try_exchange' do
     let!(:method) { :try_exchange }
-    def get_value(result) result.value end
+
+    def get_value(result)
+      result.value
+    end
+
     it_behaves_like 'exchanger method with indefinite timeout'
     it_behaves_like 'exchanger method with finite timeout'
     it_behaves_like 'exchanger method cross-thread interactions'
@@ -218,12 +230,12 @@ module Concurrent
     if Concurrent.on_cruby?
 
       specify 'stress test', notravis: true do
-        thread_count = 100
+        thread_count   = 100
         exchange_count = 100
-        latch = Concurrent::CountDownLatch.new(thread_count)
+        latch          = Concurrent::CountDownLatch.new(thread_count)
 
         good = Concurrent::AtomicFixnum.new(0)
-        bad = Concurrent::AtomicFixnum.new(0)
+        bad  = Concurrent::AtomicFixnum.new(0)
         ugly = Concurrent::AtomicFixnum.new(0)
 
         threads = thread_count.times.collect do |i|
@@ -246,7 +258,7 @@ module Concurrent
         expect(good.value + bad.value + ugly.value).to eq thread_count * exchange_count
         expect(ugly.value).to eq 0
 
-        threads.each {|t| t.kill }
+        threads.each { |t| t.kill }
       end
     end
   end
@@ -260,7 +272,7 @@ module Concurrent
 
   RSpec.describe Exchanger do
 
-    context 'class hierarchy'  do
+    context 'class hierarchy' do
 
       if Concurrent.on_jruby?
         it 'inherits from JavaExchanger' do

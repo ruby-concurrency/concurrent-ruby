@@ -86,13 +86,13 @@ module Concurrent
 
       it 'returns the returned value of the block' do
         m = MVar.new(14)
-        expect(m.borrow{2}).to eq(2)
+        expect(m.borrow { 2 }).to eq(2)
         expect(m.take).to eq(14)
       end
 
       it 'returns TIMEOUT on timeout on an empty MVar' do
         m = MVar.new
-        expect(m.borrow(0.1){}).to eq MVar::TIMEOUT
+        expect(m.borrow(0.1) { }).to eq MVar::TIMEOUT
       end
 
     end
@@ -172,13 +172,13 @@ module Concurrent
 
       it 'modifies a full MVar' do
         m = MVar.new(14)
-        m.modify{ |v| v + 2 }
+        m.modify { |v| v + 2 }
         expect(m.take).to eq 16
       end
 
       it 'returns the unmodified value' do
         m = MVar.new(14)
-        expect(m.modify{ |v| v + 2 }).to eq 14
+        expect(m.modify { |v| v + 2 }).to eq 14
       end
 
       it 'waits for another thread to #put' do
@@ -189,7 +189,7 @@ module Concurrent
           m.put 14
         }
 
-        expect(m.modify{ |v| v + 2 }).to eq 14
+        expect(m.modify { |v| v + 2 }).to eq 14
       end
 
       it 'is atomic' do
@@ -212,7 +212,7 @@ module Concurrent
 
       it 'returns TIMEOUT on timeout on an empty MVar' do
         m = MVar.new
-        expect(m.modify(0.1){ |v| v + 2 }).to eq MVar::TIMEOUT
+        expect(m.modify(0.1) { |v| v + 2 }).to eq MVar::TIMEOUT
       end
 
     end
@@ -293,31 +293,31 @@ module Concurrent
 
       it 'modifies a full MVar' do
         m = MVar.new(14)
-        m.modify!{ |v| v + 2 }
+        m.modify! { |v| v + 2 }
         expect(m.take).to eq 16
       end
 
       it 'modifies an empty MVar' do
         m = MVar.new
-        m.modify!{ |v| 14 }
+        m.modify! { |v| 14 }
         expect(m.take).to eq 14
       end
 
       it 'can be used to set a full MVar to empty' do
         m = MVar.new(14)
-        m.modify!{ |v| MVar::EMPTY }
+        m.modify! { |v| MVar::EMPTY }
         expect(m).to be_empty
       end
 
       it 'can be used to set an empty MVar to empty' do
         m = MVar.new
-        m.modify!{ |v| MVar::EMPTY }
+        m.modify! { |v| MVar::EMPTY }
         expect(m).to be_empty
       end
 
       it 'returns the unmodified value' do
         m = MVar.new(14)
-        expect(m.modify!{ |v| v + 2 }).to eq 14
+        expect(m.modify! { |v| v + 2 }).to eq 14
       end
 
     end
@@ -361,12 +361,12 @@ module Concurrent
           Thread.new { sleep(0.5); m.put 14 }
           Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
 
-          expect(m.modify{ |v| v + 2 }).to eq 14
+          expect(m.modify { |v| v + 2 }).to eq 14
         end
 
         it 'returns TIMEOUT on timeout on an empty MVar' do
           result = nil
-          Thread.new { result = m.modify(0.3){ |v| v + 2 } }
+          Thread.new { result = m.modify(0.3) { |v| v + 2 } }
           sleep(0.1)
           Thread.new { m.simulate_spurious_wake_up }
           sleep(0.1)

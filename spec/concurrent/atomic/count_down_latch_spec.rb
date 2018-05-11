@@ -106,7 +106,7 @@ module Concurrent
       end
 
       it 'should resist to spurious wake ups without timeout' do
-        latch = Concurrent::CountDownLatch.new(1)
+        latch    = Concurrent::CountDownLatch.new(1)
         expected = false
 
         t = Thread.new do
@@ -124,9 +124,9 @@ module Concurrent
       end
 
       it 'should resist to spurious wake ups with timeout' do
-        start_latch = Concurrent::CountDownLatch.new(1)
+        start_latch  = Concurrent::CountDownLatch.new(1)
         finish_latch = Concurrent::CountDownLatch.new(1)
-        expected = false
+        expected     = false
 
         t = Thread.new do
           start_latch.wait(1)

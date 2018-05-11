@@ -172,7 +172,7 @@ module Concurrent
       describe 'message redirecting' do
         let(:parent) do
           AdHoc.spawn!(:parent) do
-            child = AdHoc.spawn!(:child) { -> m { m+1 } }
+            child = AdHoc.spawn!(:child) { -> m { m + 1 } }
             -> message do
               if message == :child
                 child
@@ -287,7 +287,7 @@ module Concurrent
           test = AdHoc.spawn! name: :tester, behaviour_definition: resuming_behaviour do
 
             actor = AdHoc.spawn! name:                 :pausing,
-                                behaviour_definition: Behaviour.restarting_behaviour_definition do
+                                 behaviour_definition: Behaviour.restarting_behaviour_definition do
               queue << :init
               -> m { m == :add ? 1 : pass }
             end
