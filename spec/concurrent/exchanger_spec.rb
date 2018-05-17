@@ -10,7 +10,7 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
 
     in_thread do
       latch_1.count_down
-      subject.send(method, 1)
+      subject.send(method_name, 1)
       latch_2.count_down
     end
 
@@ -25,8 +25,8 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     second_value = nil
     latch        = Concurrent::CountDownLatch.new(2)
 
-    in_thread { first_value = subject.send(method, 2); latch.count_down }
-    in_thread { second_value = subject.send(method, 4); latch.count_down }
+    in_thread { first_value = subject.send(method_name, 2); latch.count_down }
+    in_thread { second_value = subject.send(method_name, 4); latch.count_down }
 
     latch.wait(1)
 
@@ -40,13 +40,13 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     latch_1      = Concurrent::CountDownLatch.new(2)
     latch_2      = Concurrent::CountDownLatch.new(2)
 
-    in_thread { first_value = subject.send(method, 1); latch_1.count_down }
-    in_thread { second_value = subject.send(method, 0); latch_1.count_down }
+    in_thread { first_value = subject.send(method_name, 1); latch_1.count_down }
+    in_thread { second_value = subject.send(method_name, 0); latch_1.count_down }
 
     latch_1.wait(1)
 
-    in_thread { first_value = subject.send(method, 10); latch_2.count_down }
-    in_thread { second_value = subject.send(method, 12); latch_2.count_down }
+    in_thread { first_value = subject.send(method_name, 10); latch_2.count_down }
+    in_thread { second_value = subject.send(method_name, 12); latch_2.count_down }
 
     latch_2.wait(1)
     expect(get_value(first_value)).to eq 12
@@ -59,7 +59,7 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
   it 'blocks until timeout' do
     duration = Concurrent::TestHelpers.monotonic_interval do
       begin
-        subject.send(method, 2, 0.1)
+        subject.send(method_name, 2, 0.1)
       rescue Concurrent::TimeoutError
         # do nothing
       end
@@ -72,8 +72,8 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     second_value = nil
     latch        = Concurrent::CountDownLatch.new(2)
 
-    in_thread { first_value = subject.send(method, 2, 1); latch.count_down }
-    in_thread { second_value = subject.send(method, 4, 1); latch.count_down }
+    in_thread { first_value = subject.send(method_name, 2, 1); latch.count_down }
+    in_thread { second_value = subject.send(method_name, 4, 1); latch.count_down }
 
     latch.wait(1)
 
@@ -87,13 +87,13 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     latch_1      = Concurrent::CountDownLatch.new(2)
     latch_2      = Concurrent::CountDownLatch.new(2)
 
-    in_thread { first_value = subject.send(method, 1, 1); latch_1.count_down }
-    in_thread { second_value = subject.send(method, 0, 1); latch_1.count_down }
+    in_thread { first_value = subject.send(method_name, 1, 1); latch_1.count_down }
+    in_thread { second_value = subject.send(method_name, 0, 1); latch_1.count_down }
 
     latch_1.wait(1)
 
-    in_thread { first_value = subject.send(method, 10, 1); latch_2.count_down }
-    in_thread { second_value = subject.send(method, 12, 1); latch_2.count_down }
+    in_thread { first_value = subject.send(method_name, 10, 1); latch_2.count_down }
+    in_thread { second_value = subject.send(method_name, 12, 1); latch_2.count_down }
 
 
     latch_2.wait(1)
@@ -110,12 +110,12 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     latch        = Concurrent::CountDownLatch.new(1)
 
     t1 = in_thread do
-      first_value = subject.send(method, :foo, 1)
+      first_value = subject.send(method_name, :foo, 1)
       latch.count_down
     end
     t1.join(0.1)
 
-    second_value = subject.send(method, :bar, 0)
+    second_value = subject.send(method_name, :bar, 0)
     latch.wait(1)
 
     expect(get_value(first_value)).to eq :bar
@@ -132,7 +132,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     threads = cancels.times.collect do
       in_thread do
         begin
-          first_value = subject.send(method, :foo, 0.1)
+          first_value = subject.send(method_name, :foo, 0.1)
         rescue Concurrent::TimeoutError
           # suppress
         ensure
@@ -145,12 +145,12 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     cancel_latch.wait(1)
 
     t1 = in_thread do
-      first_value = subject.send(method, :bar, 1)
+      first_value = subject.send(method_name, :bar, 1)
       success_latch.count_down
     end
     t1.join(0.1)
 
-    second_value = subject.send(method, :baz, 0)
+    second_value = subject.send(method_name, :baz, 0)
     success_latch.wait(1)
 
     expect(get_value(first_value)).to eq :baz
@@ -161,7 +161,7 @@ end
 RSpec.shared_examples :exchanger do
 
   context '#exchange' do
-    let!(:method) { :exchange }
+    let!(:method_name) { :exchange }
 
     def get_value(result)
       result
@@ -173,7 +173,7 @@ RSpec.shared_examples :exchanger do
   end
 
   context '#exchange!' do
-    let!(:method) { :exchange! }
+    let!(:method_name) { :exchange! }
 
     def get_value(result)
       result
@@ -185,7 +185,7 @@ RSpec.shared_examples :exchanger do
   end
 
   context '#try_exchange' do
-    let!(:method) { :try_exchange }
+    let!(:method_name) { :try_exchange }
 
     def get_value(result)
       result.value
