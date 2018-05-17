@@ -122,7 +122,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     expect(get_value(second_value)).to eq :foo
   end
 
-  it 'allows multiple firsts to cancel if necessary', buggy: true do
+  it 'allows multiple firsts to cancel if necessary', notravis: true do
     first_value   = nil
     second_value  = nil
     cancels       = 3

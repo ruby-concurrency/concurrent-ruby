@@ -19,7 +19,7 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
       expect(subject.add 'test string1').to be true
     end
 
-    context 'in a multi-threaded environment', buggy: true do
+    context 'in a multi-threaded environment', notravis: true do
       it 'adds the items to the set' do
         to_insert = %w(one two three four five six)
 
@@ -85,7 +85,7 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
         end
       end
 
-      context 'in a multi-threaded environment', buggy: true do
+      context 'in a multi-threaded environment', notravis: true do
         it 'correctly check that the set contains the item' do
           to_insert = %w(one two three four five six)
           to_insert.each { |item| subject << item }
@@ -127,7 +127,7 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
       end
     end
 
-    context 'in a multi-threaded environment', buggy: true do
+    context 'in a multi-threaded environment', notravis: true do
 
       it 'adds the items to the set' do
         to_insert = %w(one two three four five six)

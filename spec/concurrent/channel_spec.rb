@@ -1,6 +1,6 @@
 module Concurrent
 
- RSpec.describe Channel, edge: true, buggy: true do
+ RSpec.describe Channel, edge: true, notravis: true do
 
     context 'initialization' do
 
@@ -510,7 +510,7 @@ module Concurrent
 
     context '#poll?' do
 
-      it 'returns a just Maybe immediately if available', buggy: true do
+      it 'returns a just Maybe immediately if available', notravis: true do
         subject # initialize on this thread
         t = in_thread do
           subject.put(42)

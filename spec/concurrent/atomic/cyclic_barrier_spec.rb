@@ -56,7 +56,7 @@ module Concurrent
     end
 
     describe 'reset' do
-      it 'should release all waiting threads', buggy: true do
+      it 'should release all waiting threads', notravis: true do
         start_latch    = CountDownLatch.new(1)
         continue_latch = CountDownLatch.new(1)
 
@@ -120,7 +120,7 @@ module Concurrent
           expect(latch.wait(1)).to be_truthy
         end
 
-        it 'return false if barrier has been reset', buggy: true do
+        it 'return false if barrier has been reset', notravis: true do
           latch = CountDownLatch.new(1)
 
           t = in_thread { latch.count_down if barrier.wait == false }
