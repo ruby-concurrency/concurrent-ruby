@@ -9,6 +9,9 @@ module Concurrent
           include Obligation
           public :state=, :compare_and_set_state, :if_state
           attr_writer :value, :reason
+          def ns_initialize
+            init_obligation
+          end
         end
       end
 

@@ -309,6 +309,7 @@ module Concurrent
           attr_reader :reason
           attr_reader :count
           define_method(:update) do |time, value, reason|
+            @count ||= 0
             @count = @count.to_i + 1
             @value = value
             @reason = reason

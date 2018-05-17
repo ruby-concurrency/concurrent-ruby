@@ -138,13 +138,15 @@ module Concurrent
         end
         unless name.nil?
           begin
+            parent.send :remove_const, name if parent.const_defined? name
             parent.const_set(name, clazz)
-            parent.const_get(name)
+            clazz
           rescue NameError
             raise NameError.new("identifier #{name} needs to be constant")
           end
         end
         members.each_with_index do |member, index|
+          clazz.send :remove_method, member if clazz.method_defined? member
           clazz.send(:define_method, member) do
             @values[index]
           end

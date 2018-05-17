@@ -189,6 +189,7 @@ module Concurrent
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
       super
+      set_deref_options opts
     end
 
     # Is the executor running?
