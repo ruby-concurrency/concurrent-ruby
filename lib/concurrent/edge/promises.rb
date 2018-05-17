@@ -1987,7 +1987,7 @@ module Concurrent
       safe_initialization!
 
       # Default size of the Channel, makes it accept unlimited number of messages.
-      UNLIMITED = Object.new
+      UNLIMITED = ::Object.new
       UNLIMITED.singleton_class.class_eval do
         include Comparable
 

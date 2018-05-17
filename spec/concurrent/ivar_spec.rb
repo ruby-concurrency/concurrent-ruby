@@ -110,7 +110,7 @@ module Concurrent
       context 'deadlock avoidance' do
 
         def reentrant_observer(i)
-          obs = Object.new
+          obs = ::Object.new
           obs.define_singleton_method(:update) do |time, value, reason|
             @value = i.value
           end

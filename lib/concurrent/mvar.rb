@@ -40,11 +40,11 @@ module Concurrent
     safe_initialization!
 
     # Unique value that represents that an `MVar` was empty
-    EMPTY = Object.new
+    EMPTY = ::Object.new
 
     # Unique value that represents that an `MVar` timed out before it was able
     # to produce a value.
-    TIMEOUT = Object.new
+    TIMEOUT = ::Object.new
 
     # Create a new `MVar`, either empty or with an initial value.
     #

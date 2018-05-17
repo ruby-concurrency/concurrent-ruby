@@ -147,7 +147,7 @@ module Concurrent
     ERROR_MODES = [:continue, :fail].freeze
     private_constant :ERROR_MODES
 
-    AWAIT_FLAG = Object.new
+    AWAIT_FLAG = ::Object.new
     private_constant :AWAIT_FLAG
 
     AWAIT_ACTION = ->(value, latch) { latch.count_down; AWAIT_FLAG }

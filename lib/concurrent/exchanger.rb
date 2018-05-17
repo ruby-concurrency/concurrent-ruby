@@ -41,7 +41,7 @@ module Concurrent
   class AbstractExchanger < Synchronization::Object
 
     # @!visibility private
-    CANCEL = Object.new
+    CANCEL = ::Object.new
     private_constant :CANCEL
 
     # @!macro [attach] exchanger_method_initialize

@@ -162,7 +162,7 @@ module Concurrent
 
   class Transaction
 
-    ABORTED = Object.new
+    ABORTED = ::Object.new
 
     ReadLogEntry = Struct.new(:tvar, :version)
 
