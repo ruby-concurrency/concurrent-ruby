@@ -237,26 +237,26 @@ module Concurrent
     end
   end
 
-  if defined? JavaExchanger
-
-    RSpec.describe JavaExchanger do
-      it_behaves_like :exchanger
-    end
-  end
+  # if defined? JavaExchanger
+  #
+  #   RSpec.describe JavaExchanger do
+  #     it_behaves_like :exchanger
+  #   end
+  # end
 
   RSpec.describe Exchanger do
 
     context 'class hierarchy' do
 
-      if Concurrent.on_jruby?
-        it 'inherits from JavaExchanger' do
-          expect(Exchanger.ancestors).to include(JavaExchanger)
-        end
-      else
-        it 'inherits from RubyExchanger' do
-          expect(Exchanger.ancestors).to include(RubyExchanger)
-        end
+      # if Concurrent.on_jruby?
+      #   it 'inherits from JavaExchanger' do
+      #     expect(Exchanger.ancestors).to include(JavaExchanger)
+      #   end
+      # else
+      it 'inherits from RubyExchanger' do
+        expect(Exchanger.ancestors).to include(RubyExchanger)
       end
+      # end
     end
   end
 end

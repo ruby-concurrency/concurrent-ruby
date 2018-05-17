@@ -152,21 +152,21 @@ module Concurrent
     end
   end
 
-  if Concurrent.on_jruby?
-    RSpec.describe JavaCountDownLatch do
-      it_should_behave_like :count_down_latch
-    end
-  end
+  # if Concurrent.on_jruby?
+  #   RSpec.describe JavaCountDownLatch do
+  #     it_should_behave_like :count_down_latch
+  #   end
+  # end
 
   RSpec.describe CountDownLatch do
-    if Concurrent.on_jruby?
-      it 'inherits from JavaCountDownLatch' do
-        expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
-      end
-    else
-      it 'inherits from MutexCountDownLatch' do
-        expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
-      end
+    # if Concurrent.on_jruby?
+    #   it 'inherits from JavaCountDownLatch' do
+    #     expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
+    #   end
+    # else
+    it 'inherits from MutexCountDownLatch' do
+      expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
     end
+    # end
   end
 end
