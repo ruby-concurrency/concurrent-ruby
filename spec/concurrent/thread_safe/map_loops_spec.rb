@@ -40,8 +40,8 @@ module Concurrent
 
     it '#put_if_absent' do
       do_thread_loop(
-        :put_if_absent, 
-        'acc += 1 unless cache.put_if_absent(key, key)', 
+        :put_if_absent,
+        'acc += 1 unless cache.put_if_absent(key, key)',
         key_count: 100_000
       ) do |result, cache, options, keys|
         expect_standard_accumulator_test_result(result, cache, options, keys)
@@ -128,10 +128,10 @@ module Concurrent
         acc += change if cache.replace_pair(key, v, v + change)
       RUBY_EVAL
       do_thread_loop(
-        :count_race, 
-        code, 
-        loop_count: 5, 
-        prelude: prelude, 
+        :count_race,
+        code,
+        loop_count: 5,
+        prelude: prelude,
         cache_setup: ZERO_VALUE_CACHE_SETUP
       ) do |result, cache, options, keys|
         result_sum = sum(result)
@@ -151,9 +151,9 @@ module Concurrent
     it 'get_and_set_existing' do
       code = 'acc += 1 if cache.get_and_set(key, key) == -1'
       do_thread_loop(
-        :get_and_set_existing, 
-        code, 
-        cache_setup: INITIAL_VALUE_CACHE_SETUP, 
+        :get_and_set_existing,
+        code,
+        cache_setup: INITIAL_VALUE_CACHE_SETUP,
         initial_value: -1
       ) do |result, cache, options, keys|
         expect_standard_accumulator_test_result(result, cache, options, keys)
@@ -172,8 +172,8 @@ module Concurrent
         end
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5, prelude: prelude}.merge(opts)
       ) do |result, cache, options, keys|
         stored_sum       = 0
@@ -199,8 +199,8 @@ module Concurrent
         end
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5, prelude: prelude}.merge(opts)
       ) do |result, cache, options, keys|
         expect_all_key_mappings_exist(cache, keys, false)
@@ -222,8 +222,8 @@ module Concurrent
         end
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5, prelude: prelude}.merge(opts)
       ) do |result, cache, options, keys|
         expect_all_key_mappings_exist(cache, keys, false)
@@ -241,8 +241,8 @@ module Concurrent
         end
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5, prelude: prelude}.merge(opts)
       ) do |result, cache, options, keys|
         expect_all_key_mappings_exist(cache, keys, false)
@@ -260,8 +260,8 @@ module Concurrent
         end
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5, prelude: prelude}.merge(opts)
       ) do |result, cache, options, keys|
         expect_all_key_mappings_exist(cache, keys, false)
@@ -275,8 +275,8 @@ module Concurrent
         acc += 1 if cache.replace_pair(key, v, v + 1)
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5, cache_setup: ZERO_VALUE_CACHE_SETUP}.merge(opts)
       ) do |result, cache, options, keys|
         expect_count_up(result, cache, options, keys)
@@ -291,7 +291,7 @@ module Concurrent
         end
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
+        __method__,
         code, {loop_count: 5}.merge(opts)
       ) do |result, cache, options, keys|
         expect_count_up(result, cache, options, keys)
@@ -307,8 +307,8 @@ module Concurrent
         cache.merge_pair(key, 1) { |old_value| old_value + 1 }
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5}.merge(opts)
       ) do |result, cache, options, keys|
         all_match      = true
@@ -330,8 +330,8 @@ module Concurrent
         acc -= 1 if cache.delete_pair(key, key)
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5}.merge(opts)
       ) do |result, cache, options, keys|
         expect_all_key_mappings_exist(cache, keys, false)
@@ -344,8 +344,8 @@ module Concurrent
         acc += (cache.merge_pair(key, key) {}) ? 1 : -1
       RUBY_EVAL
       do_thread_loop(
-        __method__, 
-        code, 
+        __method__,
+        code,
         {loop_count: 5}.merge(opts)
       ) do |result, cache, options, keys|
         expect_all_key_mappings_exist(cache, keys, false)
@@ -363,9 +363,9 @@ module Concurrent
         options[:key_count] = (options[:key_count] / 40).to_i
         keys = to_hash_collision_keys_array(options[:key_count])
         run_thread_loop(
-          meth, 
-          keys, 
-          options.merge(loop_count: options[:loop_count] * 5), 
+          meth,
+          keys,
+          options.merge(loop_count: options[:loop_count] * 5),
           &block
         )
       end
@@ -377,10 +377,10 @@ module Concurrent
       result = (1..options[:thread_count]).map do
         in_thread do
           setup_sync_and_start_loop(
-            meth, 
-            cache, 
-            keys, 
-            barrier, 
+            meth,
+            cache,
+            keys,
+            barrier,
             options[:loop_count]
           )
         end
