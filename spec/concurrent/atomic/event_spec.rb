@@ -27,7 +27,7 @@ module Concurrent
 
       it 'triggers the event' do
         latch = CountDownLatch.new(1)
-        t = Thread.new{ subject.wait.tap{ latch.count_down } }
+        t = in_thread{ subject.wait.tap{ latch.count_down } }
         t.join(0.1)
         subject.set
         expect(latch.wait(1)).to be true
@@ -65,7 +65,7 @@ module Concurrent
 
       it 'does not trigger an unset event' do
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait.tap{ latch.count_down } }
+        in_thread{ subject.wait.tap{ latch.count_down } }
         subject.reset
         expect(latch.wait(0.1)).to be false
       end
@@ -94,7 +94,7 @@ module Concurrent
         subject.reset
         latch = CountDownLatch.new(1)
         subject.set
-        Thread.new{ subject.wait(1000); latch.count_down }
+        in_thread{ subject.wait(1000); latch.count_down }
         expect(latch.wait(0.1)).to be true
       end
 
@@ -106,7 +106,7 @@ module Concurrent
       it 'blocks indefinitely when the timer is nil' do
         subject.reset
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait.tap{ latch.count_down } }
+        in_thread{ subject.wait.tap{ latch.count_down } }
         expect(latch.wait(0.1)).to be false
         subject.set
         expect(latch.wait(0.1)).to be true
@@ -115,7 +115,7 @@ module Concurrent
       it 'stops waiting when the timer expires' do
         subject.reset
         latch = CountDownLatch.new(1)
-        Thread.new{ subject.wait(0.2); latch.count_down }
+        in_thread{ subject.wait(0.2); latch.count_down }
         expect(latch.wait(0.1)).to be false
         expect(latch.wait).to be true
       end
@@ -128,7 +128,7 @@ module Concurrent
       it 'triggers multiple waiting threads' do
         latch = CountDownLatch.new(5)
         subject.reset
-        5.times{ Thread.new{ subject.wait; latch.count_down } }
+        5.times{ in_thread{ subject.wait; latch.count_down } }
         subject.set
         expect(latch.wait(0.2)).to be true
       end
@@ -136,9 +136,9 @@ module Concurrent
       it 'behaves appropriately if wait begins while #set is processing' do
         subject.reset
         latch = CountDownLatch.new(5)
-        5.times{ Thread.new{ subject.wait(5) } }
+        5.times{ in_thread{ subject.wait(5) } }
         subject.set
-        5.times{ Thread.new{ subject.wait; latch.count_down } }
+        5.times{ in_thread{ subject.wait; latch.count_down } }
         expect(latch.wait(0.2)).to be true
       end
     end
@@ -156,7 +156,7 @@ module Concurrent
 
       it 'should resist to spurious wake ups without timeout' do
         latch = CountDownLatch.new(1)
-        t = Thread.new{ subject.wait.tap{ latch.count_down } }
+        t = in_thread{ subject.wait.tap{ latch.count_down } }
         t.join(0.1)
 
         subject.simulate_spurious_wake_up
@@ -165,7 +165,7 @@ module Concurrent
 
       it 'should resist spurious wake ups with timeout', buggy: true do
         latch = CountDownLatch.new(1)
-        t = Thread.new{ subject.wait(0.5); latch.count_down }
+        t = in_thread{ subject.wait(0.5); latch.count_down }
         t.join(0.1)
 
         subject.simulate_spurious_wake_up

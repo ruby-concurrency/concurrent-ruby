@@ -13,7 +13,7 @@ module Concurrent
 
     let(:pending_subject) do
       ivar = IVar.new
-      Thread.new do
+      in_thread do
         sleep(0.1)
         ivar.set(fulfilled_value)
       end

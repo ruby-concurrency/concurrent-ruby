@@ -8,7 +8,7 @@ module Concurrent
         latch_1 = Concurrent::CountDownLatch.new(1)
         latch_2 = Concurrent::CountDownLatch.new(1)
 
-        thread = Thread.new do
+        in_thread do
           subject.with_write_lock do
             latch_1.count_down
             latch_2.wait(1)
@@ -18,7 +18,6 @@ module Concurrent
         latch_1.wait(1)
         expect(subject).to be_write_locked
         latch_2.count_down
-        thread.join
       end
 
       it 'returns false when the write lock is not held' do
@@ -28,7 +27,7 @@ module Concurrent
       it 'returns false when the write lock is not held but there are readers' do
         latch = Concurrent::CountDownLatch.new(1)
 
-        thread = Thread.new do
+        in_thread do
           subject.with_read_lock do
             latch.wait(1)
           end
@@ -36,7 +35,6 @@ module Concurrent
 
         expect(subject).to_not be_write_locked
         latch.count_down
-        thread.join
       end
     end
 
@@ -49,7 +47,7 @@ module Concurrent
       it 'returns false when there are readers but no writers' do
         latch = Concurrent::CountDownLatch.new(1)
 
-        thread = Thread.new do
+        in_thread do
           subject.with_read_lock do
             latch.wait(1)
           end
@@ -57,7 +55,6 @@ module Concurrent
 
         expect(subject).to_not have_waiters
         latch.count_down
-        thread.join
       end
 
       it 'returns true when the write lock is held and there are waiting readers' do
@@ -65,7 +62,7 @@ module Concurrent
         latch_2 = Concurrent::CountDownLatch.new(1)
         latch_3 = Concurrent::CountDownLatch.new(1)
 
-        thread_1 = Thread.new do
+        in_thread do
           latch_1.wait(1)
           subject.acquire_write_lock
           latch_2.count_down
@@ -73,7 +70,7 @@ module Concurrent
           subject.release_write_lock
         end
 
-        thread_2 = Thread.new do
+        in_thread do
           latch_2.wait(1)
           subject.acquire_read_lock
           subject.release_read_lock
@@ -85,7 +82,6 @@ module Concurrent
         expect(subject).to have_waiters
 
         latch_3.count_down
-        [thread_1, thread_2].each(&:join)
       end
 
       it 'returns true when the write lock is held and there are waiting writers' do
@@ -93,7 +89,7 @@ module Concurrent
         latch_2 = Concurrent::CountDownLatch.new(1)
         latch_3 = Concurrent::CountDownLatch.new(1)
 
-        thread_1 = Thread.new do
+        in_thread do
           latch_1.wait(1)
           subject.acquire_write_lock
           latch_2.count_down
@@ -101,7 +97,7 @@ module Concurrent
           subject.release_write_lock
         end
 
-        thread_2 = Thread.new do
+        in_thread do
           latch_2.wait(1)
           subject.acquire_write_lock
           subject.release_write_lock
@@ -113,7 +109,6 @@ module Concurrent
         expect(subject).to have_waiters
 
         latch_3.count_down
-        [thread_1, thread_2].each(&:join)
       end
     end
 
@@ -216,7 +211,7 @@ module Concurrent
         write_flag = Concurrent::AtomicBoolean.new(false)
         read_flag = Concurrent::AtomicBoolean.new(false)
 
-        thread_1 = Thread.new do
+        thread_1 = in_thread do
           latch_1.wait(1)
           subject.acquire_write_lock
           latch_2.count_down
@@ -225,7 +220,7 @@ module Concurrent
           subject.release_write_lock
         end
 
-        thread_2 = Thread.new do
+        thread_2 = in_thread do
           latch_2.wait(1)
           expect(write_flag.value).to be false
           latch_3.count_down
@@ -253,7 +248,7 @@ module Concurrent
         read_flag_1 = Concurrent::AtomicBoolean.new(false)
         read_flag_2 = Concurrent::AtomicBoolean.new(false)
 
-        thread_1 = Thread.new do
+        thread_1 = in_thread do
           latch_1.wait(1)
           subject.acquire_read_lock
           expect(counter.value).to eq 1
@@ -263,7 +258,7 @@ module Concurrent
           subject.release_read_lock
         end
 
-        thread_2 = Thread.new do
+        thread_2 = in_thread do
           latch_2.wait(1)
           expect(read_flag_1.value).to be false
           subject.acquire_read_lock
@@ -310,7 +305,7 @@ module Concurrent
         latch_2 = Concurrent::CountDownLatch.new(1)
         write_flag = Concurrent::AtomicBoolean.new(false)
 
-        thread = Thread.new do
+        thread = in_thread do
           latch_1.wait(1)
           latch_2.count_down
           subject.acquire_write_lock
@@ -354,7 +349,7 @@ module Concurrent
         write_flag_1 = Concurrent::AtomicBoolean.new(false)
         write_flag_2 = Concurrent::AtomicBoolean.new(false)
 
-        thread_1 = Thread.new do
+        thread_1 = in_thread do
           latch_1.wait(1)
           subject.acquire_write_lock
           latch_2.count_down
@@ -363,7 +358,7 @@ module Concurrent
           subject.release_write_lock
         end
 
-        thread_2 = Thread.new do
+        thread_2 = in_thread do
           latch_2.wait(1)
           expect(write_flag_1.value).to be false
           latch_3.count_down
@@ -388,7 +383,7 @@ module Concurrent
         read_flag = Concurrent::AtomicBoolean.new(false)
         write_flag = Concurrent::AtomicBoolean.new(false)
 
-        thread_1 = Thread.new do
+        thread_1 = in_thread do
           latch_1.wait(1)
           subject.acquire_read_lock
           latch_2.count_down
@@ -397,7 +392,7 @@ module Concurrent
           subject.release_read_lock
         end
 
-        thread_2 = Thread.new do
+        thread_2 = in_thread do
           latch_2.wait(1)
           expect(read_flag.value).to be false
           latch_3.count_down
@@ -443,7 +438,7 @@ module Concurrent
         latch_2 = Concurrent::CountDownLatch.new(1)
         read_flag = Concurrent::AtomicBoolean.new(false)
 
-        thread = Thread.new do
+        thread = in_thread do
           latch_1.wait(1)
           latch_2.count_down
           subject.acquire_read_lock
@@ -465,7 +460,7 @@ module Concurrent
         latch_2 = Concurrent::CountDownLatch.new(1)
         write_flag = Concurrent::AtomicBoolean.new(false)
 
-        thread = Thread.new do
+        thread = in_thread do
           latch_1.wait(1)
           latch_2.count_down
           subject.acquire_write_lock

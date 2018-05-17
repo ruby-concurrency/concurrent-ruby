@@ -44,7 +44,7 @@ RSpec.shared_examples :channel_buffer do
 
     it 'returns true on success' do
       subject # initialize on this thread
-      t = Thread.new do
+      t = in_thread do
         subject.take
       end
       t.join(0.1)
@@ -84,7 +84,7 @@ RSpec.shared_examples :channel_buffer do
 
     it 'returns the next item immediately if available' do
       subject # initialize on this thread
-      t = Thread.new do
+      t = in_thread do
         subject.put(42)
       end
       t.join(0.1)

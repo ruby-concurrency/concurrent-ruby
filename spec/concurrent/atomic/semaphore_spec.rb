@@ -37,7 +37,7 @@ RSpec.shared_examples :semaphore do
     context 'not enough permits available' do
       it 'should block thread until permits are available' do
         semaphore.drain_permits
-        Thread.new { sleep(0.2); semaphore.release }
+        in_thread { sleep(0.2); semaphore.release }
 
         result = semaphore.acquire
         expect(result).to be_nil
@@ -97,7 +97,7 @@ RSpec.shared_examples :semaphore do
 
       it 'acquires when permits are available within timeout' do
         semaphore.drain_permits
-        Thread.new { sleep 0.1; semaphore.release }
+        in_thread { sleep 0.1; semaphore.release }
         result = semaphore.try_acquire(1, 1)
         expect(result).to be_truthy
       end

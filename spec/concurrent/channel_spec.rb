@@ -464,7 +464,7 @@ module Concurrent
 
       it 'returns the next item immediately if available' do
         subject # initialize on this thread
-        t = Thread.new do
+        t = in_thread do
           subject.put(42)
         end
         t.join(0.1)
@@ -486,7 +486,7 @@ module Concurrent
 
       it 'returns the next item immediately if available' do
         subject # initialize on this thread
-        t = Thread.new do
+        t = in_thread do
           subject.put(42)
         end
         t.join(0.1)
@@ -512,7 +512,7 @@ module Concurrent
 
       it 'returns a just Maybe immediately if available', buggy: true do
         subject # initialize on this thread
-        t = Thread.new do
+        t = in_thread do
           subject.put(42)
         end
         t.join(0.1)
@@ -611,7 +611,7 @@ module Concurrent
           latch.wait(10)
           expect(actual).to eq expected
         end
-      end 
+      end
 
       context '.go_loop_via' do
 

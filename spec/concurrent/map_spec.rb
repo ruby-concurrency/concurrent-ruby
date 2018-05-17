@@ -9,7 +9,7 @@ module Concurrent
 
     it 'concurrency' do
       (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
-        Thread.new do
+        in_thread do
           1000.times do |j|
             key = i * 1000 + j
             @cache[key] = i
@@ -90,29 +90,29 @@ module Concurrent
         end
 
         expect_size_change 1 do
-          late_compute_threads = Array.new(late_compute_threads_count) do
-            Thread.new do
+          late_compute_threads = ::Array.new(late_compute_threads_count) do
+            in_thread do
               block_until_compute_started.call('compute_if_absent')
               expect(1).to eq @cache.compute_if_absent(:a) { fail }
             end
           end
 
-          late_put_if_absent_threads = Array.new(late_put_if_absent_threads_count) do
-            Thread.new do
+          late_put_if_absent_threads = ::Array.new(late_put_if_absent_threads_count) do
+            in_thread do
               block_until_compute_started.call('put_if_absent')
               expect(1).to eq @cache.put_if_absent(:a, 2)
             end
           end
 
-          getter_threads = Array.new(getter_threads_count) do
-            Thread.new do
+          getter_threads = ::Array.new(getter_threads_count) do
+            in_thread do
               block_until_compute_started.call('getter')
               Thread.pass while @cache[:a].nil?
               expect(1).to eq @cache[:a]
             end
           end
 
-          Thread.new do
+          in_thread do
             @cache.compute_if_absent(:a) do
               compute_started.count_down
               compute_proceed.wait
@@ -272,7 +272,7 @@ module Concurrent
         getters_started  = Concurrent::CountDownLatch.new(getters_count)
         getters_finished = Concurrent::CountDownLatch.new(getters_count)
 
-        computer_thread = Thread.new do
+        computer_thread = in_thread do
           getters_started.wait
           @cache.compute_if_absent(key) do
             compute_started.count_down
@@ -283,7 +283,7 @@ module Concurrent
         end
 
         getter_threads = (1..getters_count).map do
-          Thread.new do
+          in_thread do
             getters_started.count_down
             inserted_keys.each do |inserted_key|
               expect(true).to eq @cache.key?(inserted_key)
@@ -304,7 +304,7 @@ module Concurrent
           end
         end
 
-        (getter_threads << computer_thread).map do |t|
+        (getter_threads + [computer_thread]).map do |t|
           expect(t.join(2)).to be_truthy
         end # asserting no deadlocks
         inserted_keys << key
@@ -318,7 +318,7 @@ module Concurrent
     end
 
     specify 'collision resistance with arrays' do
-      special_array_class = Class.new(Array) do
+      special_array_class = Class.new(::Array) do
         def key # assert_collision_resistance expects to be able to call .key to get the "real" key
           first.key
         end

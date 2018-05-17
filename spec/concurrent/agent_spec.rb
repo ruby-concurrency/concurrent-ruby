@@ -874,16 +874,13 @@ module Concurrent
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
-          t       = Thread.new do
+          in_thread do
             subject.send_via(executor) { sleep }
             latch.count_down
           end
 
           latch.wait(0.1)
-          ok = subject.await
-          t.kill
-
-          expect(ok).to be_truthy
+          expect(subject.await).to be_truthy
         end
 
         it 'blocks indefinitely' do
@@ -908,17 +905,15 @@ module Concurrent
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 
-          t = Thread.new do
+          t = in_thread do
             subject.send_via(executor) { sleep(0.1) }
             subject.send_via(executor) { raise StandardError }
             subject.send_via(executor) { nil }
-            Thread.new { subject.restart(42, clear_actions: true) }
+            in_thread { subject.restart(42, clear_actions: true) }
             subject.await
           end
 
           thread_status = t.join(0.3)
-          t.kill
-
           expect(thread_status).to be nil
         end
       end
@@ -933,16 +928,13 @@ module Concurrent
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
-          t       = Thread.new do
+          in_thread do
             subject.send_via(executor) { sleep }
             latch.count_down
           end
 
           latch.wait(0.1)
-          ok = subject.await_for(0.1)
-          t.kill
-
-          expect(ok).to be true
+          expect(subject.await_for(0.1)).to be true
         end
 
         it 'returns true when all prior actions have processed', buggy: true do
@@ -967,7 +959,7 @@ module Concurrent
           subject.send_via(executor) { raise StandardError }
           subject.send_via(executor) { nil }
 
-          t  = Thread.new { subject.restart(42, clear_actions: true) }
+          in_thread { subject.restart(42, clear_actions: true) }
           ok = subject.await_for(0.2)
 
           expect(ok).to be false
@@ -984,16 +976,13 @@ module Concurrent
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
-          t       = Thread.new do
+          in_thread do
             subject.send_via(executor) { sleep }
             latch.count_down
           end
 
           latch.wait(0.1)
-          ok = subject.await_for!(0.1)
-          t.kill
-
-          expect(ok).to be true
+          expect(subject.await_for!(0.1)).to be true
         end
 
         it 'returns true when all prior actions have processed' do
@@ -1020,7 +1009,7 @@ module Concurrent
           subject.send_via(executor) { raise StandardError }
           subject.send_via(executor) { nil }
 
-          t = Thread.new { subject.restart(42, clear_actions: true) }
+          in_thread { subject.restart(42, clear_actions: true) }
 
           expect {
             subject.await_for!(0.2)
@@ -1043,16 +1032,13 @@ module Concurrent
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
-          t       = Thread.new do
+          in_thread do
             subject.send_via(executor) { sleep }
             latch.count_down
           end
 
           latch.wait(0.1)
-          ok = subject.wait(0.1)
-          t.kill
-
-          expect(ok).to be true
+          expect(subject.wait(0.1)).to be true
         end
 
         it 'blocks indefinitely when timeout is nil' do
@@ -1067,18 +1053,15 @@ module Concurrent
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 
-          t = Thread.new do
+          t = in_thread do
             subject.send_via(executor) { sleep(0.1) }
             subject.send_via(executor) { raise StandardError }
             subject.send_via(executor) { nil }
-            Thread.new { subject.restart(42, clear_actions: true) }
+            in_thread { subject.restart(42, clear_actions: true) }
             subject.wait(nil)
           end
 
-          thread_status = t.join(0.3)
-          t.kill
-
-          expect(thread_status).to be nil
+          expect(t.join(0.3)).to be nil
         end
 
         it 'returns true when all prior actions have processed' do
@@ -1106,7 +1089,7 @@ module Concurrent
           subject.send_via(executor) { raise StandardError }
           subject.send_via(executor) { nil }
 
-          t  = Thread.new { subject.restart(42, clear_actions: true) }
+          in_thread { subject.restart(42, clear_actions: true) }
           ok = subject.wait(0.2)
 
           expect(ok).to be false
@@ -1119,7 +1102,7 @@ module Concurrent
           latch  = Concurrent::CountDownLatch.new
           agents = 3.times.collect { Agent.new(0) }
           agents.each { |agent| agent.send_via(executor, latch) { |_, l| l.wait(1) } }
-          Thread.new { latch.count_down }
+          in_thread { latch.count_down }
           ok = Agent.await(*agents)
           expect(ok).to be true
         end
@@ -1137,7 +1120,7 @@ module Concurrent
           latch  = Concurrent::CountDownLatch.new
           agents = 3.times.collect { Agent.new(0) }
           agents.each { |agent| agent.send_via(executor, latch) { |_, l| l.wait(1) } }
-          Thread.new { latch.count_down }
+          in_thread { latch.count_down }
           ok = Agent.await_for(1, *agents)
           expect(ok).to be true
         end
@@ -1162,7 +1145,7 @@ module Concurrent
           latch  = Concurrent::CountDownLatch.new
           agents = 3.times.collect { Agent.new(0) }
           agents.each { |agent| agent.send_via(executor, latch) { |_, l| l.wait(1) } }
-          Thread.new { latch.count_down }
+          in_thread { latch.count_down }
           ok = Agent.await_for!(1, *agents)
           expect(ok).to be true
         end

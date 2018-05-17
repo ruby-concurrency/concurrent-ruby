@@ -26,7 +26,7 @@ module Concurrent::Channel::Buffer
         subject = described_class.new(1)
         subject.put(13)
         bucket = Concurrent::AtomicReference.new(nil)
-        t = Thread.new do
+        t = in_thread do
           subject.put(42)
           bucket.value = 42
         end

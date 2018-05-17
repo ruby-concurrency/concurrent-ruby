@@ -47,7 +47,7 @@ RSpec.shared_examples :channel_timing_buffer do
     it 'blocks when the timer is not ready' do
       actual = Concurrent::AtomicBoolean.new(false)
       subject = described_class.new(10)
-      t = Thread.new do
+      t = in_thread do
         subject.take
         actual.make_true
       end
@@ -107,7 +107,7 @@ RSpec.shared_examples :channel_timing_buffer do
     it 'blocks when the timer is not ready' do
       actual = Concurrent::AtomicBoolean.new(false)
       subject = described_class.new(10)
-      t = Thread.new do
+      t = in_thread do
         subject.next
         actual.make_true
       end

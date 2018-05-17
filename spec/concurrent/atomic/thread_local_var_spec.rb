@@ -20,8 +20,8 @@ module Concurrent
 
       it 'sets the same initial value for all threads' do
         v  = described_class.new(14)
-        t1 = Thread.new { v.value }
-        t2 = Thread.new { v.value }
+        t1 = in_thread { v.value }
+        t2 = in_thread { v.value }
         expect(t1.value).to eq 14
         expect(t2.value).to eq 14
       end
@@ -85,8 +85,8 @@ module Concurrent
           expect(block).to receive(:call).twice
 
           v = described_class.new(&block)
-          Thread.new { v.value }.join
-          Thread.new { v.value }.join
+          in_thread { v.value }.join
+          in_thread { v.value }.join
         end
       end
     end
@@ -105,7 +105,7 @@ module Concurrent
 
       it 'does not modify the initial value for other threads' do
         v.value = 2
-        t = Thread.new { v.value }
+        t = in_thread { v.value }
         expect(t.value).to eq 14
       end
 
@@ -115,7 +115,7 @@ module Concurrent
         b1 = CountDownLatch.new(2)
         b2 = CountDownLatch.new(2)
 
-        t1 = Thread.new do
+        t1 = in_thread do
           b1.count_down
           b1.wait
           v.value = 1
@@ -124,7 +124,7 @@ module Concurrent
           v.value
         end
 
-        t2 = Thread.new do
+        t2 = in_thread do
           b1.count_down
           b1.wait
           v.value = 2

@@ -7,11 +7,10 @@ module Concurrent
     RSpec.shared_examples :attr_volatile do
 
       specify 'older writes are always visible' do
-        # store              = BClass.new
         store.not_volatile = 0
         store.volatile     = 0
 
-        t1 = Thread.new do
+        in_thread do
           Thread.abort_on_exception = true
           1000000000.times do |i|
             store.not_volatile = i
@@ -19,17 +18,17 @@ module Concurrent
           end
         end
 
-        t2 = Thread.new do
-          10.times do
+        t2 = in_thread do
+          Thread.abort_on_exception = true
+          10.times.map do
+            Thread.pass
             volatile     = store.volatile
             not_volatile = store.not_volatile
-            expect(not_volatile).to be >= volatile
-            Thread.pass
+            not_volatile >= volatile
           end
         end
 
-        t2.join
-        t1.kill
+        expect(t2.value.all?).to eq true
       end
     end
 
@@ -120,7 +119,7 @@ module Concurrent
       describe '#wait' do
 
         it 'puts the current thread to sleep' do
-          t = Thread.new do
+          t = in_thread do
             Thread.abort_on_exception = true
             subject.wait
           end
@@ -129,7 +128,7 @@ module Concurrent
         end
 
         it 'allows the sleeping thread to be killed' do
-          t = Thread.new do
+          t = in_thread do
             Thread.abort_on_exception = true
             subject.wait rescue nil
           end
@@ -142,7 +141,7 @@ module Concurrent
 
         it 'releases the lock on the current object' do
           expect { Timeout.timeout(3) do
-            t = Thread.new { subject.wait }
+            t = in_thread { subject.wait }
             sleep 0.1
             # TODO (pitr-ch 15-Oct-2016): https://travis-ci.org/pitr-ch/concurrent-ruby/jobs/167933569
             expect(t.status).to eq 'sleep'
@@ -153,7 +152,7 @@ module Concurrent
         it 'can be called from within a #synchronize block' do
           expect { Timeout.timeout(3) do
             # #wait should release lock, even if it was already held on entry
-            t = Thread.new { subject.synchronize { subject.wait } }
+            t = in_thread { subject.synchronize { subject.wait } }
             sleep 0.1
             expect(t.status).to eq 'sleep'
             subject.synchronize {} # we will deadlock here if lock wasn't released
@@ -163,7 +162,7 @@ module Concurrent
 
       describe '#synchronize' do
         it 'allows only one thread to execute count' do
-          threads = 10.times.map { Thread.new(subject) { 100.times { subject.count } } }
+          threads = 10.times.map { in_thread(subject) { 100.times { subject.count } } }
           threads.each(&:join)
           expect(subject.count).to eq 1001
         end
@@ -175,8 +174,8 @@ module Concurrent
 
       specify 'final field always visible' do
         store = BClass.new 'asd'
-        t1    = Thread.new { 1000000000.times { |i| store = BClass.new i.to_s } }
-        t2    = Thread.new { 10.times { expect(store.final).not_to be_nil; Thread.pass } }
+        t1    = in_thread { 1000000000.times { |i| store = BClass.new i.to_s } }
+        t2    = in_thread { 10.times { expect(store.final).not_to be_nil; Thread.pass } }
         t2.join
         t1.kill
       end

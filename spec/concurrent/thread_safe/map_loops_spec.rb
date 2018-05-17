@@ -375,7 +375,7 @@ module Concurrent
       cache   = options[:cache_setup].call(options, keys)
       barrier = Concurrent::ThreadSafe::Test::Barrier.new(options[:thread_count])
       result = (1..options[:thread_count]).map do
-        Thread.new do
+        in_thread do
           setup_sync_and_start_loop(
             meth, 
             cache, 

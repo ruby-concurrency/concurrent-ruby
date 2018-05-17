@@ -25,10 +25,24 @@ module Concurrent
       yield
       GLOBAL_MONOTONIC_CLOCK.get_time - start_time
     end
+
+    def in_thread(*args, &block)
+      @created_threads ||= Queue.new
+      @created_threads.push t = Thread.new(*args, &block)
+      t
+    end
+
   end
 end
 
 class RSpec::Core::ExampleGroup
   include Concurrent::TestHelpers
   extend Concurrent::TestHelpers
+
+  after :each do
+    while (thread = (@created_threads.pop(true) rescue nil))
+      thread.kill
+      expect(thread.join(0.25)).not_to eq nil
+    end
+  end
 end

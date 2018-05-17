@@ -8,7 +8,7 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     latch_1 = Concurrent::CountDownLatch.new
     latch_2 = Concurrent::CountDownLatch.new
 
-    t = Thread.new do
+    in_thread do
       latch_1.count_down
       subject.send(method, 1)
       latch_2.count_down
@@ -16,8 +16,8 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
 
     latch_1.wait(1)
     latch_2.wait(0.1)
+    expect(latch_1.count).to eq 0
     expect(latch_2.count).to eq 1
-    t.kill
   end
 
   it 'receives the other value' do
@@ -25,17 +25,13 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     second_value = nil
     latch        = Concurrent::CountDownLatch.new(2)
 
-    threads = [
-      Thread.new { first_value = subject.send(method, 2); latch.count_down },
-      Thread.new { second_value = subject.send(method, 4); latch.count_down }
-    ]
+    in_thread { first_value = subject.send(method, 2); latch.count_down }
+    in_thread { second_value = subject.send(method, 4); latch.count_down }
 
     latch.wait(1)
 
     expect(get_value(first_value)).to eq 4
     expect(get_value(second_value)).to eq 2
-
-    threads.each { |t| t.kill }
   end
 
   it 'can be reused' do
@@ -44,23 +40,17 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     latch_1      = Concurrent::CountDownLatch.new(2)
     latch_2      = Concurrent::CountDownLatch.new(2)
 
-    threads = [
-      Thread.new { first_value = subject.send(method, 1); latch_1.count_down },
-      Thread.new { second_value = subject.send(method, 0); latch_1.count_down }
-    ]
+    in_thread { first_value = subject.send(method, 1); latch_1.count_down }
+    in_thread { second_value = subject.send(method, 0); latch_1.count_down }
 
     latch_1.wait(1)
-    threads.each { |t| t.kill }
 
-    threads = [
-      Thread.new { first_value = subject.send(method, 10); latch_2.count_down },
-      Thread.new { second_value = subject.send(method, 12); latch_2.count_down }
-    ]
+    in_thread { first_value = subject.send(method, 10); latch_2.count_down }
+    in_thread { second_value = subject.send(method, 12); latch_2.count_down }
 
     latch_2.wait(1)
     expect(get_value(first_value)).to eq 12
     expect(get_value(second_value)).to eq 10
-    threads.each { |t| t.kill }
   end
 end
 
@@ -82,17 +72,13 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     second_value = nil
     latch        = Concurrent::CountDownLatch.new(2)
 
-    threads = [
-      Thread.new { first_value = subject.send(method, 2, 1); latch.count_down },
-      Thread.new { second_value = subject.send(method, 4, 1); latch.count_down }
-    ]
+    in_thread { first_value = subject.send(method, 2, 1); latch.count_down }
+    in_thread { second_value = subject.send(method, 4, 1); latch.count_down }
 
     latch.wait(1)
 
     expect(get_value(first_value)).to eq 4
     expect(get_value(second_value)).to eq 2
-
-    threads.each { |t| t.kill }
   end
 
   it 'can be reused' do
@@ -101,23 +87,18 @@ RSpec.shared_examples 'exchanger method with finite timeout' do
     latch_1      = Concurrent::CountDownLatch.new(2)
     latch_2      = Concurrent::CountDownLatch.new(2)
 
-    threads = [
-      Thread.new { first_value = subject.send(method, 1, 1); latch_1.count_down },
-      Thread.new { second_value = subject.send(method, 0, 1); latch_1.count_down }
-    ]
+    in_thread { first_value = subject.send(method, 1, 1); latch_1.count_down }
+    in_thread { second_value = subject.send(method, 0, 1); latch_1.count_down }
 
     latch_1.wait(1)
-    threads.each { |t| t.kill }
 
-    threads = [
-      Thread.new { first_value = subject.send(method, 10, 1); latch_2.count_down },
-      Thread.new { second_value = subject.send(method, 12, 1); latch_2.count_down }
-    ]
+    in_thread { first_value = subject.send(method, 10, 1); latch_2.count_down }
+    in_thread { second_value = subject.send(method, 12, 1); latch_2.count_down }
+
 
     latch_2.wait(1)
     expect(get_value(first_value)).to eq 12
     expect(get_value(second_value)).to eq 10
-    threads.each { |t| t.kill }
   end
 end
 
@@ -128,7 +109,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     second_value = nil
     latch        = Concurrent::CountDownLatch.new(1)
 
-    t1 = Thread.new do
+    t1 = in_thread do
       first_value = subject.send(method, :foo, 1)
       latch.count_down
     end
@@ -139,8 +120,6 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
 
     expect(get_value(first_value)).to eq :bar
     expect(get_value(second_value)).to eq :foo
-
-    t1.kill
   end
 
   it 'allows multiple firsts to cancel if necessary', buggy: true do
@@ -151,7 +130,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     success_latch = Concurrent::CountDownLatch.new(1)
 
     threads = cancels.times.collect do
-      Thread.new do
+      in_thread do
         begin
           first_value = subject.send(method, :foo, 0.1)
         rescue Concurrent::TimeoutError
@@ -165,7 +144,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     threads.each { |t| t.join(1) }
     cancel_latch.wait(1)
 
-    t1 = Thread.new do
+    t1 = in_thread do
       first_value = subject.send(method, :bar, 1)
       success_latch.count_down
     end
@@ -176,9 +155,6 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
 
     expect(get_value(first_value)).to eq :baz
     expect(get_value(second_value)).to eq :bar
-
-    t1.kill
-    threads.each { |t| t.kill }
   end
 end
 
@@ -238,8 +214,8 @@ module Concurrent
         bad  = Concurrent::AtomicFixnum.new(0)
         ugly = Concurrent::AtomicFixnum.new(0)
 
-        threads = thread_count.times.collect do |i|
-          Thread.new do
+        thread_count.times.collect do |i|
+          in_thread do
             exchange_count.times do |j|
               begin
                 result = subject.exchange!(i, 1)
@@ -257,8 +233,6 @@ module Concurrent
         puts "Good: #{good.value}, Bad (timeout): #{bad.value}, Ugly: #{ugly.value}"
         expect(good.value + bad.value + ugly.value).to eq thread_count * exchange_count
         expect(ugly.value).to eq 0
-
-        threads.each { |t| t.kill }
       end
     end
   end

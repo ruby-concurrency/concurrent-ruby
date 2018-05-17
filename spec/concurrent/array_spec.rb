@@ -4,7 +4,7 @@ module Concurrent
 
     it 'concurrency' do
       (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
-        Thread.new do
+        in_thread do
           1000.times do
             ary << i
             ary.each { |x| x * 2 }

@@ -42,6 +42,11 @@ RSpec.shared_examples :count_down_latch do
 
   describe '#wait' do
 
+    it 'blocks indefinitely' do
+      # test the thread is kill-able
+      in_thread { latch.wait }
+    end
+
     context 'count set to zero' do
       it 'should return true immediately' do
         result = zero_count_latch.wait
@@ -58,7 +63,7 @@ RSpec.shared_examples :count_down_latch do
 
       it 'should block thread until counter is set to zero' do
         3.times do
-          Thread.new { sleep(0.1); latch.count_down }
+          in_thread { sleep(0.1); latch.count_down }
         end
 
         result = latch.wait
@@ -68,13 +73,12 @@ RSpec.shared_examples :count_down_latch do
 
       it 'should block until counter is set to zero with timeout' do
         3.times do
-          Thread.new { sleep(0.1); latch.count_down }
+          in_thread { sleep(0.1); latch.count_down }
         end
 
         result = latch.wait(1)
         expect(result).to be_truthy
         expect(latch.count).to eq 0
-
       end
 
       it 'should block until timeout and return false when counter is not set to zero' do
@@ -109,7 +113,7 @@ module Concurrent
         latch    = Concurrent::CountDownLatch.new(1)
         expected = false
 
-        t = Thread.new do
+        t = in_thread do
           latch.wait(1)
           subject.wait
           expected = true
@@ -128,7 +132,7 @@ module Concurrent
         finish_latch = Concurrent::CountDownLatch.new(1)
         expected     = false
 
-        t = Thread.new do
+        t = in_thread do
           start_latch.wait(1)
           subject.wait(0.5)
           expected = true
@@ -149,9 +153,7 @@ module Concurrent
   end
 
   if Concurrent.on_jruby?
-
     RSpec.describe JavaCountDownLatch do
-
       it_should_behave_like :count_down_latch
     end
   end

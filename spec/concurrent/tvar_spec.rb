@@ -112,7 +112,7 @@ module Concurrent
       a = CountDownLatch.new
       b = CountDownLatch.new
 
-      Thread.new do
+      in_thread do
         Concurrent::atomically do
           t.value = 1
           a.count_down
@@ -135,7 +135,7 @@ module Concurrent
       a = CountDownLatch.new
       b = CountDownLatch.new
 
-      Thread.new do
+      in_thread do
         Concurrent::atomically do
           t.value = 1
           a.count_down

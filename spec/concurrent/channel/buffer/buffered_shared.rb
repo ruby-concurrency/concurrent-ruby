@@ -32,7 +32,7 @@ RSpec.shared_examples :channel_buffered_buffer do
     end
 
     it 'is 0 when there are taking threads but no putting threads' do
-      t = Thread.new { subject.take }
+      t = in_thread { subject.take }
       t.join(0.1)
       expect(subject.size).to eq 0
       t.kill # cleanup
@@ -75,7 +75,7 @@ RSpec.shared_examples :channel_buffered_buffer do
     it 'blocks until not empty' do
       subject # initialize on this thread
       bucket = Concurrent::AtomicReference.new(nil)
-      t = Thread.new do
+      t = in_thread do
         bucket.value = subject.take
       end
       t.join(0.1)
@@ -101,7 +101,7 @@ RSpec.shared_examples :channel_buffered_buffer do
     it 'blocks until not empty' do
       subject # initialize on this thread
       bucket = Concurrent::AtomicReference.new([])
-      t = Thread.new do
+      t = in_thread do
         bucket.value = subject.next
       end
       t.join(0.1)
