@@ -259,41 +259,41 @@ module Concurrent
 
     context 'runtime-specific implementation' do
 
-      if Concurrent.on_jruby?
+      # if Concurrent.on_jruby?
+      #
+      #   it 'sets :fallback_policy correctly' do
+      #     clazz  = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
+      #     policy = clazz.new
+      #     expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
+      #
+      #     subject = FixedThreadPool.new(5, fallback_policy: :discard)
+      #     expect(subject.fallback_policy).to eq :discard
+      #   end
+      #
+      # else
 
-        it 'sets :fallback_policy correctly' do
-          clazz  = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
-          policy = clazz.new
-          expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
+      context 'exception handling' do
 
-          subject = FixedThreadPool.new(5, fallback_policy: :discard)
-          expect(subject.fallback_policy).to eq :discard
-        end
-
-      else
-
-        context 'exception handling' do
-
-          it 'restarts threads that experience exception' do
-            count = subject.length
-            count.times{ subject << proc{ raise StandardError } }
-            sleep(1)
-            expect(subject.length).to eq count
-          end
-        end
-
-        context 'worker creation and caching' do
-
-          it 'creates new workers when there are none available' do
-            pool = described_class.new(5)
-            expect(pool.length).to eq 0
-            5.times{ pool << proc{ sleep(1) } }
-            sleep(0.1)
-            expect(pool.length).to eq 5
-            pool.kill
-          end
+        it 'restarts threads that experience exception' do
+          count = subject.length
+          count.times { subject << proc { raise StandardError } }
+          sleep(1)
+          expect(subject.length).to eq count
         end
       end
+
+      context 'worker creation and caching' do
+
+        it 'creates new workers when there are none available' do
+          pool = described_class.new(5)
+          expect(pool.length).to eq 0
+          5.times { pool << proc { sleep(1) } }
+          sleep(0.1)
+          expect(pool.length).to eq 5
+          pool.kill
+        end
+      end
+      # end
     end
   end
 end
