@@ -8,7 +8,7 @@ module Concurrent
     context :dereferenceable do
 
       def kill_subject
-        @subject.kill if @subject
+        @subject.kill if defined?(@subject) && @subject
       rescue Exception => ex
         # prevent exceptions with mocks in tests
       end

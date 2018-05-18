@@ -146,7 +146,7 @@ module Concurrent
           end
         end
         members.each_with_index do |member, index|
-          clazz.send :remove_method, member if clazz.method_defined? member
+          clazz.send :remove_method, member if clazz.instance_methods.include? member
           clazz.send(:define_method, member) do
             @values[index]
           end

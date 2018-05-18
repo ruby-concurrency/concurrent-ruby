@@ -281,6 +281,7 @@ module Concurrent
       @run_now = opts[:now] || opts[:run_now]
       @executor = Concurrent::SafeTaskExecutor.new(task)
       @running = Concurrent::AtomicBoolean.new(false)
+      @value = nil
 
       self.observers = Collection::CopyOnNotifyObserverSet.new
     end

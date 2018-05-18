@@ -107,6 +107,7 @@ module Concurrent
         synchronize do
           clazz = Synchronization::AbstractStruct.define_struct_class(SettableStruct, Synchronization::LockableObject, name, members, &block)
           members.each_with_index do |member, index|
+            clazz.send :remove_method, member if clazz.instance_methods.include? member
             clazz.send(:define_method, member) do
               synchronize { @values[index] }
             end
