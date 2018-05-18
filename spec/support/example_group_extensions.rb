@@ -32,6 +32,9 @@ module Concurrent
       t
     end
 
+    def join_with(*threads, timeout: 0.1)
+      Array(threads).each { |t| expect(t.join(timeout)).not_to eq nil }
+    end
   end
 end
 

@@ -89,7 +89,7 @@ module Concurrent
         latch_2 = Concurrent::CountDownLatch.new(1)
         latch_3 = Concurrent::CountDownLatch.new(1)
 
-        in_thread do
+        t1 = in_thread do
           latch_1.wait(1)
           subject.acquire_write_lock
           latch_2.count_down
@@ -97,7 +97,7 @@ module Concurrent
           subject.release_write_lock
         end
 
-        in_thread do
+        t2 = in_thread do
           latch_2.wait(1)
           subject.acquire_write_lock
           subject.release_write_lock
@@ -109,6 +109,8 @@ module Concurrent
         expect(subject).to have_waiters
 
         latch_3.count_down
+
+        join_with t1, t2
       end
     end
 

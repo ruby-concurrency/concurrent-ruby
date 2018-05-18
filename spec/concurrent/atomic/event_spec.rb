@@ -112,6 +112,11 @@ module Concurrent
         expect(latch.wait(0.1)).to be true
       end
 
+      it 'blocks indefinitely' do
+        in_thread{ subject.wait }
+        sleep 0.1
+      end
+
       it 'stops waiting when the timer expires' do
         subject.reset
         latch = CountDownLatch.new(1)

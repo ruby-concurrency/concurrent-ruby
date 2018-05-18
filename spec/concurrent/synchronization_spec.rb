@@ -7,6 +7,7 @@ module Concurrent
     RSpec.shared_examples :attr_volatile do
 
       specify 'older writes are always visible' do
+        store = store()
         store.not_volatile = 0
         store.volatile     = 0
 

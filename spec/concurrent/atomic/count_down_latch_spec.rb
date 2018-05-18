@@ -44,7 +44,8 @@ RSpec.shared_examples :count_down_latch do
 
     it 'blocks indefinitely' do
       # test the thread is kill-able
-      in_thread { latch.wait }
+      in_thread(latch) { |l| l.wait }
+      sleep 0.1
     end
 
     context 'count set to zero' do
