@@ -141,23 +141,30 @@ module Concurrent
         end
 
         it 'releases the lock on the current object' do
-          expect { Timeout.timeout(3) do
-            t = in_thread { subject.wait }
+          t1 = in_thread do
+            t2 = in_thread { subject.wait }
             sleep 0.1
             # TODO (pitr-ch 15-Oct-2016): https://travis-ci.org/pitr-ch/concurrent-ruby/jobs/167933569
-            expect(t.status).to eq 'sleep'
+            status = t2.status
             subject.synchronize {} # we will deadlock here if #wait doesn't release lock
-          end }.not_to raise_error
+          end
+
+          join_with t1
+          expect(t1.value).to eq 'sleep'
         end
 
         it 'can be called from within a #synchronize block' do
-          expect { Timeout.timeout(3) do
+          t1 = in_thread do
             # #wait should release lock, even if it was already held on entry
-            t = in_thread { subject.synchronize { subject.wait } }
+            t2 = in_thread { subject.synchronize { subject.wait } }
             sleep 0.1
-            expect(t.status).to eq 'sleep'
+            status = t2.status
             subject.synchronize {} # we will deadlock here if lock wasn't released
-          end }.not_to raise_error
+            status
+          end
+
+          join_with t1
+          expect(t1.value).to eq 'sleep'
         end
       end
 
