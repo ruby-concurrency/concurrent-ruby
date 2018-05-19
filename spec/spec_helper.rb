@@ -25,7 +25,6 @@ require 'concurrent-edge'
 Concurrent.use_simple_logger Logger::FATAL
 
 require_relative 'support/example_group_extensions'
-require_relative 'support/less_than_or_equal_to_matcher'
 require_relative 'support/threadsafe_test'
 
 RSpec.configure do |config|
