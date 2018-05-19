@@ -7,7 +7,7 @@ module Concurrent
     RSpec.shared_examples :attr_volatile do
 
       specify 'older writes are always visible' do
-        store = store()
+        store              = store()
         store.not_volatile = 0
         store.volatile     = 0
 
@@ -120,12 +120,12 @@ module Concurrent
       describe '#wait' do
 
         it 'puts the current thread to sleep' do
-          t = in_thread do
+          t1 = in_thread do
             Thread.abort_on_exception = true
             subject.wait
           end
-          sleep 0.1
-          expect(t.status).to eq 'sleep'
+          t2 = in_thread { Thread.pass until t1.status == 'sleep' }
+          join_with t2, timeout: 5
         end
 
         it 'allows the sleeping thread to be killed' do
@@ -142,29 +142,25 @@ module Concurrent
 
         it 'releases the lock on the current object' do
           t1 = in_thread do
+            # #wait should release lock, even if it was already held on entry
             t2 = in_thread { subject.wait }
-            sleep 0.1
-            # TODO (pitr-ch 15-Oct-2016): https://travis-ci.org/pitr-ch/concurrent-ruby/jobs/167933569
-            status = t2.status
-            subject.synchronize {} # we will deadlock here if #wait doesn't release lock
+            Thread.pass until t2.status == 'sleep'
+            subject.synchronize {} # it will deadlock here if #wait doesn't release lock
+            t2
           end
-
-          join_with t1
-          expect(t1.value).to eq 'sleep'
+          join_with t1, timeout: 5
+          expect(t1.value.status).to eq 'sleep'
         end
 
         it 'can be called from within a #synchronize block' do
           t1 = in_thread do
-            # #wait should release lock, even if it was already held on entry
             t2 = in_thread { subject.synchronize { subject.wait } }
-            sleep 0.1
-            status = t2.status
-            subject.synchronize {} # we will deadlock here if lock wasn't released
-            status
+            Thread.pass until t2.status == 'sleep'
+            subject.synchronize {} # it will deadlock here if #wait doesn't release lock
+            t2
           end
-
-          join_with t1
-          expect(t1.value).to eq 'sleep'
+          join_with t1, timeout: 5
+          expect(t1.value.status).to eq 'sleep'
         end
       end
 
