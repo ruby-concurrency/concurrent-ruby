@@ -125,7 +125,7 @@ module Concurrent
             subject.wait
           end
           t2 = in_thread { Thread.pass until t1.status == 'sleep' }
-          join_with t2, timeout: 5
+          join_with t2, 5
         end
 
         it 'allows the sleeping thread to be killed' do
@@ -148,7 +148,7 @@ module Concurrent
             subject.synchronize {} # it will deadlock here if #wait doesn't release lock
             t2
           end
-          join_with t1, timeout: 5
+          join_with t1, 5
           expect(t1.value.status).to eq 'sleep'
         end
 
@@ -159,7 +159,7 @@ module Concurrent
             subject.synchronize {} # it will deadlock here if #wait doesn't release lock
             t2
           end
-          join_with t1, timeout: 5
+          join_with t1, 5
           expect(t1.value.status).to eq 'sleep'
         end
       end

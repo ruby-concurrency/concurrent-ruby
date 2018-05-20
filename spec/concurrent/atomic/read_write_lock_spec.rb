@@ -110,7 +110,7 @@ module Concurrent
 
         latch_3.count_down
 
-        join_with t1, t2
+        join_with [t1, t2]
       end
     end
 
