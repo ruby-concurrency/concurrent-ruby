@@ -126,6 +126,7 @@ module Concurrent
   #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ 42 }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
+  #   sleep 4
   #
   #   #=> (2013-10-13 19:08:58 -0400) Execution successfully returned 42
   #   #=> (2013-10-13 19:08:59 -0400) Execution successfully returned 42
