@@ -8,8 +8,8 @@ module Concurrent
     end
 
     it 'concurrency' do
-      (1..THREADS).map do |i|
-        Thread.new do
+      (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
+        in_thread do
           1000.times do |j|
             key = i * 1000 + j
             @cache[key] = i
@@ -76,8 +76,8 @@ module Concurrent
         getter_threads_count             = 5
         compute_started = Concurrent::CountDownLatch.new(1)
         compute_proceed = Concurrent::CountDownLatch.new(
-          late_compute_threads_count + 
-          late_put_if_absent_threads_count + 
+          late_compute_threads_count +
+          late_put_if_absent_threads_count +
           getter_threads_count
         )
         block_until_compute_started = lambda do |name|
@@ -90,29 +90,29 @@ module Concurrent
         end
 
         expect_size_change 1 do
-          late_compute_threads = Array.new(late_compute_threads_count) do
-            Thread.new do
+          late_compute_threads = ::Array.new(late_compute_threads_count) do
+            in_thread do
               block_until_compute_started.call('compute_if_absent')
               expect(1).to eq @cache.compute_if_absent(:a) { fail }
             end
           end
 
-          late_put_if_absent_threads = Array.new(late_put_if_absent_threads_count) do
-            Thread.new do
+          late_put_if_absent_threads = ::Array.new(late_put_if_absent_threads_count) do
+            in_thread do
               block_until_compute_started.call('put_if_absent')
               expect(1).to eq @cache.put_if_absent(:a, 2)
             end
           end
 
-          getter_threads = Array.new(getter_threads_count) do
-            Thread.new do
+          getter_threads = ::Array.new(getter_threads_count) do
+            in_thread do
               block_until_compute_started.call('getter')
               Thread.pass while @cache[:a].nil?
               expect(1).to eq @cache[:a]
             end
           end
 
-          Thread.new do
+          in_thread do
             @cache.compute_if_absent(:a) do
               compute_started.count_down
               compute_proceed.wait
@@ -120,8 +120,8 @@ module Concurrent
               1
             end
           end.join
-          (late_compute_threads + 
-           late_put_if_absent_threads + 
+          (late_compute_threads +
+           late_put_if_absent_threads +
            getter_threads).each(&:join)
         end
       end
@@ -168,7 +168,7 @@ module Concurrent
       it 'with return' do
         with_or_without_default_proc do
           @cache[:a] = 1
-          expect_handles_return_lambda(:compute_if_present, :a) 
+          expect_handles_return_lambda(:compute_if_present, :a)
         end
       end
 
@@ -261,8 +261,8 @@ module Concurrent
 
       getters_count = 20
       key_klass     = Concurrent::ThreadSafe::Test::HashCollisionKey
-      keys          = [key_klass.new(1, 100), 
-                       key_klass.new(2, 100), 
+      keys          = [key_klass.new(1, 100),
+                       key_klass.new(2, 100),
                        key_klass.new(3, 100)] # hash colliding keys
       inserted_keys = []
 
@@ -272,7 +272,7 @@ module Concurrent
         getters_started  = Concurrent::CountDownLatch.new(getters_count)
         getters_finished = Concurrent::CountDownLatch.new(getters_count)
 
-        computer_thread = Thread.new do
+        computer_thread = in_thread do
           getters_started.wait
           @cache.compute_if_absent(key) do
             compute_started.count_down
@@ -282,31 +282,33 @@ module Concurrent
           compute_finished.count_down
         end
 
-        getter_threads = (1..getters_count).map do
-          Thread.new do
+        getter_threads = getters_count.times.map do
+          in_thread do
             getters_started.count_down
             inserted_keys.each do |inserted_key|
-              expect(true).to eq @cache.key?(inserted_key)
-              expect(1).to    eq @cache[inserted_key]
+              expect(@cache.key?(inserted_key)).to eq true
+              expect(@cache[inserted_key]).to eq 1
             end
             expect(false).to eq @cache.key?(key)
+
             compute_started.wait
+
             inserted_keys.each do |inserted_key|
-              expect(true).to eq @cache.key?(inserted_key)
-              expect(1).to    eq @cache[inserted_key]
+              expect(@cache.key?(inserted_key)).to eq true
+              expect(@cache[inserted_key]).to eq 1
             end
-            expect(false).to eq @cache.key?(key)
-            expect(nil).to   eq @cache[key]
+            expect(@cache.key?(key)).to eq false
+            expect(@cache[key]).to eq nil
             getters_finished.count_down
+
             compute_finished.wait
-            expect(true).to eq @cache.key?(key)
-            expect(1).to    eq @cache[key]
+
+            expect(@cache.key?(key)).to eq true
+            expect(@cache[key]).to eq 1
           end
         end
 
-        (getter_threads << computer_thread).map do |t| 
-          expect(t.join(2)).to be_truthy
-        end # asserting no deadlocks
+        join_with getter_threads + [computer_thread]
         inserted_keys << key
       end
     end
@@ -318,7 +320,7 @@ module Concurrent
     end
 
     specify 'collision resistance with arrays' do
-      special_array_class = Class.new(Array) do
+      special_array_class = Class.new(::Array) do
         def key # assert_collision_resistance expects to be able to call .key to get the "real" key
           first.key
         end
@@ -482,8 +484,8 @@ module Concurrent
 
     describe '#fetch' do
       it 'common' do
-        with_or_without_default_proc do |default_proc_set| 
-          expect_no_size_change do 
+        with_or_without_default_proc do |default_proc_set|
+          expect_no_size_change do
             expect(1).to     eq @cache.fetch(:a, 1)
             expect(1).to     eq @cache.fetch(:a) { 1 }
             expect(false).to eq @cache.key?(:a)
@@ -841,7 +843,7 @@ module Concurrent
       expect { Concurrent::Map.new(options) }.to raise_error(ArgumentError)
     end
 
-    def expect_no_size_change(cache = @cache, &block) 
+    def expect_no_size_change(cache = @cache, &block)
       expect_size_change(0, cache, &block)
     end
 
@@ -896,8 +898,8 @@ module Concurrent
         size = keys.size
         while i < size
           k = keys[i]
-          expect(k.key == @cache.delete(k) && 
-                 !@cache.key?(k) && 
+          expect(k.key == @cache.delete(k) &&
+                 !@cache.key?(k) &&
                  (@cache[k] = k.key; @cache[k] == k.key)).to be_truthy
           i += 10
         end

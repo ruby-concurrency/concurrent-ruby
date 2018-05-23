@@ -55,7 +55,7 @@ module Concurrent
   # @!macro internal_implementation_note
   CountDownLatchImplementation = case
                                  when Concurrent.on_jruby?
-                                   JavaCountDownLatch
+                                   MutexCountDownLatch
                                  else
                                    MutexCountDownLatch
                                  end

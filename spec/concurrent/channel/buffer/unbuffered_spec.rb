@@ -23,14 +23,14 @@ module Concurrent::Channel::Buffer
       end
 
       it 'is 1 when a putting thread is waiting' do
-        t = Thread.new { subject.put(:foo) }
+        t = in_thread { subject.put(:foo) }
         t.join(0.1)
         expect(subject.size).to eq 1
         t.kill # cleanup
       end
 
       it 'is 0 when there are taking threads but no putting threads' do
-        t = Thread.new { subject.take }
+        t = in_thread { subject.take }
         t.join(0.1)
         expect(subject.size).to eq 0
         t.kill # cleanup
@@ -44,7 +44,7 @@ module Concurrent::Channel::Buffer
       end
 
       it 'is false when there are waiting putting threads' do
-        t = Thread.new { subject.put(:foo) }
+        t = in_thread { subject.put(:foo) }
         t.join(0.1)
         expect(subject).to_not be_empty
         t.kill # cleanup
@@ -58,7 +58,7 @@ module Concurrent::Channel::Buffer
       end
 
       it 'is false when there are waiting putting threads' do
-        t = Thread.new { subject.put(:foo) }
+        t = in_thread { subject.put(:foo) }
         t.join(0.1)
         expect(subject).to be_full
         t.kill # cleanup
@@ -81,7 +81,7 @@ module Concurrent::Channel::Buffer
       it 'blocks until a thread is ready to take' do
         subject # initialize on this thread
         bucket = Concurrent::AtomicReference.new(nil)
-        t = Thread.new do
+        t = in_thread do
           subject.put(42)
           bucket.value = 42
         end
@@ -99,7 +99,7 @@ module Concurrent::Channel::Buffer
       end
 
       it 'delivers when closed after put starts' do
-        t = Thread.new do
+        t = in_thread do
           subject.put(:foo)
         end
         t.join(0.1)
@@ -116,7 +116,7 @@ module Concurrent::Channel::Buffer
 
       it 'returns false immediately when a put in in progress' do
         subject # initialize on this thread
-        t = Thread.new do
+        t = in_thread do
           subject.put(:foo) # block the thread
         end
         t.join(0.1)
@@ -130,7 +130,7 @@ module Concurrent::Channel::Buffer
       it 'gives the item to a waiting taker and returns true' do
         subject # initialize on this thread
         bucket = Concurrent::AtomicReference.new(nil)
-        t = Thread.new do
+        t = in_thread do
           bucket.value = subject.take
         end
         t.join(0.1)
@@ -150,7 +150,7 @@ module Concurrent::Channel::Buffer
 
       it 'returns false immediately when a put in in progress' do
         subject # initialize on this thread
-        t = Thread.new do
+        t = in_thread do
           subject.put(:foo) # block the thread
         end
         t.join(0.1)
@@ -164,7 +164,7 @@ module Concurrent::Channel::Buffer
       it 'gives the item to a waiting taker and returns true' do
         subject # initialize on this thread
         bucket = Concurrent::AtomicReference.new(nil)
-        t = Thread.new do
+        t = in_thread do
           bucket.value = subject.take
         end
         t.join(0.1)
@@ -185,7 +185,7 @@ module Concurrent::Channel::Buffer
       it 'blocks when no putting and returns <item>, true when one arrives' do
         subject # initialize on this thread
         bucket = Concurrent::AtomicReference.new([])
-        t = Thread.new do
+        t = in_thread do
           bucket.value = subject.next
         end
         t.join(0.1)
@@ -204,7 +204,7 @@ module Concurrent::Channel::Buffer
       it 'returns <item>, true when there are multiple putting' do
         subject # initialize on this thread
         threads = 2.times.collect do
-          Thread.new do
+          in_thread do
             subject.put(42)
           end
         end
@@ -218,7 +218,7 @@ module Concurrent::Channel::Buffer
       end
 
       it 'returns <item>, true when closed and last item' do
-        t = Thread.new do
+        t = in_thread do
           subject.put(:foo)
         end
         t.join(0.1)
@@ -232,7 +232,7 @@ module Concurrent::Channel::Buffer
       end
 
       it 'returns Concurrent::NULL, false when closed and no items remain' do
-        t = Thread.new do
+        t = in_thread do
           subject.put(:foo)
         end
         subject.close

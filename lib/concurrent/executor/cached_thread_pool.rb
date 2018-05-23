@@ -46,17 +46,24 @@ module Concurrent
 
     private
 
-    # @!macro cached_thread_pool_method_initialize
-    # @!visibility private
-    def ns_initialize(opts)
-      super(opts)
-      if Concurrent.on_jruby?
+    if defined?(JavaThreadPoolExecutor) && self < JavaThreadPoolExecutor
+      # @!macro cached_thread_pool_method_initialize
+      # @!visibility private
+      def ns_initialize(opts)
+        super(opts)
         @max_queue = 0
-        @executor = java.util.concurrent.Executors.newCachedThreadPool
+        @executor  = java.util.concurrent.Executors.newCachedThreadPool
         @executor.setRejectedExecutionHandler(FALLBACK_POLICY_CLASSES[@fallback_policy].new)
         @executor.setKeepAliveTime(opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT), java.util.concurrent.TimeUnit::SECONDS)
         self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
+    else
+      # @!macro cached_thread_pool_method_initialize
+      # @!visibility private
+      def ns_initialize(opts)
+        super(opts)
+      end
     end
+
   end
 end

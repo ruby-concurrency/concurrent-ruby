@@ -495,7 +495,7 @@ RSpec.shared_examples :thread_pool_executor do
 
         # Post several tasks to the executor. Has to be a new thread,
         # because it will start blocking once the queue fills up.
-        Thread.new do
+        in_thread do
           5.times{ executor.post{ trigger.wait } }
         end
 

@@ -13,7 +13,7 @@ module Concurrent
 
     let(:pending_subject) do
       ivar = IVar.new
-      Thread.new do
+      in_thread do
         sleep(0.1)
         ivar.set(fulfilled_value)
       end
@@ -87,6 +87,7 @@ module Concurrent
           attr_reader :reason
           attr_reader :count
           define_method(:update) do |time, value, reason|
+            @count ||= 0
             @count = @count.to_i + 1
             @value = value
             @reason = reason
@@ -109,7 +110,7 @@ module Concurrent
       context 'deadlock avoidance' do
 
         def reentrant_observer(i)
-          obs = Object.new
+          obs = ::Object.new
           obs.define_singleton_method(:update) do |time, value, reason|
             @value = i.value
           end

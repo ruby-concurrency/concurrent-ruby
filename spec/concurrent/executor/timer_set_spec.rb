@@ -10,28 +10,14 @@ module Concurrent
     after(:each){ subject.kill }
 
     context 'construction' do
-
-      before(:all) do
-        reset_gem_configuration
-      end
-
-      after(:each) do
-        reset_gem_configuration
-      end
-
       it 'uses the executor given at construction' do
-        executor = Concurrent.global_immediate_executor
-        expect(executor).to receive(:post).with(no_args)
-        subject = TimerSet.new(executor: executor)
-        subject.post(0){ nil }
+        subject = TimerSet.new(executor: Concurrent.global_immediate_executor)
+        expect(subject.instance_variable_get(:@task_executor)).to eq Concurrent.global_immediate_executor
       end
 
       it 'uses the global io executor be default' do
-        latch = Concurrent::CountDownLatch.new(1)
-        expect(Concurrent.global_io_executor).to receive(:post).with(no_args)
         subject = TimerSet.new
-        subject.post(0){ latch.count_down }
-        latch.wait(0.1)
+        expect(subject.instance_variable_get(:@task_executor)).to eq Concurrent.global_io_executor
       end
     end
 

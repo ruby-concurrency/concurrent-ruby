@@ -135,7 +135,7 @@ module Concurrent
         counter = Concurrent::AtomicFixnum.new(0)
         atom = Atom.new(0)
 
-        t = Thread.new do
+        t = in_thread do
           atom.swap do |value|
             latch1.count_down
             latch2.wait(1)

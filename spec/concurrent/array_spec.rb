@@ -3,8 +3,8 @@ module Concurrent
     let!(:ary) { described_class.new }
 
     it 'concurrency' do
-      (1..THREADS).map do |i|
-        Thread.new do
+      (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
+        in_thread do
           1000.times do
             ary << i
             ary.each { |x| x * 2 }

@@ -13,7 +13,7 @@ module Concurrent
       subject { SimpleExecutorService.new }
 
       it 'creates a new thread for a call without arguments' do
-        thread = Thread.new{ nil }
+        thread = in_thread{ nil }
         expect(Thread).to receive(:new).with(no_args()).and_return(thread)
         expect(Concurrent.global_fast_executor).not_to receive(:post).with(any_args())
         subject.post{ nil }
@@ -26,7 +26,7 @@ module Concurrent
       end
 
       it 'creates a new thread for a call with arguments' do
-        thread = Thread.new{ nil }
+        thread = in_thread{ nil }
         expect(Thread).to receive(:new).with(1,2,3).and_return(thread)
         expect(Concurrent.global_fast_executor).not_to receive(:post).with(any_args())
         subject.post(1,2,3){ nil }
@@ -45,7 +45,7 @@ module Concurrent
       end
 
       it 'aliases #<<' do
-        thread = Thread.new{ nil }
+        thread = in_thread{ nil }
         expect(Thread).to receive(:new).with(no_args()).and_return(thread)
         expect(Concurrent.global_fast_executor).not_to receive(:post).with(any_args())
         subject << proc{ nil }
@@ -57,7 +57,7 @@ module Concurrent
       subject { SimpleExecutorService }
 
       it 'creates a new thread for a call without arguments' do
-        thread = Thread.new{ nil }
+        thread = in_thread{ nil }
         expect(Thread).to receive(:new).with(no_args()).and_return(thread)
         expect(Concurrent.global_fast_executor).not_to receive(:post).with(any_args())
         subject.post{ nil }
@@ -70,7 +70,7 @@ module Concurrent
       end
 
       it 'creates a new thread for a call with arguments' do
-        thread = Thread.new{ nil }
+        thread = in_thread{ nil }
         expect(Thread).to receive(:new).with(1,2,3).and_return(thread)
         expect(Concurrent.global_fast_executor).not_to receive(:post).with(any_args())
         subject.post(1,2,3){ nil }
@@ -89,7 +89,7 @@ module Concurrent
       end
 
       it 'aliases #<<' do
-        thread = Thread.new{ nil }
+        thread = in_thread{ nil }
         expect(Thread).to receive(:new).with(no_args()).and_return(thread)
         expect(Concurrent.global_fast_executor).not_to receive(:post).with(any_args())
         subject << proc{ nil }

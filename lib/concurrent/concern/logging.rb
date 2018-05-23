@@ -17,7 +17,12 @@ module Concurrent
       def log(level, progname, message = nil, &block)
         #NOTE: Cannot require 'concurrent/configuration' above due to circular references.
         #      Assume that the gem has been initialized if we've gotten this far.
-        (@logger || Concurrent.global_logger).call level, progname, message, &block
+        logger = if defined?(@logger) && @logger
+                   @logger
+                 else
+                   Concurrent.global_logger
+                 end
+        logger.call level, progname, message, &block
       rescue => error
         $stderr.puts "`Concurrent.configuration.logger` failed to log #{[level, progname, message, block]}\n" +
           "#{error.message} (#{error.class})\n#{error.backtrace.join "\n"}"

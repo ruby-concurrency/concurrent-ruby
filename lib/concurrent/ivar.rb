@@ -157,9 +157,8 @@ module Concurrent
       self.observers = Collection::CopyOnWriteObserverSet.new
       set_deref_options(opts)
 
-      if value == NULL
-        @state = :pending
-      else
+      @state = :pending
+      if value != NULL
         ns_complete_without_notification(true, value, nil)
       end
     end

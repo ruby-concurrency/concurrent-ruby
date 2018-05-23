@@ -287,7 +287,7 @@ RSpec.describe 'Concurrent::Promises' do
         end
 
         event_or_future.wait
-        Array.new(event_or_future.is_a?(Concurrent::Promises::Future) ? 12 : 6) { queue.pop }
+        ::Array.new(event_or_future.is_a?(Concurrent::Promises::Future) ? 12 : 6) { queue.pop }
       end
 
       callback_results = callbacks_tester.call(fulfilled_future(:v))
@@ -442,7 +442,7 @@ RSpec.describe 'Concurrent::Promises' do
 
       it 'propagates requests for values to delayed futures' do
         expect(future { delay { 1 } }.flat.value!(0.1)).to eq 1
-        expect(Array.new(3) { |i| Concurrent::Promises.delay { i } }.
+        expect(::Array.new(3) { |i| Concurrent::Promises.delay { i } }.
             inject { |a, b| a.then { b }.flat }.value!(0.2)).to eq 2
       end
     end
@@ -502,7 +502,7 @@ RSpec.describe 'Concurrent::Promises' do
     specify do
       source, token = Concurrent::Cancellation.create
 
-      futures = Array.new(2) { future(token) { |t| t.loop_until_canceled { Thread.pass }; :done } }
+      futures = ::Array.new(2) { future(token) { |t| t.loop_until_canceled { Thread.pass }; :done } }
 
       source.cancel
       futures.each do |future|

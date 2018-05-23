@@ -55,7 +55,7 @@ module Concurrent
       it 'waits for another thread to #put' do
         m = MVar.new
 
-        putter = Thread.new {
+        putter = in_thread {
           sleep(0.1)
           m.put 14
         }
@@ -86,13 +86,13 @@ module Concurrent
 
       it 'returns the returned value of the block' do
         m = MVar.new(14)
-        expect(m.borrow{2}).to eq(2)
+        expect(m.borrow { 2 }).to eq(2)
         expect(m.take).to eq(14)
       end
 
       it 'returns TIMEOUT on timeout on an empty MVar' do
         m = MVar.new
-        expect(m.borrow(0.1){}).to eq MVar::TIMEOUT
+        expect(m.borrow(0.1) { }).to eq MVar::TIMEOUT
       end
 
     end
@@ -115,7 +115,7 @@ module Concurrent
       it 'waits for another thread to #take' do
         m = MVar.new(14)
 
-        putter = Thread.new {
+        putter = in_thread {
           sleep(0.1)
           m.take
         }
@@ -172,24 +172,24 @@ module Concurrent
 
       it 'modifies a full MVar' do
         m = MVar.new(14)
-        m.modify{ |v| v + 2 }
+        m.modify { |v| v + 2 }
         expect(m.take).to eq 16
       end
 
       it 'returns the unmodified value' do
         m = MVar.new(14)
-        expect(m.modify{ |v| v + 2 }).to eq 14
+        expect(m.modify { |v| v + 2 }).to eq 14
       end
 
       it 'waits for another thread to #put' do
         m = MVar.new
 
-        putter = Thread.new {
+        putter = in_thread {
           sleep(0.1)
           m.put 14
         }
 
-        expect(m.modify{ |v| v + 2 }).to eq 14
+        expect(m.modify { |v| v + 2 }).to eq 14
       end
 
       it 'is atomic' do
@@ -198,7 +198,7 @@ module Concurrent
         # #modify conceptually does #take and #put - but it should be atomic.
         # Check that another #put can't sneak it during the #modify.
 
-        modifier = Thread.new {
+        modifier = in_thread {
           m.modify do |v|
             sleep(0.5)
             1
@@ -212,7 +212,7 @@ module Concurrent
 
       it 'returns TIMEOUT on timeout on an empty MVar' do
         m = MVar.new
-        expect(m.modify(0.1){ |v| v + 2 }).to eq MVar::TIMEOUT
+        expect(m.modify(0.1) { |v| v + 2 }).to eq MVar::TIMEOUT
       end
 
     end
@@ -293,31 +293,31 @@ module Concurrent
 
       it 'modifies a full MVar' do
         m = MVar.new(14)
-        m.modify!{ |v| v + 2 }
+        m.modify! { |v| v + 2 }
         expect(m.take).to eq 16
       end
 
       it 'modifies an empty MVar' do
         m = MVar.new
-        m.modify!{ |v| 14 }
+        m.modify! { |v| 14 }
         expect(m.take).to eq 14
       end
 
       it 'can be used to set a full MVar to empty' do
         m = MVar.new(14)
-        m.modify!{ |v| MVar::EMPTY }
+        m.modify! { |v| MVar::EMPTY }
         expect(m).to be_empty
       end
 
       it 'can be used to set an empty MVar to empty' do
         m = MVar.new
-        m.modify!{ |v| MVar::EMPTY }
+        m.modify! { |v| MVar::EMPTY }
         expect(m).to be_empty
       end
 
       it 'returns the unmodified value' do
         m = MVar.new(14)
-        expect(m.modify!{ |v| v + 2 }).to eq 14
+        expect(m.modify! { |v| v + 2 }).to eq 14
       end
 
     end
@@ -337,17 +337,17 @@ module Concurrent
 
       describe '#take' do
         it 'waits for another thread to #put' do
-          Thread.new { sleep(0.5); m.put 14 }
-          Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
+          in_thread { sleep(0.5); m.put 14 }
+          in_thread { sleep(0.1); m.simulate_spurious_wake_up }
 
           expect(m.take).to eq 14
         end
 
         it 'returns TIMEOUT on timeout on an empty MVar' do
           result = nil
-          Thread.new { result = m.take(0.3) }
+          in_thread { result = m.take(0.3) }
           sleep(0.1)
-          Thread.new { m.simulate_spurious_wake_up }
+          in_thread { m.simulate_spurious_wake_up }
           sleep(0.1)
           expect(result).to be_nil
           sleep(0.2)
@@ -358,17 +358,17 @@ module Concurrent
       describe '#modify' do
 
         it 'waits for another thread to #put' do
-          Thread.new { sleep(0.5); m.put 14 }
-          Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
+          in_thread { sleep(0.5); m.put 14 }
+          in_thread { sleep(0.1); m.simulate_spurious_wake_up }
 
-          expect(m.modify{ |v| v + 2 }).to eq 14
+          expect(m.modify { |v| v + 2 }).to eq 14
         end
 
         it 'returns TIMEOUT on timeout on an empty MVar' do
           result = nil
-          Thread.new { result = m.modify(0.3){ |v| v + 2 } }
+          in_thread { result = m.modify(0.3) { |v| v + 2 } }
           sleep(0.1)
-          Thread.new { m.simulate_spurious_wake_up }
+          in_thread { m.simulate_spurious_wake_up }
           sleep(0.1)
           expect(result).to be_nil
           sleep(0.2)
@@ -381,18 +381,18 @@ module Concurrent
         before(:each) { m.put(42) }
 
         it 'waits for another thread to #take' do
-          Thread.new { sleep(0.5); m.take }
-          Thread.new { sleep(0.1); m.simulate_spurious_wake_up }
+          in_thread { sleep(0.5); m.take }
+          in_thread { sleep(0.1); m.simulate_spurious_wake_up }
 
           expect(m.put(14)).to eq 14
         end
 
-        it 'returns TIMEOUT on timeout on a full MVar', buggy: true do
+        it 'returns TIMEOUT on timeout on a full MVar', notravis: true do
           # TODO (pitr-ch 15-Oct-2016): fails on jruby
           result = nil
-          Thread.new { result = m.put(14, 0.3) }
+          in_thread { result = m.put(14, 0.3) }
           sleep(0.1)
-          Thread.new { m.simulate_spurious_wake_up }
+          in_thread { m.simulate_spurious_wake_up }
           sleep(0.1)
           expect(result).to be_nil
           sleep(0.2)

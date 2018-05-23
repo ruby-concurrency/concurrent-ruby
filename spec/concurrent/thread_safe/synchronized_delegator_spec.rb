@@ -26,12 +26,12 @@ module Concurrent
       sync_hash = described_class.new(hash)
       sync_hash[1] = 'egy'
 
-      t1 = Thread.new do
+      t1 = in_thread do
         sync_hash[2] = 'dva'
         sync_hash[3] # triggers t2_continue
       end
 
-      t2 = Thread.new do
+      t2 = in_thread do
         Thread.pass until t2_continue
         sync_hash[4] = '42'
       end
@@ -56,7 +56,7 @@ module Concurrent
       array = ::Array.new
       sync_array = described_class.new(array)
 
-      t1 = Thread.new do
+      t1 = in_thread do
         sync_array << 1
         sync_array.each do
           t2_continue = true
@@ -64,7 +64,7 @@ module Concurrent
         end
       end
 
-      t2 = Thread.new do
+      t2 = in_thread do
         # sleep(0.01)
         Thread.pass until t2_continue
         sync_array << 2

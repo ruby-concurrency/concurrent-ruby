@@ -90,8 +90,9 @@ module Concurrent
       # can be called from other alternative Reference implementations
       # @param [Envelope] envelope
       def on_envelope(envelope)
+        log(DEBUG) { "is  #{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} by #{envelope.sender}" }
         schedule_execution do
-          log(DEBUG) { "was #{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} by #{envelope.sender}" }
+          log(DEBUG) { "was #{envelope.future ? 'asked' : 'told'} #{envelope.message.inspect} by #{envelope.sender} - processing" }
           process_envelope envelope
         end
         nil

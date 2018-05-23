@@ -181,9 +181,7 @@ begin
                 --backtrace
                 --seed 1
                 --format documentation
-                --tag ~unfinished
-                --tag ~notravis
-                --tag ~buggy ]
+                --tag ~notravis ]
 
   RSpec::Core::RakeTask.new(:travis) do |t|
     t.rspec_opts = ['--color', *options].join(' ')

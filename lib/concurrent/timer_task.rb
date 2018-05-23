@@ -126,6 +126,7 @@ module Concurrent
   #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ 42 }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
+  #   sleep 4
   #
   #   #=> (2013-10-13 19:08:58 -0400) Execution successfully returned 42
   #   #=> (2013-10-13 19:08:59 -0400) Execution successfully returned 42
@@ -189,6 +190,7 @@ module Concurrent
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
       super
+      set_deref_options opts
     end
 
     # Is the executor running?
@@ -280,6 +282,7 @@ module Concurrent
       @run_now = opts[:now] || opts[:run_now]
       @executor = Concurrent::SafeTaskExecutor.new(task)
       @running = Concurrent::AtomicBoolean.new(false)
+      @value = nil
 
       self.observers = Collection::CopyOnNotifyObserverSet.new
     end

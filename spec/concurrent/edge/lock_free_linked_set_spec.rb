@@ -19,12 +19,12 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
       expect(subject.add 'test string1').to be true
     end
 
-    context 'in a multi-threaded environment', buggy: true do
+    context 'in a multi-threaded environment', notravis: true do
       it 'adds the items to the set' do
         to_insert = %w(one two three four five six)
 
         threads = ::Array.new(16) do
-          Thread.new do
+          in_thread do
             to_insert.each do |item|
               subject.add item
             end
@@ -85,14 +85,14 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
         end
       end
 
-      context 'in a multi-threaded environment', buggy: true do
+      context 'in a multi-threaded environment', notravis: true do
         it 'correctly check that the set contains the item' do
           to_insert = %w(one two three four five six)
           to_insert.each { |item| subject << item }
 
           threads = ::Array.new(16) do
-            Thread.new do
-              100.times { subject << SecureRandom.hex  }
+            in_thread do
+              100.times { subject << SecureRandom.hex }
 
               to_insert.each do |item|
                 expect(subject.contains? item).to be true
@@ -127,19 +127,19 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
       end
     end
 
-    context 'in a multi-threaded environment', buggy: true do
+    context 'in a multi-threaded environment', notravis: true do
 
       it 'adds the items to the set' do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
         threads = ::Array.new(8) do
-          Thread.new { subject.remove 'one' }
-          Thread.new { subject.remove 'two' }
-          Thread.new { subject.remove 'three' }
+          [in_thread { subject.remove 'one' },
+           in_thread { subject.remove 'two' },
+           in_thread { subject.remove 'three' }]
         end
 
-        threads.each(&:join)
+        threads.flatten.each(&:join)
 
         expect(subject.contains? 'one').to be false
         expect(subject.contains? 'two').to be false
@@ -153,9 +153,9 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
         to_insert = %w(one two three four five six)
         to_insert.each { |item| subject << item }
 
-        threads = ::Array.new(16) do
-          Thread.new do
-            100.times { subject << SecureRandom.hex  }
+        ::Array.new(16) do
+          in_thread do
+            100.times { subject << SecureRandom.hex }
 
             to_insert.each do |item|
               subject.remove item
@@ -163,8 +163,6 @@ RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do
             end
           end
         end
-
-        threads.map(&:join)
       end
     end
 

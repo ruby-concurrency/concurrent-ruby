@@ -108,7 +108,7 @@ module Concurrent
     # Indicates that the given attribute has not been set.
     # When `Just` the {#nothing} getter will return `NONE`.
     # When `Nothing` the {#just} getter will return `NONE`.
-    NONE = Object.new.freeze
+    NONE = ::Object.new.freeze
 
     # The value of a `Maybe` when `Just`. Will be `NONE` when `Nothing`.
     attr_reader :just

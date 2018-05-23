@@ -98,7 +98,7 @@ unless Concurrent.on_jruby?
           Timeout.timeout(3) do
             got_lock = 10.times.collect { CountDownLatch.new }
             threads  = 10.times.collect do |n|
-              Thread.new do
+              in_thread do
                 # Each thread takes the read lock and then waits for another one
                 # They will only finish if ALL of them get their read lock
                 expect(lock.acquire_read_lock).to be true
@@ -165,10 +165,10 @@ unless Concurrent.on_jruby?
           latch1,latch2 = CountDownLatch.new(3),CountDownLatch.new
           good = AtomicBoolean.new(false)
           threads = [
-            Thread.new { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
-            Thread.new { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
-            Thread.new { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
-            Thread.new { latch1.wait; lock.acquire_write_lock; good.value = true }
+            in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
+            in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
+            in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
+            in_thread { latch1.wait; lock.acquire_write_lock; good.value = true }
           ]
           wait_up_to(0.2) { threads[3].status == 'sleep' }
           # The last thread should be waiting to acquire a write lock now...
@@ -187,8 +187,8 @@ unless Concurrent.on_jruby?
         it "cannot be acquired when another thread holds a write lock" do
           latch   = CountDownLatch.new
           threads = [
-            Thread.new { lock.acquire_write_lock; latch.count_down },
-            Thread.new { latch.wait; lock.acquire_write_lock }
+            in_thread { lock.acquire_write_lock; latch.count_down },
+            in_thread { latch.wait; lock.acquire_write_lock }
           ]
           expect { Timeout.timeout(1) { threads[0].join }}.not_to raise_error
           expect(threads[0]).to hold(lock).for_write
@@ -200,8 +200,8 @@ unless Concurrent.on_jruby?
         it "cannot be acquired when another thread holds a read lock" do
           latch   = CountDownLatch.new
           threads = [
-            Thread.new { lock.acquire_read_lock; latch.count_down },
-            Thread.new { latch.wait; lock.acquire_write_lock }
+            in_thread { lock.acquire_read_lock; latch.count_down },
+            in_thread { latch.wait; lock.acquire_write_lock }
           ]
           expect { Timeout.timeout(1) { threads[0].join }}.not_to raise_error
           expect(threads[0]).to hold(lock).for_read
@@ -260,14 +260,14 @@ unless Concurrent.on_jruby?
           end
         end
 
-        it "wakes up waiting readers when the write lock is released", buggy: true do
+        it "wakes up waiting readers when the write lock is released", notravis: true do
           latch1,latch2 = CountDownLatch.new,CountDownLatch.new
           good = AtomicFixnum.new(0)
           threads = [
-            Thread.new { lock.acquire_write_lock; latch1.count_down; latch2.wait; lock.release_write_lock },
-            Thread.new { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }},
-            Thread.new { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }},
-            Thread.new { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }}
+            in_thread { lock.acquire_write_lock; latch1.count_down; latch2.wait; lock.release_write_lock },
+            in_thread { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }},
+            in_thread { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }},
+            in_thread { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }}
           ]
           wait_up_to(0.2) { threads[3].status == 'sleep' }
           # The last 3 threads should be waiting to acquire read locks now...
@@ -284,8 +284,8 @@ unless Concurrent.on_jruby?
           latch1,latch2 = CountDownLatch.new,CountDownLatch.new
           good = AtomicBoolean.new(false)
           threads = [
-            Thread.new { lock.acquire_write_lock; latch1.count_down; latch2.wait; lock.release_write_lock },
-            Thread.new { latch1.wait; lock.acquire_write_lock; good.value = true },
+            in_thread { lock.acquire_write_lock; latch1.count_down; latch2.wait; lock.release_write_lock },
+            in_thread { latch1.wait; lock.acquire_write_lock; good.value = true },
           ]
           wait_up_to(0.2) { threads[1].status == 'sleep' }
           # The last thread should be waiting to acquire a write lock now...
@@ -337,7 +337,7 @@ unless Concurrent.on_jruby?
         it "returns false immediately if read lock cannot be obtained" do
           Timeout.timeout(3) do
             latch  = CountDownLatch.new
-            thread = Thread.new { lock.acquire_write_lock; latch.count_down }
+            in_thread { lock.acquire_write_lock; latch.count_down }
 
             latch.wait
             expect {
@@ -350,7 +350,7 @@ unless Concurrent.on_jruby?
         it "acquires read lock and returns true if it can do so without blocking" do
           Timeout.timeout(3) do
             latch  = CountDownLatch.new
-            thread = Thread.new { lock.acquire_read_lock; latch.count_down }
+            in_thread { lock.acquire_read_lock; latch.count_down }
 
             latch.wait
             expect {
@@ -391,7 +391,7 @@ unless Concurrent.on_jruby?
         it "returns false immediately if write lock cannot be obtained" do
           Timeout.timeout(3) do
             latch  = CountDownLatch.new
-            thread = Thread.new { lock.acquire_write_lock; latch.count_down }
+            in_thread { lock.acquire_write_lock; latch.count_down }
 
             latch.wait
             expect {
@@ -437,10 +437,9 @@ unless Concurrent.on_jruby?
       end
 
       it "can survive a torture test" do
-        latch = CountDownLatch.new
         count = 0
         writers = 5.times.collect do
-          Thread.new do
+          in_thread do
             500.times do
               lock.with_write_lock do
                 value = (count += 1)
@@ -451,7 +450,7 @@ unless Concurrent.on_jruby?
           end
         end
         readers = 15.times.collect do
-          Thread.new do
+          in_thread do
             500.times do
               lock.with_read_lock { expect(count % 2).to eq 0 }
             end

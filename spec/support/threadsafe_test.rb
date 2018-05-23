@@ -1,6 +1,9 @@
 module Concurrent
   module ThreadSafe
     module Test
+
+      THREADS = (RUBY_ENGINE == 'ruby' ? 100 : 10)
+
       class Barrier
         def initialize(count = 1)
           @count = count

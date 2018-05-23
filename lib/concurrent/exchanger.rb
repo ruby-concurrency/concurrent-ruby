@@ -41,7 +41,7 @@ module Concurrent
   class AbstractExchanger < Synchronization::Object
 
     # @!visibility private
-    CANCEL = Object.new
+    CANCEL = ::Object.new
     private_constant :CANCEL
 
     # @!macro [attach] exchanger_method_initialize
@@ -329,7 +329,7 @@ module Concurrent
   # @!macro internal_implementation_note
   ExchangerImplementation = case
                             when Concurrent.on_jruby?
-                              JavaExchanger
+                              RubyExchanger
                             else
                               RubyExchanger
                             end

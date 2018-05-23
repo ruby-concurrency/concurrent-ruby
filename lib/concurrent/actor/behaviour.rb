@@ -49,7 +49,7 @@ module Concurrent
     # -   {RestartingContext} uses
     #     {include:Actor::Behaviour.restarting_behaviour_definition}
     module Behaviour
-      MESSAGE_PROCESSED = Object.new
+      MESSAGE_PROCESSED = ::Object.new
 
       require 'concurrent/actor/behaviour/abstract'
       require 'concurrent/actor/behaviour/awaits'

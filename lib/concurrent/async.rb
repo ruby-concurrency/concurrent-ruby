@@ -435,7 +435,7 @@ module Concurrent
     #
     # @!visibility private
     def init_synchronization
-      return self if @__async_initialized__
+      return self if defined?(@__async_initialized__) && @__async_initialized__
       @__async_initialized__ = true
       @__async_delegator__ = AsyncDelegator.new(self)
       @__await_delegator__ = AwaitDelegator.new(@__async_delegator__)

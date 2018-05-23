@@ -232,6 +232,7 @@ module Concurrent
           attr_reader :latch
           def initialize
             @latch = Concurrent::CountDownLatch.new(1)
+            @count = 0
           end
           def update(time, value, reason)
             @count = @count.to_i + 1

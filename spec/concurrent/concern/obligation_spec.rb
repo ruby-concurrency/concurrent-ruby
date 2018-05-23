@@ -4,11 +4,15 @@ module Concurrent
     RSpec.describe Obligation do
 
       let (:obligation_class) do
-
         Class.new(Synchronization::LockableObject) do
           include Obligation
           public :state=, :compare_and_set_state, :if_state
           attr_writer :value, :reason
+          def initialize
+            super
+            set_deref_options
+            init_obligation
+          end
         end
       end
 
@@ -69,8 +73,7 @@ module Concurrent
       context 'fulfilled' do
 
         before(:each) do
-          obligation.state = :fulfilled
-          obligation.send(:value=, 42)
+          obligation.send :set_state, true, 42, nil
           allow(obligation).to receive(:event).and_return(event)
         end
 
@@ -147,7 +150,7 @@ module Concurrent
       context 'rejected' do
 
         before(:each) do
-          obligation.state = :rejected
+          obligation.send :set_state, false, nil, (raise rescue $!)
           allow(obligation).to receive(:event).and_return(event)
         end
 
@@ -187,19 +190,19 @@ module Concurrent
           it 'should return immediately if timeout is zero' do
             expect(event).not_to receive(:wait)
 
-            expect { obligation.value!(0) }.to raise_error
+            expect { obligation.value!(0) }.to raise_error StandardError
           end
 
           it 'should return immediately if timeout is not set' do
             expect(event).not_to receive(:wait)
 
-            expect { obligation.value! }.to raise_error
+            expect { obligation.value! }.to raise_error StandardError
           end
 
           it 'should return immediately if timeout is not zero' do
             expect(event).not_to receive(:wait)
 
-            expect { obligation.value!(5) }.to raise_error
+            expect { obligation.value!(5) }.to raise_error StandardError
           end
 
         end
@@ -209,19 +212,19 @@ module Concurrent
           it 'should return immediately if timeout is zero' do
             expect(event).not_to receive(:wait)
 
-            expect { obligation.no_error!(0) }.to raise_error
+            expect { obligation.no_error!(0) }.to raise_error StandardError
           end
 
           it 'should return immediately if timeout is not set' do
             expect(event).not_to receive(:wait)
 
-            expect { obligation.no_error! }.to raise_error
+            expect { obligation.no_error! }.to raise_error StandardError
           end
 
           it 'should return immediately if timeout is not zero' do
             expect(event).not_to receive(:wait)
 
-            expect { obligation.no_error!(5) }.to raise_error
+            expect { obligation.no_error!(5) }.to raise_error StandardError
           end
 
         end

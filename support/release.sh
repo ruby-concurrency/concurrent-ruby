@@ -55,7 +55,7 @@ then
 
     cd ..
     # TODO (pitr-ch 17-Dec-2016): dry: duplicates rake task
-    rspec_options='--color --backtrace --seed 1 --format documentation --tag ~unfinished --tag ~notravis --tag ~buggy'
+    rspec_options='--color --backtrace --seed 1 --format documentation --tag ~notravis'
 
     # Install and test MRI version
     export RBENV_VERSION=$mriVersion

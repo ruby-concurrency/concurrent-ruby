@@ -212,6 +212,7 @@ module Concurrent
         synchronize do
           clazz = Synchronization::AbstractStruct.define_struct_class(MutableStruct, Synchronization::LockableObject, name, members, &block)
           members.each_with_index do |member, index|
+            clazz.send :remove_method, member
             clazz.send(:define_method, member) do
               synchronize { @values[index] }
             end
