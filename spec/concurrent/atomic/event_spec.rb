@@ -139,6 +139,7 @@ module Concurrent
       end
 
       it 'behaves appropriately if wait begins while #set is processing' do
+        subject = subject()
         subject.reset
         latch = CountDownLatch.new(5)
         5.times{ in_thread{ subject.wait(5) } }

@@ -196,17 +196,16 @@ module Concurrent
 
       context '#broken barrier' do
         it 'should not accept new threads' do
-          t = in_thread { barrier.wait(0.1) }
-          t.join(0.2)
+          t = in_thread { barrier.wait(0.01) }
+          join_with t
 
           expect(barrier).to be_broken
-
           expect(barrier.wait).to be_falsey
         end
 
         it 'can be reset' do
-          t = in_thread { barrier.wait(0.1) }
-          t.join(0.2)
+          t = in_thread { barrier.wait(0.01) }
+          join_with t
 
           expect(barrier).to be_broken
 

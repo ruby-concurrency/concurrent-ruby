@@ -282,31 +282,33 @@ module Concurrent
           compute_finished.count_down
         end
 
-        getter_threads = (1..getters_count).map do
+        getter_threads = getters_count.times.map do
           in_thread do
             getters_started.count_down
             inserted_keys.each do |inserted_key|
-              expect(true).to eq @cache.key?(inserted_key)
-              expect(1).to    eq @cache[inserted_key]
+              expect(@cache.key?(inserted_key)).to eq true
+              expect(@cache[inserted_key]).to eq 1
             end
             expect(false).to eq @cache.key?(key)
+
             compute_started.wait
+
             inserted_keys.each do |inserted_key|
-              expect(true).to eq @cache.key?(inserted_key)
-              expect(1).to    eq @cache[inserted_key]
+              expect(@cache.key?(inserted_key)).to eq true
+              expect(@cache[inserted_key]).to eq 1
             end
-            expect(false).to eq @cache.key?(key)
-            expect(nil).to   eq @cache[key]
+            expect(@cache.key?(key)).to eq false
+            expect(@cache[key]).to eq nil
             getters_finished.count_down
+
             compute_finished.wait
-            expect(true).to eq @cache.key?(key)
-            expect(1).to    eq @cache[key]
+
+            expect(@cache.key?(key)).to eq true
+            expect(@cache[key]).to eq 1
           end
         end
 
-        (getter_threads + [computer_thread]).map do |t|
-          expect(t.join(2)).to be_truthy
-        end # asserting no deadlocks
+        join_with getter_threads + [computer_thread]
         inserted_keys << key
       end
     end

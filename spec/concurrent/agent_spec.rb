@@ -447,8 +447,8 @@ module Concurrent
         end
 
         it 'posts to the global fast executor' do
-          expect(Concurrent.global_fast_executor).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
+          expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_fast_executor).and_call_original
           subject.send { nil }
         end
 
@@ -476,8 +476,8 @@ module Concurrent
         end
 
         it 'posts to the global fast executor' do
-          expect(Concurrent.global_fast_executor).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
+          expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_fast_executor).and_call_original
           subject.send! { nil }
         end
 
@@ -503,8 +503,8 @@ module Concurrent
         end
 
         it 'posts to the global io executor' do
-          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
+          expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject.send_off { nil }
         end
 
@@ -532,8 +532,8 @@ module Concurrent
         end
 
         it 'posts to the global io executor' do
-          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
+          expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject.send_off! { nil }
         end
 
@@ -615,8 +615,8 @@ module Concurrent
         end
 
         it 'posts to the global io executor' do
-          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
+          expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject.post { nil }
         end
 
@@ -1121,7 +1121,7 @@ module Concurrent
           agents = 3.times.collect { Agent.new(0) }
           agents.each { |agent| agent.send_via(executor, latch) { |_, l| l.wait(1) } }
           in_thread { latch.count_down }
-          ok = Agent.await_for(1, *agents)
+          ok = Agent.await_for(5, *agents)
           expect(ok).to be true
         end
 
@@ -1146,7 +1146,7 @@ module Concurrent
           agents = 3.times.collect { Agent.new(0) }
           agents.each { |agent| agent.send_via(executor, latch) { |_, l| l.wait(1) } }
           in_thread { latch.count_down }
-          ok = Agent.await_for!(1, *agents)
+          ok = Agent.await_for!(5, *agents)
           expect(ok).to be true
         end
 
