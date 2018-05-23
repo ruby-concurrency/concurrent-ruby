@@ -10,7 +10,7 @@ module Concurrent
                              JRubyObject
                            when Concurrent.on_rbx?
                              RbxObject
-                           when Concurrent.on_truffle?
+                           when Concurrent.on_truffleruby?
                              TruffleObject
                            else
                              MriObject

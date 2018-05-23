@@ -1,33 +1,27 @@
 require 'thread'
 require 'concurrent/constants'
 require 'concurrent/synchronization'
+require 'concurrent/utility/engine'
 
 module Concurrent
   # @!visibility private
   module Collection
 
     # @!visibility private
-    MapImplementation = if Concurrent.java_extensions_loaded?
+    MapImplementation = case
+                        when Concurrent.on_jruby?
                           # noinspection RubyResolve
                           JRubyMapBackend
-                        elsif defined?(RUBY_ENGINE)
-                          case RUBY_ENGINE
-                          when 'ruby'
-                            require 'concurrent/collection/map/mri_map_backend'
-                            MriMapBackend
-                          when 'rbx'
-                            require 'concurrent/collection/map/atomic_reference_map_backend'
-                            AtomicReferenceMapBackend
-                          when 'jruby+truffle'
-                            require 'concurrent/collection/map/atomic_reference_map_backend'
-                            AtomicReferenceMapBackend
-                          else
-                            warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation' if $VERBOSE
-                            require 'concurrent/collection/map/synchronized_map_backend'
-                            SynchronizedMapBackend
-                          end
-                        else
+                        when Concurrent.on_cruby?
+                          require 'concurrent/collection/map/mri_map_backend'
                           MriMapBackend
+                        when Concurrent.on_rbx? || Concurrent.on_truffleruby?
+                          require 'concurrent/collection/map/atomic_reference_map_backend'
+                          AtomicReferenceMapBackend
+                        else
+                          warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation'
+                          require 'concurrent/collection/map/synchronized_map_backend'
+                          SynchronizedMapBackend
                         end
   end
 

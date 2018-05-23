@@ -32,7 +32,7 @@ module Concurrent
       include JRuby::Synchronized
     end
 
-  elsif Concurrent.on_rbx? || Concurrent.on_truffle?
+  elsif Concurrent.on_rbx? || Concurrent.on_truffleruby?
     require 'monitor'
     require 'concurrent/thread_safe/util/array_hash_rbx'
 
