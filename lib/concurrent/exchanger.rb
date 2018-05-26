@@ -329,7 +329,7 @@ module Concurrent
   # @!macro internal_implementation_note
   ExchangerImplementation = case
                             when Concurrent.on_jruby?
-                              RubyExchanger
+                              JavaExchanger
                             else
                               RubyExchanger
                             end
