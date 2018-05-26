@@ -36,6 +36,10 @@ module Concurrent
       new_thread
     end
 
+    def is_sleeping(thread)
+      expect(in_thread { Thread.pass until thread.status == 'sleep' }.join(1)).not_to eq nil
+    end
+
     def join_with(threads, timeout = 5)
       threads = Array(threads)
       threads.each do |t|

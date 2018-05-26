@@ -315,9 +315,11 @@ module Concurrent
       # @return [Object, CANCEL] the value exchanged by the other thread; {CANCEL} on timeout
       def do_exchange(value, timeout)
         if timeout.nil?
-          @exchanger.exchange(value)
+          Synchronization::JRuby.sleep_interruptibly { @exchanger.exchange(value) }
         else
-          @exchanger.exchange(value, 1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+          Synchronization::JRuby.sleep_interruptibly do
+            @exchanger.exchange(value, 1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+          end
         end
       rescue java.util.concurrent.TimeoutException
         CANCEL
