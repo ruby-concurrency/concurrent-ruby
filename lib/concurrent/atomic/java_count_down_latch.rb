@@ -9,9 +9,8 @@ if Concurrent.on_jruby?
 
       # @!macro count_down_latch_method_initialize
       def initialize(count = 1)
-        unless count.is_a?(Fixnum) && count >= 0
-          raise ArgumentError.new('count must be in integer greater than or equal zero')
-        end
+        Utility::NativeInteger.ensure_integer_and_bounds(count)
+        Utility::NativeInteger.ensure_positive(count)
         @latch = java.util.concurrent.CountDownLatch.new(count)
       end
 
