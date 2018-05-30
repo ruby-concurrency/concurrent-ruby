@@ -308,7 +308,7 @@ module Concurrent
     # @!visibility private
     def execute_task(completion)
       return nil unless @running.true?
-      ScheduledTask.execute(execution_interval, args: [completion], &method(:timeout_task))
+      ScheduledTask.execute(timeout_interval, args: [completion], &method(:timeout_task))
       _success, value, reason = @executor.execute(self)
       if completion.try?
         self.value = value

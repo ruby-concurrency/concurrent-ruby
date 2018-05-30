@@ -243,7 +243,7 @@ module Concurrent
       end
 
       it 'notifies all observers on timeout' do
-        subject = TimerTask.new(execution: 0.1, timeout: 0.1) { sleep }
+        subject = TimerTask.new(run_now: true, execution: 2, timeout: 0.1) { sleep }
         subject.add_observer(observer)
         subject.execute
         observer.latch.wait(1)
