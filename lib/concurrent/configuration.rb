@@ -175,13 +175,8 @@ module Concurrent
   end
 
   def self.new_io_executor(opts = {})
-    ThreadPoolExecutor.new(
-        min_threads:     [2, Concurrent.processor_count].max,
-        max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-        # max_threads:     1000,
+    CachedThreadPool.new(
         auto_terminate:  opts.fetch(:auto_terminate, true),
-        idletime:        60, # 1 minute
-        max_queue:       0, # unlimited
         fallback_policy: :abort # shouldn't matter -- 0 max queue
     )
   end
