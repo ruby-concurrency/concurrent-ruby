@@ -91,7 +91,7 @@ module Concurrent
 
         # @!macro [attach] channel_buffer_offer
         #
-        #   Put an item onto the buffer is possible. If the buffer is open but
+        #   Put an item onto the buffer if possible. If the buffer is open but
         #   unable to add an item, probably due to being full, the method will
         #   return immediately. Similarly, the method will return immediately
         #   when the buffer is closed. A return value of `false` does not
