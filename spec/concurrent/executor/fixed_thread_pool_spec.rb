@@ -8,8 +8,8 @@ module Concurrent
     subject { described_class.new(num_threads) }
 
     after(:each) do
-      subject.kill
-      subject.wait_for_termination(0.1)
+      subject.shutdown
+      expect(subject.wait_for_termination(1)).to eq true
     end
 
     it_should_behave_like :thread_pool
@@ -55,16 +55,22 @@ module Concurrent
       it 'sets explicit :max_queue correctly' do
         subject = described_class.new(5, :max_queue => 10)
         expect(subject.max_queue).to eq 10
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
 
       it 'correctly sets valid :fallback_policy' do
         subject = described_class.new(5, :fallback_policy => :caller_runs)
         expect(subject.fallback_policy).to eq :caller_runs
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
 
       it "correctly sets valid :idletime" do
         subject = described_class.new(5, :idletime => 10)
         expect(subject.idletime).to eq 10
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
 
       it 'raises an exception if given an invalid :fallback_policy' do
@@ -72,8 +78,6 @@ module Concurrent
           described_class.new(5, fallback_policy: :bogus)
         }.to raise_error(ArgumentError)
       end
-
-
     end
 
     context '#min_length' do
@@ -94,7 +98,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject.min_length).to eq num_threads
       end
     end
@@ -117,7 +121,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject.max_length).to eq num_threads
       end
     end
@@ -150,7 +154,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject.largest_length).to eq num_threads
       end
     end
@@ -176,10 +180,13 @@ module Concurrent
 
       it 'never creates more than :num_threads threads' do
         pool = described_class.new(5)
-        100.times{ pool << proc{ sleep(1) } }
+        latch = Concurrent::CountDownLatch.new 1
+        100.times{ pool << proc{ latch.wait } }
         sleep(0.1)
         expect(pool.length).to eq 5
-        pool.kill
+        latch.count_down
+        pool.shutdown
+        expect(pool.wait_for_termination(1)).to eq true
       end
     end
 
@@ -190,7 +197,7 @@ module Concurrent
       end
 
       after(:each) do
-        subject.kill
+        subject.shutdown
       end
 
       # On abort, it should raise an error
@@ -209,6 +216,8 @@ module Concurrent
           end
           latch.wait(1)
         }.to raise_error(RejectedExecutionError)
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
 
       # On discard, we'd expect no error, but also not all five results
@@ -227,6 +236,8 @@ module Concurrent
         latch.wait(1)
 
         expect(@queue.length).to be < 5
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
 
       # To check for caller_runs, we'll check how many unique threads
@@ -254,6 +265,9 @@ module Concurrent
         #NOTE: This test is very, very difficult to setup properly. Hence the 'be_within' matcher
         expect(a.size).to be_within(1).of(5) # one for each run of the block
         expect(a.uniq.size).to be_within(1).of(3) # one for each of the two threads, plus the caller
+
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
     end
 
@@ -268,6 +282,8 @@ module Concurrent
 
           subject = FixedThreadPool.new(5, fallback_policy: :discard)
           expect(subject.fallback_policy).to eq :discard
+          subject.shutdown
+          expect(subject.wait_for_termination(1)).to eq true
         end
 
       else
@@ -290,7 +306,8 @@ module Concurrent
             5.times{ pool << proc{ sleep(1) } }
             sleep(0.1)
             expect(pool.length).to eq 5
-            pool.kill
+            pool.shutdown
+            expect(pool.wait_for_termination(1)).to eq true
           end
         end
       end

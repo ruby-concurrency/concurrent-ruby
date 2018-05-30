@@ -3,8 +3,8 @@ require_relative 'executor_service_shared'
 RSpec.shared_examples :thread_pool do
 
   after(:each) do
-    subject.kill
-    subject.wait_for_termination(0.1)
+    subject.shutdown
+    expect(subject.wait_for_termination(1)).to eq true
   end
 
   it_should_behave_like :executor_service
@@ -24,6 +24,9 @@ RSpec.shared_examples :thread_pool do
         subject = described_class.new(auto_terminate: true)
       end
       expect(subject.auto_terminate?).to be true
+
+      subject.shutdown
+      expect(subject.wait_for_termination(1)).to eq true
     end
 
     it 'returns false when :enable_at_exit_handler is false' do
@@ -33,6 +36,9 @@ RSpec.shared_examples :thread_pool do
         subject = described_class.new(auto_terminate: false)
       end
       expect(subject.auto_terminate?).to be false
+
+      subject.shutdown
+      expect(subject.wait_for_termination(1)).to eq true
     end
   end
 
@@ -47,7 +53,7 @@ RSpec.shared_examples :thread_pool do
       subject.post { latch.count_down }
       latch.wait(0.1)
       subject.shutdown
-      subject.wait_for_termination(1)
+      expect(subject.wait_for_termination(1)).to eq true
       expect(subject.length).to eq 0
     end
   end
@@ -70,7 +76,7 @@ RSpec.shared_examples :thread_pool do
       subject.post { latch.count_down }
       latch.wait(0.1)
       subject.shutdown
-      subject.wait_for_termination(1)
+      expect(subject.wait_for_termination(1)).to eq true
       expect(subject.scheduled_task_count).to be > 0
     end
   end

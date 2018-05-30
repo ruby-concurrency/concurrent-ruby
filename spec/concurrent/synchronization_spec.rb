@@ -10,12 +10,14 @@ module Concurrent
         store              = store()
         store.not_volatile = 0
         store.volatile     = 0
+        @stop = false
 
         in_thread do
           Thread.abort_on_exception = true
           1000000000.times do |i|
             store.not_volatile = i
             store.volatile     = i
+            break if @stop # on JRuby this is not kill-able loop
           end
         end
 
@@ -30,6 +32,7 @@ module Concurrent
         end
 
         expect(t2.value.all?).to eq true
+        @stop = true
       end
     end
 

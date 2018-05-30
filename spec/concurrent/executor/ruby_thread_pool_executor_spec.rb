@@ -5,8 +5,8 @@ module Concurrent
   RSpec.describe RubyThreadPoolExecutor, :type=>:mrirbx do
 
     after(:each) do
-      subject.kill
-      subject.wait_for_termination(0.1)
+      subject.shutdown
+      expect(subject.wait_for_termination(1)).to eq true
     end
 
     subject do
@@ -46,10 +46,12 @@ module Concurrent
       end
 
       it 'returns the remaining capacity when tasks are enqueued' do
-        100.times{ subject.post{ sleep(0.5) } }
+        block = Concurrent::CountDownLatch.new
+        100.times{ subject.post{ block.wait } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         expect(subject.remaining_capacity).to be < expected_max
+        block.count_down
       end
     end
   end

@@ -7,8 +7,8 @@ if Concurrent.on_jruby?
     RSpec.describe JavaSingleThreadExecutor, :type=>:jruby do
 
       after(:each) do
-        subject.kill
-        subject.wait_for_termination(0.1)
+        subject.shutdown
+        expect(subject.wait_for_termination(1)).to eq true
       end
 
       subject { JavaSingleThreadExecutor.new }

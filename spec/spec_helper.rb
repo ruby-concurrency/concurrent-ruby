@@ -45,8 +45,7 @@ RSpec.configure do |config|
     while defined?(@created_threads) && @created_threads && (thread = (@created_threads.pop(true) rescue nil))
       thread.kill
       thread_join = thread.join(0.25)
-      expect(thread_join).not_to be_nil
+      expect(thread_join).not_to be_nil, thread.inspect
     end
   end
-
 end

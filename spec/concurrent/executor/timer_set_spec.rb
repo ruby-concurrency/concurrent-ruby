@@ -7,7 +7,7 @@ module Concurrent
     let(:executor){ Concurrent::ImmediateExecutor.new }
     subject{ TimerSet.new(executor: executor) }
 
-    after(:each){ subject.kill }
+    after(:each){ subject.shutdown }
 
     context 'construction' do
       it 'uses the executor given at construction' do
@@ -203,7 +203,7 @@ module Concurrent
       it 'returns false when not running' do
         task = subject.post(10){ nil }
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(expect(subject.wait_for_termination(1)).to eq true).to eq true
         expect(task.cancel).to be false
       end
     end
@@ -283,7 +283,7 @@ module Concurrent
       it 'returns false when not running' do
         task = subject.post(10){ nil }
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(expect(subject.wait_for_termination(1)).to eq true).to eq true
         expected = task.schedule_time
         success = task.reschedule(10)
         expect(success).to be false
@@ -318,21 +318,21 @@ module Concurrent
       it 'stops the monitor thread on #shutdown' do
         timer_executor = subject.instance_variable_get(:@timer_executor)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(timer_executor).not_to be_running
       end
 
       it 'kills the monitor thread on #kill' do
         timer_executor = subject.instance_variable_get(:@timer_executor)
         subject.kill
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(timer_executor).not_to be_running
       end
 
       it 'rejects tasks once shutdown' do
         queue = subject.instance_variable_get(:@queue)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         subject.post(1) { nil }
         expect(queue).to be_empty
       end
@@ -340,7 +340,7 @@ module Concurrent
       it 'rejects tasks once killed' do
         queue = subject.instance_variable_get(:@queue)
         subject.kill
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         subject.post(1) { nil }
         expect(queue).to be_empty
       end
@@ -377,14 +377,14 @@ module Concurrent
 
       it 'is shutdown? after shutdown completes' do
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject).not_to be_running
         expect(subject).to be_shutdown
       end
 
       it 'is shutdown? after being killed' do
         subject.kill
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject).not_to be_running
         expect(subject).to be_shutdown
       end

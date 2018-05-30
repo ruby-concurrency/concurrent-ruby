@@ -9,8 +9,8 @@ module Concurrent
     end
 
     after(:each) do
-      subject.kill
-      subject.wait_for_termination(1)
+      subject.shutdown
+      expect(subject.wait_for_termination(1)).to eq true
     end
 
     it_should_behave_like :thread_pool
@@ -19,20 +19,22 @@ module Concurrent
 
     context '#initialize' do
 
+      subject { described_class.new }
+
       it 'sets :max_length to DEFAULT_MAX_POOL_SIZE' do
-        expect(described_class.new.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
+        expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
       end
 
       it 'sets :min_length to DEFAULT_MIN_POOL_SIZE' do
-        subject = expect(described_class.new.min_length).to eq described_class::DEFAULT_MIN_POOL_SIZE
+        expect(subject.min_length).to eq described_class::DEFAULT_MIN_POOL_SIZE
       end
 
       it 'sets :idletime to DEFAULT_THREAD_IDLETIMEOUT' do
-        subject = expect(described_class.new.idletime).to eq described_class::DEFAULT_THREAD_IDLETIMEOUT
+        expect(subject.idletime).to eq described_class::DEFAULT_THREAD_IDLETIMEOUT
       end
 
       it 'sets :max_queue to DEFAULT_MAX_QUEUE_SIZE' do
-        subject = expect(described_class.new.max_queue).to eq described_class::DEFAULT_MAX_QUEUE_SIZE
+        expect(subject.max_queue).to eq described_class::DEFAULT_MAX_QUEUE_SIZE
       end
     end
 
@@ -54,7 +56,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject.min_length).to eq 0
       end
     end
@@ -77,7 +79,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
       end
     end
@@ -100,7 +102,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        subject.wait_for_termination(1)
+        expect(subject.wait_for_termination(1)).to eq true
         expect(subject.largest_length).to be > 0
       end
     end
@@ -127,11 +129,15 @@ module Concurrent
 
             subject = CachedThreadPool.new(fallback_policy: :discard)
             expect(subject.fallback_policy).to eq :discard
+            subject.shutdown
+            expect(subject.wait_for_termination(1)).to eq true
           end
 
           it 'defaults :fallback_policy to :abort' do
             subject = CachedThreadPool.new
             expect(subject.fallback_policy).to eq :abort
+            subject.shutdown
+            expect(subject.wait_for_termination(1)).to eq true
           end
 
           it 'raises an exception if given an invalid :fallback_policy' do
