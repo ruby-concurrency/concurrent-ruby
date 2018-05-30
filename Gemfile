@@ -10,8 +10,9 @@ group :development do
   gem 'rake-compiler-dock', '~> 0.6.0'
   gem 'gem-compiler', '~> 0.3.0'
   gem 'benchmark-ips', '~> 2.7'
+end
 
-  # documentation
+group :documentation do
   gem 'countloc', '~> 0.4.0', :platforms => :mri, :require => false
   # TODO (pitr-ch 04-May-2018): update to remove: [DEPRECATION] `last_comment` is deprecated.  Please use `last_description` instead.
   gem 'yard', '~> 0.8.0', :require => false

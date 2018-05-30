@@ -11,6 +11,7 @@ module FileMap
 
   MAP = {
     core: CORE_LIB_FILES + %w(lib/concurrent.rb),
-    edge: EDGE_LIB_FILES + %w(lib/concurrent-edge.rb)
+    edge: EDGE_LIB_FILES + %w(lib/concurrent-edge.rb),
+    spec: (Dir['spec/**/*'] + ['Gemfile', 'Rakefile']) & GIT_FILES
   }
 end

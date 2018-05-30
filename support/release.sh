@@ -22,8 +22,8 @@ log "prerelease:           $prerelease"
 
 set -x
 
-mriVersion="2.4.0"
-jrubyVersion="jruby-9.1.7.0"
+mriVersion="2.4.3"
+jrubyVersion="jruby-9.1.17.0"
 
 if [[ "$@" =~ 'build' || $@ =~ 'all' ]]
 then
