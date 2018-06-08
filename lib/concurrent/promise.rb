@@ -307,7 +307,16 @@ module Concurrent
     # @yield The block operation to be performed asynchronously.
     #
     # @return [Promise] the new promise
-    def then(rescuer = nil, executor = @executor, &block)
+    def then(*args, &block)
+      if args.last.is_a?(::Hash)
+        executor = args.pop[:executor]
+        rescuer = args.first
+      else
+        rescuer, executor = args
+      end
+
+      executor ||= @executor
+
       raise ArgumentError.new('rescuers and block are both missing') if rescuer.nil? && !block_given?
       block = Proc.new { |result| result } unless block_given?
       child = Promise.new(
