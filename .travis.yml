@@ -18,6 +18,7 @@ rvm:
   - jruby-1.7.27
 
   - ruby-head
+  - ruby-2.6.0-preview2
   - jruby-head
 
   - rbx-3
@@ -42,6 +43,7 @@ matrix:
     - rvm: jruby-head
     - rvm: 1.9.3
     - rvm: rbx-3
+    - rvm: ruby-2.6.0-preview2
 
 env:
   global:
