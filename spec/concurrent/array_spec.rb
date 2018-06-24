@@ -2,18 +2,20 @@ module Concurrent
   RSpec.describe Array do
     let!(:ary) { described_class.new }
 
-    it 'concurrency' do
-      (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
-        in_thread do
-          1000.times do
-            ary << i
-            ary.each { |x| x * 2 }
-            ary.shift
-            ary.last
+    context 'concurrency' do
+      it do
+        (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
+          in_thread do
+            1000.times do
+              ary << i
+              ary.each { |x| x * 2 }
+              ary.shift
+              ary.last
+            end
           end
-        end
-      end.map(&:join)
-      expect(ary).to be_empty
+        end.map(&:join)
+        expect(ary).to be_empty
+      end
     end
 
     describe '#slice' do
