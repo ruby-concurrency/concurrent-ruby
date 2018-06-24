@@ -20,6 +20,12 @@ module Concurrent
             obj.send(:_mon_initialize)
             obj
           end
+
+          def self.[](*args)
+            obj = super
+            obj.send(:_mon_initialize)
+            obj
+          end
         end
 
         klass.superclass.instance_methods(false).each do |method|
