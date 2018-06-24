@@ -41,7 +41,14 @@ module Concurrent
           else
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               def #{method}(*args)
-                @_monitor.synchronize { super }
+                monitor = @_monitor
+
+                unless monitor
+                  raise("BUG: Internal monitor was not properly initialized. Please report this to the "\
+                    "concurrent-ruby developers.")
+                end
+
+                monitor.synchronize { super }
               end
             RUBY
           end
