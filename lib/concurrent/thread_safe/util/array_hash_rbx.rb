@@ -10,10 +10,9 @@ module Concurrent
             @_monitor = Monitor.new unless @_monitor # avoid double initialisation
           end
 
-          def self.new
-            obj = super
-            obj.send(:_mon_initialize)
-            obj
+          def initialize(*args)
+            _mon_initialize
+            super
           end
         end
 
