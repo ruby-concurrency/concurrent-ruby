@@ -6,7 +6,7 @@ module Concurrent
 
     after(:each) do
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     subject { RubySingleThreadExecutor.new }

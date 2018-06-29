@@ -5,6 +5,10 @@ module Concurrent
   module TestHelpers
     extend self
 
+    def pool_termination_timeout
+      5
+    end
+
     def delta(v1, v2)
       if block_given?
         v1 = yield(v1)

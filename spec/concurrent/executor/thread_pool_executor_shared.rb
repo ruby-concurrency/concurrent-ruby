@@ -4,7 +4,7 @@ RSpec.shared_examples :thread_pool_executor do
 
   after(:each) do
     subject.shutdown
-    subject.wait_for_termination(0.1)
+    subject.wait_for_termination(pool_termination_timeout)
   end
 
   context '#initialize defaults' do
@@ -39,21 +39,21 @@ RSpec.shared_examples :thread_pool_executor do
       pool = described_class.new(min_threads: 2)
       expect(pool.min_length).to eq 2
       pool.shutdown
-      expect(pool.wait_for_termination(1)).to eq true
+      expect(pool.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     it "sets :max_threads" do
       pool = described_class.new(max_threads: 2)
       expect(pool.max_length).to eq 2
       pool.shutdown
-      expect(pool.wait_for_termination(1)).to eq true
+      expect(pool.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     it "sets :idletime" do
       pool = described_class.new(idletime: 2)
       expect(pool.idletime).to eq 2
       pool.shutdown
-      expect(pool.wait_for_termination(1)).to eq true
+      expect(pool.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     it "doesn't allow max_threads < min_threads" do
@@ -67,7 +67,7 @@ RSpec.shared_examples :thread_pool_executor do
         subject = described_class.new(fallback_policy: policy)
         expect(subject.fallback_policy).to eq policy
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       end
     end
 
@@ -121,7 +121,7 @@ RSpec.shared_examples :thread_pool_executor do
     it 'returns the set value after stopping' do
       5.times{ subject.post{ nil } }
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject.max_queue).to eq expected_max
     end
   end
@@ -161,7 +161,7 @@ RSpec.shared_examples :thread_pool_executor do
       20.times{ subject.post{ trigger.wait } }
       subject.shutdown
       trigger.set
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject.queue_length).to eq 0
     end
 
@@ -182,7 +182,7 @@ RSpec.shared_examples :thread_pool_executor do
       executor = described_class.new(max_queue: 0)
       expect(executor.remaining_capacity).to eq(-1)
       executor.shutdown
-      expect(executor.wait_for_termination(1)).to eq true
+      expect(executor.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     it 'returns :max_length on creation' do
@@ -192,7 +192,7 @@ RSpec.shared_examples :thread_pool_executor do
     it 'returns :max_length when stopped' do
       100.times{ subject.post{ nil } }
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject.remaining_capacity).to eq expected_max
     end
   end
@@ -285,7 +285,7 @@ RSpec.shared_examples :thread_pool_executor do
 
         # Wait for all tasks to finish
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
 
         # The tasks should have run until all the threads and the
         # queue filled up...
@@ -332,7 +332,7 @@ RSpec.shared_examples :thread_pool_executor do
 
         # Wait for all tasks to finish
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
 
         # The tasks should have run until all the threads and the
         # queue filled up...
@@ -390,7 +390,7 @@ RSpec.shared_examples :thread_pool_executor do
 
         # Wait for all tasks to finish
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
 
         # The tasks should have run until all the threads and the
         # queue filled up...
@@ -435,7 +435,7 @@ RSpec.shared_examples :thread_pool_executor do
 
         # Wait for all tasks to finish
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
 
         # The tasks should have run until all the threads and the
         # queue filled up...
@@ -452,7 +452,7 @@ RSpec.shared_examples :thread_pool_executor do
         subject.post{ executed.increment }
 
         # Wait for all tasks to finish
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
 
         expect(executed.value).to be 0
       end
@@ -464,7 +464,7 @@ RSpec.shared_examples :thread_pool_executor do
         subject << proc { executed.increment }
 
         # Wait for all tasks to finish
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
 
         expect(executed.value).to be 0
       end
@@ -491,7 +491,7 @@ RSpec.shared_examples :thread_pool_executor do
       after(:each) do
         # need to replicate this w/i scope otherwise rspec may complain
         executor.shutdown
-        expect(executor.wait_for_termination(1)).to eq true
+        expect(executor.wait_for_termination(pool_termination_timeout)).to eq true
       end
 
       specify '#post does not create any new threads when the queue is at capacity' do
@@ -518,7 +518,7 @@ RSpec.shared_examples :thread_pool_executor do
         trigger.set
 
         executor.shutdown
-        expect(executor.wait_for_termination(1)).to eq true
+        expect(executor.wait_for_termination(pool_termination_timeout)).to eq true
       end
 
       specify '#<< executes the task on the current thread when the queue is at capacity' do

@@ -862,7 +862,7 @@ module Concurrent
           expect(bucket).to eq [1, 2, 3]
 
           executor.kill
-          expect(executor.wait_for_termination(1)).to eq true
+          expect(executor.wait_for_termination(pool_termination_timeout)).to eq true
         end
       end
 

@@ -10,7 +10,7 @@ module Concurrent
 
     after(:each) do
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     it_should_behave_like :thread_pool
@@ -56,7 +56,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
         expect(subject.min_length).to eq 0
       end
     end
@@ -79,7 +79,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
         expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
       end
     end
@@ -102,7 +102,7 @@ module Concurrent
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
-        expect(subject.wait_for_termination(1)).to eq true
+        expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
         expect(subject.largest_length).to be > 0
       end
     end
@@ -130,14 +130,14 @@ module Concurrent
             subject = CachedThreadPool.new(fallback_policy: :discard)
             expect(subject.fallback_policy).to eq :discard
             subject.shutdown
-            expect(subject.wait_for_termination(1)).to eq true
+            expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
           end
 
           it 'defaults :fallback_policy to :abort' do
             subject = CachedThreadPool.new
             expect(subject.fallback_policy).to eq :abort
             subject.shutdown
-            expect(subject.wait_for_termination(1)).to eq true
+            expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
           end
 
           it 'raises an exception if given an invalid :fallback_policy' do

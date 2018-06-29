@@ -4,7 +4,7 @@ RSpec.shared_examples :executor_service do
 
   after(:each) do
     subject.shutdown
-    expect(subject.wait_for_termination(1)).to eq true
+    expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
   end
 
   it_should_behave_like :global_thread_pool
@@ -43,18 +43,18 @@ RSpec.shared_examples :executor_service do
       subject.post{ sleep(0.5) }
       subject.shutdown
       expect(subject).not_to be_running
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
     end
 
     it 'returns false when the thread pool is shutdown' do
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject).not_to be_running
     end
 
     it 'returns false when the thread pool is killed' do
       subject.kill
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject).not_to be_running
     end
   end
@@ -67,7 +67,7 @@ RSpec.shared_examples :executor_service do
       subject.post{ sleep(0.1); latch1.count_down }
       latch1.wait(1)
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       begin
         subject.post{ latch2.count_down }
       rescue Concurrent::RejectedExecutionError
@@ -97,7 +97,7 @@ RSpec.shared_examples :executor_service do
       latch = Concurrent::CountDownLatch.new(1)
       subject.post{ sleep(0.1); latch.count_down }
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(latch.wait(1)).to be_truthy
     end
 
@@ -107,7 +107,7 @@ RSpec.shared_examples :executor_service do
         subject.post { sleep 0.1; q << i }
       end
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(q.length).to eq 5
     end
 
@@ -120,7 +120,7 @@ RSpec.shared_examples :executor_service do
         subject.post{ expected.increment }
       rescue Concurrent::RejectedExecutionError
       end
-      expect(subject.wait_for_termination(1)).to eq true
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(expected.value).to eq(2)
     end
   end
@@ -164,14 +164,14 @@ RSpec.shared_examples :executor_service do
       10.times { subject << proc{ nil } }
       sleep(0.1)
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to be_truthy
+      expect(subject.wait_for_termination(pool_termination_timeout)).to be_truthy
     end
 
     it 'returns true when shutdown successfully completes before timeout' do
       subject.post{ sleep(0.5) }
       sleep(0.1)
       subject.shutdown
-      expect(subject.wait_for_termination(1)).to be_truthy
+      expect(subject.wait_for_termination(pool_termination_timeout)).to be_truthy
     end
 
     it 'returns false when shutdown fails to complete before timeout' do
