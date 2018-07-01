@@ -1797,8 +1797,8 @@ module Concurrent
 
       def on_resolvable(resolved_future, index)
         all_fulfilled = true
-        values        = Array.new(@Resolutions.size)
-        reasons       = Array.new(@Resolutions.size)
+        values        = ::Array.new(@Resolutions.size)
+        reasons       = ::Array.new(@Resolutions.size)
 
         @Resolutions.each_with_index do |internal_state, i|
           fulfilled, values[i], reasons[i] = internal_state.result

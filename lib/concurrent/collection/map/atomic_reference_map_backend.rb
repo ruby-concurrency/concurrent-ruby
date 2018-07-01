@@ -831,7 +831,7 @@ module Concurrent
             # no lock needed (or available) if bin >= 0, because we're not popping values from locked_indexes until we've run through the whole table
             redo unless (bin >= 0 ? table.cas(i, nil, forwarder) : lock_and_clean_up_reverse_forwarders(table, old_table_size, new_table, i, forwarder))
           elsif Node.locked_hash?(node_hash = node.hash)
-            locked_indexes ||= Array.new
+            locked_indexes ||= ::Array.new
             if bin < 0 && locked_arr_idx > 0
               locked_arr_idx -= 1
               i, locked_indexes[locked_arr_idx] = locked_indexes[locked_arr_idx], i # swap with another bin
