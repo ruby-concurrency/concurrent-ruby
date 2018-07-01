@@ -68,7 +68,7 @@ module Concurrent
     context 'concurrency' do
       it do
         (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
-          in_thread do
+          in_thread(ary) do |ary|
             1000.times do
               ary << i
               ary.each { |x| x * 2 }
@@ -82,7 +82,7 @@ module Concurrent
     end
 
     describe '#slice' do
-      # This is mostly relevant on Rubinius and Truffle
+      # This is mostly relevant on Rubinius and TruffleRuby
       it 'correctly initializes the monitor' do
         ary.concat([0, 1, 2, 3, 4, 5, 6, 7, 8])
 

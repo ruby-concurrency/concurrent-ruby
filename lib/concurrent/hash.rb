@@ -2,7 +2,8 @@ require 'concurrent/utility/engine'
 require 'concurrent/thread_safe/util'
 
 module Concurrent
-  if Concurrent.on_cruby?
+  case
+  when Concurrent.on_cruby?
 
     # @!macro [attach] concurrent_hash
     #
@@ -12,10 +13,10 @@ module Concurrent
     #   which takes the lock repeatedly when reading an item.
     #
     #   @see http://ruby-doc.org/core-2.2.0/Hash.html Ruby standard library `Hash`
-    class Hash < ::Hash;
+    class Hash < ::Hash
     end
 
-  elsif Concurrent.on_jruby?
+  when Concurrent.on_jruby?
     require 'jruby/synchronized'
 
     # @!macro concurrent_hash
@@ -23,14 +24,30 @@ module Concurrent
       include JRuby::Synchronized
     end
 
-  elsif Concurrent.on_rbx? || Concurrent.on_truffleruby?
+  when Concurrent.on_rbx?
     require 'monitor'
-    require 'concurrent/thread_safe/util/array_hash_rbx'
+    require 'concurrent/thread_safe/util/data_structures'
 
     # @!macro concurrent_hash
     class Hash < ::Hash
     end
 
     ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Hash
+
+  when Concurrent.on_truffleruby?
+    require 'concurrent/thread_safe/util/data_structures'
+
+    # @!macro concurrent_hash
+    class Hash < ::Hash
+    end
+
+    ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Hash
+
+  else
+    warn 'Possibly unsupported Ruby implementation'
+    class Hash < ::Hash
+    end
+
   end
 end
+

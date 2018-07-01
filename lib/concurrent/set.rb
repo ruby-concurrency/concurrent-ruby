@@ -3,7 +3,8 @@ require 'concurrent/thread_safe/util'
 require 'set'
 
 module Concurrent
-  if Concurrent.on_cruby?
+  case
+  when Concurrent.on_cruby?
 
     # Because MRI never runs code in parallel, the existing
     # non-thread-safe structures should usually work fine.
@@ -25,7 +26,7 @@ module Concurrent
     class Set < ::Set;
     end
 
-  elsif Concurrent.on_jruby?
+  when Concurrent.on_jruby?
     require 'jruby/synchronized'
 
     # @!macro concurrent_Set
@@ -33,15 +34,29 @@ module Concurrent
       include JRuby::Synchronized
     end
 
-  elsif Concurrent.on_rbx? || Concurrent.on_truffleruby?
+  when Concurrent.on_rbx?
     require 'monitor'
-    require 'concurrent/thread_safe/util/array_hash_rbx'
+    require 'concurrent/thread_safe/util/data_structures'
 
     # @!macro concurrent_Set
     class Set < ::Set
     end
 
-    ThreadSafe::Util.make_synchronized_on_rbx Set
+    ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Set
+
+  when Concurrent.on_truffleruby?
+    require 'concurrent/thread_safe/util/data_structures'
+
+    # @!macro concurrent_array
+    class Set < ::Set
+    end
+
+    ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Set
+
+  else
+    warn 'Possibly unsupported Ruby implementation'
+    class Set < ::Set
+    end
   end
 end
 
