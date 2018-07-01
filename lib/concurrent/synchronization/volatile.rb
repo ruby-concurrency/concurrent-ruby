@@ -21,14 +21,16 @@ module Concurrent
     #  => 2
 
     Volatile = case
-    when Concurrent.on_cruby?
-      MriAttrVolatile
-    when Concurrent.on_jruby?
-      JRubyAttrVolatile
-    when Concurrent.on_rbx? || Concurrent.on_truffleruby?
-      RbxAttrVolatile
-    else
-      MriAttrVolatile
-    end
+               when Concurrent.on_cruby?
+                 MriAttrVolatile
+               when Concurrent.on_jruby?
+                 JRubyAttrVolatile
+               when Concurrent.on_rbx?
+                 RbxAttrVolatile
+               when Concurrent.on_truffleruby?
+                 TruffleRubyAttrVolatile
+               else
+                 MriAttrVolatile
+               end
   end
 end

@@ -1,18 +1,19 @@
 module Concurrent
+  # noinspection RubyInstanceVariableNamingConvention
   module Synchronization
 
     # @!visibility private
     # @!macro internal_implementation_note
-    class MriLockableObject < AbstractLockableObject
+    module ConditionSignalling
       protected
 
       def ns_signal
-        @__condition__.signal
+        @__Condition__.signal
         self
       end
 
       def ns_broadcast
-        @__condition__.broadcast
+        @__Condition__.broadcast
         self
       end
     end
@@ -20,50 +21,54 @@ module Concurrent
 
     # @!visibility private
     # @!macro internal_implementation_note
-    class MriMutexLockableObject < MriLockableObject
+    class MutexLockableObject < AbstractLockableObject
+      include ConditionSignalling
+
       safe_initialization!
 
       def initialize(*defaults)
         super(*defaults)
-        @__lock__      = ::Mutex.new
-        @__condition__ = ::ConditionVariable.new
+        @__Lock__      = ::Mutex.new
+        @__Condition__ = ::ConditionVariable.new
       end
 
       protected
 
       def synchronize
-        if @__lock__.owned?
+        if @__Lock__.owned?
           yield
         else
-          @__lock__.synchronize { yield }
+          @__Lock__.synchronize { yield }
         end
       end
 
       def ns_wait(timeout = nil)
-        @__condition__.wait @__lock__, timeout
+        @__Condition__.wait @__Lock__, timeout
         self
       end
     end
 
     # @!visibility private
     # @!macro internal_implementation_note
-    class MriMonitorLockableObject < MriLockableObject
+    class MonitorLockableObject < AbstractLockableObject
+      include ConditionSignalling
+
       safe_initialization!
 
       def initialize(*defaults)
         super(*defaults)
-        @__lock__      = ::Monitor.new
-        @__condition__ = @__lock__.new_cond
+        @__Lock__      = ::Monitor.new
+        @__Condition__ = @__Lock__.new_cond
       end
 
       protected
 
       def synchronize # TODO may be a problem with lock.synchronize { lock.wait }
-        @__lock__.synchronize { yield }
+        @__Lock__.synchronize { yield }
       end
 
       def ns_wait(timeout = nil)
-        @__condition__.wait timeout
+        @__Condition__.wait timeout
         self
       end
     end
