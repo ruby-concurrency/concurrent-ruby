@@ -2,7 +2,8 @@ require 'concurrent/utility/engine'
 require 'concurrent/thread_safe/util'
 
 module Concurrent
-  if Concurrent.on_cruby?
+  case
+  when Concurrent.on_cruby?
 
     # Because MRI never runs code in parallel, the existing
     # non-thread-safe structures should usually work fine.
@@ -21,10 +22,10 @@ module Concurrent
     #   may be lost. Use `#concat` instead.
     #
     #   @see http://ruby-doc.org/core-2.2.0/Array.html Ruby standard library `Array`
-    class Array < ::Array;
+    class Array < ::Array
     end
 
-  elsif Concurrent.on_jruby?
+  when Concurrent.on_jruby?
     require 'jruby/synchronized'
 
     # @!macro concurrent_array
@@ -32,15 +33,29 @@ module Concurrent
       include JRuby::Synchronized
     end
 
-  elsif Concurrent.on_rbx? || Concurrent.on_truffleruby?
+  when Concurrent.on_rbx?
     require 'monitor'
-    require 'concurrent/thread_safe/util/array_hash_rbx'
+    require 'concurrent/thread_safe/util/data_structures'
 
     # @!macro concurrent_array
     class Array < ::Array
     end
 
     ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Array
+
+  when Concurrent.on_truffleruby?
+    require 'concurrent/thread_safe/util/data_structures'
+
+    # @!macro concurrent_array
+    class Array < ::Array
+    end
+
+    ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Array
+
+  else
+    warn 'Possibly unsupported Ruby implementation'
+    class Array < ::Array
+    end
   end
 end
 
