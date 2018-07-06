@@ -7,6 +7,16 @@
 /*#include <libkern/OSAtomic.h>*/
 /*#endif*/
 
+/*
+Following the wisdom of postgres, we opt to use platform specific memory barriers when available.
+These are generally more performant. In this PR, we add specific cases for i386, x86_64.
+
+In the future, we could look at using pg's atomics library directly:
+https://github.com/postgres/postgres/tree/9d4649ca49416111aee2c84b7e4441a0b7aa2fac/src/include/port/atomics
+
+Point of contact @ianks
+*/
+
 #include "atomic_reference.h"
 
 #if (defined(__i386__) || defined(__i386)) && (defined(__GNUC__) || defined(__INTEL_COMPILER))
