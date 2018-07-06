@@ -92,20 +92,20 @@ module Concurrent
     end
 
     # @!macro struct_new
-    def self.new(*args, &block)
+    def self.new(*args, **kw_args, &block)
       clazz_name = nil
       if args.length == 0
         raise ArgumentError.new('wrong number of arguments (0 for 1+)')
       elsif args.length > 0 && args.first.is_a?(String)
         clazz_name = args.shift
       end
-      FACTORY.define_struct(clazz_name, args, &block)
+      FACTORY.define_struct(clazz_name, args, kw_args, &block)
     end
 
     FACTORY = Class.new(Synchronization::LockableObject) do
-      def define_struct(name, members, &block)
+      def define_struct(name, members, kw_args, &block)
         synchronize do
-          clazz = Synchronization::AbstractStruct.define_struct_class(SettableStruct, Synchronization::LockableObject, name, members, &block)
+          clazz = Synchronization::AbstractStruct.define_struct_class(SettableStruct, Synchronization::LockableObject, name, members, kw_args, &block)
           members.each_with_index do |member, index|
             clazz.send :remove_method, member if clazz.instance_methods.include? member
             clazz.send(:define_method, member) do

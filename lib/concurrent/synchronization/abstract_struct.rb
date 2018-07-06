@@ -6,9 +6,18 @@ module Concurrent
     module AbstractStruct
 
       # @!visibility private
-      def initialize(*values)
+      def initialize(*values, **kw_values)
         super()
-        ns_initialize(*values)
+        ns_initialize(*values, **kw_values)
+      end
+
+      # @!macro [attach] struct_keyword_init
+      #
+      #   Returns `true` if the struct uses keyword arguments.
+      #
+      #   @return [Boolean] true if struct uses keyword arguments
+      def keyword_init?
+        self.class::KEYWORD_INIT
       end
 
       # @!macro [attach] struct_length
@@ -127,13 +136,14 @@ module Concurrent
       end
 
       # @!visibility private
-      def self.define_struct_class(parent, base, name, members, &block)
+      def self.define_struct_class(parent, base, name, members, kw_args, &block)
         clazz = Class.new(base || Object) do
           include parent
           self.const_set(:MEMBERS, members.collect{|member| member.to_s.to_sym}.freeze)
-          def ns_initialize(*values)
-            raise ArgumentError.new('struct size differs') if values.length > length
-            @values = values.fill(nil, values.length..length-1)
+          self.const_set(:KEYWORD_INIT, !!kw_args[:keyword_init])
+          def ns_initialize(*values, **kw_values)
+            raise ArgumentError.new('struct size differs') if values.length > length || kw_values.length > length
+            @values = keyword_init? ? members.map{ |val| kw_values.fetch(val, nil) } : values.fill(nil, values.length..length-1)
           end
         end
         unless name.nil?

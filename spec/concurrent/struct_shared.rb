@@ -27,7 +27,8 @@ RSpec.shared_examples :struct do
       members = [:Foo, :bar, 'baz']
       structs = [
         described_class.new(*members).new,
-        described_class.new('ClassForCheckingGetterDefinition', *members).new
+        described_class.new(*members, keyword_init: true).new,
+        described_class.new('ClassForCheckingGetterDefinition', *members).new,
       ]
 
       structs.each do |struct|
@@ -54,8 +55,11 @@ RSpec.shared_examples :struct do
       clazz2 = described_class.new(:foo, :bar) do
         def baz(foo, bar) foo + bar; end
       end
+      clazz3 = described_class.new(:foo, :bar, keyword_init: true) do
+        def baz(foo, bar) foo + bar; end
+      end
 
-      [clazz1, clazz2].each do |clazz|
+      [clazz1, clazz2, clazz3].each do |clazz|
         struct = clazz.new
         expect(struct).to respond_to :baz
         expect(struct.method(:baz).arity).to eq 2
@@ -68,9 +72,11 @@ RSpec.shared_examples :struct do
 
     let!(:members){ [:Foo, :bar, 'baz'] }
     let!(:values){ [42, '42', :fortytwo] }
+    let!(:kw_values){ {Foo: 42, bar: '42', baz: :fortytwo} }
     let!(:classes) do
       [
         described_class.new(*members),
+        described_class.new(*members, keyword_init: true),
         described_class.new('StructConstructionTester', *members)
       ]
     end
@@ -86,7 +92,7 @@ RSpec.shared_examples :struct do
 
     it 'sets all given members in order' do
       classes.each do |clazz|
-        struct = clazz.new(*values)
+        struct =  clazz::KEYWORD_INIT ? clazz.new(**kw_values) : clazz.new(*values)
         members.each_with_index do |member, index|
           expect(struct.send(member)).to eq values[index]
         end
@@ -105,6 +111,7 @@ RSpec.shared_examples :struct do
 
     let!(:anon_struct_members) { [:name, :address, :zip] }
     let(:anon_struct) { described_class.new(*anon_struct_members) }
+    let(:anon_struct_with_keyword_init) { described_class.new(*anon_struct_members, keyword_init: true) }
 
     let!(:named_struct_members) { [:left, :right] }
     let(:named_struct) do
@@ -116,7 +123,17 @@ RSpec.shared_examples :struct do
 
       it 'returns the number of struct members' do
         expect(anon_struct.new.length).to eq anon_struct_members.length
+        expect(anon_struct_with_keyword_init.new.length).to eq anon_struct_members.length
         expect(named_struct.new.length).to eq named_struct_members.length
+      end
+    end
+
+    context '#keyword_init?' do
+
+      it 'returns a boolean indicating if keywords are enabled for initialization' do
+        expect(anon_struct.new.keyword_init?).to eq false
+        expect(anon_struct_with_keyword_init.new.keyword_init?).to eq true
+        expect(named_struct.new.keyword_init?).to eq false
       end
     end
 
@@ -124,11 +141,13 @@ RSpec.shared_examples :struct do
 
       it 'returns the struct members as an array of symbols' do
         expect(anon_struct.new.members).to eq anon_struct_members
+        expect(anon_struct_with_keyword_init.new.members).to eq anon_struct_members
         expect(named_struct.new.members).to eq named_struct_members
       end
 
       it 'returns a different object than the array passed at definition' do
         expect(anon_struct.new.members.object_id).to_not eq anon_struct_members.object_id
+        expect(anon_struct_with_keyword_init.new.members.object_id).to_not eq anon_struct_members.object_id
         expect(named_struct.new.members.object_id).to_not eq named_struct_members.object_id
       end
     end
@@ -137,6 +156,7 @@ RSpec.shared_examples :struct do
 
       it 'returns the number of struct members' do
         expect(anon_struct.new.size).to eq anon_struct_members.size
+        expect(anon_struct_with_keyword_init.new.size).to eq anon_struct_members.size
         expect(named_struct.new.size).to eq named_struct_members.size
       end
     end
@@ -145,9 +165,11 @@ RSpec.shared_examples :struct do
 
       it 'returns the values of the struct as an array in order' do
         expect(anon_struct.new().values).to eq [nil, nil, nil]
+        expect(anon_struct_with_keyword_init.new().values).to eq [nil, nil, nil]
         expect(named_struct.new().values).to eq [nil, nil]
 
         expect(anon_struct.new(:foo, :bar, :baz).values).to eq [:foo, :bar, :baz]
+        expect(anon_struct_with_keyword_init.new(name: :foo, address: :bar, zip: :baz).values).to eq [:foo, :bar, :baz]
         expect(named_struct.new(:yes, :no).values).to eq [:yes, :no]
       end
     end
