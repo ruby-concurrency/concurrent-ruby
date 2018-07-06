@@ -1,4 +1,4 @@
-require 'concurrent/edge/atomic_markable_reference'
+require 'concurrent/atomic/atomic_markable_reference'
 
 module Concurrent
   module Edge
@@ -10,7 +10,7 @@ module Concurrent
 
         def initialize(data = nil, successor = nil)
           super()
-          @SuccessorReference = AtomicMarkableReference.new(successor || Tail.new)
+          @SuccessorReference  = AtomicMarkableReference.new(successor || Tail.new)
           @Data                = data
           @Key                 = key_for data
         end

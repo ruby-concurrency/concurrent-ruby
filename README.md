@@ -108,6 +108,7 @@ Thread-safe variables:
 * [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html) A lock that supports multiple readers but only one writer.
 * [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html) A read/write lock with reentrant and upgrade features.
 * [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html) A counting-based locking mechanism that uses permits.
+* [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atomic/AtomicMarkableReference.html)
 
 ### Edge Features
 
@@ -129,7 +130,6 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
   inspiration from Clojure [core.async](https://clojure.github.io/core.async/).
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
-* [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
 * [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
 
