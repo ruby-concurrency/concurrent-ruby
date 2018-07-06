@@ -595,7 +595,7 @@ module Concurrent
         it 'raises an exception when no block is given' do
           expect {
             Channel.go_loop
-          }.to raise_error(RejectedExecutionError)
+          }.to raise_error(ArgumentError)
         end
 
         it 'loops until the block returns false' do
