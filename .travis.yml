@@ -3,7 +3,7 @@ language: ruby
 rvm:
   # start with the latest
   - 2.5.1
-  - jruby-9.1.17.0
+  - jruby-9.2.0.0
 
   # older versions
   - 2.4.4
@@ -13,10 +13,12 @@ rvm:
   - 2.0.0
   - 1.9.3
 
+  - jruby-9.1.17.0
   - jruby-9.0.5.0
   - jruby-1.7.27
 
   - ruby-head
+  - ruby-2.6.0-preview2
   - jruby-head
 
   - rbx-3
@@ -41,6 +43,7 @@ matrix:
     - rvm: jruby-head
     - rvm: 1.9.3
     - rvm: rbx-3
+    - rvm: ruby-2.6.0-preview2
 
 env:
   global:

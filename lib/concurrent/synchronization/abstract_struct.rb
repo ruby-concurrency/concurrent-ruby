@@ -117,7 +117,7 @@ module Concurrent
 
       # @!visibility private
       def pr_underscore(clazz)
-        word = clazz.to_s
+        word = clazz.to_s.dup # dup string to workaround JRuby 9.2.0.0 bug https://github.com/jruby/jruby/issues/5229
         word.gsub!(/::/, '/')
         word.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
         word.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
