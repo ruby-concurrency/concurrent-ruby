@@ -165,7 +165,7 @@ module Concurrent
       # @overload create(value, default_executor = self.default_executor)
       #   @param [Object] value when none of the above overloads fits
       #   @return [Future] a fulfilled future with the value.
-      def create(argument = nil, default_executor = self.default_executor)
+      def make_future(argument = nil, default_executor = self.default_executor)
         case argument
         when AbstractEventFuture
           # returning wrapper would change nothing
