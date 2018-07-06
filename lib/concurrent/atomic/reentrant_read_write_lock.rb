@@ -21,7 +21,9 @@ module Concurrent
   # also acquire a read lock OR a write lock more than once. Only when the read (or
   # write) lock is released as many times as it was acquired, will the thread
   # actually let it go, allowing other threads which might have been waiting
-  # to proceed.
+  # to proceed. Therefore the lock can be upgraded by first acquiring
+  # read lock and then write lock and that the lock can be downgraded by first
+  # having both read and write lock a releasing just the write lock.
   #
   # If both read and write locks are acquired by the same thread, it is not strictly
   # necessary to release them in the same order they were acquired. In other words,
