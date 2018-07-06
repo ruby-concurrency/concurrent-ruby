@@ -32,6 +32,11 @@ The design goals of this gem are:
 * Exclude features that don't make sense in Ruby
 * Be small, lean, and loosely coupled
 
+## Contributing
+
+**This gem depends on contributions and we appreciate your help. Would you like to contribute? Great! 
+Have a look at [issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).**
+
 ### Supported Ruby versions
 
 MRI 1.9.3, 2.0 and above, JRuby 1.7x in 1.9 mode, JRuby 9000, and Rubinius 2.x are supported.
@@ -40,9 +45,9 @@ Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is
 
 ## Thread Safety
 
-*Concurrent Ruby makes the strongest thread safety guarantees of any Ruby concurrency library. We are the only library with a published [memory model](https://github.com/ruby-concurrency/concurrent-ruby/blob/master/doc/synchronization.md) which provides consistent behavior and guarantees on all three of the main Ruby interpreters (MRI/CRuby, JRuby, and Rubinius).*
+*Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency library, providing consistent behavior and guarantees on all three of the main Ruby interpreters (MRI/CRuby, JRuby, and Rubinius).*
 
-Every abstraction in this library is thread safe. Similarly, all are deadlock free and many are fully lock free. Specific thread safety guarantees are documented with each abstraction.
+Every abstraction in this library is thread safe. Specific thread safety guarantees are documented with each abstraction.
 
 It is critical to remember, however, that Ruby is a language of mutable references. *No* concurrency library for Ruby can ever prevent the user from making thread safety mistakes (such as sharing a mutable object between threads and modifying it on both threads) or from creating deadlocks through incorrect use of locks. All the library can do is provide safe abstractions which encourage safe practices. Concurrent Ruby provides more safe concurrency abstractions than any other Ruby library, many of which support the mantra of ["Do not communicate by sharing memory; instead, share memory by communicating"](https://blog.golang.org/share-memory-by-communicating). Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and immutable variable types and data structures.
 
@@ -121,28 +126,23 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 * [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html):
   Unified implementation of futures and promises which combines features of previous `Future`,
   `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and `TimerTask` into a single framework. It extensively uses the
-  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of obviously blocking
-  operations like `#wait`, `#value`. It also offers better performance.
+  new synchronization layer to make all the features **non-blocking** and **lock-free**, with the exception of 
+  obviously blocking operations like `#wait`, `#value`. It also offers better performance. 
+  Status: The framework is being finalized so it can be moved to core. It will eventually replace old implementations 
+  it replaces.
 * [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html):
   Implements the Actor Model, where concurrent actors exchange messages.
+  Status: Partial documentation and tests; depends on new future/promise framework; stability is good.
 * [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
   Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
   Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
   inspiration from Clojure [core.async](https://clojure.github.io/core.async/).
+  Status: Partial documentation and tests.
 * [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
 * [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
+  Status: will be moved to core soon.
 * [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
-
-#### Statuses:
-
-*Why are these not in core?*
-
-- **Promises Framework** - They are being finalized to be able to be moved to core. They'll deprecate old 
-  implementation.
-- **Actor** - Partial documentation and tests; depends on new future/promise framework; stability is good.
-- **Channel** - Brand new implementation; partial documentation and tests; stability is good.
-- **LazyRegister** - Missing documentation and tests.
-- **AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack** - Need real world battle testing.
+  Status: missing documentation and tests.
 
 ## Usage
 
