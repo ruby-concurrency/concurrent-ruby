@@ -14,7 +14,7 @@ module Concurrent
       # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
         super()
-        self.reference = ImmutableArray[value, mark]
+        self.reference = immutable_array(value, mark)
       end
 
       # @!macro [attach] atomic_markable_reference_method_compare_and_set
@@ -53,7 +53,7 @@ module Concurrent
           return false unless expected_val.equal? curr_val
         end
 
-        prospect = ImmutableArray[new_val, new_mark]
+        prospect = immutable_array(new_val, new_mark)
 
         compare_and_set_reference current, prospect
       end
@@ -63,7 +63,7 @@ module Concurrent
       #
       #   Gets the current reference and marked values.
       #
-      #   @return [ImmutableArray] the current reference and marked values
+      #   @return [Array] the current reference and marked values
       def get
         reference
       end
@@ -95,9 +95,9 @@ module Concurrent
       #   @param [Object] new_val the new value
       #   @param [Boolean] new_mark the new mark
       #
-      #   @return [ImmutableArray] both the new value and the new mark
+      #   @return [Array] both the new value and the new mark
       def set(new_val, new_mark)
-        self.reference = ImmutableArray[new_val, new_mark]
+        self.reference = immutable_array(new_val, new_mark)
       end
 
       # @!macro [attach] atomic_markable_reference_method_update
@@ -111,14 +111,14 @@ module Concurrent
       # @yieldparam [Object] old_val the starting value of the atomic reference
       # @yieldparam [Boolean] old_mark the starting state of marked
       #
-      # @return [ImmutableArray] the new value and new mark
+      # @return [Array] the new value and new mark
       def update
         loop do
           old_val, old_mark = reference
           new_val, new_mark = yield old_val, old_mark
 
           if compare_and_set old_val, new_val, old_mark, new_mark
-            return ImmutableArray[new_val, new_mark]
+            return immutable_array(new_val, new_mark)
           end
         end
       end
@@ -134,7 +134,7 @@ module Concurrent
       # @yieldparam [Object] old_val the starting value of the atomic reference
       # @yieldparam [Boolean] old_mark the starting state of marked
       #
-      # @return [ImmutableArray] the new value and marked state
+      # @return [Array] the new value and marked state
       #
       # @raise [Concurrent::ConcurrentUpdateError] if the update fails
       def try_update!
@@ -148,7 +148,7 @@ module Concurrent
             'the `AtomicMarkableReference#update` method.'
         end
 
-        ImmutableArray[new_val, new_mark]
+        immutable_array(new_val, new_mark)
       end
 
       # @!macro [attach] atomic_markable_reference_method_try_update
@@ -161,7 +161,7 @@ module Concurrent
       # @yieldparam [Object] old_val the starting value of the atomic reference
       # @yieldparam [Boolean] old_mark the starting state of marked
       #
-      # @return [ImmutableArray] the new value and marked state, or nil if
+      # @return [Array] the new value and marked state, or nil if
       # the update failed
       def try_update
         old_val, old_mark = reference
@@ -169,14 +169,13 @@ module Concurrent
 
         return unless compare_and_set old_val, new_val, old_mark, new_mark
 
-        ImmutableArray[new_val, new_mark]
+        immutable_array(new_val, new_mark)
       end
 
-      # Internal/private ImmutableArray for representing pairs
-      class ImmutableArray < ::Array
-        def self.new(*args)
-          super(*args).freeze
-        end
+      private
+
+      def immutable_array(*args)
+        args.freeze
       end
     end
   end
