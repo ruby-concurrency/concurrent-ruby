@@ -1,4 +1,4 @@
-RSpec.describe Concurrent::Atomic::AtomicMarkableReference do
+RSpec.describe Concurrent::AtomicMarkableReference do
   subject { described_class.new 1000, true }
 
   describe '.initialize' do

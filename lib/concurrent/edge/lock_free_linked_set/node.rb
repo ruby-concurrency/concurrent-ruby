@@ -5,7 +5,6 @@ module Concurrent
     class LockFreeLinkedSet
       class Node < Synchronization::Object
         include Comparable
-        include Concurrent::Atomic
 
         safe_initialization!
 
