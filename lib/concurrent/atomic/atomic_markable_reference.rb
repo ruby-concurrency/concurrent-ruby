@@ -1,37 +1,32 @@
 module Concurrent
   module Atomic
-    # @!macro [attach] atomic_markable_reference
+    # An atomic reference which maintains an object reference along with a mark bit
+    # that can be updated atomically.
     #
-    #   An atomic reference which maintains an object reference along with a mark bit
-    #   that can be updated atomically.
-    #
-    #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicMarkableReference.html
-    #     java.util.concurrent.atomic.AtomicMarkableReference
+    # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/AtomicMarkableReference.html
+    #   java.util.concurrent.atomic.AtomicMarkableReference
     class AtomicMarkableReference < ::Concurrent::Synchronization::Object
 
       private(*attr_atomic(:reference))
 
-      # @!macro [attach] atomic_markable_reference_method_initialize
       def initialize(value = nil, mark = false)
         super()
         self.reference = immutable_array(value, mark)
       end
 
-      # @!macro [attach] atomic_markable_reference_method_compare_and_set
+      # Atomically sets the value and mark to the given updated value and
+      # mark given both:
+      #   - the current value == the expected value &&
+      #   - the current mark == the expected mark
       #
-      #   Atomically sets the value and mark to the given updated value and
-      #   mark given both:
-      #     - the current value == the expected value &&
-      #     - the current mark == the expected mark
+      # @param [Object] expected_val the expected value
+      # @param [Object] new_val the new value
+      # @param [Boolean] expected_mark the expected mark
+      # @param [Boolean] new_mark the new mark
       #
-      #   @param [Object] expected_val the expected value
-      #   @param [Object] new_val the new value
-      #   @param [Boolean] expected_mark the expected mark
-      #   @param [Boolean] new_mark the new mark
-      #
-      #   @return [Boolean] `true` if successful. A `false` return indicates
-      #   that the actual value was not equal to the expected value or the
-      #   actual mark was not equal to the expected mark
+      # @return [Boolean] `true` if successful. A `false` return indicates
+      # that the actual value was not equal to the expected value or the
+      # actual mark was not equal to the expected mark
       def compare_and_set(expected_val, new_val, expected_mark, new_mark)
         # Memoize a valid reference to the current AtomicReference for
         # later comparison.
@@ -59,49 +54,39 @@ module Concurrent
       end
       alias_method :compare_and_swap, :compare_and_set
 
-      # @!macro [attach] atomic_markable_reference_method_get
+      # Gets the current reference and marked values.
       #
-      #   Gets the current reference and marked values.
-      #
-      #   @return [Array] the current reference and marked values
+      # @return [Array] the current reference and marked values
       def get
         reference
       end
 
-      # @!macro [attach] atomic_markable_reference_method_value
+      # Gets the current value of the reference
       #
-      #   Gets the current value of the reference
-      #
-      #   @return [Object] the current value of the reference
+      # @return [Object] the current value of the reference
       def value
         reference[0]
       end
 
-      # @!macro [attach] atomic_markable_reference_method_mark
+      # Gets the current marked value
       #
-      #   Gets the current marked value
-      #
-      #   @return [Boolean] the current marked value
+      # @return [Boolean] the current marked value
       def mark
         reference[1]
       end
       alias_method :marked?, :mark
 
-      # @!macro [attach] atomic_markable_reference_method_set
+      # _Unconditionally_ sets to the given value of both the reference and
+      # the mark.
       #
-      #   _Unconditionally_ sets to the given value of both the reference and
-      #   the mark.
+      # @param [Object] new_val the new value
+      # @param [Boolean] new_mark the new mark
       #
-      #   @param [Object] new_val the new value
-      #   @param [Boolean] new_mark the new mark
-      #
-      #   @return [Array] both the new value and the new mark
+      # @return [Array] both the new value and the new mark
       def set(new_val, new_mark)
         self.reference = immutable_array(new_val, new_mark)
       end
 
-      # @!macro [attach] atomic_markable_reference_method_update
-      #
       # Pass the current value and marked state to the given block, replacing it
       # with the block's results. May retry if the value changes during the
       # block's execution.
@@ -123,8 +108,6 @@ module Concurrent
         end
       end
 
-      # @!macro [attach] atomic_markable_reference_method_try_update!
-      #
       # Pass the current value to the given block, replacing it
       # with the block's result. Raise an exception if the update
       # fails.
@@ -151,8 +134,6 @@ module Concurrent
         immutable_array(new_val, new_mark)
       end
 
-      # @!macro [attach] atomic_markable_reference_method_try_update
-      #
       # Pass the current value to the given block, replacing it with the
       # block's result. Simply return nil if update fails.
       #
