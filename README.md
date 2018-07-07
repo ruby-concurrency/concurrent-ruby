@@ -142,8 +142,8 @@ MRI 2.0 and above, JRuby 9000, TruffleRuby are supported.
 This gem should be fully compatible with any interpreter that is compliant with Ruby 2.0 or newer.
 Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.
 
-Legacy support for Rubinius is kept but is no longer maintained, if you would like to help 
-please respond to [#739](https://github.com/ruby-concurrency/concurrent-ruby/issues/739)
+The legacy support for Rubinius is kept but it is no longer maintained, if you would like to help 
+please respond to [#739](https://github.com/ruby-concurrency/concurrent-ruby/issues/739).
 
 ## Usage
 
