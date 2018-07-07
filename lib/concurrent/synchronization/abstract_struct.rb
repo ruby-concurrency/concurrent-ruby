@@ -142,8 +142,14 @@ module Concurrent
           self.const_set(:MEMBERS, members.collect{|member| member.to_s.to_sym}.freeze)
           self.const_set(:KEYWORD_INIT, !!kw_args[:keyword_init])
           def ns_initialize(*values, **kw_values)
-            raise ArgumentError.new('struct size differs') if values.length > length || kw_values.length > length
-            @values = keyword_init? ? members.map{ |val| kw_values.fetch(val, nil) } : values.fill(nil, values.length..length-1)
+            @values = if keyword_init?
+              key_diff = kw_values.keys - members
+              raise ArgumentError.new("unknown keywords: #{key_diff.join(',')}") unless key_diff.empty?
+              members.map {|val| kw_values.fetch(val, nil)}
+            else
+              raise ArgumentError.new('struct size differs') if values.length > length
+              values.fill(nil, values.length..length-1)
+            end
           end
         end
         unless name.nil?

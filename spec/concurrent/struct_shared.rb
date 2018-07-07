@@ -101,8 +101,13 @@ RSpec.shared_examples :struct do
 
     it 'raises an exception when extra members are given' do
       classes.each do |clazz|
-        extra_values = values << 'forty two'
-        expect{ clazz.new(*extra_values) }.to raise_error(ArgumentError)
+        if clazz::KEYWORD_INIT
+          extra_values = kw_values.merge({FortyTwo: 'forty two'})
+          expect{ clazz.new(**extra_values) }.to raise_error(ArgumentError)
+        else  
+          extra_values = values << 'forty two'
+          expect{ clazz.new(*extra_values) }.to raise_error(ArgumentError)
+        end
       end
     end
   end
