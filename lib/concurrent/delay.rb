@@ -81,13 +81,15 @@ module Concurrent
         # this function has been optimized for performance and
         # should not be modified without running new benchmarks
         synchronize do
-          execute = @computing = true unless @computing
+          execute = @evaluation_started = true unless @evaluation_started
           if execute
             begin
               set_state(true, @task.call, nil)
             rescue => ex
               set_state(false, nil, ex)
             end
+          elsif incomplete?
+            raise IllegalOperationError, 'Recursive call to #value during evaluation of the Delay'
           end
         end
         if @do_nothing_on_deref
@@ -144,7 +146,7 @@ module Concurrent
     def reconfigure(&block)
       synchronize do
         raise ArgumentError.new('no block given') unless block_given?
-        unless @computing
+        unless @evaluation_started
           @task = block
           true
         else
@@ -160,9 +162,9 @@ module Concurrent
       set_deref_options(opts)
       @executor = opts[:executor]
 
-      @task      = block
-      @state     = :pending
-      @computing = false
+      @task               = block
+      @state              = :pending
+      @evaluation_started = false
     end
 
     private
@@ -173,7 +175,7 @@ module Concurrent
       # should not be modified without running new benchmarks
       execute = task = nil
       synchronize do
-        execute = @computing = true unless @computing
+        execute = @evaluation_started = true unless @evaluation_started
         task    = @task
       end
 
