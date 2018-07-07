@@ -11,11 +11,9 @@ rvm:
   - 2.2.10
   - 2.1.10
   - 2.0.0
-  - 1.9.3
 
   - jruby-9.1.17.0
   - jruby-9.0.5.0
-  - jruby-1.7.27
 
   - ruby-head
   - ruby-2.6.0-preview2
@@ -41,7 +39,6 @@ matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
-    - rvm: 1.9.3
     - rvm: rbx-3
     - rvm: ruby-2.6.0-preview2
 
