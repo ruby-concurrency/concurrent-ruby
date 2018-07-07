@@ -35,12 +35,6 @@ The design goals of this gem are:
 **This gem depends on contributions and we appreciate your help. Would you like to contribute? Great! 
 Have a look at [issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).**
 
-### Supported Ruby versions
-
-MRI 1.9.3, 2.0 and above, JRuby 1.7x in 1.9 mode, JRuby 9000, and Rubinius 2.x are supported.
-This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
-Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.
-
 ## Thread Safety
 
 *Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency library, providing consistent behavior and guarantees on all three of the main Ruby interpreters (MRI/CRuby, JRuby, and Rubinius).*
@@ -51,7 +45,7 @@ It is critical to remember, however, that Ruby is a language of mutable referenc
 
 ## Features & Documentation
 
-The primary site for documentation is the automatically generated [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html)
+**The primary site for documentation is the automatically generated [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html) which is up to date with latest relase.** This readme matches the master so may contain new stuff not yet released.
 
 We also have a [mailing list](http://groups.google.com/group/concurrent-ruby) and [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby).
 
@@ -141,6 +135,12 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
   Status: will be moved to core soon.
 * [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
   Status: missing documentation and tests.
+
+## Supported Ruby versions
+
+MRI 1.9.3, 2.0 and above, JRuby 1.7x in 1.9 mode, JRuby 9000, and Rubinius 2.x are supported.
+This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
+Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.
 
 ## Usage
 
