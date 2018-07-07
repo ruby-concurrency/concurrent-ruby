@@ -860,6 +860,9 @@ module Concurrent
 
           subject.await_for(5)
           expect(bucket).to eq [1, 2, 3]
+
+          executor.kill
+          expect(executor.wait_for_termination(pool_termination_timeout)).to eq true
         end
       end
 

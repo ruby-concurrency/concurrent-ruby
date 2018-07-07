@@ -1,8 +1,5 @@
-$:.push File.join(File.dirname(__FILE__), 'lib')
-$:.push File.join(File.dirname(__FILE__), 'support')
-
-require 'concurrent/version'
-require 'file_map'
+require_relative 'lib/concurrent/version'
+require_relative 'support/file_map'
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")

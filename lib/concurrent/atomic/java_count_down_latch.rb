@@ -9,19 +9,20 @@ if Concurrent.on_jruby?
 
       # @!macro count_down_latch_method_initialize
       def initialize(count = 1)
-        unless count.is_a?(Fixnum) && count >= 0
-          raise ArgumentError.new('count must be in integer greater than or equal zero')
-        end
+        Utility::NativeInteger.ensure_integer_and_bounds(count)
+        Utility::NativeInteger.ensure_positive(count)
         @latch = java.util.concurrent.CountDownLatch.new(count)
       end
 
       # @!macro count_down_latch_method_wait
       def wait(timeout = nil)
         if timeout.nil?
-          @latch.await
+          Synchronization::JRuby.sleep_interruptibly { @latch.await }
           true
         else
-          @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+          Synchronization::JRuby.sleep_interruptibly do
+            @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+          end
         end
       end
 

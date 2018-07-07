@@ -8,14 +8,13 @@ RSpec.shared_examples 'exchanger method with indefinite timeout' do
     latch_1 = Concurrent::CountDownLatch.new
     latch_2 = Concurrent::CountDownLatch.new
 
-    in_thread do
+    t = in_thread do
       latch_1.count_down
-      subject.send(method_name, 1)
+      subject.send(method_name, 0.1)
       latch_2.count_down
     end
 
-    latch_1.wait(1)
-    latch_2.wait(0.1)
+    is_sleeping t
     expect(latch_1.count).to eq 0
     expect(latch_2.count).to eq 1
   end
@@ -237,26 +236,25 @@ module Concurrent
     end
   end
 
-  # if defined? JavaExchanger
-  #
-  #   RSpec.describe JavaExchanger do
-  #     it_behaves_like :exchanger
-  #   end
-  # end
+  if defined? JavaExchanger
+    RSpec.describe JavaExchanger do
+      it_behaves_like :exchanger
+    end
+  end
 
   RSpec.describe Exchanger do
 
     context 'class hierarchy' do
 
-      # if Concurrent.on_jruby?
-      #   it 'inherits from JavaExchanger' do
-      #     expect(Exchanger.ancestors).to include(JavaExchanger)
-      #   end
-      # else
-      it 'inherits from RubyExchanger' do
-        expect(Exchanger.ancestors).to include(RubyExchanger)
+      if Concurrent.on_jruby?
+        it 'inherits from JavaExchanger' do
+          expect(Exchanger.ancestors).to include(JavaExchanger)
+        end
+      else
+        it 'inherits from RubyExchanger' do
+          expect(Exchanger.ancestors).to include(RubyExchanger)
+        end
       end
-      # end
     end
   end
 end

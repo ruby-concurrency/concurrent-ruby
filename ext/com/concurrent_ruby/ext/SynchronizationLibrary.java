@@ -5,6 +5,7 @@ import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
+import org.jruby.RubyThread;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
@@ -96,6 +97,14 @@ public class SynchronizationLibrary implements Library {
 
         defineClass(runtime, synchronizationModule, "AbstractLockableObject", "JRubyLockableObject",
                 JRubyLockableObject.class, JRUBY_LOCKABLE_OBJECT_ALLOCATOR);
+
+        defineClass(runtime, synchronizationModule, "Object", "JRuby",
+                JRuby.class, new ObjectAllocator() {
+                    @Override
+                    public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+                        return new JRuby(runtime, klazz);
+                    }
+                });
     }
 
     private RubyClass defineClass(
@@ -265,6 +274,31 @@ public class SynchronizationLibrary implements Library {
         public IRubyObject nsBroadcast(ThreadContext context) {
             notifyAll();
             return this;
+        }
+    }
+
+    @JRubyClass(name = "JRuby")
+    public static class JRuby extends RubyObject {
+        public JRuby(Ruby runtime, RubyClass metaClass) {
+            super(runtime, metaClass);
+        }
+
+        @JRubyMethod(name = "sleep_interruptibly", visibility = Visibility.PUBLIC, module = true)
+        public static IRubyObject sleepInterruptibly(ThreadContext context, IRubyObject receiver, Block block) {
+            try {
+                return context.getThread().executeTask(context, block,
+                        new RubyThread.Task<Block, IRubyObject>() {
+                            public IRubyObject run(ThreadContext context, Block block1) throws InterruptedException {
+                                return block1.call(context);
+                            }
+
+                            public void wakeup(RubyThread thread, Block block1) {
+                                thread.getNativeThread().interrupt();
+                            }
+                        });
+            } catch (InterruptedException e) {
+                throw context.runtime.newThreadError("interrupted in Concurrent::Synchronization::JRuby.sleep_interruptibly");
+            }
         }
     }
 }

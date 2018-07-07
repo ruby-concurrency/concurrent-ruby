@@ -42,10 +42,14 @@ RSpec.shared_examples :count_down_latch do
 
   describe '#wait' do
 
-    it 'blocks indefinitely' do
-      # test the thread is kill-able
-      in_thread(latch) { |l| l.wait }
-      sleep 0.1
+    it 'blocks indefinitely, and is kill-able' do
+      t = in_thread(latch) { |l| l.wait }
+      is_sleeping t
+    end
+
+    it 'blocks indefinitely with timeout, and is kill-able' do
+      t = in_thread(latch) { |l| l.wait 100 }
+      is_sleeping t
     end
 
     context 'count set to zero' do
@@ -153,21 +157,21 @@ module Concurrent
     end
   end
 
-  # if Concurrent.on_jruby?
-  #   RSpec.describe JavaCountDownLatch do
-  #     it_should_behave_like :count_down_latch
-  #   end
-  # end
+  if Concurrent.on_jruby?
+    RSpec.describe JavaCountDownLatch do
+      it_should_behave_like :count_down_latch
+    end
+  end
 
   RSpec.describe CountDownLatch do
-    # if Concurrent.on_jruby?
-    #   it 'inherits from JavaCountDownLatch' do
-    #     expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
-    #   end
-    # else
-    it 'inherits from MutexCountDownLatch' do
-      expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
+    if Concurrent.on_jruby?
+      it 'inherits from JavaCountDownLatch' do
+        expect(CountDownLatch.ancestors).to include(JavaCountDownLatch)
+      end
+    else
+      it 'inherits from MutexCountDownLatch' do
+        expect(CountDownLatch.ancestors).to include(MutexCountDownLatch)
+      end
     end
-    # end
   end
 end

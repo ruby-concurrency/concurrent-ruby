@@ -90,10 +90,10 @@ if Concurrent.on_jruby?
       private
 
       def ns_initialize(opts)
-        min_length = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
-        max_length = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
-        idletime = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
-        @max_queue = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+        min_length       = opts.fetch(:min_threads, DEFAULT_MIN_POOL_SIZE).to_i
+        max_length       = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
+        idletime         = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
+        @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
         @fallback_policy = opts.fetch(:fallback_policy, :abort)
 
         raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if max_length < DEFAULT_MIN_POOL_SIZE
@@ -109,9 +109,12 @@ if Concurrent.on_jruby?
         end
 
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
-          min_length, max_length,
-          idletime, java.util.concurrent.TimeUnit::SECONDS,
-          queue, FALLBACK_POLICY_CLASSES[@fallback_policy].new)
+            min_length,
+            max_length,
+            idletime,
+            java.util.concurrent.TimeUnit::SECONDS,
+            queue,
+            FALLBACK_POLICY_CLASSES[@fallback_policy].new)
 
         self.auto_terminate = opts.fetch(:auto_terminate, true)
       end

@@ -8,7 +8,7 @@ module Concurrent
 
   SingleThreadExecutorImplementation = case
                                        when Concurrent.on_jruby?
-                                         RubySingleThreadExecutor
+                                         JavaSingleThreadExecutor
                                        else
                                          RubySingleThreadExecutor
                                        end

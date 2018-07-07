@@ -11,8 +11,9 @@ module Concurrent
                            when Concurrent.on_rbx?
                              RbxObject
                            when Concurrent.on_truffleruby?
-                             TruffleObject
+                             TruffleRubyObject
                            else
+                             warn 'Possibly unsupported Ruby implementation'
                              MriObject
                            end
     private_constant :ObjectImplementation
@@ -134,8 +135,11 @@ module Concurrent
       private
 
       def self.define_initialize_volatile_with_cas
-        assignments = @volatile_cas_fields.map { |name| "@Atomic#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }} = AtomicReference.new(nil)" }.join("\n")
-        class_eval <<-RUBY
+        assignments = @volatile_cas_fields.map do |name|
+          "@Atomic#{name.to_s.gsub(/(?:^|_)(.)/) { $1.upcase }} = Concurrent::AtomicReference.new(nil)"
+        end.join("\n")
+
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def initialize_volatile_with_cas
             super
             #{assignments}

@@ -58,9 +58,9 @@ module Concurrent
           begin
             require 'concurrent_ruby_ext'
             set_java_extensions_loaded
-          rescue LoadError
+          rescue LoadError => e
             # move on with pure-Ruby implementations
-            raise 'On JRuby but Java extensions failed to load.'
+            raise RuntimeError, "On JRuby but Java extensions failed to load.\n" + e.message, e.backtrace
           end
         end
       end

@@ -24,7 +24,7 @@ module Concurrent
     attr_reader :size
 
     # @!visibility private
-    Tuple = defined?(Rubinius::Tuple) ? Rubinius::Tuple : Array
+    Tuple = defined?(Rubinius::Tuple) ? Rubinius::Tuple : ::Array
     private_constant :Tuple
 
     # Create a new tuple of the given size.
