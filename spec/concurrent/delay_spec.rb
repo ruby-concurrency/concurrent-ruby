@@ -85,6 +85,18 @@ module Concurrent
         delay = Delay.new(&task)
         5.times{ delay.value }
       end
+
+      it 'raises when called recursively' do
+        delay = Delay.new { delay.value }
+        expect { delay.value! }.to raise_error(IllegalOperationError)
+        expect(delay.reason).to be_a_kind_of(IllegalOperationError)
+      end
+
+      it 'can be called twice' do
+        delay = Delay.new { 10 }
+        expect(delay.value).to eq 10
+        expect(delay.value).to eq 10
+      end
     end
   end
 end
