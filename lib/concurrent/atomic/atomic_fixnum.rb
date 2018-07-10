@@ -52,7 +52,7 @@ module Concurrent
   #   @param [Fixnum] expect the expected value
   #   @param [Fixnum] update the new value
   #
-  #   @return [Fixnum] true if the value was updated else false
+  #   @return [Boolean] true if the value was updated else false
 
   # @!macro [new] atomic_fixnum_method_update
   #
