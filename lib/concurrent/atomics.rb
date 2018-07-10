@@ -44,6 +44,7 @@
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic/atomic_integer'
 require 'concurrent/atomic/cyclic_barrier'
 require 'concurrent/atomic/count_down_latch'
 require 'concurrent/atomic/event'
