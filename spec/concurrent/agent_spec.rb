@@ -119,6 +119,8 @@ module Concurrent
           end
           1
         end
+        expect(subject.await_for(1)).to eq true
+        expect(subject).to_not be_failed
       end
 
       specify 'when the action raises an error the value will not change' do
@@ -372,7 +374,7 @@ module Concurrent
 
           subject.restart(42)
           latch.wait(0.1)
-          sleep(0.1)
+          expect(subject.await_for(1)).to eq true
           expect(subject.value).to eq expected
         end
 
@@ -409,6 +411,7 @@ module Concurrent
         end
 
         latch.wait(2)
+        expect(subject.await_for(1)).to eq true
         expect(actual).to eq expected
       end
 
@@ -438,25 +441,31 @@ module Concurrent
         it 'returns true when the job is post' do
           subject = Agent.new(0)
           expect(subject.send { nil }).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'returns false when #failed?' do
           subject = Agent.new(0)
           allow(subject).to receive(:failed?).and_return(true)
           expect(subject.send { nil }).to be false
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'posts to the global fast executor' do
           subject = Agent.new(0)
           expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_fast_executor).and_call_original
           subject.send { nil }
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not wait for the action to process' do
           job_done = false
           subject  = Agent.new(0)
-          subject.send { sleep(5); job_done = true }
+          latch = CountDownLatch.new
+          subject.send { latch.wait; job_done = true }
           expect(job_done).to be false
+          latch.count_down
+          expect(subject.await_for(1)).to eq true
         end
       end
 
@@ -465,6 +474,7 @@ module Concurrent
         it 'returns true when the job is post' do
           subject = Agent.new(0)
           expect(subject.send! { nil }).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'raises an error when #failed?' do
@@ -479,13 +489,17 @@ module Concurrent
           subject = Agent.new(0)
           expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_fast_executor).and_call_original
           subject.send! { nil }
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not wait for the action to process' do
           job_done = false
           subject  = Agent.new(0)
-          subject.send! { sleep(5); job_done = true }
+          latch = CountDownLatch.new
+          subject.send! { latch.wait; job_done = true }
           expect(job_done).to be false
+          latch.count_down
+          expect(subject.await_for(1)).to eq true
         end
       end
 
@@ -494,6 +508,7 @@ module Concurrent
         it 'returns true when the job is post' do
           subject = Agent.new(0)
           expect(subject.send_off { nil }).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'returns false when #failed?' do
@@ -506,13 +521,17 @@ module Concurrent
           subject = Agent.new(0)
           expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject.send_off { nil }
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not wait for the action to process' do
           job_done = false
           subject  = Agent.new(0)
-          subject.send_off { sleep(5); job_done = true }
+          latch = CountDownLatch.new
+          subject.send_off { latch.wait; job_done = true }
           expect(job_done).to be false
+          latch.count_down
+          expect(subject.await_for(1)).to eq true
         end
       end
 
@@ -521,6 +540,7 @@ module Concurrent
         it 'returns true when the job is post' do
           subject = Agent.new(0)
           expect(subject.send_off! { nil }).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'raises an error when #failed?' do
@@ -535,13 +555,17 @@ module Concurrent
           subject = Agent.new(0)
           expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject.send_off! { nil }
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not wait for the action to process' do
           job_done = false
           subject  = Agent.new(0)
-          subject.send_off! { sleep(5); job_done = true }
+          latch = CountDownLatch.new
+          subject.send_off! { latch.wait; job_done = true }
           expect(job_done).to be false
+          latch.count_down
+          expect(subject.await_for(1)).to eq true
         end
       end
 
@@ -562,13 +586,6 @@ module Concurrent
           expect(immediate).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
           subject.send_via(immediate) { nil }
-        end
-
-        it 'does not wait for the action to process' do
-          job_done = false
-          subject  = Agent.new(0)
-          subject.send_via(executor) { sleep(5); job_done = true }
-          expect(job_done).to be false
         end
       end
 
@@ -592,13 +609,6 @@ module Concurrent
           subject = Agent.new(0)
           subject.send_via!(immediate) { nil }
         end
-
-        it 'does not wait for the action to process' do
-          job_done = false
-          subject  = Agent.new(0)
-          subject.send_via!(executor) { sleep(5); job_done = true }
-          expect(job_done).to be false
-        end
       end
 
       context 'with #post' do
@@ -606,6 +616,7 @@ module Concurrent
         it 'returns true when the job is post' do
           subject = Agent.new(0)
           expect(subject.post { nil }).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'returns false when #failed?' do
@@ -618,13 +629,17 @@ module Concurrent
           subject = Agent.new(0)
           expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject.post { nil }
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not wait for the action to process' do
           job_done = false
           subject  = Agent.new(0)
-          subject.post { sleep(5); job_done = true }
+          latch = CountDownLatch.new
+          subject.post { latch.wait; job_done = true }
           expect(job_done).to be false
+          latch.count_down
+          expect(subject.await_for(1)).to eq true
         end
       end
 
@@ -633,6 +648,7 @@ module Concurrent
         it 'returns self when the job is post' do
           subject = Agent.new(0)
           expect(subject << proc { nil }).to be subject
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'returns self when #failed?' do
@@ -642,16 +658,20 @@ module Concurrent
         end
 
         it 'posts to the global io executor' do
-          expect(Concurrent.global_io_executor).to receive(:post).with(any_args).and_call_original
           subject = Agent.new(0)
+          expect(subject).to receive(:enqueue_action_job).with(anything, anything, Concurrent.global_io_executor).and_call_original
           subject << proc { nil }
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not wait for the action to process' do
           job_done = false
           subject  = Agent.new(0)
-          subject << proc { sleep(5); job_done = true }
+          latch = CountDownLatch.new
+          subject << proc { latch.wait; job_done = true }
           expect(job_done).to be false
+          latch.count_down
+          expect(subject.await_for(1)).to eq true
         end
       end
     end
@@ -707,6 +727,7 @@ module Concurrent
           subject.restart(42, clear_actions: true)
           result = end_latch.wait(0.1)
           expect(result).to be false
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not clear the action queue when :clear_actions is false' do
@@ -723,6 +744,7 @@ module Concurrent
           subject.restart(42, clear_actions: false)
           result = end_latch.wait(3)
           expect(result).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not clear the action queue when :clear_actions is not given' do
@@ -739,6 +761,7 @@ module Concurrent
           subject.restart(42)
           result = end_latch.wait(3)
           expect(result).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'resumes action processing if actions are enqueued' do
@@ -759,6 +782,7 @@ module Concurrent
 
           subject.restart(42, clear_actions: false)
           expect(finish_latch.wait(5)).to be true
+          expect(subject.await_for(1)).to eq true
         end
 
         it 'does not trigger observation' do
@@ -876,14 +900,16 @@ module Concurrent
 
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
+          finish   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
           in_thread do
-            subject.send_via(executor) { sleep }
+            subject.send_via(executor) { finish.wait }
             latch.count_down
           end
 
           latch.wait(0.1)
-          expect(subject.await).to be_truthy
+          expect(subject.await_for(1)).to eq true
+          finish.count_down
         end
 
         it 'blocks indefinitely' do
@@ -930,14 +956,16 @@ module Concurrent
 
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
+          finish   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
           in_thread do
-            subject.send_via(executor) { sleep }
+            subject.send_via(executor) { finish.wait }
             latch.count_down
           end
 
           latch.wait(0.1)
           expect(subject.await_for(0.1)).to be true
+          finish.count_down
         end
 
         it 'returns true when all prior actions have processed', notravis: true do
@@ -952,6 +980,7 @@ module Concurrent
           subject.send_via(executor) { sleep(1) }
           5.times { subject.send_via(executor) { nil } }
           expect(subject.await_for(0.1)).to be false
+          expect(subject.await_for(5)).to eq true
         end
 
         it 'returns false if restarted with :clear_actions true', notravis: true do
@@ -978,14 +1007,16 @@ module Concurrent
 
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
+          finish   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
           in_thread do
-            subject.send_via(executor) { sleep }
+            subject.send_via(executor) { finish.wait }
             latch.count_down
           end
 
           latch.wait(0.1)
           expect(subject.await_for!(0.1)).to be true
+          finish.count_down
         end
 
         it 'returns true when all prior actions have processed' do
@@ -1002,6 +1033,7 @@ module Concurrent
           expect {
             subject.await_for!(0.1)
           }.to raise_error(Concurrent::TimeoutError)
+          expect(subject.await_for(5)).to eq true
         end
 
         it 'raises an error if restarted with :clear_actions true', notravis: true do
@@ -1034,14 +1066,16 @@ module Concurrent
 
         it 'does not block on actions from other threads' do
           latch   = Concurrent::CountDownLatch.new
+          finish   = Concurrent::CountDownLatch.new
           subject = Agent.new(0)
           in_thread do
-            subject.send_via(executor) { sleep }
+            subject.send_via(executor) { finish.wait }
             latch.count_down
           end
 
           latch.wait(0.1)
           expect(subject.wait(0.1)).to be true
+          finish.count_down
         end
 
         it 'blocks indefinitely when timeout is nil' do
@@ -1082,6 +1116,7 @@ module Concurrent
           subject.send_via(executor) { sleep(1) }
           5.times { subject.send_via(executor) { nil } }
           expect(subject.wait(0.1)).to be false
+          expect(subject.wait(5)).to eq true
         end
 
         it 'returns false when timeout is given and restarted with :clear_actions true', notravis: true do
@@ -1133,6 +1168,7 @@ module Concurrent
           agents.each { |agent| agent.send_via(executor) { sleep(0.3) } }
           ok = Agent.await_for(0.1, *agents)
           expect(ok).to be false
+          expect(Agent.await_for!(1, *agents)).to eq true
         end
       end
 
@@ -1159,6 +1195,7 @@ module Concurrent
           expect {
             Agent.await_for!(0.1, *agents)
           }.to raise_error(Concurrent::TimeoutError)
+          expect(Agent.await_for!(1, *agents)).to eq true
         end
       end
     end

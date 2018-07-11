@@ -163,9 +163,7 @@ module Concurrent
             t2
           end
           join_with t1
-          t2     = t1.value
-          status = t2.status
-          expect(status).to(eq('sleep'), -> { "is #{status} instead at:\n#{t2.backtrace.join "\n"}" })
+          repeat_until_success { expect(t1.value.status).to eq 'sleep' }
         end
       end
 

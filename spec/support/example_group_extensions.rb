@@ -25,9 +25,9 @@ module Concurrent
 
     def monotonic_interval
       raise ArgumentError.new('no block given') unless block_given?
-      start_time = GLOBAL_MONOTONIC_CLOCK.get_time
+      start_time = Concurrent.monotonic_time
       yield
-      GLOBAL_MONOTONIC_CLOCK.get_time - start_time
+      Concurrent.monotonic_time - start_time
     end
 
     def in_thread(*args, &block)
@@ -42,6 +42,21 @@ module Concurrent
 
     def is_sleeping(thread)
       expect(in_thread { Thread.pass until thread.status == 'sleep' }.join(1)).not_to eq nil
+    end
+
+    def repeat_until_success(timeout = 5, &test)
+      start_time = Concurrent.monotonic_time
+      last_exception = nil
+      while Concurrent.monotonic_time - start_time < timeout
+        begin
+          test.call
+          return true
+        rescue Exception => e
+          last_exception = e
+          Thread.pass
+        end
+      end
+      raise last_exception
     end
 
     def join_with(threads, timeout = 5)
