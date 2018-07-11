@@ -107,8 +107,7 @@ module Concurrent
           getter_threads = ::Array.new(getter_threads_count) do
             in_thread do
               block_until_compute_started.call('getter')
-              Thread.pass while @cache[:a].nil?
-              expect(1).to eq @cache[:a]
+              repeat_until_success { expect(1).to eq @cache[:a] }
             end
           end
 
