@@ -10,7 +10,7 @@ module Concurrent
         store              = store()
         store.not_volatile = 0
         store.volatile     = 0
-        @stop = false
+        @stop              = false
 
         in_thread do
           Thread.abort_on_exception = true
@@ -163,7 +163,9 @@ module Concurrent
             t2
           end
           join_with t1
-          expect(t1.value.status).to eq 'sleep'
+          t2     = t1.value
+          status = t2.status
+          expect(status).to(eq('sleep'), -> { "is #{status} instead at:\n#{t2.backtrace.join "\n"}" })
         end
       end
 
