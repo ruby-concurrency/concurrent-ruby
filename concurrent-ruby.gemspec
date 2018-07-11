@@ -1,6 +1,5 @@
 require_relative 'lib/concurrent/version'
 require_relative 'lib/concurrent/utility/engine'
-require_relative 'support/file_map'
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
