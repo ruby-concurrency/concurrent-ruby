@@ -37,7 +37,7 @@ The design goals of this gem are:
 **This gem depends on 
 [contributions](https://github.com/ruby-concurrency/concurrent-ruby/graphs/contributors) and we 
 appreciate your help. Would you like to contribute? Great! Have a look at 
-[issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).**
+[issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).** And if you pick something up let us know on the issue.
 
 ## Thread Safety
 
