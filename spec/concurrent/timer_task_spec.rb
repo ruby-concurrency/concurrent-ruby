@@ -4,6 +4,21 @@ require_relative 'concern/observable_shared'
 module Concurrent
 
   RSpec.describe TimerTask do
+    let(:observer) do
+      Class.new do
+        attr_reader :time
+        attr_reader :value
+        attr_reader :ex
+        attr_accessor :latch
+        define_method(:initialize) { @latch = CountDownLatch.new(1) }
+        define_method(:update) do |time, value, ex|
+          @time  = time
+          @value = value
+          @ex    = ex
+          @latch.count_down
+        end
+      end.new
+    end
 
     context :dereferenceable do
 
@@ -212,26 +227,37 @@ module Concurrent
         expect(expected).to eq subject
         subject.kill
       end
+
+      context "timeout" do
+        it 'should not timeout' do
+          subject = TimerTask.new(execution: 0.1, timeout: 1) { sleep(0.5); 42 }
+          subject.add_observer(observer)
+          subject.execute
+          observer.latch.wait(2)
+          expect(observer.ex).to be_nil
+          expect(observer.value).to eq(42)
+          subject.kill
+        end
+
+        it 'times out and kills the current task' do
+          observer.latch = CountDownLatch.new(2)
+          subject = TimerTask.new(execution: 0.1, timeout: 0.5, run_now: true) do
+            sleep(5) if observer.latch.count == 2
+            42
+          end
+          subject.add_observer(observer)
+
+          subject.execute
+          observer.latch.wait(2)
+
+          expect(observer.ex).to be_nil
+          expect(observer.value).to eq(42)
+          subject.kill
+        end
+      end
     end
 
     context 'observation' do
-
-      let(:observer) do
-        Class.new do
-          attr_reader :time
-          attr_reader :value
-          attr_reader :ex
-          attr_reader :latch
-          define_method(:initialize) { @latch = CountDownLatch.new(1) }
-          define_method(:update) do |time, value, ex|
-            @time  = time
-            @value = value
-            @ex    = ex
-            @latch.count_down
-          end
-        end.new
-      end
-
       it 'notifies all observers on success' do
         subject = TimerTask.new(execution: 0.1) { 42 }
         subject.add_observer(observer)
