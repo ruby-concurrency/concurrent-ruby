@@ -182,22 +182,25 @@ Thread-safe variables:
 
 #### Deprecated
 
-Deprecated features are still available and maintained, but new features will not be added. They 
-will be eventually removed in next major version.
+Deprecated features are still available and bugs are being fixed, but new features will not be added.
   
 *   ~~[Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): 
-    An asynchronous operation that produces a value.~~
+    An asynchronous operation that produces a value.~~ Replaced by 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
     *   ~~[Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): 
         Built on Futures, Dataflow allows you to create a task that will be scheduled when all of 
-        its data dependencies are available.~~
+        its data dependencies are available.~~ Replaced by 
+        [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
 *   ~~[Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar 
-    to Futures, with more features.~~
+    to Futures, with more features.~~ Replaced by 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
 *   ~~[Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation 
     of a block yielding an immutable result. Based on Clojure's 
-    [delay](https://clojuredocs.org/clojure.core/delay).~~
-    
+    [delay](https://clojuredocs.org/clojure.core/delay).~~ Replaced by 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).    
 *   ~~[IVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) Similar to a 
-    "future" but can be manually assigned once, after which it becomes immutable.~~
+    "future" but can be manually assigned once, after which it becomes immutable.~~ Replaced by 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
     
 ### Edge Features
 
