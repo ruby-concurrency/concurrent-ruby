@@ -326,7 +326,7 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 *   [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
 *   [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
-### Maintainer of the past
+### Maintainers of the past
 
 *   [Michele Della Torre](https://github.com/mighe)
 *   [Paweł Obrok](https://github.com/obrok)
