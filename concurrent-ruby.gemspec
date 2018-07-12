@@ -1,8 +1,9 @@
 require_relative 'lib/concurrent/version'
 require_relative 'lib/concurrent/utility/engine'
-require_relative 'support/file_map'
 
 Gem::Specification.new do |s|
+  git_files = `git ls-files`.split("\n")
+
   s.name             = 'concurrent-ruby'
   s.version          = Concurrent::VERSION
   s.platform         = Concurrent.on_jruby? ? Gem::Platform::JAVA : Gem::Platform::RUBY
@@ -12,8 +13,7 @@ Gem::Specification.new do |s|
   s.summary          = 'Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell, F#, C#, Java, and classic concurrency patterns.'
   s.license          = 'MIT'
   s.date             = Time.now.strftime('%Y-%m-%d')
-  s.files            = [*FileMap::MAP.fetch(:core),
-                        *FileMap::MAP.fetch(:spec),
+  s.files            = [*Dir['lib/**/*.rb'] & git_files,
                         *(Dir['lib/**/*.jar'] if Concurrent.on_jruby?)]
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']

@@ -12,7 +12,7 @@ module Concurrent
 
   # {include:file:doc/actor/main.md}
   # @api Actor
-  # @!macro edge_warning
+  # @!macro warn.edge
   module Actor
 
     require 'concurrent/actor/type_check'

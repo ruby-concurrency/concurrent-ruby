@@ -14,6 +14,7 @@ module Concurrent
   #   end
   #   sleep 0.1
   #   cancellation.cancel # Stop the thread by cancelling
+  # @!macro warn.edge
   class Cancellation < Synchronization::Object
     safe_initialization!
 
@@ -132,7 +133,7 @@ module Concurrent
       end
     end
 
-    # FIXME (pitr-ch 27-Mar-2016): cooperation with mutex, condition, select etc?
+    # TODO (pitr-ch 27-Mar-2016): cooperation with mutex, condition, select etc?
     # TODO (pitr-ch 27-Mar-2016): examples (scheduled to be cancelled in 10 sec)
   end
 end

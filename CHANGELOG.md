@@ -1,8 +1,16 @@
 ## Current
 
+concurrent-ruby:
+
+* [Promises](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html)
+  are moved from `concurrent-ruby-edge` to `concurrent-ruby`
+* Fix Map#each and #each_pair not returning enumerator outside of MRI (#644)
+* (#659) Edge promises fail during error handling
+  
 concurrent-ruby-edge:
 
-* (#659) Edge promises fail during error handling
+* Edge files clearly separated in `lib-edge`
+* added ReInclude
 
 ## Release v1.0.5, edge v0.3.1 (26 Feb 2017)
 

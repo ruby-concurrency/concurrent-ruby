@@ -31,6 +31,7 @@ require 'concurrent/scheduled_task'
 require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
 require 'concurrent/tvar'
+require 'concurrent/promises'
 
 require 'concurrent/thread_safe/synchronized_delegator'
 require 'concurrent/thread_safe/util'

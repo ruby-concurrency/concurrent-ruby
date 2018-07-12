@@ -323,24 +323,31 @@ RSpec.describe 'Concurrent::Promises' do
       expect(callback_results).to contain_exactly([], [1], [], [4], [], [7])
     end
 
-    [:wait, :wait!, :value, :value!, :reason, :result].each do |method_with_timeout|
+    methods_with_timeout = { wait:   false,
+                             wait!:  false,
+                             value:  nil,
+                             value!: nil,
+                             reason: nil,
+                             result: nil }
+    methods_with_timeout.each do |method_with_timeout, timeout_value|
       it "#{ method_with_timeout } supports setting timeout" do
         start_latch = Concurrent::CountDownLatch.new
         end_latch   = Concurrent::CountDownLatch.new
 
         future = future do
           start_latch.count_down
-          end_latch.wait(1)
+          end_latch.wait(0.2)
         end
 
-        start_latch.wait(1)
-        future.send(method_with_timeout, 0.1)
+        expect(start_latch.wait(0.1)).to eq true
         expect(future).not_to be_resolved
+        expect(future.send(method_with_timeout, 0.01)).to eq timeout_value
+        expect(future).not_to be_resolved
+
         end_latch.count_down
-        future.wait
+        expect(future.value!).to eq true
       end
     end
-
 
     it 'chains' do
       future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
@@ -445,14 +452,26 @@ RSpec.describe 'Concurrent::Promises' do
         expect(::Array.new(3) { |i| Concurrent::Promises.delay { i } }.
             inject { |a, b| a.then { b }.flat }.value!(0.2)).to eq 2
       end
+
+      it 'has shortcuts' do
+        expect(fulfilled_future(1).then_flat { |v| future(v) { v + 1 } }.value!).to eq 2
+        expect(fulfilled_future(1).then_flat_event { |v| resolved_event }.wait.resolved?).to eq true
+        expect(fulfilled_future(1).then_flat_on(:fast) { |v| future(v) { v + 1 } }.value!).to eq 2
+      end
     end
 
     it 'resolves future when Exception raised' do
-      f = future { raise Exception, 'reject' }
-      f.wait 1
-      expect(f).to be_resolved
-      expect(f).to be_rejected
-      expect { f.value! }.to raise_error(Exception, 'reject')
+      message = 'reject by an Exception'
+      future  = future { raise Exception, message }
+      expect(future.wait(0.1)).to eq true
+      future.wait
+      expect(future).to be_resolved
+      expect(future).to be_rejected
+
+      expect(future.reason).to be_instance_of Exception
+      expect(future.result).to be_instance_of Array
+      expect(future.value).to be_nil
+      expect { future.value! }.to raise_error(Exception, message)
     end
 
     it 'runs' do
@@ -467,6 +486,31 @@ RSpec.describe 'Concurrent::Promises' do
         v < 5 ? future(v, &body) : raise(v.to_s)
       end
       expect(future(0, &body).run.reason.message).to eq '5'
+    end
+
+    it 'can be risen when rejected' do
+      strip_methods = -> backtrace do
+        backtrace.map do |line|
+          /^.*:\d+:in/.match(line)[0] rescue line
+        end
+      end
+
+      future    = rejected_future TypeError.new
+      backtrace = caller; exception = (raise future rescue $!)
+      expect(exception).to be_a TypeError
+      expect(strip_methods[backtrace] - strip_methods[exception.backtrace]).to be_empty
+
+      exception = TypeError.new
+      exception.set_backtrace(first_backtrace = %W[/a /b /c])
+      future    = rejected_future exception
+      backtrace = caller; exception = (raise future rescue $!)
+      expect(exception).to be_a TypeError
+      expect(strip_methods[first_backtrace + backtrace] - strip_methods[exception.backtrace]).to be_empty
+
+      future    = rejected_future(TypeError.new) & rejected_future(TypeError.new)
+      backtrace = caller; exception = (raise future rescue $!)
+      expect(exception).to be_a Concurrent::MultipleErrors
+      expect(strip_methods[backtrace] - strip_methods[exception.backtrace]).to be_empty
     end
   end
 

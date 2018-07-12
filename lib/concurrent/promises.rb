@@ -1,43 +1,14 @@
 require 'concurrent/synchronization'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
-require 'concurrent/edge/lock_free_stack'
+require 'concurrent/collection/lock_free_stack'
 require 'concurrent/errors'
+require 'concurrent/re_include'
 
 module Concurrent
 
-
   # {include:file:doc/promises-main.md}
   module Promises
-
-    # TODO (pitr-ch 23-Dec-2016): move out
-    # @!visibility private
-    module ReInclude
-      def included(base)
-        included_into << [:include, base]
-        super(base)
-      end
-
-      def extended(base)
-        included_into << [:extend, base]
-        super(base)
-      end
-
-      def include(*modules)
-        super(*modules)
-        modules.reverse.each do |module_being_included|
-          included_into.each do |method, mod|
-            mod.send method, module_being_included
-          end
-        end
-      end
-
-      private
-
-      def included_into
-        @included_into ||= []
-      end
-    end
 
     # @!macro [new] promises.param.default_executor
     #   @param [Executor, :io, :fast] default_executor Instance of an executor or a name of the
@@ -194,7 +165,7 @@ module Concurrent
       # @overload create(value, default_executor = self.default_executor)
       #   @param [Object] value when none of the above overloads fits
       #   @return [Future] a fulfilled future with the value.
-      def create(argument = nil, default_executor = self.default_executor)
+      def make_future(argument = nil, default_executor = self.default_executor)
         case argument
         when AbstractEventFuture
           # returning wrapper would change nothing
@@ -336,6 +307,7 @@ module Concurrent
 
       # TODO consider adding first(count, *futures)
       # TODO consider adding zip_by(slice, *futures) processing futures in slices
+      # TODO or rather a generic aggregator taking a function
     end
 
     module InternalStates
@@ -555,14 +527,14 @@ module Concurrent
 
       # Is it in pending state?
       # @return [Boolean]
-      def pending?(state = internal_state)
-        !state.resolved?
+      def pending?
+        !internal_state.resolved?
       end
 
       # Is it in resolved state?
       # @return [Boolean]
-      def resolved?(state = internal_state)
-        state.resolved?
+      def resolved?
+        internal_state.resolved?
       end
 
       # Propagates touch. Requests all the delayed futures, which it depends on, to be
@@ -738,7 +710,7 @@ module Concurrent
         @Waiters.each.to_a
       end
 
-      # # @!visibility private
+      # @!visibility private
       def add_callback_notify_blocked(promise, index)
         add_callback :callback_notify_blocked, promise, index
       end
@@ -752,13 +724,13 @@ module Concurrent
 
       def add_callback(method, *args)
         state = internal_state
-        if resolved?(state)
+        if state.resolved?
           call_callback method, state, args
         else
           @Callbacks.push [method, args]
           state = internal_state
           # take back if it was resolved in the meanwhile
-          call_callbacks state if resolved?(state)
+          call_callbacks state if state.resolved?
         end
         self
       end
@@ -912,13 +884,15 @@ module Concurrent
 
       # Is it in fulfilled state?
       # @return [Boolean]
-      def fulfilled?(state = internal_state)
+      def fulfilled?
+        state = internal_state
         state.resolved? && state.fulfilled?
       end
 
       # Is it in rejected state?
       # @return [Boolean]
-      def rejected?(state = internal_state)
+      def rejected?
+        state = internal_state
         state.resolved? && !state.fulfilled?
       end
 
@@ -984,9 +958,11 @@ module Concurrent
         raise Concurrent::Error, 'it is not rejected' unless rejected?
         reason = Array(internal_state.reason).flatten.compact
         if reason.size > 1
-          Concurrent::MultipleErrors.new reason
+          ex = Concurrent::MultipleErrors.new reason
+          ex.set_backtrace(caller)
+          ex
         else
-          ex = reason[0].exception(*args)
+          ex = reason[0].clone.exception(*args)
           ex.set_backtrace Array(ex.backtrace) + caller
           ex
         end
@@ -1298,7 +1274,6 @@ module Concurrent
       # @yieldreturn [Object] value
       # @return [self]
       def evaluate_to(*args, &block)
-        # FIXME (pitr-ch 13-Jun-2016): add raise_on_reassign
         promise.evaluate_to(*args, block)
       end
 
@@ -1309,7 +1284,7 @@ module Concurrent
       # @return [self]
       # @raise [Exception] also raise reason on rejection.
       def evaluate_to!(*args, &block)
-        promise.evaluate_to!(*args, block)
+        promise.evaluate_to(*args, block).wait!
       end
 
       # Creates new future wrapping receiver, effectively hiding the resolve method and similar.
@@ -1348,6 +1323,10 @@ module Concurrent
       def touch
       end
 
+      def to_s
+        format '<#%s:0x%x of %s>', self.class, object_id << 1, @Future
+      end
+
       alias_method :inspect, :to_s
 
       def delayed_because
@@ -1364,8 +1343,8 @@ module Concurrent
       def evaluate_to(*args, block)
         resolve_with Fulfilled.new(block.call(*args))
       rescue Exception => error
-        # TODO (pitr-ch 30-Jul-2016): figure out what should be rescued, there is an issue about it
         resolve_with Rejected.new(error)
+        raise error unless error.is_a?(StandardError)
       end
     end
 
@@ -1389,10 +1368,6 @@ module Concurrent
       end
 
       public :evaluate_to
-
-      def evaluate_to!(*args, block)
-        evaluate_to(*args, block).wait!
-      end
     end
 
     # @abstract
@@ -1784,7 +1759,7 @@ module Concurrent
 
       def initialize(delayed, blockers_count, default_executor)
         super(delayed, blockers_count, Future.new(self, default_executor))
-        @Resolutions = ::Array.new(blockers_count)
+        @Resolutions = ::Array.new(blockers_count, nil)
 
         on_resolvable nil, nil if blockers_count == 0
       end
@@ -1958,154 +1933,6 @@ module Concurrent
                      :DelayPromise,
                      :ScheduledPromise
 
-
-  end
-end
-
-# TODO try stealing pool, each thread has it's own queue
-# TODO (pitr-ch 18-Dec-2016): doc macro debug method
-# TODO (pitr-ch 18-Dec-2016): add macro noting that debug methods may change api without warning
-
-
-module Concurrent
-  module Promises
-
-    class Future < AbstractEventFuture
-
-      module ActorIntegration
-        # Asks the actor with its value.
-        # @return [Future] new future with the response form the actor
-        def then_ask(actor)
-          self.then { |v| actor.ask(v) }.flat
-        end
-      end
-
-      include ActorIntegration
-    end
-
-    class Channel < Concurrent::Synchronization::Object
-      safe_initialization!
-
-      # Default size of the Channel, makes it accept unlimited number of messages.
-      UNLIMITED = ::Object.new
-      UNLIMITED.singleton_class.class_eval do
-        include Comparable
-
-        def <=>(other)
-          1
-        end
-
-        def to_s
-          'unlimited'
-        end
-      end
-
-      # A channel to pass messages between promises. The size is limited to support back pressure.
-      # @param [Integer, UNLIMITED] size the maximum number of messages stored in the channel.
-      def initialize(size = UNLIMITED)
-        super()
-        @Size        = size
-        # TODO (pitr-ch 26-Dec-2016): replace with lock-free implementation
-        @Mutex       = Mutex.new
-        @Probes      = []
-        @Messages    = []
-        @PendingPush = []
-      end
-
-
-      # Returns future which will fulfill when the message is added to the channel. Its value is the message.
-      # @param [Object] message
-      # @return [Future]
-      def push(message)
-        @Mutex.synchronize do
-          while true
-            if @Probes.empty?
-              if @Size > @Messages.size
-                @Messages.push message
-                return Promises.fulfilled_future message
-              else
-                pushed = Promises.resolvable_future
-                @PendingPush.push [message, pushed]
-                return pushed.with_hidden_resolvable
-              end
-            else
-              probe = @Probes.shift
-              if probe.fulfill [self, message], false
-                return Promises.fulfilled_future(message)
-              end
-            end
-          end
-        end
-      end
-
-      # Returns a future witch will become fulfilled with a value from the channel when one is available.
-      # @param [ResolvableFuture] probe the future which will be fulfilled with a channel value
-      # @return [Future] the probe, its value will be the message when available.
-      def pop(probe = Concurrent::Promises.resolvable_future)
-        # TODO (pitr-ch 26-Dec-2016): improve performance
-        pop_for_select(probe).then(&:last)
-      end
-
-      # @!visibility private
-      def pop_for_select(probe = Concurrent::Promises.resolvable_future)
-        @Mutex.synchronize do
-          if @Messages.empty?
-            @Probes.push probe
-          else
-            message = @Messages.shift
-            probe.fulfill [self, message]
-
-            unless @PendingPush.empty?
-              message, pushed = @PendingPush.shift
-              @Messages.push message
-              pushed.fulfill message
-            end
-          end
-        end
-        probe
-      end
-
-      # @return [String] Short string representation.
-      def to_s
-        format '%s size:%s>', super[0..-2], @Size
-      end
-
-      alias_method :inspect, :to_s
-    end
-
-    class Future < AbstractEventFuture
-      module NewChannelIntegration
-
-        # @param [Channel] channel to push to.
-        # @return [Future] a future which is fulfilled after the message is pushed to the channel.
-        #   May take a moment if the channel is full.
-        def then_push_channel(channel)
-          self.then { |value| channel.push value }.flat_future
-        end
-
-        # TODO (pitr-ch 26-Dec-2016): does it make sense to have rescue an chain variants as well, check other integrations as well
-      end
-
-      include NewChannelIntegration
-    end
-
-    module FactoryMethods
-
-      module NewChannelIntegration
-
-        # Selects a channel which is ready to be read from.
-        # @param [Channel] channels
-        # @return [Future] a future which is fulfilled with pair [channel, message] when one of the channels is
-        #   available for reading
-        def select_channel(*channels)
-          probe = Promises.resolvable_future
-          channels.each { |ch| ch.pop_for_select probe }
-          probe
-        end
-      end
-
-      include NewChannelIntegration
-    end
 
   end
 end
