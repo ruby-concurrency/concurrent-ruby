@@ -205,11 +205,12 @@ module Concurrent
         latch    = CountDownLatch.new(1)
         subject  = TimerTask.new(execution_interval: 1, run_now: true) do |task|
           expected = task
-          latch.sount_down
+          latch.count_down
         end
         subject.execute
         latch.wait(1)
         expect(expected).to eq subject
+        expect(latch.count).to eq(0)
         subject.kill
       end
     end
