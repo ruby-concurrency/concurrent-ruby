@@ -45,7 +45,7 @@ require 'concurrent/options'
 
 # @!macro [new] monotonic_clock_warning
 #
-#   @note Time calculations one all platforms and languages are sensitive to
+#   @note Time calculations on all platforms and languages are sensitive to
 #     changes to the system clock. To alleviate the potential problems
 #     associated with changing the system clock while an application is running,
 #     most modern operating systems provide a monotonic clock that operates
