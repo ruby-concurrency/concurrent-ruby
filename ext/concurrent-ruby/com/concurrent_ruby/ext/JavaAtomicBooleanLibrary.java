@@ -1,19 +1,20 @@
 package com.concurrent_ruby.ext;
 
-import java.io.IOException;
 import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
+import org.jruby.RubyNil;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyNil;
-import org.jruby.runtime.ThreadContext;
 
 public class JavaAtomicBooleanLibrary implements Library {
 

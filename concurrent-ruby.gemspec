@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 
   s.name             = 'concurrent-ruby'
   s.version          = Concurrent::VERSION
-  s.platform         = Concurrent.on_jruby? ? Gem::Platform::JAVA : Gem::Platform::RUBY
+  s.platform         = Gem::Platform::RUBY
   s.authors          = ["Jerry D'Antonio", 'Petr Chalupa', 'The Ruby Concurrency Team']
   s.email            = 'concurrent-ruby@googlegroups.com'
   s.homepage         = 'http://www.concurrent-ruby.com'
@@ -14,7 +14,10 @@ Gem::Specification.new do |s|
   s.license          = 'MIT'
   s.date             = Time.now.strftime('%Y-%m-%d')
   s.files            = [*Dir['lib/**/*.rb'] & git_files,
-                        *(Dir['lib/**/*.jar'] if Concurrent.on_jruby?)]
+                        *Dir['ext/concurrent-ruby/**/*'] & git_files,
+                        'Rakefile', 'Gemfile',
+                        'lib/concurrent/concurrent_ruby.jar'
+  ]
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
   s.description      = <<-TXT.gsub(/^ +/, '')
@@ -22,5 +25,5 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   TXT
 
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.0.0'
 end

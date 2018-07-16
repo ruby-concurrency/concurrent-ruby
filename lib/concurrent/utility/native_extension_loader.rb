@@ -12,12 +12,35 @@ module Concurrent
       end
 
       def c_extensions_loaded?
-        @c_extensions_loaded ||= false
+        defined?(@c_extensions_loaded) && @c_extensions_loaded
       end
 
       def java_extensions_loaded?
-        @java_extensions_loaded ||= false
+        defined?(@java_extensions_loaded) && @java_extensions_loaded
       end
+
+      def load_native_extensions
+        unless defined? Synchronization::AbstractObject
+          raise 'native_extension_loader loaded before Synchronization::AbstractObject'
+        end
+
+        if Concurrent.on_cruby? && !c_extensions_loaded?
+          ['concurrent/concurrent_ruby_ext',
+           "concurrent/#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
+          ].each { |p| try_load_c_extension p }
+        end
+
+        if Concurrent.on_jruby? && !java_extensions_loaded?
+          begin
+            require 'concurrent/concurrent_ruby.jar'
+            set_java_extensions_loaded
+          rescue LoadError => e
+            raise e, "Java extensions are required for JRuby.\n" + e.message, e.backtrace
+          end
+        end
+      end
+
+      private
 
       def set_c_extensions_loaded
         @c_extensions_loaded = true
@@ -27,43 +50,18 @@ module Concurrent
         @java_extensions_loaded = true
       end
 
-      def load_native_extensions
-        unless defined? Synchronization::AbstractObject
-          raise 'native_extension_loader loaded before Synchronization::AbstractObject'
-        end
-
-        if Concurrent.on_cruby? && !c_extensions_loaded?
-          tries = [
-            lambda do
-              require 'concurrent/extension'
-              set_c_extensions_loaded
-            end,
-            lambda do
-              # may be a Windows cross-compiled native gem
-              require "concurrent/#{RUBY_VERSION[0..2]}/extension"
-              set_c_extensions_loaded
-            end]
-
-          tries.each do |try|
-            begin
-              try.call
-              break
-            rescue LoadError
-              next
-            end
-          end
-        end
-
-        if Concurrent.on_jruby? && !java_extensions_loaded?
-          begin
-            require 'concurrent_ruby_ext'
-            set_java_extensions_loaded
-          rescue LoadError => e
-            # move on with pure-Ruby implementations
-            raise RuntimeError, "On JRuby but Java extensions failed to load.\n" + e.message, e.backtrace
-          end
+      def try_load_c_extension(path)
+        require path
+        set_c_extensions_loaded
+      rescue LoadError => e
+        if e.path == path
+          # move on with pure-Ruby implementations
+          # TODO (pitr-ch 12-Jul-2018): warning on verbose?
+        else
+          raise e
         end
       end
+
     end
   end
 

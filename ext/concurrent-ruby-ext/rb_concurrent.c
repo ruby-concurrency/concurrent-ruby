@@ -13,7 +13,7 @@ static VALUE rb_cAtomicFixnum;
 
 // Init_extension
 
-void Init_extension() {
+void Init_concurrent_ruby_ext() {
 
   // define modules and classes
   rb_mConcurrent = rb_define_module("Concurrent");

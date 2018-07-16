@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.license          = 'MIT'
   s.date             = Time.now.strftime('%Y-%m-%d')
   s.files            = Dir['lib-edge/**/*.rb'] & git_files
-  s.extra_rdoc_files = Dir['README*', 'LICENSE*']
+  s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib-edge']
   s.description      = <<-TXT
 These features are under active development and may change frequently. They are expected not to
@@ -22,7 +22,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 Please see http://concurrent-ruby.com for more information.
   TXT
 
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.0.0'
 
   s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION}"
 end

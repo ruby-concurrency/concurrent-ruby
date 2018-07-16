@@ -19,9 +19,23 @@ if ENV['COVERAGE']
   end
 end
 
+if ENV['NO_PATH']
+  # Patch rspec not to add lib to $LOAD_PATH, allows to test installed gems
+  $LOAD_PATH.delete File.expand_path(File.join(__dir__, '..', 'lib'))
+  class RSpec::Core::Configuration
+    remove_method :requires=
+
+    def requires=(paths)
+      directories = [default_path].select { |p| File.directory? p }
+      RSpec::Core::RubyProject.add_to_load_path(*directories)
+      paths.each { |path| require path }
+      @requires += paths
+    end
+  end
+end
+
 require 'concurrent'
 require 'concurrent-edge'
-require 'rspec'
 
 Concurrent.use_simple_logger Logger::FATAL
 

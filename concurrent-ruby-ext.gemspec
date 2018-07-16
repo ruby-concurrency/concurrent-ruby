@@ -23,10 +23,10 @@ Gem::Specification.new do |s|
     'lib/concurrent/atomic_reference/numeric_cas_wrapper.rb',
   ]
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
-  s.require_paths    = ['lib', 'ext']
-  s.extensions       = 'ext/concurrent/extconf.rb'
+  s.require_paths    = ['lib']
+  s.extensions       = 'ext/concurrent-ruby-ext/extconf.rb'
 
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.0.0'
 
   s.add_runtime_dependency 'concurrent-ruby', "= #{Concurrent::VERSION}"
 end
