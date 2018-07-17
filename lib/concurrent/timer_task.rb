@@ -281,7 +281,7 @@ module Concurrent
       self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
       @run_now = opts[:now] || opts[:run_now]
       @task = task
-      @executor = Concurrent::RubySingleThreadExecutor.new()
+      @executor = Concurrent::RubySingleThreadExecutor.new
       @running = Concurrent::AtomicBoolean.new(false)
       @value = nil
 
@@ -341,7 +341,7 @@ module Concurrent
       if completion.try?
         @executor.kill
         @executor.wait_for_termination
-        @executor = Concurrent::RubySingleThreadExecutor.new()
+        @executor = Concurrent::RubySingleThreadExecutor.new
         @thread_completed.set
         self.value = value
         schedule_next_task
