@@ -36,8 +36,12 @@ matrix:
     - rvm: 2.3.7
       jdk: oraclejdk8
       env: COVERAGE=1
+    - rvm: ruby-head
+      env: RUBYOPT="--jit"
   allow_failures:
     - rvm: ruby-head
+    - rvm: ruby-head
+      env: RUBYOPT="--jit"
     - rvm: jruby-head
     - rvm: rbx-3
     - rvm: ruby-2.6.0-preview2
