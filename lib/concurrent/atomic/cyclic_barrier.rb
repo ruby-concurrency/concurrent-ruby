@@ -23,7 +23,7 @@ module Concurrent
   #   # use main as well
   #   process.call 2
   #
-  #   # here we can be sure that all jobs are processed  
+  #   # here we can be sure that all jobs are processed
   class CyclicBarrier < Synchronization::LockableObject
 
     # @!visibility private

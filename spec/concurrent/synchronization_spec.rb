@@ -152,7 +152,7 @@ module Concurrent
             t2
           end
           join_with t1
-          expect(t1.value.status).to eq 'sleep'
+          repeat_until_success { expect(t1.value.status).to eq 'sleep' }
         end
 
         it 'can be called from within a #synchronize block' do
