@@ -140,3 +140,50 @@ begin
 rescue LoadError => e
   puts 'YARD is not installed, skipping documentation task definitions: ' + e.message
 end
+
+namespace :release do
+  # Depends on environment of @pitr-ch
+
+  mri_version   = '2.4.3'
+  jruby_version = 'jruby-9.1.17.0'
+
+  task :build => 'repackage:all'
+
+  task :test do
+    old = ENV['RBENV_VERSION']
+
+    ENV['RBENV_VERSION'] = mri_version
+    sh 'rbenv version'
+    sh 'bundle exec rake spec:installed'
+
+    ENV['RBENV_VERSION'] = jruby_version
+    sh 'rbenv version'
+    sh 'bundle exec rake spec:installed'
+
+    puts 'Windows build is untested'
+
+    ENV['RBENV_VERSION'] = old
+  end
+
+  task :push do
+    sh 'git fetch'
+    sh 'test $(git show-ref --verify --hash refs/heads/master) = $(git show-ref --verify --hash refs/remotes/github/master)'
+
+    sh "git tag v#{Concurrent::VERSION}"
+    sh "git tag edge-v#{Concurrent::EDGE_VERSION}"
+    sh "git push github v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
+
+    sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
+    sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
+    sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem"
+    sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x64-mingw32.gem"
+    sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x86-mingw32.gem"
+  end
+
+  task :notify do
+    puts 'Manually: create a release on GitHub with relevant changelog part'
+    puts 'Manually: send email same as release with relevant changelog part'
+    puts 'Manually: update documentation'
+    puts '  $ bundle exec rake yard:push'
+  end
+end
