@@ -8,6 +8,7 @@ require 'concurrent/options'
 
 # TODO (pitr-ch 14-Mar-2017): deprecate, Future, Promise, etc.
 
+
 module Concurrent
 
   # {include:file:doc/future.md}

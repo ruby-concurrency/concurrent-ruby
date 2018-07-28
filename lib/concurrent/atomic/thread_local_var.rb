@@ -6,7 +6,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] thread_local_var_method_initialize
+  # @!macro thread_local_var_method_initialize
   #
   #   Creates a thread local variable.
   #
@@ -14,20 +14,20 @@ module Concurrent
   #   @param [Proc] default_block Optional block that gets called to obtain the
   #     default value for each thread
 
-  # @!macro [new] thread_local_var_method_get
+  # @!macro thread_local_var_method_get
   #
   #   Returns the value in the current thread's copy of this thread-local variable.
   #
   #   @return [Object] the current value
 
-  # @!macro [new] thread_local_var_method_set
+  # @!macro thread_local_var_method_set
   #
   #   Sets the current thread's copy of this thread-local variable to the specified value.
   #
   #   @param [Object] value the value to set
   #   @return [Object] the new value
 
-  # @!macro [new] thread_local_var_method_bind
+  # @!macro thread_local_var_method_bind
   #
   #   Bind the given value to thread local storage during
   #   execution of the given block.
@@ -39,9 +39,9 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] thread_local_var_public_api
+  # @!macro thread_local_var_public_api
   #
-  #   @!method initialize(default = nil)
+  #   @!method initialize(default = nil, &default_block)
   #     @!macro thread_local_var_method_initialize
   #
   #   @!method value
@@ -65,7 +65,7 @@ module Concurrent
                                  end
   private_constant :ThreadLocalVarImplementation
 
-  # @!macro [attach] thread_local_var
+  # @!macro thread_local_var
   #
   #   A `ThreadLocalVar` is a variable where the value is different for each thread.
   #   Each variable may have a default value, but when you modify the variable only

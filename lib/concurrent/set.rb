@@ -9,7 +9,7 @@ module Concurrent
     # Because MRI never runs code in parallel, the existing
     # non-thread-safe structures should usually work fine.
 
-    # @!macro [attach] concurrent_Set
+    # @!macro concurrent_Set
     #
     #   A thread-safe subclass of Set. This version locks against the object
     #   itself for every method call, ensuring only one thread can be reading

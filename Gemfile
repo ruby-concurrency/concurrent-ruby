@@ -13,7 +13,7 @@ group :development do
   gem 'rake', '~> 12.0'
   gem 'rake-compiler', '~> 1.0'
   gem 'rake-compiler-dock', '~> 0.6.0'
-  gem 'pry', '~> 0.11'
+  gem 'pry', '~> 0.11', platforms: :mri
 end
 
 group :documentation, optional: true do

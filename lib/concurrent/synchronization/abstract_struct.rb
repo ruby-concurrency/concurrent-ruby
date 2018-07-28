@@ -11,7 +11,7 @@ module Concurrent
         ns_initialize(*values)
       end
 
-      # @!macro [attach] struct_length
+      # @!macro struct_length
       #
       #   Returns the number of struct members.
       #
@@ -21,7 +21,7 @@ module Concurrent
       end
       alias_method :size, :length
 
-      # @!macro [attach] struct_members
+      # @!macro struct_members
       #
       #   Returns the struct members as an array of symbols.
       #

@@ -49,7 +49,7 @@ module Concurrent
     # or an AtomicFixum)
     module Observable
 
-      # @!macro [attach] observable_add_observer
+      # @!macro observable_add_observer
       #
       #   Adds an observer to this set. If a block is passed, the observer will be
       #   created by this method and no other params should be passed.
@@ -72,8 +72,8 @@ module Concurrent
         self
       end
 
-      # @!macro [attach] observable_delete_observer
-      # 
+      # @!macro observable_delete_observer
+      #
       #   Remove `observer` as an observer on this object so that it will no
       #   longer receive notifications.
       #
@@ -83,17 +83,17 @@ module Concurrent
         observers.delete_observer(observer)
       end
 
-      # @!macro [attach] observable_delete_observers
-      # 
+      # @!macro observable_delete_observers
+      #
       #   Remove all observers associated with this object.
-      #   
+      #
       #   @return [Observable] self
       def delete_observers
         observers.delete_observers
         self
       end
 
-      # @!macro [attach] observable_count_observers
+      # @!macro observable_count_observers
       #
       #   Return the number of observers associated with this object.
       #

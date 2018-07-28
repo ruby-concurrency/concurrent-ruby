@@ -41,8 +41,7 @@ This framework allows its users to:
     pressure (parts, which are not keeping up, signal to the other parts of the 
     system to slow down).
 
-**The guide is best place to start with promises, see**
-**{file:doc/promises.out.md}.**
+**The {file:doc/promises.out.md guide} is best place to start with promises.**
 
 # Main classes
 

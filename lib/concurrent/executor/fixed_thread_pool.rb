@@ -3,44 +3,44 @@ require 'concurrent/executor/thread_pool_executor'
 
 module Concurrent
 
-  # @!macro [new] thread_pool_executor_constant_default_max_pool_size
+  # @!macro thread_pool_executor_constant_default_max_pool_size
   #   Default maximum number of threads that will be created in the pool.
 
-  # @!macro [new] thread_pool_executor_constant_default_min_pool_size
+  # @!macro thread_pool_executor_constant_default_min_pool_size
   #   Default minimum number of threads that will be retained in the pool.
 
-  # @!macro [new] thread_pool_executor_constant_default_max_queue_size
+  # @!macro thread_pool_executor_constant_default_max_queue_size
   #   Default maximum number of tasks that may be added to the task queue.
 
-  # @!macro [new] thread_pool_executor_constant_default_thread_timeout
+  # @!macro thread_pool_executor_constant_default_thread_timeout
   #   Default maximum number of seconds a thread in the pool may remain idle
   #   before being reclaimed.
 
-  # @!macro [new] thread_pool_executor_attr_reader_max_length
+  # @!macro thread_pool_executor_attr_reader_max_length
   #   The maximum number of threads that may be created in the pool.
   #   @return [Integer] The maximum number of threads that may be created in the pool.
 
-  # @!macro [new] thread_pool_executor_attr_reader_min_length
+  # @!macro thread_pool_executor_attr_reader_min_length
   #   The minimum number of threads that may be retained in the pool.
   #   @return [Integer] The minimum number of threads that may be retained in the pool.
 
-  # @!macro [new] thread_pool_executor_attr_reader_largest_length
+  # @!macro thread_pool_executor_attr_reader_largest_length
   #   The largest number of threads that have been created in the pool since construction.
   #   @return [Integer] The largest number of threads that have been created in the pool since construction.
 
-  # @!macro [new] thread_pool_executor_attr_reader_scheduled_task_count
+  # @!macro thread_pool_executor_attr_reader_scheduled_task_count
   #   The number of tasks that have been scheduled for execution on the pool since construction.
   #   @return [Integer] The number of tasks that have been scheduled for execution on the pool since construction.
 
-  # @!macro [new] thread_pool_executor_attr_reader_completed_task_count
+  # @!macro thread_pool_executor_attr_reader_completed_task_count
   #   The number of tasks that have been completed by the pool since construction.
   #   @return [Integer] The number of tasks that have been completed by the pool since construction.
 
-  # @!macro [new] thread_pool_executor_attr_reader_idletime
+  # @!macro thread_pool_executor_attr_reader_idletime
   #   The number of seconds that a thread may be idle before being reclaimed.
   #   @return [Integer] The number of seconds that a thread may be idle before being reclaimed.
 
-  # @!macro [new] thread_pool_executor_attr_reader_max_queue
+  # @!macro thread_pool_executor_attr_reader_max_queue
   #   The maximum number of tasks that may be waiting in the work queue at any one time.
   #   When the queue size reaches `max_queue` subsequent tasks will be rejected in
   #   accordance with the configured `fallback_policy`.
@@ -49,15 +49,15 @@ module Concurrent
   #     When the queue size reaches `max_queue` subsequent tasks will be rejected in
   #     accordance with the configured `fallback_policy`.
 
-  # @!macro [new] thread_pool_executor_attr_reader_length
+  # @!macro thread_pool_executor_attr_reader_length
   #   The number of threads currently in the pool.
   #   @return [Integer] The number of threads currently in the pool.
 
-  # @!macro [new] thread_pool_executor_attr_reader_queue_length
+  # @!macro thread_pool_executor_attr_reader_queue_length
   #   The number of tasks in the queue awaiting execution.
   #   @return [Integer] The number of tasks in the queue awaiting execution.
 
-  # @!macro [new] thread_pool_executor_attr_reader_remaining_capacity
+  # @!macro thread_pool_executor_attr_reader_remaining_capacity
   #   Number of tasks that may be enqueued before reaching `max_queue` and rejecting
   #   new tasks. A value of -1 indicates that the queue may grow without bound.
   #
@@ -68,7 +68,7 @@ module Concurrent
 
 
 
-  # @!macro [new] thread_pool_executor_public_api
+  # @!macro thread_pool_executor_public_api
   #
   #   @!macro abstract_executor_service_public_api
   #
@@ -108,7 +108,7 @@ module Concurrent
 
 
 
-  # @!macro [new] thread_pool_options
+  # @!macro thread_pool_options
   #
   #   **Thread Pool Options**
   #
@@ -169,7 +169,7 @@ module Concurrent
 
 
 
-  # @!macro [attach] fixed_thread_pool
+  # @!macro fixed_thread_pool
   #
   #   A thread pool that reuses a fixed number of threads operating off an unbounded queue.
   #   At any point, at most `num_threads` will be active processing tasks. When all threads are busy new
@@ -182,7 +182,7 @@ module Concurrent
   # @!macro thread_pool_options
   class FixedThreadPool < ThreadPoolExecutor
 
-    # @!macro [attach] fixed_thread_pool_method_initialize
+    # @!macro fixed_thread_pool_method_initialize
     #
     #   Create a new thread pool.
     #

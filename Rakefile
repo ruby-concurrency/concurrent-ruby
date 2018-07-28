@@ -66,7 +66,7 @@ begin
     desc '- test packaged and installed gems instead of local files'
     task :installed => :repackage do
       sh 'gem install pkg/concurrent-ruby-1.1.0.pre1.gem'
-      sh 'gem install pkg/concurrent-ruby-ext-1.1.0.pre1.gem'
+      sh 'gem install pkg/concurrent-ruby-ext-1.1.0.pre1.gem' if Concurrent.on_cruby?
       sh 'gem install pkg/concurrent-ruby-edge-0.4.0.pre1.gem'
       ENV['NO_PATH'] = 'true'
       sh 'bundle install'

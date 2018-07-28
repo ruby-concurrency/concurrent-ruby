@@ -5,7 +5,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] semaphore_method_initialize
+  # @!macro semaphore_method_initialize
   #
   #   Create a new `Semaphore` with the initial `count`.
   #
@@ -13,7 +13,7 @@ module Concurrent
   #
   #   @raise [ArgumentError] if `count` is not an integer or is less than zero
 
-  # @!macro [new] semaphore_method_acquire
+  # @!macro semaphore_method_acquire
   #
   #   Acquires the given number of permits from this semaphore,
   #     blocking until all are available.
@@ -25,19 +25,19 @@ module Concurrent
   #
   #   @return [nil]
 
-  # @!macro [new] semaphore_method_available_permits
+  # @!macro semaphore_method_available_permits
   #
   #   Returns the current number of permits available in this semaphore.
   #
   #   @return [Integer]
 
-  # @!macro [new] semaphore_method_drain_permits
+  # @!macro semaphore_method_drain_permits
   #
   #   Acquires and returns all permits that are immediately available.
   #
   #   @return [Integer]
 
-  # @!macro [new] semaphore_method_try_acquire
+  # @!macro semaphore_method_try_acquire
   #
   #   Acquires the given number of permits from this semaphore,
   #     only if all are available at the time of invocation or within
@@ -54,7 +54,7 @@ module Concurrent
   #   @return [Boolean] `false` if no permits are available, `true` when
   #     acquired a permit
 
-  # @!macro [new] semaphore_method_release
+  # @!macro semaphore_method_release
   #
   #   Releases the given number of permits, returning them to the semaphore.
   #
@@ -66,7 +66,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] semaphore_public_api
+  # @!macro semaphore_public_api
   #
   #   @!method initialize(count)
   #     @!macro semaphore_method_initialize
@@ -98,7 +98,7 @@ module Concurrent
                             end
   private_constant :SemaphoreImplementation
 
-  # @!macro [attach] semaphore
+  # @!macro semaphore
   #
   #   A counting semaphore. Conceptually, a semaphore maintains a set of
   #   permits. Each {#acquire} blocks if necessary until a permit is

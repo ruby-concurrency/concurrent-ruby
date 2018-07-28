@@ -17,11 +17,6 @@ Gem::Specification.new do |s|
   EOF
 
   s.files            = Dir['ext/**/*.{h,c,cpp}']
-  s.files           += [
-    'lib/concurrent/atomic_reference/concurrent_update_error.rb',
-    'lib/concurrent/atomic_reference/direct_update.rb',
-    'lib/concurrent/atomic_reference/numeric_cas_wrapper.rb',
-  ]
   s.extra_rdoc_files = Dir['README*', 'LICENSE*', 'CHANGELOG*']
   s.require_paths    = ['lib']
   s.extensions       = 'ext/concurrent-ruby-ext/extconf.rb'

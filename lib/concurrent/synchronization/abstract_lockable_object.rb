@@ -6,7 +6,7 @@ module Concurrent
 
       protected
 
-      # @!macro [attach] synchronization_object_method_synchronize
+      # @!macro synchronization_object_method_synchronize
       #
       #   @yield runs the block synchronized against this object,
       #     equivalent of java's `synchronize(this) {}`
@@ -15,7 +15,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # @!macro [attach] synchronization_object_method_ns_wait_until
+      # @!macro synchronization_object_method_ns_wait_until
       #
       #   Wait until condition is met or timeout passes,
       #   protects against spurious wake-ups.
@@ -45,7 +45,7 @@ module Concurrent
         end
       end
 
-      # @!macro [attach] synchronization_object_method_ns_wait
+      # @!macro synchronization_object_method_ns_wait
       #
       #   Wait until another thread calls #signal or #broadcast,
       #   spurious wake-ups can happen.
@@ -63,7 +63,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # @!macro [attach] synchronization_object_method_ns_signal
+      # @!macro synchronization_object_method_ns_signal
       #
       #   Signal one waiting thread.
       #   @return [self]
@@ -78,7 +78,7 @@ module Concurrent
         raise NotImplementedError
       end
 
-      # @!macro [attach] synchronization_object_method_ns_broadcast
+      # @!macro synchronization_object_method_ns_broadcast
       #
       #   Broadcast to all waiting threads.
       #   @return [self]

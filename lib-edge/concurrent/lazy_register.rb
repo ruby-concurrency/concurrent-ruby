@@ -3,7 +3,9 @@ require 'concurrent/delay'
 
 module Concurrent
 
-  # Hash-like collection that store lazys evaluated values.
+  # Hash-like collection that store lazy evaluated values.
+  #
+  # @!macro warn.edge
   #
   # @example
   #   register = Concurrent::LazyRegister.new
@@ -15,10 +17,10 @@ module Concurrent
   #   register[:key]
   #   #=> #<Concurrent::Actor::Reference /ping (Concurrent::Actor::AdHoc)>
   #
-  # @!macro edge_warning
   class LazyRegister < Synchronization::Object
 
-    private(*attr_atomic(:data))
+    attr_atomic(:data)
+    private :data, :data=, :swap_data, :compare_and_set_data, :update_data
 
     def initialize
       super

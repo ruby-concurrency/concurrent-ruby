@@ -32,7 +32,7 @@ module Concurrent
         synchronize{ @value = value }
       end
 
-      # @!macro [attach] dereferenceable_set_deref_options
+      # @!macro dereferenceable_set_deref_options
       #   Set the options which define the operations #value performs before
       #   returning data to the caller (dereferencing).
       #

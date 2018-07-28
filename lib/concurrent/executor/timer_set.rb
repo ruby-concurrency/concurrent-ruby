@@ -20,7 +20,7 @@ module Concurrent
 
     # Create a new set of timed tasks.
     #
-    # @!macro [attach] executor_options
+    # @!macro executor_options
     #
     #   @param [Hash] opts the options used to specify the executor on which to perform actions
     #   @option opts [Executor] :executor when set use the given `Executor` instance.

@@ -10,33 +10,33 @@ module Concurrent
   # {include:file:doc/promises-main.md}
   module Promises
 
-    # @!macro [new] promises.param.default_executor
+    # @!macro promises.param.default_executor
     #   @param [Executor, :io, :fast] default_executor Instance of an executor or a name of the
     #     global executor. Default executor propagates to chained futures unless overridden with
     #     executor parameter or changed with {AbstractEventFuture#with_default_executor}.
     #
-    # @!macro [new] promises.param.executor
+    # @!macro promises.param.executor
     #   @param [Executor, :io, :fast] executor Instance of an executor or a name of the
     #     global executor. The task is executed on it, default executor remains unchanged.
     #
-    # @!macro [new] promises.param.args
+    # @!macro promises.param.args
     #   @param [Object] args arguments which are passed to the task when it's executed.
     #     (It might be prepended with other arguments, see the @yeild section).
     #
-    # @!macro [new] promises.shortcut.on
+    # @!macro promises.shortcut.on
     #   Shortcut of {#$0_on} with default `:io` executor supplied.
     #   @see #$0_on
     #
-    # @!macro [new] promises.shortcut.using
+    # @!macro promises.shortcut.using
     #   Shortcut of {#$0_using} with default `:io` executor supplied.
     #   @see #$0_using
     #
-    # @!macro [new] promise.param.task-future
+    # @!macro promise.param.task-future
     #  @yieldreturn will become result of the returned Future.
     #     Its returned value becomes {Future#value} fulfilling it,
     #     raised exception becomes {Future#reason} rejecting it.
     #
-    # @!macro [new] promise.param.callback
+    # @!macro promise.param.callback
     #  @yieldreturn is forgotten.
 
     # Container of all {Future}, {Event} factory methods. They are never constructed directly with
@@ -92,11 +92,11 @@ module Concurrent
         future_on(default_executor, *args, &task)
       end
 
-      # @!macro [new] promises.future-on1
+      # @!macro promises.future-on1
       #   Constructs new Future which will be resolved after block is evaluated on default executor.
       # Evaluation begins immediately.
       #
-      # @!macro [new] promises.future-on2
+      # @!macro promises.future-on2
       #   @!macro promises.param.default_executor
       #   @!macro promises.param.args
       #   @yield [*args] to the task.
@@ -203,7 +203,7 @@ module Concurrent
       # The task is planned for execution in intended_time.
       #
       # @!macro promises.future-on2
-      # @!macro [new] promises.param.intended_time
+      # @!macro promises.param.intended_time
       #   @param [Numeric, Time] intended_time `Numeric` means to run in `intended_time` seconds.
       #     `Time` means to run on `intended_time`.
       def schedule_on(default_executor, intended_time, *args, &task)
@@ -219,7 +219,7 @@ module Concurrent
       # Creates new future which is resolved after all futures_and_or_events are resolved.
       # Its value is array of zipped future values. Its reason is array of reasons for rejection.
       # If there is an error it rejects.
-      # @!macro [new] promises.event-conversion
+      # @!macro promises.event-conversion
       #   If event is supplied, which does not have value and can be only resolved, it's
       #   represented as `:fulfilled` with value `nil`.
       #
@@ -258,7 +258,7 @@ module Concurrent
 
       # Creates new future which is resolved after first futures_and_or_events is resolved.
       # Its result equals result of the first resolved future.
-      # @!macro [new] promises.any-touch
+      # @!macro promises.any-touch
       #   If resolved it does not propagate {AbstractEventFuture#touch}, leaving delayed
       #   futures un-executed if they are not required any more.
       # @!macro promises.event-conversion
@@ -502,14 +502,14 @@ module Concurrent
 
       private :initialize
 
-      # @!macro [new] promises.shortcut.event-future
+      # @!macro promises.shortcut.event-future
       #   @see Event#$0
       #   @see Future#$0
 
-      # @!macro [new] promises.param.timeout
+      # @!macro promises.param.timeout
       #   @param [Numeric] timeout the maximum time in second to wait.
 
-      # @!macro [new] promises.warn.blocks
+      # @!macro promises.warn.blocks
       #   @note This function potentially blocks current thread until the Future is resolved.
       #     Be careful it can deadlock. Try to chain instead.
 
@@ -545,10 +545,10 @@ module Concurrent
         self
       end
 
-      # @!macro [new] promises.touches
+      # @!macro promises.touches
       #   Calls {AbstractEventFuture#touch}.
 
-      # @!macro [new] promises.method.wait
+      # @!macro promises.method.wait
       #   Wait (block the Thread) until receiver is {#resolved?}.
       #   @!macro promises.touches
       #
@@ -655,7 +655,7 @@ module Concurrent
         add_callback :async_callback_on_resolution, executor, args, callback
       end
 
-      # @!macro [new] promises.method.with_default_executor
+      # @!macro promises.method.with_default_executor
       #   Crates new object with same class with the executor set as its new default executor.
       #   Any futures depending on it will use the new default executor.
       # @!macro promises.shortcut.event-future
@@ -794,7 +794,7 @@ module Concurrent
       alias_method :then, :chain
 
 
-      # @!macro [new] promises.method.zip
+      # @!macro promises.method.zip
       #   Creates a new event or a future which will be resolved when receiver and other are.
       #   Returns an event if receiver and other are events, otherwise returns a future.
       #   If just one of the parties is Future then the result
@@ -831,7 +831,7 @@ module Concurrent
         ZipEventEventPromise.new_blocked_by2(self, event, @DefaultExecutor).event
       end
 
-      # @!macro [new] promise.method.schedule
+      # @!macro promise.method.schedule
       #   Creates new event dependent on receiver scheduled to execute on/in intended_time.
       #   In time is interpreted from the moment the receiver is resolved, therefore it inserts
       #   delay into the chain.
@@ -896,12 +896,12 @@ module Concurrent
         state.resolved? && !state.fulfilled?
       end
 
-      # @!macro [new] promises.warn.nil
+      # @!macro promises.warn.nil
       #   @note Make sure returned `nil` is not confused with timeout, no value when rejected,
       #     no reason when fulfilled, etc.
       #     Use more exact methods if needed, like {#wait}, {#value!}, {#result}, etc.
 
-      # @!macro [new] promises.method.value
+      # @!macro promises.method.value
       #   Return value of the future.
       #   @!macro promises.touches
       #
@@ -1216,10 +1216,10 @@ module Concurrent
       include Resolvable
 
 
-      # @!macro [new] raise_on_reassign
+      # @!macro raise_on_reassign
       # @raise [MultipleAssignmentError] when already resolved and raise_on_reassign is true.
 
-      # @!macro [new] promise.param.raise_on_reassign
+      # @!macro promise.param.raise_on_reassign
       #   @param [Boolean] raise_on_reassign should method raise exception if already resolved
       #   @return [self, false] false is returner when raise_on_reassign is false and the receiver
       #     is already resolved.

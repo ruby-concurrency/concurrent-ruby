@@ -131,7 +131,7 @@ module Concurrent
         # waiting to {#put} items onto the buffer. This method exhibits the
         # same blocking behavior as {#take}.
         #
-        # @see {#take}
+        # @see #take
         def next
           item = take
           more = (item != Concurrent::NULL)

@@ -392,7 +392,7 @@ module Concurrent
     # object's thread. The final disposition of the method call can be obtained
     # by inspecting the returned future.
     #
-    # @!macro [attach] async_thread_safety_warning
+    # @!macro async_thread_safety_warning
     #   @note The method call is guaranteed to be thread safe with respect to
     #     all other method calls against the same object that are called with
     #     either `async` or `await`. The mutable nature of Ruby references

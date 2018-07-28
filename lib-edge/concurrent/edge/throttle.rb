@@ -1,5 +1,5 @@
 module Concurrent
-  # @!macro [new] throttle.example.throttled_block
+  # @!macro throttle.example.throttled_block
   #   @example
   #     max_two = Throttle.new 2
   #     10.times.map do
@@ -10,12 +10,12 @@ module Concurrent
   #         end
   #       end
   #     end
-  # @!macro [new] throttle.example.throttled_future
+  # @!macro throttle.example.throttled_future
   #   @example
   #     throttle.throttled_future(1) do |arg|
   #       arg.succ
   #     end
-  # @!macro [new] throttle.example.throttled_future_chain
+  # @!macro throttle.example.throttled_future_chain
   #   @example
   #     throttle.throttled_future_chain do |trigger|
   #       trigger.
@@ -23,7 +23,7 @@ module Concurrent
   #           chain { 1 }.
   #           then(&:succ)
   #     end
-  # @!macro [new] throttle.example.then_throttled_by
+  # @!macro throttle.example.then_throttled_by
   #   @example
   #     data     = (1..5).to_a
   #     db       = data.reduce({}) { |h, v| h.update v => v.to_s }
@@ -53,7 +53,8 @@ module Concurrent
     # TODO (pitr-ch 21-Dec-2016): consider using sized channel for implementation instead when available
 
     safe_initialization!
-    private(*attr_atomic(:can_run))
+    attr_atomic(:can_run)
+    private :can_run, :can_run=, :swap_can_run, :compare_and_set_can_run, :update_can_run
 
     # New throttle.
     # @param [Integer] limit

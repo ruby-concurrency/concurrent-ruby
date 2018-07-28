@@ -4,36 +4,36 @@ concurrent-ruby:
 
 * [Promises](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html)
   are moved from `concurrent-ruby-edge` to `concurrent-ruby`
-* #644 Fix Map#each and #each_pair not returning enumerator outside of MRI
-* #659 Edge promises fail during error handling
-* #741 Raise on recursive Delay#value call
-* #727 #717 fix global IO executor on JRuby
-* #740 Drop support for CRuby 1.9, JRuby 1.7, Rubinius.
-* #737 Move AtomicMarkableReference out of Edge
-* #708 Prefer platform specific memory barriers 
+* (#644) Fix Map#each and #each_pair not returning enumerator outside of MRI
+* (#659) Edge promises fail during error handling
+* (#741) Raise on recursive Delay#value call
+* (#727) #717 fix global IO executor on JRuby
+* (#740) Drop support for CRuby 1.9, JRuby 1.7, Rubinius.
+* (#737) Move AtomicMarkableReference out of Edge
+* (#708) Prefer platform specific memory barriers 
 * Add support for TruffleRuby
-  * #734 Fix Array/Hash/Set construction broken on TruffleRuby    
-* #735 Fix wrong expected exception in channel spec assertion
+  * (#734) Fix Array/Hash/Set construction broken on TruffleRuby    
+* (#735) Fix wrong expected exception in channel spec assertion
 * CI stabilization
-* #729 Allow executor option in `Promise#then`
-* #725 fix timeout check to use timeout_interval
-* #719 update engine detection
-* #660 Add specs for Promise#zip/Promise.zip ordering
-* #654 Promise.zip execution changes
-* #666 Add thread safe set implementation
-* #651 #699 #to_s, #inspect should not output negative object IDs.
-* #685 Avoid RSpec warnings about raise_error
-* #680 Avoid RSpec monkey patching, persist spec results locally, use RSpec
+* (#729) Allow executor option in `Promise#then`
+* (#725) fix timeout check to use timeout_interval
+* (#719) update engine detection
+* (#660) Add specs for Promise#zip/Promise.zip ordering
+* (#654) Promise.zip execution changes
+* (#666) Add thread safe set implementation
+* (#651) #699 #to_s, #inspect should not output negative object IDs.
+* (#685) Avoid RSpec warnings about raise_error
+* (#680) Avoid RSpec monkey patching, persist spec results locally, use RSpec
   v3.7.0
-* #665 Initialize the monitor for new subarrays on Rubinius
-* #661 Fix error handling in edge promises
+* (#665) Initialize the monitor for new subarrays on Rubinius
+* (#661) Fix error handling in edge promises
 * remove sharp dependency edge -> core
 * remove warnings
 * documentation updates
   
 concurrent-ruby-edge:
 
-* #659 Edge promises fail during error handling
+* (#659) Edge promises fail during error handling
 * Edge files clearly separated in `lib-edge`
 * added ReInclude
 

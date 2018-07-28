@@ -38,12 +38,12 @@ require 'concurrent/thread_safe/util'
 
 require 'concurrent/options'
 
-# @!macro [new] internal_implementation_note
+# @!macro internal_implementation_note
 #
 #   @note **Private Implementation:** This abstraction is a private, internal
 #     implementation detail. It should never be used directly.
 
-# @!macro [new] monotonic_clock_warning
+# @!macro monotonic_clock_warning
 #
 #   @note Time calculations on all platforms and languages are sensitive to
 #     changes to the system clock. To alleviate the potential problems
@@ -61,7 +61,7 @@ require 'concurrent/options'
 #
 #   @see http://linux.die.net/man/3/clock_gettime Linux clock_gettime(3)
 
-# @!macro [new] copy_options
+# @!macro copy_options
 #
 #   ## Copy Options
 #
@@ -97,7 +97,7 @@ require 'concurrent/options'
 #   as close to the behavior of a "pure" functional language (like Erlang, Clojure,
 #   or Haskell) as we are likely to get in Ruby.
 
-# @!macro [attach] deref_options
+# @!macro deref_options
 #
 #   @option opts [Boolean] :dup_on_deref (false) Call `#dup` before
 #     returning the data from {#value}
@@ -107,7 +107,7 @@ require 'concurrent/options'
 #     method, call the given proc passing the internal value as the sole
 #     argument then return the new value returned from the proc.
 
-# @!macro [attach] executor_and_deref_options
+# @!macro executor_and_deref_options
 #
 #   @param [Hash] opts the options used to define the behavior at update and deref
 #     and to specify the executor on which to perform actions
@@ -117,16 +117,18 @@ require 'concurrent/options'
 #     operations, and `:immediate` returns the global `ImmediateExecutor` object.
 #   @!macro deref_options
 
-# Modern concurrency tools for Ruby. Inspired by Erlang, Clojure, Scala, Haskell,
-# F#, C#, Java, and classic concurrency patterns.
+# @!macro warn.edge
+#   @api Edge
+#   @note **Edge Features** are under active development and may change frequently.
 #
-# The design goals of this gem are:
-#
-# * Stay true to the spirit of the languages providing inspiration
-# * But implement in a way that makes sense for Ruby
-# * Keep the semantics as idiomatic Ruby as possible
-# * Support features that make sense in Ruby
-# * Exclude features that don't make sense in Ruby
-# * Be small, lean, and loosely coupled
+#     -   Deprecations are not added before incompatible changes.
+#     -   Edge version: _major_ is always 0, _minor_ bump means incompatible change,
+#         _patch_ bump means compatible change.
+#     -   Edge features may also lack tests and documentation.
+#     -   Features developed in `concurrent-ruby-edge` are expected to move
+#         to `concurrent-ruby` when finalised.
+
+
+# {include:file:README.md}
 module Concurrent
 end

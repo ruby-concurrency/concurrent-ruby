@@ -14,7 +14,7 @@ module Concurrent
                                        end
   private_constant :SingleThreadExecutorImplementation
 
-  # @!macro [attach] single_thread_executor
+  # @!macro single_thread_executor
   #
   #   A thread pool with a single thread an unlimited queue. Should the thread
   #   die for any reason it will be removed and replaced, thus ensuring that
@@ -35,7 +35,7 @@ module Concurrent
   # @!macro abstract_executor_service_public_api
   class SingleThreadExecutor < SingleThreadExecutorImplementation
 
-    # @!macro [new] single_thread_executor_method_initialize
+    # @!macro single_thread_executor_method_initialize
     #
     #   Create a new thread pool.
     #

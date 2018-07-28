@@ -3,7 +3,7 @@ require 'concurrent/collection/copy_on_notify_observer_set'
 require 'concurrent/concern/observable'
 require 'concurrent/synchronization'
 
-# @!macro [new] thread_safe_variable_comparison
+# @!macro thread_safe_variable_comparison
 #
 #   ## Thread-safe Variable Classes
 #
@@ -96,8 +96,15 @@ module Concurrent
     include Concern::Observable
 
     safe_initialization!
-    private(*attr_atomic(:value))
+    attr_atomic(:value)
+    private :value=, :swap_value, :compare_and_set_value, :update_value
     public :value
+    alias_method :deref, :value
+
+    # @!method value
+    #   The current value of the atom.
+    #
+    #   @return [Object] The current value.
 
     # Create a new atom with the given initial value.
     #
@@ -117,13 +124,6 @@ module Concurrent
       self.observers = Collection::CopyOnNotifyObserverSet.new
       self.value     = value
     end
-
-    # @!method value
-    #   The current value of the atom.
-    #
-    #   @return [Object] The current value.
-
-    alias_method :deref, :value
 
     # Atomically swaps the value of atom using the given block. The current
     # value will be passed to the block, as will any arguments passed as

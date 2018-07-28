@@ -193,7 +193,7 @@ module Concurrent
     #
     # @!macro executor_and_deref_options
     #
-    # @!macro [attach] promise_init_options
+    # @!macro promise_init_options
     #
     #   @option opts [Promise] :parent the parent `Promise` when building a chain/tree
     #   @option opts [Proc] :on_fulfill fulfillment handler
@@ -298,15 +298,18 @@ module Concurrent
 
     # Chain a new promise off the current promise.
     #
-    # @param [Proc] rescuer An optional rescue block to be executed if the
-    #   promise is rejected.
-    #
-    # @param [ThreadPool] executor An optional thread pool executor to be used
-    # in the new Promise
-    #
-    # @yield The block operation to be performed asynchronously.
-    #
     # @return [Promise] the new promise
+    # @yield The block operation to be performed asynchronously.
+    # @overload then(rescuer, executor, &block)
+    #   @param [Proc] rescuer An optional rescue block to be executed if the
+    #     promise is rejected.
+    #   @param [ThreadPool] executor An optional thread pool executor to be used
+    #     in the new Promise
+    # @overload then(rescuer, executor: executor, &block)
+    #   @param [Proc] rescuer An optional rescue block to be executed if the
+    #     promise is rejected.
+    #   @param [ThreadPool] executor An optional thread pool executor to be used
+    #     in the new Promise
     def then(*args, &block)
       if args.last.is_a?(::Hash)
         executor = args.pop[:executor]
@@ -443,7 +446,7 @@ module Concurrent
     # fail. Upon execution will execute any of the aggregate promises that
     # were not already executed.
     #
-    # @!macro [attach] promise_self_aggregate
+    # @!macro promise_self_aggregate
     #
     #   The returned promise will not yet have been executed. Additional `#then`
     #   and `#rescue` handlers may still be provided. Once the returned promise

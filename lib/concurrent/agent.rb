@@ -129,7 +129,7 @@ module Concurrent
   # end
   # ```
   #
-  # @!macro [new] agent_await_warning
+  # @!macro agent_await_warning
   #
   #   **NOTE** Never, *under any circumstances*, call any of the "await" methods
   #   ({#await}, {#await_for}, {#await_for!}, and {#wait}) from within an action
@@ -242,7 +242,7 @@ module Concurrent
 
     alias_method :reason, :error
 
-    # @!macro [attach] agent_send
+    # @!macro agent_send
     #
     #   Dispatches an action to the Agent and returns immediately. Subsequently,
     #   in a thread from a thread pool, the {#value} will be set to the return
@@ -271,7 +271,7 @@ module Concurrent
     #     action
     #   @yieldreturn [Object] the new value of the Agent
     #
-    # @!macro [attach] send_return
+    # @!macro send_return
     #   @return [Boolean] true if the action is successfully enqueued, false if
     #     the Agent is {#failed?}
     def send(*args, &action)
@@ -280,7 +280,7 @@ module Concurrent
 
     # @!macro agent_send
     #
-    # @!macro [attach] send_bang_return_and_raise
+    # @!macro send_bang_return_and_raise
     #   @return [Boolean] true if the action is successfully enqueued
     #   @raise [Concurrent::Agent::Error] if the Agent is {#failed?}
     def send!(*args, &action)
@@ -326,7 +326,7 @@ module Concurrent
     #
     # @param [Proc] action the action dispatch to be enqueued
     # @return [Concurrent::Agent] self
-    # @see {#send_off}
+    # @see #send_off
     def <<(action)
       send_off(&action)
       self
@@ -397,7 +397,7 @@ module Concurrent
 
     # Is the Agent in a failed state?
     #
-    # @see {#restart}
+    # @see #restart
     def failed?
       !@error.value.nil?
     end

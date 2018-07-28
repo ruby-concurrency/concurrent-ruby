@@ -42,7 +42,7 @@ module Concurrent
   GLOBAL_MONOTONIC_CLOCK = class_definition.new
   private_constant :GLOBAL_MONOTONIC_CLOCK
 
-  # @!macro [attach] monotonic_get_time
+  # @!macro monotonic_get_time
   #
   #   Returns the current time a tracked by the application monotonic clock.
   #
