@@ -36,9 +36,18 @@ matrix:
     - rvm: 2.3.7
       jdk: oraclejdk8
       env: COVERAGE=1
+    - name: TruffleRuby
+      rvm: system
+      install:
+        - export TRUFFLERUBY_VERSION=1.0.0-rc3
+        - curl -L https://github.com/oracle/truffleruby/releases/download/vm-$TRUFFLERUBY_VERSION/truffleruby-$TRUFFLERUBY_VERSION-linux-amd64.tar.gz | tar xz
+        - export PATH="$PWD/truffleruby-$TRUFFLERUBY_VERSION-linux-amd64/bin:$PATH"
+        - gem install bundler
+        - bundle install
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
+    - rvm: TruffleRuby
     - rvm: rbx-3
     - rvm: ruby-2.6.0-preview2
 
