@@ -13,14 +13,15 @@ test_script:
 
 environment:
   matrix:
-    - ruby_version: "193"
     - ruby_version: "200"
     - ruby_version: "200-x64"
     - ruby_version: "21"
     - ruby_version: "21-x64"
     - ruby_version: "22"
     - ruby_version: "22-x64"
-
-matrix:
-  allow_failures:
-    - ruby_version: "193"
+    - ruby_version: "23"
+    - ruby_version: "23-x64"
+    - ruby_version: "24"
+    - ruby_version: "24-x64"
+    - ruby_version: "25"
+    - ruby_version: "25-x64"
