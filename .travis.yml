@@ -1,31 +1,5 @@
 language: ruby
-
-rvm:
-  # start with the latest
-  - 2.5.1
-  - jruby-9.2.0.0
-
-  # older versions
-  - 2.4.4
-  - 2.3.7
-  - 2.2.10
-  - 2.1.10
-  - 2.0.0
-
-  - jruby-9.1.17.0
-  - jruby-9.0.5.0
-
-  - ruby-head
-  - ruby-2.6.0-preview2
-  - jruby-head
-
-  - rbx-3
-
-jdk:
-  - oraclejdk8
-
 sudo: false
-
 branches:
   only:
     - master
@@ -33,10 +7,12 @@ branches:
 matrix:
   fast_finish: true
   include:
-    - rvm: 2.3.7
+    - name: MRI 2.5.1 Latest
+      rvm: 2.5.1
+    - name: JRuby 9.2.0.0 Latest
+      rvm: jruby-9.2.0.0
       jdk: oraclejdk8
-      env: COVERAGE=1
-    - name: TruffleRuby
+    - name: TruffleRuby Latest
       rvm: system
       install:
         - export TRUFFLERUBY_VERSION=1.0.0-rc3
@@ -44,12 +20,47 @@ matrix:
         - export PATH="$PWD/truffleruby-$TRUFFLERUBY_VERSION-linux-amd64/bin:$PATH"
         - gem install bundler
         - bundle install
+
+    - name: MRI 2.4.4
+      rvm: 2.4.4
+    - name: MRI 2.3.7
+      rvm: 2.3.7
+    - name: MRI 2.2.10
+      rvm: 2.2.10
+    - name: MRI 2.1.10
+      rvm: 2.1.10
+    - name: MRI 2.0.0
+      rvm: 2.0.0
+
+    - name: JRuby 9.1.17.0
+      rvm: jruby-9.1.17.0
+      jdk: oraclejdk8
+    - name: JRuby 9.0.5.0
+      rvm: jruby-9.0.5.0
+      jdk: oraclejdk8
+
+    - name: MRI head
+      rvm: ruby-head
+    - name: MRI 2.6.0-preview2
+      rvm: 2.6.0-preview2
+    - name: JRuby head
+      rvm: jruby-head
+      jdk: oraclejdk8
+
+    - name: Rubinius
+      rvm: rbx-3
+
+    - name: Coverage on MRI 2.3.7
+      rvm: 2.3.7
+      jdk: oraclejdk8
+      env: COVERAGE=1
+
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
-    - rvm: TruffleRuby
     - rvm: rbx-3
     - rvm: ruby-2.6.0-preview2
+    - name: TruffleRuby Latest
 
 env:
   global:
