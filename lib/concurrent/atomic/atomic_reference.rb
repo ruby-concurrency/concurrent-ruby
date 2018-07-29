@@ -142,18 +142,22 @@ module Concurrent
                                     # @!visibility private
                                     # @!macro internal_implementation_note
                                     class CAtomicReference
-                                      include Concurrent::AtomicDirectUpdate
-                                      include Concurrent::AtomicNumericCompareAndSetWrapper
+                                      include AtomicDirectUpdate
+                                      include AtomicNumericCompareAndSetWrapper
                                     end
                                     CAtomicReference
                                   when Concurrent.on_jruby?
                                     # @!visibility private
                                     # @!macro internal_implementation_note
                                     class JavaAtomicReference
-                                      include Concurrent::AtomicDirectUpdate
+                                      include AtomicDirectUpdate
                                     end
                                     JavaAtomicReference
-                                  when Concurrent.on_rbx?, Concurrent.on_truffleruby?
+                                  when Concurrent.on_truffleruby?
+                                    class TruffleRubyAtomicReference < Truffle::AtomicReference
+                                      include AtomicDirectUpdate
+                                    end
+                                  when Concurrent.on_rbx?
                                     # @note Extends `Rubinius::AtomicReference` version adding aliases
                                     #   and numeric logic.
                                     #
@@ -161,8 +165,8 @@ module Concurrent
                                     # @!macro internal_implementation_note
                                     class RbxAtomicReference < Rubinius::AtomicReference
                                       alias _compare_and_set compare_and_set
-                                      include Concurrent::AtomicDirectUpdate
-                                      include Concurrent::AtomicNumericCompareAndSetWrapper
+                                      include AtomicDirectUpdate
+                                      include AtomicNumericCompareAndSetWrapper
                                       alias_method :value, :get
                                       alias_method :value=, :set
                                       alias_method :swap, :get_and_set
