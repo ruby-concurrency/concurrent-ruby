@@ -144,6 +144,7 @@ module Concurrent
                                     class CAtomicReference
                                       include AtomicDirectUpdate
                                       include AtomicNumericCompareAndSetWrapper
+                                      alias_method :compare_and_swap, :compare_and_set
                                     end
                                     CAtomicReference
                                   when Concurrent.on_jruby?
@@ -156,6 +157,8 @@ module Concurrent
                                   when Concurrent.on_truffleruby?
                                     class TruffleRubyAtomicReference < Truffle::AtomicReference
                                       include AtomicDirectUpdate
+                                      alias_method :compare_and_swap, :compare_and_set
+                                      alias_method :swap, :get_and_set
                                     end
                                   when Concurrent.on_rbx?
                                     # @note Extends `Rubinius::AtomicReference` version adding aliases
@@ -164,12 +167,13 @@ module Concurrent
                                     # @!visibility private
                                     # @!macro internal_implementation_note
                                     class RbxAtomicReference < Rubinius::AtomicReference
-                                      alias _compare_and_set compare_and_set
+                                      alias_method :_compare_and_set, :compare_and_set
                                       include AtomicDirectUpdate
                                       include AtomicNumericCompareAndSetWrapper
                                       alias_method :value, :get
                                       alias_method :value=, :set
                                       alias_method :swap, :get_and_set
+                                      alias_method :compare_and_swap, :compare_and_set
                                     end
                                     RbxAtomicReference
                                   else

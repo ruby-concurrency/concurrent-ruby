@@ -5,6 +5,7 @@ module Concurrent
   class MutexAtomicReference < Synchronization::LockableObject
     include AtomicDirectUpdate
     include AtomicNumericCompareAndSetWrapper
+    alias_method :compare_and_swap, :compare_and_set
 
     # @!macro atomic_reference_method_initialize
     def initialize(value = nil)
