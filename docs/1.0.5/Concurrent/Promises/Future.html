@@ -1,0 +1,3473 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Concurrent::Promises::Future
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../../';
+  framesUrl = "../../frames.html#!Concurrent/Promises/Future.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span>
+     &raquo; 
+    <span class="title">Future</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: Concurrent::Promises::Future
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="AbstractEventFuture.html" title="Concurrent::Promises::AbstractEventFuture (class)">AbstractEventFuture</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="AbstractEventFuture.html" title="Concurrent::Promises::AbstractEventFuture (class)">AbstractEventFuture</a></span></li>
+          
+            <li class="next">Concurrent::Promises::Future</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+      <dt class="r2">Includes:</dt>
+      <dd class="r2"><span class='object_link'><a href="Future/ActorIntegration.html" title="Concurrent::Promises::Future::ActorIntegration (module)">ActorIntegration</a></span>, <span class='object_link'><a href="Future/NewChannelIntegration.html" title="Concurrent::Promises::Future::NewChannelIntegration (module)">NewChannelIntegration</a></span>, <span class='object_link'><a href="Future/ThrottleIntegration.html" title="Concurrent::Promises::Future::ThrottleIntegration (module)">ThrottleIntegration</a></span></dd>
+      
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/concurrent/edge/promises.rb<span class="defines">,<br />
+  lib/concurrent/edge/throttle.rb,<br /> lib/concurrent/edge/old_channel_integration.rb,<br /> lib/concurrent/edge/promises.rb,<br /> lib/concurrent/edge/promises.rb</span>
+</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Represents a value which will become available in future. May reject with a reason instead,
+e.g. when the tasks raises an exception.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="ResolvableFuture.html" title="Concurrent::Promises::ResolvableFuture (class)">ResolvableFuture</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Future/ActorIntegration.html" title="Concurrent::Promises::Future::ActorIntegration (module)">ActorIntegration</a></span>, <span class='object_link'><a href="Future/NewChannelIntegration.html" title="Concurrent::Promises::Future::NewChannelIntegration (module)">NewChannelIntegration</a></span>, <span class='object_link'><a href="Future/ThrottleIntegration.html" title="Concurrent::Promises::Future::ThrottleIntegration (module)">ThrottleIntegration</a></span>
+    
+  
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#any-instance_method" title="#any (instance method)">- (Future) <strong>any</strong>(event_or_future) </a>
+    
+
+    
+      (also: #|)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates a new event which will be resolved when the first of receiver, <code>event_or_future</code> resolves.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delay-instance_method" title="#delay (instance method)">- (Future) <strong>delay</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates new future dependent on receiver which will not evaluate until touched, see <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#exception-instance_method" title="#exception (instance method)">- (Exception) <strong>exception</strong>(*args) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Allows rejected Future to be risen with <code>raise</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#flat_event-instance_method" title="#flat_event (instance method)">- (Event) <strong>flat_event</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates new event which will be resolved when the returned event by receiver is.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#flat_future-instance_method" title="#flat_future (instance method)">- (Future) <strong>flat_future</strong>(level = 1) </a>
+    
+
+    
+      (also: #flat)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates new future which will have result of the future returned by receiver.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fulfilled%3F-instance_method" title="#fulfilled? (instance method)">- (Boolean) <strong>fulfilled?</strong>(state = internal_state) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is it in fulfilled state?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_fulfillment-instance_method" title="#on_fulfillment (instance method)">- (self) <strong>on_fulfillment</strong>(*args, &amp;callback) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Shortcut of <span class='object_link'><a href="#on_fulfillment_using-instance_method" title="Concurrent::Promises::Future#on_fulfillment_using (method)">#on_fulfillment_using</a></span> with default <code>:io</code> executor supplied.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_fulfillment%21-instance_method" title="#on_fulfillment! (instance method)">- (self) <strong>on_fulfillment!</strong>(*args) {|value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Stores the callback to be executed synchronously on resolving thread after it is fulfilled.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_fulfillment_using-instance_method" title="#on_fulfillment_using (instance method)">- (self) <strong>on_fulfillment_using</strong>(executor, *args) {|value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Stores the callback to be executed asynchronously on executor after it is fulfilled.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_rejection-instance_method" title="#on_rejection (instance method)">- (self) <strong>on_rejection</strong>(*args, &amp;callback) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Shortcut of <span class='object_link'><a href="#on_rejection_using-instance_method" title="Concurrent::Promises::Future#on_rejection_using (method)">#on_rejection_using</a></span> with default <code>:io</code> executor supplied.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_rejection%21-instance_method" title="#on_rejection! (instance method)">- (self) <strong>on_rejection!</strong>(*args) {|reason, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Stores the callback to be executed synchronously on resolving thread after it is rejected.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_rejection_using-instance_method" title="#on_rejection_using (instance method)">- (self) <strong>on_rejection_using</strong>(executor, *args) {|reason, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Stores the callback to be executed asynchronously on executor after it is rejected.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reason-instance_method" title="#reason (instance method)">- (Exception, nil) <strong>reason</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns reason of future&#39;s rejection.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rejected%3F-instance_method" title="#rejected? (instance method)">- (Boolean) <strong>rejected?</strong>(state = internal_state) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is it in rejected state?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rescue-instance_method" title="#rescue (instance method)">- (Future) <strong>rescue</strong>(*args, &amp;task) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Shortcut of <span class='object_link'><a href="#rescue_on-instance_method" title="Concurrent::Promises::Future#rescue_on (method)">#rescue_on</a></span> with default <code>:io</code> executor supplied.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rescue_on-instance_method" title="#rescue_on (instance method)">- (Future) <strong>rescue_on</strong>(executor, *args) {|reason, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Chains the task to be executed asynchronously on executor after it rejects.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rescue_throttled_by-instance_method" title="#rescue_throttled_by (instance method)">- (Promises::Future) <strong>rescue_throttled_by</strong>(throttle, *args, &amp;block) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/ThrottleIntegration.html#rescue_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#rescue_throttled_by (method)">ThrottleIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="#rescue-instance_method" title="Concurrent::Promises::Future#rescue (method)">#rescue</a></span> but the it is throttled.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#result-instance_method" title="#result (instance method)">- (Array(Boolean, Object, Exception), nil) <strong>result</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns triplet fulfilled?, value, reason.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#run-instance_method" title="#run (instance method)">- (Future) <strong>run</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Allows to use futures as green threads.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#schedule-instance_method" title="#schedule (instance method)">- (Future) <strong>schedule</strong>(intended_time) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates new event dependent on receiver scheduled to execute on/in intended_time.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then-instance_method" title="#then (instance method)">- (Future) <strong>then</strong>(*args, &amp;task) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Shortcut of <span class='object_link'><a href="#then_on-instance_method" title="Concurrent::Promises::Future#then_on (method)">#then_on</a></span> with default <code>:io</code> executor supplied.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_ask-instance_method" title="#then_ask (instance method)">- (Future) <strong>then_ask</strong>(actor) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/ActorIntegration.html#then_ask-instance_method" title="Concurrent::Promises::Future::ActorIntegration#then_ask (method)">ActorIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Asks the actor with its value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_on-instance_method" title="#then_on (instance method)">- (Future) <strong>then_on</strong>(executor, *args) {|value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Chains the task to be executed asynchronously on executor after it fulfills.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_push_channel-instance_method" title="#then_push_channel (instance method)">- (Future) <strong>then_push_channel</strong>(channel) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/NewChannelIntegration.html#then_push_channel-instance_method" title="Concurrent::Promises::Future::NewChannelIntegration#then_push_channel (method)">NewChannelIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A future which is fulfilled after the message is pushed to the channel.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_throttled_by-instance_method" title="#then_throttled_by (instance method)">- (Promises::Future) <strong>then_throttled_by</strong>(throttle, *args, &amp;block) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/ThrottleIntegration.html#then_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#then_throttled_by (method)">ThrottleIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="#then-instance_method" title="Concurrent::Promises::Future#then (method)">#then</a></span> but the it is throttled.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_event-instance_method" title="#to_event (instance method)">- (Event) <strong>to_event</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Converts future to event which is resolved when future is resolved by fulfillment or rejection.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_future-instance_method" title="#to_future (instance method)">- (Future) <strong>to_future</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns self, since this is a future.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">- (Object, nil) <strong>value</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return value of the future.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value%21-instance_method" title="#value! (instance method)">- (Object, nil) <strong>value!</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return value of the future.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait%21-instance_method" title="#wait! (instance method)">- (Future, true, false) <strong>wait!</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Wait (block the Thread) until receiver is <span class='object_link'><a href="AbstractEventFuture.html#resolved%3F-instance_method" title="Concurrent::Promises::AbstractEventFuture#resolved? (method)">AbstractEventFuture#resolved?</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_default_executor-instance_method" title="#with_default_executor (instance method)">- (Future) <strong>with_default_executor</strong>(executor) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Crates new object with same class with the executor set as its new default executor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#zip-instance_method" title="#zip (instance method)">- (Future) <strong>zip</strong>(other) </a>
+    
+
+    
+      (also: #&amp;)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates a new event or a future which will be resolved when receiver and other are.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="any-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>any</strong>(event_or_future) 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='|-instance_method'>|</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates a new event which will be resolved when the first of receiver, <code>event_or_future</code>
+resolves. Returning future will have value nil if event_or_future is event and resolves
+first.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1048
+1049
+1050</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1048</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_any'>any</span><span class='lparen'>(</span><span class='id identifier rubyid_event_or_future'>event_or_future</span><span class='rparen'>)</span>
+  <span class='const'>AnyResolvedFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event_or_future'>event_or_future</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delay-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>delay</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates new future dependent on receiver which will not evaluate until touched, see <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.
+In other words, it inserts delay into the chain of Futures making rest of it lazy evaluated.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1058
+1059
+1060
+1061</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1058</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delay'>delay</span>
+  <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>DelayPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+  <span class='const'>ZipFutureEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="exception-instance_method">
+  
+    - (<tt>Exception</tt>) <strong>exception</strong>(*args) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Allows rejected Future to be risen with <code>raise</code> method.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_raise'>raise</span> <span class='const'>Promises</span><span class='period'>.</span><span class='id identifier rubyid_rejected_future'>rejected_future</span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>boom</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='rparen'>)</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>StandardError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when raising not rejected future</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+983
+984
+985
+986
+987
+988
+989
+990
+991
+992
+993</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 983</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Error</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>it is not rejected</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
+  <span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='const'>Array</span><span class='lparen'>(</span><span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_reason'>reason</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&gt;</span> <span class='int'>1</span>
+    <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>MultipleErrors</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_reason'>reason</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_ex'>ex</span> <span class='op'>=</span> <span class='id identifier rubyid_reason'>reason</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_ex'>ex</span><span class='period'>.</span><span class='id identifier rubyid_set_backtrace'>set_backtrace</span> <span class='id identifier rubyid_ex'>ex</span><span class='period'>.</span><span class='id identifier rubyid_backtrace'>backtrace</span> <span class='op'>+</span> <span class='id identifier rubyid_caller'>caller</span>
+    <span class='id identifier rubyid_ex'>ex</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="flat_event-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>) <strong>flat_event</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates new event which will be resolved when the returned event by receiver is.
+Be careful if the receiver rejects it will just resolve since Event does not hold reason.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1093
+1094
+1095</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1093</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_flat_event'>flat_event</span>
+  <span class='const'>FlatEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="flat_future-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>flat_future</strong>(level = 1) 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='flat-instance_method'>flat</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates new future which will have result of the future returned by receiver. If receiver
+rejects it will have its rejection.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>level</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>1</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>how many levels of futures should flatten</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1083
+1084
+1085</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1083</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_flat_future'>flat_future</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='int'>1</span><span class='rparen'>)</span>
+  <span class='const'>FlatFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fulfilled?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>fulfilled?</strong>(state = internal_state) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is it in fulfilled state?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+915
+916
+917</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 915</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fulfilled?'>fulfilled?</span><span class='lparen'>(</span><span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='id identifier rubyid_internal_state'>internal_state</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_fulfilled?'>fulfilled?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_fulfillment-instance_method">
+  
+    - (<tt>self</tt>) <strong>on_fulfillment</strong>(*args, &amp;callback) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Shortcut of <span class='object_link'><a href="#on_fulfillment_using-instance_method" title="Concurrent::Promises::Future#on_fulfillment_using (method)">#on_fulfillment_using</a></span> with default <code>:io</code> executor supplied.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#on_fulfillment_using-instance_method" title="Concurrent::Promises::Future#on_fulfillment_using (method)">#on_fulfillment_using</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1099
+1100
+1101</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1099</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_fulfillment'>on_fulfillment</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_on_fulfillment_using'>on_fulfillment_using</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_fulfillment!-instance_method">
+  
+    - (<tt>self</tt>) <strong>on_fulfillment!</strong>(*args) {|value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Stores the callback to be executed synchronously on resolving thread after it is
+fulfilled. Does nothing on rejection.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
+(It might be prepended with other arguments, see the @yeild section).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to the callback.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>is forgotten.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1110
+1111
+1112</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1110</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_fulfillment!'>on_fulfillment!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:callback_on_fulfillment</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_fulfillment_using-instance_method">
+  
+    - (<tt>self</tt>) <strong>on_fulfillment_using</strong>(executor, *args) {|value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Stores the callback to be executed asynchronously on executor after it is
+fulfilled. Does nothing on rejection.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. The task is executed on it, default executor remains unchanged.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
+(It might be prepended with other arguments, see the @yeild section).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to the callback.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>is forgotten.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1122
+1123
+1124</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1122</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_fulfillment_using'>on_fulfillment_using</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:async_callback_on_fulfillment</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_rejection-instance_method">
+  
+    - (<tt>self</tt>) <strong>on_rejection</strong>(*args, &amp;callback) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Shortcut of <span class='object_link'><a href="#on_rejection_using-instance_method" title="Concurrent::Promises::Future#on_rejection_using (method)">#on_rejection_using</a></span> with default <code>:io</code> executor supplied.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#on_rejection_using-instance_method" title="Concurrent::Promises::Future#on_rejection_using (method)">#on_rejection_using</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1128
+1129
+1130</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_rejection'>on_rejection</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_on_rejection_using'>on_rejection_using</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_rejection!-instance_method">
+  
+    - (<tt>self</tt>) <strong>on_rejection!</strong>(*args) {|reason, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Stores the callback to be executed synchronously on resolving thread after it is
+rejected. Does nothing on fulfillment.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
+(It might be prepended with other arguments, see the @yeild section).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>reason</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to the callback.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>is forgotten.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1139
+1140
+1141</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1139</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_rejection!'>on_rejection!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:callback_on_rejection</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_rejection_using-instance_method">
+  
+    - (<tt>self</tt>) <strong>on_rejection_using</strong>(executor, *args) {|reason, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Stores the callback to be executed asynchronously on executor after it is
+rejected. Does nothing on fulfillment.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. The task is executed on it, default executor remains unchanged.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
+(It might be prepended with other arguments, see the @yeild section).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>reason</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to the callback.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>is forgotten.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1151
+1152
+1153</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1151</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_rejection_using'>on_rejection_using</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:async_callback_on_rejection</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reason-instance_method">
+  
+    - (<tt>Exception</tt>, <tt>nil</tt>) <strong>reason</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>This function potentially blocks current thread until the Future is resolved.
+Be careful it can deadlock. Try to chain instead.</p>
+</div>
+  </div>
+
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>Make sure returned <code>nil</code> is not confused with timeout, no value when rejected,
+no reason when fulfilled, etc.
+Use more exact methods if needed, like <span class='object_link'><a href="AbstractEventFuture.html#wait-instance_method" title="Concurrent::Promises::AbstractEventFuture#wait (method)">AbstractEventFuture#wait</a></span>, <span class='object_link'><a href="#value%21-instance_method" title="Concurrent::Promises::Future#value! (method)">#value!</a></span>, <span class='object_link'><a href="#result-instance_method" title="Concurrent::Promises::Future#result (method)">#result</a></span>, etc.</p>
+</div>
+  </div>
+
+<p>Returns reason of future&#39;s rejection.
+Calls <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum time in second to wait.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>nil on timeout or fulfillment.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+949
+950
+951</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 949</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reason'>reason</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span> <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rejected?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>rejected?</strong>(state = internal_state) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is it in rejected state?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+921
+922
+923</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 921</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_rejected?'>rejected?</span><span class='lparen'>(</span><span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='id identifier rubyid_internal_state'>internal_state</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_state'>state</span><span class='period'>.</span><span class='id identifier rubyid_fulfilled?'>fulfilled?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rescue-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>rescue</strong>(*args, &amp;task) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Shortcut of <span class='object_link'><a href="#rescue_on-instance_method" title="Concurrent::Promises::Future#rescue_on (method)">#rescue_on</a></span> with default <code>:io</code> executor supplied.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#rescue_on-instance_method" title="Concurrent::Promises::Future#rescue_on (method)">#rescue_on</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1015
+1016
+1017</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1015</span>
+
+<span class='kw'>def</span> <span class='kw'>rescue</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_rescue_on'>rescue_on</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rescue_on-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>rescue_on</strong>(executor, *args) {|reason, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Chains the task to be executed asynchronously on executor after it rejects. Does not run
+the task if it fulfills. It will resolve though, triggering any dependent futures.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. The task is executed on it, default executor remains unchanged.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
+(It might be prepended with other arguments, see the @yeild section).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>reason</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to the task.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>will become result of the returned Future.
+Its returned value becomes <span class='object_link'><a href="#value-instance_method" title="Concurrent::Promises::Future#value (method)">#value</a></span> fulfilling it,
+raised exception becomes <span class='object_link'><a href="#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">#reason</a></span> rejecting it.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1027
+1028
+1029</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1027</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_rescue_on'>rescue_on</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='const'>RescuePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rescue_throttled_by-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>) <strong>rescue_throttled_by</strong>(throttle, *args, &amp;block) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/ThrottleIntegration.html#rescue_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#rescue_throttled_by (method)">ThrottleIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="#rescue-instance_method" title="Concurrent::Promises::Future#rescue (method)">Concurrent::Promises::Future#rescue</a></span> but the it is throttled.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#rescue-instance_method" title="Concurrent::Promises::Future#rescue (method)">Concurrent::Promises::Future#rescue</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="result-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Exception)</tt>, <tt>nil</tt>) <strong>result</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>This function potentially blocks current thread until the Future is resolved.
+Be careful it can deadlock. Try to chain instead.</p>
+</div>
+  </div>
+
+<p>Returns triplet fulfilled?, value, reason.
+Calls <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum time in second to wait.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>triplet of fulfilled?, value, reason, or nil
+on timeout.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+960
+961
+962</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 960</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_result'>result</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span> <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="run-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>run</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Allows to use futures as green threads. The receiver has to evaluate to a future which
+represents what should be done next. It basically flattens indefinitely until non Future
+values is returned which becomes result of the returned future. Any encountered exception
+will become reason of the returned future.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_body'>body</span> <span class='op'>=</span> <span class='id identifier rubyid_lambda'>lambda</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+  <span class='id identifier rubyid_v'>v</span> <span class='op'>+=</span> <span class='int'>1</span>
+  <span class='id identifier rubyid_v'>v</span> <span class='op'>&lt;</span> <span class='int'>5</span> <span class='op'>?</span> <span class='const'>Promises</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_v'>v</span>
+<span class='kw'>end</span>
+<span class='const'>Promises</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span> <span class='comment'># =&gt; 5</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1167
+1168
+1169</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1167</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
+  <span class='const'>RunFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="schedule-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>schedule</strong>(intended_time) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates new event dependent on receiver scheduled to execute on/in intended_time.
+In time is interpreted from the moment the receiver is resolved, therefore it inserts
+delay into the chain.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>intended_time</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>, <tt>Time</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><code>Numeric</code> means to run in <code>intended_time</code> seconds.
+<code>Time</code> means to run on <code>intended_time</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1065
+1066
+1067
+1068
+1069
+1070</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1065</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_chain'>chain</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>ScheduledPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+    <span class='const'>ZipFutureEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_flat'>flat</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>then</strong>(*args, &amp;task) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Shortcut of <span class='object_link'><a href="#then_on-instance_method" title="Concurrent::Promises::Future#then_on (method)">#then_on</a></span> with default <code>:io</code> executor supplied.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#then_on-instance_method" title="Concurrent::Promises::Future#then_on (method)">#then_on</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+997
+998
+999</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 997</span>
+
+<span class='kw'>def</span> <span class='kw'>then</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_then_on'>then_on</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_ask-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>then_ask</strong>(actor) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/ActorIntegration.html#then_ask-instance_method" title="Concurrent::Promises::Future::ActorIntegration#then_ask (method)">ActorIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Asks the actor with its value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>new future with the response form the actor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_on-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>then_on</strong>(executor, *args) {|value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Chains the task to be executed asynchronously on executor after it fulfills. Does not run
+the task if it rejects. It will resolve though, triggering any dependent futures.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. The task is executed on it, default executor remains unchanged.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
+(It might be prepended with other arguments, see the @yeild section).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to the task.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>will become result of the returned Future.
+Its returned value becomes <span class='object_link'><a href="#value-instance_method" title="Concurrent::Promises::Future#value (method)">#value</a></span> fulfilling it,
+raised exception becomes <span class='object_link'><a href="#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">#reason</a></span> rejecting it.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1009
+1010
+1011</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1009</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_then_on'>then_on</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='const'>ThenPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_push_channel-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>then_push_channel</strong>(channel) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/NewChannelIntegration.html#then_push_channel-instance_method" title="Concurrent::Promises::Future::NewChannelIntegration#then_push_channel (method)">NewChannelIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a future which is fulfilled after the message is pushed to the channel.
+May take a moment if the channel is full.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>channel</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to push to.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a future which is fulfilled after the message is pushed to the channel.
+May take a moment if the channel is full.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_throttled_by-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>) <strong>then_throttled_by</strong>(throttle, *args, &amp;block) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/ThrottleIntegration.html#then_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#then_throttled_by (method)">ThrottleIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="#then-instance_method" title="Concurrent::Promises::Future#then (method)">Concurrent::Promises::Future#then</a></span> but the it is throttled.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_data'>data</span>     <span class='op'>=</span> <span class='lparen'>(</span><span class='int'>1</span><span class='op'>..</span><span class='int'>5</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+<span class='id identifier rubyid_db'>db</span>       <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='rbrace'>}</span>
+<span class='id identifier rubyid_max_two'>max_two</span>  <span class='op'>=</span> <span class='const'>Throttle</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>2</span>
+
+<span class='id identifier rubyid_futures'>futures</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+  <span class='const'>Promises</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+    <span class='comment'># un-throttled, concurrency level equal data.size
+</span>    <span class='id identifier rubyid_data'>data</span> <span class='op'>+</span> <span class='int'>1</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then_throttled_by'>then_throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_max_two'>max_two</span><span class='comma'>,</span> <span class='id identifier rubyid_db'>db</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_db'>db</span><span class='op'>|</span>
+    <span class='comment'># throttled, only 2 tasks executed at the same time
+</span>    <span class='comment'># e.g. limiting access to db
+</span>    <span class='id identifier rubyid_db'>db</span><span class='lbracket'>[</span><span class='id identifier rubyid_v'>v</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span> <span class='comment'># =&gt; [2, 3, 4, 5, nil]</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#then-instance_method" title="Concurrent::Promises::Future#then (method)">Concurrent::Promises::Future#then</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_event-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>) <strong>to_event</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Converts future to event which is resolved when future is resolved by fulfillment or rejection.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1179
+1180
+1181
+1182
+1183</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1179</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_event'>to_event</span>
+  <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>Promises</span><span class='period'>.</span><span class='id identifier rubyid_resolvable_event'>resolvable_event</span>
+<span class='kw'>ensure</span>
+  <span class='id identifier rubyid_chain_resolvable'>chain_resolvable</span><span class='lparen'>(</span><span class='id identifier rubyid_event'>event</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_future-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>to_future</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns self, since this is a future</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1187
+1188
+1189</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1187</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_future'>to_future</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value-instance_method">
+  
+    - (<tt>Object</tt>, <tt>nil</tt>) <strong>value</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>This function potentially blocks current thread until the Future is resolved.
+Be careful it can deadlock. Try to chain instead.</p>
+</div>
+  </div>
+
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>Make sure returned <code>nil</code> is not confused with timeout, no value when rejected,
+no reason when fulfilled, etc.
+Use more exact methods if needed, like <span class='object_link'><a href="AbstractEventFuture.html#wait-instance_method" title="Concurrent::Promises::AbstractEventFuture#wait (method)">AbstractEventFuture#wait</a></span>, <span class='object_link'><a href="#value%21-instance_method" title="Concurrent::Promises::Future#value! (method)">#value!</a></span>, <span class='object_link'><a href="#result-instance_method" title="Concurrent::Promises::Future#result (method)">#result</a></span>, etc.</p>
+</div>
+  </div>
+
+<p>Return value of the future.
+Calls <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum time in second to wait.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the value of the Future when fulfilled, nil on timeout or rejection.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+938
+939
+940</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 938</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value!-instance_method">
+  
+    - (<tt>Object</tt>, <tt>nil</tt>) <strong>value!</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>This function potentially blocks current thread until the Future is resolved.
+Be careful it can deadlock. Try to chain instead.</p>
+</div>
+  </div>
+
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>Make sure returned <code>nil</code> is not confused with timeout, no value when rejected,
+no reason when fulfilled, etc.
+Use more exact methods if needed, like <span class='object_link'><a href="AbstractEventFuture.html#wait-instance_method" title="Concurrent::Promises::AbstractEventFuture#wait (method)">AbstractEventFuture#wait</a></span>, <span class='object_link'><a href="#value%21-instance_method" title="Concurrent::Promises::Future#value! (method)">#value!</a></span>, <span class='object_link'><a href="#result-instance_method" title="Concurrent::Promises::Future#result (method)">#result</a></span>, etc.</p>
+</div>
+  </div>
+
+<p>Return value of the future.
+Calls <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum time in second to wait.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the value of the Future when fulfilled, nil on timeout.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><span class='object_link'><a href="#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">#reason</a></span> on rejection</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+974
+975
+976</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 974</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved!'>wait_until_resolved!</span> <span class='id identifier rubyid_timeout'>timeout</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait!-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt>true</tt>, <tt>false</tt>) <strong>wait!</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>This function potentially blocks current thread until the Future is resolved.
+Be careful it can deadlock. Try to chain instead.</p>
+</div>
+  </div>
+
+<p>Wait (block the Thread) until receiver is <span class='object_link'><a href="AbstractEventFuture.html#resolved%3F-instance_method" title="Concurrent::Promises::AbstractEventFuture#resolved? (method)">AbstractEventFuture#resolved?</a></span>.
+Calls <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum time in second to wait.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self implies timeout was not used, true implies timeout was used
+and it was resolved, false implies it was not resolved within timeout.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><span class='object_link'><a href="#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">#reason</a></span> on rejection</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+966
+967
+968
+969</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 966</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait!'>wait!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='id identifier rubyid_wait_until_resolved!'>wait_until_resolved!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>?</span> <span class='id identifier rubyid_result'>result</span> <span class='op'>:</span> <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="with_default_executor-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>with_default_executor</strong>(executor) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Crates new object with same class with the executor set as its new default executor.
+Any futures depending on it will use the new default executor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1074
+1075
+1076</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1074</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_with_default_executor'>with_default_executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span>
+  <span class='const'>FutureWrapperPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="zip-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>) <strong>zip</strong>(other) 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='&-instance_method'>&amp;</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates a new event or a future which will be resolved when receiver and other are.
+Returns an event if receiver and other are events, otherwise returns a future.
+If just one of the parties is Future then the result
+of the returned future is equal to the result of the supplied future. If both are futures
+then the result is as described in <span class='object_link'><a href="FactoryMethods.html#zip_futures_on-instance_method" title="Concurrent::Promises::FactoryMethods#zip_futures_on (method)">Concurrent::Promises::FactoryMethods#zip_futures_on</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1033
+1034
+1035
+1036
+1037
+1038
+1039</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/promises.rb', line 1033</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Future</span><span class='rparen'>)</span>
+    <span class='const'>ZipFuturesPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_other'>other</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+  <span class='kw'>else</span>
+    <span class='const'>ZipFutureEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_other'>other</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Sun Feb 26 18:16:39 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.0).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

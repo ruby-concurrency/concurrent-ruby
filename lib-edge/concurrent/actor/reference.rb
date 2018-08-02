@@ -89,7 +89,7 @@ module Concurrent
       end
 
       def to_s
-        "#<#{self.class}:0x#{'%x' % (object_id << 1)} #{path} (#{actor_class})>"
+        format '%s %s (%s)>', super[0..-2], path, actor_class
       end
 
       alias_method :inspect, :to_s

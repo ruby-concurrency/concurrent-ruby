@@ -11,7 +11,7 @@ require 'concurrent/options'
 
 module Concurrent
 
-  # {include:file:doc/future.md}
+  # {include:file:docs-source/future.md}
   #
   # @!macro copy_options
   #

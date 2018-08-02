@@ -16,7 +16,7 @@ module Concurrent
     #
     # Example of ac actor definition:
     #
-    # {include:file:doc/actor/define.out.rb}
+    # {include:file:docs-source/actor/define.out.rb}
     #
     # See methods of {AbstractContext} what else can be tweaked, e.g {AbstractContext#default_reference_class}
     #

@@ -10,7 +10,7 @@ module Concurrent
   # TODO supervision tree, pause children on error in parent, pause may need higher priority
   # TODO more effective executor
 
-  # {include:file:doc/actor/main.md}
+  # {include:file:docs-source/actor/main.md}
   # @api Actor
   # @!macro warn.edge
   module Actor

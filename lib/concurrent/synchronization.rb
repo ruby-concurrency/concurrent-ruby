@@ -22,8 +22,8 @@ require 'concurrent/synchronization/condition'
 require 'concurrent/synchronization/lock'
 
 module Concurrent
-  # {include:file:doc/synchronization.md}
-  # {include:file:doc/synchronization-notes.md}
+  # {include:file:docs-source/synchronization.md}
+  # {include:file:docs-source/synchronization-notes.md}
   module Synchronization
   end
 end

@@ -19,7 +19,7 @@ end
 group :documentation, optional: true do
   gem 'yard', '~> 0.9.0', :require => false
   gem 'redcarpet', '~> 3.0', platforms: :mri # understands github markdown
-  gem 'md-ruby-eval'
+  gem 'md-ruby-eval', '~> 0.2'
 end
 
 group :testing do

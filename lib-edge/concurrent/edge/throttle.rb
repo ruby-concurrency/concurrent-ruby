@@ -97,6 +97,7 @@ module Concurrent
         current_can_run = can_run
         if compare_and_set_can_run current_can_run, current_can_run + 1
           if current_can_run < 0
+            # release called after trigger which pushed a trigger, busy wait is ok
             Thread.pass until (trigger = @Queue.pop)
             trigger.resolve
           end
@@ -153,17 +154,23 @@ module Concurrent
 
     class AbstractEventFuture < Synchronization::Object
       module ThrottleIntegration
+
+        # @yieldparam [Future] a trigger
+        # @yieldreturn [Future, Event]
+        # @return [Future, Event]
         def throttled_by(throttle, &throttled_futures)
           a_trigger = self & self.chain { throttle.trigger }.flat_event
           throttled_futures.call(a_trigger).on_resolution! { throttle.release }
         end
 
-        # Behaves as {Promises::AbstractEventFuture#chain} but the it is throttled.
-        # @return [Promises::Future, Promises::Event]
-        # @see Promises::AbstractEventFuture#chain
+        # Behaves as {AbstractEventFuture#chain} but the it is throttled.
+        # @return [Future, Event]
+        # @see AbstractEventFuture#chain
         def chain_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.chain(*args, &block) }
         end
+
+        # TODO (pitr-ch 11-Jul-2018): add other then/rescue methods
       end
 
       include ThrottleIntegration
@@ -172,17 +179,17 @@ module Concurrent
     class Future < AbstractEventFuture
       module ThrottleIntegration
 
-        # Behaves as {Promises::Future#then} but the it is throttled.
-        # @return [Promises::Future]
-        # @see Promises::Future#then
+        # Behaves as {Future#then} but the it is throttled.
+        # @return [Future]
+        # @see Future#then
         # @!macro throttle.example.then_throttled_by
         def then_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.then(*args, &block) }
         end
 
-        # Behaves as {Promises::Future#rescue} but the it is throttled.
-        # @return [Promises::Future]
-        # @see Promises::Future#rescue
+        # Behaves as {Future#rescue} but the it is throttled.
+        # @return [Future]
+        # @see Future#rescue
         def rescue_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.rescue(*args, &block) }
         end

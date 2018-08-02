@@ -16,7 +16,7 @@ Modern concurrency tools for Ruby. Inspired by
 [Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html),
 and classic concurrency patterns.
 
-<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
+<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc-source/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
 
 The design goals of this gem are:
 
@@ -58,7 +58,7 @@ other Ruby library, many of which support the mantra of
 Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and
 immutable variable types and data structures.
 
-We've also initiated discussion to document [memory model](doc/synchronization.md) of Ruby which 
+We've also initiated discussion to document [memory model](docs-source/synchronization.md) of Ruby which 
 would provide consistent behaviour and guarantees on all three of the main Ruby interpreters 
 (MRI/CRuby, JRuby, Rubinius, TruffleRuby).
 

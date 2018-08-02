@@ -1,0 +1,1006 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: Concurrent::Actress
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!Concurrent/Actress.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (A)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">Actress</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Module: Concurrent::Actress
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/concurrent/actress.rb<span class="defines">,<br />
+  lib/concurrent/actress/core.rb,<br /> lib/concurrent/actress/ad_hoc.rb,<br /> lib/concurrent/actress/errors.rb,<br /> lib/concurrent/actress/context.rb,<br /> lib/concurrent/actress/envelope.rb,<br /> lib/concurrent/actress/reference.rb,<br /> lib/concurrent/actress/type_check.rb,<br /> lib/concurrent/actress/core_delegations.rb</span>
+</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <h1>Actor model</h1>
+
+<ul>
+<li> Light-weighted.</li>
+<li> Inspired by Akka and Erlang.</li>
+</ul>
+
+<p>Actors are sharing a thread-pool by default which makes them very cheap to create and discard.
+Thousands of actors can be created allowing to brake the program to small maintainable pieces
+without breaking single responsibility principles.</p>
+
+<h2>What is an actor model?</h2>
+
+<p><a href="http://en.wikipedia.org/wiki/Actor_model">Wiki</a> says:
+The actor model in computer science is a mathematical model of concurrent computation
+that treats <em>actors</em> as the universal primitives of concurrent digital computation:
+in response to a message that it receives, an actor can make local decisions,
+create more actors, send more messages, and determine how to respond to the next
+message received.</p>
+
+<h2>Why?</h2>
+
+<p>Concurrency is hard this is one of many ways how to simplify the problem.
+It is simpler to reason about actors then about locks (and all their possible states).</p>
+
+<h2>How to use it</h2>
+
+<p><pre class="code ruby"><span class='kw'>class</span> <span class='const'>Counter</span>
+  <span class='comment'># Include context of an actor which gives this class access to reference and other information
+</span>  <span class='comment'># about the actor, see CoreDelegations.
+</span>  <span class='id identifier rubyid_include'>include</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Actress</span><span class='op'>::</span><span class='const'>Context</span>
+
+  <span class='comment'># use initialize as you wish
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_initial_value'>initial_value</span><span class='rparen'>)</span>
+    <span class='ivar'>@count</span> <span class='op'>=</span> <span class='id identifier rubyid_initial_value'>initial_value</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># override on_message to define actor&#39;s behaviour
+</span>  <span class='kw'>def</span> <span class='id identifier rubyid_on_message'>on_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_message'>message</span>
+    <span class='kw'>when</span> <span class='const'>Integer</span>
+      <span class='ivar'>@count</span> <span class='op'>+=</span> <span class='id identifier rubyid_message'>message</span>
+    <span class='kw'>when</span> <span class='symbol'>:terminate</span>
+      <span class='id identifier rubyid_terminate!'>terminate!</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>unknown</span><span class='tstring_end'>&#39;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>                                                <span class='comment'># =&gt; :on_message
+</span>
+<span class='comment'># Create new actor naming the instance &#39;first&#39;.
+</span><span class='comment'># Return value is a reference to the actor, the actual actor is never returned.
+</span><span class='id identifier rubyid_counter'>counter</span> <span class='op'>=</span> <span class='const'>Counter</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='symbol'>:first</span><span class='comma'>,</span> <span class='int'>5</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /first (Counter)&gt;
+</span>
+<span class='comment'># Tell a message and forget returning self.
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /first (Counter)&gt;
+</span><span class='id identifier rubyid_counter'>counter</span> <span class='op'>&lt;&lt;</span> <span class='int'>1</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /first (Counter)&gt;
+</span><span class='comment'># (First counter now contains 7.)
+</span>
+<span class='comment'># Send a messages asking for a result.
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span>                               <span class='comment'># =&gt; Concurrent::IVar
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                               <span class='comment'># =&gt; 7
+</span>
+<span class='comment'># Terminate the actor.
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='symbol'>:terminate</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /first (Counter)&gt;
+</span><span class='comment'># Not terminated yet, it takes a while until the message is processed.
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_terminated?'>terminated?</span>                                <span class='comment'># =&gt; false
+</span><span class='comment'># Waiting for the termination.
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span>                           <span class='comment'># =&gt; Concurrent::Event
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span>                            <span class='comment'># =&gt; true
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_terminated?'>terminated?</span>                                <span class='comment'># =&gt; true
+</span><span class='comment'># Any subsequent messages are rejected.
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='int'>5</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span><span class='period'>.</span><span class='id identifier rubyid_rejected?'>rejected?</span>                      <span class='comment'># =&gt; true
+</span>
+<span class='comment'># Failure on message processing terminates the actor.
+</span><span class='id identifier rubyid_counter'>counter</span> <span class='op'>=</span> <span class='const'>Counter</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='symbol'>:first</span><span class='comma'>,</span> <span class='int'>0</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /first (Counter)&gt;
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>boom</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span><span class='period'>.</span><span class='id identifier rubyid_rejected?'>rejected?</span>                 <span class='comment'># =&gt; true
+</span><span class='id identifier rubyid_counter'>counter</span><span class='period'>.</span><span class='id identifier rubyid_terminated?'>terminated?</span>                                <span class='comment'># =&gt; true
+</span>
+
+<span class='comment'># Lets define an actor creating children actors.
+</span><span class='kw'>class</span> <span class='const'>Node</span>
+  <span class='id identifier rubyid_include'>include</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Actress</span><span class='op'>::</span><span class='const'>Context</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_on_message'>on_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_message'>message</span>
+    <span class='kw'>when</span> <span class='symbol'>:new_child</span>
+      <span class='id identifier rubyid_spawn'>spawn</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='symbol'>:child</span>
+    <span class='kw'>when</span> <span class='symbol'>:how_many_children</span>
+      <span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span>
+    <span class='kw'>when</span> <span class='symbol'>:terminate</span>
+      <span class='id identifier rubyid_terminate!'>terminate!</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>unknown</span><span class='tstring_end'>&#39;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>                                                <span class='comment'># =&gt; :on_message
+</span>
+<span class='comment'># Actors are tracking parent-child relationships
+</span><span class='id identifier rubyid_parent'>parent</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span> <span class='symbol'>:parent</span>                        <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /parent (Node)&gt;
+</span><span class='id identifier rubyid_child'>child</span>  <span class='op'>=</span> <span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='symbol'>:new_child</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_ask!'>ask!</span><span class='lparen'>(</span><span class='symbol'>:new_child</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /parent/child (Node)&gt;
+</span><span class='id identifier rubyid_child'>child</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span>                                       <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference /parent (Node)&gt;
+</span><span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_ask!'>ask!</span><span class='lparen'>(</span><span class='symbol'>:how_many_children</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; 2
+</span>
+<span class='comment'># There is a special root actor which is used for all actors spawned outside any actor.
+</span><span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_parent'>parent</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actress::Reference / (Concurrent::Actress::Root)&gt;
+</span>
+<span class='comment'># Termination of an parent will also terminate all children.
+</span><span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>boom</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span> 
+<span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_terminated?'>terminated?</span>                                 <span class='comment'># =&gt; true
+</span><span class='id identifier rubyid_child'>child</span><span class='period'>.</span><span class='id identifier rubyid_terminated?'>terminated?</span>                                  <span class='comment'># =&gt; true</span></pre></p>
+
+<h2>Messaging</h2>
+
+<p>Messages are processed in same order as they are sent by a sender. It may interleaved with
+messages form other senders though. There is also a contract in actor model that
+messages sent between actors should be immutable. Gems like</p>
+
+<ul>
+<li><a href="https://github.com/pitr-ch/algebrick">Algebrick</a> - Typed struct on steroids based on
+algebraic types and pattern matching</li>
+<li><a href="https://github.com/hamstergem/hamster">Hamster</a> - Efficient, Immutable, Thread-Safe
+Collection classes for Ruby</li>
+</ul>
+
+<p>are very useful.</p>
+
+<h2>Architecture</h2>
+
+<p>Actors are running on shared thread poll which allows user to create many actors cheaply.
+Downside is that these actors cannot be directly used to do IO or other blocking operations.
+Blocking operations could starve the <code>default_task_pool</code>. However there are two options:</p>
+
+<ul>
+<li>Create an regular actor which will schedule blocking operations in <code>global_operation_pool</code>
+(which is intended for blocking operations) sending results back to self in messages.</li>
+<li>Create an actor using <code>global_operation_pool</code> instead of <code>global_task_pool</code>, e.g.
+<code>AnIOActor.spawn name: :blocking, executor: Concurrent.configuration.global_operation_pool</code>.</li>
+</ul>
+
+<p>Each actor is composed from 3 objects:</p>
+
+<h3><span class='object_link'><a href="Actress/Reference.html" title="Concurrent::Actress::Reference (class)">Reference</a></span></h3>
+
+<p><p>Reference is public interface of Actor instances. It is used for sending messages and can
+be freely passed around the program. It also provides some basic information about the actor,
+see <span class='object_link'><a href="Actress/CoreDelegations.html" title="Concurrent::Actress::CoreDelegations (module)">CoreDelegations</a></span>.</p>
+</p>
+
+<h3><span class='object_link'><a href="Actress/Core.html" title="Concurrent::Actress::Core (class)">Core</a></span></h3>
+
+<p><p>Core of the actor</p>
+</p>
+
+<h3><span class='object_link'><a href="Actress/Context.html" title="Concurrent::Actress::Context (module)">Context</a></span></h3>
+
+<p><p>This module is used to define actors. It can be included in any class,
+only requirement is to override <span class='object_link'><a href="Actress/Context.html#on_message-instance_method" title="Concurrent::Actress::Context#on_message (method)">Context#on_message</a></span> method.</p>
+</p>
+
+<h2>Speed</h2>
+
+<p>Simple benchmark Actress vs Celluloid, the numbers are looking good
+but you know how it is with benchmarks. Source code is in
+<code>examples/actress/celluloid_benchmark.rb</code>. It sends numbers between x actors
+and adding 1 until certain limit is reached.</p>
+
+<p>Benchmark legend:</p>
+
+<ul>
+<li>mes.  - number of messages send between the actors</li>
+<li>act.  - number of actors exchanging the messages</li>
+<li>impl. - which gem is used</li>
+</ul>
+
+<h3>JRUBY</h3>
+
+<pre class="code ruby"><code class="ruby">Rehearsal --------------------------------------------------------
+50000    2 actress    24.110000   0.800000  24.910000 (  7.728000)
+50000    2 celluloid  28.510000   4.780000  33.290000 ( 14.782000)
+50000  500 actress    13.700000   0.280000  13.980000 (  4.307000)
+50000  500 celluloid  14.520000  11.740000  26.260000 ( 12.258000)
+50000 1000 actress    10.890000   0.220000  11.110000 (  3.760000)
+50000 1000 celluloid  15.600000  21.690000  37.290000 ( 18.512000)
+50000 1500 actress    10.580000   0.270000  10.850000 (  3.646000)
+50000 1500 celluloid  14.490000  29.790000  44.280000 ( 26.043000)
+--------------------------------------------- total: 201.970000sec
+
+ mes. act.      impl.      user     system      total        real
+50000    2 actress     9.820000   0.510000  10.330000 (  5.735000)
+50000    2 celluloid  10.390000   4.030000  14.420000 (  7.494000)
+50000  500 actress     9.880000   0.200000  10.080000 (  3.310000)
+50000  500 celluloid  12.430000  11.310000  23.740000 ( 11.727000)
+50000 1000 actress    10.590000   0.190000  10.780000 (  4.029000)
+50000 1000 celluloid  14.950000  23.260000  38.210000 ( 20.841000)
+50000 1500 actress    10.710000   0.250000  10.960000 (  3.892000)
+50000 1500 celluloid  13.280000  30.030000  43.310000 ( 24.620000) (1)
+</code></pre>
+
+<h3>MRI 2.1.0</h3>
+
+<pre class="code ruby"><code class="ruby">Rehearsal --------------------------------------------------------
+50000    2 actress     4.640000   0.080000   4.720000 (  4.852390)
+50000    2 celluloid   6.110000   2.300000   8.410000 (  7.898069)
+50000  500 actress     6.260000   2.210000   8.470000 (  7.400573)
+50000  500 celluloid  10.250000   4.930000  15.180000 ( 14.174329)
+50000 1000 actress     6.300000   1.860000   8.160000 (  7.303162)
+50000 1000 celluloid  12.300000   7.090000  19.390000 ( 17.962621)
+50000 1500 actress     7.410000   2.610000  10.020000 (  8.887396)
+50000 1500 celluloid  14.850000  10.690000  25.540000 ( 24.489796)
+---------------------------------------------- total: 99.890000sec
+
+ mes. act.      impl.      user     system      total        real
+50000    2 actress     4.190000   0.070000   4.260000 (  4.306386)
+50000    2 celluloid   6.490000   2.210000   8.700000 (  8.280051)
+50000  500 actress     7.060000   2.520000   9.580000 (  8.518707)
+50000  500 celluloid  10.550000   4.980000  15.530000 ( 14.699962)
+50000 1000 actress     6.440000   1.870000   8.310000 (  7.571059)
+50000 1000 celluloid  12.340000   7.510000  19.850000 ( 18.793591)
+50000 1500 actress     6.720000   2.160000   8.880000 (  7.929630)
+50000 1500 celluloid  14.140000  10.130000  24.270000 ( 22.775288) (1)
+</code></pre>
+
+<p><em>Note (1):</em> Celluloid is using thread per actor so this bench is creating about 1500
+native threads. Actress is using constant number of threads.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Actress/Context.html" title="Concurrent::Actress::Context (module)">Context</a></span>, <span class='object_link'><a href="Actress/CoreDelegations.html" title="Concurrent::Actress::CoreDelegations (module)">CoreDelegations</a></span>, <span class='object_link'><a href="Actress/TypeCheck.html" title="Concurrent::Actress::TypeCheck (module)">TypeCheck</a></span>
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Actress/ActressTerminated.html" title="Concurrent::Actress::ActressTerminated (class)">ActressTerminated</a></span>, <span class='object_link'><a href="Actress/AdHoc.html" title="Concurrent::Actress::AdHoc (class)">AdHoc</a></span>, <span class='object_link'><a href="Actress/Core.html" title="Concurrent::Actress::Core (class)">Core</a></span>, <span class='object_link'><a href="Actress/Envelope.html" title="Concurrent::Actress::Envelope (class)">Envelope</a></span>, <span class='object_link'><a href="Actress/Reference.html" title="Concurrent::Actress::Reference (class)">Reference</a></span>, <span class='object_link'><a href="Actress/Root.html" title="Concurrent::Actress::Root (class)">Root</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="ROOT-constant" class="">ROOT =
+          <div class="docstring">
+  <div class="discussion">
+    <p>A root actor, a default parent of all actors spawned outside an actor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Core</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>parent:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>class:</span> <span class='const'>Root</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reference'>reference</span></pre></dd>
+      
+        <dt id="Error-constant" class="">Error =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>Class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='rparen'>)</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#current-class_method" title="current (class method)">+ (Reference<sup>?</sup>) <strong>current</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Current executing actor if any.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#experimental_acknowledged%3F-class_method" title="experimental_acknowledged? (class method)">+ (Boolean) <strong>experimental_acknowledged?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#i_know_it_is_experimental%21-class_method" title="i_know_it_is_experimental! (class method)">+ (Object) <strong>i_know_it_is_experimental!</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>call this to disable experimental warning.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#spawn-class_method" title="spawn (class method)">+ (Reference) <strong>spawn</strong>(*args, &amp;block) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Spawns a new actor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#spawn%21-class_method" title="spawn! (class method)">+ (Object) <strong>spawn!</strong>(*args, &amp;block) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>as <span class='object_link'><a href="#spawn-class_method" title="Concurrent::Actress.spawn (method)">Actress.spawn</a></span> but it&#39;ll raise when Actor not initialized properly.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#spawn_optionify-class_method" title="spawn_optionify (class method)">+ (Object) <strong>spawn_optionify</strong>(*args) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="current-class_method">
+  
+    + (<tt><span class='object_link'><a href="Actress/Reference.html" title="Concurrent::Actress::Reference (class)">Reference</a></span></tt><sup>?</sup>) <strong>current</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns current executing actor if any</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Actress/Reference.html" title="Concurrent::Actress::Reference (class)">Reference</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>current executing actor if any</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+144
+145
+146</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/actress.rb', line 144</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:__current_actor__</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="experimental_acknowledged?-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>experimental_acknowledged?</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+217
+218
+219</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/actress.rb', line 217</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_experimental_acknowledged?'>experimental_acknowledged?</span>
+  <span class='op'>!</span><span class='op'>!</span><span class='ivar'>@experimental_acknowledged</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="i_know_it_is_experimental!-class_method">
+  
+    + (<tt>Object</tt>) <strong>i_know_it_is_experimental!</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>call this to disable experimental warning</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+213
+214
+215</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/actress.rb', line 213</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_i_know_it_is_experimental!'>i_know_it_is_experimental!</span>
+  <span class='ivar'>@experimental_acknowledged</span> <span class='op'>=</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="spawn-class_method">
+  
+    + (<tt><span class='object_link'><a href="Actress/Reference.html" title="Concurrent::Actress::Reference (class)">Reference</a></span></tt>) <strong>spawn</strong>(*args, &amp;block) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Spawns a new actor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>simple</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='const'>Actress</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='const'>AdHoc</span><span class='comma'>,</span> <span class='symbol'>:ping1</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_message'>message</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>complex</p>
+</div></p>
+      
+      <pre class="example code"><code>Actress.spawn name:     :ping3,
+              class:    AdHoc,
+              args:     [1]
+              executor: Concurrent.configuration.global_task_pool do |add|
+  lambda { |number| number + add }
+end</code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>block</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>for actress_class instantiation</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>see <span class='object_link'><a href="#spawn_optionify-class_method" title="Concurrent::Actress.spawn_optionify (method)">spawn_optionify</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Actress/Reference.html" title="Concurrent::Actress::Reference (class)">Reference</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>never the actual actor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/actress.rb', line 180</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_experimental_acknowledged?'>experimental_acknowledged?</span> <span class='kw'>or</span>
+      <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>[EXPERIMENTAL] A full release of `Actress`, renamed `Actor`, is expected in the 0.7.0 release.</span><span class='tstring_end'>&#39;</span></span>
+
+  <span class='kw'>if</span> <span class='const'>Actress</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span>
+    <span class='const'>Core</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_spawn_optionify'>spawn_optionify</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>parent:</span> <span class='const'>Actress</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reference'>reference</span>
+  <span class='kw'>else</span>
+    <span class='const'>ROOT</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='symbol'>:spawn</span><span class='comma'>,</span> <span class='id identifier rubyid_spawn_optionify'>spawn_optionify</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_block'>block</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="spawn!-class_method">
+  
+    + (<tt>Object</tt>) <strong>spawn!</strong>(*args, &amp;block) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>as <span class='object_link'><a href="#spawn-class_method" title="Concurrent::Actress.spawn (method)">spawn</a></span> but it&#39;ll raise when Actor not initialized properly</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+192
+193
+194</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/actress.rb', line 192</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn!'>spawn!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_spawn_optionify'>spawn_optionify</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>initialized:</span> <span class='id identifier rubyid_ivar'>ivar</span> <span class='op'>=</span> <span class='const'>IVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_tap'>tap</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ivar'>ivar</span><span class='period'>.</span><span class='id identifier rubyid_no_error!'>no_error!</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="spawn_optionify-class_method">
+  
+    
+      <span class="overload">+ (<tt>Object</tt>) <strong>spawn_optionify</strong>(actress_class, name, *args) </span>
+    
+      <span class="overload">+ (<tt>Object</tt>) <strong>spawn_optionify</strong>(opts) </span>
+    
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt>Object</tt>) <strong>spawn_optionify</strong>(actress_class, name, *args) </span>
+        <div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>actress_class</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Actress/Context.html" title="Concurrent::Actress::Context (module)">Context</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to be spawned</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>of the instance, it&#39;s used to generate the <span class='object_link'><a href="Actress/Core.html#path-instance_method" title="Concurrent::Actress::Core#path (method)">Concurrent::Actress::Core#path</a></span> of the actor</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>for actress_class instantiation</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">+ (<tt>Object</tt>) <strong>spawn_optionify</strong>(opts) </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>see <span class='object_link'><a href="Actress/Core.html#initialize-instance_method" title="Concurrent::Actress::Core#initialize (method)">Concurrent::Actress::Core#initialize</a></span> opts</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+      </li>
+    
+  </ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+202
+203
+204
+205
+206
+207
+208
+209
+210</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/actress.rb', line 202</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn_optionify'>spawn_optionify</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>1</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+  <span class='kw'>else</span>
+    <span class='lbrace'>{</span> <span class='label'>class:</span> <span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='label'>name:</span>  <span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='label'>args:</span>  <span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='int'>2</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Sat Jun 14 13:05:33 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.4 (ruby-2.1.0).
+</div>
+
+<script>
+//  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+//    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+//      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+//  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+//
+//  ga('create', 'UA-4005004-8', 'pitr.ch');
+//  ga('send', 'pageview');
+</script>
+
+  </body>
+</html>

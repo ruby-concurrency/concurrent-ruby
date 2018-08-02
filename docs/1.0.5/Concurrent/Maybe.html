@@ -1,0 +1,1211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Concurrent::Maybe
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!Concurrent/Maybe.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (M)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">Maybe</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: Concurrent::Maybe
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
+          
+            <li class="next">Concurrent::Maybe</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+      <dt class="r2">Includes:</dt>
+      <dd class="r2">Comparable</dd>
+      
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/concurrent/maybe.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A <code>Maybe</code> encapsulates an optional value. A <code>Maybe</code> either contains a value
+of (represented as <code>Just</code>), or it is empty (represented as <code>Nothing</code>). Using
+<code>Maybe</code> is a good way to deal with errors or exceptional cases without
+resorting to drastic measures such as exceptions.</p>
+
+<p><code>Maybe</code> is a replacement for the use of <code>nil</code> with better type checking.</p>
+
+<p>For compatibility with <span class='object_link'><a href="Concern/Obligation.html" title="Concurrent::Concern::Obligation (module)">Concern::Obligation</a></span> the predicate and
+accessor methods are aliased as <code>fulfilled?</code>, <code>rejected?</code>, <code>value</code>, and
+<code>reason</code>.</p>
+
+<h2>Motivation</h2>
+
+<p>A common pattern in languages with pattern matching, such as Erlang and
+Haskell, is to return <em>either</em> a value <em>or</em> an error from a function
+Consider this Erlang code:</p>
+
+<pre class="code erlang"><code class="erlang">case file:consult(&quot;data.dat&quot;) of
+  {ok, Terms} -&gt; do_something_useful(Terms);
+  {error, Reason} -&gt; lager:error(Reason)
+end.
+</code></pre>
+
+<p>In this example the standard library function <code>file:consult</code> returns a
+<a href="http://erlang.org/doc/reference_manual/data_types.html#id69044">tuple</a>
+with two elements: an <a href="http://erlang.org/doc/reference_manual/data_types.html#id64134">atom</a>
+(similar to a ruby symbol) and a variable containing ancillary data. On
+success it returns the atom <code>ok</code> and the data from the file. On failure it
+returns <code>error</code> and a string with an explanation of the problem. With this
+pattern there is no ambiguity regarding success or failure. If the file is
+empty the return value cannot be misinterpreted as an error. And when an
+error occurs the return value provides useful information.</p>
+
+<p>In Ruby we tend to return <code>nil</code> when an error occurs or else we raise an
+exception. Both of these idioms are problematic. Returning <code>nil</code> is
+ambiguous because <code>nil</code> may also be a valid value. It also lacks
+information pertaining to the nature of the error. Raising an exception
+is both expensive and usurps the normal flow of control. All of these
+problems can be solved with the use of a <code>Maybe</code>.</p>
+
+<p>A <code>Maybe</code> is unambiguous with regard to whether or not it contains a value.
+When <code>Just</code> it contains a value, when <code>Nothing</code> it does not. When <code>Just</code>
+the value it contains may be <code>nil</code>, which is perfectly valid. When
+<code>Nothing</code> the reason for the lack of a value is contained as well. The
+previous Erlang example can be duplicated in Ruby in a principled way by
+having functions return <code>Maybe</code> objects:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>MyFileUtils</span><span class='period'>.</span><span class='id identifier rubyid_consult'>consult</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>data.dat</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='comment'># returns a Maybe
+</span><span class='kw'>if</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_just?'>just?</span>
+  <span class='id identifier rubyid_do_something_useful'>do_something_useful</span><span class='lparen'>(</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>      <span class='comment'># or result.just
+</span><span class='kw'>else</span>
+  <span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>            <span class='comment'># or result.nothing
+</span><span class='kw'>end</span>
+</code></pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>Returning a Maybe from a Function</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='kw'>module</span> <span class='const'>MyFileUtils</span>
+  <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_consult'>consult</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_file'>file</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>r</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Maybe</span><span class='period'>.</span><span class='id identifier rubyid_just'>just</span><span class='lparen'>(</span><span class='id identifier rubyid_file'>file</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
+    <span class='kw'>return</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Maybe</span><span class='period'>.</span><span class='id identifier rubyid_nothing'>nothing</span><span class='lparen'>(</span><span class='id identifier rubyid_ex'>ex</span><span class='rparen'>)</span>
+  <span class='kw'>ensure</span>
+    <span class='id identifier rubyid_file'>file</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span> <span class='kw'>if</span> <span class='id identifier rubyid_file'>file</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_maybe'>maybe</span> <span class='op'>=</span> <span class='const'>MyFileUtils</span><span class='period'>.</span><span class='id identifier rubyid_consult'>consult</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>bogus.file</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='id identifier rubyid_maybe'>maybe</span><span class='period'>.</span><span class='id identifier rubyid_just?'>just?</span>    <span class='comment'>#=&gt; false
+</span><span class='id identifier rubyid_maybe'>maybe</span><span class='period'>.</span><span class='id identifier rubyid_nothing?'>nothing?</span> <span class='comment'>#=&gt; true
+</span><span class='id identifier rubyid_maybe'>maybe</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span>   <span class='comment'>#=&gt; #&lt;Errno::ENOENT: No such file or directory @ rb_sysopen - bogus.file&gt;
+</span>
+<span class='id identifier rubyid_maybe'>maybe</span> <span class='op'>=</span> <span class='const'>MyFileUtils</span><span class='period'>.</span><span class='id identifier rubyid_consult'>consult</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>README.md</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='id identifier rubyid_maybe'>maybe</span><span class='period'>.</span><span class='id identifier rubyid_just?'>just?</span>    <span class='comment'>#=&gt; true
+</span><span class='id identifier rubyid_maybe'>maybe</span><span class='period'>.</span><span class='id identifier rubyid_nothing?'>nothing?</span> <span class='comment'>#=&gt; false
+</span><span class='id identifier rubyid_maybe'>maybe</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>    <span class='comment'>#=&gt; &quot;# Concurrent Ruby\n[![Gem Version...&quot;</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>Using Maybe with a Block</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Maybe</span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span> <span class='kw'>do</span>
+  <span class='const'>Client</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span><span class='lparen'>(</span><span class='int'>10</span><span class='rparen'>)</span> <span class='comment'># Client is an ActiveRecord model
+</span><span class='kw'>end</span>
+
+<span class='comment'># -- if the record was found
+</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_just?'>just?</span> <span class='comment'>#=&gt; true
+</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'>#=&gt; #&lt;Client id: 10, first_name: &quot;Ryan&quot;&gt;
+</span>
+<span class='comment'># -- if the record was not found
+</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_just?'>just?</span>  <span class='comment'>#=&gt; false
+</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span> <span class='comment'>#=&gt; ActiveRecord::RecordNotFound</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>Using Maybe with the Null Object Pattern</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='comment'># In a Rails controller...
+</span><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>ClientService</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>10</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span>    <span class='comment'># returns a Maybe
+</span><span class='id identifier rubyid_render'>render</span> <span class='label'>json:</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_or'>or</span><span class='lparen'>(</span><span class='const'>NullClient</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span></code></pre>
+    
+  </div>
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html" target="_parent" title="Haskell Data.Maybe">Haskell Data.Maybe</a></li>
+    
+      <li><a href="https://github.com/purescript/purescript-maybe/blob/master/docs/Data.Maybe.md" target="_parent" title="PureScript Data.Maybe">PureScript Data.Maybe</a></li>
+    
+  </ul>
+
+</div>
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="NONE-constant" class="">NONE =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Indicates that the given attribute has not been set.
+When <code>Just</code> the <span class='object_link'><a href="#nothing-instance_method" title="Concurrent::Maybe#nothing (method)">#nothing</a></span> getter will return <code>NONE</code>.
+When <code>Nothing</code> the <span class='object_link'><a href="#just-instance_method" title="Concurrent::Maybe#just (method)">#just</a></span> getter will return <code>NONE</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Object</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#just-instance_method" title="#just (instance method)">- (undocumented) <strong>just</strong> </a>
+    
+
+    
+      (also: #value)
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The value of a <code>Maybe</code> when <code>Just</code>.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#nothing-instance_method" title="#nothing (instance method)">- (undocumented) <strong>nothing</strong> </a>
+    
+
+    
+      (also: #reason)
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The reason for the <code>Maybe</code> when <code>Nothing</code>.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#from-class_method" title="from (class method)">+ (Maybe) <strong>from</strong>(*args) {|args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>Maybe</code> using the given block.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#just-class_method" title="just (class method)">+ (Maybe) <strong>just</strong>(value) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>Just</code> with the given value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#nothing-class_method" title="nothing (class method)">+ (Maybe) <strong>nothing</strong>(error = &#39;&#39;) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>Nothing</code> with the given (optional) reason.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#%3C%3D%3E-instance_method" title="#&lt;=&gt; (instance method)">- (Integer) <strong>&lt;=&gt;</strong>(other) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Comparison operator.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#just%3F-instance_method" title="#just? (instance method)">- (Boolean) <strong>just?</strong> </a>
+    
+
+    
+      (also: #fulfilled?)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is this <code>Maybe</code> a <code>Just</code> (successfully fulfilled with a value)?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#nothing%3F-instance_method" title="#nothing? (instance method)">- (Boolean) <strong>nothing?</strong> </a>
+    
+
+    
+      (also: #rejected?)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is this <code>Maybe</code> a <code>nothing</code> (rejected with an exception upon fulfillment)?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#or-instance_method" title="#or (instance method)">- (Object) <strong>or</strong>(other) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return either the value of self or the given default value.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="just-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>just</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='value-instance_method'>value</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The value of a <code>Maybe</code> when <code>Just</code>. Will be <code>NONE</code> when <code>Nothing</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+114
+115
+116</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 114</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_just'>just</span>
+  <span class='ivar'>@just</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="nothing-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>nothing</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='reason-instance_method'>reason</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The reason for the <code>Maybe</code> when <code>Nothing</code>. Will be <code>NONE</code> when <code>Just</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+117
+118
+119</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 117</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_nothing'>nothing</span>
+  <span class='ivar'>@nothing</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="from-class_method">
+  
+    + (<tt><span class='object_link'><a href="" title="Concurrent::Maybe (class)">Maybe</a></span></tt>) <strong>from</strong>(*args) {|args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>Maybe</code> using the given block.</p>
+
+<p>Runs the given block passing all function arguments to the block as block
+arguments. If the block runs to completion without raising an exception
+a new <code>Just</code> is created with the value set to the return value of the
+block. If the block raises an exception a new <code>Nothing</code> is created with
+the reason being set to the raised exception.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Zero or more arguments to pass to the block.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>The block from which to create a new <code>Maybe</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Zero or more block arguments passed as
+arguments to the function.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Maybe (class)">Maybe</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The newly created object.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when no block given.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+137
+138
+139
+140
+141
+142
+143
+144
+145</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 137</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>yield</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='const'>NONE</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
+    <span class='kw'>return</span> <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>NONE</span><span class='comma'>,</span> <span class='id identifier rubyid_ex'>ex</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="just-class_method">
+  
+    + (<tt><span class='object_link'><a href="" title="Concurrent::Maybe (class)">Maybe</a></span></tt>) <strong>just</strong>(value) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>Just</code> with the given value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The value to set for the new <code>Maybe</code> object.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Maybe (class)">Maybe</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The newly created object.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+152
+153
+154</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 152</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_just'>just</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='const'>NONE</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="nothing-class_method">
+  
+    + (<tt><span class='object_link'><a href="" title="Concurrent::Maybe (class)">Maybe</a></span></tt>) <strong>nothing</strong>(error = &#39;&#39;) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>Nothing</code> with the given (optional) reason.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>error</span>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>The reason to set for the new <code>Maybe</code> object.
+When given a string a new <code>StandardError</code> will be created with the
+argument as the message. When no argument is given a new
+<code>StandardError</code> with an empty message will be created.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Maybe (class)">Maybe</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The newly created object.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+164
+165
+166
+167
+168
+169
+170
+171</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 164</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_nothing'>nothing</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_error'>error</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Exception</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_nothing'>nothing</span> <span class='op'>=</span> <span class='id identifier rubyid_error'>error</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_nothing'>nothing</span> <span class='op'>=</span> <span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>NONE</span><span class='comma'>,</span> <span class='id identifier rubyid_nothing'>nothing</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="<=>-instance_method">
+  
+    - (<tt>Integer</tt>) <strong>&lt;=&gt;</strong>(other) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Comparison operator.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>0 if self and other are both <code>Nothing</code>;
+-1 if self is <code>Nothing</code> and other is <code>Just</code>;
+1 if self is <code>Just</code> and other is nothing;
+<code>self.just &lt;=&gt; other.just</code> if both self and other are <code>Just</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+199
+200
+201
+202
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 199</span>
+
+<span class='kw'>def</span> <span class='op'>&lt;=&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_nothing?'>nothing?</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_nothing?'>nothing?</span> <span class='op'>?</span> <span class='int'>0</span> <span class='op'>:</span> <span class='op'>-</span><span class='int'>1</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_nothing?'>nothing?</span> <span class='op'>?</span> <span class='int'>1</span> <span class='op'>:</span> <span class='id identifier rubyid_just'>just</span> <span class='op'>&lt;=&gt;</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_just'>just</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="just?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>just?</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='fulfilled?-instance_method'>fulfilled?</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is this <code>Maybe</code> a <code>Just</code> (successfully fulfilled with a value)?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>True if <code>Just</code> or false if <code>Nothing</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+176
+177
+178</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 176</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_just?'>just?</span>
+  <span class='op'>!</span> <span class='id identifier rubyid_nothing?'>nothing?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="nothing?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>nothing?</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='rejected?-instance_method'>rejected?</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is this <code>Maybe</code> a <code>nothing</code> (rejected with an exception upon fulfillment)?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>True if <code>Nothing</code> or false if <code>Just</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+184
+185
+186</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 184</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_nothing?'>nothing?</span>
+  <span class='ivar'>@nothing</span> <span class='op'>!=</span> <span class='const'>NONE</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="or-instance_method">
+  
+    - (<tt>Object</tt>) <strong>or</strong>(other) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Return either the value of self or the given default value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The value of self when <code>Just</code>; else the given default.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+210
+211
+212</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 210</span>
+
+<span class='kw'>def</span> <span class='kw'>or</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_just?'>just?</span> <span class='op'>?</span> <span class='id identifier rubyid_just'>just</span> <span class='op'>:</span> <span class='id identifier rubyid_other'>other</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Sun Feb 26 18:16:37 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.0).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

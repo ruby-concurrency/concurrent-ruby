@@ -15,11 +15,16 @@ matrix:
     - name: TruffleRuby Latest
       rvm: system
       install:
-        - export TRUFFLERUBY_VERSION=1.0.0-rc3
+        - export TRUFFLERUBY_VERSION=1.0.0-rc5
         - curl -L https://github.com/oracle/truffleruby/releases/download/vm-$TRUFFLERUBY_VERSION/truffleruby-$TRUFFLERUBY_VERSION-linux-amd64.tar.gz | tar xz
         - export PATH="$PWD/truffleruby-$TRUFFLERUBY_VERSION-linux-amd64/bin:$PATH"
         - gem install bundler
         - bundle install
+    - name: YARD uptodate in docs
+      rvm: 2.5.1
+      script:
+      - bundle install --with documentation
+      - bundle exec rake spec:docs_uptodate
 
     - name: MRI 2.4.4
       rvm: 2.4.4
@@ -52,15 +57,15 @@ matrix:
 
     - name: Coverage on MRI 2.3.7
       rvm: 2.3.7
-      jdk: oraclejdk8
       env: COVERAGE=1
 
   allow_failures:
+    - rvm: 2.6.0-preview2
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3
-    - rvm: ruby-2.6.0-preview2
     - name: TruffleRuby Latest
+    - name: YARD uptodate in docs
 
 env:
   global:

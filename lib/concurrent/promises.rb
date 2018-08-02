@@ -7,7 +7,7 @@ require 'concurrent/re_include'
 
 module Concurrent
 
-  # {include:file:doc/promises-main.md}
+  # {include:file:docs-source/promises-main.md}
   module Promises
 
     # @!macro promises.param.default_executor
@@ -1324,7 +1324,7 @@ module Concurrent
       end
 
       def to_s
-        format '<#%s:0x%x of %s>', self.class, object_id << 1, @Future
+        format '%s %s>', super[0..-2], @Future
       end
 
       alias_method :inspect, :to_s
