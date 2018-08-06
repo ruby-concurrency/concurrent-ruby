@@ -161,16 +161,12 @@ module Concurrent
 
     context 'construction' do
 
-      it 'raises an exception if the initial value is too big' do
-        expect {
-          described_class.new(Utility::NativeInteger::MAX_VALUE + 1)
-        }.to raise_error(RangeError)
+      it 'does not raise an exception if the initial value is too big for a system integer' do
+        expect(described_class.new(Utility::NativeInteger::MAX_VALUE + 1)).to be_a(MutexAtomicInteger)
       end
 
-      it 'raises an exception if the initial value is too small' do
-        expect {
-          described_class.new(Utility::NativeInteger::MIN_VALUE - 1)
-        }.to raise_error(RangeError)
+      it 'does not raise an exception if the initial value is too small for a system integer' do
+        expect(described_class.new(Utility::NativeInteger::MIN_VALUE - 1)).to be_a(MutexAtomicInteger)
       end
     end
 

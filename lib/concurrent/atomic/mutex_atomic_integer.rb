@@ -68,7 +68,7 @@ module Concurrent
 
     # @!visibility private
     def ns_set(value)
-      Utility::NativeInteger.ensure_integer_and_bounds value
+      Utility::NativeInteger.ensure_integer value
       @value = value
     end
   end
