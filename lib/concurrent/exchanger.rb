@@ -24,7 +24,6 @@ module Concurrent
   #   will remain correct.
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Exchanger.html java.util.concurrent.Exchanger
-  #   @!macro warn.edge
   #   @example
   #
   #     exchanger = Concurrent::Exchanger.new
