@@ -65,7 +65,7 @@ would provide consistent behaviour and guarantees on all three of the main Ruby 
 ## Features & Documentation
 
 **The primary site for documentation is the automatically generated 
-[API documentation](http://ruby-concurrency.github.io/concurrent-ruby/frames.html) which is up to 
+[API documentation](http://ruby-concurrency.github.io/concurrent-ruby/index.html) which is up to 
 date with latest release.** This readme matches the master so may contain new stuff not yet 
 released.
 
