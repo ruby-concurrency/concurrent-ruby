@@ -204,7 +204,7 @@ module Concurrent
 
   if defined? Concurrent::CAtomicFixnum
 
-    RSpec.describe CAtomicFixnum, ext: true do
+    RSpec.describe CAtomicFixnum do
       it_should_behave_like :atomic_fixnum
     end
   end
@@ -228,7 +228,7 @@ module Concurrent
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end
     elsif defined? Concurrent::CAtomicFixnum
-      it 'inherits from CAtomicFixnum', ext: true do
+      it 'inherits from CAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
       end
     else

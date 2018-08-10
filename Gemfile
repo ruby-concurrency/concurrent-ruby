@@ -13,13 +13,13 @@ group :development do
   gem 'rake', '~> 12.0'
   gem 'rake-compiler', '~> 1.0'
   gem 'rake-compiler-dock', '~> 0.6.0'
-  gem 'pry', '~> 0.11'
+  gem 'pry', '~> 0.11', platforms: :mri
 end
 
 group :documentation, optional: true do
   gem 'yard', '~> 0.9.0', :require => false
   gem 'redcarpet', '~> 3.0', platforms: :mri # understands github markdown
-  gem 'md-ruby-eval'
+  gem 'md-ruby-eval', '~> 0.2'
 end
 
 group :testing do

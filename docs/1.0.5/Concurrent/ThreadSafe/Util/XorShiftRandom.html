@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: Concurrent::ThreadSafe::Util::XorShiftRandom
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../../../';
+  framesUrl = "../../../frames.html#!Concurrent/ThreadSafe/Util/XorShiftRandom.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../../_index.html">Index (X)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'>ThreadSafe</span></span> &raquo; <span class='title'><span class='object_link'>Util</span></span>
+     &raquo; 
+    <span class="title">XorShiftRandom</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../../../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../../../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Module: Concurrent::ThreadSafe::Util::XorShiftRandom
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+      <dt class="r1">Extended by:</dt>
+      <dd class="r1"><span class='object_link'><a href="" title="Concurrent::ThreadSafe::Util::XorShiftRandom (module)">XorShiftRandom</a></span></dd>
+      
+    
+  
+    
+  
+  
+    <dt class="r2">Included in:</dt>
+    <dd class="r2"><span class='object_link'><a href="" title="Concurrent::ThreadSafe::Util::XorShiftRandom (module)">XorShiftRandom</a></span></dd>
+    
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/concurrent/thread_safe/util/xor_shift_random.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A xorshift random number (positive +Fixnum+s) generator, provides
+reasonably cheap way to generate thread local random numbers without
+contending for the global +Kernel.rand+.</p>
+
+<p>Usage:
+  x = XorShiftRandom.get # uses Kernel.rand to generate an initial seed
+  while true
+    if (x = XorShiftRandom.xorshift).odd? # thread-localy generate a next random number
+      do_something_at_random
+    end
+  end</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="MAX_XOR_SHIFTABLE_INT-constant" class="">MAX_XOR_SHIFTABLE_INT =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>MAX_INT</span> <span class='op'>-</span> <span class='int'>1</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get-class_method" title="#get (class method)">+ (undocumented) <strong>get</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Generates an initial non-zero positive +Fixnum+ via +Kernel.rand+.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#xorshift-class_method" title="#xorshift (class method)">+ (undocumented) <strong>xorshift</strong>(x) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>using the &quot;yˆ=y&gt;&gt;a; yˆ=y&gt;c;&quot; transform with the (a,b,c) tuple with values (1,1,54) to minimise Bignum overflows.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get-instance_method" title="#get (instance method)">- (undocumented) <strong>get</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Generates an initial non-zero positive +Fixnum+ via +Kernel.rand+.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#xorshift-instance_method" title="#xorshift (instance method)">- (undocumented) <strong>xorshift</strong>(x) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>using the &quot;yˆ=y&gt;&gt;a; yˆ=y&gt;c;&quot; transform with the (a,b,c) tuple with values (1,1,54) to minimise Bignum overflows.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="get-class_method">
+  
+    + (<tt>undocumented</tt>) <strong>get</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Generates an initial non-zero positive +Fixnum+ via +Kernel.rand+.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span>
+  <span class='const'>Kernel</span><span class='period'>.</span><span class='id identifier rubyid_rand'>rand</span><span class='lparen'>(</span><span class='const'>MAX_XOR_SHIFTABLE_INT</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='int'>1</span> <span class='comment'># 0 can&#39;t be xorshifted
+</span><span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="xorshift-class_method">
+  
+    + (<tt>undocumented</tt>) <strong>xorshift</strong>(x) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>using the &quot;yˆ=y&gt;&gt;a; yˆ=y&lt;<b; yˆ=y>&gt;c;&quot; transform with the (a,b,c) tuple with values (1,1,54) to minimise Bignum overflows</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_xorshift'>xorshift</span><span class='lparen'>(</span><span class='id identifier rubyid_x'>x</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='id identifier rubyid_x'>x</span> <span class='op'>&gt;&gt;</span> <span class='int'>3</span>
+  <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='lparen'>(</span><span class='id identifier rubyid_x'>x</span> <span class='op'>&lt;&lt;</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='const'>MAX_INT</span> <span class='comment'># cut-off Bignum overflow
+</span>  <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='id identifier rubyid_x'>x</span> <span class='op'>&gt;&gt;</span> <span class='int'>14</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="get-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>get</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Generates an initial non-zero positive +Fixnum+ via +Kernel.rand+.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span>
+  <span class='const'>Kernel</span><span class='period'>.</span><span class='id identifier rubyid_rand'>rand</span><span class='lparen'>(</span><span class='const'>MAX_XOR_SHIFTABLE_INT</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='int'>1</span> <span class='comment'># 0 can&#39;t be xorshifted
+</span><span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="xorshift-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>xorshift</strong>(x) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>using the &quot;yˆ=y&gt;&gt;a; yˆ=y&lt;<b; yˆ=y>&gt;c;&quot; transform with the (a,b,c) tuple with values (1,1,54) to minimise Bignum overflows</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_xorshift'>xorshift</span><span class='lparen'>(</span><span class='id identifier rubyid_x'>x</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='id identifier rubyid_x'>x</span> <span class='op'>&gt;&gt;</span> <span class='int'>3</span>
+  <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='lparen'>(</span><span class='id identifier rubyid_x'>x</span> <span class='op'>&lt;&lt;</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='const'>MAX_INT</span> <span class='comment'># cut-off Bignum overflow
+</span>  <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='id identifier rubyid_x'>x</span> <span class='op'>&gt;&gt;</span> <span class='int'>14</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Sun Feb 26 18:16:36 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.0).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

@@ -1,0 +1,3771 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Concurrent::Agent
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!Concurrent/Agent.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (A)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">Agent</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: Concurrent::Agent
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'>Synchronization::LockableObject</span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'>Synchronization::LockableObject</span></li>
+          
+            <li class="next">Concurrent::Agent</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+      <dt class="r2">Includes:</dt>
+      <dd class="r2"><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Concern::Observable</a></span></dd>
+      
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/concurrent/agent.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p><code>Agent</code> is inspired by Clojure&#39;s <a href="http://clojure.org/agents">agent</a>
+function. An agent is a shared, mutable variable providing independent,
+uncoordinated, <em>asynchronous</em> change of individual values. Best used when
+the value will undergo frequent, complex updates. Suitable when the result
+of an update does not need to be known immediately. <code>Agent</code> is (mostly)
+functionally equivalent to Clojure&#39;s agent, except where the runtime
+prevents parity.</p>
+
+<p>Agents are reactive, not autonomous - there is no imperative message loop
+and no blocking receive. The state of an Agent should be itself immutable
+and the <code>#value</code> of an Agent is always immediately available for reading by
+any thread without any messages, i.e. observation does not require
+cooperation or coordination.</p>
+
+<p>Agent action dispatches are made using the various <code>#send</code> methods. These
+methods always return immediately. At some point later, in another thread,
+the following will happen:</p>
+
+<ol>
+<li>The given <code>action</code> will be applied to the state of the Agent and the
+<code>args</code>, if any were supplied.</li>
+<li>The return value of <code>action</code> will be passed to the validator lambda,
+if one has been set on the Agent.</li>
+<li>If the validator succeeds or if no validator was given, the return value
+of the given <code>action</code> will become the new <code>#value</code> of the Agent. See
+<code>#initialize</code> for details.</li>
+<li>If any observers were added to the Agent, they will be notified. See
+<code>#add_observer</code> for details.</li>
+<li>If during the <code>action</code> execution any other dispatches are made (directly
+or indirectly), they will be held until after the <code>#value</code> of the Agent
+has been changed.</li>
+</ol>
+
+<p>If any exceptions are thrown by an action function, no nested dispatches
+will occur, and the exception will be cached in the Agent itself. When an
+Agent has errors cached, any subsequent interactions will immediately throw
+an exception, until the agent&#39;s errors are cleared. Agent errors can be
+examined with <code>#error</code> and the agent restarted with <code>#restart</code>.</p>
+
+<p>The actions of all Agents get interleaved amongst threads in a thread pool.
+At any point in time, at most one action for each Agent is being executed.
+Actions dispatched to an agent from another single agent or thread will
+occur in the order they were sent, potentially interleaved with actions
+dispatched to the same agent from other sources. The <code>#send</code> method should
+be used for actions that are CPU limited, while the <code>#send_off</code> method is
+appropriate for actions that may block on IO.</p>
+
+<p>Unlike in Clojure, <code>Agent</code> cannot participate in <code>Concurrent::TVar</code> transactions.</p>
+
+<h2>Example</h2>
+
+<pre class="code ruby"><code class="ruby"><span class='kw'>def</span> <span class='id identifier rubyid_next_fibonacci'>next_fibonacci</span><span class='lparen'>(</span><span class='id identifier rubyid_set'>set</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='int'>0</span><span class='comma'>,</span> <span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_set'>set</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_set'>set</span> <span class='op'>+</span> <span class='lbracket'>[</span><span class='id identifier rubyid_set'>set</span><span class='lbracket'>[</span><span class='op'>-</span><span class='int'>2</span><span class='op'>..</span><span class='op'>-</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_sum'>sum</span><span class='comma'>,</span><span class='id identifier rubyid_x'>x</span><span class='op'>|</span> <span class='id identifier rubyid_sum'>sum</span> <span class='op'>+</span> <span class='id identifier rubyid_x'>x</span> <span class='rbrace'>}</span><span class='rbracket'>]</span>
+<span class='kw'>end</span>
+
+<span class='comment'># create an agent with an initial value
+</span><span class='id identifier rubyid_agent'>agent</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Agent</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_next_fibonacci'>next_fibonacci</span><span class='rparen'>)</span>
+
+<span class='comment'># send a few update requests
+</span><span class='int'>5</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_set'>set</span><span class='op'>|</span> <span class='id identifier rubyid_next_fibonacci'>next_fibonacci</span><span class='lparen'>(</span><span class='id identifier rubyid_set'>set</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span>
+
+<span class='comment'># wait for them to complete
+</span><span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span>
+
+<span class='comment'># get the current value
+</span><span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'>#=&gt; [0, 1, 1, 2, 3, 5, 8]
+</span></code></pre>
+
+<h2>Observation</h2>
+
+<p>Agents support observers through the Observable mixin module.
+Notification of observers occurs every time an action dispatch returns and
+the new value is successfully validated. Observation will <em>not</em> occur if the
+action raises an exception, if validation fails, or when a <span class='object_link'><a href="#restart-instance_method" title="Concurrent::Agent#restart (method)">#restart</a></span> occurs.</p>
+
+<p>When notified the observer will receive three arguments: <code>time</code>, <code>old_value</code>,
+and <code>new_value</code>. The <code>time</code> argument is the time at which the value change
+occurred. The <code>old_value</code> is the value of the Agent when the action began
+processing. The <code>new_value</code> is the value to which the Agent was set when the
+action completed. Note that <code>old_value</code> and <code>new_value</code> may be the same.
+This is not an error. It simply means that the action returned the same
+value.</p>
+
+<h2>Nested Actions</h2>
+
+<p>It is possible for an Agent action to post further actions back to itself.
+The nested actions will be enqueued normally then processed <em>after</em> the
+outer action completes, in the order they were sent, possibly interleaved
+with action dispatches from other threads. Nested actions never deadlock
+with one another and a failure in a nested action will never affect the
+outer action.</p>
+
+<p>Nested actions can be called using the Agent reference from the enclosing
+scope or by passing the reference in as a &quot;send&quot; argument. Nested actions
+cannot be post using <code>self</code> from within the action block/proc/lambda; <code>self</code>
+in this context will not reference the Agent. The preferred method for
+dispatching nested actions is to pass the Agent as an argument. This allows
+Ruby to more effectively manage the closing scope.</p>
+
+<p>Prefer this:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_agent'>agent</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Agent</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='id identifier rubyid_agent'>agent</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_this'>this</span><span class='op'>|</span>
+  <span class='id identifier rubyid_this'>this</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>+</span> <span class='int'>42</span> <span class='rbrace'>}</span>
+  <span class='float'>3.14</span>
+<span class='kw'>end</span>
+<span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'>#=&gt; 45.14
+</span></code></pre>
+
+<p>Over this:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_agent'>agent</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Agent</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='op'>|</span>
+  <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>+</span> <span class='int'>42</span> <span class='rbrace'>}</span>
+  <span class='float'>3.14</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+<h2>Thread-safe Variable Classes</h2>
+
+<p>Each of the thread-safe variable classes is designed to solve a different
+problem. In general:</p>
+
+<ul>
+<li><em><span class='object_link'><a href="" title="Concurrent::Agent (class)">Agent</a></span>:</em> Shared, mutable variable providing independent,
+uncoordinated, <em>asynchronous</em> change of individual values. Best used when
+the value will undergo frequent, complex updates. Suitable when the result
+of an update does not need to be known immediately.</li>
+<li><em><span class='object_link'><a href="Atom.html" title="Concurrent::Atom (class)">Atom</a></span>:</em> Shared, mutable variable providing independent,
+uncoordinated, <em>synchronous</em> change of individual values. Best used when
+the value will undergo frequent reads but only occasional, though complex,
+updates. Suitable when the result of an update must be known immediately.</li>
+<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be
+atomically. Updates are synchronous but fast. Best used when updates a
+simple set operations. Not suitable when updates are complex.
+<span class='object_link'><a href="AtomicBoolean.html" title="Concurrent::AtomicBoolean (class)">AtomicBoolean</a></span> and <span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span> are similar
+but optimized for the given data type.</li>
+<li><em><span class='object_link'><a href="Exchanger.html" title="Concurrent::Exchanger (class)">Exchanger</a></span>:</em> Shared, stateless synchronization point. Used
+when two or more threads need to exchange data. The threads will pair then
+block on each other until the exchange is complete.</li>
+<li><em><span class='object_link'><a href="MVar.html" title="Concurrent::MVar (class)">MVar</a></span>:</em> Shared synchronization point. Used when one thread
+must give a value to another, which must take the value. The threads will
+block on each other until the exchange is complete.</li>
+<li><em><span class='object_link'><a href="ThreadLocalVar.html" title="Concurrent::ThreadLocalVar (class)">ThreadLocalVar</a></span>:</em> Shared, mutable, isolated variable which
+holds a different value for each thread which has access. Often used as
+an instance variable in objects which must maintain different state
+for different threads.</li>
+<li><em><span class='object_link'><a href="TVar.html" title="Concurrent::TVar (class)">TVar</a></span>:</em> Shared, mutable variables which provide
+<em>coordinated</em>, <em>synchronous</em>, change of <em>many</em> stated. Used when multiple
+value must change together, in an all-or-nothing transaction.</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://clojure.org/Agents" target="_parent" title="Clojure Agents">Clojure Agents</a></li>
+    
+      <li><a href="http://clojure.org/state" target="_parent" title="Values and Change - Clojure&#39;s approach to Identity and State">Values and Change - Clojure's approach to Identity and State</a></li>
+    
+  </ul>
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Error</a></span>, <span class='object_link'><a href="Agent/ValidationError.html" title="Concurrent::Agent::ValidationError (class)">ValidationError</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#error_mode-instance_method" title="#error_mode (instance method)">- (undocumented) <strong>error_mode</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The error mode this Agent is operating in.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#await-class_method" title="await (class method)">+ (Boolean) <strong>await</strong>(*agents) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread (indefinitely!) until all actions dispatched thus far to all the given Agents, from this thread or nested by the given Agents, have occurred.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#await_for-class_method" title="await_for (class method)">+ (Boolean) <strong>await_for</strong>(timeout, *agents) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far to all the given Agents, from this thread or nested by the given Agents, have occurred, or the timeout (in seconds) has elapsed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#await_for%21-class_method" title="await_for! (class method)">+ (Boolean) <strong>await_for!</strong>(timeout, *agents) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far to all the given Agents, from this thread or nested by the given Agents, have occurred, or the timeout (in seconds) has elapsed.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#%3C%3C-instance_method" title="#&lt;&lt; (instance method)">- (Concurrent::Agent) <strong>&lt;&lt;</strong>(action) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_observer-instance_method" title="#add_observer (instance method)">- (Object) <strong>add_observer</strong>(observer = nil, func = :update, &amp;block) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#add_observer-instance_method" title="Concurrent::Concern::Observable#add_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Adds an observer to this set.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#await-instance_method" title="#await (instance method)">- (Boolean) <strong>await</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread (indefinitely!) until all actions dispatched thus far, from this thread or nested by the Agent, have occurred.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#await_for-instance_method" title="#await_for (instance method)">- (Boolean) <strong>await_for</strong>(timeout) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far, from this thread or nested by the Agent, have occurred, or the timeout (in seconds) has elapsed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#await_for%21-instance_method" title="#await_for! (instance method)">- (Boolean) <strong>await_for!</strong>(timeout) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far, from this thread or nested by the Agent, have occurred, or the timeout (in seconds) has elapsed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#count_observers-instance_method" title="#count_observers (instance method)">- (Integer) <strong>count_observers</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#count_observers-instance_method" title="Concurrent::Concern::Observable#count_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the number of observers associated with this object.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_observer-instance_method" title="#delete_observer (instance method)">- (Object) <strong>delete_observer</strong>(observer) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#delete_observer-instance_method" title="Concurrent::Concern::Observable#delete_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Remove <code>observer</code> as an observer on this object so that it will no longer receive notifications.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_observers-instance_method" title="#delete_observers (instance method)">- (Observable) <strong>delete_observers</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#delete_observers-instance_method" title="Concurrent::Concern::Observable#delete_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Remove all observers associated with this object.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#error-instance_method" title="#error (instance method)">- (nil, Error) <strong>error</strong> </a>
+    
+
+    
+      (also: #reason)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>When <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span> and <span class='object_link'><a href="#error_mode-instance_method" title="Concurrent::Agent#error_mode (method)">#error_mode</a></span> is <code>:fail</code>, returns the error object which caused the failure, else <code>nil</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#failed%3F-instance_method" title="#failed? (instance method)">- (Boolean) <strong>failed?</strong> </a>
+    
+
+    
+      (also: #stopped?)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is the Agent in a failed state?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (Agent) <strong>initialize</strong>(initial, opts = {}) </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>Agent</code> with the given initial value and options.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#restart-instance_method" title="#restart (instance method)">- (Boolean) <strong>restart</strong>(new_value, opts = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>When an Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>, changes the Agent <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> to <code>new_value</code> then un-fails the Agent so that action dispatches are allowed again.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send-instance_method" title="#send (instance method)">- (Boolean) <strong>send</strong>(*args, &amp;action) {|agent, value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send%21-instance_method" title="#send! (instance method)">- (Boolean) <strong>send!</strong>(*args, &amp;action) {|agent, value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send_off-instance_method" title="#send_off (instance method)">- (Boolean) <strong>send_off</strong>(*args, &amp;action) {|agent, value, *args| ... }</a>
+    
+
+    
+      (also: #post)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send_off%21-instance_method" title="#send_off! (instance method)">- (Boolean) <strong>send_off!</strong>(*args, &amp;action) {|agent, value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send_via-instance_method" title="#send_via (instance method)">- (Boolean) <strong>send_via</strong>(executor, *args, &amp;action) {|agent, value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send_via%21-instance_method" title="#send_via! (instance method)">- (Boolean) <strong>send_via!</strong>(executor, *args, &amp;action) {|agent, value, *args| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Dispatches an action to the Agent and returns immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">- (Object) <strong>value</strong> </a>
+    
+
+    
+      (also: #deref)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The current value (state) of the Agent, irrespective of any pending or in-progress actions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait-instance_method" title="#wait (instance method)">- (Boolean) <strong>wait</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far, from this thread or nested by the Agent, have occurred, or the timeout (in seconds) has elapsed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_observer-instance_method" title="#with_observer (instance method)">- (Observable) <strong>with_observer</strong>(observer = nil, func = :update, &amp;block) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#with_observer-instance_method" title="Concurrent::Concern::Observable#with_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>As <code>#add_observer</code> but can be used for chaining.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Agent (class)">Agent</a></span></tt>) <strong>initialize</strong>(initial, opts = {}) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>Agent</code> with the given initial value and options.</p>
+
+<p>The <code>:validator</code> option must be <code>nil</code> or a side-effect free proc/lambda
+which takes one argument. On any intended value change the validator, if
+provided, will be called. If the new value is invalid the validator should
+return <code>false</code> or raise an error.</p>
+
+<p>The <code>:error_handler</code> option must be <code>nil</code> or a proc/lambda which takes two
+arguments. When an action raises an error or validation fails, either by
+returning false or raising an error, the error handler will be called. The
+arguments to the error handler will be a reference to the agent itself and
+the error object which was raised.</p>
+
+<p>The <code>:error_mode</code> may be either <code>:continue</code> (the default if an error
+handler is given) or <code>:fail</code> (the default if error handler nil or not
+given).</p>
+
+<p>If an action being run by the agent throws an error or doesn&#39;t pass
+validation the error handler, if present, will be called. After the
+handler executes if the error mode is <code>:continue</code> the Agent will continue
+as if neither the action that caused the error nor the error itself ever
+happened.</p>
+
+<p>If the mode is <code>:fail</code> the Agent will become <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span> and will stop
+accepting new action dispatches. Any previously queued actions will be
+held until <span class='object_link'><a href="#restart-instance_method" title="Concurrent::Agent#restart (method)">#restart</a></span> is called. The <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> method will still work,
+returning the value of the Agent before the error.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>initial</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the initial value</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>opts</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Hash.html" title="Concurrent::Hash (class)">Hash</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>{}</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the configuration options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>opts</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:error_mode</span>
+          <span class="type">(<tt>Symbol</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>either <code>:continue</code> or <code>:fail</code></p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:error_handler</span>
+          <span class="type">(<tt>nil</tt>, <tt>Proc</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>the (optional) error handler</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:validator</span>
+          <span class="type">(<tt>nil</tt>, <tt>Proc</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>the (optional) validation procedure</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+219
+220
+221
+222</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 219</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_initial'>initial</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_initialize'>ns_initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_initial'>initial</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="error_mode-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>error_mode</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The error mode this Agent is operating in. See <span class='object_link'><a href="#initialize-instance_method" title="Concurrent::Agent#initialize (method)">#initialize</a></span> for details.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+183
+184
+185</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 183</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_error_mode'>error_mode</span>
+  <span class='ivar'>@error_mode</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="await-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>await</strong>(*agents) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread (indefinitely!) until all actions dispatched
+thus far to all the given Agents, from this thread or nested by the
+given Agents, have occurred. Will block when any of the agents are
+failed. Will never return if a failed Agent is restart with
+<code>:clear_actions</code> true.</p>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>agents</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;<span class='object_link'><a href="" title="Concurrent::Agent (class)">Concurrent::Agent</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the Agents on which to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+448
+449
+450
+451</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 448</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_await'>await</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_agents'>agents</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_agent'>agent</span><span class='op'>|</span> <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span> <span class='rbrace'>}</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="await_for-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>await_for</strong>(timeout, *agents) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread until all actions dispatched thus far to all
+the given Agents, from this thread or nested by the given Agents, have
+occurred, or the timeout (in seconds) has elapsed.</p>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Float</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>agents</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;<span class='object_link'><a href="" title="Concurrent::Agent (class)">Concurrent::Agent</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the Agents on which to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if all actions complete before timeout else false</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+462
+463
+464
+465
+466
+467
+468
+469</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 462</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_end_at'>end_at</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_monotonic_time'>monotonic_time</span> <span class='op'>+</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
+  <span class='id identifier rubyid_ok'>ok</span>     <span class='op'>=</span> <span class='id identifier rubyid_agents'>agents</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
+    <span class='kw'>break</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_delay'>delay</span> <span class='op'>=</span> <span class='id identifier rubyid_end_at'>end_at</span> <span class='op'>-</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_monotonic_time'>monotonic_time</span><span class='rparen'>)</span> <span class='op'>&lt;</span> <span class='int'>0</span>
+    <span class='kw'>break</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_agents'>agents</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_delay'>delay</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='op'>!</span><span class='op'>!</span><span class='id identifier rubyid_ok'>ok</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="await_for!-class_method">
+  
+    + (<tt>Boolean</tt>) <strong>await_for!</strong>(timeout, *agents) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread until all actions dispatched thus far to all
+the given Agents, from this thread or nested by the given Agents, have
+occurred, or the timeout (in seconds) has elapsed.</p>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Float</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>agents</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;<span class='object_link'><a href="" title="Concurrent::Agent (class)">Concurrent::Agent</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the Agents on which to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if all actions complete before timeout</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../root/Concurrent.html#TimeoutError-constant" title="Concurrent::TimeoutError (constant)">Concurrent::TimeoutError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when timout is reached</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+481
+482
+483
+484</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 481</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_await_for!'>await_for!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>TimeoutError</span> <span class='kw'>unless</span> <span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="<<-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Agent (class)">Concurrent::Agent</a></span></tt>) <strong>&lt;&lt;</strong>(action) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Appropriate for actions that may block on IO.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Agent (class)">Concurrent::Agent</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>Concurrent::Agent.{{#send_off}</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+330
+331
+332
+333</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 330</span>
+
+<span class='kw'>def</span> <span class='op'>&lt;&lt;</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_send_off'>send_off</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_observer-instance_method">
+  
+    - (<tt>Object</tt>) <strong>add_observer</strong>(observer = nil, func = :update, &amp;block) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#add_observer-instance_method" title="Concurrent::Concern::Observable#add_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Adds an observer to this set. If a block is passed, the observer will be
+created by this method and no other params should be passed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>observer</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the observer to add</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>func</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>:update</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the function to call on the observer during notification.
+Default is :update</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the added observer</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="await-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>await</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread (indefinitely!) until all actions dispatched
+thus far, from this thread or nested by the Agent, have occurred. Will
+block when <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>. Will never return if a failed Agent is <span class='object_link'><a href="#restart-instance_method" title="Concurrent::Agent#restart (method)">#restart</a></span>
+with <code>:clear_actions</code> true.</p>
+
+<p>Returns a reference to <code>self</code> to support method chaining:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_current_value'>current_value</span> <span class='op'>=</span> <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+</code></pre>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+349
+350
+351
+352</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 349</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_await'>await</span>
+  <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="await_for-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>await_for</strong>(timeout) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread until all actions dispatched thus far, from this
+thread or nested by the Agent, have occurred, or the timeout (in seconds)
+has elapsed.</p>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Float</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if all actions complete before timeout else false</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+362
+363
+364</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 362</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="await_for!-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>await_for!</strong>(timeout) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread until all actions dispatched thus far, from this
+thread or nested by the Agent, have occurred, or the timeout (in seconds)
+has elapsed.</p>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Float</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if all actions complete before timeout</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../root/Concurrent.html#TimeoutError-constant" title="Concurrent::TimeoutError (constant)">Concurrent::TimeoutError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when timout is reached</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+376
+377
+378
+379</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 376</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_await_for!'>await_for!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>TimeoutError</span> <span class='kw'>unless</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="count_observers-instance_method">
+  
+    - (<tt>Integer</tt>) <strong>count_observers</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#count_observers-instance_method" title="Concurrent::Concern::Observable#count_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Return the number of observers associated with this object.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the observers count</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_observer-instance_method">
+  
+    - (<tt>Object</tt>) <strong>delete_observer</strong>(observer) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#delete_observer-instance_method" title="Concurrent::Concern::Observable#delete_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Remove <code>observer</code> as an observer on this object so that it will no
+longer receive notifications.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>observer</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the observer to remove</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the deleted observer</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_observers-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt>) <strong>delete_observers</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#delete_observers-instance_method" title="Concurrent::Concern::Observable#delete_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Remove all observers associated with this object.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="error-instance_method">
+  
+    - (<tt>nil</tt>, <tt><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Error</a></span></tt>) <strong>error</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='reason-instance_method'>reason</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>When <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span> and <span class='object_link'><a href="#error_mode-instance_method" title="Concurrent::Agent#error_mode (method)">#error_mode</a></span> is <code>:fail</code>, returns the error object
+which caused the failure, else <code>nil</code>. When <span class='object_link'><a href="#error_mode-instance_method" title="Concurrent::Agent#error_mode (method)">#error_mode</a></span> is <code>:continue</code>
+will <em>always</em> return <code>nil</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>, <tt><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Error</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the error which caused the failure when <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+239
+240
+241</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 239</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_error'>error</span>
+  <span class='ivar'>@error</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="failed?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>failed?</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='stopped?-instance_method'>stopped?</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is the Agent in a failed state?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>Concurrent::Agent.{{#restart}</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+401
+402
+403</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 401</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_failed?'>failed?</span>
+  <span class='op'>!</span><span class='ivar'>@error</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="restart-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>restart</strong>(new_value, opts = {}) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>When an Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>, changes the Agent <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> to <code>new_value</code>
+then un-fails the Agent so that action dispatches are allowed again. If
+the <code>:clear_actions</code> option is give and true, any actions queued on the
+Agent that were being held while it was failed will be discarded,
+otherwise those held actions will proceed. The <code>new_value</code> must pass the
+validator if any, or <code>restart</code> will raise an exception and the Agent will
+remain failed with its old <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> and <span class='object_link'><a href="#error-instance_method" title="Concurrent::Agent#error (method)">#error</a></span>. Observers, if any, will
+not be notified of the new state.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>new_value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value for the Agent once restarted</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>opts</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Hash.html" title="Concurrent::Hash (class)">Hash</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>{}</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the configuration options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>opts</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:clear_actions</span>
+          <span class="type">(<tt>Symbol</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>true if all enqueued but unprocessed
+actions should be discarded on restart, else false (default: false)</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Concurrent:AgentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when not failed</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 423</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_restart'>restart</span><span class='lparen'>(</span><span class='id identifier rubyid_new_value'>new_value</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_clear_actions'>clear_actions</span> <span class='op'>=</span> <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:clear_actions</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>agent is not failed</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_failed?'>failed?</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ValidationError</span> <span class='kw'>unless</span> <span class='id identifier rubyid_ns_validate'>ns_validate</span><span class='lparen'>(</span><span class='id identifier rubyid_new_value'>new_value</span><span class='rparen'>)</span>
+    <span class='ivar'>@current</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_new_value'>new_value</span>
+    <span class='ivar'>@error</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>   <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='ivar'>@queue</span><span class='period'>.</span><span class='id identifier rubyid_clear'>clear</span> <span class='kw'>if</span> <span class='id identifier rubyid_clear_actions'>clear_actions</span>
+    <span class='id identifier rubyid_ns_post_next_job'>ns_post_next_job</span> <span class='kw'>unless</span> <span class='ivar'>@queue</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+  <span class='kw'>end</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>send</strong>(*args, &amp;action) {|agent, value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Action dispatches are only allowed when the Agent
+is not <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>.</p>
+
+<p>The action must be a block/proc/lambda which takes 1 or more arguments.
+The first argument is the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent. Any arguments
+passed to the send method via the <code>args</code> parameter will be passed to the
+action as the remaining arguments. The action must return the new value
+of the Agent.</p>
+
+<ul>
+<li><span class='object_link'><a href="#send-instance_method" title="Concurrent::Agent#send (method)">#send</a></span> and <span class='object_link'><a href="#send%21-instance_method" title="Concurrent::Agent#send! (method)">#send!</a></span> should be used for actions that are CPU limited</li>
+<li><span class='object_link'><a href="#send_off-instance_method" title="Concurrent::Agent#send_off (method)">#send_off</a></span>, <span class='object_link'><a href="#send_off%21-instance_method" title="Concurrent::Agent#send_off! (method)">#send_off!</a></span>, and <span class='object_link'><a href="#%3C%3C-instance_method" title="Concurrent::Agent#&lt;&lt; (method)">#&lt;&lt;</a></span> are appropriate for actions that
+may block on IO</li>
+<li><span class='object_link'><a href="#send_via-instance_method" title="Concurrent::Agent#send_via (method)">#send_via</a></span> and <span class='object_link'><a href="#send_via%21-instance_method" title="Concurrent::Agent#send_via! (method)">#send_via!</a></span> are used when a specific executor is to
+be used for the action</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to be passed to
+the action</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>agent</tt>, <tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>process the old value and return the new</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to pass to the
+action</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value of the Agent</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the action is successfully enqueued, false if
+the Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+277
+278
+279</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 277</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_enqueue_action_job'>enqueue_action_job</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_global_fast_executor'>global_fast_executor</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send!-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>send!</strong>(*args, &amp;action) {|agent, value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Action dispatches are only allowed when the Agent
+is not <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>.</p>
+
+<p>The action must be a block/proc/lambda which takes 1 or more arguments.
+The first argument is the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent. Any arguments
+passed to the send method via the <code>args</code> parameter will be passed to the
+action as the remaining arguments. The action must return the new value
+of the Agent.</p>
+
+<ul>
+<li><span class='object_link'><a href="#send-instance_method" title="Concurrent::Agent#send (method)">#send</a></span> and <span class='object_link'><a href="#send%21-instance_method" title="Concurrent::Agent#send! (method)">#send!</a></span> should be used for actions that are CPU limited</li>
+<li><span class='object_link'><a href="#send_off-instance_method" title="Concurrent::Agent#send_off (method)">#send_off</a></span>, <span class='object_link'><a href="#send_off%21-instance_method" title="Concurrent::Agent#send_off! (method)">#send_off!</a></span>, and <span class='object_link'><a href="#%3C%3C-instance_method" title="Concurrent::Agent#&lt;&lt; (method)">#&lt;&lt;</a></span> are appropriate for actions that
+may block on IO</li>
+<li><span class='object_link'><a href="#send_via-instance_method" title="Concurrent::Agent#send_via (method)">#send_via</a></span> and <span class='object_link'><a href="#send_via%21-instance_method" title="Concurrent::Agent#send_via! (method)">#send_via!</a></span> are used when a specific executor is to
+be used for the action</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to be passed to
+the action</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>agent</tt>, <tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>process the old value and return the new</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to pass to the
+action</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value of the Agent</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the action is successfully enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Concurrent::Agent::Error</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+286
+287
+288
+289</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 286</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send!'>send!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>unless</span> <span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send_off-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>send_off</strong>(*args, &amp;action) {|agent, value, *args| ... }
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='post-instance_method'>post</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Action dispatches are only allowed when the Agent
+is not <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>.</p>
+
+<p>The action must be a block/proc/lambda which takes 1 or more arguments.
+The first argument is the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent. Any arguments
+passed to the send method via the <code>args</code> parameter will be passed to the
+action as the remaining arguments. The action must return the new value
+of the Agent.</p>
+
+<ul>
+<li><span class='object_link'><a href="#send-instance_method" title="Concurrent::Agent#send (method)">#send</a></span> and <span class='object_link'><a href="#send%21-instance_method" title="Concurrent::Agent#send! (method)">#send!</a></span> should be used for actions that are CPU limited</li>
+<li><span class='object_link'><a href="#send_off-instance_method" title="Concurrent::Agent#send_off (method)">#send_off</a></span>, <span class='object_link'><a href="#send_off%21-instance_method" title="Concurrent::Agent#send_off! (method)">#send_off!</a></span>, and <span class='object_link'><a href="#%3C%3C-instance_method" title="Concurrent::Agent#&lt;&lt; (method)">#&lt;&lt;</a></span> are appropriate for actions that
+may block on IO</li>
+<li><span class='object_link'><a href="#send_via-instance_method" title="Concurrent::Agent#send_via (method)">#send_via</a></span> and <span class='object_link'><a href="#send_via%21-instance_method" title="Concurrent::Agent#send_via! (method)">#send_via!</a></span> are used when a specific executor is to
+be used for the action</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to be passed to
+the action</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>agent</tt>, <tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>process the old value and return the new</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to pass to the
+action</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value of the Agent</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the action is successfully enqueued, false if
+the Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+293
+294
+295</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 293</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send_off'>send_off</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_enqueue_action_job'>enqueue_action_job</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_global_io_executor'>global_io_executor</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send_off!-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>send_off!</strong>(*args, &amp;action) {|agent, value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Action dispatches are only allowed when the Agent
+is not <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>.</p>
+
+<p>The action must be a block/proc/lambda which takes 1 or more arguments.
+The first argument is the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent. Any arguments
+passed to the send method via the <code>args</code> parameter will be passed to the
+action as the remaining arguments. The action must return the new value
+of the Agent.</p>
+
+<ul>
+<li><span class='object_link'><a href="#send-instance_method" title="Concurrent::Agent#send (method)">#send</a></span> and <span class='object_link'><a href="#send%21-instance_method" title="Concurrent::Agent#send! (method)">#send!</a></span> should be used for actions that are CPU limited</li>
+<li><span class='object_link'><a href="#send_off-instance_method" title="Concurrent::Agent#send_off (method)">#send_off</a></span>, <span class='object_link'><a href="#send_off%21-instance_method" title="Concurrent::Agent#send_off! (method)">#send_off!</a></span>, and <span class='object_link'><a href="#%3C%3C-instance_method" title="Concurrent::Agent#&lt;&lt; (method)">#&lt;&lt;</a></span> are appropriate for actions that
+may block on IO</li>
+<li><span class='object_link'><a href="#send_via-instance_method" title="Concurrent::Agent#send_via (method)">#send_via</a></span> and <span class='object_link'><a href="#send_via%21-instance_method" title="Concurrent::Agent#send_via! (method)">#send_via!</a></span> are used when a specific executor is to
+be used for the action</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to be passed to
+the action</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>agent</tt>, <tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>process the old value and return the new</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to pass to the
+action</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value of the Agent</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the action is successfully enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Concurrent::Agent::Error</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+301
+302
+303
+304</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 301</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send_off!'>send_off!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>unless</span> <span class='id identifier rubyid_send_off'>send_off</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send_via-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>send_via</strong>(executor, *args, &amp;action) {|agent, value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Action dispatches are only allowed when the Agent
+is not <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>.</p>
+
+<p>The action must be a block/proc/lambda which takes 1 or more arguments.
+The first argument is the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent. Any arguments
+passed to the send method via the <code>args</code> parameter will be passed to the
+action as the remaining arguments. The action must return the new value
+of the Agent.</p>
+
+<ul>
+<li><span class='object_link'><a href="#send-instance_method" title="Concurrent::Agent#send (method)">#send</a></span> and <span class='object_link'><a href="#send%21-instance_method" title="Concurrent::Agent#send! (method)">#send!</a></span> should be used for actions that are CPU limited</li>
+<li><span class='object_link'><a href="#send_off-instance_method" title="Concurrent::Agent#send_off (method)">#send_off</a></span>, <span class='object_link'><a href="#send_off%21-instance_method" title="Concurrent::Agent#send_off! (method)">#send_off!</a></span>, and <span class='object_link'><a href="#%3C%3C-instance_method" title="Concurrent::Agent#&lt;&lt; (method)">#&lt;&lt;</a></span> are appropriate for actions that
+may block on IO</li>
+<li><span class='object_link'><a href="#send_via-instance_method" title="Concurrent::Agent#send_via (method)">#send_via</a></span> and <span class='object_link'><a href="#send_via%21-instance_method" title="Concurrent::Agent#send_via! (method)">#send_via!</a></span> are used when a specific executor is to
+be used for the action</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to be passed to
+the action</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>executor</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'>Concurrent::ExecutorService</span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the executor on which the
+action is to be dispatched</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>agent</tt>, <tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>process the old value and return the new</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to pass to the
+action</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value of the Agent</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the action is successfully enqueued, false if
+the Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+310
+311
+312</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 310</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_enqueue_action_job'>enqueue_action_job</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send_via!-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>send_via!</strong>(executor, *args, &amp;action) {|agent, value, *args| ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Dispatches an action to the Agent and returns immediately. Subsequently,
+in a thread from a thread pool, the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> will be set to the return
+value of the action. Action dispatches are only allowed when the Agent
+is not <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span>.</p>
+
+<p>The action must be a block/proc/lambda which takes 1 or more arguments.
+The first argument is the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent. Any arguments
+passed to the send method via the <code>args</code> parameter will be passed to the
+action as the remaining arguments. The action must return the new value
+of the Agent.</p>
+
+<ul>
+<li><span class='object_link'><a href="#send-instance_method" title="Concurrent::Agent#send (method)">#send</a></span> and <span class='object_link'><a href="#send%21-instance_method" title="Concurrent::Agent#send! (method)">#send!</a></span> should be used for actions that are CPU limited</li>
+<li><span class='object_link'><a href="#send_off-instance_method" title="Concurrent::Agent#send_off (method)">#send_off</a></span>, <span class='object_link'><a href="#send_off%21-instance_method" title="Concurrent::Agent#send_off! (method)">#send_off!</a></span>, and <span class='object_link'><a href="#%3C%3C-instance_method" title="Concurrent::Agent#&lt;&lt; (method)">#&lt;&lt;</a></span> are appropriate for actions that
+may block on IO</li>
+<li><span class='object_link'><a href="#send_via-instance_method" title="Concurrent::Agent#send_via (method)">#send_via</a></span> and <span class='object_link'><a href="#send_via%21-instance_method" title="Concurrent::Agent#send_via! (method)">#send_via!</a></span> are used when a specific executor is to
+be used for the action</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to be passed to
+the action</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>action</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the action dispatch to be enqueued</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>executor</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'>Concurrent::ExecutorService</span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the executor on which the
+action is to be dispatched</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>agent</tt>, <tt>value</tt>, <tt>*args</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>process the old value and return the new</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current <span class='object_link'><a href="#value-instance_method" title="Concurrent::Agent#value (method)">#value</a></span> of the Agent</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>zero or more arguments to pass to the
+action</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the new value of the Agent</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the action is successfully enqueued</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Concurrent::Agent::Error</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the Agent is <span class='object_link'><a href="#failed%3F-instance_method" title="Concurrent::Agent#failed? (method)">#failed?</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+318
+319
+320
+321</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 318</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send_via!'>send_via!</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Error</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>unless</span> <span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value-instance_method">
+  
+    - (<tt>Object</tt>) <strong>value</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='deref-instance_method'>deref</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The current value (state) of the Agent, irrespective of any pending or
+in-progress actions. The value is always available and is non-blocking.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current value</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+228
+229
+230</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 228</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='ivar'>@current</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># TODO (pitr 12-Sep-2015): broken unsafe read?
+</span><span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>wait</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks the current thread until all actions dispatched thus far, from this
+thread or nested by the Agent, have occurred, or the timeout (in seconds)
+has elapsed. Will block indefinitely when timeout is nil or not given.</p>
+
+<p>Provided mainly for consistency with other classes in this library. Prefer
+the various <code>await</code> methods instead.</p>
+
+<p><strong>NOTE</strong> Never, <em>under any circumstances</em>, call any of the &quot;await&quot; methods
+(<span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span>, <span class='object_link'><a href="#await_for-instance_method" title="Concurrent::Agent#await_for (method)">#await_for</a></span>, <span class='object_link'><a href="#await_for%21-instance_method" title="Concurrent::Agent#await_for! (method)">#await_for!</a></span>, and <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span>) from within an action
+block/proc/lambda. The call will block the Agent and will always fail.
+Calling either <span class='object_link'><a href="#await-instance_method" title="Concurrent::Agent#await (method)">#await</a></span> or <span class='object_link'><a href="#wait-instance_method" title="Concurrent::Agent#wait (method)">#wait</a></span> (with a timeout of <code>nil</code>) will
+hopelessly deadlock the Agent with no possibility of recovery.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Float</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if all actions complete before timeout else false</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+392
+393
+394
+395
+396</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 392</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_latch'>latch</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>CountDownLatch</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_enqueue_await_job'>enqueue_await_job</span><span class='lparen'>(</span><span class='id identifier rubyid_latch'>latch</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_latch'>latch</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="with_observer-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt>) <strong>with_observer</strong>(observer = nil, func = :update, &amp;block) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#with_observer-instance_method" title="Concurrent::Concern::Observable#with_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>As <code>#add_observer</code> but can be used for chaining.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>observer</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the observer to add</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>func</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>:update</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the function to call on the observer during notification.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Sun Feb 26 18:16:37 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.0).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

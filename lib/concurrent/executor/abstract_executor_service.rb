@@ -93,7 +93,7 @@ module Concurrent
       raise NotImplementedError
     end
 
-    # @!macro [attach] executor_service_method_ns_shutdown_execution
+    # @!macro executor_service_method_ns_shutdown_execution
     #
     #   Callback method called when an orderly shutdown has completed.
     #   The default behavior is to signal all waiting threads.
@@ -101,7 +101,7 @@ module Concurrent
       # do nothing
     end
 
-    # @!macro [attach] executor_service_method_ns_kill_execution
+    # @!macro executor_service_method_ns_kill_execution
     #
     #   Callback method called when the executor has been killed.
     #   The default behavior is to do nothing.

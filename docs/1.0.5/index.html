@@ -1,0 +1,348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.README.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><h1>Concurrent Ruby</h1>
+
+<p><a href="http://badge.fury.io/rb/concurrent-ruby"><img src="https://badge.fury.io/rb/concurrent-ruby.svg" alt="Gem Version"></a>
+<a href="https://travis-ci.org/ruby-concurrency/concurrent-ruby"><img src="https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master" alt="Build Status"></a>
+<a href="https://ci.appveyor.com/project/rubyconcurrency/concurrent-ruby"><img src="https://ci.appveyor.com/api/projects/status/iq8aboyuu3etad4w?svg=true" alt="Build status"></a>
+<a href="https://codeclimate.com/github/ruby-concurrency/concurrent-ruby"><img src="https://codeclimate.com/github/ruby-concurrency/concurrent-ruby.svg" alt="Code Climate"></a>
+<a href="http://inch-ci.org/github/ruby-concurrency/concurrent-ruby"><img src="http://inch-ci.org/github/ruby-concurrency/concurrent-ruby.svg" alt="Inline docs"></a>
+<a href="https://gemnasium.com/ruby-concurrency/concurrent-ruby"><img src="https://gemnasium.com/ruby-concurrency/concurrent-ruby.svg" alt="Dependency Status"></a>
+<a href="http://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
+<a href="https://gitter.im/ruby-concurrency/concurrent-ruby"><img src="https://img.shields.io/badge/IRC%20(gitter)-devs%20%26%20users-brightgreen.svg" alt="Gitter chat"></a></p>
+
+<p>Modern concurrency tools for Ruby. Inspired by
+<a href="http://www.erlang.org/doc/reference_manual/processes.html">Erlang</a>,
+<a href="http://clojure.org/concurrent_programming">Clojure</a>,
+<a href="http://akka.io/">Scala</a>,
+<a href="http://www.haskell.org/haskellwiki/Applications_and_libraries/Concurrency_and_parallelism#Concurrent_Haskell">Haskell</a>,
+<a href="http://blogs.msdn.com/b/dsyme/archive/2010/02/15/async-and-parallel-design-patterns-in-f-part-3-agents.aspx">F#</a>,
+<a href="http://msdn.microsoft.com/en-us/library/vstudio/hh191443.aspx">C#</a>,
+<a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html">Java</a>,
+and classic concurrency patterns.</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" /></p>
+
+<p>The design goals of this gem are:</p>
+
+<ul>
+<li>Be an &#39;unopinionated&#39; toolbox that provides useful utilities without debating which is better or why</li>
+<li>Remain free of external gem dependencies</li>
+<li>Stay true to the spirit of the languages providing inspiration</li>
+<li>But implement in a way that makes sense for Ruby</li>
+<li>Keep the semantics as idiomatic Ruby as possible</li>
+<li>Support features that make sense in Ruby</li>
+<li>Exclude features that don&#39;t make sense in Ruby</li>
+<li>Be small, lean, and loosely coupled</li>
+</ul>
+
+<h3>Supported Ruby versions</h3>
+
+<p>MRI 1.9.3, 2.0 and above, JRuby 1.7x in 1.9 mode, JRuby 9000, and Rubinius 2.x are supported.
+This gem should be fully compatible with any interpreter that is compliant with Ruby 1.9.3 or newer.
+Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.</p>
+
+<h2>Thread Safety</h2>
+
+<p><em>Concurrent Ruby makes the strongest thread safety guarantees of any Ruby concurrency library. We are the only library with a published <a href="https://github.com/ruby-concurrency/concurrent-ruby/blob/master/doc/synchronization.md">memory model</a> which provides consistent behavior and guarantees on all three of the main Ruby interpreters (MRI/CRuby, JRuby, and Rubinius).</em></p>
+
+<p>Every abstraction in this library is thread safe. Similarly, all are deadlock free and many are fully lock free. Specific thread safety guarantees are documented with each abstraction.</p>
+
+<p>It is critical to remember, however, that Ruby is a language of mutable references. <em>No</em> concurrency library for Ruby can ever prevent the user from making thread safety mistakes (such as sharing a mutable object between threads and modifying it on both threads) or from creating deadlocks through incorrect use of locks. All the library can do is provide safe abstractions which encourage safe practices. Concurrent Ruby provides more safe concurrency abstractions than any other Ruby library, many of which support the mantra of <a href="https://blog.golang.org/share-memory-by-communicating">&quot;Do not communicate by sharing memory; instead, share memory by communicating&quot;</a>. Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and immutable variable types and data structures.</p>
+
+<h2>Features &amp; Documentation</h2>
+
+<p>The primary site for documentation is the automatically generated <a href="http://ruby-concurrency.github.io/concurrent-ruby/frames.html">API documentation</a></p>
+
+<p>We also have a <a href="http://groups.google.com/group/concurrent-ruby">mailing list</a> and <a href="https://gitter.im/ruby-concurrency/concurrent-ruby">IRC (gitter)</a>.</p>
+
+<h4>General-purpose Concurrency Abstractions</h4>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html">Async</a>: A mixin module that provides simple asynchronous behavior to a class. Loosely based on Erlang&#39;s <a href="http://www.erlang.org/doc/man/gen_server.html">gen_server</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html">Future</a>: An asynchronous operation that produces a value.
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method">Dataflow</a>: Built on Futures, Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.</li>
+</ul></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html">Promise</a>: Similar to Futures, with more features.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html">ScheduledTask</a>: Like a Future scheduled for a specific future time.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html">TimerTask</a>: A Thread that periodically wakes up to perform work at regular intervals.</li>
+</ul>
+
+<h4>Thread-safe Value Objects, Structures, and Collections</h4>
+
+<p>Collection classes that were originally part of the (deprecated) <code>thread_safe</code> gem:</p>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Array.html">Array</a> A thread-safe subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/core-2.2.0/Array.html">Array</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html">Hash</a> A thread-safe subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/core-2.2.0/Hash.html">Hash</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Map.html">Map</a> A hash-like object that should have much better performance characteristics, especially under high concurrency, than <code>Concurrent::Hash</code>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Tuple.html">Tuple</a> A fixed size array with volatile (synchronized, thread safe) getters/setters.</li>
+</ul>
+
+<p>Value objects inspired by other languages:</p>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Maybe.html">Maybe</a> A thread-safe, immutable object representing an optional value, based on
+<a href="https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html">Haskell Data.Maybe</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html">Delay</a> Lazy evaluation of a block yielding an immutable result. Based on Clojure&#39;s <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html">delay</a>.</li>
+</ul>
+
+<p>Structure classes derived from Ruby&#39;s <a href="http://ruby-doc.org/core-2.2.0/Struct.html">Struct</a>:</p>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmutableStruct.html">ImmutableStruct</a> Immutable struct where values are set at construction and cannot be changed later.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutableStruct.html">MutableStruct</a> Synchronized, mutable struct where values can be safely changed at any time.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SettableStruct.html">SettableStruct</a> Synchronized, write-once struct where values can be set at most once, either at construction or any time thereafter.</li>
+</ul>
+
+<p>Thread-safe variables:</p>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html">Agent</a>: A way to manage shared, mutable, <em>asynchronous</em>, independent state. Based on Clojure&#39;s <a href="http://clojure.org/agents">Agent</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html">Atom</a>: A way to manage shared, mutable, <em>synchronous</em>, independent state. Based on Clojure&#39;s <a href="http://clojure.org/atoms">Atom</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html">AtomicBoolean</a> A boolean value that can be updated atomically.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html">AtomicFixnum</a> A numeric value that can be updated atomically.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html">AtomicReference</a> An object reference that may be updated atomically.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html">Exchanger</a> A synchronization point at which threads can pair and swap elements within pairs. Based on Java&#39;s <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Exchanger.html">Exchanger</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html">MVar</a> A synchronized single element container. Based on Haskell&#39;s <a href="https://hackage.haskell.org/package/base-4.8.1.0/docs/Control-Concurrent-MVar.html">MVar</a> and Scala&#39;s <a href="http://docs.typelevel.org/api/scalaz/nightly/index.html#scalaz.concurrent.MVar$">MVar</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html">ThreadLocalVar</a> A variable where the value is different for each thread.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html">TVar</a> A transactional variable implementing software transactional memory (STM). Based on Clojure&#39;s <a href="http://clojure.org/refs">Ref</a>.</li>
+</ul>
+
+<h4>Java-inspired ThreadPools and Other Executors</h4>
+
+<ul>
+<li>See the <a href="http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html">thread pool</a> overview, which also contains a list of other Executors available.</li>
+</ul>
+
+<h4>Thread Synchronization Classes and Algorithms</h4>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html">CountDownLatch</a> A synchronization object that allows one thread to wait on multiple other threads.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html">CyclicBarrier</a> A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html">Event</a> Old school kernel-style event.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html">IVar</a> Similar to a &quot;future&quot; but can be manually assigned once, after which it becomes immutable.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html">ReadWriteLock</a> A lock that supports multiple readers but only one writer.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html">ReentrantReadWriteLock</a> A read/write lock with reentrant and upgrade features.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html">Semaphore</a> A counting-based locking mechanism that uses permits.</li>
+</ul>
+
+<h3>Edge Features</h3>
+
+<p>These are available in the <code>concurrent-ruby-edge</code> companion gem.</p>
+
+<p>These features are under active development and may change frequently. They are expected not to
+keep backward compatibility (there may also lack tests and documentation). Semantic versions will
+be obeyed though. Features developed in <code>concurrent-ruby-edge</code> are expected to move to <code>concurrent-ruby</code> when final.</p>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html">Promises Framework</a>:
+Unified implementation of futures and promises which combines features of previous <code>Future</code>,
+<code>Promise</code>, <code>IVar</code>, <code>Event</code>, <code>dataflow</code>, <code>Delay</code>, and <code>TimerTask</code> into a single framework. It extensively uses the
+new synchronization layer to make all the features <strong>non-blocking</strong> and <strong>lock-free</strong>, with the exception of obviously blocking
+operations like <code>#wait</code>, <code>#value</code>. It also offers better performance.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html">Actor</a>:
+Implements the Actor Model, where concurrent actors exchange messages.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html">Channel</a>:
+Communicating Sequential Processes (<a href="https://en.wikipedia.org/wiki/Communicating_sequential_processes">CSP</a>).
+Functionally equivalent to Go <a href="https://tour.golang.org/concurrency/2">channels</a> with additional
+inspiration from Clojure <a href="https://clojure.github.io/core.async/">core.async</a>.</li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html">LazyRegister</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/AtomicMarkableReference.html">AtomicMarkableReference</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html">LockFreeLinkedSet</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html">LockFreeStack</a></li>
+</ul>
+
+<h4>Statuses:</h4>
+
+<p><em>Why are these not in core?</em></p>
+
+<ul>
+<li><strong>Promises Framework</strong> - They are being finalized to be able to be moved to core. They&#39;ll deprecate old 
+implementation.</li>
+<li><strong>Actor</strong> - Partial documentation and tests; depends on new future/promise framework; stability is good.</li>
+<li><strong>Channel</strong> - Brand new implementation; partial documentation and tests; stability is good.</li>
+<li><strong>LazyRegister</strong> - Missing documentation and tests.</li>
+<li><strong>AtomicMarkableReference, LockFreeLinkedSet, LockFreeStack</strong> - Need real world battle testing.</li>
+</ul>
+
+<h2>Usage</h2>
+
+<p>Everything within this gem can be loaded simply by requiring it:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>To use the tools in the Edge gem it must be required separately:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent-edge</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>If the library does not behave as expected, <code>Concurrent.use_stdlib_logger(Logger::DEBUG)</code> could help to reveal the problem.</p>
+
+<h2>Installation</h2>
+
+<pre class="code shell"><code class="shell">gem install concurrent-ruby
+</code></pre>
+
+<p>or add the following line to Gemfile:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent-ruby</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>require:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>and run <code>bundle install</code> from your shell.</p>
+
+<h3>Edge Gem Installation</h3>
+
+<p>The Edge gem must be installed separately from the core gem:</p>
+
+<pre class="code shell"><code class="shell">gem install concurrent-ruby-edge
+</code></pre>
+
+<p>or add the following line to Gemfile:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent-ruby-edge</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>require:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent-edge</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>and run <code>bundle install</code> from your shell.</p>
+
+<h3>C Extensions for MRI</h3>
+
+<p>Potential performance improvements may be achieved under MRI by installing optional C extensions.
+To minimize installation errors the C extensions are available in the <code>concurrent-ruby-ext</code> extension
+gem. <code>concurrent-ruby</code> and <code>concurrent-ruby-ext</code> are always released together with same version.
+Simply install the extension gem too:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_gem'>gem</span> <span class='id identifier rubyid_install'>install</span> <span class='id identifier rubyid_concurrent'>concurrent</span><span class='op'>-</span><span class='id identifier rubyid_ruby'>ruby</span><span class='op'>-</span><span class='id identifier rubyid_ext'>ext</span>
+</code></pre>
+
+<p>or add the following line to Gemfile:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent-ruby-ext</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>and run <code>bundle install</code> from your shell.</p>
+
+<p>In code it is only necessary to</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>The <code>concurrent-ruby</code> gem will automatically detect the presence of the <code>concurrent-ruby-ext</code> gem
+and load the appropriate C extensions.</p>
+
+<h4>Note For gem developers</h4>
+
+<p>No gems should depend on <code>concurrent-ruby-ext</code>. Doing so will force C extensions on your users.
+The best practice is to depend on <code>concurrent-ruby</code> and let users to decide if they want C extensions.</p>
+
+<h2>Maintainers</h2>
+
+<ul>
+<li><a href="https://github.com/pitr-ch">Petr Chalupa</a> (lead maintainer)</li>
+<li><a href="https://github.com/jdantonio">Jerry D&#39;Antonio</a> (creator)</li>
+<li><a href="https://github.com/mighe">Michele Della Torre</a></li>
+<li><a href="https://github.com/chrisseaton">Chris Seaton</a></li>
+<li><a href="https://github.com/obrok">Paweł Obrok</a></li>
+<li><a href="https://github.com/lucasallan">Lucas Allan</a></li>
+</ul>
+
+<h3>Special Thanks</h3>
+
+<ul>
+<li><a href="https://github.com/bdurand">Brian Durand</a> for the <code>ref</code> gem</li>
+<li><a href="https://github.com/headius">Charles Oliver Nutter</a> for the <code>atomic</code> and <code>thread_safe</code> gems</li>
+<li><a href="https://github.com/thedarkone">thedarkone</a> for the <code>thread_safe</code> gem</li>
+</ul>
+
+<h2>License and Copyright</h2>
+
+<p><em>Concurrent Ruby</em> is free software released under the <a href="http://www.opensource.org/licenses/MIT">MIT License</a>.</p>
+
+<p>The <em>Concurrent Ruby</em> <a href="https://github.com/ruby-concurrency/concurrent-ruby/wiki/Logo">logo</a>
+was designed by <a href="https://twitter.com/zombyboy">David Jones</a>.
+It is Copyright &copy; 2014 <a href="https://twitter.com/jerrydantonio">Jerry D&#39;Antonio</a>. All Rights Reserved.</p>
+</div></div>
+
+    <div id="footer">
+  Generated on Sun Feb 26 18:16:34 2017 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.0).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

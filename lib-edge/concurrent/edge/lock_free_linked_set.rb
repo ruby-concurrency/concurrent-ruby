@@ -22,9 +22,9 @@ module Concurrent
     class LockFreeLinkedSet
       include Enumerable
 
-      # @!macro [attach] lock_free_linked_list_method_initialize
+      # @!macro lock_free_linked_list_method_initialize
       #
-      # @param [Fixnum] initial_size the size of the linked_list to initialize
+      #   @param [Fixnum] initial_size the size of the linked_list to initialize
       def initialize(initial_size = 0, val = nil)
         @head = Head.new
 
@@ -34,7 +34,7 @@ module Concurrent
         end
       end
 
-      # @!macro [attach] lock_free_linked_list_method_add
+      # @!macro lock_free_linked_list_method_add
       #
       #   Atomically adds the item to the set if it does not yet exist. Note:
       #   internally the set uses `Object#hash` to compare equality of items,
@@ -62,7 +62,7 @@ module Concurrent
         end
       end
 
-      # @!macro [attach] lock_free_linked_list_method_<<
+      # @!macro lock_free_linked_list_method_<<
       #
       #   Atomically adds the item to the set if it does not yet exist.
       #
@@ -74,7 +74,7 @@ module Concurrent
         self
       end
 
-      # @!macro [attach] lock_free_linked_list_method_contains
+      # @!macro lock_free_linked_list_method_contains
       #
       #   Atomically checks to see if the set contains an item. This method
       #   compares equality based on the `Object#hash` method, meaning that the
@@ -95,7 +95,7 @@ module Concurrent
         curr == item && !marked
       end
 
-      # @!macro [attach] lock_free_linked_list_method_remove
+      # @!macro lock_free_linked_list_method_remove
       #
       #   Atomically attempts to remove an item, comparing using `Object#hash`.
       #
@@ -121,7 +121,7 @@ module Concurrent
         end
       end
 
-      # @!macro [attach] lock_free_linked_list_method_each
+      # @!macro lock_free_linked_list_method_each
       #
       #   An iterator to loop through the set.
       #

@@ -16,7 +16,7 @@ Modern concurrency tools for Ruby. Inspired by
 [Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html),
 and classic concurrency patterns.
 
-<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
+<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc-source/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
 
 The design goals of this gem are:
 
@@ -58,7 +58,7 @@ other Ruby library, many of which support the mantra of
 Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and
 immutable variable types and data structures.
 
-We've also initiated discussion to document [memory model](doc/synchronization.md) of Ruby which 
+We've also initiated discussion to document [memory model](docs-source/synchronization.md) of Ruby which 
 would provide consistent behaviour and guarantees on all three of the main Ruby interpreters 
 (MRI/CRuby, JRuby, Rubinius, TruffleRuby).
 
@@ -323,13 +323,13 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 *   [Jerry D'Antonio](https://github.com/jdantonio) (creator)
 *   [Chris Seaton](https://github.com/chrisseaton)
 
-### Special Thanks
+### Special Thanks to
 
 *   [Brian Durand](https://github.com/bdurand) for the `ref` gem
 *   [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
 *   [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
-### Maintainers of the past
+and to the past maintainers
 
 *   [Michele Della Torre](https://github.com/mighe)
 *   [Paweł Obrok](https://github.com/obrok)

@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: tvar
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.tvar.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: tvar</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><p><code>TVar</code> and <code>atomically</code> implement a software transactional memory. A <code>TVar</code> is a single
+item container that always contains exactly one value. The <code>atomically</code> method
+allows you to modify a set of <code>TVar</code> objects with the guarantee that all of the
+updates are collectively atomic - they either all happen or none of them do -
+consistent - a <code>TVar</code> will never enter an illegal state - and isolated - atomic
+blocks never interfere with each other when they are running. You may recognise
+these properties from database transactions.</p>
+
+<p>There are some very important and unusual semantics that you must be aware of:</p>
+
+<ul>
+<li><p>Most importantly, the block that you pass to <code>atomically</code> may be executed more
+than once. In most cases your code should be free of side-effects, except for
+via <code>TVar</code>.</p></li>
+<li><p>If an exception escapes an <code>atomically</code> block it will abort the transaction.</p></li>
+<li><p>It is undefined behaviour to use <code>callcc</code> or <code>Fiber</code> with <code>atomically</code>.</p></li>
+<li><p>If you create a new thread within an <code>atomically</code>, it will not be part of
+the transaction. Creating a thread counts as a side-effect.</p></li>
+</ul>
+
+<p>We implement nested transactions by flattening.</p>
+
+<p>We only support strong isolation if you use the API correctly. In order words,
+we do not support strong isolation.</p>
+
+<p>Our implementation uses a very simple two-phased locking with versioned locks algorithm, as per [1]. In the future we will look at more advanced algorithms, contention management and using existing Java implementations when in JRuby.</p>
+
+<p>See:</p>
+
+<ol>
+<li> T. Harris, J. Larus, and R. Rajwar. Transactional Memory. Morgan &amp; Claypool, second edition, 2010.</li>
+</ol>
+
+<h2>Motivation</h2>
+
+<p>Consider an application that transfers money between bank accounts. We want to
+transfer money from one account to another. It is very important that we don&#39;t
+lose any money! But it is also important that we can handle many account
+transfers at the same time, so we run them concurrently, and probably also in
+parallel.</p>
+
+<p>This code shows us transferring ten pounds from one account to another.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_a'>a</span> <span class='op'>=</span> <span class='const'>BankAccount</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100_000</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_b'>b</span> <span class='op'>=</span> <span class='const'>BankAccount</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100</span><span class='rparen'>)</span>
+
+<span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+<span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+</code></pre>
+
+<p>Before we even start to talk about to talk about concurrency and parallelism, is
+this code safe? What happens if after removing money from account a, we get an
+exception? It&#39;s a slightly contrived example, but if the account totals were
+very large, adding to them could involve the stack allocation of a <code>BigNum</code>, and
+so could cause out of memory exceptions.  In that case the money would have
+disappeared from account a, but not appeared in account b. Disaster!</p>
+
+<p>So what do we really need to do?</p>
+
+<pre class="code ruby"><code class="ruby">a = BankAccount.new(100_000)
+b = BankAccount.new(100)
+
+original_a = a.value
+a.value -= 10
+
+begin
+  b.value += 10
+rescue e =&gt;
+  a.value = original_a
+  raise e
+end
+</code></pre>
+
+<p>This rescues any exceptions raised when setting b and will roll back the change
+we have already made to b. We&#39;ll keep this rescue code in mind, but we&#39;ll leave
+it out of future examples for simplicity.</p>
+
+<p>That might have made the code work when it only runs sequentially. Lets start to
+consider some concurrency. It&#39;s obvious that we want to make the transfer of
+money mutually exclusive with any other transfers - in order words it is a
+critical section.</p>
+
+<p>The usual solution to this would be to use a lock.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+  <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>That should work. Except we said we&#39;d like these transfer to run concurrently,
+and in parallel. With a single lock like that we&#39;ll only let one transfer take
+place at a time. Perhaps we need more locks? We could have one per account:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+    <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>However this is vulnerable to deadlock. If we tried to transfer from a to b, at
+the same time as from b to a, it&#39;s possible that the first transfer locks a, the
+second transfer locks b, and then they both sit there waiting forever to get the
+other lock. Perhaps we can solve that by applying a total ordering to the locks
+and always acquire them in the same order?</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_locks_needed'>locks_needed</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='comma'>,</span> <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='rbracket'>]</span>
+<span class='id identifier rubyid_locks_in_order'>locks_in_order</span> <span class='op'>=</span> <span class='id identifier rubyid_locks_needed'>locks_needed</span><span class='period'>.</span><span class='id identifier rubyid_sort'>sort</span><span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_x'>x</span><span class='comma'>,</span> <span class='id identifier rubyid_y'>y</span><span class='op'>|</span> <span class='id identifier rubyid_x'>x</span><span class='period'>.</span><span class='id identifier rubyid_number'>number</span> <span class='op'>&lt;=&gt;</span> <span class='id identifier rubyid_y'>y</span><span class='period'>.</span><span class='id identifier rubyid_number'>number</span> <span class='rbrace'>}</span>
+
+<span class='id identifier rubyid_locks_in_order'>locks_in_order</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_locks_in_order'>locks_in_order</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+    <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>That might work. But we need to know exactly what locks we&#39;re going to need
+before we start. If there were conditions in side the transfer this might be
+more complicated. We also need to remember the rescue code we had above to deal
+with exceptions. This is getting out of hand - and it&#39;s where <code>TVar</code> comes in.</p>
+
+<p>We&#39;ll model the accounts as <code>TVar</code> - transactional variable, and instead of
+locks we&#39;ll use <code>Concurrent::atomically</code>.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_a'>a</span> <span class='op'>=</span> <span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100_000</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_b'>b</span> <span class='op'>=</span> <span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100</span><span class='rparen'>)</span>
+
+<span class='const'>Concurrent</span><span class='op'>::</span><span class='id identifier rubyid_atomically'>atomically</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+  <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>That short piece of code effectively solves all the concerns we identified
+above. How it does it is described in the reference above. You just need to be
+happy that any two <code>atomically</code> blocks (we call them transactions) that use an
+overlapping set of <code>TVar</code> objects will appear to have happened as if there was a
+big global lock on them, and that if any exception is raised in the block, it
+will be as if the block never happened. But also keep in mind the important
+points we detailed right at the start of the article about side effects and
+repeated execution.</p>
+
+<h2>Evaluation</h2>
+
+<p>We evaluated the performance of our <code>TVar</code> implementation using a bank account simulation with a range of synchronisation implementations. The simulation maintains a set of bank account totals, and runs transactions that either get a summary statement of multiple accounts (a read-only operation) or transfers a sum from one account to another (a read-write operation).</p>
+
+<p>We implemented a bank that does not use any synchronisation (and so creates inconsistent totals in accounts), one that uses a single global (or &#39;coarse&#39;) lock (and so won&#39;t scale at all), one that uses one lock per account (and so has a complicated system for locking in the correct order) and one using our <code>TVar</code> and <code>atomically</code>.</p>
+
+<p>We ran 1 million transactions divided equally between a varying number of threads on a system that has at least that many physical cores. The transactions are made up of a varying mixture of read-only and read-write transactions. We ran each set of transactions thirty times, discarding the first ten and then taking an algebraic mean. These graphs show only the simple mean. Our <code>tvars-experiments</code> branch includes the benchmark used, full details of the test system, and all the raw data.</p>
+
+<p>Using JRuby using 75% read-write transactions, we can compare how the different implementations of bank accounts scales to more cores. That is, how much faster it runs if you use more cores.</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-scalability.png" alt=""></p>
+
+<p>We see that the coarse lock implementation does not scale at all, and in fact with more cores only wastes more time in contention for the single global lock. We see that the unsynchronised implementation doesn&#39;t seem to scale well - which is strange as there should be no overhead, but we&#39;ll explain that in a second. We see that the fine lock implementation seems to scale better, and that the <code>TVar</code> implementation scales the best.</p>
+
+<p>So the <code>TVar</code> implementation <em>scales</em> very well, but how absolutely fast is it?</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-absolute.png" alt=""></p>
+
+<p>Well, that&#39;s the downside. The unsynchronised implementation doesn&#39;t scale well because it&#39;s so fast in the first place, and probably because we&#39;re bound on access to the memory - the threads don&#39;t have much work to do, so no matter how many threads we have the system is almost always reaching out to the L3 cache or main memory. However remember that the unsynchronised implementation isn&#39;t correct - the totals are wrong at the end. The coarse lock implementation has an overhead of locking and unlocking. The fine lock implementation has a greater overhead as as the locking scheme is complicated to avoid deadlock. It scales better, however, actually allowing transactions to be processed in parallel. The <code>TVar</code> implementation has a greater overhead still - and it&#39;s pretty huge. That overhead is the cost for the simple programming model of an atomic block.</p>
+
+<p>So that&#39;s what <code>TVar</code> gives you at the moment - great scalability, but it has a high overhead. That&#39;s pretty much the state of software transactional memory in general. Perhaps hardware transactional memory will help us, or perhaps we&#39;re happy anyway with the simpler and safer programming model that the <code>TVar</code> gives us.</p>
+
+<p>We can also use this experiment to compare different implementations of Ruby. We looked at just the <code>TVar</code> implementation and compared MRI 2.1.1, Rubinius 2.2.6, and JRuby 1.7.11, again at 75% write transactions.</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/ruby-scalability.png" alt=""></p>
+
+<p>We see that MRI provides no scalability, due to the global interpreter lock (GIL). JRuby seems to scale better than Rubinius for this workload (there are of course other workloads).</p>
+
+<p>As before we should also look at the absolute performance, not just the scalability.</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/ruby-absolute.png" alt=""></p>
+
+<p>Again, JRuby seems to be faster than Rubinius for this experiment. Interestingly, Rubinius looks slower than MRI for 1 core, but we can get around that by using more cores.</p>
+
+<p>We&#39;ve used 75% read-write transactions throughout. We&#39;ll just take a quick look at how the scalability varies for different workloads, for scaling between 1 and 2 threads. We&#39;ll admit that we used 75% read-write just because it emphasised the differences.</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-write-proportion-scalability.png" alt=""></p>
+
+<p>Finally, we can also run on a larger machine. We repeated the experiment using a machine with 64 physical cores and JRuby.</p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-scalability.png" alt=""></p>
+
+<p><img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc/images/tvar/implementation-absolute.png" alt=""></p>
+
+<p>Here you can see that <code>TVar</code> does become absolutely faster than using a global lock, at the slightly ridiculously thread-count of 50. It&#39;s probably not statistically significant anyway.</p>
+</div></div>
+
+    <div id="footer">
+  Generated on Thu Nov 27 08:56:23 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.1.2).
+</div>
+
+<script>
+//  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+//    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+//      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+//  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+//
+//  ga('create', 'UA-4005004-8', 'pitr.ch');
+//  ga('send', 'pageview');
+</script>
+
+  </body>
+</html>

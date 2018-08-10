@@ -8,7 +8,7 @@ require 'concurrent/executor/cached_thread_pool'
 
 module Concurrent
 
-  # {include:file:doc/channel.md}
+  # {include:file:docs-source/channel.md}
   # @!macro warn.edge
   class Channel
     extend Forwardable

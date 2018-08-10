@@ -142,7 +142,7 @@ module Concurrent
 
   if defined? Concurrent::CAtomicBoolean
 
-    RSpec.describe CAtomicBoolean, ext: true do
+    RSpec.describe CAtomicBoolean do
       it_should_behave_like :atomic_boolean
     end
   end
@@ -166,7 +166,7 @@ module Concurrent
         expect(AtomicBoolean.ancestors).to include(JavaAtomicBoolean)
       end
     elsif defined? Concurrent::CAtomicBoolean
-      it 'inherits from CAtomicBoolean', ext: true do
+      it 'inherits from CAtomicBoolean' do
         expect(AtomicBoolean.ancestors).to include(CAtomicBoolean)
       end
     else

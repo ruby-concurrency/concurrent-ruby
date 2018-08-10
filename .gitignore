@@ -7,7 +7,6 @@
 
 # Yard documentation
 /.yardoc
-/yardoc
 
 # IDEs' files
 *.iml

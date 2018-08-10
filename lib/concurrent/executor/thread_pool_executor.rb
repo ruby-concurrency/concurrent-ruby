@@ -15,7 +15,7 @@ module Concurrent
                                      end
   private_constant :ThreadPoolExecutorImplementation
 
-  # @!macro [attach] thread_pool_executor
+  # @!macro thread_pool_executor
   #
   #   An abstraction composed of one or more threads and a task queue. Tasks
   #   (blocks or `proc` objects) are submitted to the pool and added to the queue.
@@ -55,12 +55,12 @@ module Concurrent
   # @!macro thread_pool_executor_public_api
   class ThreadPoolExecutor < ThreadPoolExecutorImplementation
 
-    # @!macro [new] thread_pool_executor_method_initialize
+    # @!macro thread_pool_executor_method_initialize
     #
     #   Create a new thread pool.
-    #  
+    #
     #   @param [Hash] opts the options which configure the thread pool.
-    #  
+    #
     #   @option opts [Integer] :max_threads (DEFAULT_MAX_POOL_SIZE) the maximum
     #     number of threads to be created
     #   @option opts [Integer] :min_threads (DEFAULT_MIN_POOL_SIZE) When a new task is submitted
@@ -73,12 +73,12 @@ module Concurrent
     #   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
     #     tasks that are received when the queue size has reached
     #     `max_queue` or the executor has shut down
-    #  
+    #
     #   @raise [ArgumentError] if `:max_threads` is less than one
     #   @raise [ArgumentError] if `:min_threads` is less than zero
     #   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
     #     in `FALLBACK_POLICIES`
-    #  
+    #
     #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html
 
     # @!method initialize(opts = {})

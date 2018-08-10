@@ -1,16 +1,11 @@
-require 'concurrent/synchronization'
-require 'concurrent/atomic_reference/direct_update'
-require 'concurrent/atomic_reference/numeric_cas_wrapper'
-
 module Concurrent
 
-  # @!macro atomic_reference
-  #
   # @!visibility private
   # @!macro internal_implementation_note
   class MutexAtomicReference < Synchronization::LockableObject
-    include Concurrent::AtomicDirectUpdate
-    include Concurrent::AtomicNumericCompareAndSetWrapper
+    include AtomicDirectUpdate
+    include AtomicNumericCompareAndSetWrapper
+    alias_method :compare_and_swap, :compare_and_set
 
     # @!macro atomic_reference_method_initialize
     def initialize(value = nil)

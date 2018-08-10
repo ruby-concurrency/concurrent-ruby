@@ -8,7 +8,7 @@ require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
-  # @!macro [attach] exchanger
+  # @!macro exchanger
   #
   #   A synchronization point at which threads can pair and swap elements within
   #   pairs. Each thread presents some object on entry to the exchange method,
@@ -24,9 +24,6 @@ module Concurrent
   #   will remain correct.
   #
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Exchanger.html java.util.concurrent.Exchanger
-  #
-  #   @!macro edge_warning
-  #
   #   @example
   #
   #     exchanger = Concurrent::Exchanger.new
@@ -36,7 +33,7 @@ module Concurrent
   #       Thread.new { puts "second: " << exchanger.exchange('bar', 1) } #=> "second: foo"
   #     ]
   #     threads.each {|t| t.join(2) }
-  #
+
   # @!visibility private
   class AbstractExchanger < Synchronization::Object
 
@@ -44,12 +41,11 @@ module Concurrent
     CANCEL = ::Object.new
     private_constant :CANCEL
 
-    # @!macro [attach] exchanger_method_initialize
     def initialize
       super
     end
 
-    # @!macro [attach] exchanger_method_do_exchange
+    # @!macro exchanger_method_do_exchange
     #
     #   Waits for another thread to arrive at this exchange point (unless the
     #   current thread is interrupted), and then transfers the given object to
@@ -61,7 +57,7 @@ module Concurrent
     #   @param [Object] value the value to exchange with another thread
     #   @param [Numeric, nil] timeout in seconds, `nil` blocks indefinitely
     #
-    # @!macro [attach] exchanger_method_exchange
+    # @!macro exchanger_method_exchange
     #
     #   In some edge cases when a `timeout` is given a return value of `nil` may be
     #   ambiguous. Specifically, if `nil` is a valid value in the exchange it will
@@ -75,8 +71,7 @@ module Concurrent
     end
 
     # @!macro exchanger_method_do_exchange
-    #
-    # @!macro [attach] exchanger_method_exchange_bang
+    # @!macro exchanger_method_exchange_bang
     #
     #   On timeout a {Concurrent::TimeoutError} exception will be raised.
     #
@@ -91,8 +86,7 @@ module Concurrent
     end
 
     # @!macro exchanger_method_do_exchange
-    #
-    # @!macro [attach] exchanger_method_try_exchange
+    # @!macro exchanger_method_try_exchange
     #
     #   The return value will be a {Concurrent::Maybe} set to `Just` on success or
     #   `Nothing` on timeout.
@@ -130,7 +124,6 @@ module Concurrent
     end
   end
 
-  # @!macro exchanger
   # @!macro internal_implementation_note
   # @!visibility private
   class RubyExchanger < AbstractExchanger
@@ -163,7 +156,6 @@ module Concurrent
     end
     private_constant :Node
 
-    # @!macro exchanger_method_initialize
     def initialize
       super
     end
@@ -298,12 +290,10 @@ module Concurrent
 
   if Concurrent.on_jruby?
 
-    # @!macro exchanger
     # @!macro internal_implementation_note
     # @!visibility private
     class JavaExchanger < AbstractExchanger
 
-      # @!macro exchanger_method_initialize
       def initialize
         @exchanger = java.util.concurrent.Exchanger.new
       end
@@ -341,7 +331,7 @@ module Concurrent
   class Exchanger < ExchangerImplementation
 
     # @!method initialize
-    #   @!macro exchanger_method_initialize
+    #   Creates exchanger instance
 
     # @!method exchange(value, timeout = nil)
     #   @!macro exchanger_method_do_exchange

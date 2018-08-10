@@ -165,7 +165,7 @@ module Concurrent
 
     # Create a new TimerTask with the given task and configuration.
     #
-    # @!macro [attach] timer_task_initialize
+    # @!macro timer_task_initialize
     #   @param [Hash] opts the options defining task execution.
     #   @option opts [Integer] :execution_interval number of seconds between
     #     task executions (default: EXECUTION_INTERVAL)

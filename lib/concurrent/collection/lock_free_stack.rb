@@ -28,7 +28,8 @@ module Concurrent
 
     EMPTY = Empty[nil, nil]
 
-    private(*attr_atomic(:head))
+    attr_atomic(:head)
+    private :head, :head=, :swap_head, :compare_and_set_head, :update_head
 
     def self.of1(value)
       new Node[value, EMPTY]

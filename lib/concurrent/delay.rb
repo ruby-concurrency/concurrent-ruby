@@ -32,7 +32,7 @@ module Concurrent
   #
   # @!macro copy_options
   #
-  # @!macro [attach] delay_note_regarding_blocking
+  # @!macro delay_note_regarding_blocking
   #   @note The default behavior of `Delay` is to block indefinitely when
   #     calling either `value` or `wait`, executing the delayed operation on
   #     the current thread. This makes the `timeout` value completely

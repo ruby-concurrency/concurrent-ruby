@@ -15,13 +15,13 @@ module Concurrent
       # used as a channel buffer should extend this class.
       class Base < Synchronization::LockableObject
 
-        # @!macro [attach] channel_buffer_capacity_reader
+        # @!macro channel_buffer_capacity_reader
         #
         #   The maximum number of values which can be {#put} onto the buffer
         #   it becomes full.
         attr_reader :capacity
 
-        # @!macro [attach] channel_buffer_initialize
+        # @!macro channel_buffer_initialize
         #
         #   Creates a new buffer.
         def initialize(*args)
@@ -35,7 +35,7 @@ module Concurrent
           end
         end
 
-        # @!macro [attach] channel_buffer_blocking_question
+        # @!macro channel_buffer_blocking_question
         #
         #   Predicate indicating if this buffer will block {#put} operations
         #   once it reaches its maximum capacity.
@@ -45,14 +45,14 @@ module Concurrent
           true
         end
 
-        # @!macro [attach] channel_buffer_size_reader
+        # @!macro channel_buffer_size_reader
         #
         #   The number of items currently in the buffer.
         def size
           synchronize { ns_size }
         end
 
-        # @!macro [attach] channel_buffer_empty_question
+        # @!macro channel_buffer_empty_question
         #
         #   Predicate indicating if the buffer is empty.
         #
@@ -63,7 +63,7 @@ module Concurrent
           synchronize { ns_empty? }
         end
 
-        # @!macro [attach] channel_buffer_full_question
+        # @!macro channel_buffer_full_question
         #
         #   Predicate indicating if the buffer is full.
         #
@@ -74,7 +74,7 @@ module Concurrent
           synchronize { ns_full? }
         end
 
-        # @!macro [attach] channel_buffer_put
+        # @!macro channel_buffer_put
         #
         #   Put an item onto the buffer if possible. If the buffer is open
         #   but not able to accept the item the calling thread will block
@@ -89,7 +89,7 @@ module Concurrent
           raise NotImplementedError
         end
 
-        # @!macro [attach] channel_buffer_offer
+        # @!macro channel_buffer_offer
         #
         #   Put an item onto the buffer if possible. If the buffer is open but
         #   unable to add an item, probably due to being full, the method will
@@ -107,7 +107,7 @@ module Concurrent
           raise NotImplementedError
         end
 
-        # @!macro [attach] channel_buffer_take
+        # @!macro channel_buffer_take
         #
         #   Take an item from the buffer if one is available. If the buffer
         #   is open and no item is available the calling thread will block
@@ -123,7 +123,7 @@ module Concurrent
           raise NotImplementedError
         end
 
-        # @!macro [attach] channel_buffer_next
+        # @!macro channel_buffer_next
         #
         #   Take the next "item" from the buffer and also return a boolean
         #   indicating if "more" items can be taken. Used for iterating
@@ -152,7 +152,7 @@ module Concurrent
           raise NotImplementedError
         end
 
-        # @!macro [attach] channel_buffer_poll
+        # @!macro channel_buffer_poll
         #
         #   Take the next item from the buffer if one is available else return
         #   immediately. Failing to return a value does not necessarily
@@ -166,7 +166,7 @@ module Concurrent
           raise NotImplementedError
         end
 
-        # @!macro [attach] channel_buffer_close
+        # @!macro channel_buffer_close
         #
         #   Close the buffer, preventing new items from being added. Once a
         #   buffer is closed it cannot be opened again.
@@ -179,7 +179,7 @@ module Concurrent
           end
         end
 
-        # @!macro [attach] channel_buffer_closed_question
+        # @!macro channel_buffer_closed_question
         #
         #   Predicate indicating is this buffer closed.
         #

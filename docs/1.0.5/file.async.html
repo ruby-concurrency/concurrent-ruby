@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: async
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.async.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: async</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><p>A mixin module that provides simple asynchronous behavior to any standard
+class/object or object. </p>
+
+<pre class="code cucumber"><code class="cucumber">Feature:
+  As a stateful, plain old Ruby class/object
+  I want safe, asynchronous behavior
+  So my long-running methods don&#39;t block the main thread
+</code></pre>
+
+<p>Stateful, mutable objects must be managed carefully when used asynchronously.
+But Ruby is an object-oriented language so designing with objects and classes
+plays to Ruby&#39;s strengths and is often more natural to many Ruby programmers.
+The <code>Async</code> module is a way to mix simple yet powerful asynchronous capabilities
+into any plain old Ruby object or class. These capabilities provide a reasonable
+level of thread safe guarantees when used correctly.</p>
+
+<p>When this module is mixed into a class or object it provides to new methods:
+<code>async</code> and <code>await</code>. These methods are thread safe with respect to the enclosing
+object. The former method allows methods to be called asynchronously by posting
+to the global thread pool. The latter allows a method to be called synchronously
+on the current thread but does so safely with respect to any pending asynchronous
+method calls. Both methods return an <code>Obligation</code> which can be inspected for
+the result of the method call. Calling a method with <code>async</code> will return a
+<code>:pending</code> <code>Obligation</code> whereas <code>await</code> will return a <code>:complete</code> <code>Obligation</code>.</p>
+
+<p>Very loosely based on the <code>async</code> and <code>await</code> keywords in C#.</p>
+
+<h4>An Important Note About Initialization</h4>
+
+<blockquote>
+<p>This module depends on several internal synchronization objects that
+must be initialized prior to calling any of the async/await/executor methods.
+The best practice is to call <code>init_mutex</code> from within the constructor
+of the including class. A less ideal but acceptable practice is for the
+thread creating the asynchronous object to explicitly call the <code>init_mutex</code>
+method prior to calling any of the async/await/executor methods. If
+<code>init_mutex</code> is <em>not</em> called explicitly the async/await/executor methods
+will raise a <code>Concurrent::InitializationError</code>. This is the only way 
+thread-safe initialization can be guaranteed.</p>
+</blockquote>
+
+<h4>An Important Note About Thread Safe Guarantees</h4>
+
+<blockquote>
+<p>Thread safe guarantees can only be made when asynchronous method calls
+are not mixed with synchronous method calls. Use only synchronous calls
+when the object is used exclusively on a single thread. Use only
+<code>async</code> and <code>await</code> when the object is shared between threads. Once you
+call a method using <code>async</code>, you should no longer call any methods
+directly on the object. Use <code>async</code> and <code>await</code> exclusively from then on.
+With careful programming it is possible to switch back and forth but it&#39;s
+also very easy to create race conditions and break your application.
+Basically, it&#39;s &quot;async all the way down.&quot;</p>
+</blockquote>
+
+<h3>Examples</h3>
+
+<h4>Defining an asynchronous class</h4>
+
+<pre class="code cucumber"><code class="cucumber">Scenario: Defining an asynchronous class
+  Given a class definition
+  When I include the Concurrent::Async module
+  Then an `async` method is defined for all objects of the class
+  And an `await` method is defined for all objects of the class
+
+Scenario: Calling the `async` method
+  Given a class which includes Concurrent::Async module
+  When I call a normal method through the `async` delegate method
+  Then the method returns a Concurrent::Future object
+  And the method is executed on a background thread using the global thread pool
+  And the current thread does not block
+  And thread safety is provided with respect to other `async` and `await` calls
+  And the returned future can be interrogated for the status of the method call
+  And the returned future will eventually contain the `value` of the method call
+  Or the returned future will eventually contain the `reason` the method call failed
+
+Scenario: Calling the `await` method
+  Given a class which includes Concurrent::Async module
+  When I call a normal method through the `await` delegate method
+  Then the method returns a Concurrent::IVar object
+  And the method is executed on the current thread
+  And thread safety is provided with respect to other `async` and `await` calls
+  And the returned ivar will be in the :fulfilled state
+  Or the returned ivar will be in the :rejected state
+  And the returned ivar will immediately contain the `value` of the method call
+  Or the returned ivar will immediately contain the `reason` the method call failed
+</code></pre>
+
+<pre class="code ruby"><code class="ruby"><span class='kw'>class</span> <span class='const'>Echo</span>
+  <span class='id identifier rubyid_include'>include</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Async</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+    <span class='id identifier rubyid_init_mutex'>init_mutex</span> <span class='comment'># initialize the internal synchronization objects
+</span>  <span class='kw'>end</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_echo'>echo</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='id identifier rubyid_rand'>rand</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_print'>print</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_horn'>horn</span> <span class='op'>=</span> <span class='const'>Echo</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='id identifier rubyid_horn'>horn</span><span class='period'>.</span><span class='id identifier rubyid_echo'>echo</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>zero</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='comment'># synchronous, not thread-safe
+</span>
+<span class='id identifier rubyid_horn'>horn</span><span class='period'>.</span><span class='id identifier rubyid_async'>async</span><span class='period'>.</span><span class='id identifier rubyid_echo'>echo</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>one</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='comment'># asynchronous, non-blocking, thread-safe
+</span><span class='id identifier rubyid_horn'>horn</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span><span class='period'>.</span><span class='id identifier rubyid_echo'>echo</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>two</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='comment'># synchronous, blocking, thread-safe
+</span></code></pre>
+
+<h4>Monkey-patching an existing object</h4>
+
+<pre class="code cucumber"><code class="cucumber">Scenario: Monkey-patching an existing object
+  Given an object of a class that does not include the Concurrent::Async module
+  When I extend the object with the Concurrent::Async module
+  Then an `async` method is monkey-patched onto the object
+  And an `await` method is monkey-patched onto the object
+  And the object behaved as though Concurrent::Async were included in the class
+  And the `async` and `await` methods perform as expected
+  And no other objects of that class are affected
+</code></pre>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_numbers'>numbers</span> <span class='op'>=</span> <span class='int'>1_000_000</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_collect'>collect</span><span class='lbrace'>{</span> <span class='id identifier rubyid_rand'>rand</span> <span class='rbrace'>}</span>
+<span class='id identifier rubyid_numbers'>numbers</span><span class='period'>.</span><span class='id identifier rubyid_extend'>extend</span><span class='lparen'>(</span><span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Async</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_numbers'>numbers</span><span class='period'>.</span><span class='id identifier rubyid_init_mutex'>init_mutex</span> <span class='comment'># initialize the internal synchronization objects
+</span>
+<span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='id identifier rubyid_numbers'>numbers</span><span class='period'>.</span><span class='id identifier rubyid_async'>async</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span>
+<span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span> <span class='comment'>#=&gt; :pending
+</span>
+<span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='int'>2</span><span class='rparen'>)</span>
+
+<span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span> <span class='comment'>#=&gt; :fulfilled
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'>#=&gt; 0.999999138918843
+</span></code></pre>
+</div></div>
+
+    <div id="footer">
+  Generated on Thu Nov 27 08:56:23 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.1.2).
+</div>
+
+<script>
+//  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+//    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+//      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+//  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+//
+//  ga('create', 'UA-4005004-8', 'pitr.ch');
+//  ga('send', 'pageview');
+</script>
+
+  </body>
+</html>

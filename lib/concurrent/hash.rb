@@ -2,52 +2,61 @@ require 'concurrent/utility/engine'
 require 'concurrent/thread_safe/util'
 
 module Concurrent
-  case
-  when Concurrent.on_cruby?
 
-    # @!macro [attach] concurrent_hash
-    #
-    #   A thread-safe subclass of Hash. This version locks against the object
-    #   itself for every method call, ensuring only one thread can be reading
-    #   or writing at a time. This includes iteration methods like `#each`,
-    #   which takes the lock repeatedly when reading an item.
-    #
-    #   @see http://ruby-doc.org/core-2.2.0/Hash.html Ruby standard library `Hash`
-    class Hash < ::Hash
-    end
+  # @!macro concurrent_hash
+  #
+  #   A thread-safe subclass of Hash. This version locks against the object
+  #   itself for every method call, ensuring only one thread can be reading
+  #   or writing at a time. This includes iteration methods like `#each`,
+  #   which takes the lock repeatedly when reading an item.
+  #
+  #   @see http://ruby-doc.org/core-2.2.0/Hash.html Ruby standard library `Hash`
 
-  when Concurrent.on_jruby?
-    require 'jruby/synchronized'
+  # @!macro internal_implementation_note
+  HashImplementation = case
+                       when Concurrent.on_cruby?
+                         # Because MRI never runs code in parallel, the existing
+                         # non-thread-safe structures should usually work fine.
+                         ::Hash
 
-    # @!macro concurrent_hash
-    class Hash < ::Hash
-      include JRuby::Synchronized
-    end
+                       when Concurrent.on_jruby?
+                         require 'jruby/synchronized'
 
-  when Concurrent.on_rbx?
-    require 'monitor'
-    require 'concurrent/thread_safe/util/data_structures'
+                         # @!macro concurrent_hash
+                         class JRubyHash < ::Hash
+                           include JRuby::Synchronized
+                         end
+                         JRubyHash
 
-    # @!macro concurrent_hash
-    class Hash < ::Hash
-    end
+                       when Concurrent.on_rbx?
+                         require 'monitor'
+                         require 'concurrent/thread_safe/util/data_structures'
 
-    ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Hash
+                         # @!macro concurrent_hash
+                         class RbxHash < ::Hash
+                         end
+                         ThreadSafe::Util.make_synchronized_on_rbx RbxHash
+                         RbxHash
 
-  when Concurrent.on_truffleruby?
-    require 'concurrent/thread_safe/util/data_structures'
+                       when Concurrent.on_truffleruby?
+                         require 'concurrent/thread_safe/util/data_structures'
 
-    # @!macro concurrent_hash
-    class Hash < ::Hash
-    end
+                         # @!macro concurrent_hash
+                         class TruffleRubyHash < ::Hash
+                         end
 
-    ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Hash
+                         ThreadSafe::Util.make_synchronized_on_truffleruby TruffleRubyHash
+                         TruffleRubyHash
 
-  else
-    warn 'Possibly unsupported Ruby implementation'
-    class Hash < ::Hash
-    end
+                       else
+                         warn 'Possibly unsupported Ruby implementation'
+                         ::Hash
+                       end
+  private_constant :HashImplementation
 
+  # @!macro concurrent_hash
+  class Hash < HashImplementation
   end
+
 end
 

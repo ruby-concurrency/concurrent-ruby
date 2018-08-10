@@ -86,15 +86,20 @@ module Concurrent
         # @!visibility private
         class Cell < Concurrent::AtomicReference
 
-          # TODO: this only adds padding after the :value slot, need to find a way to add padding before the slot
-          # @!visibility private
-          attr_reader *(12.times.collect{ |i| "padding_#{i}".to_sym })
-
           alias_method :cas, :compare_and_set
 
           def cas_computed
             cas(current_value = value, yield(current_value))
           end
+
+          # @!visibility private
+          def self.padding
+            # TODO: this only adds padding after the :value slot, need to find a way to add padding before the slot
+            # TODO (pitr-ch 28-Jul-2018): the padding instance vars may not be created
+            # hide from yardoc in a method
+            attr_reader *(12.times.collect{ |i| "padding_#{i}".to_sym })
+          end
+          padding
         end
 
         extend Volatile

@@ -6,7 +6,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] count_down_latch_method_initialize
+  # @!macro count_down_latch_method_initialize
   #
   #   Create a new `CountDownLatch` with the initial `count`.
   #
@@ -14,7 +14,7 @@ module Concurrent
   #
   #   @raise [ArgumentError] if `count` is not an integer or is less than zero
 
-  # @!macro [new] count_down_latch_method_wait
+  # @!macro count_down_latch_method_wait
   #
   #   Block on the latch until the counter reaches zero or until `timeout` is reached.
   #
@@ -22,12 +22,12 @@ module Concurrent
   #     to block indefinitely
   #   @return [Boolean] `true` if the `count` reaches zero else false on `timeout`
 
-  # @!macro [new] count_down_latch_method_count_down
+  # @!macro count_down_latch_method_count_down
   #
   #   Signal the latch to decrement the counter. Will signal all blocked threads when
   #   the `count` reaches zero.
 
-  # @!macro [attach] count_down_latch_method_count
+  # @!macro count_down_latch_method_count
   #
   #   The current value of the counter.
   #
@@ -35,7 +35,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] count_down_latch_public_api
+  # @!macro count_down_latch_public_api
   #
   #   @!method initialize(count = 1)
   #     @!macro count_down_latch_method_initialize
@@ -61,7 +61,7 @@ module Concurrent
                                  end
   private_constant :CountDownLatchImplementation
 
-  # @!macro [attach] count_down_latch
+  # @!macro count_down_latch
   #
   #   A synchronization object that allows one thread to wait on multiple other threads.
   #   The thread that will wait creates a `CountDownLatch` and sets the initial value

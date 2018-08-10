@@ -31,8 +31,10 @@ require 'rake_compiler_dock'
 namespace :repackage do
   desc '- with Windows fat distributions'
   task :all do
-    sh 'bundle package'
-    RakeCompilerDock.exec 'support/cross_building.sh'
+    Dir.chdir(__dir__) do
+      sh 'bundle package'
+      RakeCompilerDock.exec 'support/cross_building.sh'
+    end
   end
 end
 
@@ -65,12 +67,14 @@ begin
 
     desc '- test packaged and installed gems instead of local files'
     task :installed => :repackage do
-      sh 'gem install pkg/concurrent-ruby-1.1.0.pre1.gem'
-      sh 'gem install pkg/concurrent-ruby-ext-1.1.0.pre1.gem'
-      sh 'gem install pkg/concurrent-ruby-edge-0.4.0.pre1.gem'
-      ENV['NO_PATH'] = 'true'
-      sh 'bundle install'
-      sh 'bundle exec rake spec:ci'
+      Dir.chdir(__dir__) do
+        sh 'gem install pkg/concurrent-ruby-1.1.0.pre1.gem'
+        sh 'gem install pkg/concurrent-ruby-ext-1.1.0.pre1.gem' if Concurrent.on_cruby?
+        sh 'gem install pkg/concurrent-ruby-edge-0.4.0.pre1.gem'
+        ENV['NO_PATH'] = 'true'
+        sh 'bundle install'
+        sh 'bundle exec rake spec:ci'
+      end
     end
   end
 
@@ -87,56 +91,126 @@ begin
   require 'md_ruby_eval'
   require_relative 'support/yard_full_types'
 
-  root = File.expand_path File.dirname(__FILE__)
+  common_yard_options = ['--no-yardopts',
+                         '--no-document',
+                         '--no-private',
+                         '--embed-mixins',
+                         '--markup', 'markdown',
+                         '--title', 'Concurrent Ruby',
+                         '--template', 'default',
+                         '--template-path', 'yard-template',
+                         '--default-return', 'undocumented',]
 
-  cmd = lambda do |command|
-    puts ">> executing: #{command}"
-    puts ">>        in: #{Dir.pwd}"
-    system command or raise "#{command} failed"
-  end
-
-  yard_doc        = YARD::Rake::YardocTask.new(:yard)
-  yard_doc.before = -> do
-    Dir.chdir File.join(root, 'doc') do
-      cmd.call 'bundle exec md-ruby-eval --auto'
-    end
-  end
+  desc 'Generate YARD Documentation (signpost, master)'
+  task :yard => ['yard:signpost', 'yard:master']
 
   namespace :yard do
 
-    desc 'Pushes generated documentation to github pages: http://ruby-concurrency.github.io/concurrent-ruby/'
-    task :push => [:setup, :yard] do
-
-      message = Dir.chdir(root) do
-        `git log -n 1 --oneline`.strip
+    desc '- eval markdown files'
+    task :eval_md do
+      Dir.chdir File.join(__dir__, 'docs-source') do
+        sh 'bundle exec md-ruby-eval --auto'
       end
-      puts "Generating commit: #{message}"
-
-      Dir.chdir "#{root}/yardoc" do
-        cmd.call "git add -A"
-        cmd.call "git commit -m '#{message}'"
-        cmd.call 'git push origin gh-pages'
-      end
-
     end
 
-    desc 'Setups second clone in ./yardoc dir for pushing doc to github'
-    task :setup do
+    define_yard_task = -> name do
+      desc "- of #{name} into subdir #{name}"
+      YARD::Rake::YardocTask.new(name) do |yard|
+        yard.options.push(
+            '--output-dir', "docs/#{name}",
+            *common_yard_options)
+        yard.files = ['./lib/**/*.rb',
+                      './lib-edge/**/*.rb',
+                      './ext/concurrent_ruby_ext/**/*.c',
+                      '-',
+                      'docs-source/thread_pools.md',
+                      'docs-source/promises.out.md',
+                      'README.md',
+                      'LICENSE.txt',
+                      'CHANGELOG.md']
+      end
+      Rake::Task[name].prerequisites.push 'yard:eval_md'
+    end
 
-      unless File.exist? "#{root}/yardoc/.git"
-        cmd.call "rm -rf #{root}/yardoc" if File.exist?("#{root}/yardoc")
-        Dir.chdir "#{root}" do
-          cmd.call 'git clone --single-branch --branch gh-pages git@github.com:ruby-concurrency/concurrent-ruby.git ./yardoc'
+    define_yard_task.call(Concurrent::VERSION.split('.')[0..2].join('.'))
+    define_yard_task.call('master')
+
+    desc "- signpost for versions"
+    YARD::Rake::YardocTask.new(:signpost) do |yard|
+      yard.options.push(
+          '--output-dir', 'docs',
+          '--main', 'docs-source/signpost.md',
+          *common_yard_options)
+      yard.files = ['no-lib']
+    end
+  end
+
+  namespace :spec do
+    desc '- ensure that generated documentation is matching the source code'
+    task :docs_uptodate do
+      Dir.chdir(__dir__) do
+        begin
+          FileUtils.cp_r 'docs', 'docs-copy', verbose: true
+          Rake::Task[:yard].invoke
+          sh 'diff -r docs/ docs-copy/'
+        ensure
+          FileUtils.rm_rf 'docs-copy', verbose: true
         end
       end
-      Dir.chdir "#{root}/yardoc" do
-        cmd.call 'git fetch origin'
-        cmd.call 'git reset --hard origin/gh-pages'
-      end
-
     end
-
   end
+
 rescue LoadError => e
   puts 'YARD is not installed, skipping documentation task definitions: ' + e.message
+end
+
+namespace :release do
+  # Depends on environment of @pitr-ch
+
+  mri_version   = '2.4.3'
+  jruby_version = 'jruby-9.1.17.0'
+
+  task :build => 'repackage:all'
+
+  task :test do
+    Dir.chdir(__dir__) do
+      old = ENV['RBENV_VERSION']
+
+      ENV['RBENV_VERSION'] = mri_version
+      sh 'rbenv version'
+      sh 'bundle exec rake spec:installed'
+
+      ENV['RBENV_VERSION'] = jruby_version
+      sh 'rbenv version'
+      sh 'bundle exec rake spec:installed'
+
+      puts 'Windows build is untested'
+
+      ENV['RBENV_VERSION'] = old
+    end
+  end
+
+  task :push do
+    Dir.chdir(__dir__) do
+      sh 'git fetch'
+      sh 'test $(git show-ref --verify --hash refs/heads/master) = $(git show-ref --verify --hash refs/remotes/github/master)'
+
+      sh "git tag v#{Concurrent::VERSION}"
+      sh "git tag edge-v#{Concurrent::EDGE_VERSION}"
+      sh "git push github v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
+
+      sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
+      sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
+      sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem"
+      sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x64-mingw32.gem"
+      sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x86-mingw32.gem"
+    end
+  end
+
+  task :notify do
+    puts 'Manually: create a release on GitHub with relevant changelog part'
+    puts 'Manually: send email same as release with relevant changelog part'
+    puts 'Manually: update documentation'
+    puts '  $ bundle exec rake yard:push'
+  end
 end

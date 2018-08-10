@@ -37,7 +37,7 @@ module Concurrent
   # > map = Concurrent::Map.new
   class Map < Collection::MapImplementation
 
-    # @!macro [new] map_method_is_atomic
+    # @!macro map_method_is_atomic
     #   This method is atomic. Atomic methods of `Map` which accept a block
     #   do not allow the `self` instance to be used within the block. Doing
     #   so will cause a deadlock.
@@ -100,7 +100,7 @@ module Concurrent
     alias_method :get, :[]
     alias_method :put, :[]=
 
-    # @!macro [attach] map_method_not_atomic
+    # @!macro map_method_not_atomic
     #   The "fetch-then-act" methods of `Map` are not atomic. `Map` is intended
     #   to be use as a concurrency primitive with strong happens-before
     #   guarantees. It is not intended to be used as a high-level abstraction

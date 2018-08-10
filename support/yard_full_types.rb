@@ -3,7 +3,8 @@ module YARD
   VERSION[0..2] == '0.9' or raise 'incompatible YARD'
 
   module Templates::Helpers
-    # The helper module for HTML templates.
+
+    # make sure the signatures are complete not simplified with ...
     module HtmlHelper
       def signature_types(meth, link = true)
         meth = convert_method_to_overload(meth)
@@ -31,6 +32,21 @@ module YARD
         end
         type = "#{type} " unless type.empty?
         type
+      end
+
+      # enables :strikethrough extension
+      def html_markup_markdown(text)
+        # TODO: other libraries might be more complex
+        provider = markup_class(:markdown)
+        if provider.to_s == 'RDiscount'
+          provider.new(text, :autolink).to_html
+        elsif provider.to_s == 'RedcarpetCompat'
+          provider.new(text, :no_intraemphasis, :gh_blockcode,
+                       :fenced_code, :autolink, :tables,
+                       :lax_spacing, :strikethrough).to_html
+        else
+          provider.new(text).to_html
+        end
       end
     end
   end

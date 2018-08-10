@@ -26,7 +26,7 @@ module Concurrent
   # @!macro thread_pool_options
   class CachedThreadPool < ThreadPoolExecutor
 
-    # @!macro [attach] cached_thread_pool_method_initialize
+    # @!macro cached_thread_pool_method_initialize
     #
     #   Create a new thread pool.
     #

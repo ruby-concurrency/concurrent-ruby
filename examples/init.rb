@@ -1,6 +1,6 @@
 require 'concurrent-edge'
 
-def do_stuff
+def do_stuff(*args)
   :stuff
 end
 

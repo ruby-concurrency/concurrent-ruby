@@ -4,7 +4,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] executor_service_method_post
+  # @!macro executor_service_method_post
   #
   #   Submit a task to the executor for asynchronous processing.
   #
@@ -17,7 +17,7 @@ module Concurrent
   #
   #   @raise [ArgumentError] if no task is given
 
-  # @!macro [new] executor_service_method_left_shift
+  # @!macro executor_service_method_left_shift
   #
   #   Submit a task to the executor for asynchronous processing.
   #
@@ -25,13 +25,13 @@ module Concurrent
   #
   #   @return [self] returns itself
 
-  # @!macro [new] executor_service_method_can_overflow_question
+  # @!macro executor_service_method_can_overflow_question
   #
   #   Does the task queue have a maximum size?
   #
   #   @return [Boolean] True if the task queue has a maximum size else false.
 
-  # @!macro [new] executor_service_method_serialized_question
+  # @!macro executor_service_method_serialized_question
   #
   #   Does this executor guarantee serialization of its operations?
   #
@@ -41,7 +41,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] executor_service_public_api
+  # @!macro executor_service_public_api
   #
   #   @!method post(*args, &task)
   #     @!macro executor_service_method_post
@@ -57,23 +57,23 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] executor_service_attr_reader_fallback_policy
+  # @!macro executor_service_attr_reader_fallback_policy
   #   @return [Symbol] The fallback policy in effect. Either `:abort`, `:discard`, or `:caller_runs`.
 
-  # @!macro [new] executor_service_method_shutdown
+  # @!macro executor_service_method_shutdown
   #
   #   Begin an orderly shutdown. Tasks already in the queue will be executed,
   #   but no new tasks will be accepted. Has no additional effect if the
   #   thread pool is not running.
 
-  # @!macro [new] executor_service_method_kill
+  # @!macro executor_service_method_kill
   #
   #   Begin an immediate shutdown. In-progress tasks will be allowed to
   #   complete but enqueued tasks will be dismissed and no new tasks
   #   will be accepted. Has no additional effect if the thread pool is
   #   not running.
 
-  # @!macro [new] executor_service_method_wait_for_termination
+  # @!macro executor_service_method_wait_for_termination
   #
   #   Block until executor shutdown is complete or until `timeout` seconds have
   #   passed.
@@ -85,31 +85,31 @@ module Concurrent
   #
   #   @return [Boolean] `true` if shutdown complete or false on `timeout`
 
-  # @!macro [new] executor_service_method_running_question
+  # @!macro executor_service_method_running_question
   #
   #   Is the executor running?
   #
   #   @return [Boolean] `true` when running, `false` when shutting down or shutdown
 
-  # @!macro [new] executor_service_method_shuttingdown_question
+  # @!macro executor_service_method_shuttingdown_question
   #
   #   Is the executor shuttingdown?
   #
   #   @return [Boolean] `true` when not running and not shutdown, else `false`
 
-  # @!macro [new] executor_service_method_shutdown_question
+  # @!macro executor_service_method_shutdown_question
   #
   #   Is the executor shutdown?
   #
   #   @return [Boolean] `true` when shutdown, `false` when shutting down or running
 
-  # @!macro [new] executor_service_method_auto_terminate_question
+  # @!macro executor_service_method_auto_terminate_question
   #
   #   Is the executor auto-terminate when the application exits?
   #
   #   @return [Boolean] `true` when auto-termination is enabled else `false`.
 
-  # @!macro [new] executor_service_method_auto_terminate_setter
+  # @!macro executor_service_method_auto_terminate_setter
   #
   #   Set the auto-terminate behavior for this executor.
   #
@@ -119,7 +119,7 @@ module Concurrent
 
   ###################################################################
 
-  # @!macro [new] abstract_executor_service_public_api
+  # @!macro abstract_executor_service_public_api
   #
   #   @!macro executor_service_public_api
   #

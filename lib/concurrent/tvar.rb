@@ -8,7 +8,7 @@ module Concurrent
   #
   # @!macro thread_safe_variable_comparison
   #
-  # {include:file:doc/tvar.md}
+  # {include:file:docs-source/tvar.md}
   class TVar < Synchronization::Object
     safe_initialization!
 

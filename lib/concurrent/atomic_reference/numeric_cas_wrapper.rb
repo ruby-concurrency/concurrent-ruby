@@ -23,6 +23,6 @@ module Concurrent
         _compare_and_set(old_value, new_value)
       end
     end
-    alias_method :compare_and_swap, :compare_and_set
+
   end
 end

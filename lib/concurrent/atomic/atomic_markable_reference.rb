@@ -6,7 +6,8 @@ module Concurrent
   #   java.util.concurrent.atomic.AtomicMarkableReference
   class AtomicMarkableReference < ::Concurrent::Synchronization::Object
 
-    private(*attr_atomic(:reference))
+    attr_atomic(:reference)
+    private :reference, :reference=, :swap_reference, :compare_and_set_reference, :update_reference
 
     def initialize(value = nil, mark = false)
       super()

@@ -15,16 +15,7 @@ module Concurrent
   # features should remain in this module until merged into the core gem. This
   # will prevent namespace collisions.
   #
-  # @!macro [attach] warn.edge
-  #   @api Edge
-  #   @note **Edge Features** are under active development and may change frequently.
-  #
-  #     -   Deprecations are not added before incompatible changes.
-  #     -   Edge version: _major_ is always 0, _minor_ bump means incompatible change,
-  #         _patch_ bump means compatible change.
-  #     -   Edge features may also lack tests and documentation.
-  #     -   Features developed in `concurrent-ruby-edge` are expected to move
-  #         to `concurrent-ruby` when finalised.
+  # @!macro warn.edge
   module Edge
   end
 end

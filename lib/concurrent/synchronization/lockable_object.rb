@@ -31,7 +31,7 @@ module Concurrent
     #     `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
     #     `Thread#wakeup` will not work on all platforms.
     #
-    #   @see {Event} implementation as an example of this class use
+    #   @see Event implementation as an example of this class use
     #
     #   @example simple
     #     class AnClass < Synchronization::Object

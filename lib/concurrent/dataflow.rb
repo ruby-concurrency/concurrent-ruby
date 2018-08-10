@@ -18,7 +18,7 @@ module Concurrent
     end
   end
 
-  # {include:file:doc/dataflow.md}
+  # {include:file:docs-source/dataflow.md}
   #
   # @param [Future] inputs zero or more `Future` operations that this dataflow depends upon
   #

@@ -98,10 +98,10 @@ module Concurrent
       observer
     end
 
-    # @!macro [attach] ivar_set_method
+    # @!macro ivar_set_method
     #   Set the `IVar` to a value and wake or notify all threads waiting on it.
     #
-    #   @!macro [attach] ivar_set_parameters_and_exceptions
+    #   @!macro ivar_set_parameters_and_exceptions
     #     @param [Object] value the value to store in the `IVar`
     #     @yield A block operation to use for setting the value
     #     @raise [ArgumentError] if both a value and a block are given
@@ -124,7 +124,7 @@ module Concurrent
       self
     end
 
-    # @!macro [attach] ivar_fail_method
+    # @!macro ivar_fail_method
     #   Set the `IVar` to failed due to some error and wake or notify all threads waiting on it.
     #
     #   @param [Object] reason for the failure

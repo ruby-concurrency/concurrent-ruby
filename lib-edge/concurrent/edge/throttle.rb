@@ -1,5 +1,5 @@
 module Concurrent
-  # @!macro [new] throttle.example.throttled_block
+  # @!macro throttle.example.throttled_block
   #   @example
   #     max_two = Throttle.new 2
   #     10.times.map do
@@ -10,12 +10,12 @@ module Concurrent
   #         end
   #       end
   #     end
-  # @!macro [new] throttle.example.throttled_future
+  # @!macro throttle.example.throttled_future
   #   @example
   #     throttle.throttled_future(1) do |arg|
   #       arg.succ
   #     end
-  # @!macro [new] throttle.example.throttled_future_chain
+  # @!macro throttle.example.throttled_future_chain
   #   @example
   #     throttle.throttled_future_chain do |trigger|
   #       trigger.
@@ -23,7 +23,7 @@ module Concurrent
   #           chain { 1 }.
   #           then(&:succ)
   #     end
-  # @!macro [new] throttle.example.then_throttled_by
+  # @!macro throttle.example.then_throttled_by
   #   @example
   #     data     = (1..5).to_a
   #     db       = data.reduce({}) { |h, v| h.update v => v.to_s }
@@ -53,7 +53,8 @@ module Concurrent
     # TODO (pitr-ch 21-Dec-2016): consider using sized channel for implementation instead when available
 
     safe_initialization!
-    private(*attr_atomic(:can_run))
+    attr_atomic(:can_run)
+    private :can_run, :can_run=, :swap_can_run, :compare_and_set_can_run, :update_can_run
 
     # New throttle.
     # @param [Integer] limit
@@ -96,6 +97,7 @@ module Concurrent
         current_can_run = can_run
         if compare_and_set_can_run current_can_run, current_can_run + 1
           if current_can_run < 0
+            # release called after trigger which pushed a trigger, busy wait is ok
             Thread.pass until (trigger = @Queue.pop)
             trigger.resolve
           end
@@ -152,17 +154,23 @@ module Concurrent
 
     class AbstractEventFuture < Synchronization::Object
       module ThrottleIntegration
+
+        # @yieldparam [Future] a trigger
+        # @yieldreturn [Future, Event]
+        # @return [Future, Event]
         def throttled_by(throttle, &throttled_futures)
           a_trigger = self & self.chain { throttle.trigger }.flat_event
           throttled_futures.call(a_trigger).on_resolution! { throttle.release }
         end
 
-        # Behaves as {Promises::AbstractEventFuture#chain} but the it is throttled.
-        # @return [Promises::Future, Promises::Event]
-        # @see Promises::AbstractEventFuture#chain
+        # Behaves as {AbstractEventFuture#chain} but the it is throttled.
+        # @return [Future, Event]
+        # @see AbstractEventFuture#chain
         def chain_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.chain(*args, &block) }
         end
+
+        # TODO (pitr-ch 11-Jul-2018): add other then/rescue methods
       end
 
       include ThrottleIntegration
@@ -171,17 +179,17 @@ module Concurrent
     class Future < AbstractEventFuture
       module ThrottleIntegration
 
-        # Behaves as {Promises::Future#then} but the it is throttled.
-        # @return [Promises::Future]
-        # @see Promises::Future#then
+        # Behaves as {Future#then} but the it is throttled.
+        # @return [Future]
+        # @see Future#then
         # @!macro throttle.example.then_throttled_by
         def then_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.then(*args, &block) }
         end
 
-        # Behaves as {Promises::Future#rescue} but the it is throttled.
-        # @return [Promises::Future]
-        # @see Promises::Future#rescue
+        # Behaves as {Future#rescue} but the it is throttled.
+        # @return [Future]
+        # @see Future#rescue
         def rescue_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.rescue(*args, &block) }
         end

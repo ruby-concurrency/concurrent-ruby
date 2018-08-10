@@ -1,0 +1,1749 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: Concurrent::Edge::FutureShortcuts
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../../';
+  framesUrl = "../../frames.html#!Concurrent/Edge/FutureShortcuts.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Edge.html" title="Concurrent::Edge (module)">Edge</a></span></span>
+     &raquo; 
+    <span class="title">FutureShortcuts</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Module: Concurrent::Edge::FutureShortcuts
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+    <dt class="r1">Included in:</dt>
+    <dd class="r1"><span class='object_link'><a href="../../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span>, <span class='object_link'><a href="../../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span>, <span class='object_link'><a href="../Edge.html" title="Concurrent::Edge (module)">Concurrent::Edge</a></span>, <span class='object_link'><a href="../Edge.html" title="Concurrent::Edge (module)">Concurrent::Edge</a></span></dd>
+    
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/concurrent/edge/future.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p><strong>Edge Feature:</strong> Edge features are under active development and may change frequently. They are expected not to
+keep backward compatibility (there may also lack tests and documentation). Semantic versions will
+be obeyed though. Features developed in <code>concurrent-ruby-edge</code> are expected to move
+to <code>concurrent-ruby</code> when final.</p>
+</div>
+  </div>
+
+<p>Provides edge features, which will be added to or replace features in main gem.</p>
+
+<p>Contains new unified implementation of Futures and Promises which combines Features of previous <code>Future</code>,
+<code>Promise</code>, <code>IVar</code>, <code>Event</code>, <code>Probe</code>, <code>dataflow</code>, <code>Delay</code>, <code>TimerTask</code> into single framework. It uses extensively
+new synchronization layer to make all the paths lock-free with exception of blocking threads on <code>#wait</code>.
+It offers better performance and does not block threads (exception being #wait and similar methods where it&#39;s
+intended).</p>
+
+<h2>Examples</h2>
+
+<p><pre class="code ruby"><span class='comment'>### Simple asynchronous task
+</span>
+<span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span><span class='semicolon'>;</span> <span class='int'>1</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span> <span class='comment'># evaluation starts immediately
+</span>    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc73208180 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_completed?'>completed?</span>                                  <span class='comment'># =&gt; false
+</span><span class='comment'># block until evaluated
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                       <span class='comment'># =&gt; 2
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_completed?'>completed?</span>                                  <span class='comment'># =&gt; true
+</span>
+
+<span class='comment'>### Failing asynchronous task
+</span>
+<span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Boom</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc731fa0a8 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                       <span class='comment'># =&gt; nil
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span> <span class='kw'>rescue</span> <span class='gvar'>$!</span>                            <span class='comment'># =&gt; #&lt;RuntimeError: Boom&gt;
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span>                                      <span class='comment'># =&gt; #&lt;RuntimeError: Boom&gt;
+</span><span class='comment'># re-raising
+</span><span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_future'>future</span> <span class='kw'>rescue</span> <span class='gvar'>$!</span>                             <span class='comment'># =&gt; #&lt;RuntimeError: Boom&gt;
+</span>
+
+<span class='comment'>### Chaining
+</span>
+<span class='id identifier rubyid_head'>head</span>    <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_succeeded_future'>succeeded_future</span> <span class='int'>1</span> 
+<span class='id identifier rubyid_branch1'>branch1</span> <span class='op'>=</span> <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span> 
+<span class='id identifier rubyid_branch2'>branch2</span> <span class='op'>=</span> <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span> 
+<span class='id identifier rubyid_branch1'>branch1</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_branch2'>branch2</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                        <span class='comment'># =&gt; [2, 3]
+</span><span class='lparen'>(</span><span class='id identifier rubyid_branch1'>branch1</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_branch2'>branch2</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_b'>b</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span> <span class='op'>+</span> <span class='id identifier rubyid_b'>b</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>   <span class='comment'># =&gt; 5
+</span><span class='lparen'>(</span><span class='id identifier rubyid_branch1'>branch1</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_branch2'>branch2</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:+</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>               <span class='comment'># =&gt; 5
+</span><span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_branch1'>branch1</span><span class='comma'>,</span> <span class='id identifier rubyid_branch2'>branch2</span><span class='comma'>,</span> <span class='id identifier rubyid_branch1'>branch1</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='op'>*</span><span class='id identifier rubyid_values'>values</span><span class='op'>|</span> <span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span> <span class='op'>&amp;</span><span class='symbol'>:+</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
+    <span class='comment'># =&gt; 7
+</span><span class='comment'># pick only first completed
+</span><span class='lparen'>(</span><span class='id identifier rubyid_branch1'>branch1</span> <span class='op'>|</span> <span class='id identifier rubyid_branch2'>branch2</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                         <span class='comment'># =&gt; 2
+</span>
+<span class='comment'>### Error handling
+</span>
+<span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='const'>Object</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># error propagates
+</span>    <span class='comment'># =&gt; NoMethodError
+</span><span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='const'>Object</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># rescued and replaced with 1
+</span>    <span class='comment'># =&gt; 2
+</span><span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># no error, rescue not applied
+</span>    <span class='comment'># =&gt; 3
+</span>
+<span class='id identifier rubyid_failing_zip'>failing_zip</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_succeeded_future'>succeeded_future</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span> <span class='op'>&amp;</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_failed_future'>failed_future</span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>boom</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7ffcc19ac2a0 failed blocks:[]&gt;
+</span><span class='id identifier rubyid_failing_zip'>failing_zip</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>                                 <span class='comment'># =&gt; [false, [1, nil], [nil, #&lt;StandardError: boom&gt;]]
+</span><span class='id identifier rubyid_failing_zip'>failing_zip</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>never happens</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>    <span class='comment'># =&gt; [false, [1, nil], [nil, #&lt;StandardError: boom&gt;]]
+</span><span class='id identifier rubyid_failing_zip'>failing_zip</span><span class='period'>.</span><span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_b'>b</span><span class='op'>|</span> <span class='lparen'>(</span><span class='id identifier rubyid_a'>a</span> <span class='op'>||</span> <span class='id identifier rubyid_b'>b</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='comment'># =&gt; &quot;boom&quot;
+</span><span class='id identifier rubyid_failing_zip'>failing_zip</span><span class='period'>.</span><span class='id identifier rubyid_chain'>chain</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_values'>values</span><span class='comma'>,</span> <span class='id identifier rubyid_reasons'>reasons</span><span class='op'>|</span> <span class='lbracket'>[</span><span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_compact'>compact</span><span class='comma'>,</span> <span class='id identifier rubyid_reasons'>reasons</span><span class='period'>.</span><span class='id identifier rubyid_compactß'>compactß</span><span class='rbracket'>]</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='comment'># =&gt; nil
+</span>
+<span class='comment'>### Delay
+</span>
+<span class='comment'># will not evaluate until asked by #value or other method requiring completion
+</span><span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_delay'>delay</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>lazy</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc731a1840 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span> 
+<span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_completed?'>completed?</span>                                  <span class='comment'># =&gt; false
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                       <span class='comment'># =&gt; &quot;lazy&quot;
+</span>
+<span class='comment'># propagates trough chain allowing whole or partial lazy chains
+</span>
+<span class='id identifier rubyid_head'>head</span>    <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_delay'>delay</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc73193b28 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_branch1'>branch1</span> <span class='op'>=</span> <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc73190900 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_branch2'>branch2</span> <span class='op'>=</span> <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_delay'>delay</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc7318b400 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_join'>join</span>    <span class='op'>=</span> <span class='id identifier rubyid_branch1'>branch1</span> <span class='op'>&amp;</span> <span class='id identifier rubyid_branch2'>branch2</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc73180af0 pending blocks:[]&gt;
+</span>
+<span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span> <span class='comment'># nothing will complete                  # =&gt; 0
+</span><span class='lbracket'>[</span><span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_branch1'>branch1</span><span class='comma'>,</span> <span class='id identifier rubyid_branch2'>branch2</span><span class='comma'>,</span> <span class='id identifier rubyid_join'>join</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:completed?</span><span class='rparen'>)</span>   <span class='comment'># =&gt; [false, false, false, false]
+</span>
+<span class='id identifier rubyid_branch1'>branch1</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                      <span class='comment'># =&gt; 2
+</span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span> <span class='comment'># forces only head to complete, branch 2 stays incomplete
+</span>    <span class='comment'># =&gt; 0
+</span><span class='lbracket'>[</span><span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_branch1'>branch1</span><span class='comma'>,</span> <span class='id identifier rubyid_branch2'>branch2</span><span class='comma'>,</span> <span class='id identifier rubyid_join'>join</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:completed?</span><span class='rparen'>)</span>   <span class='comment'># =&gt; [true, true, false, false]
+</span>
+<span class='id identifier rubyid_join'>join</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                         <span class='comment'># =&gt; [2, 2]
+</span>
+
+<span class='comment'>### Flatting
+</span>
+<span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='int'>1</span><span class='op'>+</span><span class='int'>1</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flat'>flat</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># waits for inner future
+</span>    <span class='comment'># =&gt; 2
+</span>
+<span class='comment'># more complicated example
+</span><span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='period'>.</span>
+    <span class='id identifier rubyid_flat'>flat</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span><span class='period'>.</span>
+    <span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span>
+    <span class='id identifier rubyid_flat'>flat</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                  <span class='comment'># =&gt; 3
+</span>
+
+<span class='comment'>### Schedule
+</span>
+<span class='id identifier rubyid_scheduled'>scheduled</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='float'>0.1</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc73143e48 pending blocks:[]&gt;
+</span>
+<span class='id identifier rubyid_scheduled'>scheduled</span><span class='period'>.</span><span class='id identifier rubyid_completed?'>completed?</span>                               <span class='comment'># =&gt; false
+</span><span class='id identifier rubyid_scheduled'>scheduled</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># available after 0.1sec           # =&gt; 1
+</span>
+<span class='comment'># and in chain
+</span><span class='id identifier rubyid_scheduled'>scheduled</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_delay'>delay</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='float'>0.1</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc7313a758 pending blocks:[]&gt;
+</span><span class='comment'># will not be scheduled until value is requested
+</span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span> 
+<span class='id identifier rubyid_scheduled'>scheduled</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># returns after another 0.1sec     # =&gt; 2
+</span>
+
+<span class='comment'>### Completable Future and Event
+</span>
+<span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::CompletableFuture:0x7fcc731286e8 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_event'>event</span>  <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::CompletableEvent:0x7fcc73123058 pending blocks:[]&gt;
+</span><span class='comment'># Don&#39;t forget to keep the reference, `Concurrent.future.then { |v| v }` is incompletable
+</span>
+<span class='comment'># will be blocked until completed
+</span><span class='id identifier rubyid_t1'>t1</span>     <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span> 
+<span class='id identifier rubyid_t2'>t2</span>     <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span> <span class='rbrace'>}</span> 
+
+<span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_success'>success</span> <span class='int'>1</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::CompletableFuture:0x7fcc731286e8 success blocks:[]&gt;
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_success'>success</span> <span class='int'>1</span> <span class='kw'>rescue</span> <span class='gvar'>$!</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::MultipleAssignmentError: Future can be completed only once. Current result is [true, 1, nil], trying to set [true, 1, nil]&gt;
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_try_success'>try_success</span> <span class='int'>2</span>                               <span class='comment'># =&gt; false
+</span><span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_complete'>complete</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::CompletableEvent:0x7fcc73123058 completed blocks:[]&gt;
+</span>
+<span class='lbracket'>[</span><span class='id identifier rubyid_t1'>t1</span><span class='comma'>,</span> <span class='id identifier rubyid_t2'>t2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='op'>&amp;</span><span class='symbol'>:join</span> 
+
+
+<span class='comment'>### Callbacks
+</span>
+<span class='id identifier rubyid_queue'>queue</span>  <span class='op'>=</span> <span class='const'>Queue</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>                                 <span class='comment'># =&gt; #&lt;Thread::Queue:0x007fcc73110638&gt;
+</span><span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_delay'>delay</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc7310ab98 pending blocks:[]&gt;
+</span>
+<span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_on_success'>on_success</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_queue'>queue</span> <span class='op'>&lt;&lt;</span> <span class='int'>1</span> <span class='rbrace'>}</span> <span class='comment'># evaluated asynchronously
+</span>    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc7310ab98 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_on_success!'>on_success!</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_queue'>queue</span> <span class='op'>&lt;&lt;</span> <span class='int'>2</span> <span class='rbrace'>}</span> <span class='comment'># evaluated on completing thread
+</span>    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc7310ab98 pending blocks:[]&gt;
+</span>
+<span class='id identifier rubyid_queue'>queue</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>                                       <span class='comment'># =&gt; true
+</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                                       <span class='comment'># =&gt; 2
+</span><span class='id identifier rubyid_queue'>queue</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                                          <span class='comment'># =&gt; 2
+</span><span class='id identifier rubyid_queue'>queue</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                                          <span class='comment'># =&gt; 1
+</span>
+
+<span class='comment'>### Thread-pools
+</span>
+<span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='lparen'>(</span><span class='symbol'>:fast</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>2</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span> <span class='kw'>__FILE__</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc730f98e8 success blocks:[]&gt;
+</span>
+
+<span class='comment'>### Interoperability with actors
+</span>
+<span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Actor</span><span class='op'>::</span><span class='const'>Utils</span><span class='op'>::</span><span class='const'>AdHoc</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span> <span class='symbol'>:square</span> <span class='kw'>do</span>
+  <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_v'>v</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>**</span> <span class='int'>2</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x7fcc730c36f8 /square (Concurrent::Actor::Utils::AdHoc)&gt;
+</span>
+<span class='const'>Concurrent</span><span class='period'>.</span>
+    <span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='int'>2</span> <span class='rbrace'>}</span><span class='period'>.</span>
+    <span class='id identifier rubyid_then_ask'>then_ask</span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='rparen'>)</span><span class='period'>.</span>
+    <span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>+</span> <span class='int'>2</span> <span class='rbrace'>}</span><span class='period'>.</span>
+    <span class='id identifier rubyid_value'>value</span>                                          <span class='comment'># =&gt; 6
+</span>
+<span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='int'>2</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                    <span class='comment'># =&gt; 5
+</span>
+
+<span class='comment'>### Interoperability with channels
+</span>
+<span class='id identifier rubyid_ch1'>ch1</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Channel</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>                <span class='comment'># =&gt; #&lt;Concurrent::Channel:0x007fcc73043188&gt;
+</span><span class='id identifier rubyid_ch2'>ch2</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Channel</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>                <span class='comment'># =&gt; #&lt;Concurrent::Channel:0x007fcc730425f8&gt;
+</span>
+<span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='id identifier rubyid_ch1'>ch1</span><span class='comma'>,</span> <span class='id identifier rubyid_ch2'>ch2</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::CompletableFuture:0x7fcc730411a8 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_ch1'>ch1</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='int'>1</span>                                         <span class='comment'># =&gt; nil
+</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
+    <span class='comment'># =&gt; [1, #&lt;Concurrent::Channel:0x007fcc73043188&gt;]
+</span>
+<span class='const'>Concurrent</span><span class='period'>.</span>
+    <span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='int'>1</span><span class='op'>+</span><span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span>
+    <span class='id identifier rubyid_then_push'>then_push</span><span class='lparen'>(</span><span class='id identifier rubyid_ch1'>ch1</span><span class='rparen'>)</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc73032c98 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='period'>.</span>
+    <span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%02d</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span><span class='period'>.</span>
+    <span class='id identifier rubyid_then_select'>then_select</span><span class='lparen'>(</span><span class='id identifier rubyid_ch1'>ch1</span><span class='comma'>,</span> <span class='id identifier rubyid_ch2'>ch2</span><span class='rparen'>)</span><span class='period'>.</span>
+    <span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_format'>format</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span><span class='op'>|</span> <span class='id identifier rubyid_format'>format</span> <span class='id identifier rubyid_format'>format</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc7302a4f8 pending blocks:[]&gt;
+</span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                                      <span class='comment'># =&gt; &quot;02&quot;
+</span>
+
+<span class='comment'>### Common use-cases Examples
+</span>
+<span class='comment'># simple background processing
+</span><span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc72123c48 pending blocks:[]&gt;
+</span>
+<span class='comment'># parallel background processing
+</span><span class='id identifier rubyid_jobs'>jobs</span> <span class='op'>=</span> <span class='int'>10</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_i'>i</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span> 
+<span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_jobs'>jobs</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                        <span class='comment'># =&gt; [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+</span>
+
+<span class='comment'># periodic task
+</span><span class='ivar'>@end</span> <span class='op'>=</span> <span class='kw'>false</span>                                       <span class='comment'># =&gt; false
+</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_schedule_job'>schedule_job</span>
+  <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span><span class='period'>.</span>
+      <span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='const'>StandardError</span> <span class='op'>===</span> <span class='id identifier rubyid_e'>e</span> <span class='op'>?</span> <span class='id identifier rubyid_report_error'>report_error</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span>
+      <span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_schedule_job'>schedule_job</span> <span class='kw'>unless</span> <span class='ivar'>@end</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span>                                                <span class='comment'># =&gt; :schedule_job
+</span>
+<span class='id identifier rubyid_schedule_job'>schedule_job</span>
+    <span class='comment'># =&gt; &lt;#Concurrent::Edge::Future:0x7fcc75011370 pending blocks:[]&gt;
+</span><span class='ivar'>@end</span> <span class='op'>=</span> <span class='kw'>true</span>                                        <span class='comment'># =&gt; true
+</span>
+
+<span class='comment'># How to limit processing where there are limited resources?
+</span><span class='comment'># By creating an actor managing the resource
+</span><span class='const'>DB</span>   <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Actor</span><span class='op'>::</span><span class='const'>Utils</span><span class='op'>::</span><span class='const'>AdHoc</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span> <span class='symbol'>:db</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_data'>data</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>10</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*</span><span class='tstring_end'>&#39;</span></span> <span class='op'>*</span> <span class='id identifier rubyid_i'>i</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_lambda'>lambda</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span>
+    <span class='comment'># pretending that this queries a DB
+</span>    <span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='id identifier rubyid_message'>message</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x7fcc71832a08 /db (Concurrent::Actor::Utils::AdHoc)&gt;
+</span>
+<span class='id identifier rubyid_concurrent_jobs'>concurrent_jobs</span> <span class='op'>=</span> <span class='int'>11</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+  <span class='const'>Concurrent</span><span class='period'>.</span>
+      <span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span><span class='period'>.</span>
+      <span class='comment'># ask the DB with the `v`, only one at the time, rest is parallel
+</span>      <span class='id identifier rubyid_then_ask'>then_ask</span><span class='lparen'>(</span><span class='const'>DB</span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='comment'># get size of the string, fails for 11
+</span>      <span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:size</span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_reason'>reason</span><span class='op'>|</span> <span class='id identifier rubyid_reason'>reason</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span> <span class='comment'># translate error to value (exception, message)
+</span><span class='kw'>end</span> 
+
+<span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_concurrent_jobs'>concurrent_jobs</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
+    <span class='comment'># =&gt; [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, &quot;undefined method `size&#39; for nil:NilClass&quot;]
+</span>
+
+<span class='comment'># In reality there is often a pool though:
+</span><span class='id identifier rubyid_data'>data</span>      <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>10</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*</span><span class='tstring_end'>&#39;</span></span> <span class='op'>*</span> <span class='id identifier rubyid_i'>i</span> <span class='rbrace'>}</span>
+    <span class='comment'># =&gt; [&quot;&quot;, &quot;*&quot;, &quot;**&quot;, &quot;***&quot;, &quot;****&quot;, &quot;*****&quot;, &quot;******&quot;, &quot;*******&quot;, &quot;********&quot;, &quot;*********&quot;]
+</span><span class='id identifier rubyid_pool_size'>pool_size</span> <span class='op'>=</span> <span class='int'>5</span>                                      <span class='comment'># =&gt; 5
+</span>
+<span class='const'>DB_POOL</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Actor</span><span class='op'>::</span><span class='const'>Utils</span><span class='op'>::</span><span class='const'>Pool</span><span class='period'>.</span><span class='id identifier rubyid_spawn!'>spawn!</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>DB-pool</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_pool_size'>pool_size</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_index'>index</span><span class='op'>|</span>
+  <span class='comment'># DB connection constructor
+</span>  <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>Actor</span><span class='op'>::</span><span class='const'>Utils</span><span class='op'>::</span><span class='const'>AdHoc</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>worker-</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_index'>index</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>args:</span> <span class='lbracket'>[</span><span class='id identifier rubyid_data'>data</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+    <span class='id identifier rubyid_lambda'>lambda</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span>
+      <span class='comment'># pretending that this queries a DB
+</span>      <span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='id identifier rubyid_message'>message</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+    <span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x7fcc72320118 /DB-pool (Concurrent::Actor::Utils::Pool)&gt;
+</span>
+<span class='id identifier rubyid_concurrent_jobs'>concurrent_jobs</span> <span class='op'>=</span> <span class='int'>11</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+  <span class='const'>Concurrent</span><span class='period'>.</span>
+      <span class='id identifier rubyid_future'>future</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span><span class='period'>.</span>
+      <span class='comment'># ask the DB_POOL with the `v`, only 5 at the time, rest is parallel
+</span>      <span class='id identifier rubyid_then_ask'>then_ask</span><span class='lparen'>(</span><span class='const'>DB_POOL</span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:size</span><span class='rparen'>)</span><span class='period'>.</span>
+      <span class='id identifier rubyid_rescue'>rescue</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_reason'>reason</span><span class='op'>|</span> <span class='id identifier rubyid_reason'>reason</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span> 
+
+<span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_concurrent_jobs'>concurrent_jobs</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
+    <span class='comment'># =&gt; [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, &quot;undefined method `size&#39; for nil:NilClass&quot;]</span></pre></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#any-instance_method" title="#any (instance method)">- (Future) <strong>any</strong>(*futures) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Constructs new <span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span> which is completed after first of the futures is complete.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#completed_event-instance_method" title="#completed_event (instance method)">- (Event) <strong>completed_event</strong>(default_executor = :io) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Which is already completed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#completed_future-instance_method" title="#completed_future (instance method)">- (Future) <strong>completed_future</strong>(success, value, reason, default_executor = :io) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Which is already completed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delay-instance_method" title="#delay (instance method)">- (Future) <strong>delay</strong>(default_executor = :io, &amp;task) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Constructs new Future which will evaluate to the block after requested by calling <code>#wait</code>, <code>#value</code>, <code>#value!</code>, etc.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#event-instance_method" title="#event (instance method)">- (CompletableEvent) <strong>event</strong>(default_executor = :io) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>User is responsible for completing the event once by <span class='object_link'><a href="CompletableEvent.html#complete-instance_method" title="Concurrent::Edge::CompletableEvent#complete (method)">CompletableEvent#complete</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#failed_future-instance_method" title="#failed_future (instance method)">- (Future) <strong>failed_future</strong>(reason, default_executor = :io) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Which is already completed in failed state with reason.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#future-instance_method" title="#future (instance method)">- (Object) <strong>future</strong>(default_executor = :io, &amp;task) </a>
+    
+
+    
+      (also: #async)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#post-instance_method" title="#post (instance method)">- (true, false) <strong>post</strong>(*args, &amp;job) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>post job on :io executor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#post%21-instance_method" title="#post! (instance method)">- (true, false) <strong>post!</strong>(*args, &amp;job) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>post job on :fast executor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#post_on-instance_method" title="#post_on (instance method)">- (true, false) <strong>post_on</strong>(executor, *args, &amp;job) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>post job on executor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#schedule-instance_method" title="#schedule (instance method)">- (Future) <strong>schedule</strong>(intended_time, default_executor = :io, &amp;task) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Schedules the block to be executed on executor in given intended_time.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#select-instance_method" title="#select (instance method)">- (Future) <strong>select</strong>(*channels) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>only proof of concept.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#succeeded_future-instance_method" title="#succeeded_future (instance method)">- (Future) <strong>succeeded_future</strong>(value, default_executor = :io) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Which is already completed in success state with value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#zip_events-instance_method" title="#zip_events (instance method)">- (Event) <strong>zip_events</strong>(*futures_and_or_events) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Constructs new <span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span> which is completed after all futures_and_or_events are complete (Future is completed when Success or Failed).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#zip_futures-instance_method" title="#zip_futures (instance method)">- (Future) <strong>zip_futures</strong>(*futures_and_or_events) </a>
+    
+
+    
+      (also: #zip)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Constructs new <span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span> which is completed after all futures_and_or_events are complete.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="any-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>any</strong>(*futures) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Constructs new <span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Concurrent::Edge::Future</a></span> which is completed after first of the futures is complete.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>futures</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+101
+102
+103</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 101</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_any'>any</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures'>futures</span><span class='rparen'>)</span>
+  <span class='const'>AnyPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_futures'>futures</span><span class='comma'>,</span> <span class='symbol'>:io</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="completed_event-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>) <strong>completed_event</strong>(default_executor = :io) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns which is already completed</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>which is already completed</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+59
+60
+61</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 59</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_completed_event'>completed_event</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='rparen'>)</span>
+  <span class='const'>ImmediateEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="completed_future-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>completed_future</strong>(success, value, reason, default_executor = :io) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns which is already completed</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>which is already completed</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44
+45
+46</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_completed_future'>completed_future</span><span class='lparen'>(</span><span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='rparen'>)</span>
+  <span class='const'>ImmediateFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delay-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>delay</strong>(default_executor = :io, &amp;task) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Constructs new Future which will evaluate to the block after
+requested by calling <code>#wait</code>, <code>#value</code>, <code>#value!</code>, etc. on it or on any of the chained futures.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+68
+69
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 68</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delay'>delay</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='const'>Delay</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="event-instance_method">
+  
+    - (<tt><span class='object_link'><a href="CompletableEvent.html" title="Concurrent::Edge::CompletableEvent (class)">CompletableEvent</a></span></tt>) <strong>event</strong>(default_executor = :io) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>User is responsible for completing the event once by <span class='object_link'><a href="CompletableEvent.html#complete-instance_method" title="Concurrent::Edge::CompletableEvent#complete (method)">CompletableEvent#complete</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="CompletableEvent.html" title="Concurrent::Edge::CompletableEvent (class)">CompletableEvent</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+25
+26
+27</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 25</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_event'>event</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='rparen'>)</span>
+  <span class='const'>CompletableEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="failed_future-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>failed_future</strong>(reason, default_executor = :io) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns which is already completed in failed state with reason</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>which is already completed in failed state with reason</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+54
+55
+56</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 54</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_failed_future'>failed_future</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_completed_future'>completed_future</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="future-instance_method">
+  
+    
+      <span class="overload">- (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>future</strong>(default_executor = :io, &amp;task) </span>
+    
+      <span class="overload">- (<tt><span class='object_link'><a href="CompletableFuture.html" title="Concurrent::Edge::CompletableFuture (class)">CompletableFuture</a></span></tt>) <strong>future</strong>(default_executor = :io) </span>
+    
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='async-instance_method'>async</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">- (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>future</strong>(default_executor = :io, &amp;task) </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>Constructs new Future which will be completed after block is evaluated on executor. Evaluation begins immediately.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">- (<tt><span class='object_link'><a href="CompletableFuture.html" title="Concurrent::Edge::CompletableFuture (class)">CompletableFuture</a></span></tt>) <strong>future</strong>(default_executor = :io) </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>User is responsible for completing the future once by <span class='object_link'><a href="CompletableFuture.html#success-instance_method" title="Concurrent::Edge::CompletableFuture#success (method)">CompletableFuture#success</a></span> or <span class='object_link'><a href="CompletableFuture.html#fail-instance_method" title="Concurrent::Edge::CompletableFuture#fail (method)">CompletableFuture#fail</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="CompletableFuture.html" title="Concurrent::Edge::CompletableFuture (class)">CompletableFuture</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+  </ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+35
+36
+37
+38
+39
+40
+41</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 35</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_future'>future</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_task'>task</span>
+    <span class='const'>ImmediateEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='const'>CompletableFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="post-instance_method">
+  
+    - (<tt>true</tt>, <tt>false</tt>) <strong>post</strong>(*args, &amp;job) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>post job on :io executor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+126
+127
+128</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 126</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_post_on'>post_on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="post!-instance_method">
+  
+    - (<tt>true</tt>, <tt>false</tt>) <strong>post!</strong>(*args, &amp;job) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>post job on :fast executor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+120
+121
+122</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 120</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_post!'>post!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_post_on'>post_on</span><span class='lparen'>(</span><span class='symbol'>:fast</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="post_on-instance_method">
+  
+    - (<tt>true</tt>, <tt>false</tt>) <strong>post_on</strong>(executor, *args, &amp;job) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>post job on executor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+132
+133
+134</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 132</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_post_on'>post_on</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+  <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_executor'>executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_job'>job</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="schedule-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>schedule</strong>(intended_time, default_executor = :io, &amp;task) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Schedules the block to be executed on executor in given intended_time.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>intended_time</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>, <tt>Time</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Numeric =&gt; run in <code>intended_time</code> seconds. Time =&gt; eun on time.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75
+76
+77</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+  <span class='const'>ScheduledPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="select-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>select</strong>(*channels) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>only proof of concept</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 107</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_channels'>channels</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_future'>future</span> <span class='kw'>do</span>
+    <span class='comment'># noinspection RubyArgCount
+</span>    <span class='const'>Channel</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_s'>s</span><span class='op'>|</span>
+      <span class='id identifier rubyid_channels'>channels</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_ch'>ch</span><span class='op'>|</span>
+        <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_take'>take</span><span class='lparen'>(</span><span class='id identifier rubyid_ch'>ch</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='op'>|</span> <span class='lbracket'>[</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ch'>ch</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="succeeded_future-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>succeeded_future</strong>(value, default_executor = :io) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns which is already completed in success state with value</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>which is already completed in success state with value</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_succeeded_future'>succeeded_future</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='symbol'>:io</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_completed_future'>completed_future</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="zip_events-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>) <strong>zip_events</strong>(*futures_and_or_events) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Constructs new <span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span> which is completed after all futures_and_or_events are complete
+(Future is completed when Success or Failed).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>futures_and_or_events</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+94
+95
+96</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 94</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_zip_events'>zip_events</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
+  <span class='const'>ZipEventsPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='symbol'>:io</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="zip_futures-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>) <strong>zip_futures</strong>(*futures_and_or_events) 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='zip-instance_method'>zip</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Constructs new <span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Concurrent::Edge::Future</a></span> which is completed after all futures_and_or_events are complete. Its value is array
+of dependent future values. If there is an error it fails with the first one. Event does not
+have a value so it&#39;s represented by nil in the array of values.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>futures_and_or_events</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Edge::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Edge::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+84
+85
+86</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/edge/future.rb', line 84</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_zip_futures'>zip_futures</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
+  <span class='const'>ZipFuturesPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='symbol'>:io</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Sat Feb 27 09:06:57 2016 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.2.3).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

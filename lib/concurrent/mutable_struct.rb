@@ -10,7 +10,7 @@ module Concurrent
   module MutableStruct
     include Synchronization::AbstractStruct
 
-    # @!macro [new] struct_new
+    # @!macro struct_new
     #
     #   Factory for creating new struct classes.
     #
@@ -42,7 +42,7 @@ module Concurrent
     #
     #   @see http://ruby-doc.org/core-2.2.0/Struct.html#method-c-new Ruby standard library `Struct#new`
 
-    # @!macro [attach] struct_values
+    # @!macro struct_values
     #
     #   Returns the values for this struct as an Array.
     #
@@ -53,7 +53,7 @@ module Concurrent
     end
     alias_method :to_a, :values
 
-    # @!macro [attach] struct_values_at
+    # @!macro struct_values_at
     #
     #   Returns the struct member values for each selector as an Array.
     #
@@ -64,7 +64,7 @@ module Concurrent
       synchronize { ns_values_at(indexes) }
     end
 
-    # @!macro [attach] struct_inspect
+    # @!macro struct_inspect
     #
     #   Describe the contents of this struct in a string.
     #
@@ -74,7 +74,7 @@ module Concurrent
     end
     alias_method :to_s, :inspect
 
-    # @!macro [attach] struct_merge
+    # @!macro struct_merge
     #
     #   Returns a new struct containing the contents of `other` and the contents
     #   of `self`. If no block is specified, the value for entries with duplicate
@@ -95,7 +95,7 @@ module Concurrent
       synchronize { ns_merge(other, &block) }
     end
 
-    # @!macro [attach] struct_to_h
+    # @!macro struct_to_h
     #
     #   Returns a hash containing the names and values for the struct’s members.
     #
@@ -104,7 +104,7 @@ module Concurrent
       synchronize { ns_to_h }
     end
 
-    # @!macro [attach] struct_get
+    # @!macro struct_get
     #
     #   Attribute Reference
     #
@@ -119,7 +119,7 @@ module Concurrent
       synchronize { ns_get(member) }
     end
 
-    # @!macro [attach] struct_equality
+    # @!macro struct_equality
     #
     #   Equality
     #
@@ -129,7 +129,7 @@ module Concurrent
       synchronize { ns_equality(other) }
     end
 
-    # @!macro [attach] struct_each
+    # @!macro struct_each
     #
     #   Yields the value of each struct member in order. If no block is given
     #   an enumerator is returned.
@@ -141,7 +141,7 @@ module Concurrent
       synchronize { ns_each(&block) }
     end
 
-    # @!macro [attach] struct_each_pair
+    # @!macro struct_each_pair
     #
     #   Yields the name and value of each struct member in order. If no block is
     #   given an enumerator is returned.
@@ -154,7 +154,7 @@ module Concurrent
       synchronize { ns_each_pair(&block) }
     end
 
-    # @!macro [attach] struct_select
+    # @!macro struct_select
     #
     #   Yields each member value from the struct to the block and returns an Array
     #   containing the member values from the struct for which the given block
@@ -169,7 +169,7 @@ module Concurrent
       synchronize { ns_select(&block) }
     end
 
-    # @!macro [new] struct_set
+    # @!macro struct_set
     #
     #   Attribute Assignment
     #
