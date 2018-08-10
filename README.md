@@ -16,7 +16,7 @@ Modern concurrency tools for Ruby. Inspired by
 [Java](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/package-summary.html),
 and classic concurrency patterns.
 
-<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/doc-source/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
+<img src="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/docs-source/logo/concurrent-ruby-logo-300x300.png" align="right" style="margin-left: 20px;" />
 
 The design goals of this gem are:
 
