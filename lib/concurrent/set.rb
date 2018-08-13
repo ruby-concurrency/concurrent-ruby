@@ -3,60 +3,64 @@ require 'concurrent/thread_safe/util'
 require 'set'
 
 module Concurrent
-  case
-  when Concurrent.on_cruby?
 
-    # Because MRI never runs code in parallel, the existing
-    # non-thread-safe structures should usually work fine.
+  # @!macro concurrent_set
+  #
+  #   A thread-safe subclass of Set. This version locks against the object
+  #   itself for every method call, ensuring only one thread can be reading
+  #   or writing at a time. This includes iteration methods like `#each`.
+  #
+  #   @note `a += b` is **not** a **thread-safe** operation on
+  #   `Concurrent::Set`. It reads Set `a`, then it creates new `Concurrent::Set`
+  #   which is union of `a` and `b`, then it writes the union to `a`.
+  #   The read and write are independent operations they do not form a single atomic
+  #   operation therefore when two `+=` operations are executed concurrently updates
+  #   may be lost. Use `#merge` instead.
+  #
+  #   @see http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html Ruby standard library `Set`
 
-    # @!macro concurrent_Set
-    #
-    #   A thread-safe subclass of Set. This version locks against the object
-    #   itself for every method call, ensuring only one thread can be reading
-    #   or writing at a time. This includes iteration methods like `#each`.
-    #
-    #   @note `a += b` is **not** a **thread-safe** operation on
-    #   `Concurrent::Set`. It reads Set `a`, then it creates new `Concurrent::Set`
-    #   which is union of `a` and `b`, then it writes the union to `a`.
-    #   The read and write are independent operations they do not form a single atomic
-    #   operation therefore when two `+=` operations are executed concurrently updates
-    #   may be lost. Use `#merge` instead.
-    #
-    #   @see http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html Ruby standard library `Set`
-    class Set < ::Set;
-    end
 
-  when Concurrent.on_jruby?
-    require 'jruby/synchronized'
+  # @!macro internal_implementation_note
+  SetImplementation = case
+                      when Concurrent.on_cruby?
+                        # Because MRI never runs code in parallel, the existing
+                        # non-thread-safe structures should usually work fine.
+                        ::Set
 
-    # @!macro concurrent_Set
-    class Set < ::Set
-      include JRuby::Synchronized
-    end
+                      when Concurrent.on_jruby?
+                        require 'jruby/synchronized'
 
-  when Concurrent.on_rbx?
-    require 'monitor'
-    require 'concurrent/thread_safe/util/data_structures'
+                        class JRubySet < ::Set
+                          include JRuby::Synchronized
+                        end
+                        JRubySet
 
-    # @!macro concurrent_Set
-    class Set < ::Set
-    end
+                      when Concurrent.on_rbx?
+                        require 'monitor'
+                        require 'concurrent/thread_safe/util/data_structures'
 
-    ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Set
+                        class RbxSet < ::Set
+                        end
+                        ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Set
+                        RbxSet
 
-  when Concurrent.on_truffleruby?
-    require 'concurrent/thread_safe/util/data_structures'
+                      when Concurrent.on_truffleruby?
+                        require 'concurrent/thread_safe/util/data_structures'
 
-    # @!macro concurrent_array
-    class Set < ::Set
-    end
+                        class TruffleRubySet < ::Set
+                        end
 
-    ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Set
+                        ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Set
+                        TruffleRubySet
 
-  else
-    warn 'Possibly unsupported Ruby implementation'
-    class Set < ::Set
-    end
+                      else
+                        warn 'Possibly unsupported Ruby implementation'
+                        ::Set
+                      end
+  private_constant :SetImplementation
+
+  # @!macro concurrent_set
+  class Set < SetImplementation
   end
 end
 

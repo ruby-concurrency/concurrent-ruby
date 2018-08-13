@@ -7,6 +7,7 @@ module Concurrent
 
     class Future < AbstractEventFuture
 
+      # @!macro warn.edge
       module ActorIntegration
         # Asks the actor with its value.
         # @return [Future] new future with the response form the actor
@@ -48,6 +49,7 @@ module Concurrent
       include FlatShortcuts
     end
 
+    # @!macro warn.edge
     class Channel < Concurrent::Synchronization::Object
       safe_initialization!
 
@@ -139,6 +141,7 @@ module Concurrent
     end
 
     class Future < AbstractEventFuture
+      # @!macro warn.edge
       module NewChannelIntegration
 
         # @param [Channel] channel to push to.
@@ -154,7 +157,7 @@ module Concurrent
     end
 
     module FactoryMethods
-
+      # @!macro warn.edge
       module NewChannelIntegration
 
         # Selects a channel which is ready to be read from.

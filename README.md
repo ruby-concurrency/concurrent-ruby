@@ -93,7 +93,7 @@ We also have a [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby
     Like a Future scheduled for a specific future time.
 *   [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/TimerTask.html):
     A Thread that periodically wakes up to perform work at regular intervals.
-*   [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html):
+*   [Promises](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html):
     Unified implementation of futures and promises which combines features of previous `Future`,
     `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and (partially) `TimerTask` into a single 
     framework. It extensively uses the new synchronization layer to make all the features 
@@ -186,21 +186,21 @@ Deprecated features are still available and bugs are being fixed, but new featur
   
 *   ~~[Future](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html):
     An asynchronous operation that produces a value.~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
-    *   ~~[Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent.html#dataflow-class_method):
+    [Promises](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+    *   ~~[.dataflow](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent.html#dataflow-class_method):
         Built on Futures, Dataflow allows you to create a task that will be scheduled when all of 
         its data dependencies are available.~~ Replaced by 
-        [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+        [Promises](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
 *   ~~[Promise](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promise.html): Similar
     to Futures, with more features.~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+    [Promises](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
 *   ~~[Delay](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Delay.html) Lazy evaluation
     of a block yielding an immutable result. Based on Clojure's 
     [delay](https://clojuredocs.org/clojure.core/delay).~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+    [Promises](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
 *   ~~[IVar](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/IVar.html) Similar to a
     "future" but can be manually assigned once, after which it becomes immutable.~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+    [Promises](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
     
 ### Edge Features
 

@@ -24,7 +24,7 @@ matrix:
       rvm: 2.5.1
       script:
       - bundle install --with documentation
-      - bundle exec rake spec:docs_uptodate
+      - bundle exec rake yard:master:uptodate
 
     - name: MRI 2.4.4
       rvm: 2.4.4

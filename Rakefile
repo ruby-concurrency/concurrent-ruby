@@ -29,10 +29,12 @@ end
 
 require 'rake_compiler_dock'
 namespace :repackage do
-  desc '- with Windows fat distributions'
+  desc '* with Windows fat distributions'
   task :all do
     Dir.chdir(__dir__) do
       sh 'bundle package'
+      # needed only if the jar is built outside of docker
+      Rake::Task['lib/concurrent/concurrent_ruby.jar'].invoke
       RakeCompilerDock.exec 'support/cross_building.sh'
     end
   end
@@ -60,19 +62,19 @@ begin
                 --tag ~notravis ]
 
   namespace :spec do
-    desc '- Configured for ci'
+    desc '* Configured for ci'
     RSpec::Core::RakeTask.new(:ci) do |t|
       t.rspec_opts = [*options].join(' ')
     end
 
-    desc '- test packaged and installed gems instead of local files'
-    task :installed => :repackage do
+    desc '* test packaged and installed gems instead of local files'
+    task :installed do
       Dir.chdir(__dir__) do
         sh 'gem install pkg/concurrent-ruby-1.1.0.pre1.gem'
         sh 'gem install pkg/concurrent-ruby-ext-1.1.0.pre1.gem' if Concurrent.on_cruby?
         sh 'gem install pkg/concurrent-ruby-edge-0.4.0.pre1.gem'
         ENV['NO_PATH'] = 'true'
-        sh 'bundle install'
+        sh 'bundle update'
         sh 'bundle exec rake spec:ci'
       end
     end
@@ -85,6 +87,8 @@ begin
 rescue LoadError => e
   puts 'RSpec is not installed, skipping test task definitions: ' + e.message
 end
+
+current_yard_version_name = Concurrent::VERSION.split('.')[0..2].join('.')
 
 begin
   require 'yard'
@@ -99,25 +103,45 @@ begin
                          '--title', 'Concurrent Ruby',
                          '--template', 'default',
                          '--template-path', 'yard-template',
-                         '--default-return', 'undocumented',]
+                         '--default-return', 'undocumented']
 
   desc 'Generate YARD Documentation (signpost, master)'
   task :yard => ['yard:signpost', 'yard:master']
 
   namespace :yard do
 
-    desc '- eval markdown files'
+    desc '* eval markdown files'
     task :eval_md do
       Dir.chdir File.join(__dir__, 'docs-source') do
         sh 'bundle exec md-ruby-eval --auto'
       end
     end
 
+    task :update_readme do
+      Dir.chdir __dir__ do
+        content = File.read(File.join('README.md')).
+            gsub(/\[([\w ]+)\]\(http:\/\/ruby-concurrency\.github\.io\/concurrent-ruby\/master\/.*\)/) do |_|
+          case $1
+          when 'LockFreeLinkedSet'
+            "{Concurrent::Edge::#{$1} #{$1}}"
+          when '.dataflow'
+            '{Concurrent.dataflow Concurrent.dataflow}'
+          when 'thread pool'
+            '{file:thread_pools.md thread pool}'
+          else
+            "{Concurrent::#{$1} #{$1}}"
+          end
+        end
+        File.write 'tmp/README.md', content
+      end
+    end
+
     define_yard_task = -> name do
-      desc "- of #{name} into subdir #{name}"
+      desc "* of #{name} into subdir #{name}"
       YARD::Rake::YardocTask.new(name) do |yard|
         yard.options.push(
             '--output-dir', "docs/#{name}",
+            '--main', 'tmp/README.md',
             *common_yard_options)
         yard.files = ['./lib/**/*.rb',
                       './lib-edge/**/*.rb',
@@ -125,17 +149,16 @@ begin
                       '-',
                       'docs-source/thread_pools.md',
                       'docs-source/promises.out.md',
-                      'README.md',
-                      'LICENSE.txt',
+                      'LICENSE.md',
                       'CHANGELOG.md']
       end
-      Rake::Task[name].prerequisites.push 'yard:eval_md'
+      Rake::Task[name].prerequisites.push 'yard:eval_md', 'yard:update_readme'
     end
 
-    define_yard_task.call(Concurrent::VERSION.split('.')[0..2].join('.'))
-    define_yard_task.call('master')
+    define_yard_task.call current_yard_version_name
+    define_yard_task.call 'master'
 
-    desc "- signpost for versions"
+    desc "* signpost for versions"
     YARD::Rake::YardocTask.new(:signpost) do |yard|
       yard.options.push(
           '--output-dir', 'docs',
@@ -143,35 +166,59 @@ begin
           *common_yard_options)
       yard.files = ['no-lib']
     end
-  end
 
-  namespace :spec do
-    desc '- ensure that generated documentation is matching the source code'
-    task :docs_uptodate do
-      Dir.chdir(__dir__) do
-        begin
-          FileUtils.cp_r 'docs', 'docs-copy', verbose: true
-          Rake::Task[:yard].invoke
-          sh 'diff -r docs/ docs-copy/'
-        ensure
-          FileUtils.rm_rf 'docs-copy', verbose: true
+    define_uptodate_task = -> name do
+      namespace name do
+        desc "** ensure that #{name} generated documentation is matching the source code"
+        task :uptodate do
+          Dir.chdir(__dir__) do
+            begin
+              FileUtils.cp_r 'docs', 'docs-copy', verbose: true
+              Rake::Task["yard:#{name}"].invoke
+              sh 'diff -r docs/ docs-copy/'
+            ensure
+              FileUtils.rm_rf 'docs-copy', verbose: true
+            end
+          end
         end
       end
     end
+
+    define_uptodate_task.call current_yard_version_name
+    define_uptodate_task.call 'master'
   end
 
 rescue LoadError => e
   puts 'YARD is not installed, skipping documentation task definitions: ' + e.message
 end
 
+desc 'build, test, and publish the gem'
+task :release => ['release:checks', 'release:build', 'release:test', 'release:publish']
+
 namespace :release do
   # Depends on environment of @pitr-ch
 
-  mri_version   = '2.4.3'
+  mri_version   = '2.5.1'
   jruby_version = 'jruby-9.1.17.0'
 
+  task :checks => "yard:#{current_yard_version_name}:uptodate" do
+    Dir.chdir(__dir__) do
+      begin
+        STDOUT.puts "Is this a final release build? (Do git checks?) (y/n)"
+        input = STDIN.gets.strip.downcase
+      end until %w(y n).include?(input)
+      if input == 'y'
+        sh 'test -z "$(git status --porcelain)"'
+        sh 'git fetch'
+        sh 'test $(git show-ref --verify --hash refs/heads/master) = $(git show-ref --verify --hash refs/remotes/github/master)'
+      end
+    end
+  end
+
+  desc '* build all *.gem files necessary for release'
   task :build => 'repackage:all'
 
+  desc '* test actual installed gems instead of cloned repository on MRI and JRuby'
   task :test do
     Dir.chdir(__dir__) do
       old = ENV['RBENV_VERSION']
@@ -190,27 +237,43 @@ namespace :release do
     end
   end
 
-  task :push do
-    Dir.chdir(__dir__) do
-      sh 'git fetch'
-      sh 'test $(git show-ref --verify --hash refs/heads/master) = $(git show-ref --verify --hash refs/remotes/github/master)'
+  desc '* do all nested steps'
+  task :publish => ['publish:ask', 'publish:tag', 'publish:rubygems', 'publish:post_steps']
 
-      sh "git tag v#{Concurrent::VERSION}"
-      sh "git tag edge-v#{Concurrent::EDGE_VERSION}"
-      sh "git push github v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
-
-      sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
-      sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
-      sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem"
-      sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x64-mingw32.gem"
-      sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x86-mingw32.gem"
+  namespace :publish do
+    task :ask do
+      begin
+        STDOUT.puts "Do you want to publish? (y/n)"
+        input = STDIN.gets.strip.downcase
+      end until %w(y n).include?(input)
+      raise 'reconsidered' if input == 'n'
     end
-  end
 
-  task :notify do
-    puts 'Manually: create a release on GitHub with relevant changelog part'
-    puts 'Manually: send email same as release with relevant changelog part'
-    puts 'Manually: update documentation'
-    puts '  $ bundle exec rake yard:push'
+    desc '** tag HEAD with current version and push to github'
+    task :tag do
+      Dir.chdir(__dir__) do
+        sh "git tag v#{Concurrent::VERSION}"
+        sh "git tag edge-v#{Concurrent::EDGE_VERSION}"
+        sh "git push github v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
+      end
+    end
+
+    desc '** push all *.gem files to rubygems'
+    task :rubygems do
+      Dir.chdir(__dir__) do
+        sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
+        sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
+        sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem"
+        sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x64-mingw32.gem"
+        sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x86-mingw32.gem"
+      end
+    end
+
+    desc '** print post release steps'
+    task :post_steps do
+      puts 'Manually: create a release on GitHub with relevant changelog part'
+      puts 'Manually: send email same as release with relevant changelog part'
+      puts 'Manually: tweet'
+    end
   end
 end

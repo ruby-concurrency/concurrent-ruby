@@ -18,6 +18,7 @@ module Concurrent
     end
   end
 
+  # Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available.
   # {include:file:docs-source/dataflow.md}
   #
   # @param [Future] inputs zero or more `Future` operations that this dataflow depends upon

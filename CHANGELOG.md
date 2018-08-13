@@ -2,7 +2,7 @@
 
 concurrent-ruby:
 
-* [Promises](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html)
+* [Promises](http://ruby-concurrency.github.io/concurrent-ruby/1.1.0/Concurrent/Promises.html)
   are moved from `concurrent-ruby-edge` to `concurrent-ruby`
 * Add support for TruffleRuby
   * (#734) Fix Array/Hash/Set construction broken on TruffleRuby

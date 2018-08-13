@@ -2,7 +2,7 @@
 
 A Thread Pool is an abstraction that you can give a unit of work to, and the work will be executed by one of possibly several threads in the pool. One motivation for using thread pools is the overhead of creating and destroying threads. Creating a pool of reusable worker threads then repeatedly re-using threads from the pool can have huge performance benefits for a long-running application like a service.
 
-`concurrent-ruby` also offers some higher level abstractions than thread pools. For many problems, you will be better served by using one of these -- if you are thinking of using a thread pool, we especially recommend you look at and understand [Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html)s before deciding to use thread pools directly instead.  Futures are implemented using thread pools, but offer a higher level abstraction.
+`concurrent-ruby` also offers some higher level abstractions than thread pools. For many problems, you will be better served by using one of these -- if you are thinking of using a thread pool, we especially recommend you look at and understand {Concurrent::Future}s before deciding to use thread pools directly instead.  Futures are implemented using thread pools, but offer a higher level abstraction.
 
 But there are some problems for which directly using a thread pool is an appropriate solution. Or, you may wish to make your own thread pool to run Futures on, to be separate or have different characteristics than the global thread pool that Futures run on by default.
 
@@ -10,7 +10,7 @@ Thread pools are considered 'executors' -- an object you can give a unit of work
 
 ## FixedThreadPool
 
-A [FixedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/FixedThreadPool.html) contains a fixed number of threads. When you give a unit of work to it, an available thread will be used to execute.
+A {Concurrent::FixedThreadPool} contains a fixed number of threads. When you give a unit of work to it, an available thread will be used to execute.
 
 ~~~ruby
 pool = Concurrent::FixedThreadPool.new(5) # 5 threads
@@ -29,7 +29,7 @@ The `FixedThreadPool` is based on the semantics used in Java for [java.util.conc
 
 ## CachedThreadPool
 
-A [CachedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CachedThreadPool.html) will create as many threads as necessary for work posted to it. If you post work to a `CachedThreadPool` when all its existing threads are busy, it will create a new thread to execute that work, and then keep that thread cached for future work. Cached threads are reclaimed (destroyed) after they are idle for a while.
+A {Concurrent::CachedThreadPool} will create as many threads as necessary for work posted to it. If you post work to a `CachedThreadPool` when all its existing threads are busy, it will create a new thread to execute that work, and then keep that thread cached for future work. Cached threads are reclaimed (destroyed) after they are idle for a while.
 
 CachedThreadPools typically improve the performance of programs that execute many short-lived asynchronous tasks.
 
@@ -46,7 +46,7 @@ If you'd like to configure a maximum number of threads, you can use the more gen
 
 ## ThreadPoolExecutor
 
-A [ThreadPoolExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html) is a general-purpose thread pool that can be configured to have various behaviors.
+A {Concurrent::ThreadPoolExecutor} is a general-purpose thread pool that can be configured to have various behaviors.
 
 A `ThreadPoolExecutor` will automatically adjust the pool size according to the bounds set by `min-threads` and `max-threads`.
 When a new task is submitted and fewer than `min-threads` threads are running, a new thread is created to handle the request, even if other worker threads are idle.
@@ -130,16 +130,16 @@ The `shutdown?` method will return true for a stopped pool, regardless of whethe
 
   There are several other thread pools and executors in the `concurrent-ruby` library. See the API documentation for more information:
 
-  * [CachedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CachedThreadPool.html)
-  * [FixedThreadPool](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/FixedThreadPool.html)
-  * [ImmediateExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmediateExecutor.html)
-  * [PerThreadExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/PerThreadExecutor.html)
-  * [SafeTaskExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SafeTaskExecutor.html)
-  * [SerializedExecution](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SerializedExecution.html)
-  * [SerializedExecutionDelegator](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SerializedExecutionDelegator.html)
-  * [SingleThreadExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SingleThreadExecutor.html)
-  * [ThreadPoolExecutor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html)
-  * [TimerSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerSet.html)
+  * {Concurrent::CachedThreadPool}
+  * {Concurrent::FixedThreadPool}
+  * {Concurrent::ImmediateExecutor}
+  * {Concurrent::SimpleExecutorService}
+  * {Concurrent::SafeTaskExecutor}
+  * {Concurrent::SerializedExecution}
+  * {Concurrent::SerializedExecutionDelegator}
+  * {Concurrent::SingleThreadExecutor}
+  * {Concurrent::ThreadPoolExecutor}
+  * {Concurrent::TimerSet}
 
 ## Global Thread Pools
 

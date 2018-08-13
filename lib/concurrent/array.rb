@@ -37,7 +37,6 @@ module Concurrent
                           require 'monitor'
                           require 'concurrent/thread_safe/util/data_structures'
 
-                          # @!macro concurrent_array
                           class RbxArray < ::Array
                           end
 
@@ -47,7 +46,6 @@ module Concurrent
                         when Concurrent.on_truffleruby?
                           require 'concurrent/thread_safe/util/data_structures'
 
-                          # @!macro concurrent_array
                           class TruffleRubyArray < ::Array
                           end
 

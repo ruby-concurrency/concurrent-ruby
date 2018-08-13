@@ -1,4 +1,4 @@
-Dataflow allows you to create a task that will be scheduled when all of its data dependencies are available. Data dependencies are `Future` values. The dataflow task itself is also a `Future` value, so you can build up a graph of these tasks, each of which is run when all the data and other tasks it depends on are available or completed. 
+Data dependencies are `Future` values. The dataflow task itself is also a `Future` value, so you can build up a graph of these tasks, each of which is run when all the data and other tasks it depends on are available or completed. 
 
 Our syntax is somewhat related to that of Akka's `flow` and Habanero Java's `DataDrivenFuture`. However unlike Akka we don't schedule a task at all until it is ready to run, and unlike Habanero Java we pass the data values into the task instead of dereferencing them again in the task. 
 

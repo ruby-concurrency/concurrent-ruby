@@ -22,7 +22,6 @@ module Concurrent
                        when Concurrent.on_jruby?
                          require 'jruby/synchronized'
 
-                         # @!macro concurrent_hash
                          class JRubyHash < ::Hash
                            include JRuby::Synchronized
                          end
@@ -32,7 +31,6 @@ module Concurrent
                          require 'monitor'
                          require 'concurrent/thread_safe/util/data_structures'
 
-                         # @!macro concurrent_hash
                          class RbxHash < ::Hash
                          end
                          ThreadSafe::Util.make_synchronized_on_rbx RbxHash
@@ -41,7 +39,6 @@ module Concurrent
                        when Concurrent.on_truffleruby?
                          require 'concurrent/thread_safe/util/data_structures'
 
-                         # @!macro concurrent_hash
                          class TruffleRubyHash < ::Hash
                          end
 

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Concurrent::Synchronization::Object
+  
+    &mdash; Concurrent Ruby
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "Concurrent::Synchronization::Object";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (O)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Synchronization.html" title="Concurrent::Synchronization (module)">Synchronization</a></span></span>
+     &raquo; 
+    <span class="title">Object</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Concurrent::Synchronization::Object
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'>ObjectImplementation</span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">Concurrent::Synchronization::Object</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/concurrent/synchronization/object.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Abstract object providing final, volatile, ans CAS extensions to build other concurrent abstractions.</p>
+
+<ul>
+<li>final instance variables see <span class='object_link'><a href="#safe_initialization!-class_method" title="Concurrent::Synchronization::Object.safe_initialization! (method)">Object.safe_initialization!</a></span></li>
+<li>volatile instance variables see <span class='object_link'><a href="#attr_volatile-class_method" title="Concurrent::Synchronization::Object.attr_volatile (method)">Object.attr_volatile</a></span></li>
+<li>volatile instance variables see <span class='object_link'><a href="#attr_atomic-class_method" title="Concurrent::Synchronization::Object.attr_atomic (method)">Object.attr_atomic</a></span></li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="../Atom.html" title="Concurrent::Atom (class)">Atom</a></span>, <span class='object_link'><a href="../AtomicMarkableReference.html" title="Concurrent::AtomicMarkableReference (class)">AtomicMarkableReference</a></span>, <span class='object_link'><a href="../Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span>, <span class='object_link'><a href="../Cancellation/Token.html" title="Concurrent::Cancellation::Token (class)">Cancellation::Token</a></span>, <span class='object_link'><a href="../Channel/Tick.html" title="Concurrent::Channel::Tick (class)">Channel::Tick</a></span>, <span class='object_link'><a href="../Edge/LockFreeLinkedSet/Node.html" title="Concurrent::Edge::LockFreeLinkedSet::Node (class)">Edge::LockFreeLinkedSet::Node</a></span>, <span class='object_link'><a href="../LazyRegister.html" title="Concurrent::LazyRegister (class)">LazyRegister</a></span>, <span class='object_link'><a href="../LockFreeQueue/Node.html" title="Concurrent::LockFreeQueue::Node (class)">LockFreeQueue::Node</a></span>, <span class='object_link'><a href="../MVar.html" title="Concurrent::MVar (class)">MVar</a></span>, <span class='object_link'><a href="../Maybe.html" title="Concurrent::Maybe (class)">Maybe</a></span>, <span class='object_link'><a href="../ProcessingActor.html" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span>, <span class='object_link'><a href="../Promises/AbstractEventFuture.html" title="Concurrent::Promises::AbstractEventFuture (class)">Promises::AbstractEventFuture</a></span>, <span class='object_link'><a href="../Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Promises::Channel</a></span>, <span class='object_link'><a href="../ReadWriteLock.html" title="Concurrent::ReadWriteLock (class)">ReadWriteLock</a></span>, <span class='object_link'><a href="../ReentrantReadWriteLock.html" title="Concurrent::ReentrantReadWriteLock (class)">ReentrantReadWriteLock</a></span>, <span class='object_link'><a href="../TVar.html" title="Concurrent::TVar (class)">TVar</a></span>, <span class='object_link'><a href="../Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span></p>
+</div>
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#attr_atomic-class_method" title="attr_atomic (class method)">.<strong>attr_atomic</strong>(*names)  &#x21d2; Array&lt;Symbol&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates methods for reading and writing to a instance variable with volatile (Java) semantic as <span class='object_link'><a href="#attr_volatile-class_method" title="Concurrent::Synchronization::Object.attr_volatile (method)">Object.attr_volatile</a></span> does.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#attr_volatile-class_method" title="attr_volatile (class method)">.<strong>attr_volatile</strong>(*names)  &#x21d2; Array&lt;Symbol&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates methods for reading and writing (as <code>attr_accessor</code> does) to a instance variable with volatile (Java) semantic.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ensure_safe_initialization_when_final_fields_are_present-class_method" title="ensure_safe_initialization_when_final_fields_are_present (class method)">.<strong>ensure_safe_initialization_when_final_fields_are_present</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>For testing purposes, quite slow.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#new-class_method" title="new (class method)">.<strong>new</strong>(*args, &amp;block)  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#safe_initialization!-class_method" title="safe_initialization! (class method)">.<strong>safe_initialization!</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>By calling this method on a class, it and all its children are marked to be constructed safely.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#safe_initialization%3F-class_method" title="safe_initialization? (class method)">.<strong>safe_initialization?</strong>  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If this class is safely initialized.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#volatile_cas_fields-class_method" title="volatile_cas_fields (class method)">.<strong>volatile_cas_fields</strong>(inherited = true)  &#x21d2; Array&lt;Symbol&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns defined volatile with CAS fields on this class.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Has to be called by children.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Synchronization::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has to be called by children.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+36
+37
+38
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 36</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='kw'>super</span>
+  <span class='id identifier rubyid_initialize_volatile_with_cas'>initialize_volatile_with_cas</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="attr_atomic-class_method">
+  
+    .<strong>attr_atomic</strong>(*names)  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates methods for reading and writing to a instance variable with
+volatile (Java) semantic as <span class='object_link'><a href="#attr_volatile-class_method" title="Concurrent::Synchronization::Object.attr_volatile (method)">attr_volatile</a></span> does.
+The instance variable should be accessed oly through generated methods.
+This method generates following methods: <code>value</code>, <code>value=(new_value) #=&gt; new_value</code>,
+<code>swap_value(new_value) #=&gt; old_value</code>,
+<code>compare_and_set_value(expected, value) #=&gt; true || false</code>, <code>update_value(&amp;block)</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>names</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>of the instance variables to be volatile with CAS.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>names of defined method names.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 94</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_attr_atomic'>attr_atomic</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_names'>names</span><span class='rparen'>)</span>
+  <span class='ivar'>@volatile_cas_fields</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@volatile_cas_fields</span> <span class='op'>+=</span> <span class='id identifier rubyid_names'>names</span>
+  <span class='id identifier rubyid_safe_initialization!'>safe_initialization!</span>
+  <span class='id identifier rubyid_define_initialize_volatile_with_cas'>define_initialize_volatile_with_cas</span>
+
+  <span class='id identifier rubyid_names'>names</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='op'>|</span>
+    <span class='id identifier rubyid_ivar'>ivar</span> <span class='op'>=</span> <span class='symbol'>:&quot;@Atomic</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(?:^|_)(.)</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='backref'>$1</span><span class='period'>.</span><span class='id identifier rubyid_upcase'>upcase</span> <span class='rbrace'>}</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_class_eval'>class_eval</span> <span class='heredoc_beg'>&lt;&lt;-RUBY</span><span class='comma'>,</span> <span class='kw'>__FILE__</span><span class='comma'>,</span> <span class='kw'>__LINE__</span> <span class='op'>+</span> <span class='int'>1</span>
+<span class='tstring_content'>      def </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>
+        </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ivar'>ivar</span><span class='embexpr_end'>}</span><span class='tstring_content'>.get
+      end
+
+      def </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>=(value)
+        </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ivar'>ivar</span><span class='embexpr_end'>}</span><span class='tstring_content'>.set value
+      end
+
+      def swap_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>(value)
+        </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ivar'>ivar</span><span class='embexpr_end'>}</span><span class='tstring_content'>.swap value
+      end
+
+      def compare_and_set_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>(expected, value)
+        </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ivar'>ivar</span><span class='embexpr_end'>}</span><span class='tstring_content'>.compare_and_set expected, value
+      end
+
+      def update_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>(&amp;block)
+        </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ivar'>ivar</span><span class='embexpr_end'>}</span><span class='tstring_content'>.update(&amp;block)
+      end
+</span><span class='heredoc_end'>    RUBY
+</span>  <span class='kw'>end</span>
+  <span class='id identifier rubyid_names'>names</span><span class='period'>.</span><span class='id identifier rubyid_flat_map'>flat_map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> <span class='lbracket'>[</span><span class='id identifier rubyid_n'>n</span><span class='comma'>,</span> <span class='symbol'>:&quot;#{</span><span class='id identifier rubyid_n'>n</span><span class='embexpr_end'>}</span><span class='tstring_content'>=</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:&quot;swap_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_n'>n</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:&quot;compare_and_set_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_n'>n</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:&quot;update_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_n'>n</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="attr_volatile-class_method">
+  
+    .<strong>attr_volatile</strong>(*names)  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates methods for reading and writing (as <code>attr_accessor</code> does) to a instance variable with
+volatile (Java) semantic. The instance variable should be accessed oly through generated methods.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>names</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>of the instance variables to be volatile</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>names of defined method names</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 28</span>
+
+</pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="ensure_safe_initialization_when_final_fields_are_present-class_method">
+  
+    .<strong>ensure_safe_initialization_when_final_fields_are_present</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>For testing purposes, quite slow. Injects assert code to new method which will raise if class instance contains
+any instance variables with CamelCase names and isn&#39;t <span class='object_link'><a href="#safe_initialization%3F-class_method" title="Concurrent::Synchronization::Object.safe_initialization? (method)">safe_initialization?</a></span>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 73</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_ensure_safe_initialization_when_final_fields_are_present'>ensure_safe_initialization_when_final_fields_are_present</span>
+  <span class='const'><span class='object_link'><a href="" title="Concurrent::Synchronization::Object (class)">Object</a></span></span><span class='period'>.</span><span class='id identifier rubyid_class_eval'>class_eval</span> <span class='kw'>do</span>
+    <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_object'>object</span> <span class='op'>=</span> <span class='kw'>super</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+    <span class='kw'>ensure</span>
+      <span class='id identifier rubyid_has_final_field'>has_final_field</span> <span class='op'>=</span> <span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_instance_variables'>instance_variables</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^@[A-Z]</span><span class='regexp_end'>/</span></span> <span class='rbrace'>}</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_has_final_field'>has_final_field</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_safe_initialization?'>safe_initialization?</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>there was an instance of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'> with final field but not marked with safe_initialization!</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="new-class_method">
+  
+    .<strong>new</strong>(*args, &amp;block)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59
+60</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_object'>object</span> <span class='op'>=</span> <span class='kw'>super</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+<span class='kw'>ensure</span>
+  <span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_full_memory_barrier'>full_memory_barrier</span> <span class='kw'>if</span> <span class='id identifier rubyid_object'>object</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="safe_initialization!-class_method">
+  
+    .<strong>safe_initialization!</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>By calling this method on a class, it and all its children are marked to be constructed safely. Meaning that
+all writes (ivar initializations) are made visible to all readers of newly constructed object. It ensures
+same behaviour as Java&#39;s final fields.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='kw'>class</span> <span class='const'>AClass</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Synchronization.html" title="Concurrent::Synchronization (module)">Synchronization</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="Concurrent::Synchronization::Object (class)">Object</a></span></span>
+  <span class='id identifier rubyid_safe_initialization!'>safe_initialization!</span>
+
+  <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+    <span class='ivar'>@AFinalValue</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>value</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># published safely, does not have to be synchronized
+</span>  <span class='kw'>end</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 52</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_safe_initialization!'>safe_initialization!</span>
+  <span class='comment'># define only once, and not again in children
+</span>  <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_safe_initialization?'>safe_initialization?</span>
+
+  <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_object'>object</span> <span class='op'>=</span> <span class='kw'>super</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>ensure</span>
+    <span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_full_memory_barrier'>full_memory_barrier</span> <span class='kw'>if</span> <span class='id identifier rubyid_object'>object</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@safe_initialization</span> <span class='op'>=</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="safe_initialization?-class_method">
+  
+    .<strong>safe_initialization?</strong>  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns if this class is safely initialized.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if this class is safely initialized.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_safe_initialization?'>safe_initialization?</span>
+  <span class='ivar'>@safe_initialization</span> <span class='op'>=</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='kw'>defined?</span> <span class='ivar'>@safe_initialization</span>
+  <span class='ivar'>@safe_initialization</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:safe_initialization?</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_safe_initialization?'>safe_initialization?</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="volatile_cas_fields-class_method">
+  
+    .<strong>volatile_cas_fields</strong>(inherited = true)  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns defined volatile with CAS fields on this class.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>inherited</span>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>true</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>should inherited volatile with CAS fields be returned?</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Returns defined volatile with CAS fields on this class.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+129
+130
+131
+132
+133</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/synchronization/object.rb', line 129</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_volatile_cas_fields'>volatile_cas_fields</span><span class='lparen'>(</span><span class='id identifier rubyid_inherited'>inherited</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='ivar'>@volatile_cas_fields</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_volatile_cas_fields'>volatile_cas_fields</span> <span class='kw'>if</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:volatile_cas_fields</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_inherited'>inherited</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='op'>+</span>
+      <span class='ivar'>@volatile_cas_fields</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated by <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_blank">yard</a>.
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    </div>
+  </body>
+</html>
