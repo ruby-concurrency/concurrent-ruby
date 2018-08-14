@@ -86,14 +86,14 @@ We also have a [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby
 
 #### General-purpose Concurrency Abstractions
 
-*   [Async](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Async.html): 
+*   [Async](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Async.html):
     A mixin module that provides simple asynchronous behavior to a class. Loosely based on Erlang's 
     [gen_server](http://www.erlang.org/doc/man/gen_server.html).
-*   [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ScheduledTask.html):
+*   [ScheduledTask](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ScheduledTask.html):
     Like a Future scheduled for a specific future time.
-*   [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerTask.html): 
+*   [TimerTask](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/TimerTask.html):
     A Thread that periodically wakes up to perform work at regular intervals.
-*   [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html):
+*   [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html):
     Unified implementation of futures and promises which combines features of previous `Future`,
     `Promise`, `IVar`, `Event`, `dataflow`, `Delay`, and (partially) `TimerTask` into a single 
     framework. It extensively uses the new synchronization layer to make all the features 
@@ -104,103 +104,103 @@ We also have a [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby
 
 Collection classes that were originally part of the (deprecated) `thread_safe` gem:
 
-*   [Array](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Array.html) A thread-safe 
+*   [Array](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Array.html) A thread-safe
     subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
-*   [Hash](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Hash.html) A thread-safe 
+*   [Hash](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Hash.html) A thread-safe
     subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
-*   [Set](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Set.html) A thread-safe 
+*   [Set](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Set.html) A thread-safe
     subclass of Ruby's standard [Set](http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html).
-*   [Map](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Map.html) A hash-like object 
+*   [Map](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Map.html) A hash-like object
     that should have much better performance characteristics, especially under high concurrency, 
     than `Concurrent::Hash`.
-*   [Tuple](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Tuple.html) A fixed size 
+*   [Tuple](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Tuple.html) A fixed size
     array with volatile (synchronized, thread safe) getters/setters.
 
 Value objects inspired by other languages:
 
-*   [Maybe](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Maybe.html) A thread-safe, 
+*   [Maybe](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Maybe.html) A thread-safe,
     immutable object representing an optional value, based on 
     [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
 
 Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
 
-*   [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmutableStruct.html) 
+*   [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ImmutableStruct.html)
     Immutable struct where values are set at construction and cannot be changed later.
-*   [MutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutableStruct.html) 
+*   [MutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/MutableStruct.html)
     Synchronized, mutable struct where values can be safely changed at any time.
-*   [SettableStruct](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SettableStruct.html) 
+*   [SettableStruct](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/SettableStruct.html)
     Synchronized, write-once struct where values can be set at most once, either at construction 
     or any time thereafter.
 
 Thread-safe variables:
 
-*   [Agent](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Agent.html): A way to 
+*   [Agent](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Agent.html): A way to
     manage shared, mutable, *asynchronous*, independent state. Based on Clojure's 
     [Agent](http://clojure.org/agents).
-*   [Atom](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atom.html): A way to manage 
+*   [Atom](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Atom.html): A way to manage
     shared, mutable, *synchronous*, independent state. Based on Clojure's 
     [Atom](http://clojure.org/atoms).
-*   [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicBoolean.html) 
+*   [AtomicBoolean](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/AtomicBoolean.html)
     A boolean value that can be updated atomically.
-*   [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/AtomicFixnum.html) 
+*   [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/AtomicFixnum.html)
     A numeric value that can be updated atomically.
-*   [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MutexAtomic.html) 
+*   [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/MutexAtomic.html)
     An object reference that may be updated atomically.
-*   [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Exchanger.html) 
+*   [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Exchanger.html)
     A synchronization point at which threads can pair and swap elements within pairs. Based on 
     Java's [Exchanger](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Exchanger.html).
-*   [MVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/MVar.html) A synchronized 
+*   [MVar](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/MVar.html) A synchronized
     single element container. Based on Haskell's 
     [MVar](https://hackage.haskell.org/package/base-4.8.1.0/docs/Control-Concurrent-MVar.html) and 
     Scala's [MVar](http://docs.typelevel.org/api/scalaz/nightly/index.html#scalaz.concurrent.MVar$).
-*   [ThreadLocalVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadLocalVar.html) 
+*   [ThreadLocalVar](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ThreadLocalVar.html)
     A variable where the value is different for each thread.
-*   [TVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html) A transactional 
+*   [TVar](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/TVar.html) A transactional
     variable implementing software transactional memory (STM). Based on Clojure's 
     [Ref](http://clojure.org/refs).
 
 #### Java-inspired ThreadPools and Other Executors
 
-*   See the [thread pool](http://ruby-concurrency.github.io/concurrent-ruby/file.thread_pools.html) 
+*   See the [thread pool](http://ruby-concurrency.github.io/concurrent-ruby/master/file.thread_pools.html)
     overview, which also contains a list of other Executors available.
 
 #### Thread Synchronization Classes and Algorithms
 
-*   [CountDownLatch](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CountDownLatch.html) 
+*   [CountDownLatch](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/CountDownLatch.html)
     A synchronization object that allows one thread to wait on multiple other threads.
-*   [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CyclicBarrier.html) 
+*   [CyclicBarrier](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/CyclicBarrier.html)
     A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.
-*   [Event](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Event.html) Old school 
+*   [Event](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Event.html) Old school
     kernel-style event.
-*   [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReadWriteLock.html) 
+*   [ReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ReadWriteLock.html)
     A lock that supports multiple readers but only one writer.
-*   [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ReentrantReadWriteLock.html) 
+*   [ReentrantReadWriteLock](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ReentrantReadWriteLock.html)
     A read/write lock with reentrant and upgrade features.
-*   [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Semaphore.html) 
+*   [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Semaphore.html)
     A counting-based locking mechanism that uses permits.
-*   [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Atomic/AtomicMarkableReference.html)
+*   [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Atomic/AtomicMarkableReference.html)
 
 #### Deprecated
 
 Deprecated features are still available and bugs are being fixed, but new features will not be added.
   
-*   ~~[Future](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html): 
+*   ~~[Future](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html):
     An asynchronous operation that produces a value.~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
-    *   ~~[Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent.html#dataflow-class_method): 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+    *   ~~[Dataflow](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent.html#dataflow-class_method):
         Built on Futures, Dataflow allows you to create a task that will be scheduled when all of 
         its data dependencies are available.~~ Replaced by 
-        [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
-*   ~~[Promise](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promise.html): Similar 
+        [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+*   ~~[Promise](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promise.html): Similar
     to Futures, with more features.~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
-*   ~~[Delay](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Delay.html) Lazy evaluation 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+*   ~~[Delay](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Delay.html) Lazy evaluation
     of a block yielding an immutable result. Based on Clojure's 
     [delay](https://clojuredocs.org/clojure.core/delay).~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).    
-*   ~~[IVar](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/IVar.html) Similar to a 
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
+*   ~~[IVar](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/IVar.html) Similar to a
     "future" but can be manually assigned once, after which it becomes immutable.~~ Replaced by 
-    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html).
+    [Promises Framework](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises.html).
     
 ### Edge Features
 
@@ -211,18 +211,18 @@ keep backward compatibility (there may also lack tests and documentation). Seman
 be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to
 `concurrent-ruby` when final.
 
-*   [Actor](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Actor.html): Implements 
+*   [Actor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Actor.html): Implements
     the Actor Model, where concurrent actors exchange messages.
     *Status: Partial documentation and tests; depends on new future/promise framework; stability is good.*
-*   [Channel](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/Channel.html):
+*   [Channel](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Channel.html):
     Communicating Sequential Processes ([CSP](https://en.wikipedia.org/wiki/Communicating_sequential_processes)).
     Functionally equivalent to Go [channels](https://tour.golang.org/concurrency/2) with additional
     inspiration from Clojure [core.async](https://clojure.github.io/core.async/).
     *Status: Partial documentation and tests.*
-*   [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LazyRegister.html)
-*   [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge/LockFreeLinkedSet.html)
+*   [LazyRegister](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/LazyRegister.html)
+*   [LockFreeLinkedSet](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Edge/LockFreeLinkedSet.html)
     *Status: will be moved to core soon.*
-*   [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/LockFreeStack.html)
+*   [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/LockFreeStack.html)
     *Status: missing documentation and tests.*
 
 ## Supported Ruby versions
