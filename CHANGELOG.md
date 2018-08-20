@@ -1,5 +1,7 @@
 ## Current
 
+## Release v1.1.0.pre1, edge v0.4.0.pre1 (15 Aug 2018)
+
 concurrent-ruby:
 
 * [Promises](http://ruby-concurrency.github.io/concurrent-ruby/1.1.0/Concurrent/Promises.html)
