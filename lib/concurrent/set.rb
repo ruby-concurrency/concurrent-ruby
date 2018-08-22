@@ -41,7 +41,7 @@ module Concurrent
 
                         class RbxSet < ::Set
                         end
-                        ThreadSafe::Util.make_synchronized_on_rbx Concurrent::Set
+                        ThreadSafe::Util.make_synchronized_on_rbx Concurrent::RbxSet
                         RbxSet
 
                       when Concurrent.on_truffleruby?
@@ -50,7 +50,7 @@ module Concurrent
                         class TruffleRubySet < ::Set
                         end
 
-                        ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::Set
+                        ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::TruffleRubySet
                         TruffleRubySet
 
                       else
