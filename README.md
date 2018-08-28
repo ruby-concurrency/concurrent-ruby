@@ -144,7 +144,7 @@ Thread-safe variables:
     A boolean value that can be updated atomically.
 *   [AtomicFixnum](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/AtomicFixnum.html)
     A numeric value that can be updated atomically.
-*   [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/MutexAtomic.html)
+*   [AtomicReference](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/AtomicReference.html)
     An object reference that may be updated atomically.
 *   [Exchanger](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Exchanger.html)
     A synchronization point at which threads can pair and swap elements within pairs. Based on 
@@ -178,7 +178,7 @@ Thread-safe variables:
     A read/write lock with reentrant and upgrade features.
 *   [Semaphore](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Semaphore.html)
     A counting-based locking mechanism that uses permits.
-*   [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Atomic/AtomicMarkableReference.html)
+*   [AtomicMarkableReference](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/AtomicMarkableReference.html)
 
 #### Deprecated
 
