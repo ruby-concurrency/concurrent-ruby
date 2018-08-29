@@ -966,6 +966,62 @@ e.g. when the tasks raises an exception.</p>
 </li>
 
       
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#zip_futures_over-class_method" title="#zip_futures_over (class method)">.<strong>zip_futures_over</strong>(enumerable, &amp;future_factory)  &#x21d2; Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      extended
+      from <span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over-class_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over (method)">FactoryMethods</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Shortcut of <span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over_on-instance_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over_on (method)">FactoryMethods#zip_futures_over_on</a></span> with default <code>:io</code> executor supplied.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#zip_futures_over_on-class_method" title="#zip_futures_over_on (class method)">.<strong>zip_futures_over_on</strong>(default_executor, enumerable) {|element| ... } &#x21d2; Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      extended
+      from <span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over_on-class_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over_on (method)">FactoryMethods</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates new future which is resolved after all the futures created by future_factory from enumerable elements are resolved.</p>
+</div></span>
+  
+</li>
+
+      
     </ul>
   
 
@@ -3002,6 +3058,221 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
   
 </ul>
 
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="zip_futures_over-class_method">
+  
+    .<strong>zip_futures_over</strong>(enumerable, &amp;future_factory)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over-class_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over (method)">FactoryMethods</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p><strong>Edge Features</strong> are under active development and may change frequently.</p>
+
+<ul>
+<li>  Deprecations are not added before incompatible changes.</li>
+<li>  Edge version: <em>major</em> is always 0, <em>minor</em> bump means incompatible change,
+<em>patch</em> bump means compatible change.</li>
+<li>  Edge features may also lack tests and documentation.</li>
+<li>  Features developed in <code>concurrent-ruby-edge</code> are expected to move
+to <code>concurrent-ruby</code> when finalised.</li>
+</ul>
+</div>
+  </div>
+
+<p>Shortcut of <span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over_on-instance_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over_on (method)">#zip_futures_over_on</a></span> with default <code>:io</code> executor supplied.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over_on-instance_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over_on (method)">#zip_futures_over_on</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="zip_futures_over_on-class_method">
+  
+    .<strong>zip_futures_over_on</strong>(default_executor, enumerable) {|element| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Promises/FactoryMethods.html#zip_futures_over_on-class_method" title="Concurrent::Promises::FactoryMethods#zip_futures_over_on (method)">FactoryMethods</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p><strong>Edge Features</strong> are under active development and may change frequently.</p>
+
+<ul>
+<li>  Deprecations are not added before incompatible changes.</li>
+<li>  Edge version: <em>major</em> is always 0, <em>minor</em> bump means incompatible change,
+<em>patch</em> bump means compatible change.</li>
+<li>  Edge features may also lack tests and documentation.</li>
+<li>  Features developed in <code>concurrent-ruby-edge</code> are expected to move
+to <code>concurrent-ruby</code> when finalised.</li>
+</ul>
+</div>
+  </div>
+
+<p>Creates new future which is resolved after all the futures created by future_factory from
+enumerable elements are resolved. Simplified it does:
+<code>zip(*enumerable.map { |e| future e, &amp;future_factory })</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='comment'># `#succ` calls are executed in parallel
+</span><span class='id identifier rubyid_zip_futures_over_on'>zip_futures_over_on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span> <span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span> <span class='comment'># =&gt; [2, 3]</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>default_executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. Default executor propagates to chained futures unless overridden with
+executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>enumerable</span>
+      
+      
+        <span class='type'>(<tt>Enumerable</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>a task to be executed in future</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>element</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>from enumerable</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a value of the future</p>
+</div>
+      
+    </li>
+  
+</ul>
 <p class="tag_title">Returns:</p>
 <ul class="return">
   

@@ -266,12 +266,12 @@ is already resolved.</p>
       <pre class="lines">
 
 
+1230
 1231
-1232
-1233</pre>
+1232</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1231</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1230</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolve_with'>resolve_with</span> <span class='const'>RESOLVED</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span>
@@ -319,12 +319,12 @@ is already resolved.</p>
       <pre class="lines">
 
 
+1237
 1238
-1239
-1240</pre>
+1239</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1238</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1237</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_hidden_resolvable'>with_hidden_resolvable</span>
   <span class='ivar'>@with_hidden_resolvable</span> <span class='op'>||=</span> <span class='const'>EventWrapperPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>

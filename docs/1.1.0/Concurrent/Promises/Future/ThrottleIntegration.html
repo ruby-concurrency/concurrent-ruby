@@ -203,12 +203,12 @@
       <pre class="lines">
 
 
-193
-194
-195</pre>
+191
+192
+193</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 193</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 191</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rescue_throttled_by'>rescue_throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_throttled_by'>throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_trigger'>trigger</span><span class='op'>|</span> <span class='id identifier rubyid_trigger'>trigger</span><span class='period'>.</span><span class='id identifier rubyid_rescue'>rescue</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
@@ -286,12 +286,12 @@
       <pre class="lines">
 
 
-186
-187
-188</pre>
+184
+185
+186</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 186</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 184</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_then_throttled_by'>then_throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_throttled_by'>throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_trigger'>trigger</span><span class='op'>|</span> <span class='id identifier rubyid_trigger'>trigger</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
