@@ -37,7 +37,7 @@
         <div id="menu">
   
     <a href="../../_index.html">Index (N)</a> &raquo;
-    <span class='title'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'>LockFreeStack</span></span>
+    <span class='title'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../LockFreeStack.html" title="Concurrent::LockFreeStack (class)">LockFreeStack</a></span></span>
      &raquo; 
     <span class="title">Node</span>
   
@@ -99,11 +99,16 @@
   
 </div>
 
-<div id="subclasses">
-  <h2>Direct Known Subclasses</h2>
-  <p class="children"><span class='object_link'><a href="Empty.html" title="Concurrent::LockFreeStack::Empty (class)">Empty</a></span></p>
-</div>
+<div class="docstring">
+  <div class="discussion">
+    
 
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
 
 
 
@@ -113,7 +118,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#next_node-instance_method" title="#next_node (instance method)">#<strong>next_node</strong>  &#x21d2; undocumented </a>
+      <a href="#next_node-instance_method" title="#next_node (instance method)">#<strong>next_node</strong>  &#x21d2; Node </a>
     
 
     
@@ -132,8 +137,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>TODO (pitr-ch 20-Dec-2016): Could be unified with Stack class?.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -141,7 +145,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>  &#x21d2; undocumented </a>
+      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>  &#x21d2; Object </a>
     
 
     
@@ -150,6 +154,8 @@
   
   
     
+      <span class="note title readonly">readonly</span>
+    
     
   
   
@@ -158,8 +164,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>TODO (pitr-ch 20-Dec-2016): Could be unified with Stack class?.</p>
-</div></span>
+    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -233,13 +238,13 @@
       <pre class="lines">
 
 
-15
-16
-17
-18</pre>
+21
+22
+23
+24</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 15</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 21</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_next_node'>next_node</span><span class='rparen'>)</span>
   <span class='ivar'>@value</span>     <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
@@ -260,7 +265,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="next_node-instance_method">
   
-    #<strong>next_node</strong>  &#x21d2; <tt>undocumented</tt>  <span class="extras">(readonly)</span>
+    #<strong>next_node</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::LockFreeStack::Node (class)">Node</a></span></tt>  <span class="extras">(readonly)</span>
   
 
   
@@ -268,13 +273,25 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>TODO (pitr-ch 20-Dec-2016): Could be unified with Stack class?</p>
-
+    
 
   </div>
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::LockFreeStack::Node (class)">Node</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -282,12 +299,12 @@
       <pre class="lines">
 
 
-11
 12
-13</pre>
+13
+14</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 11</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 12</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_next_node'>next_node</span>
   <span class='ivar'>@next_node</span>
@@ -302,7 +319,7 @@
       <div class="method_details ">
   <h3 class="signature " id="value-instance_method">
   
-    #<strong>value</strong>  &#x21d2; <tt>undocumented</tt> 
+    #<strong>value</strong>  &#x21d2; <tt>Object</tt> 
   
 
   
@@ -310,13 +327,25 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>TODO (pitr-ch 20-Dec-2016): Could be unified with Stack class?</p>
-
+    
 
   </div>
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -324,12 +353,12 @@
       <pre class="lines">
 
 
-11
-12
-13</pre>
+15
+16
+17</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 11</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 15</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span>
   <span class='ivar'>@value</span>

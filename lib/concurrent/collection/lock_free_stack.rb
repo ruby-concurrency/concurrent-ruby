@@ -1,6 +1,6 @@
 module Concurrent
 
-  # @!visibility private
+  # @!macro warn.edge
   class LockFreeStack < Synchronization::Object
 
     safe_initialization!
@@ -8,7 +8,13 @@ module Concurrent
     class Node
       # TODO (pitr-ch 20-Dec-2016): Could be unified with Stack class?
 
-      attr_reader :value, :next_node
+      # @return [Node]
+      attr_reader :next_node
+
+      # @return [Object]
+      attr_reader :value
+
+      # @!visibility private
       # allow to nil-ify to free GC when the entry is no longer relevant, not synchronised
       attr_writer :value
 
@@ -20,38 +26,46 @@ module Concurrent
       singleton_class.send :alias_method, :[], :new
     end
 
-    class Empty < Node
-      def next_node
-        self
-      end
+    # The singleton for empty node
+    EMPTY = Node[nil, nil]
+    def EMPTY.next_node
+      self
     end
-
-    EMPTY = Empty[nil, nil]
 
     attr_atomic(:head)
     private :head, :head=, :swap_head, :compare_and_set_head, :update_head
 
+    # @!visibility private
     def self.of1(value)
       new Node[value, EMPTY]
     end
 
+    # @!visibility private
     def self.of2(value1, value2)
       new Node[value1, Node[value2, EMPTY]]
     end
 
+    # @param [Node] head
     def initialize(head = EMPTY)
       super()
       self.head = head
     end
 
+    # @param [Node] head
+    # @return [true, false]
     def empty?(head = self.head)
       head.equal? EMPTY
     end
 
+    # @param [Node] head
+    # @param [Object] value
+    # @return [true, false]
     def compare_and_push(head, value)
       compare_and_set_head head, Node[value, head]
     end
 
+    # @param [Object] value
+    # @return [self]
     def push(value)
       while true
         current_head = head
@@ -59,14 +73,18 @@ module Concurrent
       end
     end
 
+    # @return [Node]
     def peek
       head
     end
 
+    # @param [Node] head
+    # @return [true, false]
     def compare_and_pop(head)
       compare_and_set_head head, head.next_node
     end
 
+    # @return [Object]
     def pop
       while true
         current_head = head
@@ -74,12 +92,16 @@ module Concurrent
       end
     end
 
+    # @param [Node] head
+    # @return [true, false]
     def compare_and_clear(head)
       compare_and_set_head head, EMPTY
     end
 
     include Enumerable
 
+    # @param [Node] head
+    # @return [self]
     def each(head = nil)
       return to_enum(:each, head) unless block_given?
       it = head || peek
@@ -90,6 +112,7 @@ module Concurrent
       self
     end
 
+    # @return [true, false]
     def clear
       while true
         current_head = head
@@ -98,14 +121,22 @@ module Concurrent
       end
     end
 
+    # @param [Node] head
+    # @return [true, false]
     def clear_if(head)
       compare_and_set_head head, EMPTY
     end
 
+    # @param [Node] head
+    # @param [Node] new_head
+    # @return [true, false]
     def replace_if(head, new_head)
       compare_and_set_head head, new_head
     end
 
+    # @return [self]
+    # @yield over the cleared stack
+    # @yieldparam [Object] value
     def clear_each(&block)
       while true
         current_head = head
