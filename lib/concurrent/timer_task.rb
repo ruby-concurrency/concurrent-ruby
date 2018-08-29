@@ -4,7 +4,7 @@ require 'concurrent/concern/observable'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/ruby_executor_service'
-require 'concurrent/executor/safe_task_executor'
+require 'concurrent/executor/ruby_single_thread_executor'
 require 'concurrent/scheduled_task'
 
 module Concurrent
