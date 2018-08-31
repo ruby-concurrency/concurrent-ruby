@@ -25,6 +25,13 @@ if Concurrent.on_jruby?
 
       it_should_behave_like :thread_pool_executor
 
+      context :prune do
+        it "is a no-op, pruning is handled by the JVM" do
+          executor = JavaThreadPoolExecutor.new
+          executor.prune_pool
+        end
+      end
+
       context '#overload_policy' do
 
         specify ':abort maps to AbortPolicy' do

@@ -23,6 +23,109 @@ module Concurrent
 
     it_should_behave_like :thread_pool_executor
 
+
+    context :prune do
+      subject do
+        RubyThreadPoolExecutor.new(idletime: 5, min_threads: 2, max_threads: 10)
+      end
+
+      Group = Struct.new :waiting_threads, :threads, :mutex, :cond
+
+      def prepare_thread_group(size)
+        cond = ConditionVariable.new
+        mutex = Mutex.new
+        threads = []
+        size.times do
+          subject.post do
+            mutex.synchronize do
+              threads << Thread.current
+              cond.wait(mutex)
+              threads.delete(Thread.current)
+            end
+          end
+        end
+        eventually(mutex: mutex) { expect(threads).to have_attributes(size: size) }
+        Group.new(threads, threads.dup, mutex, cond)
+      end
+
+      def wakeup_thread_group(group)
+        group.cond.broadcast
+        eventually(mutex: group.mutex) do
+          expect(group.waiting_threads).to have_attributes(size: 0)
+        end
+      end
+
+      before(:each) do
+        @now = Concurrent.monotonic_time
+        allow(Concurrent).to receive(:monotonic_time) { @now }
+
+        @group1 = prepare_thread_group(5)
+        @group2 = prepare_thread_group(5)
+      end
+
+      def eventually(mutex: nil, timeout: 5, &block)
+          start = Time.now
+          while Time.now - start < timeout
+            begin
+              if mutex
+                mutex.synchronize do
+                  return yield
+                end
+              else
+                return yield
+              end
+            rescue Exception => last_failure
+            end
+            Thread.pass
+          end
+          raise last_failure
+      end
+
+      it "triggers pruning when posting work if the last prune happened more than gc_interval ago" do
+        wakeup_thread_group(@group1)
+        @now += 6
+        wakeup_thread_group(@group2)
+        subject.post { }
+
+        eventually { expect(@group1.threads).to all(have_attributes(status: false)) }
+        eventually { expect(@group2.threads).to all(have_attributes(status: 'sleep')) }
+      end
+
+      it "does not trigger pruning when posting work if the last prune happened less than gc_interval ago" do
+        wakeup_thread_group(@group1)
+        @now += 3
+        subject.prune_pool
+        @now += 3
+        wakeup_thread_group(@group2)
+        subject.post { }
+
+        eventually { expect(@group1.threads).to all(have_attributes(status: false)) }
+        eventually { expect(@group2.threads).to all(have_attributes(status: 'sleep')) }
+      end
+
+      it "reclaims threads that have been idle for more than idletime seconds" do
+        wakeup_thread_group(@group1)
+        @now += 6
+        wakeup_thread_group(@group2)
+        subject.prune_pool
+
+        eventually { expect(@group1.threads).to all(have_attributes(status: false)) }
+        eventually { expect(@group2.threads).to all(have_attributes(status: 'sleep')) }
+      end
+
+      it "keeps at least min_length workers" do
+        wakeup_thread_group(@group1)
+        wakeup_thread_group(@group2)
+        @now += 12
+        subject.prune_pool
+        all_threads = @group1.threads + @group2.threads
+        eventually do
+          finished_threads = all_threads.find_all { |t| !t.status }
+          expect(finished_threads).to have_attributes(size: 8)
+        end
+      end
+    end
+
     context '#remaining_capacity' do
 
       let!(:expected_max){ 100 }

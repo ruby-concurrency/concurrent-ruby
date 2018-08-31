@@ -64,9 +64,16 @@ module Concurrent
   #   @return [Integer] Number of tasks that may be enqueued before reaching `max_queue` and rejecting
   #     new tasks. A value of -1 indicates that the queue may grow without bound.
 
-
-
-
+  # @!macro thread_pool_executor_method_prune_pool
+  #   Prune the thread pool of unneeded threads
+  #
+  #   What is being pruned is controlled by the min_threads and idletime
+  #   parameters passed at pool creation time
+  #
+  #   This is a no-op on some pool implementation (e.g. the Java one).  The Ruby
+  #   pool will auto-prune each time a new job is posted. You will need to call
+  #   this method explicitely in case your application post jobs in bursts (a
+  #   lot of jobs and then nothing for long periods)
 
   # @!macro thread_pool_executor_public_api
   #
@@ -104,6 +111,9 @@ module Concurrent
   #
   #   @!method can_overflow?
   #     @!macro executor_service_method_can_overflow_question
+  #
+  #   @!method prune_pool
+  #     @!macro thread_pool_executor_method_prune_pool
 
 
 

@@ -87,6 +87,10 @@ if Concurrent.on_jruby?
         super && !@executor.isTerminating
       end
 
+      # @!macro thread_pool_executor_method_prune_pool
+      def prune_pool
+      end
+
       private
 
       def ns_initialize(opts)
