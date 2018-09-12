@@ -169,8 +169,6 @@ module Concurrent
         def chain_throttled_by(throttle, *args, &block)
           throttled_by(throttle) { |trigger| trigger.chain(*args, &block) }
         end
-
-        # TODO (pitr-ch 11-Jul-2018): add other then/rescue methods
       end
 
       include ThrottleIntegration

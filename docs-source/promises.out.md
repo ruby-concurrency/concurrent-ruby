@@ -34,7 +34,9 @@ Concurrent::Promises::FactoryMethods.instance_methods(false).sort
 #     :zip_events,
 #     :zip_events_on,
 #     :zip_futures,
-#     :zip_futures_on]
+#     :zip_futures_on,
+#     :zip_futures_over,
+#     :zip_futures_over_on]
 ```
 
 The module can be included or extended where needed.

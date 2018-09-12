@@ -495,7 +495,6 @@ module Concurrent
         @Promise            = promise
         @DefaultExecutor    = default_executor
         @Callbacks          = LockFreeStack.new
-        # noinspection RubyArgCount
         @Waiters            = AtomicFixnum.new 0
         self.internal_state = PENDING
       end
@@ -1420,7 +1419,6 @@ module Concurrent
       def initialize(delayed, blockers_count, future)
         super(future)
         @Delayed   = delayed
-        # noinspection RubyArgCount
         @Countdown = AtomicFixnum.new blockers_count
       end
 

@@ -172,6 +172,32 @@ module Concurrent
       end
 
       include NewChannelIntegration
+
+      # @!macro promises.shortcut.on
+      # @return [Future]
+      # @!macro warn.edge
+      def zip_futures_over(enumerable, &future_factory)
+        zip_futures_over_on default_executor, enumerable, &future_factory
+      end
+
+      # Creates new future which is resolved after all the futures created by future_factory from
+      # enumerable elements are resolved. Simplified it does:
+      # `zip(*enumerable.map { |e| future e, &future_factory })`
+      # @example
+      #   # `#succ` calls are executed in parallel
+      #   zip_futures_over_on(:io, [1, 2], &:succ).value! # => [2, 3]
+      #
+      # @!macro promises.param.default_executor
+      # @param [Enumerable] enumerable
+      # @yield a task to be executed in future
+      # @yieldparam [Object] element from enumerable
+      # @yieldreturn [Object] a value of the future
+      # @return [Future]
+      # @!macro warn.edge
+      def zip_futures_over_on(default_executor, enumerable, &future_factory)
+        # ZipFuturesPromise.new_blocked_by(futures_and_or_events, default_executor).future
+        zip_futures_on(default_executor, *enumerable.map { |e| future e, &future_factory })
+      end
     end
 
   end
