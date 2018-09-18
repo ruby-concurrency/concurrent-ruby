@@ -106,13 +106,13 @@ composition.</p>
     <span class='id identifier rubyid_resolvable_event'>resolvable_event</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_a_method'>a_method</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x0000000000000002 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x000002 pending&gt;
 </span>
 <span class='id identifier rubyid_mod'>mod</span> <span class='op'>=</span> <span class='const'>Module</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
   <span class='id identifier rubyid_extend'>extend</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html" title="Concurrent::Promises::FactoryMethods (module)">FactoryMethods</a></span></span>
 <span class='kw'>end</span> 
 <span class='id identifier rubyid_mod'>mod</span><span class='period'>.</span><span class='id identifier rubyid_resolvable_event'>resolvable_event</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x0000000000000003 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x000003 pending&gt;
 </span></code></pre>
 
 <p>The default executor can be changed by overriding <code>default_executor</code> method
@@ -132,7 +132,7 @@ inherited from <code>Concurrent::Promises::FactoryMethods</code>.</p>
 <p>The module is already extended into <span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Concurrent::Promises</a></span> for convenience.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_event'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#resolvable_event-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_event (method)">resolvable_event</a></span></span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x0000000000000004 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x000004 pending&gt;
 </span></code></pre>
 
 <h2>Asynchronous task</h2>
@@ -147,7 +147,7 @@ be executed on an internal thread pool.</p>
   <span class='id identifier rubyid_sleep'>sleep</span> <span class='id identifier rubyid_duration'>duration</span>
   <span class='symbol'>:result</span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000005 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000005 pending&gt;
 </span></code></pre>
 
 <p>Asks if the future is resolved, here it will be still in the middle of the
@@ -165,7 +165,7 @@ sleep call.</p>
 <p>If the task fails, we talk about the future being <strong>rejected</strong>.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span> <span class='lbrace'>{</span> <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span><span class='semicolon'>;</span> <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Boom</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000006 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000006 pending&gt;
 </span></code></pre>
 
 <p>There is no result, the future was rejected with a reason.</p>
@@ -253,19 +253,19 @@ method.</p>
 through evaluation as follows.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span> <span class='lbrace'>{</span> <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.01</span><span class='semicolon'>;</span> <span class='symbol'>:value</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000007 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000007 pending&gt;
 </span></code></pre>
 
 <p>Instead, it can be created directly as already-resolved:</p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_fulfilled_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#fulfilled_future-instance_method" title="Concurrent::Promises::FactoryMethods#fulfilled_future (method)">fulfilled_future</a></span></span><span class='lparen'>(</span><span class='symbol'>:value</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000008 fulfilled&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000008 fulfilled&gt;
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_rejected_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#rejected_future-instance_method" title="Concurrent::Promises::FactoryMethods#rejected_future (method)">rejected_future</a></span></span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Ups</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000009 rejected&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000009 rejected&gt;
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolved_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#resolved_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolved_future (method)">resolved_future</a></span></span><span class='lparen'>(</span><span class='kw'>true</span><span class='comma'>,</span> <span class='symbol'>:value</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000000a fulfilled&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00000a fulfilled&gt;
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolved_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#resolved_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolved_future (method)">resolved_future</a></span></span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Ups</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000000b rejected&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00000b rejected&gt;
 </span></code></pre>
 
 <h2>Chaining</h2>
@@ -303,18 +303,18 @@ do_stuff arg }</code>) is <strong>required</strong>. Both of the following bad e
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_arg'>arg</span> <span class='op'>=</span> <span class='int'>1</span>                                  <span class='comment'># =&gt; 1
 </span><span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='id identifier rubyid_arg'>arg</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Thread:0x000000000000000c@promises.in.md:203 run&gt;
+<span class='comment'># =&gt; #&lt;Thread:0x00000c@promises.in.md:203 run&gt;
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='id identifier rubyid_arg'>arg</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000000d pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00000d pending&gt;
 </span></code></pre>
 
 <p>Correct:</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_arg'>arg</span> <span class='op'>=</span> <span class='int'>1</span>                                  <span class='comment'># =&gt; 1
 </span><span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_arg'>arg</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='id identifier rubyid_arg'>arg</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Thread:0x000000000000000e@promises.in.md:211 run&gt;
+<span class='comment'># =&gt; #&lt;Thread:0x00000e@promises.in.md:211 run&gt;
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_arg'>arg</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='id identifier rubyid_arg'>arg</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000000f pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00000f pending&gt;
 </span></code></pre>
 
 <h2>Branching, and zipping</h2>
@@ -373,7 +373,7 @@ chain without executing the tasks created with <code>then</code>.</p>
     <span class='id identifier rubyid_result'>result</span>
 <span class='comment'># =&gt; [false,
 </span><span class='comment'>#     nil,
-</span><span class='comment'>#     #&lt;NoMethodError: undefined method `succ&#39; for #&lt;Object:0x0000000000000010&gt;&gt;]
+</span><span class='comment'>#     #&lt;NoMethodError: undefined method `succ&#39; for #&lt;Object:0x000010&gt;&gt;]
 </span></code></pre>
 
 <p>As <code>then</code> chained tasks execute only on fulfilled futures, there is a <code>rescue</code>
@@ -417,7 +417,7 @@ It can be used to recover from rejection.</p>
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_rejected_zip'>rejected_zip</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span>
     <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_fulfilled_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#fulfilled_future-instance_method" title="Concurrent::Promises::FactoryMethods#fulfilled_future (method)">fulfilled_future</a></span></span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span><span class='comma'>,</span>
     <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_rejected_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#rejected_future-instance_method" title="Concurrent::Promises::FactoryMethods#rejected_future (method)">rejected_future</a></span></span><span class='lparen'>(</span><span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Ups</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000011 rejected&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000011 rejected&gt;
 </span><span class='id identifier rubyid_rejected_zip'>rejected_zip</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>
 <span class='comment'># =&gt; [false, [1, nil], [nil, #&lt;StandardError: Ups&gt;]]
 </span><span class='id identifier rubyid_rejected_zip'>rejected_zip</span><span class='period'>.</span>
@@ -431,11 +431,11 @@ It can be used to recover from rejection.</p>
 requiring resolution. </p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_delay'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#delay-instance_method" title="Concurrent::Promises::FactoryMethods#delay (method)">delay</a></span></span> <span class='lbrace'>{</span> <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span><span class='semicolon'>;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>lazy</span><span class='tstring_end'>&#39;</span></span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000012 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000012 pending&gt;
 </span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span> 
 <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>                         <span class='comment'># =&gt; false
 </span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_touch'>touch</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000012 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000012 pending&gt;
 </span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.2</span> 
 <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>                         <span class='comment'># =&gt; true
 </span></code></pre>
@@ -506,7 +506,7 @@ in this situation and does not block any thread.</p>
 <p>Schedule task to be executed in 0.1 seconds.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_scheduled'>scheduled</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_schedule'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#schedule-instance_method" title="Concurrent::Promises::FactoryMethods#schedule (method)">schedule</a></span></span><span class='lparen'>(</span><span class='float'>0.1</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000013 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000013 pending&gt;
 </span><span class='id identifier rubyid_scheduled'>scheduled</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>                      <span class='comment'># =&gt; false
 </span></code></pre>
 
@@ -528,7 +528,7 @@ its parent resolves. Therefore, the following future will be resolved in 0.2 sec
 <p>Time can be used as well.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_schedule'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#schedule-instance_method" title="Concurrent::Promises::FactoryMethods#schedule (method)">schedule</a></span></span><span class='lparen'>(</span><span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span> <span class='op'>+</span> <span class='int'>10</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='symbol'>:val</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000014 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000014 pending&gt;
 </span></code></pre>
 
 <h2>Resolvable Future and Event:</h2>
@@ -539,14 +539,14 @@ its parent resolves. Therefore, the following future will be resolved in 0.2 sec
 <span class='object_link'><a href="Concurrent/Promises/ResolvableEvent.html" title="Concurrent::Promises::ResolvableEvent (class)">Concurrent::Promises::ResolvableEvent</a></span>.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x0000000000000015 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x000015 pending&gt;
 </span></code></pre>
 
 <p>The thread will be blocked until the future is resolved</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_thread'>thread</span> <span class='op'>=</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span> 
 <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_fulfill'>fulfill</span> <span class='int'>1</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x0000000000000015 fulfilled&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x000015 fulfilled&gt;
 </span><span class='id identifier rubyid_thread'>thread</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>                             <span class='comment'># =&gt; 1
 </span></code></pre>
 
@@ -586,9 +586,9 @@ must be thread-safe, see <span class='object_link'><a href="Concurrent/Array.htm
 
 <h2>Callbacks</h2>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_queue'>queue</span>  <span class='op'>=</span> <span class='const'>Queue</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>                       <span class='comment'># =&gt; #&lt;Thread::Queue:0x0000000000000016&gt;
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_queue'>queue</span>  <span class='op'>=</span> <span class='const'>Queue</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>                       <span class='comment'># =&gt; #&lt;Thread::Queue:0x000016&gt;
 </span><span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_delay'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#delay-instance_method" title="Concurrent::Promises::FactoryMethods#delay (method)">delay</a></span></span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000017 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000017 pending&gt;
 </span>
 <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_on_fulfillment'>on_fulfillment</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_queue'>queue</span> <span class='op'>&lt;&lt;</span> <span class='int'>1</span> <span class='rbrace'>}</span> <span class='comment'># evaluated asynchronously
 </span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_on_fulfillment!'>on_fulfillment!</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_queue'>queue</span> <span class='op'>&lt;&lt;</span> <span class='int'>2</span> <span class='rbrace'>}</span> <span class='comment'># evaluated on resolving thread
@@ -623,7 +623,7 @@ to simulate a thread-like processing without actually occupying the thread.</p>
   <span class='id identifier rubyid_v'>v</span> <span class='op'>+=</span> <span class='int'>1</span>
   <span class='id identifier rubyid_v'>v</span> <span class='op'>&lt;</span> <span class='int'>5</span> <span class='op'>?</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future_on'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future_on-instance_method" title="Concurrent::Promises::FactoryMethods#future_on (method)">future_on</a></span></span><span class='lparen'>(</span><span class='symbol'>:fast</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_count'>count</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_v'>v</span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; #&lt;Proc:0x0000000000000018@promises.in.md:520 (lambda)&gt;
+<span class='comment'># =&gt; #&lt;Proc:0x000018@promises.in.md:520 (lambda)&gt;
 </span><span class='int'>400</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span>
     <span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future_on'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future_on-instance_method" title="Concurrent::Promises::FactoryMethods#future_on (method)">future_on</a></span></span><span class='lparen'>(</span><span class='symbol'>:fast</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_count'>count</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Concurrent/Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span><span class='period'>.</span><span class='id identifier rubyid_value!'><span class='object_link'><a href="Concurrent/Promises/Future.html#value!-instance_method" title="Concurrent::Promises::Future#value! (method)">value!</a></span></span> <span class='rbrace'>}</span><span class='period'>.</span>
     <span class='id identifier rubyid_all?'>all?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>==</span> <span class='int'>5</span> <span class='rbrace'>}</span>                  <span class='comment'># =&gt; true
@@ -641,7 +641,7 @@ though it has much fewer threads than are simulated in the simulated process.</p
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Actor.html" title="Concurrent::Actor (module)">Actor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Actor/Utils.html" title="Concurrent::Actor::Utils (module)">Utils</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Actor/Utils/AdHoc.html" title="Concurrent::Actor::Utils::AdHoc (class)">AdHoc</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="Concurrent/Actor/AbstractContext.html#spawn-class_method" title="Concurrent::Actor::AbstractContext.spawn (method)">spawn</a></span></span> <span class='symbol'>:square</span> <span class='kw'>do</span>
   <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_v'>v</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>**</span> <span class='int'>2</span> <span class='rbrace'>}</span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x0000000000000019 /square (Concurrent::Actor::Utils::AdHoc)&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x000019 /square (Concurrent::Actor::Utils::AdHoc)&gt;
 </span></code></pre>
 
 <p>Send result of <code>1+1</code> to the actor, and add 2 to the result sent back from the
@@ -667,7 +667,7 @@ actor.</p>
 channel with a capacity of 2 messages.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch1'>ch1</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>2</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000000000000001a size:2&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x00001a size:2&gt;
 </span></code></pre>
 
 <p>We push 3 messages, it can be observed that the last future representing the
@@ -677,14 +677,14 @@ backpressure – the filling work is delayed until the channel has space for
 more messages.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pushes'>pushes</span> <span class='op'>=</span> <span class='int'>3</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='id identifier rubyid_ch1'>ch1</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_i'>i</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000000000000001b fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000001c fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000001d pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x00001b fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00001c fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00001d pending&gt;]
 </span><span class='id identifier rubyid_ch1'>ch1</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                           <span class='comment'># =&gt; 0
 </span><span class='id identifier rubyid_pushes'>pushes</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000000000000001b fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000001c fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000001d fulfilled&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x00001b fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00001c fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00001d fulfilled&gt;]
 </span></code></pre>
 
 <p>A selection over channels can be created with the <code>.select_channel</code> factory method. It
@@ -692,19 +692,19 @@ will be fulfilled with a first message available in any of the channels. It
 returns a pair to be able to find out which channel had the message available.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch2'>ch2</span>    <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>2</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000000000000001e size:2&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x00001e size:2&gt;
 </span><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_select_channel'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods/NewChannelIntegration.html#select_channel-instance_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">select_channel</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_ch1'>ch1</span><span class='comma'>,</span> <span class='id identifier rubyid_ch2'>ch2</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x000000000000001f fulfilled&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x00001f fulfilled&gt;
 </span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Channel:0x000000000000001a size:2&gt;, 1]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Channel:0x00001a size:2&gt;, 1]
 </span>
 <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span> <span class='lbrace'>{</span> <span class='int'>1</span><span class='op'>+</span><span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_then_push_channel'>then_push_channel</span><span class='lparen'>(</span><span class='id identifier rubyid_ch1'>ch1</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000020 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000020 pending&gt;
 </span><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='lparen'>(</span>
     <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_fulfilled_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#fulfilled_future-instance_method" title="Concurrent::Promises::FactoryMethods#fulfilled_future (method)">fulfilled_future</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%02d</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>&amp;</span>      
         <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_select_channel'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods/NewChannelIntegration.html#select_channel-instance_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">select_channel</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_ch1'>ch1</span><span class='comma'>,</span> <span class='id identifier rubyid_ch2'>ch2</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span>
     <span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_format'>format</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='op'>|</span> <span class='id identifier rubyid_format'>format</span> <span class='id identifier rubyid_format'>format</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000021 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000021 pending&gt;
 </span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                            <span class='comment'># =&gt; &quot;02&quot;
 </span></code></pre>
 
@@ -722,7 +722,7 @@ message.</p>
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ProcessingActor.html" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_act'><span class='object_link'><a href="Concurrent/ProcessingActor.html#act-class_method" title="Concurrent::ProcessingActor.act (method)">act</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_an_argument'>an_argument</span> <span class='op'>=</span> <span class='int'>2</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='id identifier rubyid_number'>number</span><span class='op'>|</span>
   <span class='id identifier rubyid_number'>number</span> <span class='op'>**</span> <span class='int'>3</span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ProcessingActor:0x0000000000000022 ... termination:pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ProcessingActor:0x000022 ... termination:pending&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                 <span class='comment'># =&gt; 8
 </span></code></pre>
 
@@ -735,10 +735,10 @@ message.</p>
   <span class='kw'>end</span>
 <span class='kw'>end</span>
 <span class='id identifier rubyid_add_2_messages'>add_2_messages</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='int'>1</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000025 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000025 pending&gt;
 </span><span class='id identifier rubyid_add_2_messages'>add_2_messages</span><span class='period'>.</span><span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>     <span class='comment'># =&gt; false
 </span><span class='id identifier rubyid_add_2_messages'>add_2_messages</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='int'>3</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x0000000000000026 pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000026 pending&gt;
 </span><span class='id identifier rubyid_add_2_messages'>add_2_messages</span><span class='period'>.</span><span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>        <span class='comment'># =&gt; 4
 </span></code></pre>
 
@@ -762,7 +762,7 @@ defining an actor which a mailbox of size 2.</p>
     <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>2</span><span class='rparen'>)</span><span class='comma'>,</span> 
     <span class='int'>0</span><span class='comma'>,</span>
     <span class='op'>&amp;</span><span class='id identifier rubyid_slow_counter'>slow_counter</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ProcessingActor:0x0000000000000027 ... termination:pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ProcessingActor:0x000027 ... termination:pending&gt;
 </span></code></pre>
 
 <p>Now we can create a producer which will push messages only when there is a
@@ -784,7 +784,7 @@ on a free space in the mailbox.</p>
 <span class='kw'>end</span>
 
 <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_produce'>produce</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Concurrent/Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span><span class='period'>.</span><span class='id identifier rubyid_wait!'><span class='object_link'><a href="Concurrent/Promises/Future.html#wait!-instance_method" title="Concurrent::Promises::Future#wait! (method)">wait!</a></span></span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000002a fulfilled&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00002a fulfilled&gt;
 </span>
 <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                 <span class='comment'># =&gt; 45
 </span></code></pre>
@@ -794,16 +794,16 @@ on a free space in the mailbox.</p>
 <h2>Simple background processing</h2>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000002b pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00002b pending&gt;
 </span></code></pre>
 
 <h2>Parallel background processing</h2>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_tasks'>tasks</span> <span class='op'>=</span> <span class='int'>4</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='id identifier rubyid_i'>i</span><span class='op'>*</span><span class='int'>2</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000000000000002c pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000002d pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000002e pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000002f pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x00002c pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002d pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002e pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002f pending&gt;]
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_tasks'>tasks</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'><span class='object_link'><a href="Concurrent/Promises/Future.html#value!-instance_method" title="Concurrent::Promises::Future#value! (method)">value!</a></span></span>
 <span class='comment'># =&gt; [0, 2, 4, 6]
 </span></code></pre>
@@ -855,11 +855,11 @@ tracking the number of tasks being processed.</p>
 <p>Create the computer actor and send it 3 jobs.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_computer'>computer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Actor.html" title="Concurrent::Actor (module)">Actor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="Concurrent/Actor.html#spawn-class_method" title="Concurrent::Actor.spawn (method)">spawn</a></span></span> <span class='const'>Computer</span><span class='comma'>,</span> <span class='symbol'>:computer</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x0000000000000030 /computer (Computer)&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Actor::Reference:0x000030 /computer (Computer)&gt;
 </span><span class='id identifier rubyid_results'>results</span> <span class='op'>=</span> <span class='int'>3</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_computer'>computer</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='lbracket'>[</span><span class='symbol'>:run</span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span><span class='semicolon'>;</span> <span class='symbol'>:result</span> <span class='rbrace'>}</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x0000000000000031 pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000032 pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000033 pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000031 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000032 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000033 pending&gt;]
 </span><span class='id identifier rubyid_computer'>computer</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='symbol'>:status</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>             <span class='comment'># =&gt; {:running_jobs=&gt;3}
 </span><span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [:result, :result, :result]
 </span></code></pre>
@@ -907,8 +907,8 @@ of the process simulated by <code>run</code>.</p>
 <p>Lets have two processes which will count until cancelled.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'><span class='object_link'><a href="Concurrent/Cancellation.html#create-class_method" title="Concurrent::Cancellation.create (method)">create</a></span></span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x0000000000000034 canceled:false&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x0000000000000035 canceled:false&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x000034 canceled:false&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x000035 canceled:false&gt;]
 </span>
 <span class='id identifier rubyid_count_until_cancelled'>count_until_cancelled</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span> <span class='kw'>do</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_token'>token</span><span class='period'>.</span><span class='id identifier rubyid_canceled?'>canceled?</span>
@@ -921,8 +921,8 @@ of the process simulated by <code>run</code>.</p>
 <span class='id identifier rubyid_futures'>futures</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>2</span><span class='rparen'>)</span> <span class='kw'>do</span>
   <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_count_until_cancelled'>count_until_cancelled</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Concurrent/Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x0000000000000036 pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000037 pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000036 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000037 pending&gt;]
 </span>
 <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.01</span> 
 <span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_cancel'>cancel</span>                            <span class='comment'># =&gt; true
@@ -943,8 +943,8 @@ of the process simulated by <code>run</code>.</p>
 tasks share a cancellation, when one of them fails it cancels the others.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'><span class='object_link'><a href="Concurrent/Cancellation.html#create-class_method" title="Concurrent::Cancellation.create (method)">create</a></span></span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x0000000000000038 canceled:false&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x0000000000000039 canceled:false&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x000038 canceled:false&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x000039 canceled:false&gt;]
 </span><span class='id identifier rubyid_tasks'>tasks</span> <span class='op'>=</span> <span class='int'>4</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
   <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
     <span class='id identifier rubyid_count'>count</span> <span class='op'>=</span> <span class='int'>0</span>
@@ -960,10 +960,10 @@ tasks share a cancellation, when one of them fails it cancels the others.</p>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000000000000003a pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000003b pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000003c pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000000000000003d pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x00003a pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00003b pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00003c pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00003d pending&gt;]
 </span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_tasks'>tasks</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_result'><span class='object_link'><a href="Concurrent/Promises/Future.html#result-instance_method" title="Concurrent::Promises::Future#result (method)">result</a></span></span> 
 <span class='comment'># =&gt; [false,
 </span><span class='comment'>#     [:cancelled, nil, :cancelled, :cancelled],
@@ -973,8 +973,8 @@ tasks share a cancellation, when one of them fails it cancels the others.</p>
 <p>Without the randomly failing part it produces following.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'><span class='object_link'><a href="Concurrent/Cancellation.html#create-class_method" title="Concurrent::Cancellation.create (method)">create</a></span></span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x000000000000003e canceled:false&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x000000000000003f canceled:false&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x00003e canceled:false&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x00003f canceled:false&gt;]
 </span><span class='id identifier rubyid_tasks'>tasks</span> <span class='op'>=</span> <span class='int'>4</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
   <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
     <span class='id identifier rubyid_count'>count</span> <span class='op'>=</span> <span class='int'>0</span>
@@ -1081,7 +1081,7 @@ pool of size 3. We create throttle with the same size</p>
 </span><span class='comment'>#     &quot;*********&quot;]
 </span>
 <span class='id identifier rubyid_max_tree'>max_tree</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>3</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Throttle:0x0000000000000040 limit:3 can_run:3&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Throttle:0x000040 limit:3 can_run:3&gt;
 </span>
 <span class='id identifier rubyid_futures'>futures</span> <span class='op'>=</span> <span class='int'>11</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
   <span class='id identifier rubyid_max_tree'>max_tree</span><span class='period'>.</span>
@@ -1105,10 +1105,10 @@ buffer and how to apply backpressure to slow down the queries. </p>
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>json</span><span class='tstring_end'>&#39;</span></span> 
 
 <span class='id identifier rubyid_channel'>channel</span>       <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>6</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x0000000000000041 size:6&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000041 size:6&gt;
 </span><span class='id identifier rubyid_source'>source</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'><span class='object_link'><a href="Concurrent/Cancellation.html#create-class_method" title="Concurrent::Cancellation.create (method)">create</a></span></span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x0000000000000042 canceled:false&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x0000000000000043 canceled:false&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x000042 canceled:false&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x000043 canceled:false&gt;]
 </span>
 <span class='kw'>def</span> <span class='id identifier rubyid_query_random_text'>query_random_text</span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span> <span class='kw'>do</span>
@@ -1135,7 +1135,7 @@ buffer and how to apply backpressure to slow down the queries. </p>
 
 <span class='id identifier rubyid_words'>words</span>          <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>                      <span class='comment'># =&gt; []
 </span><span class='id identifier rubyid_words_throttle'>words_throttle</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>1</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Throttle:0x0000000000000044 limit:1 can_run:1&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Throttle:0x000044 limit:1 can_run:1&gt;
 </span>
 <span class='kw'>def</span> <span class='id identifier rubyid_count_words_in_random_text'>count_words_in_random_text</span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_words'>words</span><span class='comma'>,</span> <span class='id identifier rubyid_words_throttle'>words_throttle</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_response'>response</span><span class='op'>|</span>
@@ -1157,16 +1157,16 @@ buffer and how to apply backpressure to slow down the queries. </p>
 <span class='id identifier rubyid_query_processes'>query_processes</span> <span class='op'>=</span> <span class='int'>3</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span>
   <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:query_random_text</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Concurrent/Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x0000000000000045 pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000046 pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000047 pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000045 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000046 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000047 pending&gt;]
 </span>
 <span class='id identifier rubyid_word_counter_processes'>word_counter_processes</span> <span class='op'>=</span> <span class='int'>2</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span>
   <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_words'>words</span><span class='comma'>,</span> <span class='id identifier rubyid_words_throttle'>words_throttle</span><span class='comma'>,</span> 
       <span class='op'>&amp;</span><span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:count_words_in_random_text</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Concurrent/Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span>
 <span class='kw'>end</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x0000000000000048 pending&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000049 pending&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000048 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000049 pending&gt;]
 </span>
 <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.5</span> 
 </code></pre>
@@ -1176,12 +1176,12 @@ buffer and how to apply backpressure to slow down the queries. </p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_source'>source</span><span class='period'>.</span><span class='id identifier rubyid_cancel'>cancel</span>                            <span class='comment'># =&gt; true
 </span><span class='id identifier rubyid_query_processes'>query_processes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:wait!</span><span class='rparen'>)</span> 
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x0000000000000045 fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000046 fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000047 fulfilled&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000045 fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000046 fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000047 fulfilled&gt;]
 </span><span class='id identifier rubyid_word_counter_processes'>word_counter_processes</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:wait!</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x0000000000000048 fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x0000000000000049 fulfilled&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000048 fulfilled&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000049 fulfilled&gt;]
 </span><span class='id identifier rubyid_words'>words</span>                                    <span class='comment'># =&gt; [7, 7, 7, 7]
 </span></code></pre>
 
@@ -1202,8 +1202,8 @@ solution.</p>
 <span class='kw'>end</span>
 
 <span class='id identifier rubyid_cancellation'>cancellation</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'><span class='object_link'><a href="Concurrent/Cancellation.html#create-class_method" title="Concurrent::Cancellation.create (method)">create</a></span></span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x000000000000004a canceled:false&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x000000000000004b canceled:false&gt;]
+<span class='comment'># =&gt; [#&lt;Concurrent::Cancellation:0x00004a canceled:false&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Cancellation::Token:0x00004b canceled:false&gt;]
 </span>
 <span class='id identifier rubyid_task'>task</span> <span class='op'>=</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_token'>token</span> <span class='kw'>do</span>
   <span class='int'>5</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span>
@@ -1214,7 +1214,7 @@ solution.</p>
 <span class='kw'>end</span>
 
 <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='float'>0.1</span><span class='comma'>,</span> <span class='id identifier rubyid_token'>token</span><span class='comma'>,</span> <span class='id identifier rubyid_task'>task</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_repeating_scheduled_task'>repeating_scheduled_task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Concurrent/Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000000000000004c pending&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x00004c pending&gt;
 </span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.2</span> 
 <span class='id identifier rubyid_cancellation'>cancellation</span><span class='period'>.</span><span class='id identifier rubyid_cancel'>cancel</span>                      <span class='comment'># =&gt; true
 </span><span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>
