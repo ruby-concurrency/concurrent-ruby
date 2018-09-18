@@ -70,9 +70,9 @@ begin
     desc '* test packaged and installed gems instead of local files'
     task :installed do
       Dir.chdir(__dir__) do
-        sh 'gem install pkg/concurrent-ruby-1.1.0.pre1.gem'
-        sh 'gem install pkg/concurrent-ruby-ext-1.1.0.pre1.gem' if Concurrent.on_cruby?
-        sh 'gem install pkg/concurrent-ruby-edge-0.4.0.pre1.gem'
+        sh "gem install pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
+        sh "gem install pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem" if Concurrent.on_cruby?
+        sh "gem install pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
         ENV['NO_PATH'] = 'true'
         sh 'bundle update'
         sh 'bundle exec rake spec:ci'
@@ -199,7 +199,7 @@ namespace :release do
   # Depends on environment of @pitr-ch
 
   mri_version   = '2.5.1'
-  jruby_version = 'jruby-9.1.17.0'
+  jruby_version = 'jruby-9.1.17.1'
 
   task :checks => "yard:#{current_yard_version_name}:uptodate" do
     Dir.chdir(__dir__) do
