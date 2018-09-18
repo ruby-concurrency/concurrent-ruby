@@ -1,5 +1,16 @@
 ## Current
 
+## Release v1.1.0.pre2, edge v0.4.0.pre2 (18 Sep 2018)
+
+concurrent-ruby:
+
+* fixed documentation and README links
+* fix Set for TruffleRuby and Rubinius
+
+concurrent-ruby-edge:
+
+* add Promises.zip_futures_over_on
+
 ## Release v1.1.0.pre1, edge v0.4.0.pre1 (15 Aug 2018)
 
 concurrent-ruby:
