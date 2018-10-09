@@ -2,6 +2,13 @@ require 'concurrent/synchronization'
 require 'concurrent/utility/engine'
 require 'concurrent/atomic_reference/numeric_cas_wrapper'
 
+# Shim for TruffleRuby::AtomicReference
+if Concurrent.on_truffleruby? && !defined?(TruffleRuby::AtomicReference)
+  module TruffleRuby
+    AtomicReference = Truffle::AtomicReference
+  end
+end
+
 module Concurrent
 
   # Define update methods that use direct paths
@@ -155,8 +162,10 @@ module Concurrent
                                     end
                                     JavaAtomicReference
                                   when Concurrent.on_truffleruby?
-                                    class TruffleRubyAtomicReference < Truffle::AtomicReference
+                                    class TruffleRubyAtomicReference < TruffleRuby::AtomicReference
                                       include AtomicDirectUpdate
+                                      alias_method :value, :get
+                                      alias_method :value=, :set
                                       alias_method :compare_and_swap, :compare_and_set
                                       alias_method :swap, :get_and_set
                                     end

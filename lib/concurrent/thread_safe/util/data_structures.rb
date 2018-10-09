@@ -1,5 +1,14 @@
 require 'concurrent/thread_safe/util'
 
+# Shim for TruffleRuby.synchronized
+if Concurrent.on_truffleruby? && !TruffleRuby.respond_to?(:synchronized)
+  module TruffleRuby
+    def self.synchronized(object, &block)
+      Truffle::System.synchronized(object, &block)
+    end
+  end
+end
+
 module Concurrent
   module ThreadSafe
     module Util
@@ -44,8 +53,7 @@ module Concurrent
         klass.superclass.instance_methods(false).each do |method|
           klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
             def #{method}(*args, &block)    
-              # TODO (pitr-ch 01-Jul-2018): don't use internal TruffleRuby APIs  
-              Truffle::System.synchronized(self) { super(*args, &block) }
+              TruffleRuby.synchronized(self) { super(*args, &block) }
             end
           RUBY
         end
