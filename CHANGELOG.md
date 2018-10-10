@@ -6,6 +6,7 @@ concurrent-ruby:
 
 * fixed documentation and README links
 * fix Set for TruffleRuby and Rubinius
+* use properly supported TruffleRuby APIs
 
 concurrent-ruby-edge:
 
