@@ -200,7 +200,7 @@ module Concurrent
     # @return [Object, nil] the value or nil when key was present
     def put_if_absent(key, value)
       computed = false
-      result = compute_if_absent(key) do
+      result   = compute_if_absent(key) do
         computed = true
         value
       end
@@ -221,7 +221,7 @@ module Concurrent
     # @return [::Array<Object>] keys
     def keys
       arr = []
-      each_pair {|k, v| arr << k}
+      each_pair { |k, v| arr << k }
       arr
     end unless method_defined?(:keys)
 
@@ -229,7 +229,7 @@ module Concurrent
     # @return [::Array<Object>] values
     def values
       arr = []
-      each_pair {|k, v| arr << v}
+      each_pair { |k, v| arr << v }
       arr
     end unless method_defined?(:values)
 
@@ -239,7 +239,7 @@ module Concurrent
     # @return [self]
     # @!macro map.atomic_method_with_block
     def each_key
-      each_pair {|k, v| yield k}
+      each_pair { |k, v| yield k }
     end unless method_defined?(:each_key)
 
     # Iterates over each value.
@@ -248,7 +248,7 @@ module Concurrent
     # @return [self]
     # @!macro map.atomic_method_with_block
     def each_value
-      each_pair {|k, v| yield v}
+      each_pair { |k, v| yield v }
     end unless method_defined?(:each_value)
 
     # Iterates over each key value pair.
@@ -268,7 +268,7 @@ module Concurrent
     # @param [Object] value
     # @return [Object, nil] key or nil when not found
     def key(value)
-      each_pair {|k, v| return k if v == value}
+      each_pair { |k, v| return k if v == value }
       nil
     end unless method_defined?(:key)
     alias_method :index, :key if RUBY_VERSION < '1.9'
@@ -276,7 +276,7 @@ module Concurrent
     # Is map empty?
     # @return [true, false]
     def empty?
-      each_pair {|k, v| return false}
+      each_pair { |k, v| return false }
       true
     end unless method_defined?(:empty?)
 
@@ -284,7 +284,7 @@ module Concurrent
     # @return [Integer] size
     def size
       count = 0
-      each_pair {|k, v| count += 1}
+      each_pair { |k, v| count += 1 }
       count
     end unless method_defined?(:size)
 
@@ -292,7 +292,7 @@ module Concurrent
     def marshal_dump
       raise TypeError, "can't dump hash with default proc" if @default_proc
       h = {}
-      each_pair {|k, v| h[k] = v}
+      each_pair { |k, v| h[k] = v }
       h
     end
 
@@ -310,6 +310,7 @@ module Concurrent
     end
 
     private
+
     def raise_fetch_no_key
       raise KeyError, 'key not found'
     end
@@ -320,7 +321,7 @@ module Concurrent
     end
 
     def populate_from(hash)
-      hash.each_pair {|k, v| self[k] = v}
+      hash.each_pair { |k, v| self[k] = v }
       self
     end
 
