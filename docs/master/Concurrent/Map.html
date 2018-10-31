@@ -1432,7 +1432,7 @@ This method is atomic.</p>
       <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 241</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each_key'>each_key</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_k'>k</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_k'>k</span> <span class='rbrace'>}</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1637,7 +1637,7 @@ This method is atomic.</p>
       <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 250</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each_value'>each_value</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_v'>v</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1691,7 +1691,7 @@ This method is atomic.</p>
       <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 278</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_empty?'>empty?</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>return</span> <span class='kw'>false</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>return</span> <span class='kw'>false</span> <span class='rbrace'>}</span>
   <span class='kw'>true</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -2181,7 +2181,7 @@ This method is atomic.</p>
       <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 270</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_key'>key</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>return</span> <span class='id identifier rubyid_k'>k</span> <span class='kw'>if</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>==</span> <span class='id identifier rubyid_value'>value</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>return</span> <span class='id identifier rubyid_k'>k</span> <span class='kw'>if</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>==</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span>
   <span class='kw'>nil</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -2242,7 +2242,7 @@ This method is atomic.</p>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_keys'>keys</span>
   <span class='id identifier rubyid_arr'>arr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_arr'>arr</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_k'>k</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_arr'>arr</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_k'>k</span> <span class='rbrace'>}</span>
   <span class='id identifier rubyid_arr'>arr</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -2474,7 +2474,7 @@ This method is atomic.</p>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_put_if_absent'>put_if_absent</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_computed'>computed</span> <span class='op'>=</span> <span class='kw'>false</span>
-  <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='id identifier rubyid_compute_if_absent'>compute_if_absent</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_result'>result</span>   <span class='op'>=</span> <span class='id identifier rubyid_compute_if_absent'>compute_if_absent</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span> <span class='kw'>do</span>
     <span class='id identifier rubyid_computed'>computed</span> <span class='op'>=</span> <span class='kw'>true</span>
     <span class='id identifier rubyid_value'>value</span>
   <span class='kw'>end</span>
@@ -2710,7 +2710,7 @@ This method is atomic.</p>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_size'>size</span>
   <span class='id identifier rubyid_count'>count</span> <span class='op'>=</span> <span class='int'>0</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_count'>count</span> <span class='op'>+=</span> <span class='int'>1</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_count'>count</span> <span class='op'>+=</span> <span class='int'>1</span> <span class='rbrace'>}</span>
   <span class='id identifier rubyid_count'>count</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -2845,7 +2845,7 @@ This method is atomic.</p>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_values'>values</span>
   <span class='id identifier rubyid_arr'>arr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_arr'>arr</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_v'>v</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_arr'>arr</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span>
   <span class='id identifier rubyid_arr'>arr</span>
 <span class='kw'>end</span></pre>
     </td>

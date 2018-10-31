@@ -9,7 +9,29 @@ edge_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-edge.
 
 require 'rake/javaextensiontask'
 
-Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
+JRUBY_JAR_PATH = '/usr/local/opt/rbenv/versions/jruby-9.1.17.0/lib/jruby.jar'
+
+class ConcurrentRubyJavaExtensionTask < Rake::JavaExtensionTask
+  def java_classpath_arg(*args)
+    jruby_cpath = nil
+    if RUBY_PLATFORM =~ /java/
+      begin
+        cpath  = Java::java.lang.System.getProperty('java.class.path').split(File::PATH_SEPARATOR)
+        cpath += Java::java.lang.System.getProperty('sun.boot.class.path').split(File::PATH_SEPARATOR)
+        jruby_cpath = cpath.compact.join(File::PATH_SEPARATOR)
+      rescue => e
+      end
+    end
+    unless jruby_cpath
+      jruby_cpath = JRUBY_JAR_PATH
+      raise "#{jruby_cpath} does not exist" unless File.exist? jruby_cpath
+    end
+    jruby_cpath += File::PATH_SEPARATOR + args.join(File::PATH_SEPARATOR) unless args.empty?
+    jruby_cpath ? "-cp \"#{jruby_cpath}\"" : ""
+  end
+end
+
+ConcurrentRubyJavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.ext_dir = 'ext/concurrent-ruby'
   ext.lib_dir = 'lib/concurrent'
 end
@@ -203,14 +225,25 @@ namespace :release do
 
   task :checks => "yard:#{current_yard_version_name}:uptodate" do
     Dir.chdir(__dir__) do
-      begin
-        STDOUT.puts "Is this a final release build? (Do git checks?) (y/n)"
-        input = STDIN.gets.strip.downcase
-      end until %w(y n).include?(input)
-      if input == 'y'
-        sh 'test -z "$(git status --porcelain)"'
-        sh 'git fetch'
-        sh 'test $(git show-ref --verify --hash refs/heads/master) = $(git show-ref --verify --hash refs/remotes/github/master)'
+      sh 'test -z "$(git status --porcelain)"' do |ok, res|
+        unless ok
+          begin
+            STDOUT.puts 'Command failed. Continue? (y/n)'
+            input = STDIN.gets.strip.downcase
+          end until %w(y n).include?(input)
+          exit 1 if input == 'n'
+        end
+      end
+      sh 'git fetch'
+      sh 'test $(git show-ref --verify --hash refs/heads/master) = ' +
+             '$(git show-ref --verify --hash refs/remotes/github/master)' do |ok, res|
+        unless ok
+          begin
+            STDOUT.puts 'Command failed. Continue? (y/n)'
+            input = STDIN.gets.strip.downcase
+          end until %w(y n).include?(input)
+          exit 1 if input == 'n'
+        end
       end
     end
   end
@@ -243,10 +276,10 @@ namespace :release do
   namespace :publish do
     task :ask do
       begin
-        STDOUT.puts "Do you want to publish? (y/n)"
+        STDOUT.puts 'Do you want to publish? (y/n)'
         input = STDIN.gets.strip.downcase
       end until %w(y n).include?(input)
-      raise 'reconsidered' if input == 'n'
+      exit 1 if input == 'n'
     end
 
     desc '** tag HEAD with current version and push to github'
