@@ -287,7 +287,7 @@ namespace :release do
       Dir.chdir(__dir__) do
         sh "git tag v#{Concurrent::VERSION}"
         sh "git tag edge-v#{Concurrent::EDGE_VERSION}"
-        sh "git push github v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
+        sh "git push origin v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
       end
     end
 
