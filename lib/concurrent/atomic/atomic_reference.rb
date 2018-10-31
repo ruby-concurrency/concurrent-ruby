@@ -4,6 +4,7 @@ require 'concurrent/atomic_reference/numeric_cas_wrapper'
 
 # Shim for TruffleRuby::AtomicReference
 if Concurrent.on_truffleruby? && !defined?(TruffleRuby::AtomicReference)
+  # @!visibility private
   module TruffleRuby
     AtomicReference = Truffle::AtomicReference
   end
