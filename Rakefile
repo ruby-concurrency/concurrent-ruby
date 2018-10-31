@@ -236,7 +236,7 @@ namespace :release do
       end
       sh 'git fetch'
       sh 'test $(git show-ref --verify --hash refs/heads/master) = ' +
-             '$(git show-ref --verify --hash refs/remotes/github/master)' do |ok, res|
+             '$(git show-ref --verify --hash refs/remotes/origin/master)' do |ok, res|
         unless ok
           begin
             STDOUT.puts 'Command failed. Continue? (y/n)'
