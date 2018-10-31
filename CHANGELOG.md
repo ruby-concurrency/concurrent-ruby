@@ -16,6 +16,7 @@ concurrent-ruby-edge:
 
 concurrent-ruby:
 
+* requires at least Ruby 2.0
 * [Promises](http://ruby-concurrency.github.io/concurrent-ruby/1.1.0/Concurrent/Promises.html)
   are moved from `concurrent-ruby-edge` to `concurrent-ruby`
 * Add support for TruffleRuby
