@@ -8,7 +8,7 @@ module Concurrent
       end
 
       def on_jruby_9000?
-        on_jruby? && ruby_version(:>=, 9, 0, 0, JRUBY_VERSION)
+        on_jruby? && ruby_version(JRUBY_VERSION, :>=, 9, 0, 0)
       end
 
       def on_cruby?
@@ -39,7 +39,7 @@ module Concurrent
         defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
       end
 
-      def ruby_version(comparison, major, minor, patch, version = RUBY_VERSION)
+      def ruby_version(version = RUBY_VERSION, comparison, major, minor, patch)
         result      = (version.split('.').map(&:to_i) <=> [major, minor, patch])
         comparisons = { :== => [0],
                         :>= => [1, 0],

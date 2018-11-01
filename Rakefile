@@ -2,6 +2,7 @@
 
 require_relative 'lib/concurrent/version'
 require_relative 'lib/concurrent/utility/engine'
+require_relative 'lib/concurrent/utility/193'
 
 core_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby.gemspec')
 ext_gemspec  = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-ext.gemspec')
@@ -16,8 +17,8 @@ class ConcurrentRubyJavaExtensionTask < Rake::JavaExtensionTask
     jruby_cpath = nil
     if RUBY_PLATFORM =~ /java/
       begin
-        cpath  = Java::java.lang.System.getProperty('java.class.path').split(File::PATH_SEPARATOR)
-        cpath += Java::java.lang.System.getProperty('sun.boot.class.path').split(File::PATH_SEPARATOR)
+        cpath       = Java::java.lang.System.getProperty('java.class.path').split(File::PATH_SEPARATOR)
+        cpath       += Java::java.lang.System.getProperty('sun.boot.class.path').split(File::PATH_SEPARATOR)
         jruby_cpath = cpath.compact.join(File::PATH_SEPARATOR)
       rescue => e
       end

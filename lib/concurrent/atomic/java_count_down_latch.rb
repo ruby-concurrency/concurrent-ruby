@@ -16,14 +16,16 @@ if Concurrent.on_jruby?
 
       # @!macro count_down_latch_method_wait
       def wait(timeout = nil)
+        result = nil
         if timeout.nil?
           Synchronization::JRuby.sleep_interruptibly { @latch.await }
-          true
+          result = true
         else
           Synchronization::JRuby.sleep_interruptibly do
-            @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+            result = @latch.await(1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
           end
         end
+        result
       end
 
       # @!macro count_down_latch_method_count_down

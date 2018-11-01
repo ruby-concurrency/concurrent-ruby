@@ -141,8 +141,8 @@ module Concurrent
 
       def initialize(item)
         super()
-        @Item = item
-        @Latch = Concurrent::CountDownLatch.new
+        @Item      = item
+        @Latch     = Concurrent::CountDownLatch.new
         self.value = nil
       end
 
@@ -252,8 +252,8 @@ module Concurrent
       #     - Wake the sleeping occupier
       #     - Return the occupier's item
 
-      value = NULL if value.nil?                        # The sentinel allows nil to be a valid value
-      me = Node.new(value)                              # create my node in case I need to occupy
+      value  = NULL if value.nil? # The sentinel allows nil to be a valid value
+      me     = Node.new(value) # create my node in case I need to occupy
       end_at = Concurrent.monotonic_time + timeout.to_f # The time to give up
 
       result = loop do
@@ -304,13 +304,17 @@ module Concurrent
       #
       # @return [Object, CANCEL] the value exchanged by the other thread; {CANCEL} on timeout
       def do_exchange(value, timeout)
+        result = nil
         if timeout.nil?
-          Synchronization::JRuby.sleep_interruptibly { @exchanger.exchange(value) }
+          Synchronization::JRuby.sleep_interruptibly do
+            result = @exchanger.exchange(value)
+          end
         else
           Synchronization::JRuby.sleep_interruptibly do
-            @exchanger.exchange(value, 1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
+            result = @exchanger.exchange(value, 1000 * timeout, java.util.concurrent.TimeUnit::MILLISECONDS)
           end
         end
+        result
       rescue java.util.concurrent.TimeoutException
         CANCEL
       end

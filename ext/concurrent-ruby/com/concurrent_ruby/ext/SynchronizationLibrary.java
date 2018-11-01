@@ -284,21 +284,23 @@ public class SynchronizationLibrary implements Library {
         }
 
         @JRubyMethod(name = "sleep_interruptibly", visibility = Visibility.PUBLIC, module = true)
-        public static IRubyObject sleepInterruptibly(ThreadContext context, IRubyObject receiver, Block block) {
+        public static IRubyObject sleepInterruptibly(final ThreadContext context, IRubyObject receiver, final Block block) {
             try {
-                return context.getThread().executeTask(context, block,
-                        new RubyThread.Task<Block, IRubyObject>() {
-                            public IRubyObject run(ThreadContext context, Block block1) throws InterruptedException {
-                                return block1.call(context);
-                            }
+                context.getThread().executeBlockingTask(new RubyThread.BlockingTask() {
+                    @Override
+                    public void run() throws InterruptedException {
+                        block.call(context);
+                    }
 
-                            public void wakeup(RubyThread thread, Block block1) {
-                                thread.getNativeThread().interrupt();
-                            }
-                        });
+                    @Override
+                    public void wakeup() {
+                        context.getThread().getNativeThread().interrupt();
+                    }
+                });
             } catch (InterruptedException e) {
                 throw context.runtime.newThreadError("interrupted in Concurrent::Synchronization::JRuby.sleep_interruptibly");
             }
+            return context.nil;
         }
     }
 }

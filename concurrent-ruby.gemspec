@@ -1,5 +1,5 @@
-require_relative 'lib/concurrent/version'
-require_relative 'lib/concurrent/utility/engine'
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent/version')
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent/utility/engine')
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
@@ -25,5 +25,5 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   TXT
 
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 1.9.3'
 end
