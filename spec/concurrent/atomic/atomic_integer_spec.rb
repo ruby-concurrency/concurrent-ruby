@@ -198,9 +198,28 @@ module Concurrent
     end
   end
 
+  if defined? Concurrent::CAtomicInteger
+
+    RSpec.describe CAtomicInteger, ext: true do
+      it_should_behave_like :atomic_integer
+    end
+  end
+
   RSpec.describe AtomicInteger do
-    it 'inherits from MutexAtomicInteger' do
-      expect(AtomicInteger.ancestors).to include(MutexAtomicInteger)
+    if RUBY_ENGINE != 'ruby'
+      it 'does not load the C extension' do
+        expect(defined?(Concurrent::CAtomicInteger)).to be_falsey
+      end
+    end
+
+    if defined? Concurrent::CAtomicInteger
+      it 'inherits from CAtomicInteger', ext: true do
+        expect(AtomicInteger.ancestors).to include(CAtomicInteger)
+      end
+    else
+      it 'inherits from MutexAtomicInteger' do
+        expect(AtomicInteger.ancestors).to include(MutexAtomicInteger)
+      end
     end
 
     describe '#to_s and #inspect' do

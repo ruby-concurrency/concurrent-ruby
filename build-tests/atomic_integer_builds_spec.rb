@@ -41,4 +41,26 @@ describe Concurrent::AtomicInteger do
       end
     end
   end
+
+
+  if 'EXT' == ENV['TEST_PLATFORM'].strip
+
+    describe Concurrent::CAtomicInteger do
+
+      specify 'Concurrent::CAtomicInteger is defined' do
+        expect(defined?(Concurrent::CAtomicInteger)).to be_truthy
+      end
+
+      specify 'runs the benchmarks' do
+        stats = atomic_integer_test('CAtomicInteger', threads: threads, tests: tests)
+        expect(stats).to be_benchmark_results
+      end
+    end
+
+  else
+
+    specify 'Concurrent::CAtomicInteger is not defined' do
+      expect(defined?(Concurrent::CAtomicInteger)).to be_falsey
+    end
+  end
 end

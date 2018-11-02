@@ -95,7 +95,12 @@ module Concurrent
 
   # @!visibility private
   # @!macro internal_implementation_note
-  AtomicIntegerImplementation = MutexAtomicInteger
+  AtomicIntegerImplementation = case
+                                when defined?(CAtomicInteger)
+                                  CAtomicInteger
+                                else
+                                  MutexAtomicInteger
+                                end
   private_constant :AtomicIntegerImplementation
 
   # @!macro [attach] atomic_integer

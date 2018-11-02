@@ -1,0 +1,79 @@
+#include <ruby.h>
+
+#include "atomic_integer.h"
+#include "atomic_reference.h"
+#include "ruby_193_compatible.h"
+
+void atomic_integer_mark(void *value) {
+  rb_gc_mark_maybe((VALUE) value);
+}
+
+VALUE atomic_integer_allocate(VALUE klass) {
+  return rb_data_object_alloc(klass, (void *) Qnil, atomic_integer_mark, NULL);
+}
+
+VALUE method_atomic_integer_initialize(int argc, VALUE* argv, VALUE self) {
+  VALUE value = LL2NUM(0);
+  rb_check_arity(argc, 0, 1);
+  if (argc == 1) {
+    if (!RB_TYPE_P(argv[0], T_BIGNUM))
+      Check_Type(argv[0], T_FIXNUM);
+    value = argv[0];
+  }
+  DATA_PTR(self) = (void *) value;
+  return(self);
+}
+
+VALUE method_atomic_integer_value(VALUE self) {
+  return (VALUE) DATA_PTR(self);
+}
+
+VALUE method_atomic_integer_value_set(VALUE self, VALUE value) {
+  if (!RB_TYPE_P(value, T_BIGNUM))
+    Check_Type(value, T_FIXNUM);
+  DATA_PTR(self) = (void *) value;
+  return(value);
+}
+
+VALUE method_atomic_integer_increment(int argc, VALUE* argv, VALUE self) {
+  long long value = NUM2LL((VALUE) DATA_PTR(self));
+  long long delta = 1;
+  rb_check_arity(argc, 0, 1);
+  if (argc == 1) {
+    if (!RB_TYPE_P(argv[0], T_BIGNUM))
+      Check_Type(argv[0], T_FIXNUM);
+    delta = NUM2LL(argv[0]);
+  }
+  return method_atomic_integer_value_set(self, LL2NUM(value + delta));
+}
+
+VALUE method_atomic_integer_decrement(int argc, VALUE* argv, VALUE self) {
+  long long value = NUM2LL((VALUE) DATA_PTR(self));
+  long long delta = 1;
+  rb_check_arity(argc, 0, 1);
+  if (argc == 1) {
+    if (!RB_TYPE_P(argv[0], T_BIGNUM))
+      Check_Type(argv[0], T_FIXNUM);
+    delta = NUM2LL(argv[0]);
+  }
+  return method_atomic_integer_value_set(self, LL2NUM(value - delta));
+}
+
+VALUE method_atomic_integer_compare_and_set(VALUE self, VALUE rb_expect, VALUE rb_update) {
+  if (!RB_TYPE_P(rb_expect, T_BIGNUM))
+    Check_Type(rb_expect, T_FIXNUM);
+  if (!RB_TYPE_P(rb_update, T_BIGNUM))
+    Check_Type(rb_update, T_FIXNUM);
+  return ir_compare_and_set(self, rb_expect, rb_update);
+}
+
+VALUE method_atomic_integer_update(VALUE self) {
+  VALUE old_value, new_value;
+  for (;;) {
+    old_value = method_atomic_integer_value(self);
+    new_value = rb_yield(old_value);
+    if (ir_compare_and_set(self, old_value, new_value) == Qtrue) {
+      return new_value;
+    }
+  }
+}
