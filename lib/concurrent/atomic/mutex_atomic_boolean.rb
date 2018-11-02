@@ -50,6 +50,8 @@ module Concurrent
       @value = !!initial
     end
 
+    private
+
     # @!visibility private
     def ns_make_value(value)
       old = @value
