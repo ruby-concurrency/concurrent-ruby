@@ -15,6 +15,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.jruby.runtime.Block;
 
+import com.concurrent_ruby.ext.JavaAtomicIntegerLibrary.JavaAtomicInteger;
+
 public class JavaAtomicFixnumLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
@@ -30,8 +32,8 @@ public class JavaAtomicFixnumLibrary implements Library {
         }
     };
 
-    @JRubyClass(name = "JavaAtomicFixnum", parent = "Object")
-    public static class JavaAtomicFixnum extends RubyObject {
+    @JRubyClass(name = "JavaAtomicFixnum", parent = "JavaAtomicInteger")
+    public static class JavaAtomicFixnum extends JavaAtomicInteger {
 
         private AtomicLong atomicLong;
 

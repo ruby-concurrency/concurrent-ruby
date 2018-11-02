@@ -21,8 +21,8 @@ void Init_concurrent_ruby_ext() {
   rb_mConcurrent = rb_define_module("Concurrent");
   rb_cAtomicReference = rb_define_class_under(rb_mConcurrent, "CAtomicReference", rb_cObject);
   rb_cAtomicBoolean = rb_define_class_under(rb_mConcurrent, "CAtomicBoolean", rb_cObject);
-  rb_cAtomicFixnum = rb_define_class_under(rb_mConcurrent, "CAtomicFixnum", rb_cObject);
   rb_cAtomicInteger = rb_define_class_under(rb_mConcurrent, "CAtomicInteger", rb_cObject);
+  rb_cAtomicFixnum = rb_define_class_under(rb_mConcurrent, "CAtomicFixnum", rb_cAtomicInteger);
 
   // CAtomicReference
   rb_define_alloc_func(rb_cAtomicReference, ir_alloc);
@@ -45,6 +45,18 @@ void Init_concurrent_ruby_ext() {
   rb_define_method(rb_cAtomicBoolean, "make_true", method_atomic_boolean_make_true, 0);
   rb_define_method(rb_cAtomicBoolean, "make_false", method_atomic_boolean_make_false, 0);
 
+  // CAtomicInteger
+  rb_define_alloc_func(rb_cAtomicInteger, atomic_integer_allocate);
+  rb_define_method(rb_cAtomicInteger, "initialize", method_atomic_integer_initialize, -1);
+  rb_define_method(rb_cAtomicInteger, "value", method_atomic_integer_value, 0);
+  rb_define_method(rb_cAtomicInteger, "value=", method_atomic_integer_value_set, 1);
+  rb_define_method(rb_cAtomicInteger, "increment", method_atomic_integer_increment, -1);
+  rb_define_method(rb_cAtomicInteger, "decrement", method_atomic_integer_decrement, -1);
+  rb_define_method(rb_cAtomicInteger, "compare_and_set", method_atomic_integer_compare_and_set, 2);
+  rb_define_method(rb_cAtomicInteger, "update", method_atomic_integer_update, 0);
+  rb_define_alias(rb_cAtomicInteger, "up", "increment");
+  rb_define_alias(rb_cAtomicInteger, "down", "decrement");
+
   // CAtomicFixnum
   rb_define_const(rb_cAtomicFixnum, "MIN_VALUE", LL2NUM(LLONG_MIN));
   rb_define_const(rb_cAtomicFixnum, "MAX_VALUE", LL2NUM(LLONG_MAX));
@@ -58,16 +70,4 @@ void Init_concurrent_ruby_ext() {
   rb_define_method(rb_cAtomicFixnum, "update", method_atomic_fixnum_update, 0);
   rb_define_alias(rb_cAtomicFixnum, "up", "increment");
   rb_define_alias(rb_cAtomicFixnum, "down", "decrement");
-
-  // CAtomicInteger
-  rb_define_alloc_func(rb_cAtomicInteger, atomic_integer_allocate);
-  rb_define_method(rb_cAtomicInteger, "initialize", method_atomic_integer_initialize, -1);
-  rb_define_method(rb_cAtomicInteger, "value", method_atomic_integer_value, 0);
-  rb_define_method(rb_cAtomicInteger, "value=", method_atomic_integer_value_set, 1);
-  rb_define_method(rb_cAtomicInteger, "increment", method_atomic_integer_increment, -1);
-  rb_define_method(rb_cAtomicInteger, "decrement", method_atomic_integer_decrement, -1);
-  rb_define_method(rb_cAtomicInteger, "compare_and_set", method_atomic_integer_compare_and_set, 2);
-  rb_define_method(rb_cAtomicInteger, "update", method_atomic_integer_update, 0);
-  rb_define_alias(rb_cAtomicInteger, "up", "increment");
-  rb_define_alias(rb_cAtomicInteger, "down", "decrement");
 }
