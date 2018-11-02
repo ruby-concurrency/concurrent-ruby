@@ -96,6 +96,8 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   AtomicIntegerImplementation = case
+                                when defined?(JavaAtomicInteger)
+                                  JavaAtomicInteger
                                 when defined?(CAtomicInteger)
                                   CAtomicInteger
                                 else

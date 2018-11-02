@@ -205,6 +205,13 @@ module Concurrent
     end
   end
 
+  if Concurrent.on_jruby?
+
+    RSpec.describe JavaAtomicInteger do
+      it_should_behave_like :atomic_integer
+    end
+  end
+
   RSpec.describe AtomicInteger do
     if RUBY_ENGINE != 'ruby'
       it 'does not load the C extension' do
@@ -212,7 +219,11 @@ module Concurrent
       end
     end
 
-    if defined? Concurrent::CAtomicInteger
+    if Concurrent.on_jruby?
+      it 'inherits from JavaAtomicInteger' do
+        expect(AtomicInteger.ancestors).to include(JavaAtomicInteger)
+      end
+    elsif defined? Concurrent::CAtomicInteger
       it 'inherits from CAtomicInteger', ext: true do
         expect(AtomicInteger.ancestors).to include(CAtomicInteger)
       end

@@ -42,6 +42,26 @@ describe Concurrent::AtomicInteger do
     end
   end
 
+  if jruby?
+
+    describe Concurrent::JavaAtomicInteger do
+
+      specify 'Concurrent::JavaAtomicInteger is defined' do
+        expect(defined?(Concurrent::JavaAtomicInteger)).to be_truthy
+      end
+
+      specify 'runs the benchmarks' do
+        stats = atomic_integer_test('JavaAtomicInteger', threads: threads, tests: tests)
+        expect(stats).to be_benchmark_results
+      end
+    end
+
+  else
+
+    specify 'Concurrent::JavaAtomicInteger is not defined' do
+      expect(defined?(Concurrent::JavaAtomicInteger)).to be_falsey
+    end
+  end
 
   if 'EXT' == ENV['TEST_PLATFORM'].strip
 
