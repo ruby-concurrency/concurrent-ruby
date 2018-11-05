@@ -1,4 +1,4 @@
-require_relative 'lib/concurrent/version'
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent/version')
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
@@ -22,7 +22,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 Please see http://concurrent-ruby.com for more information.
   TXT
 
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 1.9.3'
 
   s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION}"
 end

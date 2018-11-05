@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-require_relative 'lib/concurrent/version'
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent/version')
 
 no_path = ENV['NO_PATH']
 options = no_path ? {} : { path: '.' }

@@ -28,7 +28,7 @@
   </head>
   <body>
     <div class="nav_wrap">
-      <iframe id="nav" src="class_list.html?1"></iframe>
+      <iframe id="nav" src="file_list.html?1"></iframe>
       <div id="resizer"></div>
     </div>
 
@@ -313,8 +313,14 @@ inspiration from Clojure <a href="https://clojure.github.io/core.async/">core.as
 
 <h2>Supported Ruby versions</h2>
 
-<p>MRI 2.0 and above, JRuby 9000, TruffleRuby are supported. 
-This gem should be fully compatible with any interpreter that is compliant with Ruby 2.0 or newer.
+<ul>
+<li>MRI 2.0 and above</li>
+<li>JRuby 9000</li>
+<li>TruffleRuby are supported. </li>
+<li>Any Ruby interpreter that is compliant with Ruby 2.0 or newer.</li>
+</ul>
+
+<p>Actually we still support mri 1.9.3 and jruby 1.7.27 but we are looking at ways how to drop the support.
 Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.</p>
 
 <p>The legacy support for Rubinius is kept but it is no longer maintained, if you would like to help 

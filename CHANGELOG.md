@@ -1,5 +1,13 @@
 ## Current
 
+## Release v1.1.1, edge v0.4.1 (1 Nov 2018)
+
+* (#768) add support for 1.9.3 back 
+
+## Release v1.1.0, edge v0.4.0 (31 OCt 2018) (yanked)
+
+* (#768) yanked because of issues with removed 1.9.3 support 
+
 ## Release v1.1.0.pre2, edge v0.4.0.pre2 (18 Sep 2018)
 
 concurrent-ruby:
