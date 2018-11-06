@@ -42,6 +42,14 @@ module Concurrent
 
       private
 
+      def load_error_path(error)
+        if error.respond_to? :path
+          error.path
+        else
+          error.message.split(' -- ').last
+        end
+      end
+
       def set_c_extensions_loaded
         @c_extensions_loaded = true
       end
@@ -54,7 +62,7 @@ module Concurrent
         require path
         set_c_extensions_loaded
       rescue LoadError => e
-        if e.path == path
+        if load_error_path(e) == path
           # move on with pure-Ruby implementations
           # TODO (pitr-ch 12-Jul-2018): warning on verbose?
         else

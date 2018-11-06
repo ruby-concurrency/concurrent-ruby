@@ -1,5 +1,3 @@
-require 'concurrent/utility/193'
-
 require 'concurrent/version'
 require 'concurrent/constants'
 require 'concurrent/errors'
