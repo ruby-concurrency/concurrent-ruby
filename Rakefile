@@ -283,20 +283,28 @@ namespace :release do
   task :publish => ['publish:ask', 'publish:tag', 'publish:rubygems', 'publish:post_steps']
 
   namespace :publish do
+    publish_edge = false
+
     task :ask do
       begin
-        STDOUT.puts 'Do you want to publish? (y/n)'
+        STDOUT.puts 'Do you want to publish anything? (y/n)'
         input = STDIN.gets.strip.downcase
       end until %w(y n).include?(input)
       exit 1 if input == 'n'
+      begin
+        STDOUT.puts 'Do you want to publish edge? (y/n)'
+        input = STDIN.gets.strip.downcase
+      end until %w(y n).include?(input)
+      publish_edge = input == 'y'
     end
 
     desc '** tag HEAD with current version and push to github'
     task :tag do
       Dir.chdir(__dir__) do
         sh "git tag v#{Concurrent::VERSION}"
-        sh "git tag edge-v#{Concurrent::EDGE_VERSION}"
-        sh "git push origin v#{Concurrent::VERSION} edge-v#{Concurrent::EDGE_VERSION}"
+        sh "git push origin v#{Concurrent::VERSION}"
+        sh "git tag edge-v#{Concurrent::EDGE_VERSION}" if publish_edge
+        sh "git push origin edge-v#{Concurrent::EDGE_VERSION}" if publish_edge
       end
     end
 
@@ -304,7 +312,7 @@ namespace :release do
     task :rubygems do
       Dir.chdir(__dir__) do
         sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
-        sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
+        sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem" if publish_edge
         sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem"
         sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x64-mingw32.gem"
         sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x86-mingw32.gem"
