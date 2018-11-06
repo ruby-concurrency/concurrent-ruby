@@ -10,6 +10,15 @@ RSpec.shared_examples :struct do
       expect(clazz.ancestors).to include described_class
     end
 
+    it 'registers the class when given a class name which is defined in the ancestors' do
+      class_name = 'ValidClassName2'
+      Object.const_set(class_name, class_name)
+      clazz = described_class.new(class_name)
+      expect{ described_class.const_get(class_name) }.to_not raise_error
+      expect(clazz).to be_a Class
+      expect(clazz.ancestors).to include described_class
+    end
+
     it 'creates an anonymous class when given at least one member' do
       clazz = described_class.new(:foo)
       expect{ described_class.const_get(clazz.to_s) }.to raise_error(NameError)

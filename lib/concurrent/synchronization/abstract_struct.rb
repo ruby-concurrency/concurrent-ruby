@@ -138,7 +138,7 @@ module Concurrent
         end
         unless name.nil?
           begin
-            parent.send :remove_const, name if parent.const_defined? name
+            parent.send :remove_const, name if parent.const_defined?(name, false)
             parent.const_set(name, clazz)
             clazz
           rescue NameError
