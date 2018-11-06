@@ -1,5 +1,9 @@
 ## Current
 
+## Release v1.1.2 (6 Nov 2018)
+
+* (#773) more defensive 1.9.3 support
+
 ## Release v1.1.1, edge v0.4.1 (1 Nov 2018)
 
 * (#768) add support for 1.9.3 back 
