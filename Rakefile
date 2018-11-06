@@ -2,7 +2,15 @@
 
 require_relative 'lib/concurrent/version'
 require_relative 'lib/concurrent/utility/engine'
-require_relative 'lib/concurrent/utility/193'
+
+if Concurrent.ruby_version :<, 2, 0, 0
+  # @!visibility private
+  module Kernel
+    def __dir__
+      File.dirname __FILE__
+    end
+  end
+end
 
 core_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby.gemspec')
 ext_gemspec  = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-ext.gemspec')
