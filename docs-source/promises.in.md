@@ -594,7 +594,7 @@ Concurrent::Promises.future { 1+1 }.then_push_channel(ch1)
 result = (
     Concurrent::Promises.fulfilled_future('%02d') &      
         Concurrent::Promises.select_channel(ch1, ch2)).
-    then { |format, (channel, value)| format format, value }
+    then { |format, (channel, value)| format format, value } #
 result.value!
 ```
 
