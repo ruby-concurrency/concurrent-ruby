@@ -4,6 +4,7 @@ require 'concurrent/errors'
 require 'concurrent/atomic/atomic_reference'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/cached_thread_pool'
 require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_counter'
 

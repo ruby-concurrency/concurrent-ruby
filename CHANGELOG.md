@@ -1,5 +1,7 @@
 ## Current
 
+* (#775) fix partial require of the gem (although not officially supported)
+
 ## Release v1.1.2 (6 Nov 2018)
 
 * (#773) more defensive 1.9.3 support
