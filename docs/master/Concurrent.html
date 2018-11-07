@@ -659,7 +659,7 @@ maximum limit/threshold.</p>
         <dt id="VERSION-constant" class="">VERSION =
           
         </dt>
-        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>1.1.2</span><span class='tstring_end'>&#39;</span></span></pre></dd>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>1.1.3</span><span class='tstring_end'>&#39;</span></span></pre></dd>
       
         <dt id="EDGE_VERSION-constant" class="">EDGE_VERSION =
           
@@ -1655,7 +1655,6 @@ the transaction. Creating a thread counts as a side-effect.</p></li>
       <pre class="lines">
 
 
-18
 19
 20
 21
@@ -1678,10 +1677,11 @@ the transaction. Creating a thread counts as a side-effect.</p></li>
 38
 39
 40
-41</pre>
+41
+42</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 19</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_create_simple_logger'>create_simple_logger</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='const'>Logger</span><span class='op'>::</span><span class='const'>FATAL</span><span class='comma'>,</span> <span class='id identifier rubyid_output'>output</span> <span class='op'>=</span> <span class='gvar'>$stderr</span><span class='rparen'>)</span>
   <span class='comment'># TODO (pitr-ch 24-Dec-2016): figure out why it had to be replaced, stdlogger was deadlocking
@@ -1755,7 +1755,6 @@ the transaction. Creating a thread counts as a side-effect.</p></li>
       <pre class="lines">
 
 
-50
 51
 52
 53
@@ -1778,10 +1777,11 @@ the transaction. Creating a thread counts as a side-effect.</p></li>
 70
 71
 72
-73</pre>
+73
+74</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 50</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 51</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_create_stdlib_logger'>create_stdlib_logger</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='const'>Logger</span><span class='op'>::</span><span class='const'>FATAL</span><span class='comma'>,</span> <span class='id identifier rubyid_output'>output</span> <span class='op'>=</span> <span class='gvar'>$stderr</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_logger'>logger</span>           <span class='op'>=</span> <span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_output'>output</span><span class='rparen'>)</span>
@@ -2292,12 +2292,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-128
 129
-130</pre>
+130
+131</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 129</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_disable_at_exit_handlers!'>disable_at_exit_handlers!</span>
   <span class='const'>AtExit</span><span class='period'>.</span><span class='id identifier rubyid_enabled'>enabled</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -2370,12 +2370,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-163
 164
-165</pre>
+165
+166</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 163</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 164</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_executor'>executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor_identifier'>executor_identifier</span><span class='rparen'>)</span>
   <span class='const'>Options</span><span class='period'>.</span><span class='id identifier rubyid_executor'>executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor_identifier'>executor_identifier</span><span class='rparen'>)</span>
@@ -2427,12 +2427,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-135
 136
-137</pre>
+137
+138</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 135</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 136</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_global_fast_executor'>global_fast_executor</span>
   <span class='const'>GLOBAL_FAST_EXECUTOR</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
@@ -2457,12 +2457,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-146
 147
-148</pre>
+148
+149</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 146</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 147</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_global_immediate_executor'>global_immediate_executor</span>
   <span class='const'>GLOBAL_IMMEDIATE_EXECUTOR</span>
@@ -2514,12 +2514,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-142
 143
-144</pre>
+144
+145</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 142</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 143</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_global_io_executor'>global_io_executor</span>
   <span class='const'>GLOBAL_IO_EXECUTOR</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
@@ -2544,12 +2544,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-90
 91
-92</pre>
+92
+93</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 90</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 91</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_global_logger'>global_logger</span>
   <span class='const'>GLOBAL_LOGGER</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
@@ -2574,12 +2574,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-94
 95
-96</pre>
+96
+97</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 94</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 95</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_global_logger='>global_logger=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='const'>GLOBAL_LOGGER</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
@@ -2631,12 +2631,12 @@ exit by calling AtExitImplementation.new.install.run method.</p>
       <pre class="lines">
 
 
-153
 154
-155</pre>
+155
+156</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 153</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 154</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_global_timer_set'>global_timer_set</span>
   <span class='const'>GLOBAL_TIMER_SET</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
@@ -2798,7 +2798,6 @@ starting point</p>
       <pre class="lines">
 
 
-167
 168
 169
 170
@@ -2806,10 +2805,11 @@ starting point</p>
 172
 173
 174
-175</pre>
+175
+176</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 167</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 168</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new_fast_executor'>new_fast_executor</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="Concurrent/FixedThreadPool.html" title="Concurrent::FixedThreadPool (class)">FixedThreadPool</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/FixedThreadPool.html#initialize-instance_method" title="Concurrent::FixedThreadPool#initialize (method)">new</a></span></span><span class='lparen'>(</span>
@@ -2840,15 +2840,15 @@ starting point</p>
       <pre class="lines">
 
 
-177
 178
 179
 180
 181
-182</pre>
+182
+183</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 177</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 178</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new_io_executor'>new_io_executor</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="Concurrent/CachedThreadPool.html" title="Concurrent::CachedThreadPool (class)">CachedThreadPool</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/CachedThreadPool.html#initialize-instance_method" title="Concurrent::CachedThreadPool#initialize (method)">new</a></span></span><span class='lparen'>(</span>
@@ -2946,12 +2946,12 @@ starting point</p>
       <pre class="lines">
 
 
-44
 45
-46</pre>
+46
+47</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 45</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_use_simple_logger'>use_simple_logger</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='const'>Logger</span><span class='op'>::</span><span class='const'>FATAL</span><span class='comma'>,</span> <span class='id identifier rubyid_output'>output</span> <span class='op'>=</span> <span class='gvar'>$stderr</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_global_logger'><span class='object_link'><a href="#global_logger-class_method" title="Concurrent.global_logger (method)">global_logger</a></span></span> <span class='op'>=</span> <span class='id identifier rubyid_create_simple_logger'>create_simple_logger</span> <span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='id identifier rubyid_output'>output</span>
@@ -2987,12 +2987,12 @@ starting point</p>
       <pre class="lines">
 
 
-77
 78
-79</pre>
+79
+80</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/configuration.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_use_stdlib_logger'>use_stdlib_logger</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='const'>Logger</span><span class='op'>::</span><span class='const'>FATAL</span><span class='comma'>,</span> <span class='id identifier rubyid_output'>output</span> <span class='op'>=</span> <span class='gvar'>$stderr</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_global_logger'><span class='object_link'><a href="#global_logger-class_method" title="Concurrent.global_logger (method)">global_logger</a></span></span> <span class='op'>=</span> <span class='id identifier rubyid_create_stdlib_logger'>create_stdlib_logger</span> <span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='id identifier rubyid_output'>output</span>

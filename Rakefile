@@ -163,6 +163,7 @@ begin
             "{Concurrent::#{$1} #{$1}}"
           end
         end
+        FileUtils.mkpath 'tmp'
         File.write 'tmp/README.md', content
       end
     end
