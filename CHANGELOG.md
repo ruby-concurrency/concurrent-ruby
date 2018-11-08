@@ -1,5 +1,7 @@
 ## Current
 
+* (#776) Fix NameError on defining a struct with a name which is already taken in an ancestor
+
 ## Release v1.1.3 (7 Nov 2018)
 
 * (#775) fix partial require of the gem (although not officially supported)
