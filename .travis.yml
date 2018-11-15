@@ -9,8 +9,11 @@ matrix:
   include:
     - name: MRI 2.5.1 Latest
       rvm: 2.5.1
-    - name: JRuby 9.2.0.0 Latest
-      rvm: jruby-9.2.0.0
+    - name: JRuby 9.2.4.1 Latest on Java 11
+      rvm: jruby-9.2.4.1
+      jdk: oraclejdk11
+    - name: JRuby 9.2.4.1 Latest on Java 8
+      rvm: jruby-9.2.4.1
       jdk: oraclejdk8
     - name: TruffleRuby Latest
       rvm: system
