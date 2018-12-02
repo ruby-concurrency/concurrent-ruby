@@ -74,7 +74,9 @@ namespace :repackage do
   desc '* with Windows fat distributions'
   task :all do
     Dir.chdir(__dir__) do
+      # store gems in vendor cache for docker
       sh 'bundle package'
+
       # needed only if the jar is built outside of docker
       Rake::Task['lib/concurrent/concurrent_ruby.jar'].invoke
       RakeCompilerDock.exec 'support/cross_building.sh'
