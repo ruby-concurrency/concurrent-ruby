@@ -95,13 +95,14 @@ future = Concurrent::Promises.future(0.1) do |duration|
   :result
 end
 # => #<Concurrent::Promises::Future:0x000005 pending>
+future.value                             # => :result
 ```
 
 Asks if the future is resolved, here it will be still in the middle of the
 sleep call.
 
 ```ruby
-future.resolved?                         # => false
+future.resolved?                         # => true
 ```
 
 Retrieving the value will block until the future is **resolved**.
@@ -264,7 +265,7 @@ do_stuff arg }`) is **required**. Both of the following bad examples may break:
 ```ruby
 arg = 1                                  # => 1
 Thread.new { do_stuff arg }
-# => #<Thread:0x00000c@promises.in.md:203 run>
+# => #<Thread:0x00000c@promises.in.md:204 run>
 Concurrent::Promises.future { do_stuff arg }
 # => #<Concurrent::Promises::Future:0x00000d pending>
 ```
@@ -274,7 +275,7 @@ Correct:
 ```ruby
 arg = 1                                  # => 1
 Thread.new(arg) { |arg| do_stuff arg }
-# => #<Thread:0x00000e@promises.in.md:211 run>
+# => #<Thread:0x00000e@promises.in.md:212 run>
 Concurrent::Promises.future(arg) { |arg| do_stuff arg }
 # => #<Concurrent::Promises::Future:0x00000f pending>
 ```
@@ -593,7 +594,7 @@ and `:io` for long-running and blocking tasks.
 ```ruby
 Concurrent::Promises.future_on(:fast) { 2 }.
     then_on(:io) { File.read __FILE__ }.
-    value.size                           # => 27117
+    value.size                           # => 27130
 ```
 
 ## Run (simulated process)
@@ -607,7 +608,7 @@ count = lambda do |v|
   v += 1
   v < 5 ? Concurrent::Promises.future_on(:fast, v, &count) : v
 end
-# => #<Proc:0x000018@promises.in.md:520 (lambda)>
+# => #<Proc:0x000018@promises.in.md:521 (lambda)>
 400.times.
     map { Concurrent::Promises.future_on(:fast, 0, &count).run.value! }.
     all? { |v| v == 5 }                  # => true
