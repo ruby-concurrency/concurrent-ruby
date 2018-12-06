@@ -43,7 +43,7 @@ appreciate your help. Would you like to contribute? Great! Have a look at
 
 *Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency 
 library, providing consistent behavior and guarantees on all three of the main Ruby interpreters 
-(MRI/CRuby, JRuby, and Rubinius).*
+(MRI/CRuby, JRuby, Rubinius, TruffleRuby).*
 
 Every abstraction in this library is thread safe. Specific thread safety guarantees are documented 
 with each abstraction.
@@ -59,7 +59,7 @@ Concurrent Ruby is also the only Ruby library which provides a full suite of thr
 immutable variable types and data structures.
 
 We've also initiated discussion to document [memory model](docs-source/synchronization.md) of Ruby which 
-would provide consistent behaviour and guarantees on all three of the main Ruby interpreters 
+would provide consistent behaviour and guarantees on all four of the main Ruby interpreters 
 (MRI/CRuby, JRuby, Rubinius, TruffleRuby).
 
 ## Features & Documentation
