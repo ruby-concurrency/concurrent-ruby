@@ -18,8 +18,6 @@ edge_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-edge.
 
 require 'rake/javaextensiontask'
 
-JRUBY_JAR_PATH = '/usr/local/opt/rbenv/versions/jruby-9.1.17.0/lib/jruby.jar'
-
 class ConcurrentRubyJavaExtensionTask < Rake::JavaExtensionTask
   def java_classpath_arg(*args)
     jruby_cpath = nil
@@ -42,9 +40,14 @@ class ConcurrentRubyJavaExtensionTask < Rake::JavaExtensionTask
     end
 
     unless jruby_cpath
-      jruby_cpath = JRUBY_JAR_PATH
-      raise "#{jruby_cpath} does not exist" unless File.exist? jruby_cpath
+      jruby_home = ENV['JRUBY_HOME']
+      if jruby_home
+        candidate = File.join(jruby_home, 'lib', 'jruby.jar')
+        jruby_cpath = candidate if File.exist? candidate
+      end
     end
+
+    raise "jruby.jar path not found" unless jruby_cpath
 
     jruby_cpath += File::PATH_SEPARATOR + args.join(File::PATH_SEPARATOR) unless args.empty?
     jruby_cpath ? "-cp \"#{jruby_cpath}\"" : ""
