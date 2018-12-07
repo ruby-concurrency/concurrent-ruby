@@ -61,6 +61,7 @@ future = Concurrent::Promises.future(0.1) do |duration|
   sleep duration
   :result
 end
+future.value
 ```
 
 Asks if the future is resolved, here it will be still in the middle of the
