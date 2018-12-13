@@ -9,11 +9,11 @@ matrix:
   include:
     - name: MRI 2.5.1 Latest
       rvm: 2.5.1
-    - name: JRuby 9.2.4.1 Latest on Java 11
-      rvm: jruby-9.2.4.1
+    - name: JRuby 9.2.5.0 Latest on Java 11
+      rvm: jruby-9.2.5.0
       jdk: oraclejdk11
-    - name: JRuby 9.2.4.1 Latest on Java 8
-      rvm: jruby-9.2.4.1
+    - name: JRuby 9.2.5.0 Latest on Java 8
+      rvm: jruby-9.2.5.0
       jdk: oraclejdk8
     - name: TruffleRuby Latest
       rvm: system
@@ -54,8 +54,8 @@ matrix:
 
     - name: MRI head
       rvm: ruby-head
-    - name: MRI 2.6.0-preview2
-      rvm: 2.6.0-preview2
+    - name: MRI 2.6.0-rc1
+      rvm: 2.6.0-rc1
     - name: JRuby head
       rvm: jruby-head
       jdk: oraclejdk8
@@ -68,7 +68,7 @@ matrix:
       env: COVERAGE=1
 
   allow_failures:
-    - rvm: 2.6.0-preview2
+    - rvm: 2.6.0-rc1
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3
