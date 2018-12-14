@@ -135,7 +135,7 @@ rescue LoadError => e
   puts 'RSpec is not installed, skipping test task definitions: ' + e.message
 end
 
-current_yard_version_name = Concurrent::VERSION.split('.')[0..2].join('.')
+current_yard_version_name = [*Concurrent::VERSION.split('.')[0..1], 'x'].join('.')
 
 begin
   require 'yard'

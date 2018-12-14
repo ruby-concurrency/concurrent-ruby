@@ -1,5 +1,8 @@
 ## Current
 
+## Release v1.1.4 (14 Dec 2018)
+
+* (#780) Remove java_alias of 'submit' method of Runnable to let executor service work on java 11
 * (#776) Fix NameError on defining a struct with a name which is already taken in an ancestor
 
 ## Release v1.1.3 (7 Nov 2018)
