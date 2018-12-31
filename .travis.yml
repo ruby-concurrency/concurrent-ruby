@@ -9,6 +9,8 @@ matrix:
   include:
     - name: MRI 2.6.0 Latest
       rvm: 2.6.0
+    - name: MRI 2.5
+      rvm: 2.5.3
     - name: JRuby 9.2.5.0 Latest on Java 11
       rvm: jruby-9.2.5.0
       jdk: oraclejdk11
@@ -41,7 +43,8 @@ matrix:
       rvm: 2.0.0
     - name: MRI 1.9.3
       rvm: 1.9.3
-
+      before_install:
+        - gem install bundler
     - name: JRuby 9.1.17.0
       rvm: jruby-9.1.17.0
       jdk: oraclejdk8
