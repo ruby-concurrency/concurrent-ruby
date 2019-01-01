@@ -80,9 +80,10 @@ namespace :repackage do
       # store gems in vendor cache for docker
       sh 'bundle package'
 
-      # needed only if the jar is built outside of docker
-      Rake::Task['lib/concurrent/concurrent_ruby.jar'].invoke
-      RakeCompilerDock.exec 'support/cross_building.sh'
+      # build only the jar file not the whole gem for java platform, the jar is part the concurrent-ruby-x.y.z.gem
+      RakeCompilerDock.sh 'bundle install --local && bundle exec rake lib/concurrent/concurrent_ruby.jar --trace', rubyvm: :jruby
+      # build all gem files
+      RakeCompilerDock.sh 'bundle install --local && bundle exec rake cross native package --trace'
     end
   end
 end
@@ -275,7 +276,7 @@ namespace :release do
   end
 
   desc '* build all *.gem files necessary for release'
-  task :build => 'repackage:all'
+  task :build => [:clobber, 'repackage:all']
 
   desc '* test actual installed gems instead of cloned repository on MRI and JRuby'
   task :test do
