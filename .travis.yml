@@ -7,8 +7,9 @@ branches:
 matrix:
   fast_finish: true
   include:
-    - name: MRI 2.5.1 Latest
-      rvm: 2.5.1
+    # Latest versions first
+    - name: MRI 2.6.0 Latest
+      rvm: 2.6.0
     - name: JRuby 9.2.5.0 Latest on Java 11
       rvm: jruby-9.2.5.0
       jdk: oraclejdk11
@@ -24,11 +25,14 @@ matrix:
         - gem install bundler
         - bundle install
     - name: YARD uptodate in docs
-      rvm: 2.5.1
+      rvm: 2.6.0
       script:
       - bundle install --with documentation
       - bundle exec rake yard:master:uptodate
 
+    # Older versions follow
+    - name: MRI 2.5.3
+      rvm: 2.5.3
     - name: MRI 2.4.4
       rvm: 2.4.4
     - name: MRI 2.3.7
@@ -41,7 +45,8 @@ matrix:
       rvm: 2.0.0
     - name: MRI 1.9.3
       rvm: 1.9.3
-
+      before_install:
+        - gem install bundler
     - name: JRuby 9.1.17.0
       rvm: jruby-9.1.17.0
       jdk: oraclejdk8
@@ -54,8 +59,6 @@ matrix:
 
     - name: MRI head
       rvm: ruby-head
-    - name: MRI 2.6.0-rc1
-      rvm: 2.6.0-rc1
     - name: JRuby head
       rvm: jruby-head
       jdk: oraclejdk8
@@ -68,7 +71,6 @@ matrix:
       env: COVERAGE=1
 
   allow_failures:
-    - rvm: 2.6.0-rc1
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3
