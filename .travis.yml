@@ -7,10 +7,9 @@ branches:
 matrix:
   fast_finish: true
   include:
+    # Latest versions first
     - name: MRI 2.6.0 Latest
       rvm: 2.6.0
-    - name: MRI 2.5
-      rvm: 2.5.3
     - name: JRuby 9.2.5.0 Latest on Java 11
       rvm: jruby-9.2.5.0
       jdk: oraclejdk11
@@ -31,6 +30,9 @@ matrix:
       - bundle install --with documentation
       - bundle exec rake yard:master:uptodate
 
+    # Older versions follow
+    - name: MRI 2.5
+      rvm: 2.5.3
     - name: MRI 2.4.4
       rvm: 2.4.4
     - name: MRI 2.3.7
