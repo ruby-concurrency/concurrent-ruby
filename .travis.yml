@@ -31,7 +31,7 @@ matrix:
       - bundle exec rake yard:master:uptodate
 
     # Older versions follow
-    - name: MRI 2.5
+    - name: MRI 2.5.3
       rvm: 2.5.3
     - name: MRI 2.4.4
       rvm: 2.4.4
