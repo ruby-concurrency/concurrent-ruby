@@ -86,7 +86,7 @@
   
   <dl>
     <dt>Included in:</dt>
-    <dd><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Concurrent::Promises</a></span></dd>
+    <dd><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Concurrent::Promises</a></span>, <span class='object_link'><a href="../Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span></dd>
   </dl>
   
 
@@ -271,34 +271,6 @@ new.</p>
 
   
     <span class="summary_desc"><div class='inline'><p>Creates new future which is resolved after first futures_and_or_events is resolved.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#default_executor-instance_method" title="#default_executor (instance method)">#<strong>default_executor</strong>  &#x21d2; Executor, :io, :fast </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="FactoryMethods/Configuration.html#default_executor-instance_method" title="Concurrent::Promises::FactoryMethods::Configuration#default_executor (method)">Configuration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>The executor which is used when none is supplied to a factory method.</p>
 </div></span>
   
 </li>
@@ -652,34 +624,6 @@ new.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#select_channel-instance_method" title="#select_channel (instance method)">#<strong>select_channel</strong>(*channels)  &#x21d2; Future </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="FactoryMethods/NewChannelIntegration.html#select_channel-instance_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">NewChannelIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Selects a channel which is ready to be read from.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#zip_events-instance_method" title="#zip_events (instance method)">#<strong>zip_events</strong>(*futures_and_or_events)  &#x21d2; Event </a>
     
 
@@ -812,6 +756,62 @@ new.</p>
 
   
     <span class="summary_desc"><div class='inline'><p>Creates new future which is resolved after all the futures created by future_factory from enumerable elements are resolved.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_executor-instance_method" title="#default_executor (instance method)">#<strong>default_executor</strong>  &#x21d2; Executor, :io, :fast </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="FactoryMethods/Configuration.html#default_executor-instance_method" title="Concurrent::Promises::FactoryMethods::Configuration#default_executor (method)">Configuration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The executor which is used when none is supplied to a factory method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#select_channel-instance_method" title="#select_channel (instance method)">#<strong>select_channel</strong>(*channels)  &#x21d2; Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="FactoryMethods/NewChannelIntegration.html#select_channel-instance_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">NewChannelIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Selects a channel which is ready to be read from.</p>
 </div></span>
   
 </li>
@@ -1284,54 +1284,6 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="default_executor-instance_method">
-  
-    #<strong>default_executor</strong>  &#x21d2; <tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="FactoryMethods/Configuration.html#default_executor-instance_method" title="Concurrent::Promises::FactoryMethods::Configuration#default_executor (method)">Configuration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Returns the executor which is used when none is supplied
-to a factory method. The method can be overridden in the receivers of
-<code>include FactoryMethod</code></p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the executor which is used when none is supplied
-to a factory method. The method can be overridden in the receivers of
-<code>include FactoryMethod</code></p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
 </div>
     
       <div class="method_details ">
@@ -2855,66 +2807,6 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="select_channel-instance_method">
-  
-    #<strong>select_channel</strong>(*channels)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="FactoryMethods/NewChannelIntegration.html#select_channel-instance_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">NewChannelIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Selects a channel which is ready to be read from.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>channels</span>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>a future which is fulfilled with pair [channel, message] when one of the channels is
-available for reading</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="zip_events-instance_method">
   
     #<strong>zip_events</strong>(*futures_and_or_events)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
@@ -3454,6 +3346,114 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
     </td>
   </tr>
 </table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="default_executor-instance_method">
+  
+    #<strong>default_executor</strong>  &#x21d2; <tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="FactoryMethods/Configuration.html#default_executor-instance_method" title="Concurrent::Promises::FactoryMethods::Configuration#default_executor (method)">Configuration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the executor which is used when none is supplied
+to a factory method. The method can be overridden in the receivers of
+<code>include FactoryMethod</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the executor which is used when none is supplied
+to a factory method. The method can be overridden in the receivers of
+<code>include FactoryMethod</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="select_channel-instance_method">
+  
+    #<strong>select_channel</strong>(*channels)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="FactoryMethods/NewChannelIntegration.html#select_channel-instance_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">NewChannelIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Selects a channel which is ready to be read from.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>channels</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a future which is fulfilled with pair [channel, message] when one of the channels is
+available for reading</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
 </div>
     
   </div>

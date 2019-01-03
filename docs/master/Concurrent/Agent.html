@@ -446,34 +446,6 @@ value must change together, in an all-or-nothing transaction.</li>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#add_observer-instance_method" title="#add_observer (instance method)">#<strong>add_observer</strong>(observer = nil, func = :update, &amp;block)  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Concern/Observable.html#add_observer-instance_method" title="Concurrent::Concern::Observable#add_observer (method)">Concern::Observable</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Adds an observer to this set.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#await-instance_method" title="#await (instance method)">#<strong>await</strong>  &#x21d2; Boolean </a>
     
 
@@ -535,90 +507,6 @@ value must change together, in an all-or-nothing transaction.</li>
 
   
     <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far, from this thread or nested by the Agent, have occurred, or the timeout (in seconds) has elapsed.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#count_observers-instance_method" title="#count_observers (instance method)">#<strong>count_observers</strong>  &#x21d2; Integer </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Concern/Observable.html#count_observers-instance_method" title="Concurrent::Concern::Observable#count_observers (method)">Concern::Observable</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Return the number of observers associated with this object.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#delete_observer-instance_method" title="#delete_observer (instance method)">#<strong>delete_observer</strong>(observer)  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Concern/Observable.html#delete_observer-instance_method" title="Concurrent::Concern::Observable#delete_observer (method)">Concern::Observable</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Remove <code>observer</code> as an observer on this object so that it will no longer receive notifications.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#delete_observers-instance_method" title="#delete_observers (instance method)">#<strong>delete_observers</strong>  &#x21d2; Observable </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Concern/Observable.html#delete_observers-instance_method" title="Concurrent::Concern::Observable#delete_observers (method)">Concern::Observable</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Remove all observers associated with this object.</p>
 </div></span>
   
 </li>
@@ -905,6 +793,118 @@ value must change together, in an all-or-nothing transaction.</li>
 
   
     <span class="summary_desc"><div class='inline'><p>Blocks the current thread until all actions dispatched thus far, from this thread or nested by the Agent, have occurred, or the timeout (in seconds) has elapsed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_observer-instance_method" title="#add_observer (instance method)">#<strong>add_observer</strong>(observer = nil, func = :update, &amp;block)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#add_observer-instance_method" title="Concurrent::Concern::Observable#add_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Adds an observer to this set.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#count_observers-instance_method" title="#count_observers (instance method)">#<strong>count_observers</strong>  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#count_observers-instance_method" title="Concurrent::Concern::Observable#count_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the number of observers associated with this object.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_observer-instance_method" title="#delete_observer (instance method)">#<strong>delete_observer</strong>(observer)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#delete_observer-instance_method" title="Concurrent::Concern::Observable#delete_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Remove <code>observer</code> as an observer on this object so that it will no longer receive notifications.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_observers-instance_method" title="#delete_observers (instance method)">#<strong>delete_observers</strong>  &#x21d2; Observable </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Observable.html#delete_observers-instance_method" title="Concurrent::Concern::Observable#delete_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Remove all observers associated with this object.</p>
 </div></span>
   
 </li>
@@ -1562,90 +1562,6 @@ value of the action. Appropriate for actions that may block on IO.</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="add_observer-instance_method">
-  
-    #<strong>add_observer</strong>(observer = nil, func = :update, &amp;block)  &#x21d2; <tt>Object</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Observable.html#add_observer-instance_method" title="Concurrent::Concern::Observable#add_observer (method)">Concern::Observable</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Adds an observer to this set. If a block is passed, the observer will be
-created by this method and no other params should be passed.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>observer</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>nil</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'><p>the observer to add</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>func</span>
-      
-      
-        <span class='type'>(<tt>Symbol</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>:update</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'><p>the function to call on the observer during notification.
-Default is :update</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the added observer</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="await-instance_method">
   
     #<strong>await</strong>  &#x21d2; <tt>Boolean</tt> 
@@ -1903,158 +1819,6 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="count_observers-instance_method">
-  
-    #<strong>count_observers</strong>  &#x21d2; <tt>Integer</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Observable.html#count_observers-instance_method" title="Concurrent::Concern::Observable#count_observers (method)">Concern::Observable</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Return the number of observers associated with this object.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the observers count</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="delete_observer-instance_method">
-  
-    #<strong>delete_observer</strong>(observer)  &#x21d2; <tt>Object</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Observable.html#delete_observer-instance_method" title="Concurrent::Concern::Observable#delete_observer (method)">Concern::Observable</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Remove <code>observer</code> as an observer on this object so that it will no
-longer receive notifications.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>observer</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the observer to remove</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the deleted observer</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="delete_observers-instance_method">
-  
-    #<strong>delete_observers</strong>  &#x21d2; <tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Observable.html#delete_observers-instance_method" title="Concurrent::Concern::Observable#delete_observers (method)">Concern::Observable</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Remove all observers associated with this object.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>self</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
 </div>
     
       <div class="method_details ">
@@ -3660,6 +3424,242 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
     </td>
   </tr>
 </table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_observer-instance_method">
+  
+    #<strong>add_observer</strong>(observer = nil, func = :update, &amp;block)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#add_observer-instance_method" title="Concurrent::Concern::Observable#add_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Adds an observer to this set. If a block is passed, the observer will be
+created by this method and no other params should be passed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>observer</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the observer to add</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>func</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>:update</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the function to call on the observer during notification.
+Default is :update</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the added observer</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="count_observers-instance_method">
+  
+    #<strong>count_observers</strong>  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#count_observers-instance_method" title="Concurrent::Concern::Observable#count_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Return the number of observers associated with this object.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the observers count</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_observer-instance_method">
+  
+    #<strong>delete_observer</strong>(observer)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#delete_observer-instance_method" title="Concurrent::Concern::Observable#delete_observer (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Remove <code>observer</code> as an observer on this object so that it will no
+longer receive notifications.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>observer</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the observer to remove</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the deleted observer</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_observers-instance_method">
+  
+    #<strong>delete_observers</strong>  &#x21d2; <tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Observable.html#delete_observers-instance_method" title="Concurrent::Concern::Observable#delete_observers (method)">Concern::Observable</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Remove all observers associated with this object.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Concern/Observable.html" title="Concurrent::Concern::Observable (module)">Observable</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
 </div>
     
       <div class="method_details ">

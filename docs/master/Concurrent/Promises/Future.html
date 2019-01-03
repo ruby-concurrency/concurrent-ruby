@@ -93,7 +93,7 @@
   
   <dl>
       <dt>Includes:</dt>
-      <dd><span class='object_link'><a href="Future/ActorIntegration.html" title="Concurrent::Promises::Future::ActorIntegration (module)">ActorIntegration</a></span>, <span class='object_link'><a href="Future/FlatShortcuts.html" title="Concurrent::Promises::Future::FlatShortcuts (module)">FlatShortcuts</a></span>, <span class='object_link'><a href="Future/NewChannelIntegration.html" title="Concurrent::Promises::Future::NewChannelIntegration (module)">NewChannelIntegration</a></span>, <span class='object_link'><a href="Future/ThrottleIntegration.html" title="Concurrent::Promises::Future::ThrottleIntegration (module)">ThrottleIntegration</a></span></dd>
+      <dd><span class='object_link'><a href="Future/ActorIntegration.html" title="Concurrent::Promises::Future::ActorIntegration (module)">ActorIntegration</a></span>, <span class='object_link'><a href="Future/FlatShortcuts.html" title="Concurrent::Promises::Future::FlatShortcuts (module)">FlatShortcuts</a></span>, <span class='object_link'><a href="Future/NewChannelIntegration.html" title="Concurrent::Promises::Future::NewChannelIntegration (module)">NewChannelIntegration</a></span></dd>
   </dl>
   
   
@@ -104,7 +104,7 @@
   <dl>
     <dt>Defined in:</dt>
     <dd>lib/concurrent/promises.rb<span class="defines">,<br />
-  lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/throttle.rb,<br /> lib-edge/concurrent/edge/old_channel_integration.rb</span>
+  lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/old_channel_integration.rb</span>
 </dd>
   </dl>
   
@@ -129,7 +129,7 @@ e.g. when the tasks raises an exception.</p>
 <p class="children">
   
     
-      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Future/ActorIntegration.html" title="Concurrent::Promises::Future::ActorIntegration (module)">ActorIntegration</a></span>, <span class='object_link'><a href="Future/FlatShortcuts.html" title="Concurrent::Promises::Future::FlatShortcuts (module)">FlatShortcuts</a></span>, <span class='object_link'><a href="Future/NewChannelIntegration.html" title="Concurrent::Promises::Future::NewChannelIntegration (module)">NewChannelIntegration</a></span>, <span class='object_link'><a href="Future/ThrottleIntegration.html" title="Concurrent::Promises::Future::ThrottleIntegration (module)">ThrottleIntegration</a></span>
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Future/ActorIntegration.html" title="Concurrent::Promises::Future::ActorIntegration (module)">ActorIntegration</a></span>, <span class='object_link'><a href="Future/FlatShortcuts.html" title="Concurrent::Promises::Future::FlatShortcuts (module)">FlatShortcuts</a></span>, <span class='object_link'><a href="Future/NewChannelIntegration.html" title="Concurrent::Promises::Future::NewChannelIntegration (module)">NewChannelIntegration</a></span>
     
   
     
@@ -525,34 +525,6 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#rescue_throttled_by-instance_method" title="#rescue_throttled_by (instance method)">#<strong>rescue_throttled_by</strong>(throttle, *args, &amp;block)  &#x21d2; Future </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/ThrottleIntegration.html#rescue_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#rescue_throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="#rescue-instance_method" title="Concurrent::Promises::Future#rescue (method)">#rescue</a></span> but the it is throttled.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#result-instance_method" title="#result (instance method)">#<strong>result</strong>(timeout = nil)  &#x21d2; Array(Boolean, Object, Exception)<sup>?</sup> </a>
     
 
@@ -645,146 +617,6 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#then_ask-instance_method" title="#then_ask (instance method)">#<strong>then_ask</strong>(actor)  &#x21d2; Future </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/ActorIntegration.html#then_ask-instance_method" title="Concurrent::Promises::Future::ActorIntegration#then_ask (method)">ActorIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Asks the actor with its value.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#then_flat_event-instance_method" title="#then_flat_event (instance method)">#<strong>then_flat_event</strong>(*args, &amp;block)  &#x21d2; Event </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event (method)">FlatShortcuts</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#then_flat_event_on-instance_method" title="#then_flat_event_on (instance method)">#<strong>then_flat_event_on</strong>(executor, *args, &amp;block)  &#x21d2; Event </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event_on (method)">FlatShortcuts</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#then_flat_future-instance_method" title="#then_flat_future (instance method)">#<strong>then_flat_future</strong>(*args, &amp;block)  &#x21d2; Future </a>
-    
-
-    
-      (also: #then_flat)
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future (method)">FlatShortcuts</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#then_flat_future_on-instance_method" title="#then_flat_future_on (instance method)">#<strong>then_flat_future_on</strong>(executor, *args, &amp;block)  &#x21d2; Future </a>
-    
-
-    
-      (also: #then_flat_on)
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future_on (method)">FlatShortcuts</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#then_on-instance_method" title="#then_on (instance method)">#<strong>then_on</strong>(executor, *args) {|value, *args| ... } &#x21d2; Future </a>
     
 
@@ -800,62 +632,6 @@ e.g. when the tasks raises an exception.</p>
 
   
     <span class="summary_desc"><div class='inline'><p>Chains the task to be executed asynchronously on executor after it fulfills.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#then_push_channel-instance_method" title="#then_push_channel (instance method)">#<strong>then_push_channel</strong>(channel)  &#x21d2; Future </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/NewChannelIntegration.html#then_push_channel-instance_method" title="Concurrent::Promises::Future::NewChannelIntegration#then_push_channel (method)">NewChannelIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>A future which is fulfilled after the message is pushed to the channel.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#then_throttled_by-instance_method" title="#then_throttled_by (instance method)">#<strong>then_throttled_by</strong>(throttle, *args, &amp;block)  &#x21d2; Future </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="Future/ThrottleIntegration.html#then_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#then_throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="#then-instance_method" title="Concurrent::Promises::Future#then (method)">#then</a></span> but the it is throttled.</p>
 </div></span>
   
 </li>
@@ -1024,14 +800,178 @@ e.g. when the tasks raises an exception.</p>
 </li>
 
       
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_ask-instance_method" title="#then_ask (instance method)">#<strong>then_ask</strong>(actor)  &#x21d2; Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/ActorIntegration.html#then_ask-instance_method" title="Concurrent::Promises::Future::ActorIntegration#then_ask (method)">ActorIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Asks the actor with its value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_flat_event-instance_method" title="#then_flat_event (instance method)">#<strong>then_flat_event</strong>(*args, &amp;block)  &#x21d2; Event </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event (method)">FlatShortcuts</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_flat_event_on-instance_method" title="#then_flat_event_on (instance method)">#<strong>then_flat_event_on</strong>(executor, *args, &amp;block)  &#x21d2; Event </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event_on (method)">FlatShortcuts</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_flat_future-instance_method" title="#then_flat_future (instance method)">#<strong>then_flat_future</strong>(*args, &amp;block)  &#x21d2; Future </a>
+    
+
+    
+      (also: #then_flat)
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future (method)">FlatShortcuts</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_flat_future_on-instance_method" title="#then_flat_future_on (instance method)">#<strong>then_flat_future_on</strong>(executor, *args, &amp;block)  &#x21d2; Future </a>
+    
+
+    
+      (also: #then_flat_on)
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future_on (method)">FlatShortcuts</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#then_push_channel-instance_method" title="#then_push_channel (instance method)">#<strong>then_push_channel</strong>(channel)  &#x21d2; Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Future/NewChannelIntegration.html#then_push_channel-instance_method" title="Concurrent::Promises::Future::NewChannelIntegration#then_push_channel (method)">NewChannelIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A future which is fulfilled after the message is pushed to the channel.</p>
+</div></span>
+  
+</li>
+
+      
     </ul>
   
 
 
-  
-  
-  
-  
   
   
   
@@ -2373,53 +2313,6 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="rescue_throttled_by-instance_method">
-  
-    #<strong>rescue_throttled_by</strong>(throttle, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/ThrottleIntegration.html#rescue_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#rescue_throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Behaves as <span class='object_link'><a href="#rescue-instance_method" title="Concurrent::Promises::Future#rescue (method)">Concurrent::Promises::Future#rescue</a></span> but the it is throttled.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="#rescue-instance_method" title="Concurrent::Promises::Future#rescue (method)">Concurrent::Promises::Future#rescue</a></span></li>
-    
-  </ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="result-instance_method">
   
     #<strong>result</strong>(timeout = nil)  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Exception)</tt><sup>?</sup> 
@@ -2717,214 +2610,6 @@ delay into the chain.</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="then_ask-instance_method">
-  
-    #<strong>then_ask</strong>(actor)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/ActorIntegration.html#then_ask-instance_method" title="Concurrent::Promises::Future::ActorIntegration#then_ask (method)">ActorIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Asks the actor with its value.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>new future with the response form the actor</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="then_flat_event-instance_method">
-  
-    #<strong>then_flat_event</strong>(*args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event (method)">FlatShortcuts</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="then_flat_event_on-instance_method">
-  
-    #<strong>then_flat_event_on</strong>(executor, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event_on (method)">FlatShortcuts</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="then_flat_future-instance_method">
-  
-    #<strong>then_flat_future</strong>(*args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-    <span class="aliases">Also known as:
-    <span class="names"><span id='then_flat-instance_method'>then_flat</span></span>
-    </span>
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future (method)">FlatShortcuts</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="then_flat_future_on-instance_method">
-  
-    #<strong>then_flat_future_on</strong>(executor, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-    <span class="aliases">Also known as:
-    <span class="names"><span id='then_flat_on-instance_method'>then_flat_on</span></span>
-    </span>
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future_on (method)">FlatShortcuts</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="then_on-instance_method">
   
     #<strong>then_on</strong>(executor, *args) {|value, *args| ... } &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
@@ -3048,141 +2733,6 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="then_push_channel-instance_method">
-  
-    #<strong>then_push_channel</strong>(channel)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/NewChannelIntegration.html#then_push_channel-instance_method" title="Concurrent::Promises::Future::NewChannelIntegration#then_push_channel (method)">NewChannelIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Returns a future which is fulfilled after the message is pushed to the channel.
-May take a moment if the channel is full.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>channel</span>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>to push to.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>a future which is fulfilled after the message is pushed to the channel.
-May take a moment if the channel is full.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="then_throttled_by-instance_method">
-  
-    #<strong>then_throttled_by</strong>(throttle, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Future/ThrottleIntegration.html#then_throttled_by-instance_method" title="Concurrent::Promises::Future::ThrottleIntegration#then_throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Behaves as <span class='object_link'><a href="#then-instance_method" title="Concurrent::Promises::Future#then (method)">Concurrent::Promises::Future#then</a></span> but the it is throttled.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-  <div class="examples">
-    <p class="tag_title">Examples:</p>
-    
-      
-      <pre class="example code"><code><span class='id identifier rubyid_data'>data</span>     <span class='op'>=</span> <span class='lparen'>(</span><span class='int'>1</span><span class='op'>..</span><span class='int'>5</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
-<span class='id identifier rubyid_db'>db</span>       <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='rbrace'>}</span>
-<span class='id identifier rubyid_max_two'>max_two</span>  <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>2</span>
-
-<span class='id identifier rubyid_futures'>futures</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
-  <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
-    <span class='comment'># un-throttled, concurrency level equal data.size
-</span>    <span class='id identifier rubyid_data'>data</span> <span class='op'>+</span> <span class='int'>1</span>
-  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then_throttled_by'>then_throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_max_two'>max_two</span><span class='comma'>,</span> <span class='id identifier rubyid_db'>db</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_db'>db</span><span class='op'>|</span>
-    <span class='comment'># throttled, only 2 tasks executed at the same time
-</span>    <span class='comment'># e.g. limiting access to db
-</span>    <span class='id identifier rubyid_db'>db</span><span class='lbracket'>[</span><span class='id identifier rubyid_v'>v</span><span class='rbracket'>]</span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span>
-
-<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span> <span class='comment'># =&gt; [2, 3, 4, 5, nil]</span></code></pre>
-    
-  </div>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="#then-instance_method" title="Concurrent::Promises::Future#then (method)">Concurrent::Promises::Future#then</a></span></li>
-    
-  </ul>
-
-</div>
 </div>
     
       <div class="method_details ">
@@ -3730,6 +3280,279 @@ then the result is as described in <span class='object_link'><a href="FactoryMet
     </td>
   </tr>
 </table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_ask-instance_method">
+  
+    #<strong>then_ask</strong>(actor)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/ActorIntegration.html#then_ask-instance_method" title="Concurrent::Promises::Future::ActorIntegration#then_ask (method)">ActorIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Asks the actor with its value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>new future with the response form the actor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_flat_event-instance_method">
+  
+    #<strong>then_flat_event</strong>(*args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event (method)">FlatShortcuts</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_flat_event_on-instance_method">
+  
+    #<strong>then_flat_event_on</strong>(executor, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_event_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_event_on (method)">FlatShortcuts</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_flat_future-instance_method">
+  
+    #<strong>then_flat_future</strong>(*args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='then_flat-instance_method'>then_flat</span></span>
+    </span>
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future (method)">FlatShortcuts</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_flat_future_on-instance_method">
+  
+    #<strong>then_flat_future_on</strong>(executor, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='then_flat_on-instance_method'>then_flat_on</span></span>
+    </span>
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/FlatShortcuts.html#then_flat_future_on-instance_method" title="Concurrent::Promises::Future::FlatShortcuts#then_flat_future_on (method)">FlatShortcuts</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="then_push_channel-instance_method">
+  
+    #<strong>then_push_channel</strong>(channel)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Future/NewChannelIntegration.html#then_push_channel-instance_method" title="Concurrent::Promises::Future::NewChannelIntegration#then_push_channel (method)">NewChannelIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a future which is fulfilled after the message is pushed to the channel.
+May take a moment if the channel is full.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>channel</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>to push to.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a future which is fulfilled after the message is pushed to the channel.
+May take a moment if the channel is full.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
 </div>
     
   </div>

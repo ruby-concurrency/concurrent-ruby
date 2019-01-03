@@ -198,6 +198,100 @@ In Proceedings of Workshop on Graph Reduction, 1986.</li>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#fail-instance_method" title="#fail (instance method)">#<strong>fail</strong>(reason = StandardError.new)  &#x21d2; IVar </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Set the <code>IVar</code> to failed due to some error and wake or notify all threads waiting on it.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(value = NULL, opts = {}, &amp;block)  &#x21d2; IVar </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>IVar</code> in the <code>:pending</code> state with the (optional) initial value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#set-instance_method" title="#set (instance method)">#<strong>set</strong>(value = NULL) { ... } &#x21d2; IVar </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Set the <code>IVar</code> to a value and wake or notify all threads waiting on it.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#try_set-instance_method" title="#try_set (instance method)">#<strong>try_set</strong>(value = NULL) { ... } &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Attempt to set the <code>IVar</code> with the given value or block.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#complete%3F-instance_method" title="#complete? (instance method)">#<strong>complete?</strong>  &#x21d2; Boolean </a>
     
 
@@ -337,29 +431,6 @@ In Proceedings of Workshop on Graph Reduction, 1986.</li>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#fail-instance_method" title="#fail (instance method)">#<strong>fail</strong>(reason = StandardError.new)  &#x21d2; IVar </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Set the <code>IVar</code> to failed due to some error and wake or notify all threads waiting on it.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#fulfilled%3F-instance_method" title="#fulfilled? (instance method)">#<strong>fulfilled?</strong>  &#x21d2; Boolean </a>
     
 
@@ -410,31 +481,6 @@ In Proceedings of Workshop on Graph Reduction, 1986.</li>
 
   
     <span class="summary_desc"><div class='inline'><p>Is the obligation still awaiting completion of processing?.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(value = NULL, opts = {}, &amp;block)  &#x21d2; IVar </a>
-    
-
-    
-  </span>
-  
-  
-    <span class="note title constructor">constructor</span>
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Create a new <code>IVar</code> in the <code>:pending</code> state with the (optional) initial value.</p>
 </div></span>
   
 </li>
@@ -527,29 +573,6 @@ In Proceedings of Workshop on Graph Reduction, 1986.</li>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#set-instance_method" title="#set (instance method)">#<strong>set</strong>(value = NULL) { ... } &#x21d2; IVar </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Set the <code>IVar</code> to a value and wake or notify all threads waiting on it.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#state-instance_method" title="#state (instance method)">#<strong>state</strong>  &#x21d2; Symbol </a>
     
 
@@ -570,29 +593,6 @@ In Proceedings of Workshop on Graph Reduction, 1986.</li>
 
   
     <span class="summary_desc"><div class='inline'><p>The current state of the obligation.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#try_set-instance_method" title="#try_set (instance method)">#<strong>try_set</strong>(value = NULL) { ... } &#x21d2; Boolean </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Attempt to set the <code>IVar</code> with the given value or block.</p>
 </div></span>
   
 </li>
@@ -1069,6 +1069,383 @@ fulfillment).</p>
 </div>
     
       <div class="method_details ">
+  <h3 class="signature " id="fail-instance_method">
+  
+    #<strong>fail</strong>(reason = StandardError.new)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Set the <code>IVar</code> to failed due to some error and wake or notify all threads waiting on it.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>StandardError.new</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>for the failure</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">Concurrent::MultipleAssignmentError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the <code>IVar</code> has already
+been set or otherwise completed</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+134
+135
+136</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 134</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fail'>fail</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_complete'>complete</span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="set-instance_method">
+  
+    #<strong>set</strong>(value = NULL) { ... } &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Set the <code>IVar</code> to a value and wake or notify all threads waiting on it.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>NULL</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the value to store in the <code>IVar</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>A block operation to use for setting the value</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if both a value and a block are given</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">Concurrent::MultipleAssignmentError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the <code>IVar</code> has already
+been set or otherwise completed</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 112</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_check_for_block_or_value!'>check_for_block_or_value!</span><span class='lparen'>(</span><span class='id identifier rubyid_block_given?'>block_given?</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">MultipleAssignmentError</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_compare_and_set_state'>compare_and_set_state</span><span class='lparen'>(</span><span class='symbol'>:processing</span><span class='comma'>,</span> <span class='symbol'>:pending</span><span class='rparen'>)</span>
+
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>yield</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='id identifier rubyid_complete_without_notification'>complete_without_notification</span><span class='lparen'>(</span><span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
+    <span class='id identifier rubyid_complete_without_notification'>complete_without_notification</span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ex'>ex</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_notify_observers'>notify_observers</span><span class='lparen'>(</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="try_set-instance_method">
+  
+    #<strong>try_set</strong>(value = NULL) { ... } &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Attempt to set the <code>IVar</code> with the given value or block. Return a
+boolean indicating the success or failure of the set operation.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>NULL</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the value to store in the <code>IVar</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>A block operation to use for setting the value</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the value was set else false</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if both a value and a block are given</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">Concurrent::MultipleAssignmentError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the <code>IVar</code> has already
+been set or otherwise completed</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+144
+145
+146
+147
+148
+149</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 144</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_try_set'>try_set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">MultipleAssignmentError</a></span></span>
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
   <h3 class="signature " id="complete?-instance_method">
   
     #<strong>complete?</strong>  &#x21d2; <tt>Boolean</tt> 
@@ -1299,102 +1676,6 @@ longer receive notifications.</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="fail-instance_method">
-  
-    #<strong>fail</strong>(reason = StandardError.new)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Set the <code>IVar</code> to failed due to some error and wake or notify all threads waiting on it.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>reason</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>StandardError.new</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'><p>for the failure</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>self</p>
-</div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">Concurrent::MultipleAssignmentError</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>if the <code>IVar</code> has already
-been set or otherwise completed</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-134
-135
-136</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 134</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_fail'>fail</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_complete'>complete</span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="fulfilled?-instance_method">
   
     #<strong>fulfilled?</strong>  &#x21d2; <tt>Boolean</tt> 
@@ -1605,154 +1886,6 @@ the obligation has been successfully fulfilled.</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="set-instance_method">
-  
-    #<strong>set</strong>(value = NULL) { ... } &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Set the <code>IVar</code> to a value and wake or notify all threads waiting on it.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>value</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>NULL</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'><p>the value to store in the <code>IVar</code></p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Yields:</p>
-<ul class="yield">
-  
-    <li>
-      
-      
-        <span class='type'></span>
-      
-      
-      
-        
-        <div class='inline'><p>A block operation to use for setting the value</p>
-</div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::IVar (class)">IVar</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>self</p>
-</div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>if both a value and a block are given</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">Concurrent::MultipleAssignmentError</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>if the <code>IVar</code> has already
-been set or otherwise completed</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124
-125</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 112</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_check_for_block_or_value!'>check_for_block_or_value!</span><span class='lparen'>(</span><span class='id identifier rubyid_block_given?'>block_given?</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">MultipleAssignmentError</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_compare_and_set_state'>compare_and_set_state</span><span class='lparen'>(</span><span class='symbol'>:processing</span><span class='comma'>,</span> <span class='symbol'>:pending</span><span class='rparen'>)</span>
-
-  <span class='kw'>begin</span>
-    <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>yield</span> <span class='kw'>if</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
-    <span class='id identifier rubyid_complete_without_notification'>complete_without_notification</span><span class='lparen'>(</span><span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
-    <span class='id identifier rubyid_complete_without_notification'>complete_without_notification</span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ex'>ex</span><span class='rparen'>)</span>
-  <span class='kw'>end</span>
-
-  <span class='id identifier rubyid_notify_observers'>notify_observers</span><span class='lparen'>(</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
-  <span class='kw'>self</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="state-instance_method">
   
     #<strong>state</strong>  &#x21d2; <tt>Symbol</tt> 
@@ -1794,139 +1927,6 @@ been set or otherwise completed</p>
 </ul>
 
 </div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="try_set-instance_method">
-  
-    #<strong>try_set</strong>(value = NULL) { ... } &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Attempt to set the <code>IVar</code> with the given value or block. Return a
-boolean indicating the success or failure of the set operation.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>value</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>NULL</tt>)</em>
-      
-      
-        &mdash;
-        <div class='inline'><p>the value to store in the <code>IVar</code></p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Yields:</p>
-<ul class="yield">
-  
-    <li>
-      
-      
-        <span class='type'></span>
-      
-      
-      
-        
-        <div class='inline'><p>A block operation to use for setting the value</p>
-</div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>true if the value was set else false</p>
-</div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Raises:</p>
-<ul class="raise">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>ArgumentError</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>if both a value and a block are given</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">Concurrent::MultipleAssignmentError</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>if the <code>IVar</code> has already
-been set or otherwise completed</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-144
-145
-146
-147
-148
-149</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 144</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_try_set'>try_set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
-  <span class='kw'>true</span>
-<span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="MultipleAssignmentError.html" title="Concurrent::MultipleAssignmentError (class)">MultipleAssignmentError</a></span></span>
-  <span class='kw'>false</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
 </div>
     
       <div class="method_details ">

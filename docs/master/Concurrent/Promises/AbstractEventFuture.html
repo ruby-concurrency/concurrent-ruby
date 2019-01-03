@@ -89,11 +89,6 @@
   
   
   
-  <dl>
-      <dt>Includes:</dt>
-      <dd><span class='object_link'><a href="AbstractEventFuture/ThrottleIntegration.html" title="Concurrent::Promises::AbstractEventFuture::ThrottleIntegration (module)">ThrottleIntegration</a></span></dd>
-  </dl>
-  
   
 
   
@@ -101,9 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/promises.rb<span class="defines">,<br />
-  lib-edge/concurrent/edge/throttle.rb</span>
-</dd>
+    <dd>lib/concurrent/promises.rb</dd>
   </dl>
   
 </div>
@@ -122,16 +115,6 @@
   <h2>Direct Known Subclasses</h2>
   <p class="children"><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span>, <span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></p>
 </div>
-<h2>Defined Under Namespace</h2>
-<p class="children">
-  
-    
-      <strong class="modules">Modules:</strong> <span class='object_link'><a href="AbstractEventFuture/ThrottleIntegration.html" title="Concurrent::Promises::AbstractEventFuture::ThrottleIntegration (module)">ThrottleIntegration</a></span>
-    
-  
-    
-  
-</p>
 
 
 
@@ -213,34 +196,6 @@
 
   
     <span class="summary_desc"><div class='inline'><p>Resolves the resolvable when receiver is resolved.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#chain_throttled_by-instance_method" title="#chain_throttled_by (instance method)">#<strong>chain_throttled_by</strong>(throttle, *args, &amp;block)  &#x21d2; Future, Event </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="AbstractEventFuture/ThrottleIntegration.html#chain_throttled_by-instance_method" title="Concurrent::Promises::AbstractEventFuture::ThrottleIntegration#chain_throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="#chain-instance_method" title="Concurrent::Promises::AbstractEventFuture#chain (method)">#chain</a></span> but the it is throttled.</p>
 </div></span>
   
 </li>
@@ -410,33 +365,6 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#throttled_by-instance_method" title="#throttled_by (instance method)">#<strong>throttled_by</strong>(throttle) {|a| ... } &#x21d2; Future, Event </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="AbstractEventFuture/ThrottleIntegration.html#throttled_by-instance_method" title="Concurrent::Promises::AbstractEventFuture::ThrottleIntegration#throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#to_s-instance_method" title="#to_s (instance method)">#<strong>to_s</strong>  &#x21d2; String </a>
     
 
@@ -532,8 +460,6 @@
   
 
 
-  
-  
   
   
   
@@ -891,53 +817,6 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="chain_throttled_by-instance_method">
-  
-    #<strong>chain_throttled_by</strong>(throttle, *args, &amp;block)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="AbstractEventFuture/ThrottleIntegration.html#chain_throttled_by-instance_method" title="Concurrent::Promises::AbstractEventFuture::ThrottleIntegration#chain_throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Behaves as <span class='object_link'><a href="#chain-instance_method" title="Concurrent::Promises::AbstractEventFuture#chain (method)">Concurrent::Promises::AbstractEventFuture#chain</a></span> but the it is throttled.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="#chain-instance_method" title="Concurrent::Promises::AbstractEventFuture#chain (method)">Concurrent::Promises::AbstractEventFuture#chain</a></span></li>
-    
-  </ul>
-
-</div>
 </div>
     
       <div class="method_details ">
@@ -1712,77 +1591,6 @@ global executor. The task is executed on it, default executor remains unchanged.
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="throttled_by-instance_method">
-  
-    #<strong>throttled_by</strong>(throttle) {|a| ... } &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="AbstractEventFuture/ThrottleIntegration.html#throttled_by-instance_method" title="Concurrent::Promises::AbstractEventFuture::ThrottleIntegration#throttled_by (method)">ThrottleIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Yield Parameters:</p>
-<ul class="yieldparam">
-  
-    <li>
-      
-        <span class='name'>a</span>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>trigger</p>
-</div>
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Yield Returns:</p>
-<ul class="yieldreturn">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
 </div>
     
       <div class="method_details ">
