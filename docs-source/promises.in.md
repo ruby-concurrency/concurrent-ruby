@@ -939,7 +939,7 @@ max_tree = Concurrent::Throttle.new 3
 futures = 11.times.map do |i|
   max_tree.
       # throttled tasks, at most 3 simultaneous calls of [] on the database
-      throttled_future { DB_INTERNAL_POOL[i] }.
+      future { DB_INTERNAL_POOL[i] }.
       # un-throttled tasks, unlimited concurrency
       then { |starts| starts.size }.
       rescue { |reason| reason.message }
@@ -992,10 +992,10 @@ def count_words_in_random_text(token, channel, words, words_throttle)
     # processing is slower than querying
     sleep 0.2
     words_count = string.scan(/\w+/).size
-  end.then_throttled_by(words_throttle, words) do |words_count, words|
+  end.then_on(words_throttle.on(:io), words) do |words_count, words|
     # safe since throttled to only 1 task at a time
     words << words_count
-  end.then(token) do |_, token|
+  end.then_on(:io, token) do |_, token|
     # count words in next message
     unless token.canceled?
       count_words_in_random_text(token, channel, words, words_throttle)

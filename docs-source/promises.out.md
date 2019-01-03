@@ -594,7 +594,7 @@ and `:io` for long-running and blocking tasks.
 ```ruby
 Concurrent::Promises.future_on(:fast) { 2 }.
     then_on(:io) { File.read __FILE__ }.
-    value.size                           # => 27130
+    value.size                           # => 27126
 ```
 
 ## Run (simulated process)
@@ -1084,12 +1084,12 @@ DB_INTERNAL_POOL = Concurrent::Array.new data
 #     "*********"]
 
 max_tree = Concurrent::Throttle.new 3
-# => #<Concurrent::Throttle:0x00003f limit:3 can_run:3>
+# => #<Concurrent::Throttle:0x00003f available 3 of 3>
 
 futures = 11.times.map do |i|
   max_tree.
       # throttled tasks, at most 3 simultaneous calls of [] on the database
-      throttled_future { DB_INTERNAL_POOL[i] }.
+      future { DB_INTERNAL_POOL[i] }.
       # un-throttled tasks, unlimited concurrency
       then { |starts| starts.size }.
       rescue { |reason| reason.message }
@@ -1139,7 +1139,7 @@ end
 
 words          = []                      # => []
 words_throttle = Concurrent::Throttle.new 1
-# => #<Concurrent::Throttle:0x000043 limit:1 can_run:1>
+# => #<Concurrent::Throttle:0x000043 available 1 of 1>
 
 def count_words_in_random_text(token, channel, words, words_throttle)
   channel.pop.then do |response|
@@ -1147,10 +1147,10 @@ def count_words_in_random_text(token, channel, words, words_throttle)
     # processing is slower than querying
     sleep 0.2
     words_count = string.scan(/\w+/).size
-  end.then_throttled_by(words_throttle, words) do |words_count, words|
+  end.then_on(words_throttle.on(:io), words) do |words_count, words|
     # safe since throttled to only 1 task at a time
     words << words_count
-  end.then(token) do |_, token|
+  end.then_on(:io, token) do |_, token|
     # count words in next message
     unless token.canceled?
       count_words_in_random_text(token, channel, words, words_throttle)
