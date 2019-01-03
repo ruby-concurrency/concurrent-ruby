@@ -186,10 +186,19 @@ begin
     end
 
     define_yard_task = -> name do
+      output_dir = "docs/#{name}"
+
+      removal_name = "remove.#{name}"
+      task removal_name do
+        Dir.chdir __dir__ do
+          FileUtils.rm_rf output_dir
+        end
+      end
+
       desc "* of #{name} into subdir #{name}"
       YARD::Rake::YardocTask.new(name) do |yard|
         yard.options.push(
-            '--output-dir', "docs/#{name}",
+            '--output-dir', output_dir,
             '--main', 'tmp/README.md',
             *common_yard_options)
         yard.files = ['./lib/**/*.rb',
@@ -201,7 +210,7 @@ begin
                       'LICENSE.md',
                       'CHANGELOG.md']
       end
-      Rake::Task[name].prerequisites.push 'yard:eval_md', 'yard:update_readme'
+      Rake::Task[name].prerequisites.push removal_name, 'yard:eval_md', 'yard:update_readme'
     end
 
     define_yard_task.call current_yard_version_name
