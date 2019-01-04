@@ -30,7 +30,7 @@ Array.new(10) do
   end
 # wait for all the threads to finish and read the observed 
 # concurrency level in each of them   
-end.map(&:value)                         # => [1, 1, 2, 2, 1, 2, 2, 2, 2, 2]
+end.map(&:value)                         # => [2, 2, 2, 2, 2, 2, 2, 2, 2, 1]
 ```
 Notice that the returned array has no number bigger than 2 therefore 
 the concurrency level of the block with the `do_stuff` was never bigger than 2. 
@@ -58,7 +58,7 @@ Array.new(10) do |i|
     # fulfill with the observed concurrency level
   end
 # collect observed concurrency levels   
-end.map(&:value!)                        # => [1, 2, 3, 2, 3, 3, 3, 3, 2, 1]
+end.map(&:value!)                        # => [3, 2, 1, 3, 2, 3, 3, 2, 3, 1]
 ```
 The concurrency level does not rise above 3.
 
@@ -99,16 +99,16 @@ Array.new(10) do |i|
     [l1, l2, monitor_concurrency_level(concurrency_level_unthrottled) { 5.times { do_stuff } }]
   end
 end.map(&:value!)
-# => [[3, 3, 7],
-#     [3, 3, 10],
+# => [[3, 3, 10],
+#     [2, 3, 8],
 #     [3, 3, 9],
-#     [3, 3, 3],
-#     [3, 3, 6],
-#     [3, 3, 8],
-#     [3, 3, 4],
 #     [3, 3, 5],
-#     [3, 2, 1],
-#     [3, 1, 2]]
+#     [3, 3, 6],
+#     [3, 3, 7],
+#     [3, 3, 4],
+#     [2, 2, 2],
+#     [3, 3, 3],
+#     [3, 1, 1]]
 ```
 
 In the output you can see that the first 2 columns do not cross the 3 capacity limit
@@ -137,9 +137,9 @@ agents = Array.new(5) do |i|
   agent.send_via(throttle.on(:io)) { monitor_concurrency_level(concurrency_level_throttled) { do_stuff } }
   agent 
 end 
-futures.map(&:value!)                    # => [3, 3, 3, 2, 1]
+futures.map(&:value!)                    # => [2, 3, 2, 2, 1]
 agents.each { |a| a.await }.map(&:value) 
-# => [1, 2, 3, 2, 1]
+# => [1, 3, 3, 2, 1]
 ```
 
 There is no observed concurrency level above 3.

@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent/version')
+require File.join(File.dirname(__FILE__), 'lib/concurrent/version')
 
 no_path = ENV['NO_PATH']
 options = no_path ? {} : { path: '.' }
@@ -29,7 +29,7 @@ end
 
 # made opt-in since it will not install on jruby 1.7
 group :coverage, optional: !ENV['COVERAGE'] do
-  gem 'simplecov', '~> 0.10.0', :require => false
+  gem 'simplecov', '~> 0.16.0', :require => false
   gem 'coveralls', '~> 0.8.2', :require => false
 end
 

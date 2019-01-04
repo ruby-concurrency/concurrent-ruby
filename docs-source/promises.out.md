@@ -594,7 +594,7 @@ and `:io` for long-running and blocking tasks.
 ```ruby
 Concurrent::Promises.future_on(:fast) { 2 }.
     then_on(:io) { File.read __FILE__ }.
-    value.size                           # => 27126
+    value.size                           # => 25338
 ```
 
 ## Run (simulated process)
@@ -900,109 +900,6 @@ This solution works well an any Ruby implementation.
 
 > *TODO: More examples to be added.*
 
-## Cancellation
-
-### Simple
-
-Lets have two processes which will count until cancelled.
-
-```ruby
-source, token = Concurrent::Cancellation.create
-# => [#<Concurrent::Cancellation:0x000039 canceled:false>,
-#     #<Concurrent::Cancellation::Token:0x00003a canceled:false>]
-
-count_until_cancelled = -> token, count do
-  if token.canceled?
-    count
-  else
-    Concurrent::Promises.future token, count+1, &count_until_cancelled
-  end
-end 
-
-futures = Array.new(2) do
-  Concurrent::Promises.future(token, 0, &count_until_cancelled).run
-end
-# => [#<Concurrent::Promises::Future:0x00003b pending>,
-#     #<Concurrent::Promises::Future:0x00003c pending>]
-
-sleep 0.01 
-source.cancel                            # => true
-futures.map(&:value!)                    # => [68, 71]
-```
-
-Cancellation can also be used as event or future to log or plan re-execution.
-
-```ruby
-token.to_event.chain do
-  # log cancellation
-  # plane re-execution
-end
-# => #<Concurrent::Promises::Future:0x00003d pending>
-```
-
-### Parallel background processing with cancellation
-
-Each task tries to count to 1000 but there is a randomly failing test. The
-tasks share a cancellation, when one of them fails it cancels the others.
-
-```ruby
-source, token = Concurrent::Cancellation.create
-# => [#<Concurrent::Cancellation:0x00003e canceled:false>,
-#     #<Concurrent::Cancellation::Token:0x00003f canceled:false>]
-tasks = 4.times.map do |i|
-  Concurrent::Promises.future(source, token, i) do |source, token, i|
-    count = 0
-    1000.times do
-      break count = :cancelled if token.canceled?
-      count += 1
-      sleep 0.01
-      if rand > 0.95
-        source.cancel
-        raise 'random error'
-      end
-      count
-    end
-  end
-end
-# => [#<Concurrent::Promises::Future:0x000040 pending>,
-#     #<Concurrent::Promises::Future:0x000041 pending>,
-#     #<Concurrent::Promises::Future:0x000042 pending>,
-#     #<Concurrent::Promises::Future:0x000043 pending>]
-Concurrent::Promises.zip(*tasks).result 
-# => [false,
-#     [:cancelled, nil, :cancelled, :cancelled],
-#     [nil, #<RuntimeError: random error>, nil, nil]]
-```
-
-Without the randomly failing part it produces following.
-
-```ruby
-source, token = Concurrent::Cancellation.create
-# => [#<Concurrent::Cancellation:0x000044 canceled:false>,
-#     #<Concurrent::Cancellation::Token:0x000045 canceled:false>]
-tasks = 4.times.map do |i|
-  Concurrent::Promises.future(source, token, i) do |source, token, i|
-    count = 0
-    1000.times do
-      break count = :cancelled if token.canceled?
-      count += 1
-      # sleep 0.01
-      # if rand > 0.95
-      #   source.cancel
-      #   raise 'random error'
-      # end
-    end
-    count
-  end
-end
-# => [#<Concurrent::Promises::Future:0x000046 pending>,
-#     #<Concurrent::Promises::Future:0x000047 pending>,
-#     #<Concurrent::Promises::Future:0x000048 pending>,
-#     #<Concurrent::Promises::Future:0x000049 pending>]
-Concurrent::Promises.zip(*tasks).result
-# => [true, [1000, 1000, 1000, 1000], nil]
-```
-
 ## Throttling concurrency
 
 By creating an actor managing the resource we can control how many threads is
@@ -1026,7 +923,7 @@ DB = Concurrent::Actor::Utils::AdHoc.spawn :db, data do |data|
     data[message]
   end
 end
-# => #<Concurrent::Actor::Reference:0x00004a /db (Concurrent::Actor::Utils::AdHoc)>
+# => #<Concurrent::Actor::Reference:0x000039 /db (Concurrent::Actor::Utils::AdHoc)>
 
 concurrent_jobs = 11.times.map do |v|
   DB.
@@ -1058,7 +955,7 @@ DB_POOL = Concurrent::Actor::Utils::Pool.spawn!('DB-pool', pool_size) do |index|
     end
   end
 end
-# => #<Concurrent::Actor::Reference:0x00004b /DB-pool (Concurrent::Actor::Utils::Pool)>
+# => #<Concurrent::Actor::Reference:0x00003a /DB-pool (Concurrent::Actor::Utils::Pool)>
 
 concurrent_jobs = 11.times.map do |v|
   DB_POOL.
@@ -1095,7 +992,7 @@ DB_INTERNAL_POOL = Concurrent::Array.new data
 #     "*********"]
 
 max_tree = Concurrent::Throttle.new 3
-# => #<Concurrent::Throttle:0x00004c available 3 of 3>
+# => #<Concurrent::Throttle:0x00003b available 3 of 3>
 
 futures = 11.times.map do |i|
   max_tree.
@@ -1119,85 +1016,84 @@ buffer and how to apply backpressure to slow down the queries.
 ```ruby
 require 'json' 
 
-channel       = Concurrent::Promises::Channel.new 6
-# => #<Concurrent::Promises::Channel:0x00004d size:6>
-source, token = Concurrent::Cancellation.create
-# => [#<Concurrent::Cancellation:0x00004e canceled:false>,
-#     #<Concurrent::Cancellation::Token:0x00004f canceled:false>]
+channel              = Concurrent::Promises::Channel.new 6
+# => #<Concurrent::Promises::Channel:0x00003c size:6>
+cancellation, origin = Concurrent::Cancellation.new
+# => #<Concurrent::Cancellation:0x00003d pending>
 
-def query_random_text(token, channel)
+def query_random_text(cancellation, channel)
   Concurrent::Promises.future do
     # for simplicity the query is omitted
     # url = 'some api'
     # Net::HTTP.get(URI(url))
-    sleep 0.1
+    sleep 0.01
     { 'message' => 
         'Lorem ipsum rhoncus scelerisque vulputate diam inceptos' 
     }.to_json
-  end.then(token) do |value, token|
+  end.then_flat_event(cancellation) do |value, cancellation|
     # The push to channel is fulfilled only after the message is successfully
     # published to the channel, therefore it will not continue querying until 
     # current message is pushed.
-    channel.push(value) | 
-        # It could wait on the push indefinitely if the token is not checked 
-        # here with `or` (the pipe).
-        token.to_future
-  end.flat_future.then(token) do |_, token|
+    cancellation.origin | channel.push(value) 
+    # It could wait on the push indefinitely if the token is not checked
+    # here with `or` (the pipe).        
+  end.then(cancellation) do |cancellation|
     # query again after the message is pushed to buffer
-    query_random_text(token, channel) unless token.canceled?
+    query_random_text(cancellation, channel) unless cancellation.canceled?
   end
 end                                      # => :query_random_text
 
 words          = []                      # => []
 words_throttle = Concurrent::Throttle.new 1
-# => #<Concurrent::Throttle:0x000050 available 1 of 1>
+# => #<Concurrent::Throttle:0x00003e available 1 of 1>
 
-def count_words_in_random_text(token, channel, words, words_throttle)
+def count_words_in_random_text(cancellation, channel, words, words_throttle)
   channel.pop.then do |response|
     string = JSON.load(response)['message']
     # processing is slower than querying
-    sleep 0.2
+    sleep 0.02
     words_count = string.scan(/\w+/).size
   end.then_on(words_throttle.on(:io), words) do |words_count, words|
     # safe since throttled to only 1 task at a time
     words << words_count
-  end.then_on(:io, token) do |_, token|
+  end.then_on(:io, cancellation) do |_, cancellation|
     # count words in next message
-    unless token.canceled?
-      count_words_in_random_text(token, channel, words, words_throttle)
+    unless cancellation.canceled?
+      count_words_in_random_text(cancellation, channel, words, words_throttle)
     end
   end
 end                                      # => :count_words_in_random_text
 
 query_processes = 3.times.map do
-  Concurrent::Promises.future(token, channel, &method(:query_random_text)).run
+  Concurrent::Promises.future(cancellation, channel, &method(:query_random_text)).run
 end
-# => [#<Concurrent::Promises::Future:0x000051 pending>,
-#     #<Concurrent::Promises::Future:0x000052 pending>,
-#     #<Concurrent::Promises::Future:0x000053 pending>]
+# => [#<Concurrent::Promises::Future:0x00003f pending>,
+#     #<Concurrent::Promises::Future:0x000040 pending>,
+#     #<Concurrent::Promises::Future:0x000041 pending>]
 
 word_counter_processes = 2.times.map do
-  Concurrent::Promises.future(token, channel, words, words_throttle, 
+  Concurrent::Promises.future(cancellation, channel, words, words_throttle, 
       &method(:count_words_in_random_text)).run
 end
-# => [#<Concurrent::Promises::Future:0x000054 pending>,
-#     #<Concurrent::Promises::Future:0x000055 pending>]
+# => [#<Concurrent::Promises::Future:0x000042 pending>,
+#     #<Concurrent::Promises::Future:0x000043 pending>]
 
-sleep 0.5 
+sleep 0.05 
 ```
 
 Let it run for a while, then cancel it, and ensure that the runs were all fulfilled
 (therefore ended) after the cancellation. Finally, print the result.
 
 ```ruby
-source.cancel                            # => true
+origin.resolve
+# => #<Concurrent::Promises::ResolvableEvent:0x000044 resolved>
 query_processes.map(&:wait!) 
-# => [#<Concurrent::Promises::Future:0x000051 fulfilled>,
-#     #<Concurrent::Promises::Future:0x000052 fulfilled>,
-#     #<Concurrent::Promises::Future:0x000053 fulfilled>]
+# => [#<Concurrent::Promises::Future:0x00003f fulfilled>,
+#     #<Concurrent::Promises::Future:0x000040 fulfilled>,
+#     #<Concurrent::Promises::Future:0x000041 fulfilled>]
 word_counter_processes.map(&:wait!)
-# => [#<Concurrent::Promises::Future:0x000054 fulfilled>,
-#     #<Concurrent::Promises::Future:0x000055 fulfilled>]
+# => [#<Concurrent::Promises::Future:0x000042 fulfilled>,
+#     #<Concurrent::Promises::Future:0x000043 fulfilled>]
 words                                    # => [7, 7, 7, 7]
 ```
 
@@ -1210,33 +1106,32 @@ solution.
 A periodically executed task can be creating by combining `schedule`, `run` and `Cancellation`.
 
 ```ruby
-repeating_scheduled_task = -> interval, token, task do
+repeating_scheduled_task = -> interval, cancellation, task do
   Concurrent::Promises.
       # Schedule the task.
-      schedule(interval, token, &task).
+      schedule(interval, cancellation, &task).
       # If successful schedule again. 
       # Alternatively use chain to schedule always.
-      then { repeating_scheduled_task.call(interval, token, task) }
+      then { repeating_scheduled_task.call(interval, cancellation, task) }
 end
-# => #<Proc:0x000056@promises.in.md:1037 (lambda)>
+# => #<Proc:0x000045@promises.in.md:951 (lambda)>
 
-cancellation, token = Concurrent::Cancellation.create
-# => [#<Concurrent::Cancellation:0x000057 canceled:false>,
-#     #<Concurrent::Cancellation::Token:0x000058 canceled:false>]
+cancellation, origin = Concurrent::Cancellation.new
+# => #<Concurrent::Cancellation:0x000046 pending>
 
-task = -> token do
+task = -> cancellation do
   5.times do
-    token.raise_if_canceled
-    # do stuff
-    sleep 0.01
+    cancellation.check!
+    do_stuff
   end
 end
-# => #<Proc:0x000059@promises.in.md:1048 (lambda)>
+# => #<Proc:0x000047@promises.in.md:962 (lambda)>
 
-result = Concurrent::Promises.future(0.1, token, task, &repeating_scheduled_task).run
-# => #<Concurrent::Promises::Future:0x00005a pending>
-sleep 0.2 
-cancellation.cancel                      # => true
+result = Concurrent::Promises.future(0.1, cancellation, task, &repeating_scheduled_task).run
+# => #<Concurrent::Promises::Future:0x000048 pending>
+sleep 0.03 
+origin.resolve
+# => #<Concurrent::Promises::ResolvableEvent:0x000049 resolved>
 result.result
 # => [false,
 #     nil,

@@ -442,9 +442,11 @@ RSpec.describe 'Concurrent::Promises' do
       it 'rejects if inner value is not a future' do
         f = future { 'boo' }.flat
         expect(f.reason).to be_an_instance_of TypeError
+      end
 
+      it 'accepts inner event' do
         f = future { resolved_event }.flat
-        expect(f.reason).to be_an_instance_of TypeError
+        expect(f.result).to eq [true, nil, nil]
       end
 
       it 'propagates requests for values to delayed futures' do
@@ -535,52 +537,10 @@ RSpec.describe 'Concurrent::Promises' do
       expect(result.value!).to eq [ch1, 1]
 
 
-      future { 1+1 }.then_push_channel(ch1)
+      future { 1 + 1 }.then_push_channel(ch1)
       result = (Concurrent::Promises.future { '%02d' } & Concurrent::Promises.select_channel(ch1, ch2)).
           then { |format, (channel, value)| format format, value }
       expect(result.value!).to eq '02'
-    end
-  end
-
-  describe 'Cancellation', edge: true do
-    specify do
-      source, token = Concurrent::Cancellation.create
-
-      futures = ::Array.new(2) { future(token) { |t| t.loop_until_canceled { Thread.pass }; :done } }
-
-      source.cancel
-      futures.each do |future|
-        expect(future.value!).to eq :done
-      end
-    end
-
-    specify do
-      source, token = Concurrent::Cancellation.create
-      source.cancel
-      expect(token.canceled?).to be_truthy
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.to_event).value).to be_nil
-      expect(cancellable_branch.resolved?).to be_falsey
-    end
-
-    specify do
-      source, token = Concurrent::Cancellation.create
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect(any_resolved_future(cancellable_branch, token.to_event).value).to eq 1
-      expect(cancellable_branch.resolved?).to be_truthy
-    end
-
-    specify do
-      source, token = Concurrent::Cancellation.create(
-          Concurrent::Promises.resolvable_future, false, nil, err = StandardError.new('Cancelled'))
-      source.cancel
-      expect(token.canceled?).to be_truthy
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.to_future).reason).to eq err
-      expect(cancellable_branch.resolved?).to be_falsey
     end
   end
 

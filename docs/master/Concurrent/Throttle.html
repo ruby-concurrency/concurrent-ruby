@@ -160,7 +160,7 @@ an event is returned which will be resolved when capacity becomes available.</p>
   <span class='kw'>end</span>
 <span class='comment'># wait for all the threads to finish and read the observed 
 </span><span class='comment'># concurrency level in each of them   
-</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>                         <span class='comment'># =&gt; [1, 1, 2, 2, 1, 2, 2, 2, 2, 2]
+</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>                         <span class='comment'># =&gt; [2, 2, 2, 1, 2, 2, 2, 1, 1, 1]
 </span></code></pre>
 
 <p>Notice that the returned array has no number bigger than 2 therefore 
@@ -188,7 +188,7 @@ the concurrency level of the block with the <code>do_stuff</code> was never bigg
     <span class='comment'># fulfill with the observed concurrency level
 </span>  <span class='kw'>end</span>
 <span class='comment'># collect observed concurrency levels   
-</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                        <span class='comment'># =&gt; [1, 2, 3, 2, 3, 3, 3, 3, 2, 1]
+</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                        <span class='comment'># =&gt; [3, 2, 1, 3, 3, 3, 3, 2, 3, 1]
 </span></code></pre>
 
 <p>The concurrency level does not rise above 3.</p>
@@ -228,15 +228,15 @@ the last is not.</p>
     <span class='lbracket'>[</span><span class='id identifier rubyid_l1'>l1</span><span class='comma'>,</span> <span class='id identifier rubyid_l2'>l2</span><span class='comma'>,</span> <span class='id identifier rubyid_monitor_concurrency_level'>monitor_concurrency_level</span><span class='lparen'>(</span><span class='id identifier rubyid_concurrency_level_unthrottled'>concurrency_level_unthrottled</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>5</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='rbracket'>]</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; [[3, 3, 7],
-</span><span class='comment'>#     [3, 3, 10],
+<span class='comment'># =&gt; [[3, 3, 8],
 </span><span class='comment'>#     [3, 3, 9],
-</span><span class='comment'>#     [3, 3, 3],
+</span><span class='comment'>#     [3, 3, 10],
 </span><span class='comment'>#     [3, 3, 6],
-</span><span class='comment'>#     [3, 3, 8],
 </span><span class='comment'>#     [3, 3, 4],
-</span><span class='comment'>#     [3, 3, 5],
-</span><span class='comment'>#     [3, 2, 1],
+</span><span class='comment'>#     [3, 3, 7],
+</span><span class='comment'>#     [3, 2, 5],
+</span><span class='comment'>#     [2, 1, 3],
+</span><span class='comment'>#     [1, 2, 1],
 </span><span class='comment'>#     [3, 1, 2]]
 </span></code></pre>
 
@@ -265,9 +265,9 @@ and combined.</p>
 </span>  <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_monitor_concurrency_level'>monitor_concurrency_level</span><span class='lparen'>(</span><span class='id identifier rubyid_concurrency_level_throttled'>concurrency_level_throttled</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
   <span class='id identifier rubyid_agent'>agent</span> 
 <span class='kw'>end</span> 
-<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [3, 3, 3, 2, 1]
+<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [3, 2, 3, 2, 1]
 </span><span class='id identifier rubyid_agents'>agents</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span> 
-<span class='comment'># =&gt; [1, 2, 3, 2, 1]
+<span class='comment'># =&gt; [1, 1, 2, 3, 1]
 </span></code></pre>
 
 <p>There is no observed concurrency level above 3.</p>
@@ -677,7 +677,7 @@ and combined.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#delay-instance_method" title="#delay (instance method)">#<strong>delay</strong>(*args, &amp;task)  &#x21d2; Future </a>
+      <a href="#delay-instance_method" title="#delay (instance method)">#<strong>delay</strong>(*args, &amp;task)  &#x21d2; Future, Event </a>
     
 
     
@@ -705,7 +705,7 @@ and combined.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#delay_on-instance_method" title="#delay_on (instance method)">#<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; Future </a>
+      <a href="#delay_on-instance_method" title="#delay_on (instance method)">#<strong>delay_on</strong>(default_executor, *args, &amp;task)  &#x21d2; undocumented </a>
     
 
     
@@ -724,7 +724,7 @@ and combined.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Constructs new Future which will be resolved after block is evaluated on default executor.</p>
+    <span class="summary_desc"><div class='inline'><p>Creates new event or future which is resolved only after it is touched, see AbstractEventFuture#touch.</p>
 </div></span>
   
 </li>
@@ -1041,7 +1041,7 @@ and combined.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#schedule-instance_method" title="#schedule (instance method)">#<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; Future </a>
+      <a href="#schedule-instance_method" title="#schedule (instance method)">#<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; Future, Event </a>
     
 
     
@@ -1069,7 +1069,7 @@ and combined.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#schedule_on-instance_method" title="#schedule_on (instance method)">#<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; Future </a>
+      <a href="#schedule_on-instance_method" title="#schedule_on (instance method)">#<strong>schedule_on</strong>(default_executor, intended_time, *args, &amp;task)  &#x21d2; undocumented </a>
     
 
     
@@ -1088,7 +1088,7 @@ and combined.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Constructs new Future which will be resolved after block is evaluated on default executor.</p>
+    <span class="summary_desc"><div class='inline'><p>Creates new event or future which is resolved in intended_time.</p>
 </div></span>
   
 </li>
@@ -2438,7 +2438,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       <div class="method_details ">
   <h3 class="signature " id="delay-instance_method">
   
-    #<strong>delay</strong>(*args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    #<strong>delay</strong>(*args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
   
 
   
@@ -2464,7 +2464,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
       
       
       
@@ -2485,7 +2485,11 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       <div class="method_details ">
   <h3 class="signature " id="delay_on-instance_method">
   
-    #<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    
+      <span class="overload">#<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+    
+      <span class="overload">#<strong>delay_on</strong>(default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+    
   
 
   
@@ -2498,8 +2502,23 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Constructs new Future which will be resolved after block is evaluated on default executor.
-The task will be evaluated only after the future is touched, see <span class='object_link'><a href="Promises/AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span></p>
+    <p>Creates new event or future which is resolved only after it is touched,
+see AbstractEventFuture#touch.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If task is provided it returns a <span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Concurrent::Promises::Future</a></span> representing the result of the task.</p>
 
 
   </div>
@@ -2507,23 +2526,6 @@ The task will be evaluated only after the future is touched, see <span class='ob
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
-    <li>
-      
-        <span class='name'>default_executor</span>
-      
-      
-        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>Instance of an executor or a name of the
-global executor. Default executor propagates to chained futures unless overridden with
-executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
-</div>
-      
-    </li>
   
     <li>
       
@@ -2592,6 +2594,62 @@ raised exception becomes <span class='object_link'><a href="Promises/Future.html
     </li>
   
 </ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>delay_on</strong>(default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If no task is provided, it returns an <span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+  </ul>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>default_executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. Default executor propagates to chained futures unless overridden with
+executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
 
 </div>
 </div>
@@ -3566,7 +3624,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       <div class="method_details ">
   <h3 class="signature " id="schedule-instance_method">
   
-    #<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    #<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
   
 
   
@@ -3592,7 +3650,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
       
       
       
@@ -3613,7 +3671,11 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       <div class="method_details ">
   <h3 class="signature " id="schedule_on-instance_method">
   
-    #<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    
+      <span class="overload">#<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+    
+      <span class="overload">#<strong>schedule_on</strong>(default_executor, intended_time)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+    
   
 
   
@@ -3626,8 +3688,22 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Constructs new Future which will be resolved after block is evaluated on default executor.
-The task is planned for execution in intended_time.</p>
+    <p>Creates new event or future which is resolved in intended_time.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If task is provided it returns a <span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Concurrent::Promises::Future</a></span> representing the result of the task.</p>
 
 
   </div>
@@ -3635,23 +3711,6 @@ The task is planned for execution in intended_time.</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
-    <li>
-      
-        <span class='name'>default_executor</span>
-      
-      
-        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>Instance of an executor or a name of the
-global executor. Default executor propagates to chained futures unless overridden with
-executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
-</div>
-      
-    </li>
   
     <li>
       
@@ -3665,22 +3724,6 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
         &mdash;
         <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
 (It might be prepended with other arguments, see the @yeild section).</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>intended_time</span>
-      
-      
-        <span class='type'>(<tt>Numeric</tt>, <tt>Time</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p><code>Numeric</code> means to run in <code>intended_time</code> seconds.
-<code>Time</code> means to run on <code>intended_time</code>.</p>
 </div>
       
     </li>
@@ -3736,6 +3779,78 @@ raised exception becomes <span class='object_link'><a href="Promises/Future.html
     </li>
   
 </ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>schedule_on</strong>(default_executor, intended_time)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If no task is provided, it returns an <span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+  </ul>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>default_executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. Default executor propagates to chained futures unless overridden with
+executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>intended_time</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>, <tt>Time</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><code>Numeric</code> means to run in <code>intended_time</code> seconds.
+<code>Time</code> means to run on <code>intended_time</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
 
 </div>
 </div>

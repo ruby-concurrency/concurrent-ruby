@@ -180,34 +180,53 @@ module Concurrent
       end
 
       # @!macro promises.shortcut.on
-      # @return [Future]
+      # @return [Future, Event]
       def delay(*args, &task)
         delay_on default_executor, *args, &task
       end
 
-      # @!macro promises.future-on1
-      # The task will be evaluated only after the future is touched, see {AbstractEventFuture#touch}
+      # Creates new event or future which is resolved only after it is touched,
+      # see {Concurrent::AbstractEventFuture#touch}.
       #
-      # @!macro promises.future-on2
+      # @!macro promises.param.default_executor
+      # @overload delay_on(default_executor, *args, &task)
+      #   If task is provided it returns a {Future} representing the result of the task.
+      #   @!macro promises.param.args
+      #   @yield [*args] to the task.
+      #   @!macro promise.param.task-future
+      #   @return [Future]
+      # @overload delay_on(default_executor)
+      #   If no task is provided, it returns an {Event}
+      #   @return [Event]
       def delay_on(default_executor, *args, &task)
-        DelayPromise.new(default_executor).event.chain(*args, &task)
+        event = DelayPromise.new(default_executor).event
+        task ? event.chain(*args, &task) : event
       end
 
       # @!macro promises.shortcut.on
-      # @return [Future]
+      # @return [Future, Event]
       def schedule(intended_time, *args, &task)
         schedule_on default_executor, intended_time, *args, &task
       end
 
-      # @!macro promises.future-on1
-      # The task is planned for execution in intended_time.
+      # Creates new event or future which is resolved in intended_time.
       #
-      # @!macro promises.future-on2
+      # @!macro promises.param.default_executor
       # @!macro promises.param.intended_time
       #   @param [Numeric, Time] intended_time `Numeric` means to run in `intended_time` seconds.
       #     `Time` means to run on `intended_time`.
+      # @overload schedule_on(default_executor, intended_time, *args, &task)
+      #   If task is provided it returns a {Future} representing the result of the task.
+      #   @!macro promises.param.args
+      #   @yield [*args] to the task.
+      #   @!macro promise.param.task-future
+      #   @return [Future]
+      # @overload schedule_on(default_executor, intended_time)
+      #   If no task is provided, it returns an {Event}
+      #   @return [Event]
       def schedule_on(default_executor, intended_time, *args, &task)
-        ScheduledPromise.new(default_executor, intended_time).event.chain(*args, &task)
+        event = ScheduledPromise.new(default_executor, intended_time).event
+        task ? event.chain(*args, &task) : event
       end
 
       # @!macro promises.shortcut.on
@@ -1615,7 +1634,7 @@ module Concurrent
 
           value = internal_state.value
           case value
-          when Future, Event
+          when AbstractEventFuture
             add_delayed_of value
             value.add_callback_notify_blocked self, nil
             countdown
@@ -1651,12 +1670,10 @@ module Concurrent
 
           value = internal_state.value
           case value
-          when Future
+          when AbstractEventFuture
             add_delayed_of value
             value.add_callback_notify_blocked self, nil
             countdown
-          when Event
-            evaluate_to(lambda { raise TypeError, 'cannot flatten to Event' })
           else
             evaluate_to(lambda { raise TypeError, "returned value #{value.inspect} is not a Future" })
           end

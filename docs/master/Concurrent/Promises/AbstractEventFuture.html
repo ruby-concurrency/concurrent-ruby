@@ -514,12 +514,12 @@
       <pre class="lines">
 
 
-576
-577
-578</pre>
+595
+596
+597</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 576</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 595</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_chain'>chain</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_chain_on'>chain_on</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
@@ -732,12 +732,12 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
       <pre class="lines">
 
 
-594
-595
-596</pre>
+613
+614
+615</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 594</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 613</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_chain_on'>chain_on</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='const'>ChainPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -804,12 +804,12 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
       <pre class="lines">
 
 
-609
-610
-611</pre>
+628
+629
+630</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 609</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 628</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_chain_resolvable'>chain_resolvable</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_on_resolution!'>on_resolution!</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_resolvable'>resolvable</span><span class='period'>.</span><span class='id identifier rubyid_resolve_with'>resolve_with</span> <span class='id identifier rubyid_internal_state'>internal_state</span> <span class='rbrace'>}</span>
@@ -876,12 +876,12 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
       <pre class="lines">
 
 
-570
-571
-572</pre>
+589
+590
+591</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 570</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 589</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
   <span class='ivar'>@DefaultExecutor</span>
@@ -936,12 +936,12 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
       <pre class="lines">
 
 
-617
-618
-619</pre>
+636
+637
+638</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 617</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 636</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_resolution'>on_resolution</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_on_resolution_using'>on_resolution_using</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span>
@@ -1137,12 +1137,12 @@ resolved.</p>
       <pre class="lines">
 
 
-635
-636
-637</pre>
+654
+655
+656</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 635</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 654</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_resolution!'>on_resolution!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:callback_on_resolution</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
@@ -1353,12 +1353,12 @@ global executor. The task is executed on it, default executor remains unchanged.
       <pre class="lines">
 
 
-653
-654
-655</pre>
+672
+673
+674</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 653</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 672</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_resolution_using'>on_resolution_using</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:async_callback_on_resolution</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
@@ -1406,12 +1406,12 @@ global executor. The task is executed on it, default executor remains unchanged.
       <pre class="lines">
 
 
-529
-530
-531</pre>
+548
+549
+550</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 529</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 548</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pending?'>pending?</span>
   <span class='op'>!</span><span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>
@@ -1459,12 +1459,12 @@ global executor. The task is executed on it, default executor remains unchanged.
       <pre class="lines">
 
 
-535
-536
-537</pre>
+554
+555
+556</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 535</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 554</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resolved?'>resolved?</span>
   <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>
@@ -1578,12 +1578,12 @@ global executor. The task is executed on it, default executor remains unchanged.
       <pre class="lines">
 
 
-523
-524
-525</pre>
+542
+543
+544</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 523</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 542</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_state'>state</span>
   <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
@@ -1639,12 +1639,12 @@ global executor. The task is executed on it, default executor remains unchanged.
       <pre class="lines">
 
 
-599
-600
-601</pre>
+618
+619
+620</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 599</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 618</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s %s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span>
@@ -1693,13 +1693,13 @@ executed. This method is called by any other method requiring resolved state, li
       <pre class="lines">
 
 
-542
-543
-544
-545</pre>
+561
+562
+563
+564</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 542</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 561</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_touch'>touch</span>
   <span class='ivar'>@Promise</span><span class='period'>.</span><span class='id identifier rubyid_touch'>touch</span>
@@ -1783,13 +1783,13 @@ and it was resolved, false implies it was not resolved within timeout.</p>
       <pre class="lines">
 
 
-558
-559
-560
-561</pre>
+577
+578
+579
+580</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 558</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 577</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
@@ -1865,12 +1865,12 @@ Any futures depending on it will use the new default executor.</p>
       <pre class="lines">
 
 
-663
-664
-665</pre>
+682
+683
+684</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 663</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 682</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_default_executor'>with_default_executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>

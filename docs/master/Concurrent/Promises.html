@@ -407,7 +407,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#delay-class_method" title="#delay (class method)">.<strong>delay</strong>(*args, &amp;task)  &#x21d2; Future </a>
+      <a href="#delay-class_method" title="#delay (class method)">.<strong>delay</strong>(*args, &amp;task)  &#x21d2; Future, Event </a>
     
 
     
@@ -435,7 +435,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#delay_on-class_method" title="#delay_on (class method)">.<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; Future </a>
+      <a href="#delay_on-class_method" title="#delay_on (class method)">.<strong>delay_on</strong>(default_executor, *args, &amp;task)  &#x21d2; undocumented </a>
     
 
     
@@ -454,7 +454,7 @@ e.g. when the tasks raises an exception.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Constructs new Future which will be resolved after block is evaluated on default executor.</p>
+    <span class="summary_desc"><div class='inline'><p>Creates new event or future which is resolved only after it is touched, see AbstractEventFuture#touch.</p>
 </div></span>
   
 </li>
@@ -771,7 +771,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#schedule-class_method" title="#schedule (class method)">.<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; Future </a>
+      <a href="#schedule-class_method" title="#schedule (class method)">.<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; Future, Event </a>
     
 
     
@@ -799,7 +799,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#schedule_on-class_method" title="#schedule_on (class method)">.<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; Future </a>
+      <a href="#schedule_on-class_method" title="#schedule_on (class method)">.<strong>schedule_on</strong>(default_executor, intended_time, *args, &amp;task)  &#x21d2; undocumented </a>
     
 
     
@@ -818,7 +818,7 @@ e.g. when the tasks raises an exception.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Constructs new Future which will be resolved after block is evaluated on default executor.</p>
+    <span class="summary_desc"><div class='inline'><p>Creates new event or future which is resolved in intended_time.</p>
 </div></span>
   
 </li>
@@ -1466,7 +1466,7 @@ to a factory method. The method can be overridden in the receivers of
       <div class="method_details ">
   <h3 class="signature " id="delay-class_method">
   
-    .<strong>delay</strong>(*args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    .<strong>delay</strong>(*args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
   
 
   
@@ -1492,7 +1492,7 @@ to a factory method. The method can be overridden in the receivers of
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
       
       
       
@@ -1513,7 +1513,11 @@ to a factory method. The method can be overridden in the receivers of
       <div class="method_details ">
   <h3 class="signature " id="delay_on-class_method">
   
-    .<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    
+      <span class="overload">#<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+    
+      <span class="overload">#<strong>delay_on</strong>(default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+    
   
 
   
@@ -1526,8 +1530,23 @@ to a factory method. The method can be overridden in the receivers of
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Constructs new Future which will be resolved after block is evaluated on default executor.
-The task will be evaluated only after the future is touched, see <span class='object_link'><a href="Promises/AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span></p>
+    <p>Creates new event or future which is resolved only after it is touched,
+see AbstractEventFuture#touch.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>delay_on</strong>(default_executor, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If task is provided it returns a <span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Concurrent::Promises::Future</a></span> representing the result of the task.</p>
 
 
   </div>
@@ -1535,23 +1554,6 @@ The task will be evaluated only after the future is touched, see <span class='ob
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
-    <li>
-      
-        <span class='name'>default_executor</span>
-      
-      
-        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>Instance of an executor or a name of the
-global executor. Default executor propagates to chained futures unless overridden with
-executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
-</div>
-      
-    </li>
   
     <li>
       
@@ -1620,6 +1622,62 @@ raised exception becomes <span class='object_link'><a href="Promises/Future.html
     </li>
   
 </ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>delay_on</strong>(default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If no task is provided, it returns an <span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+  </ul>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>default_executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. Default executor propagates to chained futures unless overridden with
+executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
 
 </div>
 </div>
@@ -2594,7 +2652,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       <div class="method_details ">
   <h3 class="signature " id="schedule-class_method">
   
-    .<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    .<strong>schedule</strong>(intended_time, *args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> 
   
 
   
@@ -2620,7 +2678,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>, <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
       
       
       
@@ -2641,7 +2699,11 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       <div class="method_details ">
   <h3 class="signature " id="schedule_on-class_method">
   
-    .<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    
+      <span class="overload">#<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+    
+      <span class="overload">#<strong>schedule_on</strong>(default_executor, intended_time)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+    
   
 
   
@@ -2654,8 +2716,22 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Constructs new Future which will be resolved after block is evaluated on default executor.
-The task is planned for execution in intended_time.</p>
+    <p>Creates new event or future which is resolved in intended_time.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <p class="tag_title">Overloads:</p>
+  <ul class="overload">
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>schedule_on</strong>(default_executor, intended_time, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If task is provided it returns a <span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Concurrent::Promises::Future</a></span> representing the result of the task.</p>
 
 
   </div>
@@ -2663,23 +2739,6 @@ The task is planned for execution in intended_time.</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
-    <li>
-      
-        <span class='name'>default_executor</span>
-      
-      
-        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>Instance of an executor or a name of the
-global executor. Default executor propagates to chained futures unless overridden with
-executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
-</div>
-      
-    </li>
   
     <li>
       
@@ -2693,22 +2752,6 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
         &mdash;
         <div class='inline'><p>arguments which are passed to the task when it&#39;s executed.
 (It might be prepended with other arguments, see the @yeild section).</p>
-</div>
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>intended_time</span>
-      
-      
-        <span class='type'>(<tt>Numeric</tt>, <tt>Time</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p><code>Numeric</code> means to run in <code>intended_time</code> seconds.
-<code>Time</code> means to run on <code>intended_time</code>.</p>
 </div>
       
     </li>
@@ -2764,6 +2807,78 @@ raised exception becomes <span class='object_link'><a href="Promises/Future.html
     </li>
   
 </ul>
+
+</div>
+      </li>
+    
+      
+      <li class="overload_item">
+        <span class="signature">#<strong>schedule_on</strong>(default_executor, intended_time)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <div class="docstring">
+  <div class="discussion">
+    <p>If no task is provided, it returns an <span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+      </li>
+    
+  </ul>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>default_executor</span>
+      
+      
+        <span class='type'>(<tt>Executor</tt>, <tt>:io</tt>, <tt>:fast</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instance of an executor or a name of the
+global executor. Default executor propagates to chained futures unless overridden with
+executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>intended_time</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>, <tt>Time</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><code>Numeric</code> means to run in <code>intended_time</code> seconds.
+<code>Time</code> means to run on <code>intended_time</code>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
 
 </div>
 </div>
