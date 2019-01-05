@@ -45,8 +45,6 @@ matrix:
       rvm: 2.0.0
     - name: MRI 1.9.3
       rvm: 1.9.3
-      before_install:
-        - gem install bundler
     - name: JRuby 9.1.17.0
       rvm: jruby-9.1.17.0
       jdk: oraclejdk8
@@ -83,6 +81,7 @@ env:
     - RUBYOPT=-w
 
 before_install:
+  - gem install bundler --version 1.17.3
   - "echo JAVA_OPTS: $JAVA_OPTS"
 
 script: bundle exec rake ci
