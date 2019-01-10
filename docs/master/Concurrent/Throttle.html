@@ -160,7 +160,7 @@ an event is returned which will be resolved when capacity becomes available.</p>
   <span class='kw'>end</span>
 <span class='comment'># wait for all the threads to finish and read the observed 
 </span><span class='comment'># concurrency level in each of them   
-</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>                         <span class='comment'># =&gt; [2, 2, 2, 1, 2, 2, 2, 1, 1, 1]
+</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>                         <span class='comment'># =&gt; [2, 1, 2, 1, 2, 2, 2, 2, 2, 1]
 </span></code></pre>
 
 <p>Notice that the returned array has no number bigger than 2 therefore 
@@ -188,7 +188,7 @@ the concurrency level of the block with the <code>do_stuff</code> was never bigg
     <span class='comment'># fulfill with the observed concurrency level
 </span>  <span class='kw'>end</span>
 <span class='comment'># collect observed concurrency levels   
-</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                        <span class='comment'># =&gt; [3, 2, 1, 3, 3, 3, 3, 2, 3, 1]
+</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                        <span class='comment'># =&gt; [3, 2, 1, 3, 2, 1, 3, 2, 1, 1]
 </span></code></pre>
 
 <p>The concurrency level does not rise above 3.</p>
@@ -228,16 +228,16 @@ the last is not.</p>
     <span class='lbracket'>[</span><span class='id identifier rubyid_l1'>l1</span><span class='comma'>,</span> <span class='id identifier rubyid_l2'>l2</span><span class='comma'>,</span> <span class='id identifier rubyid_monitor_concurrency_level'>monitor_concurrency_level</span><span class='lparen'>(</span><span class='id identifier rubyid_concurrency_level_unthrottled'>concurrency_level_unthrottled</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>5</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='rbracket'>]</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; [[3, 3, 8],
-</span><span class='comment'>#     [3, 3, 9],
+<span class='comment'># =&gt; [[1, 3, 8],
 </span><span class='comment'>#     [3, 3, 10],
+</span><span class='comment'>#     [2, 2, 9],
 </span><span class='comment'>#     [3, 3, 6],
-</span><span class='comment'>#     [3, 3, 4],
+</span><span class='comment'>#     [3, 3, 5],
 </span><span class='comment'>#     [3, 3, 7],
-</span><span class='comment'>#     [3, 2, 5],
-</span><span class='comment'>#     [2, 1, 3],
-</span><span class='comment'>#     [1, 2, 1],
-</span><span class='comment'>#     [3, 1, 2]]
+</span><span class='comment'>#     [3, 3, 4],
+</span><span class='comment'>#     [3, 2, 2],
+</span><span class='comment'>#     [3, 3, 3],
+</span><span class='comment'>#     [3, 1, 1]]
 </span></code></pre>
 
 <p>In the output you can see that the first 2 columns do not cross the 3 capacity limit
@@ -265,7 +265,7 @@ and combined.</p>
 </span>  <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_monitor_concurrency_level'>monitor_concurrency_level</span><span class='lparen'>(</span><span class='id identifier rubyid_concurrency_level_throttled'>concurrency_level_throttled</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
   <span class='id identifier rubyid_agent'>agent</span> 
 <span class='kw'>end</span> 
-<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [3, 2, 3, 2, 1]
+<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [3, 2, 1, 2, 1]
 </span><span class='id identifier rubyid_agents'>agents</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span> 
 <span class='comment'># =&gt; [1, 1, 2, 3, 1]
 </span></code></pre>

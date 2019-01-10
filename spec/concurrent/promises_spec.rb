@@ -516,6 +516,84 @@ RSpec.describe 'Concurrent::Promises' do
     end
   end
 
+  describe 'ResolvableEvent' do
+    specify "#wait" do
+      event = resolvable_event
+      expect(event.wait(0, false)).to be_falsey
+      expect(event.wait(0, true)).to be_falsey
+      expect(event.wait).to eq event
+      expect(event.wait(0, false)).to be_truthy
+      expect(event.wait(0, true)).to be_truthy
+    end
+  end
+
+  describe 'ResolvableFuture' do
+    specify "#wait" do
+      future = resolvable_future
+      expect(future.wait(0)).to be_falsey
+      expect(future.wait(0, [true, :v, nil])).to be_falsey
+      expect(future.wait).to eq future
+      expect(future.wait(0, nil)).to be_truthy
+      expect(future.wait(0, [true, :v, nil])).to be_truthy
+    end
+
+    specify "#wait!" do
+      future = resolvable_future
+      expect(future.wait!(0)).to be_falsey
+      expect(future.wait!(0, [true, :v, nil])).to be_falsey
+      expect(future.wait!).to eq future
+      expect(future.wait!(0, nil)).to be_truthy
+      expect(future.wait!(0, [true, :v, nil])).to be_truthy
+
+      future = resolvable_future
+      expect(future.wait!(0)).to be_falsey
+      expect(future.wait!(0, [false, nil, RuntimeError.new])).to be_falsey
+      expect { future.wait! }.to raise_error RuntimeError
+    end
+
+    specify "#value" do
+      future = resolvable_future
+      expect(future.value(0)).to eq nil
+      expect(future.value(0, [true, :v, nil])).to be_falsey
+      expect(future.value).to eq :v
+      expect(future.value(0)).to eq :v
+      expect(future.value(0, [true, :v, nil])).to eq :v
+    end
+
+    specify "#value!" do
+      future = resolvable_future
+      expect(future.value!(0)).to eq nil
+      expect(future.value!(0, [true, :v, nil])).to be_falsey
+      expect(future.value!).to eq :v
+      expect(future.value!(0, nil)).to be_truthy
+      expect(future.value!(0, [true, :v, nil])).to be_truthy
+
+      future = resolvable_future
+      expect(future.wait!(0)).to be_falsey
+      expect(future.wait!(0, [false, nil, RuntimeError.new])).to be_falsey
+      expect { future.wait! }.to raise_error RuntimeError
+    end
+
+    specify "#reason" do
+      future = resolvable_future
+      expect(future.reason(0)).to eq nil
+      expect(future.reason(0, [false, nil, :err])).to be_falsey
+      expect(future.reason).to eq :err
+      expect(future.reason(0)).to eq :err
+      expect(future.reason(0, [false, nil, :err])).to eq :err
+    end
+
+    specify "result" do
+      future = resolvable_future
+      expect(future.result(0)).to eq nil
+      expect(future.result(0, [true, :v, nil])).to be_falsey
+      expect(future.result).to eq [true, :v, nil]
+      expect(future.result(0)).to eq [true, :v, nil]
+      expect(future.result(0, [true, :v, nil])).to eq [true, :v, nil]
+    end
+
+  end
+
   describe 'interoperability' do
     it 'with actor', if: !defined?(JRUBY_VERSION) do
       actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do

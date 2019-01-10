@@ -207,6 +207,29 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#reason-instance_method" title="#reason (instance method)">#<strong>reason</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; Exception<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="Future.html#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">Future#reason</a></span> but has one additional optional argument resolve_on_timeout.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#reject-instance_method" title="#reject (instance method)">#<strong>reject</strong>(reason, raise_on_reassign = true)  &#x21d2; self, false </a>
     
 
@@ -245,6 +268,121 @@
 
   
     <span class="summary_desc"><div class='inline'><p>Makes the future resolved with result of triplet <code>fulfilled?</code>, <code>value</code>, <code>reason</code>, which triggers all dependent futures.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#result-instance_method" title="#result (instance method)">#<strong>result</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; ::Array(Boolean, Object, Exception)<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="Future.html#result-instance_method" title="Concurrent::Promises::Future#result (method)">Future#result</a></span> but has one additional optional argument resolve_on_timeout.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; Object<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="Future.html#value-instance_method" title="Concurrent::Promises::Future#value (method)">Future#value</a></span> but has one additional optional argument resolve_on_timeout.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value!-instance_method" title="#value! (instance method)">#<strong>value!</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; Object<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="Future.html#value!-instance_method" title="Concurrent::Promises::Future#value! (method)">Future#value!</a></span> but has one additional optional argument resolve_on_timeout.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait-instance_method" title="#wait (instance method)">#<strong>wait</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; self, true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="AbstractEventFuture.html#wait-instance_method" title="Concurrent::Promises::AbstractEventFuture#wait (method)">AbstractEventFuture#wait</a></span> but has one additional optional argument resolve_on_timeout.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait!-instance_method" title="#wait! (instance method)">#<strong>wait!</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; self, true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="Future.html#wait!-instance_method" title="Concurrent::Promises::Future#wait! (method)">Future#wait!</a></span> but has one additional optional argument resolve_on_timeout.</p>
 </div></span>
   
 </li>
@@ -373,12 +511,12 @@ an exception the future rejects with it.</p>
       <pre class="lines">
 
 
-1294
-1295
-1296</pre>
+1311
+1312
+1313</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1294</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1311</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_evaluate_to'>evaluate_to</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_promise'>promise</span><span class='period'>.</span><span class='id identifier rubyid_evaluate_to'>evaluate_to</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
@@ -478,12 +616,12 @@ an exception the future rejects with it.</p>
       <pre class="lines">
 
 
-1304
-1305
-1306</pre>
+1321
+1322
+1323</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1304</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1321</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_evaluate_to!'>evaluate_to!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_promise'>promise</span><span class='period'>.</span><span class='id identifier rubyid_evaluate_to'>evaluate_to</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_wait!'>wait!</span>
@@ -558,15 +696,120 @@ is already resolved.</p>
       <pre class="lines">
 
 
-1277
-1278
-1279</pre>
+1294
+1295
+1296</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1277</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1294</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fulfill'>fulfill</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_promise'>promise</span><span class='period'>.</span><span class='id identifier rubyid_fulfill'>fulfill</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reason-instance_method">
+  
+    #<strong>reason</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; <tt>Exception</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="Future.html#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">Future#reason</a></span> but has one additional optional argument
+resolve_on_timeout.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_on_timeout</span>
+      
+      
+        <span class='type'>(<tt>::Array(true, Object, nil)</tt>, <tt>::Array(false, nil, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If it times out and the argument is not nil it will also resolve the future
+to the provided resolution.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Future.html#reason-instance_method" title="Concurrent::Promises::Future#reason (method)">Future#reason</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1418
+1419
+1420
+1421
+1422
+1423
+1424
+1425
+1426
+1427
+1428
+1429
+1430
+1431</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1418</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reason'>reason</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
+    <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span>
+  <span class='kw'>else</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
+      <span class='kw'>unless</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+        <span class='comment'># if it fails to resolve it was resolved in the meantime
+</span>        <span class='comment'># so return value as if there was no timeout
+</span>        <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='comment'># otherwise returns nil
+</span>  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -638,12 +881,12 @@ is already resolved.</p>
       <pre class="lines">
 
 
-1285
-1286
-1287</pre>
+1302
+1303
+1304</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1285</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1302</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_promise'>promise</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span><span class='rparen'>)</span>
@@ -718,15 +961,566 @@ is already resolved.</p>
       <pre class="lines">
 
 
-1269
-1270
-1271</pre>
+1286
+1287
+1288</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1269</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1286</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span> <span class='op'>=</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolve_with'>resolve_with</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span> <span class='op'>?</span> <span class='const'>Fulfilled</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='const'>Rejected</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="result-instance_method">
+  
+    #<strong>result</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; <tt>::Array(Boolean, Object, Exception)</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="Future.html#result-instance_method" title="Concurrent::Promises::Future#result (method)">Future#result</a></span> but has one additional optional argument
+resolve_on_timeout.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_on_timeout</span>
+      
+      
+        <span class='type'>(<tt>::Array(true, Object, nil)</tt>, <tt>::Array(false, nil, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If it times out and the argument is not nil it will also resolve the future
+to the provided resolution.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>::Array(Boolean, Object, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Future.html#result-instance_method" title="Concurrent::Promises::Future#result (method)">Future#result</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1439
+1440
+1441
+1442
+1443
+1444
+1445
+1446
+1447
+1448
+1449
+1450
+1451
+1452</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1439</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_result'>result</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
+    <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>
+  <span class='kw'>else</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
+      <span class='kw'>unless</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+        <span class='comment'># if it fails to resolve it was resolved in the meantime
+</span>        <span class='comment'># so return value as if there was no timeout
+</span>        <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='comment'># otherwise returns nil
+</span>  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value-instance_method">
+  
+    #<strong>value</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; <tt>Object</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="Future.html#value-instance_method" title="Concurrent::Promises::Future#value (method)">Future#value</a></span> but has one additional optional argument
+resolve_on_timeout.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_on_timeout</span>
+      
+      
+        <span class='type'>(<tt>::Array(true, Object, nil)</tt>, <tt>::Array(false, nil, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If it times out and the argument is not nil it will also resolve the future
+to the provided resolution.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Future.html#value-instance_method" title="Concurrent::Promises::Future#value (method)">Future#value</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1374
+1375
+1376
+1377
+1378
+1379
+1380
+1381
+1382
+1383
+1384
+1385
+1386
+1387</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1374</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
+    <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>else</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
+      <span class='kw'>unless</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+        <span class='comment'># if it fails to resolve it was resolved in the meantime
+</span>        <span class='comment'># so return value as if there was no timeout
+</span>        <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='comment'># otherwise returns nil
+</span>  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value!-instance_method">
+  
+    #<strong>value!</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; <tt>Object</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="Future.html#value!-instance_method" title="Concurrent::Promises::Future#value! (method)">Future#value!</a></span> but has one additional optional argument
+resolve_on_timeout.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_on_timeout</span>
+      
+      
+        <span class='type'>(<tt>::Array(true, Object, nil)</tt>, <tt>::Array(false, nil, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If it times out and the argument is not nil it will also resolve the future
+to the provided resolution.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><span class='object_link'><a href="#reason-instance_method" title="Concurrent::Promises::ResolvableFuture#reason (method)">#reason</a></span> on rejection</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Future.html#value!-instance_method" title="Concurrent::Promises::Future#value! (method)">Future#value!</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1396
+1397
+1398
+1399
+1400
+1401
+1402
+1403
+1404
+1405
+1406
+1407
+1408
+1409
+1410</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1396</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved!'>wait_until_resolved!</span> <span class='id identifier rubyid_timeout'>timeout</span>
+    <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>else</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
+      <span class='kw'>unless</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+        <span class='comment'># if it fails to resolve it was resolved in the meantime
+</span>        <span class='comment'># so return value as if there was no timeout
+</span>        <span class='id identifier rubyid_raise'>raise</span> <span class='kw'>self</span> <span class='kw'>if</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
+        <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='comment'># otherwise returns nil
+</span>  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait-instance_method">
+  
+    #<strong>wait</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; <tt>self</tt>, <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="AbstractEventFuture.html#wait-instance_method" title="Concurrent::Promises::AbstractEventFuture#wait (method)">AbstractEventFuture#wait</a></span> but has one additional optional argument
+resolve_on_timeout.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_on_timeout</span>
+      
+      
+        <span class='type'>(<tt>::Array(true, Object, nil)</tt>, <tt>::Array(false, nil, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If it times out and the argument is not nil it will also resolve the future
+to the provided resolution.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>, <tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="AbstractEventFuture.html#wait-instance_method" title="Concurrent::Promises::AbstractEventFuture#wait (method)">AbstractEventFuture#wait</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1336
+1337
+1338
+1339
+1340
+1341
+1342
+1343
+1344</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1336</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span> <span class='kw'>or</span> <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
+                      <span class='comment'># if it fails to resolve it was resolved in the meantime
+</span>                      <span class='comment'># so return true as if there was no timeout
+</span>                      <span class='op'>!</span><span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+                    <span class='kw'>else</span>
+                      <span class='kw'>false</span>
+                    <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait!-instance_method">
+  
+    #<strong>wait!</strong>(timeout = nil, resolve_on_timeout = nil)  &#x21d2; <tt>self</tt>, <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="Future.html#wait!-instance_method" title="Concurrent::Promises::Future#wait! (method)">Future#wait!</a></span> but has one additional optional argument
+resolve_on_timeout.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_on_timeout</span>
+      
+      
+        <span class='type'>(<tt>::Array(true, Object, nil)</tt>, <tt>::Array(false, nil, Exception)</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If it times out and the argument is not nil it will also resolve the future
+to the provided resolution.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>, <tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><span class='object_link'><a href="#reason-instance_method" title="Concurrent::Promises::ResolvableFuture#reason (method)">#reason</a></span> on rejection</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Future.html#wait!-instance_method" title="Concurrent::Promises::Future#wait! (method)">Future#wait!</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1353
+1354
+1355
+1356
+1357
+1358
+1359
+1360
+1361
+1362
+1363
+1364
+1365
+1366</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1353</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait!'>wait!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span> <span class='kw'>or</span> <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
+                      <span class='kw'>if</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+                        <span class='kw'>false</span>
+                      <span class='kw'>else</span>
+                        <span class='comment'># if it fails to resolve it was resolved in the meantime
+</span>                        <span class='comment'># so return true as if there was no timeout
+</span>                        <span class='id identifier rubyid_raise'>raise</span> <span class='kw'>self</span> <span class='kw'>if</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
+                        <span class='kw'>true</span>
+                      <span class='kw'>end</span>
+                    <span class='kw'>else</span>
+                      <span class='kw'>false</span>
+                    <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -771,12 +1565,12 @@ is already resolved.</p>
       <pre class="lines">
 
 
-1311
-1312
-1313</pre>
+1457
+1458
+1459</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1311</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1457</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_hidden_resolvable'>with_hidden_resolvable</span>
   <span class='ivar'>@with_hidden_resolvable</span> <span class='op'>||=</span> <span class='const'>FutureWrapperPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>

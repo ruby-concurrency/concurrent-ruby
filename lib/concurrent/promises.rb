@@ -1256,6 +1256,23 @@ module Concurrent
       def with_hidden_resolvable
         @with_hidden_resolvable ||= EventWrapperPromise.new_blocked_by1(self, @DefaultExecutor).event
       end
+
+      # Behaves as {AbstractEventFuture#wait} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @param [true, false] resolve_on_timeout
+      #   If it times out and the argument is true it will also resolve the event.
+      # @return [self, true, false]
+      # @see AbstractEventFuture#wait
+      def wait(timeout = nil, resolve_on_timeout = false)
+        super(timeout) or if resolve_on_timeout
+                            # if it fails to resolve it was resolved in the meantime
+                            # so return true as if there was no timeout
+                            !resolve(false)
+                          else
+                            false
+                          end
+      end
     end
 
     # A Future which can be resolved by user.
@@ -1303,6 +1320,135 @@ module Concurrent
       # @raise [Exception] also raise reason on rejection.
       def evaluate_to!(*args, &block)
         promise.evaluate_to(*args, block).wait!
+      end
+
+      # @!macro promises.resolvable.resolve_on_timeout
+      #   @param [::Array(true, Object, nil), ::Array(false, nil, Exception), nil] resolve_on_timeout
+      #     If it times out and the argument is not nil it will also resolve the future
+      #     to the provided resolution.
+
+      # Behaves as {AbstractEventFuture#wait} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @!macro promises.resolvable.resolve_on_timeout
+      # @return [self, true, false]
+      # @see AbstractEventFuture#wait
+      def wait(timeout = nil, resolve_on_timeout = nil)
+        super(timeout) or if resolve_on_timeout
+                            # if it fails to resolve it was resolved in the meantime
+                            # so return true as if there was no timeout
+                            !resolve(*resolve_on_timeout, false)
+                          else
+                            false
+                          end
+      end
+
+      # Behaves as {Future#wait!} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @!macro promises.resolvable.resolve_on_timeout
+      # @return [self, true, false]
+      # @raise [Exception] {#reason} on rejection
+      # @see Future#wait!
+      def wait!(timeout = nil, resolve_on_timeout = nil)
+        super(timeout) or if resolve_on_timeout
+                            if resolve(*resolve_on_timeout, false)
+                              false
+                            else
+                              # if it fails to resolve it was resolved in the meantime
+                              # so return true as if there was no timeout
+                              raise self if rejected?
+                              true
+                            end
+                          else
+                            false
+                          end
+      end
+
+      # Behaves as {Future#value} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @!macro promises.resolvable.resolve_on_timeout
+      # @return [Object, nil]
+      # @see Future#value
+      def value(timeout = nil, resolve_on_timeout = nil)
+        if wait_until_resolved timeout
+          internal_state.value
+        else
+          if resolve_on_timeout
+            unless resolve(*resolve_on_timeout, false)
+              # if it fails to resolve it was resolved in the meantime
+              # so return value as if there was no timeout
+              internal_state.value
+            end
+          end
+          # otherwise returns nil
+        end
+      end
+
+      # Behaves as {Future#value!} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @!macro promises.resolvable.resolve_on_timeout
+      # @return [Object, nil]
+      # @raise [Exception] {#reason} on rejection
+      # @see Future#value!
+      def value!(timeout = nil, resolve_on_timeout = nil)
+        if wait_until_resolved! timeout
+          internal_state.value
+        else
+          if resolve_on_timeout
+            unless resolve(*resolve_on_timeout, false)
+              # if it fails to resolve it was resolved in the meantime
+              # so return value as if there was no timeout
+              raise self if rejected?
+              internal_state.value
+            end
+          end
+          # otherwise returns nil
+        end
+      end
+
+      # Behaves as {Future#reason} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @!macro promises.resolvable.resolve_on_timeout
+      # @return [Exception, nil]
+      # @see Future#reason
+      def reason(timeout = nil, resolve_on_timeout = nil)
+        if wait_until_resolved timeout
+          internal_state.reason
+        else
+          if resolve_on_timeout
+            unless resolve(*resolve_on_timeout, false)
+              # if it fails to resolve it was resolved in the meantime
+              # so return value as if there was no timeout
+              internal_state.reason
+            end
+          end
+          # otherwise returns nil
+        end
+      end
+
+      # Behaves as {Future#result} but has one additional optional argument
+      # resolve_on_timeout.
+      #
+      # @!macro promises.resolvable.resolve_on_timeout
+      # @return [::Array(Boolean, Object, Exception), nil]
+      # @see Future#result
+      def result(timeout = nil, resolve_on_timeout = nil)
+        if wait_until_resolved timeout
+          internal_state.result
+        else
+          if resolve_on_timeout
+            unless resolve(*resolve_on_timeout, false)
+              # if it fails to resolve it was resolved in the meantime
+              # so return value as if there was no timeout
+              internal_state.result
+            end
+          end
+          # otherwise returns nil
+        end
       end
 
       # Creates new future wrapping receiver, effectively hiding the resolve method and similar.
