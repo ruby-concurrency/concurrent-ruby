@@ -186,7 +186,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#act_listening-class_method" title="act_listening (class method)">.<strong>act_listening</strong>(channel, *args) {|*args| ... } &#x21d2; ProcessingActor </a>
+      <a href="#act_listening-class_method" title="act_listening (class method)">.<strong>act_listening</strong>(channel, *args) {|actor, *args| ... } &#x21d2; ProcessingActor </a>
     
 
     
@@ -218,7 +218,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#ask-instance_method" title="#ask (instance method)">#<strong>ask</strong>(message, answer = Promises.resolvable_future)  &#x21d2; Promises::Future </a>
+      <a href="#ask_op-instance_method" title="#ask_op (instance method)">#<strong>ask_op</strong>(answer = Promises.resolvable_future, &amp;message_provider)  &#x21d2; undocumented </a>
     
 
     
@@ -232,7 +232,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Simplifies common pattern when a message sender also requires an answer to the message from the actor.</p>
+    <span class="summary_desc"><div class='inline'><p>actor.ask2 { |a| [:count, a] }.</p>
 </div></span>
   
 </li>
@@ -287,7 +287,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#receive-instance_method" title="#receive (instance method)">#<strong>receive</strong>(probe = Promises.resolvable_future)  &#x21d2; Promises::Future(Object) </a>
+      <a href="#receive-instance_method" title="#receive (instance method)">#<strong>receive</strong>(channel = mailbox)  &#x21d2; undocumented </a>
     
 
     
@@ -301,7 +301,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Receives a message when available, used in the actor&#39;s process.</p>
+    <span class="summary_desc"><div class='inline'><h1>Receives a message when available, used in the actor&#39;s process.</h1>
 </div></span>
   
 </li>
@@ -310,7 +310,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#tell-instance_method" title="#tell (instance method)">#<strong>tell</strong>(message)  &#x21d2; Promises::Future(ProcessingActor) </a>
+      <a href="#tell!-instance_method" title="#tell! (instance method)">#<strong>tell!</strong>(message)  &#x21d2; self </a>
     
 
     
@@ -333,7 +333,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#tell!-instance_method" title="#tell! (instance method)">#<strong>tell!</strong>(message)  &#x21d2; self </a>
+      <a href="#tell_op-instance_method" title="#tell_op (instance method)">#<strong>tell_op</strong>(message)  &#x21d2; Promises::Future(ProcessingActor) </a>
     
 
     
@@ -372,6 +372,28 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
   
     <span class="summary_desc"><div class='inline'><p>A future which is resolved when the actor ends its processing.</p>
 </div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_ary-instance_method" title="#to_ary (instance method)">#<strong>to_ary</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -467,7 +489,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
       <div class="method_details ">
   <h3 class="signature " id="act_listening-class_method">
   
-    .<strong>act_listening</strong>(channel, *args) {|*args| ... } &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></tt> 
+    .<strong>act_listening</strong>(channel, *args) {|actor, *args| ... } &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></tt> 
   
 
   
@@ -531,12 +553,12 @@ size to achieve backpressure.</p>
     <li>
       
       
-        <span class='type'></span>
+        <span class='type'>(<tt>actor</tt>, <tt>*args</tt>)</span>
       
       
       
-        
-        <div class='inline'><p>args to the process to get back a future which represents the actors execution.</p>
+        &mdash;
+        <div class='inline'><p>to the process to get back a future which represents the actors execution.</p>
 </div>
       
     </li>
@@ -544,6 +566,17 @@ size to achieve backpressure.</p>
 </ul>
 <p class="tag_title">Yield Parameters:</p>
 <ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>actor</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></tt>)</span>
+      
+      
+      
+    </li>
   
     <li>
       
@@ -594,24 +627,18 @@ size to achieve backpressure.</p>
       <pre class="lines">
 
 
-64
 65
 66
 67
 68
-69
-70
-71</pre>
+69</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 64</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 65</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_act_listening'>act_listening</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_process'>process</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='id identifier rubyid_channel'>channel</span>
-  <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span>
-      <span class='id identifier rubyid_future'>future</span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_process'>process</span><span class='rparen'>)</span><span class='period'>.</span>
-      <span class='id identifier rubyid_run'>run</span><span class='period'>.</span>
-      <span class='id identifier rubyid_chain_resolvable'>chain_resolvable</span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_instance_variable_get'>instance_variable_get</span><span class='lparen'>(</span><span class='symbol'>:@Terminated</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_terminated'>terminated</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='id identifier rubyid_channel'>channel</span>
+  <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_process'>process</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span><span class='period'>.</span><span class='id identifier rubyid_tangle'>tangle</span><span class='lparen'>(</span><span class='id identifier rubyid_terminated'>terminated</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_actor'>actor</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -626,9 +653,9 @@ size to achieve backpressure.</p>
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="ask-instance_method">
+  <h3 class="signature first" id="ask_op-instance_method">
   
-    #<strong>ask</strong>(message, answer = Promises.resolvable_future)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt> 
+    #<strong>ask_op</strong>(answer = Promises.resolvable_future, &amp;message_provider)  &#x21d2; <tt>undocumented</tt> 
   
 
   
@@ -636,89 +663,13 @@ size to achieve backpressure.</p>
   
 </h3><div class="docstring">
   <div class="discussion">
-    
-  <div class="note todo">
-    <strong>TODO:</strong>
-    <div class='inline'><p>has to be nice also on the receive side, cannot make structure like this [message = [...], answer]
-all receives should receive something friendly</p>
-</div>
-  </div>
-
-<p>Simplifies common pattern when a message sender also requires an answer to the message
-from the actor. It appends a resolvable_future for the answer after the message.</p>
+    <p>actor.ask2 { |a| [:count, a] }</p>
 
 
   </div>
 </div>
 <div class="tags">
   
-  <div class="examples">
-    <p class="tag_title">Examples:</p>
-    
-      
-      <pre class="example code"><code><span class='id identifier rubyid_add_once_actor'>add_once_actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_act'><span class='object_link'><a href="#act-class_method" title="Concurrent::ProcessingActor.act (method)">act</a></span></span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_actor'>actor</span><span class='op'>|</span>
-  <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_receive'>receive</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='kw'>do</span> <span class='op'>|</span><span class='lparen'>(</span><span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='id identifier rubyid_b'>b</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_answer'>answer</span><span class='op'>|</span>
-    <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='id identifier rubyid_a'>a</span> <span class='op'>+</span> <span class='id identifier rubyid_b'>b</span>
-    <span class='id identifier rubyid_answer'>answer</span><span class='period'>.</span><span class='id identifier rubyid_fulfill'>fulfill</span> <span class='id identifier rubyid_result'>result</span>
-    <span class='comment'># terminate with result value
-</span>    <span class='id identifier rubyid_result'>result</span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span>
-<span class='comment'># =&gt; &lt;#Concurrent::ProcessingActor:0x7fcd1315f6e8 termination:pending&gt;
-</span>
-<span class='id identifier rubyid_add_once_actor'>add_once_actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span> <span class='int'>2</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                  <span class='comment'># =&gt; 3
-</span><span class='comment'># fails the actor already added once
-</span><span class='id identifier rubyid_add_once_actor'>add_once_actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='qwords_beg'>%w(</span><span class='tstring_content'>ab</span><span class='words_sep'> </span><span class='tstring_content'>cd</span><span class='tstring_end'>)</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span>
-<span class='comment'># =&gt; #&lt;RuntimeError: actor terminated normally before answering with a value: 3&gt;
-</span><span class='id identifier rubyid_add_once_actor'>add_once_actor</span><span class='period'>.</span><span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                  <span class='comment'># =&gt; 3</span></code></pre>
-    
-  </div>
-<p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>message</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>answer</span>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/ResolvableFuture.html" title="Concurrent::Promises::ResolvableFuture (class)">Promises::ResolvableFuture</a></span></tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>Promises.resolvable_future</tt>)</em>
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>a future which will be fulfilled with the answer to the message</p>
-</div>
-      
-    </li>
-  
-</ul>
 
 </div><table class="source_code">
   <tr>
@@ -726,44 +677,22 @@ from the actor. It appends a resolvable_future for the answer after the message.
       <pre class="lines">
 
 
-129
-130
-131
-132
-133
-134
-135
-136
-137
-138
-139
-140
-141
-142
-143
-144
-145</pre>
+157
+158
+159
+160
+161
+162</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 129</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 157</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_answer'>answer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_tell'>tell</span> <span class='lbracket'>[</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_answer'>answer</span><span class='rbracket'>]</span>
-  <span class='comment'># do not leave answers unanswered when actor terminates.
-</span>  <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_any'>any</span><span class='lparen'>(</span>
-      <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_fulfilled_future'><span class='object_link'><a href="Promises/FactoryMethods.html#fulfilled_future-instance_method" title="Concurrent::Promises::FactoryMethods#fulfilled_future (method)">fulfilled_future</a></span></span><span class='lparen'>(</span><span class='symbol'>:answer</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_zip'><span class='object_link'><a href="Promises/Future.html#zip-instance_method" title="Concurrent::Promises::Future#zip (method)">zip</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_answer'>answer</span><span class='rparen'>)</span><span class='comma'>,</span>
-      <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_fulfilled_future'><span class='object_link'><a href="Promises/FactoryMethods.html#fulfilled_future-instance_method" title="Concurrent::Promises::FactoryMethods#fulfilled_future (method)">fulfilled_future</a></span></span><span class='lparen'>(</span><span class='symbol'>:termination</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_zip'><span class='object_link'><a href="Promises/Future.html#zip-instance_method" title="Concurrent::Promises::Future#zip (method)">zip</a></span></span><span class='lparen'>(</span><span class='ivar'>@Terminated</span><span class='rparen'>)</span>
-  <span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_chain'><span class='object_link'><a href="Promises/AbstractEventFuture.html#chain-instance_method" title="Concurrent::Promises::AbstractEventFuture#chain (method)">chain</a></span></span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_fulfilled'>fulfilled</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_which'>which</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span><span class='op'>|</span>
-    <span class='comment'># TODO (pitr-ch 20-Jan-2017): we have to know which future was resolved
-</span>    <span class='comment'># TODO (pitr-ch 20-Jan-2017): make the combinator programmable, so anyone can create what is needed
-</span>    <span class='comment'># FIXME (pitr-ch 19-Jan-2017): ensure no callbacks are accumulated on @Terminated
-</span>    <span class='kw'>if</span> <span class='id identifier rubyid_which'>which</span> <span class='op'>==</span> <span class='symbol'>:termination</span>
-      <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_reason'>reason</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='id identifier rubyid_format'>format</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>actor terminated normally before answering with a value: %s</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_reason'>reason</span>
-    <span class='kw'>else</span>
-      <span class='id identifier rubyid_fulfilled'>fulfilled</span> <span class='op'>?</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>:</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
-    <span class='kw'>end</span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span></pre>
+<span class='kw'>def</span> <span class='id identifier rubyid_ask_op'>ask_op</span><span class='lparen'>(</span><span class='id identifier rubyid_answer'>answer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_message_provider'>message_provider</span><span class='rparen'>)</span>
+  <span class='comment'># TODO (pitr-ch 12-Dec-2018): is it ok to let the answers be unanswered when the actor terminates
+</span>  <span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message_provider'>message_provider</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='id identifier rubyid_answer'>answer</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='id identifier rubyid_answer'>answer</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span> <span class='rbrace'>}</span>
+
+  <span class='comment'># answer.chain { |v| [true, v] } | @Terminated.then
+</span><span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
@@ -811,12 +740,12 @@ from the actor. It appends a resolvable_future for the answer after the message.
       <pre class="lines">
 
 
-148
-149
-150</pre>
+165
+166
+167</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 148</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 165</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
   <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s termination:%s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span>
@@ -886,7 +815,7 @@ from the actor. It appends a resolvable_future for the answer after the message.
       <div class="method_details ">
   <h3 class="signature " id="receive-instance_method">
   
-    #<strong>receive</strong>(probe = Promises.resolvable_future)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span>(Object)</tt> 
+    #<strong>receive</strong>(channel = mailbox)  &#x21d2; <tt>undocumented</tt> 
   
 
   
@@ -894,31 +823,26 @@ from the actor. It appends a resolvable_future for the answer after the message.
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Receives a message when available, used in the actor&#39;s process.</p>
+    <h1>Receives a message when available, used in the actor&#39;s process.</h1>
+
+<h1>@return [Promises::Future(Object)] a future which will be fulfilled with a message from</h1>
+
+<h1>mailbox when it is available.</h1>
+
+<p>def receive(*channels)
+  channels = [@Mailbox] if channels.empty?
+  Promises::Channel.select(*channels)
+  # TODO (pitr-ch 27-Dec-2016): support patterns
+  #   - put any received message aside if it does not match
+  #   - on each receive call check the messages put aside
+  #   - track where the message came from, cannot later receive m form other channel only because it matches
+end</p>
 
 
   </div>
 </div>
 <div class="tags">
   
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span>(Object)</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>a future which will be fulfilled with a message from
-mailbox when it is available.</p>
-</div>
-      
-    </li>
-  
-</ul>
 
 </div><table class="source_code">
   <tr>
@@ -926,90 +850,15 @@ mailbox when it is available.</p>
       <pre class="lines">
 
 
-76
-77
-78
-79</pre>
+83
+84
+85</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 76</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 83</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='id identifier rubyid_probe'>probe</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span>
-  <span class='comment'># TODO (pitr-ch 27-Dec-2016): patterns
-</span>  <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='id identifier rubyid_probe'>probe</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="tell-instance_method">
-  
-    #<strong>tell</strong>(message)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span>(<span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span>)</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Tells a message to the actor.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>message</span>
-      
-      
-        <span class='type'>(<tt>Object</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span>(<span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span>)</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>a future which will be fulfilled with the actor
-when the message is pushed to mailbox.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-102
-103
-104</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 102</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-  <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_actor'>actor</span><span class='op'>|</span> <span class='id identifier rubyid_actor'>actor</span> <span class='rbrace'>}</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span> <span class='op'>=</span> <span class='id identifier rubyid_mailbox'>mailbox</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_pop_op'>pop_op</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1028,7 +877,7 @@ when the message is pushed to mailbox.</p>
 </h3><div class="docstring">
   <div class="discussion">
     <p>Tells a message to the actor. May block current thread if the mailbox is full.
-<span class='object_link'><a href="#tell-instance_method" title="Concurrent::ProcessingActor#tell (method)">#tell</a></span> is a better option since it does not block. It&#39;s usually used to integrate with
+<span class='object_link'><a href="#tell_op-instance_method" title="Concurrent::ProcessingActor#tell_op (method)">#tell_op</a></span> is a better option since it does not block. It&#39;s usually used to integrate with
 threading code.</p>
 
 
@@ -1084,17 +933,90 @@ threading code.</p>
       <pre class="lines">
 
 
-93
-94
-95
-96</pre>
+99
+100
+101
+102</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 93</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 99</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell!'>tell!</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-  <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_wait!'>wait!</span>
+  <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="tell_op-instance_method">
+  
+    #<strong>tell_op</strong>(message)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span>(<span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span>)</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Tells a message to the actor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span>(<span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span>)</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a future which will be fulfilled with the actor
+when the message is pushed to mailbox.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+108
+109
+110</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 108</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_push_op'>push_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__ch'>_ch</span><span class='comma'>,</span> <span class='id identifier rubyid_actor'>actor</span><span class='op'>|</span> <span class='id identifier rubyid_actor'>actor</span> <span class='rbrace'>}</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1156,6 +1078,45 @@ a reason (exception) when actor fails.</p>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_termination'>termination</span>
   <span class='ivar'>@Terminated</span><span class='period'>.</span><span class='id identifier rubyid_with_hidden_resolvable'>with_hidden_resolvable</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_ary-instance_method">
+  
+    #<strong>to_ary</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+169
+170
+171</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 169</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_ary'>to_ary</span>
+  <span class='lbracket'>[</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@Mailbox</span><span class='comma'>,</span> <span class='ivar'>@Terminated</span><span class='rbracket'>]</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

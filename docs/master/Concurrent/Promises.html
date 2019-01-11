@@ -84,7 +84,7 @@
   <dl>
     <dt>Defined in:</dt>
     <dd>lib/concurrent/promises.rb<span class="defines">,<br />
-  lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/old_channel_integration.rb</span>
+  lib-edge/concurrent/edge/channel.rb,<br /> lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/old_channel_integration.rb</span>
 </dd>
   </dl>
   
@@ -827,34 +827,6 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#select_channel-class_method" title="#select_channel (class method)">.<strong>select_channel</strong>(*channels)  &#x21d2; Future </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      extended
-      from <span class='object_link'><a href="Promises/FactoryMethods/NewChannelIntegration.html#select_channel-class_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">FactoryMethods::NewChannelIntegration</a></span>
-    </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Selects a channel which is ready to be read from.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#zip_events-class_method" title="#zip_events (class method)">.<strong>zip_events</strong>(*futures_and_or_events)  &#x21d2; Event </a>
     
 
@@ -1026,8 +998,6 @@ e.g. when the tasks raises an exception.</p>
   
 
 
-  
-  
   
   
   
@@ -2934,66 +2904,6 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
   
 </ul>
 
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="select_channel-class_method">
-  
-    .<strong>select_channel</strong>(*channels)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Promises/FactoryMethods/NewChannelIntegration.html#select_channel-class_method" title="Concurrent::Promises::FactoryMethods::NewChannelIntegration#select_channel (method)">FactoryMethods::NewChannelIntegration</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Selects a channel which is ready to be read from.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>channels</span>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>a future which is fulfilled with pair [channel, message] when one of the channels is
-available for reading</p>
-</div>
-      
-    </li>
-  
-</ul>
 
 </div>
 </div>
