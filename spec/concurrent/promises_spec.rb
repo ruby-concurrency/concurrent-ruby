@@ -1,7 +1,6 @@
 require 'concurrent/edge/promises'
 require 'thread'
 
-
 RSpec.describe 'Concurrent::Promises' do
 
   include Concurrent::Promises::FactoryMethods
@@ -173,7 +172,15 @@ RSpec.describe 'Concurrent::Promises' do
 
       q = Queue.new
       z1.then { |*args| q << args }
+      # first is an array because it is zipping so 2 arguments
       expect(q.pop).to eq [1, 2]
+
+      z1.then { |*args| args }.then { |*args| q << args }
+      # after then it is again just one argument
+      expect(q.pop).to eq [[1, 2]]
+
+      fulfilled_future([1, 2]).then { |*args| q << args }
+      expect(q.pop).to eq [[1, 2]]
 
       z1.then { |a1, b1, c1| q << [a1, b1, c1] }
       expect(q.pop).to eq [1, 2, nil]
@@ -381,6 +388,22 @@ RSpec.describe 'Concurrent::Promises' do
         |    7    true [3, "boo"]                 io
         |    8    true          3          io     io
       TABLE
+    end
+
+    it 'chains with correct arguments' do
+      heads   = [future { 1 },
+                 future { [2, 3] },
+                 fulfilled_future(4),
+                 fulfilled_future([5, 6])]
+      results = [1,
+                 [2, 3],
+                 4,
+                 [5, 6]]
+      heads.each_with_index do |head, i|
+        expect(head.then { |a| a }.value!).to eq results[i]
+        expect(head.then { |a, b| [a, b].compact }.value!).to eq (results[i].is_a?(Array) ? results[i] : [results[i]])
+        expect(head.then { |*a| a }.value!).to eq [results[i]]
+      end
     end
 
     it 'constructs promise like tree' do

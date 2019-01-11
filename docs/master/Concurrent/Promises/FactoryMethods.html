@@ -879,12 +879,12 @@ new.</p>
       <pre class="lines">
 
 
-313
-314
-315</pre>
+316
+317
+318</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 313</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 316</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any_event'>any_event</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_any_event_on'>any_event_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span>
@@ -906,7 +906,7 @@ new.</p>
 </h3><div class="docstring">
   <div class="discussion">
     <p>Creates new event which becomes resolved after first of the futures_and_or_events resolves.
-If resolved it does not propagate <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>, leaving delayed
+If resolved it does not propagate AbstractEventFuture#touch, leaving delayed
 futures un-executed if they are not required any more.</p>
 
 
@@ -966,12 +966,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-323
-324
-325</pre>
+326
+327
+328</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 323</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 326</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any_event_on'>any_event_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='const'>AnyResolvedEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by'>new_blocked_by</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -1026,12 +1026,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-294
-295
-296</pre>
+297
+298
+299</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 294</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 297</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any_fulfilled_future'>any_fulfilled_future</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_any_fulfilled_future_on'>any_fulfilled_future_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span>
@@ -1055,7 +1055,7 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
     <p>Creates new future which is resolved after first of futures_and_or_events is fulfilled.
 Its result equals result of the first resolved future or if all futures_and_or_events reject,
 it has reason of the last resolved future.
-If resolved it does not propagate <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>, leaving delayed
+If resolved it does not propagate AbstractEventFuture#touch, leaving delayed
 futures un-executed if they are not required any more.
 If event is supplied, which does not have value and can be only resolved, it&#39;s
 represented as <code>:fulfilled</code> with value <code>nil</code>.</p>
@@ -1117,12 +1117,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-307
-308
-309</pre>
+310
+311
+312</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 307</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 310</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any_fulfilled_future_on'>any_fulfilled_future_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='const'>AnyFulfilledFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by'>new_blocked_by</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -1181,12 +1181,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-272
-273
-274</pre>
+275
+276
+277</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 272</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 275</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any_resolved_future'>any_resolved_future</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_any_resolved_future_on'>any_resolved_future_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span>
@@ -1209,7 +1209,7 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
   <div class="discussion">
     <p>Creates new future which is resolved after first futures_and_or_events is resolved.
 Its result equals result of the first resolved future.
-If resolved it does not propagate <span class='object_link'><a href="AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>, leaving delayed
+If resolved it does not propagate AbstractEventFuture#touch, leaving delayed
 futures un-executed if they are not required any more.
 If event is supplied, which does not have value and can be only resolved, it&#39;s
 represented as <code>:fulfilled</code> with value <code>nil</code>.</p>
@@ -1271,12 +1271,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-288
-289
-290</pre>
+291
+292
+293</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 288</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 291</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any_resolved_future_on'>any_resolved_future_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='const'>AnyResolvedFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by'>new_blocked_by</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -1331,12 +1331,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-184
-185
-186</pre>
+187
+188
+189</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 184</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 187</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delay'>delay</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_delay_on'>delay_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
@@ -1516,13 +1516,13 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-201
-202
-203
-204</pre>
+204
+205
+206
+207</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 201</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 204</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delay_on'>delay_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>DelayPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -1572,6 +1572,17 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       
     </li>
   
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
 </ul>
 
 <p class="tag_title">Returns:</p>
@@ -1594,12 +1605,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-122
-123
-124</pre>
+124
+125
+126</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 122</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 124</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fulfilled_future'>fulfilled_future</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolved_future'>resolved_future</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
@@ -1781,12 +1792,12 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
       <pre class="lines">
 
 
-105
-106
-107</pre>
+103
+104
+105</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 103</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_future_on'>future_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='const'>ImmediateEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
@@ -1800,15 +1811,15 @@ raised exception becomes <span class='object_link'><a href="Future.html#reason-i
   <h3 class="signature " id="make_future-instance_method">
   
     
-      <span class="overload">#<strong>create</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
     
   
 
@@ -1830,7 +1841,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns resolved event.</p>
@@ -1878,7 +1889,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns a future which will be resolved when a_future is.</p>
@@ -1926,7 +1937,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns an event which will be resolved when an_event is.</p>
@@ -1974,7 +1985,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns a rejected future with the exception as its reason.</p>
@@ -2022,7 +2033,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns a fulfilled future with the value.</p>
@@ -2124,9 +2135,6 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-168
-169
-170
 171
 172
 173
@@ -2136,10 +2144,13 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
 177
 178
 179
-180</pre>
+180
+181
+182
+183</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 168</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 171</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_make_future'>make_future</span><span class='lparen'>(</span><span class='id identifier rubyid_argument'>argument</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span>
   <span class='kw'>case</span> <span class='id identifier rubyid_argument'>argument</span>
@@ -2198,6 +2209,17 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       
     </li>
   
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+    </li>
+  
 </ul>
 
 <p class="tag_title">Returns:</p>
@@ -2220,12 +2242,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-130
-131
-132</pre>
+133
+134
+135</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 130</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 133</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rejected_future'>rejected_future</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolved_future'>resolved_future</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
@@ -2571,12 +2593,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-138
-139
-140</pre>
+141
+142
+143</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 138</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 141</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resolved_event'>resolved_event</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span>
   <span class='const'>ImmediateEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -2606,6 +2628,39 @@ the given reason.</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
+  
+    <li>
+      
+        <span class='name'>fulfilled</span>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+    </li>
   
     <li>
       
@@ -2648,12 +2703,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-114
 115
-116</pre>
+116
+117</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 114</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 115</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resolved_future'>resolved_future</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span>
   <span class='const'>ImmediateFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='id identifier rubyid_fulfilled'>fulfilled</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -2708,12 +2763,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-208
-209
-210</pre>
+211
+212
+213</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 208</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 211</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_schedule_on'>schedule_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
@@ -2908,13 +2963,13 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-227
-228
-229
-230</pre>
+230
+231
+232
+233</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 227</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 230</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_schedule_on'>schedule_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>ScheduledPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -2970,12 +3025,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-256
-257
-258</pre>
+259
+260
+261</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 256</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 259</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_zip_events'>zip_events</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_zip_events_on'>zip_events_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span>
@@ -3056,12 +3111,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-266
-267
-268</pre>
+269
+270
+271</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 266</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 269</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_zip_events_on'>zip_events_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='const'>ZipEventsPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by'>new_blocked_by</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -3120,12 +3175,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-234
-235
-236</pre>
+237
+238
+239</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 234</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 237</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_zip_futures'>zip_futures</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_zip_futures_on'>zip_futures_on</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span>
@@ -3209,12 +3264,12 @@ executor parameter or changed with <span class='object_link'><a href="AbstractEv
       <pre class="lines">
 
 
-248
-249
-250</pre>
+251
+252
+253</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 248</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 251</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_zip_futures_on'>zip_futures_on</span><span class='lparen'>(</span><span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='rparen'>)</span>
   <span class='const'>ZipFuturesPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by'>new_blocked_by</span><span class='lparen'>(</span><span class='id identifier rubyid_futures_and_or_events'>futures_and_or_events</span><span class='comma'>,</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>

@@ -92,16 +92,14 @@ module Concurrent
         future_on(default_executor, *args, &task)
       end
 
-      # @!macro promises.future-on1
-      #   Constructs new Future which will be resolved after block is evaluated on default executor.
+      # Constructs new Future which will be resolved after block is evaluated on default executor.
       # Evaluation begins immediately.
       #
-      # @!macro promises.future-on2
-      #   @!macro promises.param.default_executor
-      #   @!macro promises.param.args
-      #   @yield [*args] to the task.
-      #   @!macro promise.param.task-future
-      #   @return [Future]
+      # @!macro promises.param.default_executor
+      # @!macro promises.param.args
+      # @yield [*args] to the task.
+      # @!macro promise.param.task-future
+      # @return [Future]
       def future_on(default_executor, *args, &task)
         ImmediateEventPromise.new(default_executor).future.then(*args, &task)
       end
@@ -109,6 +107,9 @@ module Concurrent
       # Creates resolved future with will be either fulfilled with the given value or rejection with
       # the given reason.
       #
+      # @param [true, false] fulfilled
+      # @param [Object] value
+      # @param [Exception] reason
       # @!macro promises.param.default_executor
       # @return [Future]
       def resolved_future(fulfilled, value, reason, default_executor = self.default_executor)
@@ -118,6 +119,7 @@ module Concurrent
       # Creates resolved future with will be fulfilled with the given value.
       #
       # @!macro promises.param.default_executor
+      # @param [Object] value
       # @return [Future]
       def fulfilled_future(value, default_executor = self.default_executor)
         resolved_future true, value, nil, default_executor
@@ -126,6 +128,7 @@ module Concurrent
       # Creates resolved future with will be rejected with the given reason.
       #
       # @!macro promises.param.default_executor
+      # @param [Exception] reason
       # @return [Future]
       def rejected_future(reason, default_executor = self.default_executor)
         resolved_future false, nil, reason, default_executor
@@ -146,23 +149,23 @@ module Concurrent
       # @!macro promises.param.default_executor
       # @return [Event, Future]
       #
-      # @overload create(nil, default_executor = self.default_executor)
+      # @overload make_future(nil, default_executor = self.default_executor)
       #   @param [nil] nil
       #   @return [Event] resolved event.
       #
-      # @overload create(a_future, default_executor = self.default_executor)
+      # @overload make_future(a_future, default_executor = self.default_executor)
       #   @param [Future] a_future
       #   @return [Future] a future which will be resolved when a_future is.
       #
-      # @overload create(an_event, default_executor = self.default_executor)
+      # @overload make_future(an_event, default_executor = self.default_executor)
       #   @param [Event] an_event
       #   @return [Event] an event which will be resolved when an_event is.
       #
-      # @overload create(exception, default_executor = self.default_executor)
+      # @overload make_future(exception, default_executor = self.default_executor)
       #   @param [Exception] exception
       #   @return [Future] a rejected future with the exception as its reason.
       #
-      # @overload create(value, default_executor = self.default_executor)
+      # @overload make_future(value, default_executor = self.default_executor)
       #   @param [Object] value when none of the above overloads fits
       #   @return [Future] a fulfilled future with the value.
       def make_future(argument = nil, default_executor = self.default_executor)
@@ -278,7 +281,7 @@ module Concurrent
       # Creates new future which is resolved after first futures_and_or_events is resolved.
       # Its result equals result of the first resolved future.
       # @!macro promises.any-touch
-      #   If resolved it does not propagate {AbstractEventFuture#touch}, leaving delayed
+      #   If resolved it does not propagate {Concurrent::AbstractEventFuture#touch}, leaving delayed
       #   futures un-executed if they are not required any more.
       # @!macro promises.event-conversion
       #
@@ -500,10 +503,24 @@ module Concurrent
 
     private_constant :InternalStates
 
+    # @!macro promises.shortcut.event-future
+    #   @see Event#$0
+    #   @see Future#$0
+
+    # @!macro promises.param.timeout
+    #   @param [Numeric] timeout the maximum time in second to wait.
+
+    # @!macro promises.warn.blocks
+    #   @note This function potentially blocks current thread until the Future is resolved.
+    #     Be careful it can deadlock. Try to chain instead.
+
     # Common ancestor of {Event} and {Future} classes, many shared methods are defined here.
     class AbstractEventFuture < Synchronization::Object
       safe_initialization!
-      private(*attr_atomic(:internal_state) - [:internal_state])
+      attr_atomic(:internal_state)
+      private :internal_state=, :swap_internal_state, :compare_and_set_internal_state, :update_internal_state
+      # @!method internal_state
+      #   @!visibility private
 
       include InternalStates
 
@@ -519,17 +536,6 @@ module Concurrent
       end
 
       private :initialize
-
-      # @!macro promises.shortcut.event-future
-      #   @see Event#$0
-      #   @see Future#$0
-
-      # @!macro promises.param.timeout
-      #   @param [Numeric] timeout the maximum time in second to wait.
-
-      # @!macro promises.warn.blocks
-      #   @note This function potentially blocks current thread until the Future is resolved.
-      #     Be careful it can deadlock. Try to chain instead.
 
       # Returns its state.
       # @return [Symbol]
@@ -564,7 +570,7 @@ module Concurrent
       end
 
       # @!macro promises.touches
-      #   Calls {AbstractEventFuture#touch}.
+      #   Calls {Concurrent::AbstractEventFuture#touch}.
 
       # @!macro promises.method.wait
       #   Wait (block the Thread) until receiver is {#resolved?}.
@@ -572,7 +578,7 @@ module Concurrent
       #
       #   @!macro promises.warn.blocks
       #   @!macro promises.param.timeout
-      #   @return [Future, true, false] self implies timeout was not used, true implies timeout was used
+      #   @return [self, true, false] self implies timeout was not used, true implies timeout was used
       #     and it was resolved, false implies it was not resolved within timeout.
       def wait(timeout = nil)
         result = wait_until_resolved(timeout)
@@ -736,6 +742,12 @@ module Concurrent
       # @!visibility private
       def add_callback_clear_delayed_node(node)
         add_callback(:callback_clear_delayed_node, node)
+      end
+
+      # @!visibility private
+      def with_hidden_resolvable
+        # TODO (pitr-ch 10-Dec-2018): documentation, better name if in edge
+        self
       end
 
       private
@@ -1282,6 +1294,9 @@ module Concurrent
       # Makes the future resolved with result of triplet `fulfilled?`, `value`, `reason`,
       # which triggers all dependent futures.
       #
+      # @param [true, false] fulfilled
+      # @param [Object] value
+      # @param [Exception] reason
       # @!macro promise.param.raise_on_reassign
       def resolve(fulfilled = true, value = nil, reason = nil, raise_on_reassign = true)
         resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason), raise_on_reassign)
@@ -1290,6 +1305,7 @@ module Concurrent
       # Makes the future fulfilled with `value`,
       # which triggers all dependent futures.
       #
+      # @param [Object] value
       # @!macro promise.param.raise_on_reassign
       def fulfill(value, raise_on_reassign = true)
         promise.fulfill(value, raise_on_reassign)
@@ -1298,6 +1314,7 @@ module Concurrent
       # Makes the future rejected with `reason`,
       # which triggers all dependent futures.
       #
+      # @param [Exception] reason
       # @!macro promise.param.raise_on_reassign
       def reject(reason, raise_on_reassign = true)
         promise.reject(reason, raise_on_reassign)
@@ -1305,6 +1322,7 @@ module Concurrent
 
       # Evaluates the block and sets its result as future's value fulfilling, if the block raises
       # an exception the future rejects with it.
+      #
       # @yield [*args] to the block.
       # @yieldreturn [Object] value
       # @return [self]
@@ -1314,6 +1332,7 @@ module Concurrent
 
       # Evaluates the block and sets its result as future's value fulfilling, if the block raises
       # an exception the future rejects with it.
+      #
       # @yield [*args] to the block.
       # @yieldreturn [Object] value
       # @return [self]
@@ -1968,23 +1987,6 @@ module Concurrent
     class AbstractAnyPromise < BlockedPromise
     end
 
-    class AnyResolvedFuturePromise < AbstractAnyPromise
-
-      private
-
-      def initialize(delayed, blockers_count, default_executor)
-        super delayed, blockers_count, Future.new(self, default_executor)
-      end
-
-      def resolvable?(countdown, future, index)
-        true
-      end
-
-      def on_resolvable(resolved_future, index)
-        resolve_with resolved_future.internal_state, false
-      end
-    end
-
     class AnyResolvedEventPromise < AbstractAnyPromise
 
       private
@@ -1999,6 +2001,23 @@ module Concurrent
 
       def on_resolvable(resolved_future, index)
         resolve_with RESOLVED, false
+      end
+    end
+
+    class AnyResolvedFuturePromise < AbstractAnyPromise
+
+      private
+
+      def initialize(delayed, blockers_count, default_executor)
+        super delayed, blockers_count, Future.new(self, default_executor)
+      end
+
+      def resolvable?(countdown, future, index)
+        true
+      end
+
+      def on_resolvable(resolved_future, index)
+        resolve_with resolved_future.internal_state, false
       end
     end
 
