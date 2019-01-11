@@ -43,6 +43,7 @@ module Concurrent
     # new.
     module FactoryMethods
       extend ReInclude
+      extend self
 
       module Configuration
         # @return [Executor, :io, :fast] the executor which is used when none is supplied

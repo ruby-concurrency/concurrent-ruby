@@ -81,7 +81,7 @@ future.resolved?
 If the task fails, we talk about the future being **rejected**.
 
 ```ruby
-future = Concurrent::Promises.future { sleep 0.1; raise 'Boom' }
+future = Concurrent::Promises.future { sleep 0.01; raise 'Boom' }
 ```
 
 There is no result, the future was rejected with a reason.
@@ -329,11 +329,11 @@ Delayed futures will not evaluate until asked by `touch` or other method
 requiring resolution. 
 
 ```ruby
-future = Concurrent::Promises.delay { sleep 0.1; 'lazy' }
-sleep 0.1 #
+future = Concurrent::Promises.delay { sleep 0.01; 'lazy' }
+sleep 0.01 #
 future.resolved?
 future.touch
-sleep 0.2 #
+sleep 0.02 #
 future.resolved?
 ```
 
@@ -351,7 +351,7 @@ branch1 = head.then(&:succ) #
 branch2 = head.delay.then(&:succ) #
 join    = branch1 & branch2 #
 
-sleep 0.1 #
+sleep 0.01 #
 ```
 
 Nothing resolves.
@@ -364,7 +364,7 @@ Force `branch1` evaluation.
 
 ```ruby
 branch1.value
-sleep 0.1 #
+sleep 0.01 #
 [head, branch1, branch2, join].map(&:resolved?)
 ```
 
@@ -420,8 +420,8 @@ its parent resolves. Therefore, the following future will be resolved in 0.2 sec
 
 ```ruby
 future = Concurrent::Promises.
-    future { sleep 0.1; :result }.
-    schedule(0.1).
+    future { sleep 0.01; :result }.
+    schedule(0.01).
     then(&:to_s).
     value!
 ```
@@ -577,8 +577,8 @@ backpressure – the filling work is delayed until the channel has space for
 more messages.
 
 ```ruby
-pushes = 3.times.map { |i| ch1.push i }
-ch1.pop.value!
+pushes = 3.times.map { |i| ch1.push_op i }
+ch1.pop_op.value!
 pushes
 ```
 
@@ -588,13 +588,13 @@ returns a pair to be able to find out which channel had the message available.
 
 ```ruby
 ch2    = Concurrent::Promises::Channel.new 2
-result = Concurrent::Promises.select_channel(ch1, ch2)
+result = Concurrent::Promises::Channel.select_op([ch1, ch2])
 result.value!
 
-Concurrent::Promises.future { 1+1 }.then_push_channel(ch1)
+Concurrent::Promises.future { 1+1 }.then_channel_push(ch1)
 result = (
     Concurrent::Promises.fulfilled_future('%02d') &      
-        Concurrent::Promises.select_channel(ch1, ch2)).
+        Concurrent::Promises::Channel.select_op([ch1, ch2])).
     then { |format, (channel, value)| format format, value } #
 result.value!
 ```
@@ -625,9 +625,9 @@ add_2_messages = Concurrent::ProcessingActor.act do |actor|
     a + b
   end
 end
-add_2_messages.tell 1
+add_2_messages.tell_op 1
 add_2_messages.termination.resolved?
-add_2_messages.tell 3
+add_2_messages.tell_op 3
 add_2_messages.termination.value!
 ```
 
@@ -637,7 +637,7 @@ defining an actor which a mailbox of size 2.
 ```ruby
 slow_counter = -> (actor, count) do
   actor.receive.then do |command, number|
-    sleep 0.1
+    sleep 0.01
     case command
     when :add
       slow_counter.call actor, count + number
@@ -664,11 +664,11 @@ produce = -> receiver, i do
     receiver.
         # send a message to the actor, resolves only after the message is 
         # accepted by the actor's mailbox
-        tell([:add, i]).
+        tell_op([:add, i]).
         # send incremented message when the above message is accepted 
         then(i+1, &produce)
   else
-    receiver.tell(:done)
+    receiver.tell_op(:done)
     # do not continue 
   end
 end
@@ -743,7 +743,7 @@ Create the computer actor and send it 3 jobs.
 
 ```ruby
 computer = Concurrent::Actor.spawn Computer, :computer
-results = 3.times.map { computer.ask [:run, -> { sleep 0.1; :result }] }
+results = 3.times.map { computer.ask [:run, -> { sleep 0.01; :result }] }
 computer.ask(:status).value!
 results.map(&:value!)
 ```
@@ -888,7 +888,7 @@ def query_random_text(cancellation, channel)
     # The push to channel is fulfilled only after the message is successfully
     # published to the channel, therefore it will not continue querying until 
     # current message is pushed.
-    cancellation.origin | channel.push(value) 
+    cancellation.origin | channel.push_op(value) 
     # It could wait on the push indefinitely if the token is not checked
     # here with `or` (the pipe).        
   end.then(cancellation) do |cancellation|
@@ -901,7 +901,7 @@ words          = []
 words_throttle = Concurrent::Throttle.new 1
 
 def count_words_in_random_text(cancellation, channel, words, words_throttle)
-  channel.pop.then do |response|
+  channel.pop_op.then do |response|
     string = JSON.load(response)['message']
     # processing is slower than querying
     sleep 0.02

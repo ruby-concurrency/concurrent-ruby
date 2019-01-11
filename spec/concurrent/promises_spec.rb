@@ -633,91 +633,19 @@ RSpec.describe 'Concurrent::Promises' do
       ch1 = Concurrent::Promises::Channel.new
       ch2 = Concurrent::Promises::Channel.new
 
-      result = Concurrent::Promises.select_channel(ch1, ch2)
+      result = Concurrent::Promises::Channel.select_op([ch1, ch2])
       ch1.push 1
       expect(result.value!).to eq [ch1, 1]
 
-
-      future { 1 + 1 }.then_push_channel(ch1)
-      result = (Concurrent::Promises.future { '%02d' } & Concurrent::Promises.select_channel(ch1, ch2)).
-          then { |format, (channel, value)| format format, value }
+      future { 1 + 1 }.then_channel_push(ch1)
+      result = (Concurrent::Promises.future { '%02d' } & ch1.select_op(ch2)).
+          then { |format, (_channel, value)| format format, value }
       expect(result.value!).to eq '02'
-    end
-  end
-
-  describe 'Promises::Channel' do
-    specify do
-      channel = Concurrent::Promises::Channel.new 1
-
-      pushed1 = channel.push 1
-      expect(pushed1.resolved?).to be_truthy
-      expect(pushed1.value!).to eq 1
-
-      pushed2 = channel.push 2
-      expect(pushed2.resolved?).to be_falsey
-
-      popped = channel.pop
-      expect(pushed1.value!).to eq 1
-      expect(pushed2.resolved?).to be_truthy
-      expect(pushed2.value!).to eq 2
-      expect(popped.value!).to eq 1
-
-      popped = channel.pop
-      expect(popped.value!).to eq 2
-
-      popped = channel.pop
-      expect(popped.resolved?).to be_falsey
-
-      pushed3 = channel.push 3
-      expect(popped.value!).to eq 3
-      expect(pushed3.resolved?).to be_truthy
-      expect(pushed3.value!).to eq 3
-    end
-
-    specify do
-      ch1 = Concurrent::Promises::Channel.new
-      ch2 = Concurrent::Promises::Channel.new
-      ch3 = Concurrent::Promises::Channel.new
-
-      add = -> do
-        (ch1.pop & ch2.pop).then do |a, b|
-          if a == :done && b == :done
-            :done
-          else
-            ch3.push a + b
-            add.call
-          end
-        end
-      end
-
-      ch1.push 1
-      ch2.push 2
-      ch1.push 'a'
-      ch2.push 'b'
-      ch1.push nil
-      ch2.push true
-
-      result = Concurrent::Promises.future(&add).run.result
-      expect(result[0..1]).to eq [false, nil]
-      expect(result[2]).to be_a_kind_of(NoMethodError)
-      expect(ch3.pop.value!).to eq 3
-      expect(ch3.pop.value!).to eq 'ab'
-
-      ch1.push 1
-      ch2.push 2
-      ch1.push 'a'
-      ch2.push 'b'
-      ch1.push :done
-      ch2.push :done
-
-      expect(Concurrent::Promises.future(&add).run.result).to eq [true, :done, nil]
-      expect(ch3.pop.value!).to eq 3
-      expect(ch3.pop.value!).to eq 'ab'
     end
   end
 end
 
-RSpec.describe Concurrent::ProcessingActor do
+RSpec.describe 'Concurrent::ProcessingActor' do
   specify do
     actor = Concurrent::ProcessingActor.act do |the_actor|
       the_actor.receive.then do |message|
@@ -732,6 +660,9 @@ RSpec.describe Concurrent::ProcessingActor do
     def count(actor, count)
       # the block passed to receive is called when the actor receives the message
       actor.receive.then do |number_or_command, answer|
+        # number_or_command, answer = p a
+        # p number_or_command, answer
+
         # code which is evaluated after the number is received
         case number_or_command
         when :done
@@ -752,20 +683,21 @@ RSpec.describe Concurrent::ProcessingActor do
     end
 
     counter = Concurrent::ProcessingActor.act { |a| count a, 0 }
-    expect(counter.tell!(2).ask(:count).value!).to eq 2
+    answer  = counter.tell!(2).ask_op { |a| [:count, a] }.value!
     expect(counter.tell!(3).tell!(:done).termination.value!).to eq 5
+    expect(answer.value!).to eq 2
 
     add_once_actor = Concurrent::ProcessingActor.act do |the_actor|
-      the_actor.receive.then do |(a, b), answer|
+      the_actor.receive.then do |a, b, reply|
         result = a + b
-        answer.fulfill result
+        reply.fulfill result
         # terminate with result value
         result
       end
     end
 
-    expect(add_once_actor.ask([1, 2]).value!).to eq 3
-    expect(add_once_actor.ask(%w(ab cd)).reason).to be_a_kind_of RuntimeError
+    expect(add_once_actor.ask_op { |a| [1, 2, a] }.value!.value!).to eq 3
+    # expect(add_once_actor.ask_operation(%w(ab cd)).reason).to be_a_kind_of RuntimeError
     expect(add_once_actor.termination.value!).to eq 3
 
     def pair_adder(actor)
@@ -778,9 +710,10 @@ RSpec.describe Concurrent::ProcessingActor do
     end
 
     pair_adder = Concurrent::ProcessingActor.act { |a| pair_adder a }
-
-    expect(pair_adder.tell!(3).ask(2).value!).to eq 5
-    expect((pair_adder.ask('a') & pair_adder.ask('b')).value!).to eq %w[ab ab]
-    expect((pair_adder.ask('a') | pair_adder.ask('b')).value!).to eq 'ab'
+    pair_adder.ask_op { |a| [2, a] }
+    answer = pair_adder.ask_op { |a| [3, a] }.value!
+    expect(answer.value!).to eq 5
+    expect((pair_adder.ask_op { |a| ['a', a] }.value! & pair_adder.ask_op { |a| ['b', a] }.value!).value!).to eq %w[ab ab]
+    expect((pair_adder.ask_op { |a| ['a', a] }.value! | pair_adder.ask_op { |a| ['b', a] }.value!).value!).to eq 'ab'
   end
 end

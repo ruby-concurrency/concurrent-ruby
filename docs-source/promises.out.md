@@ -115,7 +115,7 @@ future.resolved?                         # => true
 If the task fails, we talk about the future being **rejected**.
 
 ```ruby
-future = Concurrent::Promises.future { sleep 0.1; raise 'Boom' }
+future = Concurrent::Promises.future { sleep 0.01; raise 'Boom' }
 # => #<Concurrent::Promises::Future:0x000006 pending>
 ```
 
@@ -402,13 +402,13 @@ Delayed futures will not evaluate until asked by `touch` or other method
 requiring resolution. 
 
 ```ruby
-future = Concurrent::Promises.delay { sleep 0.1; 'lazy' }
+future = Concurrent::Promises.delay { sleep 0.01; 'lazy' }
 # => #<Concurrent::Promises::Future:0x000012 pending>
-sleep 0.1 
+sleep 0.01 
 future.resolved?                         # => false
 future.touch
 # => #<Concurrent::Promises::Future:0x000012 pending>
-sleep 0.2 
+sleep 0.02 
 future.resolved?                         # => true
 ```
 
@@ -427,7 +427,7 @@ branch1 = head.then(&:succ)
 branch2 = head.delay.then(&:succ) 
 join    = branch1 & branch2 
 
-sleep 0.1 
+sleep 0.01 
 ```
 
 Nothing resolves.
@@ -441,7 +441,7 @@ Force `branch1` evaluation.
 
 ```ruby
 branch1.value                            # => 2
-sleep 0.1 
+sleep 0.01 
 [head, branch1, branch2, join].map(&:resolved?)
 # => [true, true, false, false]
 ```
@@ -501,8 +501,8 @@ its parent resolves. Therefore, the following future will be resolved in 0.2 sec
 
 ```ruby
 future = Concurrent::Promises.
-    future { sleep 0.1; :result }.
-    schedule(0.1).
+    future { sleep 0.01; :result }.
+    schedule(0.01).
     then(&:to_s).
     value!                               # => "result"
 ```
@@ -594,7 +594,7 @@ and `:io` for long-running and blocking tasks.
 ```ruby
 Concurrent::Promises.future_on(:fast) { 2 }.
     then_on(:io) { File.read __FILE__ }.
-    value.size                           # => 25338
+    value.size                           # => 25384
 ```
 
 ## Run (simulated process)
@@ -656,7 +656,7 @@ channel with a capacity of 2 messages.
 
 ```ruby
 ch1 = Concurrent::Promises::Channel.new 2
-# => #<Concurrent::Promises::Channel:0x00001a size:2>
+# => #<Concurrent::Promises::Channel:0x00001a size:0 capacity:2>
 ```
 
 We push 3 messages, it can be observed that the last future representing the
@@ -666,11 +666,11 @@ backpressure – the filling work is delayed until the channel has space for
 more messages.
 
 ```ruby
-pushes = 3.times.map { |i| ch1.push i }
+pushes = 3.times.map { |i| ch1.push_op i }
 # => [#<Concurrent::Promises::Future:0x00001b fulfilled>,
 #     #<Concurrent::Promises::Future:0x00001c fulfilled>,
 #     #<Concurrent::Promises::Future:0x00001d pending>]
-ch1.pop.value!                           # => 0
+ch1.pop_op.value!                        # => 0
 pushes
 # => [#<Concurrent::Promises::Future:0x00001b fulfilled>,
 #     #<Concurrent::Promises::Future:0x00001c fulfilled>,
@@ -683,17 +683,17 @@ returns a pair to be able to find out which channel had the message available.
 
 ```ruby
 ch2    = Concurrent::Promises::Channel.new 2
-# => #<Concurrent::Promises::Channel:0x00001e size:2>
-result = Concurrent::Promises.select_channel(ch1, ch2)
+# => #<Concurrent::Promises::Channel:0x00001e size:0 capacity:2>
+result = Concurrent::Promises::Channel.select_op([ch1, ch2])
 # => #<Concurrent::Promises::ResolvableFuture:0x00001f fulfilled>
 result.value!
-# => [#<Concurrent::Promises::Channel:0x00001a size:2>, 1]
+# => [#<Concurrent::Promises::Channel:0x00001a size:1 capacity:2>, 1]
 
-Concurrent::Promises.future { 1+1 }.then_push_channel(ch1)
+Concurrent::Promises.future { 1+1 }.then_channel_push(ch1)
 # => #<Concurrent::Promises::Future:0x000020 pending>
 result = (
     Concurrent::Promises.fulfilled_future('%02d') &      
-        Concurrent::Promises.select_channel(ch1, ch2)).
+        Concurrent::Promises::Channel.select_op([ch1, ch2])).
     then { |format, (channel, value)| format format, value } 
 result.value!                            # => "02"
 ```
@@ -726,10 +726,10 @@ add_2_messages = Concurrent::ProcessingActor.act do |actor|
   end
 end
 # => #<Concurrent::ProcessingActor:0x000024 ... termination:pending>
-add_2_messages.tell 1
+add_2_messages.tell_op 1
 # => #<Concurrent::Promises::Future:0x000027 pending>
 add_2_messages.termination.resolved?     # => false
-add_2_messages.tell 3
+add_2_messages.tell_op 3
 # => #<Concurrent::Promises::Future:0x000028 pending>
 add_2_messages.termination.value!        # => 4
 ```
@@ -740,7 +740,7 @@ defining an actor which a mailbox of size 2.
 ```ruby
 slow_counter = -> (actor, count) do
   actor.receive.then do |command, number|
-    sleep 0.1
+    sleep 0.01
     case command
     when :add
       slow_counter.call actor, count + number
@@ -769,11 +769,11 @@ produce = -> receiver, i do
     receiver.
         # send a message to the actor, resolves only after the message is 
         # accepted by the actor's mailbox
-        tell([:add, i]).
+        tell_op([:add, i]).
         # send incremented message when the above message is accepted 
         then(i+1, &produce)
   else
-    receiver.tell(:done)
+    receiver.tell_op(:done)
     # do not continue 
   end
 end
@@ -857,7 +857,7 @@ Create the computer actor and send it 3 jobs.
 ```ruby
 computer = Concurrent::Actor.spawn Computer, :computer
 # => #<Concurrent::Actor::Reference:0x000034 /computer (Computer)>
-results = 3.times.map { computer.ask [:run, -> { sleep 0.1; :result }] }
+results = 3.times.map { computer.ask [:run, -> { sleep 0.01; :result }] }
 # => [#<Concurrent::Promises::Future:0x000035 pending>,
 #     #<Concurrent::Promises::Future:0x000036 pending>,
 #     #<Concurrent::Promises::Future:0x000037 pending>]
@@ -1017,7 +1017,7 @@ buffer and how to apply backpressure to slow down the queries.
 require 'json' 
 
 channel              = Concurrent::Promises::Channel.new 6
-# => #<Concurrent::Promises::Channel:0x00003c size:6>
+# => #<Concurrent::Promises::Channel:0x00003c size:0 capacity:6>
 cancellation, origin = Concurrent::Cancellation.new
 # => #<Concurrent::Cancellation:0x00003d pending>
 
@@ -1034,7 +1034,7 @@ def query_random_text(cancellation, channel)
     # The push to channel is fulfilled only after the message is successfully
     # published to the channel, therefore it will not continue querying until 
     # current message is pushed.
-    cancellation.origin | channel.push(value) 
+    cancellation.origin | channel.push_op(value) 
     # It could wait on the push indefinitely if the token is not checked
     # here with `or` (the pipe).        
   end.then(cancellation) do |cancellation|
@@ -1048,7 +1048,7 @@ words_throttle = Concurrent::Throttle.new 1
 # => #<Concurrent::Throttle:0x00003e available 1 of 1>
 
 def count_words_in_random_text(cancellation, channel, words, words_throttle)
-  channel.pop.then do |response|
+  channel.pop_op.then do |response|
     string = JSON.load(response)['message']
     # processing is slower than querying
     sleep 0.02
@@ -1114,10 +1114,10 @@ repeating_scheduled_task = -> interval, cancellation, task do
       # Alternatively use chain to schedule always.
       then { repeating_scheduled_task.call(interval, cancellation, task) }
 end
-# => #<Proc:0x000045@promises.in.md:951 (lambda)>
+# => #<Proc:0x000015@promises.in.md:951 (lambda)>
 
 cancellation, origin = Concurrent::Cancellation.new
-# => #<Concurrent::Cancellation:0x000046 pending>
+# => #<Concurrent::Cancellation:0x000045 pending>
 
 task = -> cancellation do
   5.times do
@@ -1125,13 +1125,13 @@ task = -> cancellation do
     do_stuff
   end
 end
-# => #<Proc:0x000047@promises.in.md:962 (lambda)>
+# => #<Proc:0x000046@promises.in.md:962 (lambda)>
 
 result = Concurrent::Promises.future(0.1, cancellation, task, &repeating_scheduled_task).run
-# => #<Concurrent::Promises::Future:0x000048 pending>
+# => #<Concurrent::Promises::Future:0x000047 pending>
 sleep 0.03 
 origin.resolve
-# => #<Concurrent::Promises::ResolvableEvent:0x000049 resolved>
+# => #<Concurrent::Promises::ResolvableEvent:0x000048 resolved>
 result.result
 # => [false,
 #     nil,
