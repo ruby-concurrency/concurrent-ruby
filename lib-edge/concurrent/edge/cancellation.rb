@@ -11,10 +11,10 @@ module Concurrent
   #   # stops iterating when cancelled
   # end
 
-  # Provides cooperative cancellation.
+  # The Cancellation abstraction provides cooperative cancellation.
   #
-  # The available `Thread#raise` of `Thread#kill` are very dangerous
-  # (see linked the blog posts bellow).
+  # The standard methods `Thread#raise` of `Thread#kill` available in Ruby
+  # are very dangerous (see linked the blog posts bellow).
   # Therefore concurrent-ruby provides an alternative.
   # * <https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/>
   # * <http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/>

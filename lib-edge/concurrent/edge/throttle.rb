@@ -5,6 +5,14 @@ module Concurrent
   # When there is no available capacity the current thread may either be blocked or
   # an event is returned which will be resolved when capacity becomes available.
   #
+  # The more common usage of the Throttle is with a proxy executor
+  # `a_throttle.on(Concurrent.global_io_executor)`.
+  # Anything executed on the proxy executor will be throttled and
+  # execute on the given executor. There can be more than one proxy executors.
+  # All abstractions which execute tasks have option to specify executor,
+  # therefore the proxy executor can be injected to any abstraction
+  # throttling its concurrency level.
+  #
   # {include:file:docs-source/throttle.out.md}
   #
   # @!macro warn.edge

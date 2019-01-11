@@ -42,7 +42,7 @@ class ConcurrentRubyJavaExtensionTask < Rake::JavaExtensionTask
     unless jruby_cpath
       jruby_home = ENV['JRUBY_HOME']
       if jruby_home
-        candidate = File.join(jruby_home, 'lib', 'jruby.jar')
+        candidate   = File.join(jruby_home, 'lib', 'jruby.jar')
         jruby_cpath = candidate if File.exist? candidate
       end
     end
