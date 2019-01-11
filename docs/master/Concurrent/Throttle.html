@@ -160,7 +160,7 @@ an event is returned which will be resolved when capacity becomes available.</p>
   <span class='kw'>end</span>
 <span class='comment'># wait for all the threads to finish and read the observed 
 </span><span class='comment'># concurrency level in each of them   
-</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>                         <span class='comment'># =&gt; [2, 1, 2, 1, 2, 2, 2, 2, 2, 1]
+</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>                         <span class='comment'># =&gt; [2, 2, 1, 1, 1, 2, 2, 2, 2, 1]
 </span></code></pre>
 
 <p>Notice that the returned array has no number bigger than 2 therefore 
@@ -188,7 +188,7 @@ the concurrency level of the block with the <code>do_stuff</code> was never bigg
     <span class='comment'># fulfill with the observed concurrency level
 </span>  <span class='kw'>end</span>
 <span class='comment'># collect observed concurrency levels   
-</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                        <span class='comment'># =&gt; [3, 2, 1, 3, 2, 1, 3, 2, 1, 1]
+</span><span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                        <span class='comment'># =&gt; [3, 2, 1, 2, 1, 3, 3, 1, 2, 1]
 </span></code></pre>
 
 <p>The concurrency level does not rise above 3.</p>
@@ -227,16 +227,16 @@ the last is not.</p>
   <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then_on'>then_on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_l1'>l1</span><span class='comma'>,</span> <span class='id identifier rubyid_l2'>l2</span><span class='op'>|</span>
     <span class='lbracket'>[</span><span class='id identifier rubyid_l1'>l1</span><span class='comma'>,</span> <span class='id identifier rubyid_l2'>l2</span><span class='comma'>,</span> <span class='id identifier rubyid_monitor_concurrency_level'>monitor_concurrency_level</span><span class='lparen'>(</span><span class='id identifier rubyid_concurrency_level_unthrottled'>concurrency_level_unthrottled</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>5</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='rbracket'>]</span>
   <span class='kw'>end</span>
-<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; [[1, 3, 8],
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span> 
+<span class='comment'># =&gt; [[3, 3, 7],
+</span><span class='comment'>#     [3, 2, 9],
 </span><span class='comment'>#     [3, 3, 10],
-</span><span class='comment'>#     [2, 2, 9],
 </span><span class='comment'>#     [3, 3, 6],
 </span><span class='comment'>#     [3, 3, 5],
-</span><span class='comment'>#     [3, 3, 7],
+</span><span class='comment'>#     [3, 3, 8],
+</span><span class='comment'>#     [3, 3, 3],
 </span><span class='comment'>#     [3, 3, 4],
 </span><span class='comment'>#     [3, 2, 2],
-</span><span class='comment'>#     [3, 3, 3],
 </span><span class='comment'>#     [3, 1, 1]]
 </span></code></pre>
 
@@ -265,9 +265,9 @@ and combined.</p>
 </span>  <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_monitor_concurrency_level'>monitor_concurrency_level</span><span class='lparen'>(</span><span class='id identifier rubyid_concurrency_level_throttled'>concurrency_level_throttled</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_do_stuff'>do_stuff</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
   <span class='id identifier rubyid_agent'>agent</span> 
 <span class='kw'>end</span> 
-<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [3, 2, 1, 2, 1]
+<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span>                    <span class='comment'># =&gt; [3, 3, 3, 2, 1]
 </span><span class='id identifier rubyid_agents'>agents</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span> 
-<span class='comment'># =&gt; [1, 1, 2, 3, 1]
+<span class='comment'># =&gt; [3, 2, 3, 3, 1]
 </span></code></pre>
 
 <p>There is no observed concurrency level above 3.</p>
@@ -2125,7 +2125,7 @@ The acquired capacity has to be returned to the throttle by calling <span class=
 </h3><div class="docstring">
   <div class="discussion">
     <p>Creates new event which becomes resolved after first of the futures_and_or_events resolves.
-If resolved it does not propagate <span class='object_link'><a href="Promises/AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>, leaving delayed
+If resolved it does not propagate AbstractEventFuture#touch, leaving delayed
 futures un-executed if they are not required any more.</p>
 
 
@@ -2248,7 +2248,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
     <p>Creates new future which is resolved after first of futures_and_or_events is fulfilled.
 Its result equals result of the first resolved future or if all futures_and_or_events reject,
 it has reason of the last resolved future.
-If resolved it does not propagate <span class='object_link'><a href="Promises/AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>, leaving delayed
+If resolved it does not propagate AbstractEventFuture#touch, leaving delayed
 futures un-executed if they are not required any more.
 If event is supplied, which does not have value and can be only resolved, it&#39;s
 represented as <code>:fulfilled</code> with value <code>nil</code>.</p>
@@ -2376,7 +2376,7 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
   <div class="discussion">
     <p>Creates new future which is resolved after first futures_and_or_events is resolved.
 Its result equals result of the first resolved future.
-If resolved it does not propagate <span class='object_link'><a href="Promises/AbstractEventFuture.html#touch-instance_method" title="Concurrent::Promises::AbstractEventFuture#touch (method)">AbstractEventFuture#touch</a></span>, leaving delayed
+If resolved it does not propagate AbstractEventFuture#touch, leaving delayed
 futures un-executed if they are not required any more.
 If event is supplied, which does not have value and can be only resolved, it&#39;s
 represented as <code>:fulfilled</code> with value <code>nil</code>.</p>
@@ -2698,6 +2698,17 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
       
     </li>
   
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
 </ul>
 
 <p class="tag_title">Returns:</p>
@@ -2882,15 +2893,15 @@ raised exception becomes <span class='object_link'><a href="Promises/Future.html
   <h3 class="signature " id="make_future-instance_method">
   
     
-      <span class="overload">#<strong>create</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
     
-      <span class="overload">#<strong>create</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+      <span class="overload">#<strong>make_future</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
     
   
 
@@ -2917,7 +2928,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(nil, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns resolved event.</p>
@@ -2965,7 +2976,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(a_future, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns a future which will be resolved when a_future is.</p>
@@ -3013,7 +3024,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(an_event, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Event</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns an event which will be resolved when an_event is.</p>
@@ -3061,7 +3072,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(exception, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns a rejected future with the exception as its reason.</p>
@@ -3109,7 +3120,7 @@ but it&#39;s better to be explicit.</p>
     
       
       <li class="overload_item">
-        <span class="signature">#<strong>create</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
+        <span class="signature">#<strong>make_future</strong>(value, default_executor = self.default_executor)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> </span>
         <div class="docstring">
   <div class="discussion">
     <p>Returns a fulfilled future with the value.</p>
@@ -3249,6 +3260,17 @@ executor parameter or changed with <span class='object_link'><a href="Promises/A
 global executor. Default executor propagates to chained futures unless overridden with
 executor parameter or changed with <span class='object_link'><a href="Promises/AbstractEventFuture.html#with_default_executor-instance_method" title="Concurrent::Promises::AbstractEventFuture#with_default_executor (method)">AbstractEventFuture#with_default_executor</a></span>.</p>
 </div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
       
     </li>
   
@@ -3582,6 +3604,39 @@ the given reason.</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
+  
+    <li>
+      
+        <span class='name'>fulfilled</span>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+    </li>
   
     <li>
       
