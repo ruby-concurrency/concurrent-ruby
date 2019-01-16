@@ -4,6 +4,10 @@ I started working on the project 6 Dec.
 Since then I have worked on Throttle, Cancellation, Channel, and Actor.
 I did not yet start working on the planned job stealing pool.
 
+The code is pushed in <https://github.com/ruby-concurrency/concurrent-ruby/pull/791> 
+and the generated documentation for this branch can be found at 
+<http://blog.pitr.ch/concurrent-ruby/master/index.html>.
+
 ## Throttle
 
 The Throttle implementation originally had special APIs 
@@ -22,7 +26,8 @@ therefore the proxy executor can be injected to any abstraction
 throttling its concurrency level.
 
 The abstraction is ready for release. 
-For more details see the documentation.
+For more details see the documentation 
+<http://blog.pitr.ch/concurrent-ruby/master/Concurrent/Throttle.html>.
 
 ## Cancellation
 
@@ -48,7 +53,8 @@ The task has to get the reference to the object
 and periodically cooperatively check that it is not cancelled.
 
 The abstraction is ready for release. 
-For more details see the documentation.
+For more details see the documentation 
+<http://blog.pitr.ch/concurrent-ruby/master/Concurrent/Cancellation.html>.
 
 ## Channel
 
@@ -62,14 +68,16 @@ or until it times out.
 `(pop|push|select)_op` which returns Future representing the operation,
 which can be easily composed with other asynchronous tasks.
 
-~~The abstraction is ready for release. 
-For more details see the documentation.~~ 
-(The abstraction will be ready in few days.)
+The abstraction is ready for release. 
+For more details see the documentation
+<http://blog.pitr.ch/concurrent-ruby/master/Concurrent/Promises/Channel.html>. 
 
 ## Actor
 
 I've refreshed my knowledge about Erlang actors 
-and started working on the implementation. 
+and started working on the implementation, 
+which will match the Erlangs behaviour.
+(The goal is to make possible to port OTP later, not part of this project.)  
 Originally, I have planned to only implement the process using
 Simulated process implemented by `Future#run`. 
 However that makes the body of the actors most complex, 
