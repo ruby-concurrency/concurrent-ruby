@@ -656,7 +656,7 @@ channel with a capacity of 2 messages.
 
 ```ruby
 ch1 = Concurrent::Promises::Channel.new 2
-# => #<Concurrent::Promises::Channel:0x00001a size:0 capacity:2>
+# => #<Concurrent::Promises::Channel:0x00001a capacity taken 0 of 2>
 ```
 
 We push 3 messages, it can be observed that the last future representing the
@@ -683,11 +683,11 @@ returns a pair to be able to find out which channel had the message available.
 
 ```ruby
 ch2    = Concurrent::Promises::Channel.new 2
-# => #<Concurrent::Promises::Channel:0x00001e size:0 capacity:2>
+# => #<Concurrent::Promises::Channel:0x00001e capacity taken 0 of 2>
 result = Concurrent::Promises::Channel.select_op([ch1, ch2])
 # => #<Concurrent::Promises::ResolvableFuture:0x00001f fulfilled>
 result.value!
-# => [#<Concurrent::Promises::Channel:0x00001a size:1 capacity:2>, 1]
+# => [#<Concurrent::Promises::Channel:0x00001a capacity taken 1 of 2>, 1]
 
 Concurrent::Promises.future { 1+1 }.then_channel_push(ch1)
 # => #<Concurrent::Promises::Future:0x000020 pending>
@@ -992,7 +992,7 @@ DB_INTERNAL_POOL = Concurrent::Array.new data
 #     "*********"]
 
 max_tree = Concurrent::Throttle.new 3
-# => #<Concurrent::Throttle:0x00003b available 3 of 3>
+# => #<Concurrent::Throttle:0x00003b capacity available 3 of 3>
 
 futures = 11.times.map do |i|
   max_tree.
@@ -1017,7 +1017,7 @@ buffer and how to apply backpressure to slow down the queries.
 require 'json' 
 
 channel              = Concurrent::Promises::Channel.new 6
-# => #<Concurrent::Promises::Channel:0x00003c size:0 capacity:6>
+# => #<Concurrent::Promises::Channel:0x00003c capacity taken 0 of 6>
 cancellation, origin = Concurrent::Cancellation.new
 # => #<Concurrent::Cancellation:0x00003d pending>
 
@@ -1045,7 +1045,7 @@ end                                      # => :query_random_text
 
 words          = []                      # => []
 words_throttle = Concurrent::Throttle.new 1
-# => #<Concurrent::Throttle:0x00003e available 1 of 1>
+# => #<Concurrent::Throttle:0x00003e capacity available 1 of 1>
 
 def count_words_in_random_text(cancellation, channel, words, words_throttle)
   channel.pop_op.then do |response|
@@ -1114,10 +1114,10 @@ repeating_scheduled_task = -> interval, cancellation, task do
       # Alternatively use chain to schedule always.
       then { repeating_scheduled_task.call(interval, cancellation, task) }
 end
-# => #<Proc:0x000015@promises.in.md:951 (lambda)>
+# => #<Proc:0x000045@promises.in.md:951 (lambda)>
 
 cancellation, origin = Concurrent::Cancellation.new
-# => #<Concurrent::Cancellation:0x000045 pending>
+# => #<Concurrent::Cancellation:0x000046 pending>
 
 task = -> cancellation do
   5.times do
@@ -1125,13 +1125,13 @@ task = -> cancellation do
     do_stuff
   end
 end
-# => #<Proc:0x000046@promises.in.md:962 (lambda)>
+# => #<Proc:0x000047@promises.in.md:962 (lambda)>
 
 result = Concurrent::Promises.future(0.1, cancellation, task, &repeating_scheduled_task).run
-# => #<Concurrent::Promises::Future:0x000047 pending>
+# => #<Concurrent::Promises::Future:0x000048 pending>
 sleep 0.03 
 origin.resolve
-# => #<Concurrent::Promises::ResolvableEvent:0x000048 resolved>
+# => #<Concurrent::Promises::ResolvableEvent:0x000049 resolved>
 result.result
 # => [false,
 #     nil,

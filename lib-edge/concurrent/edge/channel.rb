@@ -2,19 +2,22 @@
 module Concurrent
   module Promises
 
-    # TODO (pitr-ch 06-Jan-2019): rename to Conduit?, to be able to place it into Concurrent namespace?
-
     # A first in first out channel that accepts messages with push family of methods and returns
     # messages with pop family of methods.
     # Pop and push operations can be represented as futures, see {#pop_op} and {#push_op}.
     # The capacity of the channel can be limited to support back pressure, use capacity option in {#initialize}.
     # {#pop} method blocks ans {#pop_op} returns pending future if there is no message in the channel.
     # If the capacity is limited the {#push} method blocks and {#push_op} returns pending future.
+    #
+    # {include:file:docs-source/channel.out.md}
     class Channel < Concurrent::Synchronization::Object
 
+      # TODO (pitr-ch 06-Jan-2019): rename to Conduit?, to be able to place it into Concurrent namespace?
+      # TODO (pitr-ch 14-Jan-2019): better documentation, do few examples from go
       # TODO (pitr-ch 12-Dec-2018): implement channel closing,
       #   - as a child class? To also have a channel which cannot be closed.
       # TODO (pitr-ch 18-Dec-2018): It needs unpop to return non matched messages read by actor or rather atomic operations pop_first_matching
+      # TODO (pitr-ch 15-Jan-2019): needs peek
       # TODO (pitr-ch 26-Dec-2016): replace with lock-free implementation, at least getting a message when available should be lock free same goes for push with space available
 
       # @!macro channel.warn.blocks
@@ -140,7 +143,8 @@ module Concurrent
         probe = @Mutex.synchronize do
           message = ns_try_pop
           unless message == NOTHING
-            ns_do_pending_push
+            new_message = ns_consume_pending_push
+            @Messages.push new_message unless new_message == NOTHING
             return message
           end
 
@@ -208,7 +212,7 @@ module Concurrent
 
       # @return [String] Short string representation.
       def to_s
-        format '%s size:%s capacity:%s>', super[0..-2], size, @Capacity
+        format '%s capacity taken %s of %s>', super[0..-2], size, @Capacity
       end
 
       alias_method :inspect, :to_s
@@ -249,12 +253,13 @@ module Concurrent
 
       def ns_pop_op(probe, include_channel)
         message = ns_try_pop
-        if NOTHING == message
+        if message == NOTHING
           # TODO (pitr-ch 11-Jan-2019): clear up probes when timed out, use callback
           @Probes.push include_channel, probe
         else
           if probe.fulfill(include_channel ? [self, message] : message, false)
-            ns_do_pending_push
+            new_message = ns_consume_pending_push
+            @Messages.push new_message unless new_message == NOTHING
           else
             @Messages.unshift message
           end
@@ -262,17 +267,15 @@ module Concurrent
         probe
       end
 
-      def ns_do_pending_push
-        unless @PendingPush.empty?
-          while true
-            message, pushed = @PendingPush.shift 2
-            return unless pushed
-            # can fail if timed-out, so try without error
-            if pushed.fulfill(self, false)
-              # pushed fulfilled so actually push the message
-              @Messages.push message
-              return
-            end
+      def ns_consume_pending_push
+        return NOTHING if @PendingPush.empty?
+        while true
+          message, pushed = @PendingPush.shift 2
+          return NOTHING unless pushed
+          # can fail if timed-out, so try without error
+          if pushed.fulfill(self, false)
+            # pushed fulfilled so actually push the message
+            return message
           end
         end
       end
@@ -299,10 +302,9 @@ module Concurrent
 
       def ns_try_pop
         if @Messages.empty?
-          return NOTHING
+          ns_consume_pending_push
         else
-          message = @Messages.shift
-          return message
+          @Messages.shift
         end
       end
     end

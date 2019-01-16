@@ -127,7 +127,7 @@ module Concurrent
 
     # @return [String] Short string representation.
     def to_s
-      format '%s available %d of %d>', super[0..-2], capacity, @MaxCapacity
+      format '%s capacity available %d of %d>', super[0..-2], capacity, @MaxCapacity
     end
 
     alias_method :inspect, :to_s

@@ -151,7 +151,7 @@ RSpec.describe 'Concurrent' do
       expect(channel1.select(channel2)).to eq [channel1, :v1]
       expect(channel1.size).to eq 0
       expect(channel2.size).to eq 0
-      thread = in_thread { channel1.select(channel2, timeout: 0.01) }
+      thread = in_thread { channel1.select(channel2, 0.01) }
       is_sleeping thread
       expect(channel1.size).to eq 0
       expect(channel2.size).to eq 0
@@ -179,6 +179,24 @@ RSpec.describe 'Concurrent' do
       expect(channel1.size).to eq 0
       expect(channel2.size).to eq 0
       expect(select_op.value!).to eq [channel2, :v2]
+    end
+
+    specify 'exchanging' do
+      channel = Concurrent::Promises::Channel.new 0
+      thread  = in_thread { channel.pop }
+      is_sleeping thread
+      expect(channel.try_push(:v1)).to be_truthy
+      push = channel.push_op(:v2)
+      expect(push.pending?).to be_truthy
+      expect(thread.value).to eq :v1
+      expect(channel.pop).to eq :v2
+      expect(push.pending?).to be_falsey
+
+      ch1       = Concurrent::Promises::Channel.new 0
+      ch2       = Concurrent::Promises::Channel.new 0
+      selection = ch1.select_op(ch2)
+      expect(ch2.try_push(:v3)).to be_truthy
+      expect(selection.value!).to eq [ch2, :v3]
     end
 
     specify 'integration' do

@@ -5,7 +5,7 @@
 
 ```ruby
 max_two = Concurrent::Throttle.new 2
-# => #<Concurrent::Throttle:0x000002 available 2 of 2>
+# => #<Concurrent::Throttle:0x000002 capacity available 2 of 2>
 
 # used to track concurrency level
 concurrency_level = Concurrent::AtomicFixnum.new
@@ -47,7 +47,7 @@ def monitor_concurrency_level(concurrency_level, &block)
 end 
 
 throttle = Concurrent::Throttle.new 3
-# => #<Concurrent::Throttle:0x000004 available 3 of 3>
+# => #<Concurrent::Throttle:0x000004 capacity available 3 of 3>
 concurrency_level = Concurrent::AtomicFixnum.new 
 # => #<Concurrent::AtomicFixnum:0x000005 value:0>
 
