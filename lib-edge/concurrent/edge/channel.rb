@@ -80,7 +80,7 @@ module Concurrent
       #   e.g. popping a message.
       #
       # @param [Object] message
-      # @return [Future(self)]
+      # @return [ResolvableFuture(self)]
       def push_op(message)
         @Mutex.synchronize do
           if ns_try_push(message)
@@ -88,7 +88,7 @@ module Concurrent
           else
             pushed = Promises.resolvable_future
             @PendingPush.push message, pushed
-            return pushed.with_hidden_resolvable
+            return pushed
           end
         end
       end
