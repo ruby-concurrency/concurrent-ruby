@@ -117,11 +117,9 @@ module Concurrent
       # Pop a message from the channel if there is one available.
       # @return [Object, nil] message or nil when there is no message
       def try_pop
-        @Mutex.synchronize do
-          message = ns_try_pop
-          # TODO (pitr-ch 11-Dec-2018): disambiguation of no message and nil message
-          (NOTHING == message) ? nil : message
-        end
+        # TODO (pitr-ch 11-Dec-2018): disambiguation of no message and nil message
+        message = try_pop_disambiguated
+        message == NOTHING ? nil : message
       end
 
       # Returns a future witch will become fulfilled with a value from the channel when one is available.
@@ -141,8 +139,11 @@ module Concurrent
       def pop(timeout = nil)
         # TODO (pitr-ch 11-Dec-2018): disambiguation of message nil and timeout, allow to inject what should be returned when timed-out
         probe = @Mutex.synchronize do
-          message = ns_try_pop
-          unless message == NOTHING
+          message = ns_shift_message
+          if message == NOTHING
+            message = ns_consume_pending_push
+            return message if message != NOTHING
+          else
             new_message = ns_consume_pending_push
             @Messages.push new_message unless new_message == NOTHING
             return message
@@ -246,25 +247,57 @@ module Concurrent
       protected
 
       def try_pop_disambiguated
-        @Mutex.synchronize(&method(:ns_try_pop))
+        @Mutex.synchronize do
+          message = ns_shift_message
+          return message if message != NOTHING
+          return ns_consume_pending_push
+        end
+
       end
 
       private
 
       def ns_pop_op(probe, include_channel)
-        message = ns_try_pop
-        if message == NOTHING
-          # TODO (pitr-ch 11-Jan-2019): clear up probes when timed out, use callback
-          @Probes.push include_channel, probe
-        else
+        message = ns_shift_message
+
+        # got message from buffer
+        if message != NOTHING
           if probe.fulfill(include_channel ? [self, message] : message, false)
             new_message = ns_consume_pending_push
             @Messages.push new_message unless new_message == NOTHING
           else
             @Messages.unshift message
           end
+          return probe
         end
-        probe
+
+        # no message in buffer, try to pair with a pending push
+        while true
+          message, pushed = @PendingPush.first 2
+          break if pushed.nil?
+
+          value = include_channel ? [self, message] : message
+          if Promises::Resolvable.atomic_resolution(probe => [true, value, nil], pushed => [true, self, nil])
+            @PendingPush.shift 2
+            return probe
+          end
+
+          if pushed.resolved?
+            @PendingPush.shift 2
+            next
+          end
+
+          if probe.resolved?
+            return probe
+          end
+
+          raise 'should not reach'
+        end
+
+        # no push to pair with
+        # TODO (pitr-ch 11-Jan-2019): clear up probes when timed out, use callback
+        @Probes.push include_channel, probe if probe.pending?
+        return probe
       end
 
       def ns_consume_pending_push
@@ -275,6 +308,21 @@ module Concurrent
           # can fail if timed-out, so try without error
           if pushed.fulfill(self, false)
             # pushed fulfilled so actually push the message
+            return message
+          end
+        end
+      end
+
+      def ns_peek_pending_push
+        return NOTHING if @PendingPush.empty?
+        while true
+          message, pushed = @PendingPush.first 2
+          return NOTHING unless pushed
+          # can be timed-out
+          if pushed.resolved?
+            @PendingPush.shift 2
+            # and repeat
+          else
             return message
           end
         end
@@ -300,9 +348,13 @@ module Concurrent
       NOTHING = Object.new
       private_constant :NOTHING
 
-      def ns_try_pop
+      def ns_shift_message
+        @Messages.empty? ? NOTHING : @Messages.shift
+      end
+
+      def ns_try_peek
         if @Messages.empty?
-          ns_consume_pending_push
+          ns_peek_pending_push
         else
           @Messages.shift
         end

@@ -181,16 +181,101 @@ RSpec.describe 'Concurrent' do
       expect(select_op.value!).to eq [channel2, :v2]
     end
 
-    specify 'exchanging' do
+    def push_first(push_type, pop_type)
       channel = Concurrent::Promises::Channel.new 0
-      thread  = in_thread { channel.pop }
-      is_sleeping thread
-      expect(channel.try_push(:v1)).to be_truthy
-      push = channel.push_op(:v2)
-      expect(push.pending?).to be_truthy
-      expect(thread.value).to eq :v1
-      expect(channel.pop).to eq :v2
-      expect(push.pending?).to be_falsey
+      message = Object.new
+
+      case push_type
+      when :push
+        thread = in_thread { channel.push message }
+        is_sleeping thread
+      when :push_op
+        push = channel.push_op message
+        expect(push.pending?).to eq true
+      else
+        raise
+      end
+
+      expect(channel.size).to eq 0
+
+      case pop_type
+      when :try_pop
+        expect(channel.try_pop).to eq message
+      when :pop
+        expect(channel.pop).to eq message
+      when :pop_op
+        expect(channel.pop_op.value!).to eq message
+      else
+        raise
+      end
+
+      expect(channel.size).to eq 0
+
+      case push_type
+      when :push
+        expect(thread.value).to eq channel
+      when :push_op
+        expect(push.value!).to eq channel
+      else
+        raise
+      end
+    end
+
+    def pop_first(pop_type, push_type)
+      channel = Concurrent::Promises::Channel.new 0
+      message = Object.new
+
+      case pop_type
+      when :pop
+        thread = in_thread { channel.pop }
+        is_sleeping thread
+      when :pop_op
+        pop = channel.pop_op
+        expect(pop.pending?).to eq true
+      else
+        raise
+      end
+
+      expect(channel.size).to eq 0
+
+      case push_type
+      when :try_push
+        expect(channel.try_push message).to eq true
+      when :push
+        expect(channel.push(message)).to eq channel
+      when :push_op
+        expect(channel.push_op(message).value!).to eq channel
+      else
+        raise
+      end
+
+      expect(channel.size).to eq 0
+
+      case pop_type
+      when :pop
+        expect(thread.value).to eq message
+      when :pop_op
+        expect(pop.value!).to eq message
+      else
+        raise
+      end
+    end
+
+
+    specify 'exchanging' do
+      push_first :push, :try_pop
+      push_first :push, :pop
+      push_first :push, :pop_op
+      push_first :push_op, :try_pop
+      push_first :push_op, :pop
+      push_first :push_op, :pop_op
+
+      pop_first :pop, :try_push
+      pop_first :pop, :push
+      pop_first :pop, :push_op
+      pop_first :pop_op, :try_push
+      pop_first :pop_op, :push
+      pop_first :pop_op, :push_op
 
       ch1       = Concurrent::Promises::Channel.new 0
       ch2       = Concurrent::Promises::Channel.new 0
