@@ -361,6 +361,12 @@ module Concurrent
       private_constant :Pending
 
       # @private
+      class Reserved < Pending
+      end
+
+      private_constant :Reserved
+
+      # @private
       class ResolvedWithResult < State
         def resolved?
           true
@@ -493,6 +499,7 @@ module Concurrent
       private_constant :PartiallyRejected
 
       PENDING  = Pending.new
+      RESERVED = Reserved.new
       RESOLVED = Fulfilled.new(nil)
 
       def RESOLVED.to_sym
@@ -691,8 +698,8 @@ module Concurrent
       end
 
       # @!visibility private
-      def resolve_with(state, raise_on_reassign = true)
-        if compare_and_set_internal_state(PENDING, state)
+      def resolve_with(state, raise_on_reassign = true, reserved = false)
+        if compare_and_set_internal_state(reserved ? RESERVED : PENDING, state)
           # go to synchronized block only if there were waiting threads
           @Lock.synchronize { @Condition.broadcast } unless @Waiters.value == 0
           call_callbacks state
@@ -1199,9 +1206,15 @@ module Concurrent
 
       def rejected_resolution(raise_on_reassign, state)
         if raise_on_reassign
-          raise Concurrent::MultipleAssignmentError.new(
-              "Future can be resolved only once. It's #{result}, trying to set #{state.result}.",
-              current_result: result, new_result: state.result)
+          if internal_state == RESERVED
+            raise Concurrent::MultipleAssignmentError.new(
+                "Future can be resolved only once. It is already reserved.")
+          else
+            raise Concurrent::MultipleAssignmentError.new(
+                "Future can be resolved only once. It's #{result}, trying to set #{state.result}.",
+                current_result: result,
+                new_result:     state.result)
+          end
         end
         return false
       end
@@ -1238,14 +1251,89 @@ module Concurrent
 
     end
 
-    # Marker module of Future, Event resolved manually by user.
+    # Marker module of Future, Event resolved manually.
     module Resolvable
+      include InternalStates
+
+      # Reserves the event or future, if reserved others are prevented from resolving it.
+      # Advanced feature.
+      # Be careful about the order of reservation to avoid deadlocks,
+      # the method blocks if the future or event is already reserved
+      # until it is released or resolved.
+      #
+      # @example
+      #   f = Concurrent::Promises.resolvable_future
+      #   reserved = f.reserve
+      #   Thread.new { f.resolve true, :val, nil } # fails
+      #   f.resolve true, :val, nil, true if reserved # must be called only if reserved
+      # @return [true, false] on successful reservation
+      def reserve
+        # TODO (pitr-ch 17-Jan-2019): document that the order of the reservation must always be the same
+        # TODO (pitr-ch 17-Jan-2019): make only private and expose the atomic stuff?
+        # Then it cannot be integrated with other then future stuff :(
+
+        while true
+          return true if compare_and_set_internal_state(PENDING, RESERVED)
+          return false if resolved?
+          Thread.pass # FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
+        end
+      end
+
+      # @return [true, false] on successful release of the reservation
+      def release
+        compare_and_set_internal_state(RESERVED, PENDING)
+      end
+
+      # @return [Comparable] an item to sort the resolvable events or futures
+      #   by to get the right global locking order of resolvable events or futures
+      # @see .atomic_resolution
+      def self.locking_order_by(resolvable)
+        resolvable.object_id
+      end
+
+      # Resolves all passed events and futures to the given resolutions
+      # if possible (all are unresolved) or none.
+      #
+      # @param [Hash{Resolvable=>resolve_arguments}, Array<Array(Resolvable, resolve_arguments)>] resolvable_map
+      #   collection of resolvable events and futures which should be resolved all at once
+      #   and what should they be resolved to, examples:
+      #   ```ruby
+      #   { a_resolvable_future1 => [true, :val, nil],
+      #     a_resolvable_future2 => [false, nil, :err],
+      #     a_resolvable_event => [] }
+      #   ```
+      #    or
+      #   ```ruby
+      #   [[a_resolvable_future1, [true, :val, nil]],
+      #    [a_resolvable_future2, [false, nil, :err]],
+      #    [a_resolvable_event, []]]
+      #   ```
+      # @return [true, false] if success
+      def self.atomic_resolution(resolvable_map)
+        # atomic_resolution event => [], future => [true, :v, nil]
+        sorted = resolvable_map.to_a.sort_by { |resolvable, _| locking_order_by resolvable }
+
+        reserved = 0
+        while reserved < sorted.size && sorted[reserved].first.reserve
+          reserved += 1
+        end
+
+        if reserved == sorted.size
+          sorted.each { |resolvable, args| resolvable.resolve *args, true, true }
+          true
+        else
+          while reserved > 0
+            reserved -= 1
+            raise 'has to be reserved' unless sorted[reserved].first.release
+          end
+          false
+        end
+      end
     end
 
     # A Event which can be resolved by user.
     class ResolvableEvent < Event
       include Resolvable
-
 
       # @!macro raise_on_reassign
       # @raise [MultipleAssignmentError] when already resolved and raise_on_reassign is true.
@@ -1259,8 +1347,11 @@ module Concurrent
       # Makes the event resolved, which triggers all dependent futures.
       #
       # @!macro promise.param.raise_on_reassign
-      def resolve(raise_on_reassign = true)
-        resolve_with RESOLVED, raise_on_reassign
+      # @!macro promise.param.reserved
+      #   @param [true, false] reserved only set to true if the receiver is {#reserve}d by you.
+      #     Advanced feature, safe to ignore.
+      def resolve(raise_on_reassign = true, reserved = false)
+        resolve_with RESOLVED, raise_on_reassign, reserved
       end
 
       # Creates new event wrapping receiver, effectively hiding the resolve method.
@@ -1299,8 +1390,9 @@ module Concurrent
       # @param [Object] value
       # @param [Exception] reason
       # @!macro promise.param.raise_on_reassign
-      def resolve(fulfilled = true, value = nil, reason = nil, raise_on_reassign = true)
-        resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason), raise_on_reassign)
+      # @!macro promise.param.reserved
+      def resolve(fulfilled = true, value = nil, reason = nil, raise_on_reassign = true, reserved = false)
+        resolve_with(fulfilled ? Fulfilled.new(value) : Rejected.new(reason), raise_on_reassign, reserved)
       end
 
       # Makes the future fulfilled with `value`,
@@ -1308,8 +1400,9 @@ module Concurrent
       #
       # @param [Object] value
       # @!macro promise.param.raise_on_reassign
-      def fulfill(value, raise_on_reassign = true)
-        promise.fulfill(value, raise_on_reassign)
+      # @!macro promise.param.reserved
+      def fulfill(value, raise_on_reassign = true, reserved = false)
+        resolve_with Fulfilled.new(value), raise_on_reassign, reserved
       end
 
       # Makes the future rejected with `reason`,
@@ -1317,8 +1410,9 @@ module Concurrent
       #
       # @param [Exception] reason
       # @!macro promise.param.raise_on_reassign
-      def reject(reason, raise_on_reassign = true)
-        promise.reject(reason, raise_on_reassign)
+      # @!macro promise.param.reserved
+      def reject(reason, raise_on_reassign = true, reserved = false)
+        resolve_with Rejected.new(reason), raise_on_reassign, reserved
       end
 
       # Evaluates the block and sets its result as future's value fulfilling, if the block raises
@@ -1541,14 +1635,6 @@ module Concurrent
     class ResolvableFuturePromise < AbstractPromise
       def initialize(default_executor)
         super ResolvableFuture.new(self, default_executor)
-      end
-
-      def fulfill(value, raise_on_reassign)
-        resolve_with Fulfilled.new(value), raise_on_reassign
-      end
-
-      def reject(reason, raise_on_reassign)
-        resolve_with Rejected.new(reason), raise_on_reassign
       end
 
       public :evaluate_to

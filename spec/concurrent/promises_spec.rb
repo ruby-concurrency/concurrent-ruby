@@ -85,7 +85,6 @@ RSpec.describe 'Concurrent::Promises' do
           then { |v| v + 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
-      future.wait!
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be >= 0.09
@@ -548,6 +547,15 @@ RSpec.describe 'Concurrent::Promises' do
       expect(event.wait(0, false)).to be_truthy
       expect(event.wait(0, true)).to be_truthy
     end
+
+    specify "reservation" do
+      event = resolvable_event
+      expect(event.reserve).to be_truthy
+      expect(event.pending?).to be_truthy
+      expect(event.state).to eq :pending
+      expect(event.resolve false).to be_falsey
+      expect(event.resolve true, true).to be_truthy
+    end
   end
 
   describe 'ResolvableFuture' do
@@ -615,6 +623,49 @@ RSpec.describe 'Concurrent::Promises' do
       expect(future.result(0, [true, :v, nil])).to eq [true, :v, nil]
     end
 
+    specify "reservation" do
+      future = resolvable_future
+      expect(future.reserve).to be_truthy
+      expect(future.pending?).to be_truthy
+      expect(future.state).to eq :pending
+      expect(future.resolve true, :value, nil, false).to be_falsey
+      expect(future.fulfill :value, false).to be_falsey
+      expect(future.reject :err, false).to be_falsey
+      expect { future.resolve true, :value, nil }.to raise_error(Concurrent::MultipleAssignmentError)
+      expect(future.resolve true, :value, nil, false, true).to be_truthy
+
+      future = resolvable_future
+      expect(future.reserve).to be_truthy
+      expect(future.fulfill :value, false, true).to be_truthy
+
+      future = resolvable_future
+      expect(future.reserve).to be_truthy
+      expect(future.reject :err, false, true).to be_truthy
+    end
+
+    specify "atomic_resolution" do
+      future1 = resolvable_future
+      future2 = resolvable_future
+
+      expect(Concurrent::Promises::Resolvable.
+          atomic_resolution(future1 => [true, :v, nil],
+                            future2 => [false, nil, :err])).to eq true
+      expect(future1.fulfilled?).to be_truthy
+      expect(future2.rejected?).to be_truthy
+
+      future1 = resolvable_future
+      future2 = resolvable_future.fulfill :val
+
+      expect(Concurrent::Promises::Resolvable.
+          atomic_resolution(future1 => [true, :v, nil],
+                            future2 => [false, nil, :err])).to eq false
+
+      expect(future1.pending?).to be_truthy
+      expect(future2.fulfilled?).to be_truthy
+
+      expect(future1.reserve).to be_truthy
+      expect(future2.reserve).to be_falsey
+    end
   end
 
   describe 'interoperability' do
