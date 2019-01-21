@@ -357,12 +357,12 @@ resolves.</p>
       <pre class="lines">
 
 
-850
-851
-852</pre>
+857
+858
+859</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 850</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 857</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any'>any</span><span class='lparen'>(</span><span class='id identifier rubyid_event_or_future'>event_or_future</span><span class='rparen'>)</span>
   <span class='const'>AnyResolvedEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event_or_future'>event_or_future</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -411,16 +411,16 @@ In other words, it inserts delay into the chain of Futures making rest of it laz
       <pre class="lines">
 
 
-860
-861
-862
-863</pre>
+867
+868
+869
+870</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 860</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 867</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delay'>delay</span>
-  <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>DelayPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+  <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>DelayPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
   <span class='const'>ZipEventEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -488,19 +488,19 @@ delay into the chain.</p>
       <pre class="lines">
 
 
-872
-873
-874
-875
-876
-877</pre>
+879
+880
+881
+882
+883
+884</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 872</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 879</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_chain'>chain</span> <span class='kw'>do</span>
-    <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>ScheduledPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
+    <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>ScheduledPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
     <span class='const'>ZipEventEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
   <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_flat_event'>flat_event</span>
 <span class='kw'>end</span></pre>
@@ -547,12 +547,12 @@ delay into the chain.</p>
       <pre class="lines">
 
 
-890
-891
-892</pre>
+897
+898
+899</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 890</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 897</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_event'>to_event</span>
   <span class='kw'>self</span>
@@ -600,14 +600,14 @@ delay into the chain.</p>
       <pre class="lines">
 
 
-882
-883
-884
-885
-886</pre>
+889
+890
+891
+892
+893</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 882</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 889</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_future'>to_future</span>
   <span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span>
@@ -658,12 +658,12 @@ Any futures depending on it will use the new default executor.</p>
       <pre class="lines">
 
 
-896
-897
-898</pre>
+903
+904
+905</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 896</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 903</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_default_executor'>with_default_executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span>
   <span class='const'>EventWrapperPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -719,16 +719,16 @@ then the result is as described in <span class='object_link'><a href="FactoryMet
       <pre class="lines">
 
 
-836
-837
-838
-839
-840
-841
-842</pre>
+843
+844
+845
+846
+847
+848
+849</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 836</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 843</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></span><span class='rparen'>)</span>

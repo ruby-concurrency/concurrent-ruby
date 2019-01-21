@@ -669,12 +669,12 @@ more messages.
 pushes = 3.times.map { |i| ch1.push_op i }
 # => [#<Concurrent::Promises::Future:0x00001b fulfilled>,
 #     #<Concurrent::Promises::Future:0x00001c fulfilled>,
-#     #<Concurrent::Promises::Future:0x00001d pending>]
+#     #<Concurrent::Promises::ResolvableFuture:0x00001d pending>]
 ch1.pop_op.value!                        # => 0
 pushes
 # => [#<Concurrent::Promises::Future:0x00001b fulfilled>,
 #     #<Concurrent::Promises::Future:0x00001c fulfilled>,
-#     #<Concurrent::Promises::Future:0x00001d fulfilled>]
+#     #<Concurrent::Promises::ResolvableFuture:0x00001d fulfilled>]
 ```
 
 A selection over channels can be created with the `.select_channel` factory method. It

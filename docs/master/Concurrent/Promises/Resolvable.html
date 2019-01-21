@@ -90,7 +90,7 @@
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    <p>Marker module of Future, Event resolved manually by user.</p>
+    <p>Marker module of Future, Event resolved manually.</p>
 
 
   </div>
@@ -105,7 +105,468 @@
 
 
 
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
 
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#atomic_resolution-class_method" title="atomic_resolution (class method)">.<strong>atomic_resolution</strong>(resolvable_map)  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Resolves all passed events and futures to the given resolutions if possible (all are unresolved) or none.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#locking_order_by-class_method" title="locking_order_by (class method)">.<strong>locking_order_by</strong>(resolvable)  &#x21d2; Comparable </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>An item to sort the resolvable events or futures by to get the right global locking order of resolvable events or futures.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#release-instance_method" title="#release (instance method)">#<strong>release</strong>  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>On successful release of the reservation.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reserve-instance_method" title="#reserve (instance method)">#<strong>reserve</strong>  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Reserves the event or future, if reserved others are prevented from resolving it.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="atomic_resolution-class_method">
+  
+    .<strong>atomic_resolution</strong>(resolvable_map)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Resolves all passed events and futures to the given resolutions
+if possible (all are unresolved) or none.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolvable_map</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Hash.html" title="Concurrent::Hash (class)">Hash</a></span>{<span class='object_link'><a href="" title="Concurrent::Promises::Resolvable (module)">Resolvable</a></span>=&gt;resolve_arguments}</tt>, <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;<span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(<span class='object_link'><a href="" title="Concurrent::Promises::Resolvable (module)">Resolvable</a></span>, resolve_arguments)&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>collection of resolvable events and futures which should be resolved all at once
+and what should they be resolved to, examples:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='lbrace'>{</span> <span class='id identifier rubyid_a_resolvable_future1'>a_resolvable_future1</span> <span class='op'>=&gt;</span> <span class='lbracket'>[</span><span class='kw'>true</span><span class='comma'>,</span> <span class='symbol'>:val</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span><span class='comma'>,</span>
+  <span class='id identifier rubyid_a_resolvable_future2'>a_resolvable_future2</span> <span class='op'>=&gt;</span> <span class='lbracket'>[</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='symbol'>:err</span><span class='rbracket'>]</span><span class='comma'>,</span>
+  <span class='id identifier rubyid_a_resolvable_event'>a_resolvable_event</span> <span class='op'>=&gt;</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+</code></pre>
+
+<p>or</p>
+
+<pre class="code ruby"><code class="ruby"><span class='lbracket'>[</span><span class='lbracket'>[</span><span class='id identifier rubyid_a_resolvable_future1'>a_resolvable_future1</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>true</span><span class='comma'>,</span> <span class='symbol'>:val</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span><span class='rbracket'>]</span><span class='comma'>,</span>
+ <span class='lbracket'>[</span><span class='id identifier rubyid_a_resolvable_future2'>a_resolvable_future2</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='symbol'>:err</span><span class='rbracket'>]</span><span class='rbracket'>]</span><span class='comma'>,</span>
+ <span class='lbracket'>[</span><span class='id identifier rubyid_a_resolvable_event'>a_resolvable_event</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rbracket'>]</span><span class='rbracket'>]</span>
+</code></pre>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if success</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1326
+1327
+1328
+1329
+1330
+1331
+1332
+1333
+1334
+1335
+1336
+1337
+1338
+1339
+1340
+1341
+1342
+1343
+1344
+1345</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1326</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_atomic_resolution'>atomic_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable_map'>resolvable_map</span><span class='rparen'>)</span>
+  <span class='comment'># atomic_resolution event =&gt; [], future =&gt; [true, :v, nil]
+</span>  <span class='id identifier rubyid_sorted'>sorted</span> <span class='op'>=</span> <span class='id identifier rubyid_resolvable_map'>resolvable_map</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_sort_by'>sort_by</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span><span class='op'>|</span> <span class='id identifier rubyid_locking_order_by'>locking_order_by</span> <span class='id identifier rubyid_resolvable'>resolvable</span> <span class='rbrace'>}</span>
+
+  <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>=</span> <span class='int'>0</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_sorted'>sorted</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_sorted'>sorted</span><span class='lbracket'>[</span><span class='id identifier rubyid_reserved'>reserved</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_reserve'>reserve</span>
+    <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>+=</span> <span class='int'>1</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>==</span> <span class='id identifier rubyid_sorted'>sorted</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span>
+    <span class='id identifier rubyid_sorted'>sorted</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='op'>|</span> <span class='id identifier rubyid_resolvable'>resolvable</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='kw'>true</span> <span class='rbrace'>}</span>
+    <span class='kw'>true</span>
+  <span class='kw'>else</span>
+    <span class='kw'>while</span> <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+      <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>-=</span> <span class='int'>1</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>has to be reserved</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_sorted'>sorted</span><span class='lbracket'>[</span><span class='id identifier rubyid_reserved'>reserved</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_release'>release</span>
+    <span class='kw'>end</span>
+    <span class='kw'>false</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="locking_order_by-class_method">
+  
+    .<strong>locking_order_by</strong>(resolvable)  &#x21d2; <tt>Comparable</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns an item to sort the resolvable events or futures
+by to get the right global locking order of resolvable events or futures</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Comparable</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>an item to sort the resolvable events or futures
+by to get the right global locking order of resolvable events or futures</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#atomic_resolution-class_method" title="Concurrent::Promises::Resolvable.atomic_resolution (method)">atomic_resolution</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1304
+1305
+1306</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1304</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_locking_order_by'>locking_order_by</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_resolvable'>resolvable</span><span class='period'>.</span><span class='id identifier rubyid_object_id'>object_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="release-instance_method">
+  
+    #<strong>release</strong>  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns on successful release of the reservation</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>on successful release of the reservation</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1297
+1298
+1299</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1297</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_release'>release</span>
+  <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="InternalStates.html#RESERVED-constant" title="Concurrent::Promises::InternalStates::RESERVED (constant)">RESERVED</a></span></span><span class='comma'>,</span> <span class='const'>PENDING</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reserve-instance_method">
+  
+    #<strong>reserve</strong>  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Reserves the event or future, if reserved others are prevented from resolving it.
+Advanced feature.
+Be careful about the order of reservation to avoid deadlocks,
+the method blocks if the future or event is already reserved
+until it is released or resolved.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_f'>f</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span>
+<span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>=</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_reserve'>reserve</span>
+<span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='symbol'>:val</span><span class='comma'>,</span> <span class='kw'>nil</span> <span class='rbrace'>}</span> <span class='comment'># fails
+</span><span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='symbol'>:val</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_reserved'>reserved</span> <span class='comment'># must be called only if reserved</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>on successful reservation</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1284
+1285
+1286
+1287
+1288
+1289
+1290
+1291
+1292
+1293
+1294</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1284</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reserve'>reserve</span>
+  <span class='comment'># TODO (pitr-ch 17-Jan-2019): document that the order of the reservation must always be the same
+</span>  <span class='comment'># TODO (pitr-ch 17-Jan-2019): make only private and expose the atomic stuff?
+</span>  <span class='comment'># Then it cannot be integrated with other then future stuff :(
+</span>
+  <span class='kw'>while</span> <span class='kw'>true</span>
+    <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'>PENDING</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="InternalStates.html#RESERVED-constant" title="Concurrent::Promises::InternalStates::RESERVED (constant)">RESERVED</a></span></span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='id identifier rubyid_resolved?'>resolved?</span>
+    <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_pass'>pass</span> <span class='comment'># FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
+</span>  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
 
 </div>
 

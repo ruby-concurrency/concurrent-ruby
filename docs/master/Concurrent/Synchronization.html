@@ -99,11 +99,9 @@
 <p class="children">
   
     
-      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Synchronization/JRubyAttrVolatile.html" title="Concurrent::Synchronization::JRubyAttrVolatile (module)">JRubyAttrVolatile</a></span>, <span class='object_link'><a href="Synchronization/MriAttrVolatile.html" title="Concurrent::Synchronization::MriAttrVolatile (module)">MriAttrVolatile</a></span>, <span class='object_link'><a href="Synchronization/RbxAttrVolatile.html" title="Concurrent::Synchronization::RbxAttrVolatile (module)">RbxAttrVolatile</a></span>, <span class='object_link'><a href="Synchronization/TruffleRubyAttrVolatile.html" title="Concurrent::Synchronization::TruffleRubyAttrVolatile (module)">TruffleRubyAttrVolatile</a></span>
-    
   
     
-      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Synchronization/Condition.html" title="Concurrent::Synchronization::Condition (class)">Condition</a></span>, <span class='object_link'><a href="Synchronization/Lock.html" title="Concurrent::Synchronization::Lock (class)">Lock</a></span>, <span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Object</a></span>
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Object</a></span>
     
   
 </p>
@@ -153,15 +151,15 @@
         </dt>
         <dd><pre class="code"><span class='kw'>case</span>
 <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_on_cruby?'>on_cruby?</span>
-  <span class='const'><span class='object_link'><a href="Synchronization/MriAttrVolatile.html" title="Concurrent::Synchronization::MriAttrVolatile (module)">MriAttrVolatile</a></span></span>
+  <span class='const'>MriAttrVolatile</span>
 <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_on_jruby?'>on_jruby?</span>
-  <span class='const'><span class='object_link'><a href="Synchronization/JRubyAttrVolatile.html" title="Concurrent::Synchronization::JRubyAttrVolatile (module)">JRubyAttrVolatile</a></span></span>
+  <span class='const'>JRubyAttrVolatile</span>
 <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_on_rbx?'>on_rbx?</span>
-  <span class='const'><span class='object_link'><a href="Synchronization/RbxAttrVolatile.html" title="Concurrent::Synchronization::RbxAttrVolatile (module)">RbxAttrVolatile</a></span></span>
+  <span class='const'>RbxAttrVolatile</span>
 <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_on_truffleruby?'>on_truffleruby?</span>
-  <span class='const'><span class='object_link'><a href="Synchronization/TruffleRubyAttrVolatile.html" title="Concurrent::Synchronization::TruffleRubyAttrVolatile (module)">TruffleRubyAttrVolatile</a></span></span>
+  <span class='const'>TruffleRubyAttrVolatile</span>
 <span class='kw'>else</span>
-  <span class='const'><span class='object_link'><a href="Synchronization/MriAttrVolatile.html" title="Concurrent::Synchronization::MriAttrVolatile (module)">MriAttrVolatile</a></span></span>
+  <span class='const'>MriAttrVolatile</span>
 <span class='kw'>end</span></pre></dd>
       
     </dl>

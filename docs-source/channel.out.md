@@ -15,15 +15,15 @@ since the channel is full.
 threads = Array.new(3) { |i| Thread.new { ch.push message: i } } 
 sleep 0.01 # let the threads run
 threads
-# => [#<Thread:0x000003@channel.in.md:14 dead>,
+# => [#<Thread:0x000003@channel.in.md:14 sleep_forever>,
 #     #<Thread:0x000004@channel.in.md:14 dead>,
-#     #<Thread:0x000005@channel.in.md:14 sleep_forever>]
+#     #<Thread:0x000005@channel.in.md:14 dead>]
 ```
 
 When message is popped the last thread continues and finishes as well.
 
 ```ruby
-ch.pop                                   # => {:message=>0}
+ch.pop                                   # => {:message=>2}
 threads.map(&:join)
 # => [#<Thread:0x000003@channel.in.md:14 dead>,
 #     #<Thread:0x000004@channel.in.md:14 dead>,
@@ -40,12 +40,12 @@ threads = Array.new(3) { |i| Thread.new { ch.pop } }
 sleep 0.01 # let the threads run
 threads
 # => [#<Thread:0x000006@channel.in.md:32 dead>,
-#     #<Thread:0x000007@channel.in.md:32 sleep_forever>,
-#     #<Thread:0x000008@channel.in.md:32 dead>]
+#     #<Thread:0x000007@channel.in.md:32 dead>,
+#     #<Thread:0x000008@channel.in.md:32 sleep_forever>]
 ch.push message: 3
 # => #<Concurrent::Promises::Channel:0x000002 capacity taken 0 of 2>
 threads.map(&:value)
-# => [{:message=>1}, {:message=>3}, {:message=>2}]
+# => [{:message=>1}, {:message=>0}, {:message=>3}]
 ```
 
 ### Promises integration
@@ -59,7 +59,7 @@ ch = Concurrent::Promises::Channel.new 2
 push_operations = Array.new(3) { |i| ch.push_op message: i }
 # => [#<Concurrent::Promises::Future:0x00000a fulfilled>,
 #     #<Concurrent::Promises::Future:0x00000b fulfilled>,
-#     #<Concurrent::Promises::Future:0x00000c pending>]
+#     #<Concurrent::Promises::ResolvableFuture:0x00000c pending>]
 ```
 
 > We do not have to sleep here letting the futures execute as Threads.
@@ -204,17 +204,17 @@ log
 #     "producer 0 pushing 2",
 #     "producer 1 pushing 0",
 #     "consumer 0 got 0. payload 0 from producer 0",
-#     "consumer 1 got 0. payload 1 from producer 0",
-#     "producer 1 pushing 1",
-#     "consumer 3 got 0. payload 2 from producer 0",
-#     "producer 1 pushing 2",
-#     "consumer 2 got 0. payload 0 from producer 1",
-#     "producer 1 pushing 3",
 #     "producer 0 pushing 3",
-#     "consumer 0 got 1. payload 1 from producer 1",
-#     "consumer 1 got 1. payload 2 from producer 1",
-#     "consumer 3 got 1. payload 3 from producer 1",
-#     "consumer 2 got 1. payload 3 from producer 0"]
+#     "consumer 2 got 0. payload 1 from producer 0",
+#     "producer 1 pushing 1",
+#     "consumer 1 got 0. payload 2 from producer 0",
+#     "consumer 3 got 0. payload 0 from producer 1",
+#     "producer 1 pushing 2",
+#     "consumer 0 got 1. payload 3 from producer 0",
+#     "consumer 1 got 1. payload 1 from producer 1",
+#     "consumer 3 got 1. payload 2 from producer 1",
+#     "producer 1 pushing 3",
+#     "consumer 2 got 1. payload 3 from producer 1"]
 ```
 
 The producers are much faster than consumers 
@@ -269,20 +269,20 @@ consumers.map(&:value!)                  # => [:done, :done, :done, :done]
 log
 # => ["producer 0 pushing 0",
 #     "producer 1 pushing 0",
-#     "producer 1 pushing 1",
-#     "consumer 1 got 0. payload 0 from producer 0",
 #     "producer 0 pushing 1",
-#     "consumer 0 got 0. payload 1 from producer 1",
-#     "consumer 3 got 0. payload 0 from producer 1",
-#     "producer 0 pushing 2",
-#     "producer 0 pushing 3",
+#     "producer 1 pushing 1",
+#     "consumer 0 got 0. payload 0 from producer 0",
+#     "consumer 1 got 0. payload 0 from producer 1",
 #     "consumer 2 got 0. payload 1 from producer 0",
+#     "producer 0 pushing 2",
+#     "consumer 3 got 0. payload 1 from producer 1",
 #     "producer 1 pushing 2",
+#     "producer 0 pushing 3",
 #     "producer 1 pushing 3",
-#     "consumer 1 got 1. payload 2 from producer 0",
-#     "consumer 0 got 1. payload 3 from producer 0",
-#     "consumer 3 got 1. payload 2 from producer 1",
-#     "consumer 2 got 1. payload 3 from producer 1"]
+#     "consumer 0 got 1. payload 2 from producer 0",
+#     "consumer 2 got 1. payload 2 from producer 1",
+#     "consumer 3 got 1. payload 3 from producer 0",
+#     "consumer 1 got 1. payload 3 from producer 1"]
 ```
 
 ### Synchronization of workers by passing a value
@@ -304,10 +304,10 @@ thread
 channel.try_push(:v1)                    # => true
 # remains pending, since there is no matching operation 
 push = channel.push_op(:v2)
-# => #<Concurrent::Promises::Future:0x000023 pending>
+# => #<Concurrent::Promises::ResolvableFuture:0x000023 pending>
 thread.value                             # => :v1
 # the push operation resolves as a pairing pop is called
 channel.pop                              # => :v2
 push
-# => #<Concurrent::Promises::Future:0x000023 fulfilled>
+# => #<Concurrent::Promises::ResolvableFuture:0x000023 fulfilled>
 ```
