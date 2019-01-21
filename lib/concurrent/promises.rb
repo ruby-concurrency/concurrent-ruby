@@ -1207,6 +1207,17 @@ module Concurrent
         self
       end
 
+      # @return [String] Short string representation.
+      def to_s
+        if resolved?
+          format '%s with %s>', super[0..-2], (fulfilled? ? value : reason).inspect
+        else
+          super
+        end
+      end
+
+      alias_method :inspect, :to_s
+
       private
 
       def rejected_resolution(raise_on_reassign, state)
