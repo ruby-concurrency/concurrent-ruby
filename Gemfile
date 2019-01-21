@@ -17,7 +17,7 @@ group :development do
 end
 
 group :documentation, optional: true do
-  gem 'yard', '~> 0.9.0', :require => false
+  gem 'yard', '~> 0.9.0', require: false
   gem 'redcarpet', '~> 3.0', platforms: :mri # understands github markdown
   gem 'md-ruby-eval', '~> 0.4'
 end
@@ -25,12 +25,13 @@ end
 group :testing do
   gem 'rspec', '~> 3.7'
   gem 'timecop', '~> 0.7.4'
+  gem 'sigdump', require: false
 end
 
 # made opt-in since it will not install on jruby 1.7
 group :coverage, optional: !ENV['COVERAGE'] do
-  gem 'simplecov', '~> 0.16.0', :require => false
-  gem 'coveralls', '~> 0.8.2', :require => false
+  gem 'simplecov', '~> 0.16.0', require: false
+  gem 'coveralls', '~> 0.8.2', require: false
 end
 
 group :benchmarks, optional: true do
