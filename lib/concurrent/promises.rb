@@ -994,13 +994,18 @@ module Concurrent
       # @return [Exception]
       def exception(*args)
         raise Concurrent::Error, 'it is not rejected' unless rejected?
+        raise ArgumentError unless args.size <= 1
         reason = Array(internal_state.reason).flatten.compact
         if reason.size > 1
           ex = Concurrent::MultipleErrors.new reason
           ex.set_backtrace(caller)
           ex
         else
-          ex = reason[0].clone.exception(*args)
+          ex = if reason[0].respond_to? :exception
+                 reason[0].clone.exception(*args)
+               else
+                 RuntimeError.new(reason[0]).exception(*args)
+               end
           ex.set_backtrace Array(ex.backtrace) + caller
           ex
         end
