@@ -946,9 +946,17 @@ module Concurrent
       #   @!macro promises.warn.blocks
       #   @!macro promises.warn.nil
       #   @!macro promises.param.timeout
-      # @return [Object, nil] the value of the Future when fulfilled, nil on timeout or rejection.
-      def value(timeout = nil)
-        internal_state.value if wait_until_resolved timeout
+      #   @!macro promises.param.timeout_value
+      #     @param [Object] timeout_value a value returned by the method when it times out
+      # @return [Object, nil, timeout_value] the value of the Future when fulfilled,
+      #   timeout_value on timeout,
+      #   nil on rejection.
+      def value(timeout = nil, timeout_value = nil)
+        if wait_until_resolved timeout
+          internal_state.value
+        else
+          timeout_value
+        end
       end
 
       # Returns reason of future's rejection.
@@ -957,9 +965,14 @@ module Concurrent
       # @!macro promises.warn.blocks
       # @!macro promises.warn.nil
       # @!macro promises.param.timeout
-      # @return [Exception, nil] nil on timeout or fulfillment.
-      def reason(timeout = nil)
-        internal_state.reason if wait_until_resolved timeout
+      # @!macro promises.param.timeout_value
+      # @return [Exception, timeout_value] the reason, or timeout_value on timeout, or nil on fulfillment.
+      def reason(timeout = nil, timeout_value = nil)
+        if wait_until_resolved timeout
+          internal_state.reason
+        else
+          timeout_value
+        end
       end
 
       # Returns triplet fulfilled?, value, reason.
@@ -981,10 +994,16 @@ module Concurrent
       end
 
       # @!macro promises.method.value
-      # @return [Object, nil] the value of the Future when fulfilled, nil on timeout.
+      # @return [Object, nil, timeout_value] the value of the Future when fulfilled,
+      #   or nil on rejection,
+      #   or timeout_value on timeout.
       # @raise [Exception] {#reason} on rejection
-      def value!(timeout = nil)
-        internal_state.value if wait_until_resolved! timeout
+      def value!(timeout = nil, timeout_value = nil)
+        if wait_until_resolved! timeout
+          internal_state.value
+        else
+          timeout_value
+        end
       end
 
       # Allows rejected Future to be risen with `raise` method.
@@ -1499,9 +1518,9 @@ module Concurrent
       # resolve_on_timeout.
       #
       # @!macro promises.resolvable.resolve_on_timeout
-      # @return [Object, nil]
+      # @return [Object, timeout_value, nil]
       # @see Future#value
-      def value(timeout = nil, resolve_on_timeout = nil)
+      def value(timeout = nil, timeout_value = nil, resolve_on_timeout = nil)
         if wait_until_resolved timeout
           internal_state.value
         else
@@ -1509,10 +1528,10 @@ module Concurrent
             unless resolve(*resolve_on_timeout, false)
               # if it fails to resolve it was resolved in the meantime
               # so return value as if there was no timeout
-              internal_state.value
+              return internal_state.value
             end
           end
-          # otherwise returns nil
+          timeout_value
         end
       end
 
@@ -1520,10 +1539,10 @@ module Concurrent
       # resolve_on_timeout.
       #
       # @!macro promises.resolvable.resolve_on_timeout
-      # @return [Object, nil]
+      # @return [Object, timeout_value, nil]
       # @raise [Exception] {#reason} on rejection
       # @see Future#value!
-      def value!(timeout = nil, resolve_on_timeout = nil)
+      def value!(timeout = nil, timeout_value = nil, resolve_on_timeout = nil)
         if wait_until_resolved! timeout
           internal_state.value
         else
@@ -1532,10 +1551,10 @@ module Concurrent
               # if it fails to resolve it was resolved in the meantime
               # so return value as if there was no timeout
               raise self if rejected?
-              internal_state.value
+              return internal_state.value
             end
           end
-          # otherwise returns nil
+          timeout_value
         end
       end
 
@@ -1543,9 +1562,9 @@ module Concurrent
       # resolve_on_timeout.
       #
       # @!macro promises.resolvable.resolve_on_timeout
-      # @return [Exception, nil]
+      # @return [Exception, timeout_value, nil]
       # @see Future#reason
-      def reason(timeout = nil, resolve_on_timeout = nil)
+      def reason(timeout = nil, timeout_value = nil, resolve_on_timeout = nil)
         if wait_until_resolved timeout
           internal_state.reason
         else
@@ -1553,10 +1572,10 @@ module Concurrent
             unless resolve(*resolve_on_timeout, false)
               # if it fails to resolve it was resolved in the meantime
               # so return value as if there was no timeout
-              internal_state.reason
+              return internal_state.reason
             end
           end
-          # otherwise returns nil
+          timeout_value
         end
       end
 

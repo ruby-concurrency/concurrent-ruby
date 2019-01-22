@@ -115,11 +115,11 @@ module Concurrent
       end
 
       # Pop a message from the channel if there is one available.
-      # @return [Object, nil] message or nil when there is no message
-      def try_pop
-        # TODO (pitr-ch 11-Dec-2018): disambiguation of no message and nil message
+      # @param [Object] no_value returned when there is no message available
+      # @return [Object, no_value] message or nil when there is no message
+      def try_pop(no_value = nil)
         message = try_pop_disambiguated
-        message == NOTHING ? nil : message
+        message == NOTHING ? no_value : message
       end
 
       # Returns a future witch will become fulfilled with a value from the channel when one is available.
@@ -135,9 +135,9 @@ module Concurrent
       #
       # @!macro channel.warn.blocks
       # @!macro channel.param.timeout
+      # @!macro promises.param.timeout_value
       # @return [Object, nil] message or nil when timed out
-      def pop(timeout = nil)
-        # TODO (pitr-ch 11-Dec-2018): disambiguation of message nil and timeout, allow to inject what should be returned when timed-out
+      def pop(timeout = nil, timeout_value = nil)
         probe = @Mutex.synchronize do
           message = ns_shift_message
           if message == NOTHING
@@ -154,7 +154,7 @@ module Concurrent
           probe
         end
 
-        probe.value!(timeout, [true, nil, nil])
+        probe.value!(timeout, timeout_value, [true, timeout_value, nil])
       end
 
       # If message is available in the receiver or any of the provided channels
@@ -194,11 +194,11 @@ module Concurrent
       # @!macro channel.warn.blocks
       # @param [Channel, ::Array<Channel>] channels
       # @!macro channel.param.timeout
-      # @return [Object, nil] message or nil when timed out
+      # @return [::Array(Channel, Object), nil] message or nil when timed out
       # @see #select_op
       def select(channels, timeout = nil)
         probe = select_op(channels)
-        probe.value!(timeout, [true, nil, nil])
+        probe.value!(timeout, nil, [true, nil, nil])
       end
 
       # @return [Integer] The number of messages currently stored in the channel.

@@ -125,14 +125,14 @@ since the channel is full. </p>
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_threads'>threads</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>3</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='label'>message:</span> <span class='id identifier rubyid_i'>i</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span> 
 <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.01</span> <span class='comment'># let the threads run
 </span><span class='id identifier rubyid_threads'>threads</span>
-<span class='comment'># =&gt; [#&lt;Thread:0x000003@channel.in.md:14 sleep_forever&gt;,
+<span class='comment'># =&gt; [#&lt;Thread:0x000003@channel.in.md:14 dead&gt;,
 </span><span class='comment'>#     #&lt;Thread:0x000004@channel.in.md:14 dead&gt;,
-</span><span class='comment'>#     #&lt;Thread:0x000005@channel.in.md:14 dead&gt;]
+</span><span class='comment'>#     #&lt;Thread:0x000005@channel.in.md:14 sleep_forever&gt;]
 </span></code></pre>
 
 <p>When message is popped the last thread continues and finishes as well.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                                   <span class='comment'># =&gt; {:message=&gt;2}
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                                   <span class='comment'># =&gt; {:message=&gt;0}
 </span><span class='id identifier rubyid_threads'>threads</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:join</span><span class='rparen'>)</span>
 <span class='comment'># =&gt; [#&lt;Thread:0x000003@channel.in.md:14 dead&gt;,
 </span><span class='comment'>#     #&lt;Thread:0x000004@channel.in.md:14 dead&gt;,
@@ -153,7 +153,7 @@ one will be blocked until new messages is pushed.</p>
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='label'>message:</span> <span class='int'>3</span>
 <span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000002 capacity taken 0 of 2&gt;
 </span><span class='id identifier rubyid_threads'>threads</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; [{:message=&gt;1}, {:message=&gt;0}, {:message=&gt;3}]
+<span class='comment'># =&gt; [{:message=&gt;1}, {:message=&gt;2}, {:message=&gt;3}]
 </span></code></pre>
 
 <h3>Promises integration</h3>
@@ -253,7 +253,7 @@ when the timeout option is used.</p>
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='int'>3</span><span class='comma'>,</span> <span class='float'>0.01</span>                          <span class='comment'># =&gt; false
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; 1
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; 2
-</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; nil
+</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; [true, nil, nil]
 </span></code></pre>
 
 <h3>Backpressure</h3>
@@ -310,15 +310,15 @@ if the consumers are not keeping up.</p>
 </span><span class='comment'>#     &quot;consumer 0 got 0. payload 0 from producer 0&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 3&quot;,
 </span><span class='comment'>#     &quot;consumer 2 got 0. payload 1 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 3 got 0. payload 2 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 1 got 0. payload 0 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 1&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 0. payload 2 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 0. payload 0 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 2&quot;,
-</span><span class='comment'>#     &quot;consumer 0 got 1. payload 3 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 1. payload 1 from producer 1&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 1. payload 2 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 1. payload 3 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 3 got 1. payload 1 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 1 got 1. payload 2 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 3&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 1. payload 3 from producer 1&quot;]
+</span><span class='comment'>#     &quot;consumer 0 got 1. payload 3 from producer 1&quot;]
 </span></code></pre>
 
 <p>The producers are much faster than consumers 
@@ -372,19 +372,19 @@ that run a thread pool.</p>
 </span><span class='id identifier rubyid_log'>log</span>
 <span class='comment'># =&gt; [&quot;producer 0 pushing 0&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 0&quot;,
+</span><span class='comment'>#     &quot;consumer 0 got 0. payload 0 from producer 0&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 1&quot;,
-</span><span class='comment'>#     &quot;consumer 0 got 0. payload 0 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 0. payload 0 from producer 1&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 0. payload 1 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 0. payload 0 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 3 got 0. payload 1 from producer 0&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 2&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 0. payload 1 from producer 1&quot;,
-</span><span class='comment'>#     &quot;producer 1 pushing 2&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 3&quot;,
+</span><span class='comment'>#     &quot;consumer 1 got 0. payload 1 from producer 1&quot;,
+</span><span class='comment'>#     &quot;producer 1 pushing 2&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 3&quot;,
 </span><span class='comment'>#     &quot;consumer 0 got 1. payload 2 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 1. payload 2 from producer 1&quot;,
 </span><span class='comment'>#     &quot;consumer 3 got 1. payload 3 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 1. payload 2 from producer 1&quot;,
 </span><span class='comment'>#     &quot;consumer 1 got 1. payload 3 from producer 1&quot;]
 </span></code></pre>
 

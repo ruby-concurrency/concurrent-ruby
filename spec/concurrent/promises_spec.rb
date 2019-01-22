@@ -585,19 +585,19 @@ RSpec.describe 'Concurrent::Promises' do
     specify "#value" do
       future = resolvable_future
       expect(future.value(0)).to eq nil
-      expect(future.value(0, [true, :v, nil])).to be_falsey
+      expect(future.value(0, :timeout, [true, :v, nil])).to eq :timeout
       expect(future.value).to eq :v
       expect(future.value(0)).to eq :v
-      expect(future.value(0, [true, :v, nil])).to eq :v
+      expect(future.value(0, :timeout, [true, :v, nil])).to eq :v
     end
 
     specify "#value!" do
       future = resolvable_future
       expect(future.value!(0)).to eq nil
-      expect(future.value!(0, [true, :v, nil])).to be_falsey
+      expect(future.value!(0, :timeout, [true, :v, nil])).to eq :timeout
       expect(future.value!).to eq :v
-      expect(future.value!(0, nil)).to be_truthy
-      expect(future.value!(0, [true, :v, nil])).to be_truthy
+      expect(future.value!(0, :timeout, nil)).to eq :v
+      expect(future.value!(0, :timeout, [true, :v, nil])).to eq :v
 
       future = resolvable_future
       expect(future.wait!(0)).to be_falsey
@@ -608,10 +608,10 @@ RSpec.describe 'Concurrent::Promises' do
     specify "#reason" do
       future = resolvable_future
       expect(future.reason(0)).to eq nil
-      expect(future.reason(0, [false, nil, :err])).to be_falsey
+      expect(future.reason(0, :timeout, [false, nil, :err])).to eq :timeout
       expect(future.reason).to eq :err
       expect(future.reason(0)).to eq :err
-      expect(future.reason(0, [false, nil, :err])).to eq :err
+      expect(future.reason(0, :timeout, [false, nil, :err])).to eq :err
     end
 
     specify "result" do
