@@ -110,7 +110,7 @@ module Concurrent
       #
       # @param [true, false] fulfilled
       # @param [Object] value
-      # @param [Exception] reason
+      # @param [Object] reason
       # @!macro promises.param.default_executor
       # @return [Future]
       def resolved_future(fulfilled, value, reason, default_executor = self.default_executor)
@@ -129,7 +129,7 @@ module Concurrent
       # Creates resolved future with will be rejected with the given reason.
       #
       # @!macro promises.param.default_executor
-      # @param [Exception] reason
+      # @param [Object] reason
       # @return [Future]
       def rejected_future(reason, default_executor = self.default_executor)
         resolved_future false, nil, reason, default_executor
@@ -623,7 +623,7 @@ module Concurrent
       #   @yield [fulfilled, value, reason, *args] to the task.
       #   @yieldparam [true, false] fulfilled
       #   @yieldparam [Object] value
-      #   @yieldparam [Exception] reason
+      #   @yieldparam [Object] reason
       def chain_on(executor, *args, &task)
         ChainPromise.new_blocked_by1(self, @DefaultExecutor, executor, args, &task).future
       end
@@ -664,7 +664,7 @@ module Concurrent
       #   @yield [fulfilled, value, reason, *args] to the callback.
       #   @yieldparam [true, false] fulfilled
       #   @yieldparam [Object] value
-      #   @yieldparam [Exception] reason
+      #   @yieldparam [Object] reason
       def on_resolution!(*args, &callback)
         add_callback :callback_on_resolution, args, callback
       end
@@ -682,7 +682,7 @@ module Concurrent
       #   @yield [fulfilled, value, reason, *args] to the callback.
       #   @yieldparam [true, false] fulfilled
       #   @yieldparam [Object] value
-      #   @yieldparam [Exception] reason
+      #   @yieldparam [Object] reason
       def on_resolution_using(executor, *args, &callback)
         add_callback :async_callback_on_resolution, executor, args, callback
       end
@@ -966,7 +966,7 @@ module Concurrent
       # @!macro promises.warn.nil
       # @!macro promises.param.timeout
       # @!macro promises.param.timeout_value
-      # @return [Exception, timeout_value] the reason, or timeout_value on timeout, or nil on fulfillment.
+      # @return [Object, timeout_value] the reason, or timeout_value on timeout, or nil on fulfillment.
       def reason(timeout = nil, timeout_value = nil)
         if wait_until_resolved timeout
           internal_state.reason
@@ -980,7 +980,7 @@ module Concurrent
       #
       # @!macro promises.warn.blocks
       # @!macro promises.param.timeout
-      # @return [Array(Boolean, Object, Exception), nil] triplet of fulfilled?, value, reason, or nil
+      # @return [Array(Boolean, Object, Object), nil] triplet of fulfilled?, value, reason, or nil
       #   on timeout.
       def result(timeout = nil)
         internal_state.result if wait_until_resolved timeout
@@ -1423,7 +1423,7 @@ module Concurrent
       #
       # @param [true, false] fulfilled
       # @param [Object] value
-      # @param [Exception] reason
+      # @param [Object] reason
       # @!macro promise.param.raise_on_reassign
       # @!macro promise.param.reserved
       def resolve(fulfilled = true, value = nil, reason = nil, raise_on_reassign = true, reserved = false)
@@ -1443,7 +1443,7 @@ module Concurrent
       # Makes the future rejected with `reason`,
       # which triggers all dependent futures.
       #
-      # @param [Exception] reason
+      # @param [Object] reason
       # @!macro promise.param.raise_on_reassign
       # @!macro promise.param.reserved
       def reject(reason, raise_on_reassign = true, reserved = false)
