@@ -433,7 +433,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#reason-instance_method" title="#reason (instance method)">#<strong>reason</strong>(timeout = nil, timeout_value = nil)  &#x21d2; Exception, timeout_value </a>
+      <a href="#reason-instance_method" title="#reason (instance method)">#<strong>reason</strong>(timeout = nil, timeout_value = nil)  &#x21d2; Object, timeout_value </a>
     
 
     
@@ -525,7 +525,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#result-instance_method" title="#result (instance method)">#<strong>result</strong>(timeout = nil)  &#x21d2; Array(Boolean, Object, Exception)<sup>?</sup> </a>
+      <a href="#result-instance_method" title="#result (instance method)">#<strong>result</strong>(timeout = nil)  &#x21d2; Array(Boolean, Object, Object)<sup>?</sup> </a>
     
 
     
@@ -689,6 +689,8 @@ e.g. when the tasks raises an exception.</p>
       <a href="#to_s-instance_method" title="#to_s (instance method)">#<strong>to_s</strong>  &#x21d2; String </a>
     
 
+    
+      (also: #inspect)
     
   </span>
   
@@ -2012,7 +2014,7 @@ global executor. The task is executed on it, default executor remains unchanged.
       <div class="method_details ">
   <h3 class="signature " id="reason-instance_method">
   
-    #<strong>reason</strong>(timeout = nil, timeout_value = nil)  &#x21d2; <tt>Exception</tt>, <tt>timeout_value</tt> 
+    #<strong>reason</strong>(timeout = nil, timeout_value = nil)  &#x21d2; <tt>Object</tt>, <tt>timeout_value</tt> 
   
 
   
@@ -2088,7 +2090,7 @@ Calls AbstractEventFuture#touch.</p>
     <li>
       
       
-        <span class='type'>(<tt>Exception</tt>, <tt>timeout_value</tt>)</span>
+        <span class='type'>(<tt>Object</tt>, <tt>timeout_value</tt>)</span>
       
       
       
@@ -2373,7 +2375,7 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
       <div class="method_details ">
   <h3 class="signature " id="result-instance_method">
   
-    #<strong>result</strong>(timeout = nil)  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Exception)</tt><sup>?</sup> 
+    #<strong>result</strong>(timeout = nil)  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Object)</tt><sup>?</sup> 
   
 
   
@@ -2424,7 +2426,7 @@ Calls AbstractEventFuture#touch.</p>
     <li>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Exception)</tt>, <tt>nil</tt>)</span>
+        <span class='type'>(<tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Boolean, Object, Object)</tt>, <tt>nil</tt>)</span>
       
       
       
@@ -2909,6 +2911,10 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
     #<strong>to_s</strong>  &#x21d2; <tt>String</tt> 
   
 
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='inspect-instance_method'>inspect</span></span>
+    </span>
   
 
   

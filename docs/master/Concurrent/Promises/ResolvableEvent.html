@@ -361,12 +361,12 @@ is already resolved.</p>
       <pre class="lines">
 
 
-1386
-1387
-1388</pre>
+1388
+1389
+1390</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1386</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1388</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span> <span class='op'>=</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_reserved'>reserved</span> <span class='op'>=</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolve_with'>resolve_with</span> <span class='const'>RESOLVED</span><span class='comma'>,</span> <span class='id identifier rubyid_raise_on_reassign'>raise_on_reassign</span><span class='comma'>,</span> <span class='id identifier rubyid_reserved'>reserved</span>
@@ -443,18 +443,18 @@ resolve_on_timeout.</p>
       <pre class="lines">
 
 
-1404
-1405
 1406
 1407
 1408
 1409
 1410
 1411
-1412</pre>
+1412
+1413
+1414</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1404</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1406</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span> <span class='op'>=</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span> <span class='kw'>or</span> <span class='kw'>if</span> <span class='id identifier rubyid_resolve_on_timeout'>resolve_on_timeout</span>
@@ -508,12 +508,12 @@ resolve_on_timeout.</p>
       <pre class="lines">
 
 
-1393
-1394
-1395</pre>
+1395
+1396
+1397</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1393</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1395</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_hidden_resolvable'>with_hidden_resolvable</span>
   <span class='ivar'>@with_hidden_resolvable</span> <span class='op'>||=</span> <span class='const'>EventWrapperPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>

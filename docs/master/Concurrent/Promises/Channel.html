@@ -153,7 +153,7 @@ one will be blocked until new messages is pushed.</p>
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='label'>message:</span> <span class='int'>3</span>
 <span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000002 capacity taken 0 of 2&gt;
 </span><span class='id identifier rubyid_threads'>threads</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span>
-<span class='comment'># =&gt; [{:message=&gt;1}, {:message=&gt;2}, {:message=&gt;3}]
+<span class='comment'># =&gt; [{:message=&gt;2}, {:message=&gt;1}, {:message=&gt;3}]
 </span></code></pre>
 
 <h3>Promises integration</h3>
@@ -164,8 +164,8 @@ therefore all operations can be represented as futures.</p>
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch'>ch</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'>Channel</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>2</span>
 <span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000009 capacity taken 0 of 2&gt;
 </span><span class='id identifier rubyid_push_operations'>push_operations</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>3</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push_op'>push_op</span> <span class='label'>message:</span> <span class='id identifier rubyid_i'>i</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x00000a fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00000b fulfilled&gt;,
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x00000a fulfilled with #&lt;Concurrent::Promises::Channel:0x000009 capacity taken 2 of 2&gt;&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00000b fulfilled with #&lt;Concurrent::Promises::Channel:0x000009 capacity taken 2 of 2&gt;&gt;,
 </span><span class='comment'>#     #&lt;Concurrent::Promises::ResolvableFuture:0x00000c pending&gt;]
 </span></code></pre>
 
@@ -186,8 +186,8 @@ making a space for a new message.    </p>
 </span><span class='comment'>#     #&lt;Concurrent::Promises::Channel:0x000009 capacity taken 2 of 2&gt;]
 </span>
 <span class='id identifier rubyid_pop_operations'>pop_operations</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>3</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop_op'>pop_op</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; [#&lt;Concurrent::Promises::ResolvableFuture:0x00000d fulfilled&gt;,
-</span><span class='comment'>#     #&lt;Concurrent::Promises::ResolvableFuture:0x00000e fulfilled&gt;,
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::ResolvableFuture:0x00000d fulfilled with {:message=&gt;1}&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::ResolvableFuture:0x00000e fulfilled with {:message=&gt;2}&gt;,
 </span><span class='comment'>#     #&lt;Concurrent::Promises::ResolvableFuture:0x00000f pending&gt;]
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='label'>message:</span> <span class='int'>3</span> <span class='comment'># (push|pop) can be freely mixed with (push_o|pop_op)
 </span><span class='id identifier rubyid_pop_operations'>pop_operations</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span> 
@@ -253,7 +253,7 @@ when the timeout option is used.</p>
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='int'>3</span><span class='comma'>,</span> <span class='float'>0.01</span>                          <span class='comment'># =&gt; false
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; 1
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; 2
-</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; [true, nil, nil]
+</span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span> <span class='float'>0.01</span>                              <span class='comment'># =&gt; nil
 </span></code></pre>
 
 <h3>Backpressure</h3>
@@ -308,17 +308,17 @@ if the consumers are not keeping up.</p>
 </span><span class='comment'>#     &quot;producer 0 pushing 2&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 0&quot;,
 </span><span class='comment'>#     &quot;consumer 0 got 0. payload 0 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 1 got 0. payload 1 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 0. payload 2 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 3 got 0. payload 0 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 3&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 0. payload 1 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 0. payload 2 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 0. payload 0 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 2&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 1. payload 3 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 1. payload 1 from producer 1&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 1. payload 2 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 0 got 1. payload 3 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 1 got 1. payload 1 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 1. payload 2 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 3&quot;,
-</span><span class='comment'>#     &quot;consumer 0 got 1. payload 3 from producer 1&quot;]
+</span><span class='comment'>#     &quot;consumer 3 got 1. payload 3 from producer 1&quot;]
 </span></code></pre>
 
 <p>The producers are much faster than consumers 
@@ -372,20 +372,20 @@ that run a thread pool.</p>
 </span><span class='id identifier rubyid_log'>log</span>
 <span class='comment'># =&gt; [&quot;producer 0 pushing 0&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 0&quot;,
-</span><span class='comment'>#     &quot;consumer 0 got 0. payload 0 from producer 0&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 1&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 0. payload 0 from producer 1&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 0. payload 1 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 0 got 0. payload 0 from producer 0&quot;,
+</span><span class='comment'>#     &quot;consumer 1 got 0. payload 0 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 0. payload 1 from producer 0&quot;,
 </span><span class='comment'>#     &quot;producer 0 pushing 2&quot;,
-</span><span class='comment'>#     &quot;producer 0 pushing 3&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 0. payload 1 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 3 got 0. payload 1 from producer 1&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 2&quot;,
+</span><span class='comment'>#     &quot;producer 0 pushing 3&quot;,
 </span><span class='comment'>#     &quot;producer 1 pushing 3&quot;,
+</span><span class='comment'>#     &quot;consumer 3 got 1. payload 3 from producer 1&quot;,
 </span><span class='comment'>#     &quot;consumer 0 got 1. payload 2 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 3 got 1. payload 3 from producer 0&quot;,
-</span><span class='comment'>#     &quot;consumer 2 got 1. payload 2 from producer 1&quot;,
-</span><span class='comment'>#     &quot;consumer 1 got 1. payload 3 from producer 1&quot;]
+</span><span class='comment'>#     &quot;consumer 1 got 1. payload 2 from producer 1&quot;,
+</span><span class='comment'>#     &quot;consumer 2 got 1. payload 3 from producer 0&quot;]
 </span></code></pre>
 
 <h3>Synchronization of workers by passing a value</h3>
@@ -411,7 +411,7 @@ The operations have to be paired to succeed. </p>
 </span><span class='comment'># the push operation resolves as a pairing pop is called
 </span><span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                              <span class='comment'># =&gt; :v2
 </span><span class='id identifier rubyid_push'>push</span>
-<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x000023 fulfilled&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableFuture:0x000023 fulfilled with #&lt;Concurrent::Promises::Channel:0x000021 capacity taken 0 of 0&gt;&gt;
 </span></code></pre>
 </p>
 
@@ -588,7 +588,7 @@ The operations have to be paired to succeed. </p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#pop-instance_method" title="#pop (instance method)">#<strong>pop</strong>(timeout = nil)  &#x21d2; Object<sup>?</sup> </a>
+      <a href="#pop-instance_method" title="#pop (instance method)">#<strong>pop</strong>(timeout = nil, timeout_value = nil)  &#x21d2; Object<sup>?</sup> </a>
     
 
     
@@ -680,7 +680,7 @@ The operations have to be paired to succeed. </p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#select-instance_method" title="#select (instance method)">#<strong>select</strong>(channels, timeout = nil)  &#x21d2; Object<sup>?</sup> </a>
+      <a href="#select-instance_method" title="#select (instance method)">#<strong>select</strong>(channels, timeout = nil)  &#x21d2; ::Array(Channel, Object)<sup>?</sup> </a>
     
 
     
@@ -774,7 +774,7 @@ The operations have to be paired to succeed. </p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#try_pop-instance_method" title="#try_pop (instance method)">#<strong>try_pop</strong>  &#x21d2; Object<sup>?</sup> </a>
+      <a href="#try_pop-instance_method" title="#try_pop (instance method)">#<strong>try_pop</strong>(no_value = nil)  &#x21d2; Object, no_value </a>
     
 
     
@@ -1169,7 +1169,7 @@ The operations have to be paired to succeed. </p>
       <div class="method_details ">
   <h3 class="signature " id="pop-instance_method">
   
-    #<strong>pop</strong>(timeout = nil)  &#x21d2; <tt>Object</tt><sup>?</sup> 
+    #<strong>pop</strong>(timeout = nil, timeout_value = nil)  &#x21d2; <tt>Object</tt><sup>?</sup> 
   
 
   
@@ -1237,7 +1237,6 @@ Be careful it can deadlock.</p>
       <pre class="lines">
 
 
-139
 140
 141
 142
@@ -1259,11 +1258,10 @@ Be careful it can deadlock.</p>
 158</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/channel.rb', line 139</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/channel.rb', line 140</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_pop'>pop</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='comment'># TODO (pitr-ch 11-Dec-2018): disambiguation of message nil and timeout, allow to inject what should be returned when timed-out
-</span>  <span class='id identifier rubyid_probe'>probe</span> <span class='op'>=</span> <span class='ivar'>@Mutex</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_pop'>pop</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_probe'>probe</span> <span class='op'>=</span> <span class='ivar'>@Mutex</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
     <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='id identifier rubyid_ns_shift_message'>ns_shift_message</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>==</span> <span class='const'>NOTHING</span>
       <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='id identifier rubyid_ns_consume_pending_push'>ns_consume_pending_push</span>
@@ -1279,7 +1277,7 @@ Be careful it can deadlock.</p>
     <span class='id identifier rubyid_probe'>probe</span>
   <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_probe'>probe</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>true</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_probe'>probe</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1601,7 +1599,7 @@ e.g. popping a message.</p>
       <div class="method_details ">
   <h3 class="signature " id="select-instance_method">
   
-    #<strong>select</strong>(channels, timeout = nil)  &#x21d2; <tt>Object</tt><sup>?</sup> 
+    #<strong>select</strong>(channels, timeout = nil)  &#x21d2; <tt>::Array(<span class='object_link'><a href="" title="Concurrent::Promises::Channel (class)">Channel</a></span>, Object)</tt><sup>?</sup> 
   
 
   
@@ -1664,7 +1662,7 @@ in the receiver or in any of the channels.</p>
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>, <tt>nil</tt>)</span>
+        <span class='type'>(<tt>::Array(<span class='object_link'><a href="" title="Concurrent::Promises::Channel (class)">Channel</a></span>, Object)</tt>, <tt>nil</tt>)</span>
       
       
       
@@ -1699,7 +1697,7 @@ in the receiver or in any of the channels.</p>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_select'>select</span><span class='lparen'>(</span><span class='id identifier rubyid_channels'>channels</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_probe'>probe</span> <span class='op'>=</span> <span class='id identifier rubyid_select_op'>select_op</span><span class='lparen'>(</span><span class='id identifier rubyid_channels'>channels</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_probe'>probe</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>true</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_probe'>probe</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='kw'>true</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rbracket'>]</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1937,7 +1935,7 @@ pair [channel, message] when one of the channels is available for reading</p>
       <div class="method_details ">
   <h3 class="signature " id="try_pop-instance_method">
   
-    #<strong>try_pop</strong>  &#x21d2; <tt>Object</tt><sup>?</sup> 
+    #<strong>try_pop</strong>(no_value = nil)  &#x21d2; <tt>Object</tt>, <tt>no_value</tt> 
   
 
   
@@ -1951,14 +1949,35 @@ pair [channel, message] when one of the channels is available for reading</p>
   </div>
 </div>
 <div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
   
+    <li>
+      
+        <span class='name'>no_value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>returned when there is no message available</p>
+</div>
+      
+    </li>
+  
+</ul>
+
 <p class="tag_title">Returns:</p>
 <ul class="return">
   
     <li>
       
       
-        <span class='type'>(<tt>Object</tt>, <tt>nil</tt>)</span>
+        <span class='type'>(<tt>Object</tt>, <tt>no_value</tt>)</span>
       
       
       
@@ -1976,19 +1995,17 @@ pair [channel, message] when one of the channels is available for reading</p>
       <pre class="lines">
 
 
-119
 120
 121
 122
 123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/channel.rb', line 119</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/channel.rb', line 120</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_try_pop'>try_pop</span>
-  <span class='comment'># TODO (pitr-ch 11-Dec-2018): disambiguation of no message and nil message
-</span>  <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='id identifier rubyid_try_pop_disambiguated'>try_pop_disambiguated</span>
-  <span class='id identifier rubyid_message'>message</span> <span class='op'>==</span> <span class='const'>NOTHING</span> <span class='op'>?</span> <span class='kw'>nil</span> <span class='op'>:</span> <span class='id identifier rubyid_message'>message</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_try_pop'>try_pop</span><span class='lparen'>(</span><span class='id identifier rubyid_no_value'>no_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='id identifier rubyid_try_pop_disambiguated'>try_pop_disambiguated</span>
+  <span class='id identifier rubyid_message'>message</span> <span class='op'>==</span> <span class='const'>NOTHING</span> <span class='op'>?</span> <span class='id identifier rubyid_no_value'>no_value</span> <span class='op'>:</span> <span class='id identifier rubyid_message'>message</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

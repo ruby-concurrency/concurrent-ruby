@@ -218,13 +218,13 @@ Instead, it can be created directly as already-resolved:
 
 ```ruby
 Concurrent::Promises.fulfilled_future(:value)
-# => #<Concurrent::Promises::Future:0x000008 fulfilled>
+# => #<Concurrent::Promises::Future:0x000008 fulfilled with :value>
 Concurrent::Promises.rejected_future(StandardError.new('Ups'))
-# => #<Concurrent::Promises::Future:0x000009 rejected>
+# => #<Concurrent::Promises::Future:0x000009 rejected with #<StandardError: Ups>>
 Concurrent::Promises.resolved_future(true, :value, nil)
-# => #<Concurrent::Promises::Future:0x00000a fulfilled>
+# => #<Concurrent::Promises::Future:0x00000a fulfilled with :value>
 Concurrent::Promises.resolved_future(false, nil, StandardError.new('Ups'))
-# => #<Concurrent::Promises::Future:0x00000b rejected>
+# => #<Concurrent::Promises::Future:0x00000b rejected with #<StandardError: Ups>>
 ```
 
 ## Chaining
@@ -388,7 +388,7 @@ Zip is rejected if any of the zipped futures is.
 rejected_zip = Concurrent::Promises.zip(
     Concurrent::Promises.fulfilled_future(1),
     Concurrent::Promises.rejected_future(StandardError.new('Ups')))
-# => #<Concurrent::Promises::Future:0x000011 rejected>
+# => #<Concurrent::Promises::Future:0x000011 rejected with [nil, #<StandardError: Ups>]>
 rejected_zip.result
 # => [false, [1, nil], [nil, #<StandardError: Ups>]]
 rejected_zip.
@@ -531,7 +531,7 @@ The thread will be blocked until the future is resolved
 ```ruby
 thread = Thread.new { future.value } 
 future.fulfill 1
-# => #<Concurrent::Promises::ResolvableFuture:0x000015 fulfilled>
+# => #<Concurrent::Promises::ResolvableFuture:0x000015 fulfilled with 1>
 thread.value                             # => 1
 ```
 
@@ -667,14 +667,14 @@ more messages.
 
 ```ruby
 pushes = 3.times.map { |i| ch1.push_op i }
-# => [#<Concurrent::Promises::Future:0x00001b fulfilled>,
-#     #<Concurrent::Promises::Future:0x00001c fulfilled>,
+# => [#<Concurrent::Promises::Future:0x00001b fulfilled with #<Concurrent::Promises::Channel:0x00001a capacity taken 2 of 2>>,
+#     #<Concurrent::Promises::Future:0x00001c fulfilled with #<Concurrent::Promises::Channel:0x00001a capacity taken 2 of 2>>,
 #     #<Concurrent::Promises::ResolvableFuture:0x00001d pending>]
 ch1.pop_op.value!                        # => 0
 pushes
-# => [#<Concurrent::Promises::Future:0x00001b fulfilled>,
-#     #<Concurrent::Promises::Future:0x00001c fulfilled>,
-#     #<Concurrent::Promises::ResolvableFuture:0x00001d fulfilled>]
+# => [#<Concurrent::Promises::Future:0x00001b fulfilled with #<Concurrent::Promises::Channel:0x00001a capacity taken 2 of 2>>,
+#     #<Concurrent::Promises::Future:0x00001c fulfilled with #<Concurrent::Promises::Channel:0x00001a capacity taken 2 of 2>>,
+#     #<Concurrent::Promises::ResolvableFuture:0x00001d fulfilled with #<Concurrent::Promises::Channel:0x00001a capacity taken 2 of 2>>]
 ```
 
 A selection over channels can be created with the `.select_channel` factory method. It
@@ -685,7 +685,7 @@ returns a pair to be able to find out which channel had the message available.
 ch2    = Concurrent::Promises::Channel.new 2
 # => #<Concurrent::Promises::Channel:0x00001e capacity taken 0 of 2>
 result = Concurrent::Promises::Channel.select_op([ch1, ch2])
-# => #<Concurrent::Promises::ResolvableFuture:0x00001f fulfilled>
+# => #<Concurrent::Promises::ResolvableFuture:0x00001f fulfilled with [#<Concurrent::Promises::Channel:0x00001a capacity taken 1 of 2>, 1]>
 result.value!
 # => [#<Concurrent::Promises::Channel:0x00001a capacity taken 1 of 2>, 1]
 
@@ -780,7 +780,7 @@ end
 # => #<Proc:0x00002d@promises.in.md:662 (lambda)>
 
 Concurrent::Promises.future(actor, 0, &produce).run.wait!
-# => #<Concurrent::Promises::Future:0x00002e fulfilled>
+# => #<Concurrent::Promises::Future:0x00002e fulfilled with #<Concurrent::ProcessingActor:0x00002a @Mailbox=#<Concurrent::Promises::Channel:0x00002b capacity taken 2 of 2>, @Terminated=#<Concurrent::Promises::ResolvableFuture:0x00002c pending> termination:pending>>
 
 actor.termination.value!                 # => 45
 ```
@@ -1088,12 +1088,12 @@ Let it run for a while, then cancel it, and ensure that the runs were all fulfil
 origin.resolve
 # => #<Concurrent::Promises::ResolvableEvent:0x000044 resolved>
 query_processes.map(&:wait!) 
-# => [#<Concurrent::Promises::Future:0x00003f fulfilled>,
-#     #<Concurrent::Promises::Future:0x000040 fulfilled>,
-#     #<Concurrent::Promises::Future:0x000041 fulfilled>]
+# => [#<Concurrent::Promises::Future:0x00003f fulfilled with nil>,
+#     #<Concurrent::Promises::Future:0x000040 fulfilled with nil>,
+#     #<Concurrent::Promises::Future:0x000041 fulfilled with nil>]
 word_counter_processes.map(&:wait!)
-# => [#<Concurrent::Promises::Future:0x000042 fulfilled>,
-#     #<Concurrent::Promises::Future:0x000043 fulfilled>]
+# => [#<Concurrent::Promises::Future:0x000042 fulfilled with nil>,
+#     #<Concurrent::Promises::Future:0x000043 fulfilled with nil>]
 words                                    # => [7, 7, 7, 7]
 ```
 

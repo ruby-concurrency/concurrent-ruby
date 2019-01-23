@@ -300,8 +300,6 @@ and what should they be resolved to, examples:</p>
       <pre class="lines">
 
 
-1345
-1346
 1347
 1348
 1349
@@ -319,10 +317,12 @@ and what should they be resolved to, examples:</p>
 1361
 1362
 1363
-1364</pre>
+1364
+1365
+1366</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1345</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1347</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_atomic_resolution'>atomic_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable_map'>resolvable_map</span><span class='rparen'>)</span>
   <span class='comment'># atomic_resolution event =&gt; [], future =&gt; [true, :v, nil]
@@ -400,12 +400,12 @@ by to get the right global locking order of resolvable events or futures</p>
       <pre class="lines">
 
 
-1323
-1324
-1325</pre>
+1325
+1326
+1327</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1323</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1325</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_locking_order_by'>locking_order_by</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolvable'>resolvable</span><span class='period'>.</span><span class='id identifier rubyid_object_id'>object_id</span>
@@ -463,12 +463,12 @@ by to get the right global locking order of resolvable events or futures</p>
       <pre class="lines">
 
 
-1316
-1317
-1318</pre>
+1318
+1319
+1320</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1316</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1318</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release'>release</span>
   <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="InternalStates.html#RESERVED-constant" title="Concurrent::Promises::InternalStates::RESERVED (constant)">RESERVED</a></span></span><span class='comma'>,</span> <span class='const'>PENDING</span><span class='rparen'>)</span>
@@ -535,8 +535,6 @@ until it is released or resolved.</p>
       <pre class="lines">
 
 
-1303
-1304
 1305
 1306
 1307
@@ -545,10 +543,12 @@ until it is released or resolved.</p>
 1310
 1311
 1312
-1313</pre>
+1313
+1314
+1315</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1303</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1305</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reserve'>reserve</span>
   <span class='comment'># TODO (pitr-ch 17-Jan-2019): document that the order of the reservation must always be the same
