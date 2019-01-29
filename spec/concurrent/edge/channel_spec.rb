@@ -118,6 +118,65 @@ RSpec.describe 'Concurrent' do
       expect(pop_op.value!).to eq :v2
     end
 
+    specify "#(try_)pop(_op)_matching" do
+      channel = Concurrent::Promises::Channel.new 2
+      channel.push 'junk'
+      channel.push :v1
+
+      expect(channel.size).to eq 2
+      expect(channel.try_pop_matching(Symbol)).to eq :v1
+      expect(channel.size).to eq 1
+      expect(channel.try_pop_matching(Symbol)).to eq nil
+      expect(channel.size).to eq 1
+
+      channel = Concurrent::Promises::Channel.new 2
+      channel.push 'junk'
+      channel.push :v1
+      expect(channel.pop_matching(Symbol)).to eq :v1
+      expect(channel.size).to eq 1
+      thread = in_thread { channel.pop_matching(Symbol) }
+      is_sleeping thread
+      expect(channel.size).to eq 1
+      channel.push 'junk'
+      channel.pop
+      channel.push :v2
+      expect(thread.value).to eq :v2
+      expect(channel.size).to eq 1
+
+      channel = Concurrent::Promises::Channel.new 2
+      channel.push 'junk'
+      channel.push :v1
+      expect(channel.pop_matching(Symbol)).to eq :v1
+      expect(channel.size).to eq 1
+      thread = in_thread { channel.pop_matching(Symbol, 0.01) }
+      is_sleeping thread
+      expect(channel.size).to eq 1
+      expect(thread.value).to eq nil
+      channel.push :v2
+      expect(channel.size).to eq 2
+      expect(channel.pop_matching(Symbol)).to eq :v2
+      expect(channel.size).to eq 1
+      thread = in_thread { channel.pop_matching(Symbol,1) }
+      is_sleeping thread
+      channel.push :v3
+      expect(channel.size).to eq 1
+      expect(thread.value).to eq :v3
+      channel.push :v4
+      expect(channel.pop_matching(Symbol,0)).to eq :v4
+
+      channel = Concurrent::Promises::Channel.new 2
+      channel.push 'junk'
+      channel.push :v1
+      expect(channel.pop_op_matching(Symbol).value!).to eq :v1
+      expect(channel.size).to eq 1
+      pop_op = channel.pop_op_matching(Symbol)
+      expect(channel.size).to eq 1
+      expect(pop_op.pending?).to be_truthy
+      channel.push :v2
+      expect(channel.size).to eq 1
+      expect(pop_op.value!).to eq :v2
+    end
+
     specify "#(try_)select(_op)" do
       channel1 = Concurrent::Promises::Channel.new 1
       channel2 = Concurrent::Promises::Channel.new 1
