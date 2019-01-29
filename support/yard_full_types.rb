@@ -16,9 +16,9 @@ module YARD
         if meth.tag(:return) && meth.tag(:return).types
           types = meth.tags(:return).map {|t| t.types ? t.types : [] }.flatten.uniq
           first = link ? h(types.first) : format_types([types.first], false)
-          if types.size == 2 && types.last == 'nil'
-            type = first + '<sup>?</sup>'
-          elsif types.size == 2 && types.last =~ /^(Array)?<#{Regexp.quote types.first}>$/
+          # if types.size == 2 && types.last == 'nil'
+          #   type = first + '<sup>?</sup>'
+          if types.size == 2 && types.last =~ /^(Array)?<#{Regexp.quote types.first}>$/
             type = first + '<sup>+</sup>'
             # elsif types.size > 2
             #   type = [first, '...'].join(', ')
