@@ -42,7 +42,7 @@ appreciate your help. Would you like to contribute? Great! Have a look at
 ## Thread Safety
 
 *Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency 
-library, providing consistent behavior and guarantees on all three of the main Ruby interpreters 
+library, providing consistent behavior and guarantees on all four of the main Ruby interpreters 
 (MRI/CRuby, JRuby, Rubinius, TruffleRuby).*
 
 Every abstraction in this library is thread safe. Specific thread safety guarantees are documented 
