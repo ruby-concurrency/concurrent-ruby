@@ -12,7 +12,7 @@ module Concurrent
         # Asks the actor with its value.
         # @return [Future] new future with the response form the actor
         def then_ask(actor)
-          self.then(actor) { |v, a| a.ask(v) }.flat
+          self.then(actor) { |v, a| a.ask_op(v) }.flat
         end
       end
 

@@ -55,6 +55,9 @@ module Concurrent
         message message, future
       end
 
+      # @!visibility privated
+      alias_method :ask_op, :ask
+
       # Sends the message synchronously and blocks until the message
       # is processed. Raises on error.
       #

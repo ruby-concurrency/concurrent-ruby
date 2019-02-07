@@ -4,7 +4,8 @@ module YARD
 
   module Templates::Helpers
 
-    # make sure the signatures are complete not simplified with ...
+    # make sure the signatures are complete not simplified with
+    # '...' and '?' instead of nil
     module HtmlHelper
       def signature_types(meth, link = true)
         meth = convert_method_to_overload(meth)

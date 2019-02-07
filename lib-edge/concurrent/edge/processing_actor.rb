@@ -15,9 +15,9 @@ module Concurrent
   #     values[-5, 5]                                      # => [49996, 49997, 49998, 49999, 50000]
   # @!macro warn.edge
   class ProcessingActor < Synchronization::Object
-    # TODO (pitr-ch 18-Dec-2016): (un)linking, bidirectional, sends special message, multiple link calls has no effect,
-    # TODO (pitr-ch 21-Dec-2016): Make terminated a cancellation token?
-    # link_spawn atomic, Can it be fixed by sending exit when linked dead actor?
+
+    # TODO (pitr-ch 29-Jan-2019): simplify as much as possible, maybe even do not delegate to mailbox, no ask linking etc
+    # TODO (pitr-ch 03-Feb-2019): remove completely
 
     safe_initialization!
 
@@ -60,12 +60,8 @@ module Concurrent
     # @yieldparam [Object] *args
     # @yieldreturn [Promises::Future(Object)] a future representing next step of execution
     # @return [ProcessingActor]
-    # @example
-    #   # TODO (pitr-ch 19-Jan-2017): actor with limited mailbox
     def self.act_listening(channel, *args, &process)
-      actor, _, terminated = ProcessingActor.new channel
-      Promises.future(actor, *args, &process).run.tangle(terminated)
-      actor
+      ProcessingActor.new channel, *args, &process
     end
 
     # # Receives a message when available, used in the actor's process.
@@ -162,19 +158,21 @@ module Concurrent
     end
 
     # @return [String] string representation.
-    def inspect
-      format '%s termination:%s>', super[0..-2], termination.state
+    def to_s
+      format '%s termination: %s>', super[0..-2], termination.state
     end
 
+    alias_method :inspect, :to_s
+
     def to_ary
-      [self, @Mailbox, @Terminated]
+      [@Mailbox, @Terminated]
     end
 
     private
 
-    def initialize(channel = Promises::Channel.new)
+    def initialize(channel, *args, &process)
       @Mailbox    = channel
-      @Terminated = Promises.resolvable_future
+      @Terminated = Promises.future(self, *args, &process).run
       super()
     end
 

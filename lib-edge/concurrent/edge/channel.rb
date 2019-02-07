@@ -49,6 +49,10 @@ module Concurrent
         def any.===(other)
           true
         end
+
+        def any.to_s
+          'ANY'
+        end
       end
 
       # Create channel.
@@ -164,7 +168,7 @@ module Concurrent
       #
       #   @!macro channel.warn.blocks
       #   @!macro channel.param.timeout
-      #   @!macro promises.param.timeout_value
+      #   @param [Object] timeout_value a value returned by the method when it times out
       #   @return [Object, nil] message or nil when timed out
       def pop(timeout = nil, timeout_value = nil)
         pop_matching ANY, timeout, timeout_value

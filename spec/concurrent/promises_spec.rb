@@ -692,6 +692,17 @@ RSpec.describe 'Concurrent::Promises' do
           value!).to eq 6
     end
 
+    it 'with erlang actor' do
+      actor = Concurrent::ErlangActor.spawn :on_thread do
+        reply receive * 2
+      end
+
+      expect(future { 2 }.
+          then_ask(actor).
+          then { |v| v + 2 }.
+          value!).to eq 6
+    end
+
     it 'with channel' do
       ch1 = Concurrent::Promises::Channel.new
       ch2 = Concurrent::Promises::Channel.new
