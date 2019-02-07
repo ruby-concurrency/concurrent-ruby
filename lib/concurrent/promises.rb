@@ -1021,7 +1021,7 @@ module Concurrent
           ex
         else
           ex = if reason[0].respond_to? :exception
-                 reason[0].clone.exception(*args)
+                 reason[0].exception(*args)
                else
                  RuntimeError.new(reason[0]).exception(*args)
                end
