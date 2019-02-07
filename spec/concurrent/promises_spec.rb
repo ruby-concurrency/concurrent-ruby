@@ -29,6 +29,12 @@ RSpec.describe 'Concurrent::Promises' do
 
       future = fulfilled_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
+
+      future = future(1, 2, &-> v { v })
+      expect { future.value! }.to raise_error ArgumentError, /wrong number of arguments/
+
+      future = fulfilled_future(1).then(2, &-> v { v })
+      expect { future.value! }.to raise_error ArgumentError, /wrong number of arguments/
     end
 
     it 'executes with args' do
@@ -675,7 +681,7 @@ RSpec.describe 'Concurrent::Promises' do
   end
 
   describe 'interoperability' do
-    it 'with actor', if: !defined?(JRUBY_VERSION) do
+    it 'with processing actor', if: !defined?(JRUBY_VERSION) do
       actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
         -> v { v * 2 }
       end
@@ -699,6 +705,10 @@ RSpec.describe 'Concurrent::Promises' do
           then { |format, (_channel, value)| format format, value }
       expect(result.value!).to eq '02'
     end
+  end
+
+  specify 'zip_futures_over' do
+    expect(zip_futures_over([1, 2]) { |v| v.succ }.value!).to eq [2, 3]
   end
 end
 
