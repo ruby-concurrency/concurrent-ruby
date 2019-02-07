@@ -1,5 +1,3 @@
-#!/usr/bin/env rake
-
 require_relative 'lib/concurrent/version'
 require_relative 'lib/concurrent/utility/engine'
 
