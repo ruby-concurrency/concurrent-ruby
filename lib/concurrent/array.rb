@@ -21,8 +21,9 @@ module Concurrent
   # @!macro internal_implementation_note
   ArrayImplementation = case
                         when Concurrent.on_cruby?
-                          # Because MRI never runs code in parallel, the existing
-                          # non-thread-safe structures should usually work fine.
+                          # Array is thread-safe in practice because CRuby runs
+                          # threads one at a time and does not do context
+                          # switching during the execution of C functions.
                           ::Array
 
                         when Concurrent.on_jruby?
@@ -63,4 +64,3 @@ module Concurrent
   end
 
 end
-

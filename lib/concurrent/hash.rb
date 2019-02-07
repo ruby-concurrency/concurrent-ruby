@@ -15,8 +15,9 @@ module Concurrent
   # @!macro internal_implementation_note
   HashImplementation = case
                        when Concurrent.on_cruby?
-                         # Because MRI never runs code in parallel, the existing
-                         # non-thread-safe structures should usually work fine.
+                         # Hash is thread-safe in practice because CRuby runs
+                         # threads one at a time and does not do context
+                         # switching during the execution of C functions.
                          ::Hash
 
                        when Concurrent.on_jruby?
@@ -56,4 +57,3 @@ module Concurrent
   end
 
 end
-
