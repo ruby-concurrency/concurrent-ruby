@@ -1202,8 +1202,8 @@ module Concurrent
       #     v < 5 ? Promises.future(v, &body) : v
       #   end
       #   Promises.future(0, &body).run.value! # => 5
-      def run
-        RunFuturePromise.new_blocked_by1(self, @DefaultExecutor).future
+      def run(run_test = method(:run_test) )
+        RunFuturePromise.new_blocked_by1(self, @DefaultExecutor, run_test).future
       end
 
       # @!visibility private
@@ -1238,6 +1238,10 @@ module Concurrent
       alias_method :inspect, :to_s
 
       private
+
+      def run_test(v)
+        v if v.is_a?(Future)
+      end
 
       def rejected_resolution(raise_on_reassign, state)
         if raise_on_reassign
@@ -1303,14 +1307,11 @@ module Concurrent
       #   f.resolve true, :val, nil, true if reserved # must be called only if reserved
       # @return [true, false] on successful reservation
       def reserve
-        # TODO (pitr-ch 17-Jan-2019): document that the order of the reservation must always be the same
-        # TODO (pitr-ch 17-Jan-2019): make only private and expose the atomic stuff?
-        # Then it cannot be integrated with other then future stuff :(
-
         while true
           return true if compare_and_set_internal_state(PENDING, RESERVED)
           return false if resolved?
-          Thread.pass # FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
+          # FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
+          Thread.pass
         end
       end
 
@@ -1354,7 +1355,7 @@ module Concurrent
         end
 
         if reserved == sorted.size
-          sorted.each { |resolvable, args| resolvable.resolve *args, true, true }
+          sorted.each { |resolvable, args| resolvable.resolve(*args, true, true) }
           true
         else
           while reserved > 0
@@ -1974,8 +1975,9 @@ module Concurrent
 
       private
 
-      def initialize(delayed, blockers_count, default_executor)
+      def initialize(delayed, blockers_count, default_executor, run_test)
         super delayed, 1, Future.new(self, default_executor)
+        @RunTest = run_test
       end
 
       def process_on_blocker_resolution(future, index)
@@ -1986,11 +1988,12 @@ module Concurrent
           return 0
         end
 
-        value = internal_state.value
-        case value
-        when Future
-          add_delayed_of value
-          value.add_callback_notify_blocked self, nil
+        value               = internal_state.value
+        continuation_future = @RunTest.call value
+
+        if continuation_future
+          add_delayed_of continuation_future
+          continuation_future.add_callback_notify_blocked self, nil
         else
           resolve_with internal_state
         end

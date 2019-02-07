@@ -510,6 +510,12 @@ RSpec.describe 'Concurrent::Promises' do
         v < 5 ? future(v, &body) : raise(v.to_s)
       end
       expect(future(0, &body).run.reason.message).to eq '5'
+
+      body = lambda do |v|
+        v += 1
+        v < 5 ? [future(v, &body)] : v
+      end
+      expect(future(0, &body).run(-> v { v.first if v.is_a? Array}).value!).to eq 5
     end
 
     it 'can be risen when rejected' do
