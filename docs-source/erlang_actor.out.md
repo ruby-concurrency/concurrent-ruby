@@ -43,6 +43,34 @@ actor.tell :done
 actor.terminated.value!                  # => 12
 ```
 
+### Receiving
+
+Simplest message receive.
+
+```ruby
+actor = Concurrent::ErlangActor.spawn(:on_thread) { receive }
+# => #<Concurrent::ErlangActor::Pid:0x000004>
+actor.tell :m
+# => #<Concurrent::ErlangActor::Pid:0x000004>
+actor.terminated.value!                  # => :m
+```
+
+which also works for actor on pool, 
+because if no block is given it will use a default block `{ |v| v }` 
+
+```ruby
+actor = Concurrent::ErlangActor.spawn(:on_pool) { receive { |v| v } }
+# => #<Concurrent::ErlangActor::Pid:0x000005>
+# can simply be following
+actor = Concurrent::ErlangActor.spawn(:on_pool) { receive }
+# => #<Concurrent::ErlangActor::Pid:0x000006>
+actor.tell :m
+# => #<Concurrent::ErlangActor::Pid:0x000006>
+actor.terminated.value!                  # => :m
+```
+
+TBA
+
 ### Actor types
 
 There are two types of actors. 
@@ -65,7 +93,7 @@ Let's have a look at how the bodies of actors differ between the types:
 
 ```ruby
 ping = Concurrent::ErlangActor.spawn(:on_thread) { reply receive }
-# => #<Concurrent::ErlangActor::Pid:0x000004>
+# => #<Concurrent::ErlangActor::Pid:0x000007>
 ping.ask 42                              # => 42
 ```
 
@@ -79,7 +107,7 @@ after the message is received has to be provided.
 
 ```ruby
 ping = Concurrent::ErlangActor.spawn(:on_pool) { receive { |m| reply m } }
-# => #<Concurrent::ErlangActor::Pid:0x000005>
+# => #<Concurrent::ErlangActor::Pid:0x000008>
 ping.ask 42                              # => 42
 ```
 
@@ -116,16 +144,17 @@ actor = Concurrent::ErlangActor.spawn(:on_thread) do
   trap # equivalent of process_flag(trap_exit, true) 
   receive  
 end
-# => #<Concurrent::ErlangActor::Pid:0x000006>
+# => #<Concurrent::ErlangActor::Pid:0x000009>
 actor.terminated.value!
-# => #<Concurrent::ErlangActor::Exit:0x000007
-#     @from=#<Concurrent::ErlangActor::Pid:0x000008>,
+# => #<Concurrent::ErlangActor::Exit:0x00000a
+#     @from=#<Concurrent::ErlangActor::Pid:0x00000b>,
 #     @link_terminated=true,
 #     @reason=:err>
 ```
 
 ### TODO
 
+*   receives
 *   More erlang behaviour examples
 *   Back pressure with bounded mailbox
 *   _op methods

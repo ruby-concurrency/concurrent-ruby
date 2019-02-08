@@ -548,7 +548,7 @@ e.g. when the tasks raises an exception.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#run-instance_method" title="#run (instance method)">#<strong>run</strong>  &#x21d2; Future </a>
+      <a href="#run-instance_method" title="#run (instance method)">#<strong>run</strong>(run_test = method(:run_test))  &#x21d2; Future </a>
     
 
     
@@ -1226,7 +1226,7 @@ In other words, it inserts delay into the chain of Futures making rest of it laz
     <span class='id identifier rubyid_ex'>ex</span>
   <span class='kw'>else</span>
     <span class='id identifier rubyid_ex'>ex</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_reason'>reason</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span> <span class='symbol'>:exception</span>
-           <span class='id identifier rubyid_reason'>reason</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_clone'>clone</span><span class='period'>.</span><span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+           <span class='id identifier rubyid_reason'>reason</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
          <span class='kw'>else</span>
            <span class='const'>RuntimeError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
          <span class='kw'>end</span>
@@ -2463,7 +2463,7 @@ on timeout.</p>
       <div class="method_details ">
   <h3 class="signature " id="run-instance_method">
   
-    #<strong>run</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    #<strong>run</strong>(run_test = method(:run_test))  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
   
 
   
@@ -2520,8 +2520,8 @@ will become reason of the returned future.</p>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1205</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
-  <span class='const'>RunFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='id identifier rubyid_run_test'>run_test</span> <span class='op'>=</span> <span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:run_test</span><span class='rparen'>)</span> <span class='rparen'>)</span>
+  <span class='const'>RunFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_run_test'>run_test</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

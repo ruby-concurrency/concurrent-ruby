@@ -241,29 +241,6 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#inspect-instance_method" title="#inspect (instance method)">#<strong>inspect</strong>  &#x21d2; String </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>String representation.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#mailbox-instance_method" title="#mailbox (instance method)">#<strong>mailbox</strong>  &#x21d2; Promises::Channel </a>
     
 
@@ -398,6 +375,31 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
 </li>
 
       
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_s-instance_method" title="#to_s (instance method)">#<strong>to_s</strong>  &#x21d2; String </a>
+    
+
+    
+      (also: #inspect)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>String representation.</p>
+</div></span>
+  
+</li>
+
+      
     </ul>
   
 
@@ -503,15 +505,7 @@ ProcessingActors can run at the same time sharing a thread pool.</p>
   </div>
 </div>
 <div class="tags">
-  
-  <div class="examples">
-    <p class="tag_title">Examples:</p>
-    
-      
-      <pre class="example code"><code><span class='comment'># TODO (pitr-ch 19-Jan-2017): actor with limited mailbox</span></code></pre>
-    
-  </div>
-<p class="tag_title">Parameters:</p>
+  <p class="tag_title">Parameters:</p>
 <ul class="param">
   
     <li>
@@ -627,19 +621,15 @@ size to achieve backpressure.</p>
       <pre class="lines">
 
 
-65
-66
-67
-68
-69</pre>
+63
+64
+65</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 65</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 63</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_act_listening'>act_listening</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_process'>process</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span><span class='comma'>,</span> <span class='id identifier rubyid_terminated'>terminated</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_channel'>channel</span>
-  <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_process'>process</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'><span class='object_link'><a href="Promises/Future.html#run-instance_method" title="Concurrent::Promises::Future#run (method)">run</a></span></span><span class='period'>.</span><span class='id identifier rubyid_tangle'>tangle</span><span class='lparen'>(</span><span class='id identifier rubyid_terminated'>terminated</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_actor'>actor</span>
+  <span class='const'><span class='object_link'><a href="" title="Concurrent::ProcessingActor (class)">ProcessingActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_process'>process</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -677,15 +667,15 @@ size to achieve backpressure.</p>
       <pre class="lines">
 
 
+153
+154
+155
+156
 157
-158
-159
-160
-161
-162</pre>
+158</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 157</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 153</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask_op'>ask_op</span><span class='lparen'>(</span><span class='id identifier rubyid_answer'>answer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_message_provider'>message_provider</span><span class='rparen'>)</span>
   <span class='comment'># TODO (pitr-ch 12-Dec-2018): is it ok to let the answers be unanswered when the actor terminates
@@ -693,63 +683,6 @@ size to achieve backpressure.</p>
 
   <span class='comment'># answer.chain { |v| [true, v] } | @Terminated.then
 </span><span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="inspect-instance_method">
-  
-    #<strong>inspect</strong>  &#x21d2; <tt>String</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Returns string representation.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>string representation.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-165
-166
-167</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 165</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
-  <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s termination:%s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span>
-<span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
@@ -850,12 +783,12 @@ end</p>
       <pre class="lines">
 
 
-83
-84
-85</pre>
+79
+80
+81</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 79</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span> <span class='op'>=</span> <span class='id identifier rubyid_mailbox'>mailbox</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_pop_op'>pop_op</span>
@@ -933,13 +866,13 @@ threading code.</p>
       <pre class="lines">
 
 
-99
-100
-101
-102</pre>
+95
+96
+97
+98</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 99</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 95</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell!'>tell!</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
@@ -1008,12 +941,12 @@ when the message is pushed to mailbox.</p>
       <pre class="lines">
 
 
-108
-109
-110</pre>
+104
+105
+106</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 108</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 104</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='ivar'>@Mailbox</span><span class='period'>.</span><span class='id identifier rubyid_push_op'>push_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid__ch'>_ch</span><span class='comma'>,</span> <span class='id identifier rubyid_actor'>actor</span><span class='op'>|</span> <span class='id identifier rubyid_actor'>actor</span> <span class='rbrace'>}</span>
@@ -1108,15 +1041,76 @@ a reason (exception) when actor fails.</p>
       <pre class="lines">
 
 
-169
-170
-171</pre>
+167
+168
+169</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 169</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 167</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_ary'>to_ary</span>
-  <span class='lbracket'>[</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@Mailbox</span><span class='comma'>,</span> <span class='ivar'>@Terminated</span><span class='rbracket'>]</span>
+  <span class='lbracket'>[</span><span class='ivar'>@Mailbox</span><span class='comma'>,</span> <span class='ivar'>@Terminated</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_s-instance_method">
+  
+    #<strong>to_s</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='inspect-instance_method'>inspect</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns string representation.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>string representation.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+161
+162
+163</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/processing_actor.rb', line 161</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s termination: %s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_termination'>termination</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

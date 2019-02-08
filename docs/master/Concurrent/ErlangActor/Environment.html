@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Concurrent::ErlangActor::Environment
+  
+    &mdash; Concurrent Ruby
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "Concurrent::ErlangActor::Environment";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (E)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span>
+     &raquo; 
+    <span class="title">Environment</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Concurrent::ErlangActor::Environment
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
+          
+            <li class="next">Concurrent::ErlangActor::Environment</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib-edge/concurrent/edge/erlang_actor.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A class providing environment and methods for actor bodies to run in.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#demonitor-instance_method" title="#demonitor (instance method)">#<strong>demonitor</strong>(reference, *options)  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If MonitorRef is a reference which the calling actor obtained by calling <span class='object_link'><a href="#monitor-instance_method" title="Concurrent::ErlangActor::Environment#monitor (method)">#monitor</a></span>, this monitoring is turned off.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#link-instance_method" title="#link (instance method)">#<strong>link</strong>(pid)  &#x21d2; true </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates a link between the calling actor and another actor, if there is not such a link already.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#monitor-instance_method" title="#monitor (instance method)">#<strong>monitor</strong>(pid)  &#x21d2; Reference </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The calling actor starts monitoring actor with given pid.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name-instance_method" title="#name (instance method)">#<strong>name</strong>  &#x21d2; #to_s </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The name od the actor if provided to spawn method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on-instance_method" title="#on (instance method)">#<strong>on</strong>(matcher, value = nil, &amp;block)  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Helper for constructing a <span class='object_link'><a href="#receive-instance_method" title="Concurrent::ErlangActor::Environment#receive (method)">#receive</a></span> rules.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pid-instance_method" title="#pid (instance method)">#<strong>pid</strong>  &#x21d2; Pid </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The pid of this actor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#receive-instance_method" title="#receive (instance method)">#<strong>receive</strong>(*rules, timeout: nil, timeout_value: nil, **options) {|message| ... } &#x21d2; Object, nothing </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Receive a message.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reply-instance_method" title="#reply (instance method)">#<strong>reply</strong>(value)  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Shortcut for fulfilling the reply, same as <code>reply_resolution true, value, nil</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reply_resolution-instance_method" title="#reply_resolution (instance method)">#<strong>reply_resolution</strong>(*resolve_args)  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Reply to the sender of the message currently being processed if the actor was asked instead of told.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#spawn-instance_method" title="#spawn (instance method)">#<strong>spawn</strong>(type = @Actor.class, channel: Promises::Channel.new, environment: Environment, name: nil, link: false, monitor: false, **options) { ... } &#x21d2; Pid, ::Array(Pid, Reference) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Creates an actor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#terminate-instance_method" title="#terminate (instance method)">#<strong>terminate</strong>(pid = nil, reason, value: nil)  &#x21d2; nothing </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If pid <strong>is not</strong> provided stops the execution of the calling actor with the exit reason.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#terminated-instance_method" title="#terminated (instance method)">#<strong>terminated</strong>  &#x21d2; Promises::Future </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A future which is resolved with the final result of the actor that is either the reason for termination or a value if terminated normally.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#trap-instance_method" title="#trap (instance method)">#<strong>trap</strong>(value = true)  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>When trap is set to true, exit signals arriving to a actor are converted to <span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Exit</a></span> messages, which can be received as ordinary messages.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#traps%3F-instance_method" title="#traps? (instance method)">#<strong>traps?</strong>  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Does this actor trap exit messages?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unlink-instance_method" title="#unlink (instance method)">#<strong>unlink</strong>(pid)  &#x21d2; true </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Removes the link, if there is one, between the calling actor and the actor referred to by pid.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="demonitor-instance_method">
+  
+    #<strong>demonitor</strong>(reference, *options)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>If MonitorRef is a reference which the calling actor obtained by calling <span class='object_link'><a href="#monitor-instance_method" title="Concurrent::ErlangActor::Environment#monitor (method)">#monitor</a></span>,
+this monitoring is turned off.
+If the monitoring is already turned off, nothing happens.</p>
+
+<p>Once demonitor has returned it is guaranteed that no <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message
+due to the monitor will be placed in the caller&#39;s message queue in the future.
+A <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message might have been placed in the caller&#39;s message queue prior to the call, though.
+Therefore, in most cases, it is advisable to remove such a &#39;DOWN&#39; message from the message queue
+after monitoring has been stopped.
+<code>demonitor(reference, :flush)</code> can be used if this cleanup is wanted.</p>
+
+<p>The behavior of this method can be viewed as two combined operations:
+asynchronously send a &quot;demonitor signal&quot; to the monitored actor and
+ignore any future results of the monitor.</p>
+
+<p>Failure: It is an error if reference refers to a monitoring started by another actor.
+In that case it may raise an ArgumentError or go unnoticed.</p>
+
+<p>Options:</p>
+
+<ul>
+<li><p><code>:flush</code> - Remove (one) <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message,
+if there is one, from the caller&#39;s message queue after monitoring has been stopped.
+Calling <code>demonitor(pid, :flush)</code> is equivalent to the following, but more efficient:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_demonitor'>demonitor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_receive'>receive</span> <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="EnvironmentConstants/And.html" title="Concurrent::ErlangActor::EnvironmentConstants::And (class)">And</a></span></span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span></span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_d'>d</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_reference'>reference</span> <span class='op'>==</span> <span class='id identifier rubyid_reference'>reference</span><span class='rbrace'>}</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='kw'>true</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='int'>0</span><span class='comma'>,</span> <span class='label'>timeout_value:</span> <span class='kw'>true</span>
+</code></pre></li>
+<li><p><code>info</code>
+The returned value is one of the following:</p>
+
+<ul>
+<li>  <code>true</code> - The monitor was found and removed.
+In this case no <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message due to this monitor have been
+nor will be placed in the message queue of the caller.</li>
+<li>  <code>false</code> - The monitor was not found and could not be removed.
+This probably because someone already has placed a <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message
+corresponding to this monitor in the caller&#39;s message queue.</li>
+</ul>
+
+<p>If the info option is combined with the flush option,
+<code>false</code> will be returned if a flush was needed; otherwise, <code>true</code>.</p></li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>reference</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>:flush</tt>, <tt>:info</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+318
+319
+320</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 318</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_demonitor'>demonitor</span><span class='lparen'>(</span><span class='id identifier rubyid_reference'>reference</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_demonitor'>demonitor</span><span class='lparen'>(</span><span class='id identifier rubyid_reference'>reference</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="link-instance_method">
+  
+    #<strong>link</strong>(pid)  &#x21d2; <tt>true</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates a link between the calling actor and another actor,
+if there is not such a link already.
+If a actor attempts to create a link to itself, nothing is done. Returns true.</p>
+
+<p>If pid does not exist,
+the behavior of the method depends on
+if the calling actor is trapping exits or not (see <span class='object_link'><a href="#trap-instance_method" title="Concurrent::ErlangActor::Environment#trap (method)">#trap</a></span>):</p>
+
+<ul>
+<li>If the calling actor is not trapping exits link raises with <span class='object_link'><a href="NoActor.html" title="Concurrent::ErlangActor::NoActor (class)">NoActor</a></span>.</li>
+<li>Otherwise, if the calling actor is trapping exits, link returns true,
+but an exit signal with reason noproc is sent to the calling actor.</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="NoActor.html" title="Concurrent::ErlangActor::NoActor (class)">NoActor</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#link-1" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#link-1">http://www1.erlang.org/doc/man/erlang.html#link-1</a></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+222
+223
+224</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 222</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_link'>link</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_link'>link</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="monitor-instance_method">
+  
+    #<strong>monitor</strong>(pid)  &#x21d2; <tt><span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The calling actor starts monitoring actor with given pid.</p>
+
+<p>A <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message will be sent to the monitoring actor
+if the actor with given pid dies,
+or if the actor with given pid does not exist.</p>
+
+<p>The monitoring is turned off either
+when the <span class='object_link'><a href="Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span> message is sent, or when <span class='object_link'><a href="#demonitor-instance_method" title="Concurrent::ErlangActor::Environment#demonitor (method)">#demonitor</a></span> is called.</p>
+
+<p>Making several calls to monitor for the same pid is not an error;
+it results in as many, completely independent, monitorings.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+271
+272
+273</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 271</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_monitor'>monitor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_monitor'>monitor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>#to_s</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the name od the actor if provided to spawn method</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>#to_s</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the name od the actor if provided to spawn method</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+140
+141
+142</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 140</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
+  <span class='id identifier rubyid_pid'>pid</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on-instance_method">
+  
+    #<strong>on</strong>(matcher, value = nil, &amp;block)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Helper for constructing a <span class='object_link'><a href="#receive-instance_method" title="Concurrent::ErlangActor::Environment#receive (method)">#receive</a></span> rules</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_receive'>receive</span> <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+        <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="EnvironmentConstants.html#ANY-constant" title="Concurrent::ErlangActor::EnvironmentConstants::ANY (constant)">ANY</a></span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_terminate'>terminate</span> <span class='symbol'>:bad_message</span> <span class='rbrace'>}</span></code></pre>
+    
+  </div>
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#receive-instance_method" title="Concurrent::ErlangActor::Environment#receive (method)">#receive</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+171
+172
+173</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 171</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='id identifier rubyid_matcher'>matcher</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_on'>on</span> <span class='id identifier rubyid_matcher'>matcher</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pid-instance_method">
+  
+    #<strong>pid</strong>  &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the pid of this actor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the pid of this actor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+135
+136
+137</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 135</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pid'>pid</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_pid'>pid</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="receive-instance_method">
+  
+    #<strong>receive</strong>(*rules, timeout: nil, timeout_value: nil, **options) {|message| ... } &#x21d2; <tt>Object</tt>, <tt>nothing</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Receive a message.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>rules</span>
+      
+      
+        <span class='type'>(<tt>::Array()</tt>, <tt>::Array(#===)</tt>, <tt>::Array&lt;::Array(#===, Proc)&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><ul>
+<li>  No rule - <code>receive</code>, <code>receive {|m| m.to_s}</code></li>
+<li>  or single rule which can be combined with the supplied block -
+<code>receive(Numeric)</code>, <code>receive(Numeric) {|v| v.succ}</code></li>
+<li>  or array of matcher-proc pairs -
+<code>receive on(Numeric) { |v| v*2 }, on(Symbol) { |c| do_command c }</code></li>
+</ul>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>how long it should wait for the message</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>timeout_value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if rule <code>on(TIMEOUT) { do_something }</code> is not specified
+then timeout_value is returned.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Hash.html" title="Concurrent::Hash (class)">Hash</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>other options specific by type of the actor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:keep</span>
+          <span class="type">(<tt>true</tt>, <tt>false</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>Keep the rules and repeatedly call the associated blocks,
+until receive is called again.</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>message</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>block
+to process the message
+if single matcher is supplied</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the received message</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>nothing</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>depends on type of the actor.
+On thread it blocks until message is available
+then it returns the message (or a result of a called block).
+On pool it stops executing and continues with a given block
+when message becomes available.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205
+206</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_rules'>rules</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>timeout_value:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='comment'># TODO (pitr-ch 07-Feb-2019): add examples, keep: true, link them from this method
+</span>  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_rules'>rules</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='label'>timeout_value:</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reply-instance_method">
+  
+    #<strong>reply</strong>(value)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Shortcut for fulfilling the reply, same as <code>reply_resolution true, value, nil</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="../ErlangActor.html#spawn-class_method" title="Concurrent::ErlangActor.spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_receive'>receive</span> <span class='op'>*</span> <span class='int'>2</span> <span class='rbrace'>}</span>
+<span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span> <span class='comment'>#=&gt; 4</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>did the sender ask, and was it resolved</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+383
+384
+385</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 383</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reply'>reply</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_reply_resolution'>reply_resolution</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reply_resolution-instance_method">
+  
+    #<strong>reply_resolution</strong>(*resolve_args)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Reply to the sender of the message currently being processed
+if the actor was asked instead of told.
+The reply is stored in a <span class='object_link'><a href="../Promises/ResolvableFuture.html" title="Concurrent::Promises::ResolvableFuture (class)">Promises::ResolvableFuture</a></span> so the resolvable_args are arguments for
+<span class='object_link'><a href="../Promises/ResolvableFuture.html#resolve-instance_method" title="Concurrent::Promises::ResolvableFuture#resolve (method)">Promises::ResolvableFuture#resolve</a></span> method.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="../ErlangActor.html#spawn-class_method" title="Concurrent::ErlangActor.spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_receive'>receive</span> <span class='op'>*</span> <span class='int'>2</span><span class='comma'>,</span> <span class='kw'>nil</span> <span class='rbrace'>}</span>
+<span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span> <span class='comment'>#=&gt; 4</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>resolve_args</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>see Promises::ResolvableFuture#resolve</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>did the sender ask, and was it resolved</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+397
+398
+399</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 397</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_args'>resolve_args</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_args'>resolve_args</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="spawn-instance_method">
+  
+    #<strong>spawn</strong>(type = @Actor.class, channel: Promises::Channel.new, environment: Environment, name: nil, link: false, monitor: false, **options) { ... } &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>, <tt>::Array(<span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span>, <span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span>)</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Creates an actor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>:on_thread</tt>, <tt>:on_pool</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>@Actor.class</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>of the actor to be created.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>channel</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Channel.html" title="Concurrent::Channel (class)">Channel</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The mailbox of the actor, by default it has unlimited capacity.
+Crating the actor with a bounded queue is useful to create backpressure.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>environment</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::ErlangActor::Environment (class)">Environment</a></span></tt>, <tt>Module</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A class which is used to run the body of the actor in.
+It can either be a child of <span class='object_link'><a href="" title="Concurrent::ErlangActor::Environment (class)">Concurrent::ErlangActor::Environment</a></span> or a module.
+Module is extended to a new instance of environment,
+therefore if there is many actors with this module
+it is better to create a class and use it instead.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>#to_s</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>of the actor.
+Available by <span class='object_link'><a href="Pid.html#name-instance_method" title="Concurrent::ErlangActor::Pid#name (method)">Pid#name</a></span> or <span class='object_link'><a href="#name-instance_method" title="Concurrent::ErlangActor::Environment#name (method)">#name</a></span> and part of <span class='object_link'><a href="Pid.html#to_s-instance_method" title="Concurrent::ErlangActor::Pid#to_s (method)">Pid#to_s</a></span>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>link</span>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the created actor is atomically created and linked with the calling actor</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>monitor</span>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the created actor is atomically created and monitored by the calling actor</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Hash.html" title="Concurrent::Hash (class)">Hash</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>other options specific by type of the actor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:executor</span>
+          <span class="type">(<tt><span class='object_link'>ExecutorService</span></tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>The executor service to use to execute the actor on.
+Applies only to :on_pool actor type.</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>[] the body of the actor.
+When actor is spawned this block is evaluated
+until it terminates.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>, <tt>::Array(<span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span>, <span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span>)</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a pid or a pid-reference pair when monitor is true</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#spawn-1" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#spawn-1">http://www1.erlang.org/doc/man/erlang.html#spawn-1</a></li>
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#spawn_link-1" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#spawn_link-1">http://www1.erlang.org/doc/man/erlang.html#spawn_link-1</a></li>
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#spawn_monitor-1" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#spawn_monitor-1">http://www1.erlang.org/doc/man/erlang.html#spawn_monitor-1</a></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 358</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span>
+          <span class='label'>channel:</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='comma'>,</span>
+          <span class='label'>environment:</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ErlangActor::Environment (class)">Environment</a></span></span><span class='comma'>,</span>
+          <span class='label'>name:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+          <span class='label'>link:</span> <span class='kw'>false</span><span class='comma'>,</span>
+          <span class='label'>monitor:</span> <span class='kw'>false</span><span class='comma'>,</span>
+          <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span>
+          <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span>
+
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span>
+               <span class='label'>channel:</span>     <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span>
+               <span class='label'>environment:</span> <span class='id identifier rubyid_environment'>environment</span><span class='comma'>,</span>
+               <span class='label'>name:</span>        <span class='kw'>nil</span><span class='comma'>,</span>
+               <span class='label'>link:</span>        <span class='id identifier rubyid_link'>link</span><span class='comma'>,</span>
+               <span class='label'>monitor:</span>     <span class='id identifier rubyid_monitor'>monitor</span><span class='comma'>,</span>
+               <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span>
+               <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="terminate-instance_method">
+  
+    #<strong>terminate</strong>(pid = nil, reason, value: nil)  &#x21d2; <tt>nothing</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>If pid <strong>is not</strong> provided stops the execution of the calling actor
+with the exit reason.</p>
+
+<p>If pid <strong>is</strong> provided,
+it sends an exit signal with exit reason to the actor identified by pid.</p>
+
+<p>The following behavior apply
+if <code>reason</code> is any object except <code>:normal</code> or <code>:kill</code>.
+If pid is not trapping exits,
+pid itself will exit with exit reason.
+If pid is trapping exits,
+the exit signal is transformed into a message <span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Concurrent::ErlangActor::Exit</a></span>
+and delivered to the message queue of pid.</p>
+
+<p>If reason is the Symbol <code>:normal</code>, pid will not exit.
+If it is trapping exits, the exit signal is transformed into a message <span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Concurrent::ErlangActor::Exit</a></span>
+and delivered to its message queue.</p>
+
+<p>If reason is the Symbol <code>:kill</code>, that is if <code>exit(pid, :kill)</code> is called,
+an untrappable exit signal is sent to pid which will unconditionally exit
+with exit reason <code>:killed</code>.</p>
+
+<p>Since evaluating this function causes the process to terminate, it has no return value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>pid</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>:normal</tt>, <tt>:kill</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nothing</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#error-1" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#error-1">http://www1.erlang.org/doc/man/erlang.html#error-1</a></li>
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#error-2" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#error-2">http://www1.erlang.org/doc/man/erlang.html#error-2</a></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+431
+432
+433</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 431</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_terminate'>terminate</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminate'>terminate</span> <span class='id identifier rubyid_pid'>pid</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="terminated-instance_method">
+  
+    #<strong>terminated</strong>  &#x21d2; <tt><span class='object_link'><a href="../Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a future which is resolved with
+the final result of the actor that is either the reason for
+termination or a value if terminated normally.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a future which is resolved with
+the final result of the actor that is either the reason for
+termination or a value if terminated normally.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+130
+131
+132</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 130</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_terminated'>terminated</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="trap-instance_method">
+  
+    #<strong>trap</strong>(value = true)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>When trap is set to true,
+exit signals arriving to a actor are converted to <span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Concurrent::ErlangActor::Exit</a></span> messages,
+which can be received as ordinary messages.
+If trap is set to false,
+the actor exits
+if it receives an exit signal other than normal
+and the exit signal is propagated to its linked actors.
+Application actors should normally not trap exits.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>true</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the old value of the flag</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#process_flag-2" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#process_flag-2">http://www1.erlang.org/doc/man/erlang.html#process_flag-2</a></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+162
+163
+164</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 162</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_trap'>trap</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_trap'>trap</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="traps?-instance_method">
+  
+    #<strong>traps?</strong>  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns does this actor trap exit messages?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>does this actor trap exit messages?</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://www1.erlang.org/doc/man/erlang.html#process_flag-2" target="_parent" title="http://www1.erlang.org/doc/man/erlang.html#process_flag-2">http://www1.erlang.org/doc/man/erlang.html#process_flag-2</a></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+146
+147
+148</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 146</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_traps?'>traps?</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_traps?'>traps?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unlink-instance_method">
+  
+    #<strong>unlink</strong>(pid)  &#x21d2; <tt>true</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Removes the link, if there is one,
+between the calling actor and the actor referred to by pid.</p>
+
+<p>Returns true and does not fail, even if there is no link to Id, or if Id does not exist.</p>
+
+<p>Once unlink(pid) has returned
+it is guaranteed
+that the link between the caller and the actor referred to by pid
+has no effect on the caller in the future (unless the link is setup again).
+If caller is trapping exits,
+an <span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Concurrent::ErlangActor::Exit</a></span> message due to the link might have been placed
+in the caller&#39;s message queue prior to the call, though.</p>
+
+<p>Note, the <span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Concurrent::ErlangActor::Exit</a></span> message can be the result of the link,
+but can also be the result of calling #terminate method externally.
+Therefore, it may be appropriate to cleanup the message queue
+when trapping exits after the call to unlink, as follow:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_receive'>receive</span> <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="EnvironmentConstants/And.html" title="Concurrent::ErlangActor::EnvironmentConstants::And (class)">And</a></span></span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Exit</a></span></span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_e'>e</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_pid'>pid</span> <span class='op'>==</span> <span class='id identifier rubyid_pid'>pid</span> <span class='rbrace'>}</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='kw'>true</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='int'>0</span>
+</code></pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+248
+249
+250</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 248</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_unlink'>unlink</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_unlink'>unlink</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated by <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_blank">yard</a>.
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    </div>
+  </body>
+</html>
