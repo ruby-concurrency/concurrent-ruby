@@ -15,11 +15,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
         end
 
         specify '#receive' do
-          id   = -> v { v }
           succ = -> v { v.succ }
 
           [[[:v], -> { receive }, :v],
-           [[:v], -> { receive on(ANY, &id) }, :v],
+           [[:v], -> { receive on(ANY, &identity) }, :v],
            [[:v, 1], -> { receive Numeric }, 1],
            [[:v, 1], -> { receive(Numeric, &succ) }, 2],
 
@@ -33,14 +32,14 @@ if Concurrent.ruby_version :>=, 2, 1, 0
            [[:v, 1], -> { receive Numeric, timeout: 1, timeout_value: :timeout }, 1],
            [[:v, 1], -> { receive(Numeric, timeout: 1, timeout_value: :timeout, &succ) }, 2],
 
-           [[:v], -> { receive on(Numeric, &id), on(TIMEOUT, nil), timeout: 0 }, nil],
+           [[:v], -> { receive on(Numeric, &identity), on(TIMEOUT, nil), timeout: 0 }, nil],
            [[:v], -> { receive on(Numeric, &succ), on(TIMEOUT, nil), timeout: 0 }, nil],
-           [[:v], -> { receive on(Numeric, &id), on(TIMEOUT, :timeout), timeout: 0 }, :timeout],
+           [[:v], -> { receive on(Numeric, &identity), on(TIMEOUT, :timeout), timeout: 0 }, :timeout],
            [[:v], -> { receive on(Numeric, &succ), on(TIMEOUT, :timeout), timeout: 0 }, :timeout],
 
-           [[:v, 1], -> { receive on(Numeric, &id), on(TIMEOUT, nil), timeout: 1 }, 1],
+           [[:v, 1], -> { receive on(Numeric, &identity), on(TIMEOUT, nil), timeout: 1 }, 1],
            [[:v, 1], -> { receive on(Numeric, &succ), on(TIMEOUT, nil), timeout: 1 }, 2],
-           [[:v, 1], -> { receive on(Numeric, &id), on(TIMEOUT, :timeout), timeout: 1 }, 1],
+           [[:v, 1], -> { receive on(Numeric, &identity), on(TIMEOUT, :timeout), timeout: 1 }, 1],
            [[:v, 1], -> { receive on(Numeric, &succ), on(TIMEOUT, :timeout), timeout: 1 }, 2],
           ].each_with_index do |(messages, body, result), i|
             a = Concurrent::ErlangActor.spawn(type, &body)
@@ -229,14 +228,14 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            b = spawn { :done }
                            b.terminated.wait
                            ref = monitor b
-                           [b, ref, receive(timeout: 0.01, timeout_value: :timeout)]
+                           [b, ref, receive(timeout: 1, timeout_value: :timeout)]
                          end,
                      on_pool:
                          -> do
                            b = spawn { :done }
                            b.terminated.wait
                            ref = monitor b
-                           receive(timeout: 0.01) { |v| [b, ref, v] }
+                           receive(timeout: 1) { |v| [b, ref, v] }
                          end }
 
             a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -324,7 +323,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                           -> do
                             b = spawn { :done }
                             b.terminated.wait
-                            sleep 0.01
+                            sleep 0.1
                             trap
                             link b
                             [b, receive]
@@ -333,7 +332,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                           -> do
                             b = spawn { :done }
                             b.terminated.wait
-                            sleep 0.01
+                            sleep 0.1
                             trap
                             link b
                             receive { |v| [b, v] }
@@ -374,7 +373,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              b = spawn(link: true) { :ok }
                              trap
-                             [receive, b]
+                             [receive(timeout: 1), b]
                            end,
                        on_pool:
                            -> do
@@ -382,7 +381,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              trap
                              receive(on(ANY) { |v| [v, b] },
                                      on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                                     timeout: 1)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -396,14 +395,14 @@ if Concurrent.ruby_version :>=, 2, 1, 0
               body = { on_thread:
                            -> do
                              spawn(link: true) { terminate :boom }
-                             receive(timeout: 0.01)
+                             receive(timeout: 1)
                            end,
                        on_pool:
                            -> do
                              spawn(link: true) { terminate :boom }
                              receive(on(ANY) { |v| [v, b] },
                                      on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                                     timeout: 1)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -416,7 +415,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              b = spawn(link: true) { terminate :boom }
                              trap
-                             [receive(timeout: 0.01), b]
+                             [receive(timeout: 1), b]
                            end,
                        on_pool:
                            -> do
@@ -424,7 +423,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              trap
                              receive(on(ANY) { |v| [v, b] },
                                      on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                                     timeout: 1)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -460,7 +459,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              b = spawn(link: true) { terminate :normal, value: :ok }
                              trap
-                             [receive, b]
+                             [receive(timeout: 1), b]
                            end,
                        on_pool:
                            -> do
@@ -468,7 +467,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              trap
                              receive(on(ANY) { |v| [v, b] },
                                      on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                                     timeout: 1)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -565,7 +564,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              terminate pid, :normal # sends the signal to mailbox
                              receive(on(ANY, :continued),
                                      on(TIMEOUT, :timeout),
-                                     timeout: 1)
+                                     timeout: 0.01)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -578,13 +577,13 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              terminate pid, :normal
                              trap
-                             receive(timeout: 0.01)
+                             receive(timeout: 0)
                            end,
                        on_pool:
                            -> do
                              terminate pid, :normal
                              trap
-                             receive(on(ANY, &identity), on(TIMEOUT, nil), timeout: 0.01)
+                             receive(on(ANY, &identity), on(TIMEOUT, nil), timeout: 0)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -620,7 +619,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
             specify 4 do
               body = { on_thread:
                            -> do
-                             b = spawn(link: true) { trap; receive timeout: 0.01, timeout_value: :timeout }
+                             b = spawn(link: true) { trap; receive timeout: 1, timeout_value: :timeout }
                              terminate b, :normal
                              b
                            end,
@@ -630,7 +629,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                trap
                                receive(on(ANY, &identity),
                                        on(TIMEOUT, :timeout),
-                                       timeout: 0.01)
+                                       timeout: 1)
                              end
 
                              terminate b, :normal
@@ -648,7 +647,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              b = spawn(link: true) { receive timeout: 0.01; terminate :continued }
                              terminate b, :normal
                              trap
-                             [b, receive(timeout: 0.02)]
+                             [b, receive(timeout: 1)]
                            end,
                        on_pool:
                            -> do
@@ -739,10 +738,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
             specify 9 do
               body = { on_thread:
                            -> do
-                             b = spawn(link: true) { receive timeout: 0.01; :done }
+                             b = spawn(link: true) { receive timeout: 1; :done }
                              terminate b, :kill
                              trap
-                             [b, receive(timeout: 0.01)]
+                             [b, receive(timeout: 1)]
                            end,
                        on_pool:
                            -> do
@@ -762,12 +761,12 @@ if Concurrent.ruby_version :>=, 2, 1, 0
               body = { on_thread:
                            -> do
                              terminate pid, :kill
-                             receive timeout: 0.01
+                             receive timeout: 0
                            end,
                        on_pool:
                            -> do
                              terminate pid, :kill
-                             receive(on(ANY, :continued), on(TIMEOUT, :timeout), timeout: 1)
+                             receive(on(ANY, :continued), on(TIMEOUT, :timeout), timeout: 0)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -780,13 +779,13 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              terminate pid, :kill
                              trap
-                             receive timeout: 0.01
+                             receive timeout: 0
                            end,
                        on_pool:
                            -> do
                              terminate pid, :kill
                              trap
-                             receive(on(ANY, &identity), on(TIMEOUT, :timeout), timeout: 1)
+                             receive(on(ANY, &identity), on(TIMEOUT, :timeout), timeout: 0)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -921,6 +920,8 @@ if Concurrent.ruby_version :>=, 2, 1, 0
       describe 'event based' do
         let(:type) { :on_pool }
         it_behaves_like 'erlang actor'
+
+        include Concurrent::ErlangActor::EnvironmentConstants
 
         specify "receives message repeatedly with keep" do
           actor = Concurrent::ErlangActor.spawn(:on_pool) do
