@@ -13,4 +13,4 @@ require 'concurrent/edge/throttle'
 require 'concurrent/edge/channel'
 
 require 'concurrent/edge/processing_actor'
-require 'concurrent/edge/erlang_actor'
+require 'concurrent/edge/erlang_actor' if Concurrent.ruby_version :>=, 2, 1, 0
