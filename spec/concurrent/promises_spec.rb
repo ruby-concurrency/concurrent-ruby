@@ -521,7 +521,7 @@ RSpec.describe 'Concurrent::Promises' do
         v += 1
         v < 5 ? [future(v, &body)] : v
       end
-      expect(future(0, &body).run(-> v { v.first if v.is_a? Array}).value!).to eq 5
+      expect(future(0, &body).run(-> v { v.first if v.is_a? Array }).value!).to eq 5
     end
 
     it 'can be risen when rejected' do
@@ -692,15 +692,17 @@ RSpec.describe 'Concurrent::Promises' do
           value!).to eq 6
     end
 
-    it 'with erlang actor' do
-      actor = Concurrent::ErlangActor.spawn :on_thread do
-        reply receive * 2
-      end
+    if Concurrent.const_defined? :ErlangActor
+      it 'with erlang actor' do
+        actor = Concurrent::ErlangActor.spawn :on_thread do
+          reply receive * 2
+        end
 
-      expect(future { 2 }.
-          then_ask(actor).
-          then { |v| v + 2 }.
-          value!).to eq 6
+        expect(future { 2 }.
+            then_ask(actor).
+            then { |v| v + 2 }.
+            value!).to eq 6
+      end
     end
 
     it 'with channel' do
