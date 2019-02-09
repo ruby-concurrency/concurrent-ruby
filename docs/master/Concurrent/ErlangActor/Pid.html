@@ -105,7 +105,7 @@
   <div class="discussion">
     <p>The public reference of the actor which can be stored and passed around.
 Nothing else of the actor should be exposed.
-<span class='object_link'><a href="../ErlangActor.html#spawn-class_method" title="Concurrent::ErlangActor.spawn (method)">spawn</a></span> and <span class='object_link'><a href="Environment.html#spawn-instance_method" title="Concurrent::ErlangActor::Environment#spawn (method)">Environment#spawn</a></span> return pid.</p>
+<span class='object_link'><a href="Functions.html#spawn_actor-instance_method" title="Concurrent::ErlangActor::Functions#spawn_actor (method)">Functions#spawn_actor</a></span> and <span class='object_link'><a href="Environment.html#spawn-instance_method" title="Concurrent::ErlangActor::Environment#spawn (method)">Environment#spawn</a></span> return the pid.</p>
 
 
   </div>
@@ -317,6 +317,11 @@ Nothing else of the actor should be exposed.
 which is returned by the method.
 If the reply is a rejection then the methods raises it.</p>
 
+<p>If the actor does not call <span class='object_link'><a href="Environment.html#reply-instance_method" title="Concurrent::ErlangActor::Environment#reply (method)">Environment#reply</a></span> or <span class='object_link'><a href="Environment.html#reply_resolution-instance_method" title="Concurrent::ErlangActor::Environment#reply_resolution (method)">Environment#reply_resolution</a></span>
+the method will raise NoReply error.
+If the actor is terminated it will raise NoActor.
+Therefore the ask is never left unanswered and blocking.</p>
+
 
   </div>
 </div>
@@ -388,6 +393,19 @@ If the reply is a rejection then the methods raises it.</p>
     </li>
   
 </ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="NoReply.html" title="Concurrent::ErlangActor::NoReply (class)">NoReply</a></span></tt>, <tt><span class='object_link'><a href="NoActor.html" title="Concurrent::ErlangActor::NoActor (class)">NoActor</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -395,17 +413,15 @@ If the reply is a rejection then the methods raises it.</p>
       <pre class="lines">
 
 
-71
-72
-73
-74</pre>
+79
+80
+81</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 71</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 79</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
-  <span class='comment'># TODO (pitr-ch 06-Feb-2019): document timout interaction with reply
-</span>  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -486,12 +502,12 @@ If the reply is a rejection then the methods raises it.</p>
       <pre class="lines">
 
 
-81
-82
-83</pre>
+88
+89
+90</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 81</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 88</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask_op'>ask_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_probe'>probe</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="../Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_ask_op'>ask_op</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_probe'>probe</span>
@@ -543,12 +559,12 @@ If the reply is a rejection then the methods raises it.</p>
       <pre class="lines">
 
 
-94
-95
-96</pre>
+101
+102
+103</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 94</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 101</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='ivar'>@Name</span>
@@ -636,12 +652,12 @@ This is useful for backpressure.</p>
       <pre class="lines">
 
 
-53
 54
-55</pre>
+55
+56</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 53</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 54</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -704,12 +720,12 @@ This is useful for backpressure.</p>
       <pre class="lines">
 
 
-60
 61
-62</pre>
+62
+63</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 60</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
@@ -765,12 +781,12 @@ termination or a value if terminated normally.</p>
       <pre class="lines">
 
 
-89
-90
-91</pre>
+96
+97
+98</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 89</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 96</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminated'>terminated</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span>
@@ -826,27 +842,37 @@ termination or a value if terminated normally.</p>
       <pre class="lines">
 
 
-99
-100
-101
-102
-103
-104
-105
 106
-107</pre>
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 99</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 106</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
-  <span class='comment'># TODO (pitr-ch 06-Feb-2019): consider to add state
-</span>  <span class='id identifier rubyid_original'>original</span> <span class='op'>=</span> <span class='kw'>super</span>
-  <span class='kw'>if</span> <span class='ivar'>@Name</span>
-    <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s %s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_original'>original</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='ivar'>@Name</span>
-  <span class='kw'>else</span>
-    <span class='id identifier rubyid_original'>original</span>
-  <span class='kw'>end</span>
+  <span class='id identifier rubyid_original'>original</span> <span class='op'>=</span> <span class='kw'>super</span>
+  <span class='id identifier rubyid_state'>state</span>    <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span>
+             <span class='kw'>when</span> <span class='symbol'>:pending</span>
+               <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>running</span><span class='tstring_end'>&#39;</span></span>
+             <span class='kw'>when</span> <span class='symbol'>:fulfilled</span>
+               <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>terminated normally with </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+             <span class='kw'>when</span> <span class='symbol'>:rejected</span>
+               <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>terminated because of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_reason'>reason</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+             <span class='kw'>else</span>
+               <span class='id identifier rubyid_raise'>raise</span>
+             <span class='kw'>end</span>
+  <span class='lbracket'>[</span><span class='id identifier rubyid_original'>original</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='op'>*</span><span class='ivar'>@Name</span><span class='comma'>,</span> <span class='id identifier rubyid_state'>state</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&#39;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

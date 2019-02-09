@@ -129,6 +129,28 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#default_executor-instance_method" title="#default_executor (instance method)">#<strong>default_executor</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#demonitor-instance_method" title="#demonitor (instance method)">#<strong>demonitor</strong>(reference, *options)  &#x21d2; true, false </a>
     
 
@@ -313,7 +335,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#reply_resolution-instance_method" title="#reply_resolution (instance method)">#<strong>reply_resolution</strong>(*resolve_args)  &#x21d2; true, false </a>
+      <a href="#reply_resolution-instance_method" title="#reply_resolution (instance method)">#<strong>reply_resolution</strong>(fulfilled = true, value = nil, reason = nil)  &#x21d2; true, false </a>
     
 
     
@@ -336,7 +358,7 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#spawn-instance_method" title="#spawn (instance method)">#<strong>spawn</strong>(type = @Actor.class, channel: Promises::Channel.new, environment: Environment, name: nil, link: false, monitor: false, **options) { ... } &#x21d2; Pid, ::Array(Pid, Reference) </a>
+      <a href="#spawn-instance_method" title="#spawn (instance method)">#<strong>spawn</strong>(type = @Actor.class, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_executor, link: false, monitor: false) { ... } &#x21d2; Pid, ::Array(Pid, Reference) </a>
     
 
     
@@ -483,7 +505,46 @@
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="demonitor-instance_method">
+  <h3 class="signature first" id="default_executor-instance_method">
+  
+    #<strong>default_executor</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+451
+452
+453</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 451</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
+  <span class='ivar'>@DefaultExecutor</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="demonitor-instance_method">
   
     #<strong>demonitor</strong>(reference, *options)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
   
@@ -588,12 +649,12 @@ corresponding to this monitor in the caller&#39;s message queue.</li>
       <pre class="lines">
 
 
-318
-319
-320</pre>
+330
+331
+332</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 318</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 330</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_demonitor'>demonitor</span><span class='lparen'>(</span><span class='id identifier rubyid_reference'>reference</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_demonitor'>demonitor</span><span class='lparen'>(</span><span class='id identifier rubyid_reference'>reference</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
@@ -673,12 +734,12 @@ but an exit signal with reason noproc is sent to the calling actor.</li>
       <pre class="lines">
 
 
-222
-223
-224</pre>
+234
+235
+236</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 222</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 234</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_link'>link</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_link'>link</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
@@ -736,12 +797,12 @@ it results in as many, completely independent, monitorings.</p>
       <pre class="lines">
 
 
-271
-272
-273</pre>
+283
+284
+285</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 271</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 283</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_monitor'>monitor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_monitor'>monitor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
@@ -793,12 +854,12 @@ it results in as many, completely independent, monitorings.</p>
       <pre class="lines">
 
 
-140
-141
-142</pre>
+152
+153
+154</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 140</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 152</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='id identifier rubyid_pid'>pid</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
@@ -849,12 +910,12 @@ it results in as many, completely independent, monitorings.</p>
       <pre class="lines">
 
 
-171
-172
-173</pre>
+183
+184
+185</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 171</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 183</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='id identifier rubyid_matcher'>matcher</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_on'>on</span> <span class='id identifier rubyid_matcher'>matcher</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span>
@@ -906,12 +967,12 @@ it results in as many, completely independent, monitorings.</p>
       <pre class="lines">
 
 
-135
-136
-137</pre>
+147
+148
+149</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 135</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 147</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pid'>pid</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_pid'>pid</span>
@@ -1098,23 +1159,28 @@ when message becomes available.</p>
   
 </ul>
 
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">Receiving chapter in the ErlangActor examples</a></span></li>
+    
+  </ul>
+
 </div><table class="source_code">
   <tr>
     <td>
       <pre class="lines">
 
 
-203
-204
-205
-206</pre>
+216
+217
+218</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 203</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 216</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_rules'>rules</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>timeout_value:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
-  <span class='comment'># TODO (pitr-ch 07-Feb-2019): add examples, keep: true, link them from this method
-</span>  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_rules'>rules</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='label'>timeout_value:</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_rules'>rules</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='label'>timeout_value:</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1143,7 +1209,7 @@ when message becomes available.</p>
     <p class="tag_title">Examples:</p>
     
       
-      <pre class="example code"><code><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="../ErlangActor.html#spawn-class_method" title="Concurrent::ErlangActor.spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_receive'>receive</span> <span class='op'>*</span> <span class='int'>2</span> <span class='rbrace'>}</span>
+      <pre class="example code"><code><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_receive'>receive</span> <span class='op'>*</span> <span class='int'>2</span> <span class='rbrace'>}</span>
 <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span> <span class='comment'>#=&gt; 4</span></code></pre>
     
   </div>
@@ -1187,12 +1253,12 @@ when message becomes available.</p>
       <pre class="lines">
 
 
-383
-384
-385</pre>
+393
+394
+395</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 383</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 393</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reply'>reply</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_reply_resolution'>reply_resolution</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='kw'>nil</span>
@@ -1205,7 +1271,7 @@ when message becomes available.</p>
       <div class="method_details ">
   <h3 class="signature " id="reply_resolution-instance_method">
   
-    #<strong>reply_resolution</strong>(*resolve_args)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+    #<strong>reply_resolution</strong>(fulfilled = true, value = nil, reason = nil)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
   
 
   
@@ -1215,8 +1281,10 @@ when message becomes available.</p>
   <div class="discussion">
     <p>Reply to the sender of the message currently being processed
 if the actor was asked instead of told.
-The reply is stored in a <span class='object_link'><a href="../Promises/ResolvableFuture.html" title="Concurrent::Promises::ResolvableFuture (class)">Promises::ResolvableFuture</a></span> so the resolvable_args are arguments for
-<span class='object_link'><a href="../Promises/ResolvableFuture.html#resolve-instance_method" title="Concurrent::Promises::ResolvableFuture#resolve (method)">Promises::ResolvableFuture#resolve</a></span> method.</p>
+The reply is stored in a <span class='object_link'><a href="../Promises/ResolvableFuture.html" title="Concurrent::Promises::ResolvableFuture (class)">Promises::ResolvableFuture</a></span>
+so the arguments are same as for <span class='object_link'><a href="../Promises/ResolvableFuture.html#resolve-instance_method" title="Concurrent::Promises::ResolvableFuture#resolve (method)">Promises::ResolvableFuture#resolve</a></span> method.</p>
+
+<p>The reply may timeout, then this will fail with false.</p>
 
 
   </div>
@@ -1227,7 +1295,7 @@ The reply is stored in a <span class='object_link'><a href="../Promises/Resolvab
     <p class="tag_title">Examples:</p>
     
       
-      <pre class="example code"><code><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="../ErlangActor.html#spawn-class_method" title="Concurrent::ErlangActor.spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_receive'>receive</span> <span class='op'>*</span> <span class='int'>2</span><span class='comma'>,</span> <span class='kw'>nil</span> <span class='rbrace'>}</span>
+      <pre class="example code"><code><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_receive'>receive</span> <span class='op'>*</span> <span class='int'>2</span><span class='comma'>,</span> <span class='kw'>nil</span> <span class='rbrace'>}</span>
 <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span> <span class='comment'>#=&gt; 4</span></code></pre>
     
   </div>
@@ -1236,16 +1304,40 @@ The reply is stored in a <span class='object_link'><a href="../Promises/Resolvab
   
     <li>
       
-        <span class='name'>resolve_args</span>
+        <span class='name'>fulfilled</span>
       
       
-        <span class='type'></span>
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
       
       
+        <em class="default">(defaults to: <tt>true</tt>)</em>
       
-        &mdash;
-        <div class='inline'><p>see Promises::ResolvableFuture#resolve</p>
-</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>reason</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
       
     </li>
   
@@ -1262,7 +1354,7 @@ The reply is stored in a <span class='object_link'><a href="../Promises/Resolvab
       
       
         &mdash;
-        <div class='inline'><p>did the sender ask, and was it resolved</p>
+        <div class='inline'><p>did the sender ask, and was it resolved before it timed out?</p>
 </div>
       
     </li>
@@ -1275,15 +1367,15 @@ The reply is stored in a <span class='object_link'><a href="../Promises/Resolvab
       <pre class="lines">
 
 
-397
-398
-399</pre>
+413
+414
+415</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 397</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 413</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_args'>resolve_args</span><span class='rparen'>)</span>
-  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_resolve_args'>resolve_args</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span> <span class='op'>=</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1293,7 +1385,7 @@ The reply is stored in a <span class='object_link'><a href="../Promises/Resolvab
       <div class="method_details ">
   <h3 class="signature " id="spawn-instance_method">
   
-    #<strong>spawn</strong>(type = @Actor.class, channel: Promises::Channel.new, environment: Environment, name: nil, link: false, monitor: false, **options) { ... } &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>, <tt>::Array(<span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span>, <span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span>)</tt> 
+    #<strong>spawn</strong>(type = @Actor.class, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_executor, link: false, monitor: false) { ... } &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>, <tt>::Array(<span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span>, <span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span>)</tt> 
   
 
   
@@ -1410,54 +1502,21 @@ Available by <span class='object_link'><a href="Pid.html#name-instance_method" t
   
     <li>
       
-        <span class='name'>options</span>
+        <span class='name'>executor</span>
       
       
-        <span class='type'>(<tt><span class='object_link'><a href="../Hash.html" title="Concurrent::Hash (class)">Hash</a></span></tt>)</span>
+        <span class='type'>(<tt><span class='object_link'>ExecutorService</span></tt>)</span>
       
       
       
         &mdash;
-        <div class='inline'><p>other options specific by type of the actor</p>
+        <div class='inline'><p>The executor service to use to execute the actor on.
+Applies only to :on_pool actor type.</p>
 </div>
       
     </li>
   
 </ul>
-
-  
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <p class="tag_title">Options Hash (<tt>**options</tt>):</p>
-    <ul class="option">
-      
-        <li>
-          <span class="name">:executor</span>
-          <span class="type">(<tt><span class='object_link'>ExecutorService</span></tt>)</span>
-          <span class="default">
-            
-          </span>
-          
-            &mdash; <div class='inline'><p>The executor service to use to execute the actor on.
-Applies only to :on_pool actor type.</p>
-</div>
-          
-        </li>
-      
-    </ul>
-  
 
 <p class="tag_title">Yields:</p>
 <ul class="yield">
@@ -1513,16 +1572,6 @@ until it terminates.</p>
       <pre class="lines">
 
 
-358
-359
-360
-361
-362
-363
-364
-365
-366
-367
 368
 369
 370
@@ -1530,27 +1579,37 @@ until it terminates.</p>
 372
 373
 374
-375</pre>
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 358</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 368</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span>
           <span class='label'>channel:</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='comma'>,</span>
           <span class='label'>environment:</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ErlangActor::Environment (class)">Environment</a></span></span><span class='comma'>,</span>
           <span class='label'>name:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+          <span class='label'>executor:</span> <span class='id identifier rubyid_default_executor'>default_executor</span><span class='comma'>,</span>
           <span class='label'>link:</span> <span class='kw'>false</span><span class='comma'>,</span>
           <span class='label'>monitor:</span> <span class='kw'>false</span><span class='comma'>,</span>
-          <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span>
           <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span>
 
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span>
                <span class='label'>channel:</span>     <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span>
                <span class='label'>environment:</span> <span class='id identifier rubyid_environment'>environment</span><span class='comma'>,</span>
-               <span class='label'>name:</span>        <span class='kw'>nil</span><span class='comma'>,</span>
+               <span class='label'>name:</span>        <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span>
+               <span class='label'>executor:</span>    <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span>
                <span class='label'>link:</span>        <span class='id identifier rubyid_link'>link</span><span class='comma'>,</span>
                <span class='label'>monitor:</span>     <span class='id identifier rubyid_monitor'>monitor</span><span class='comma'>,</span>
-               <span class='op'>**</span><span class='id identifier rubyid_options'>options</span><span class='comma'>,</span>
                <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -1666,12 +1725,12 @@ with exit reason <code>:killed</code>.</p>
       <pre class="lines">
 
 
-431
-432
-433</pre>
+447
+448
+449</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 431</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 447</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminate'>terminate</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminate'>terminate</span> <span class='id identifier rubyid_pid'>pid</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_value'>value</span>
@@ -1727,12 +1786,12 @@ termination or a value if terminated normally.</p>
       <pre class="lines">
 
 
-130
-131
-132</pre>
+142
+143
+144</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 130</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 142</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminated'>terminated</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span>
@@ -1815,12 +1874,12 @@ Application actors should normally not trap exits.</p>
       <pre class="lines">
 
 
-162
-163
-164</pre>
+174
+175
+176</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 162</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 174</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_trap'>trap</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_trap'>trap</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
@@ -1879,12 +1938,12 @@ Application actors should normally not trap exits.</p>
       <pre class="lines">
 
 
-146
-147
-148</pre>
+158
+159
+160</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 146</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 158</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_traps?'>traps?</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_traps?'>traps?</span>
@@ -1951,12 +2010,12 @@ when trapping exits after the call to unlink, as follow:</p>
       <pre class="lines">
 
 
-248
-249
-250</pre>
+260
+261
+262</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 248</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 260</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unlink'>unlink</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_unlink'>unlink</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='rparen'>)</span>
