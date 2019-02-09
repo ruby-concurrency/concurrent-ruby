@@ -5,7 +5,7 @@ Although, `Promises.future { 1 + 1 }` is better suited for that purpose.
 
 ```ruby
 actor = Concurrent::ErlangActor.spawn(:on_thread, name: 'addition') { 1 + 1 }
-# => #<Concurrent::ErlangActor::Pid:0x000002 addition>
+# => #<Concurrent::ErlangActor::Pid:0x000002 addition terminated normally with 2>
 actor.terminated.value!                  # => 2
 ```
 
@@ -25,7 +25,7 @@ actor = Concurrent::ErlangActor.spawn(:on_thread, name: 'sum') do
   end
   sum
 end
-# => #<Concurrent::ErlangActor::Pid:0x000003 sum>
+# => #<Concurrent::ErlangActor::Pid:0x000003 sum running>
 ```
 
 The actor can be either told a message asynchronously, 
@@ -34,12 +34,12 @@ or asked. The ask method will block until actor replies.
 ```ruby
 # tell returns immediately returning the actor 
 actor.tell(1).tell(1)
-# => #<Concurrent::ErlangActor::Pid:0x000003 sum>
+# => #<Concurrent::ErlangActor::Pid:0x000003 sum running>
 # blocks, waiting for the answer 
 actor.ask 10                             # => 12
 # stop the actor
 actor.tell :done
-# => #<Concurrent::ErlangActor::Pid:0x000003 sum>
+# => #<Concurrent::ErlangActor::Pid:0x000003 sum running>
 actor.terminated.value!                  # => 12
 ```
 
@@ -49,9 +49,9 @@ Simplest message receive.
 
 ```ruby
 actor = Concurrent::ErlangActor.spawn(:on_thread) { receive }
-# => #<Concurrent::ErlangActor::Pid:0x000004>
+# => #<Concurrent::ErlangActor::Pid:0x000004 running>
 actor.tell :m
-# => #<Concurrent::ErlangActor::Pid:0x000004>
+# => #<Concurrent::ErlangActor::Pid:0x000004 running>
 actor.terminated.value!                  # => :m
 ```
 
@@ -60,16 +60,133 @@ because if no block is given it will use a default block `{ |v| v }`
 
 ```ruby
 actor = Concurrent::ErlangActor.spawn(:on_pool) { receive { |v| v } }
-# => #<Concurrent::ErlangActor::Pid:0x000005>
+# => #<Concurrent::ErlangActor::Pid:0x000005 running>
 # can simply be following
 actor = Concurrent::ErlangActor.spawn(:on_pool) { receive }
-# => #<Concurrent::ErlangActor::Pid:0x000006>
+# => #<Concurrent::ErlangActor::Pid:0x000006 running>
 actor.tell :m
-# => #<Concurrent::ErlangActor::Pid:0x000006>
+# => #<Concurrent::ErlangActor::Pid:0x000006 running>
 actor.terminated.value!                  # => :m
 ```
 
-TBA
+The received message type can be limited.
+
+```ruby
+Concurrent::ErlangActor.
+  spawn(:on_thread) { receive(Numeric).succ }.
+  tell('junk'). # ignored message
+  tell(42).
+  terminated.value!                      # => 43
+```
+
+On pool it requires a block.
+
+```ruby
+Concurrent::ErlangActor.
+  spawn(:on_pool) { receive(Numeric) { |v| v.succ } }.
+  tell('junk'). # ignored message
+  tell(42).
+  terminated.value!                      # => 43
+```
+
+By the way, the body written for on pool actor will work for on thread actor 
+as well. 
+
+```ruby
+Concurrent::ErlangActor.
+  spawn(:on_thread) { receive(Numeric) { |v| v.succ } }.
+  tell('junk'). # ignored message
+  tell(42).
+  terminated.value!                      # => 43
+```
+
+The `receive` method can be also used to dispatch based on the received message.
+
+```ruby
+actor = Concurrent::ErlangActor.spawn(:on_thread) do
+  while true
+    receive(on(Symbol) { |s| reply s.to_s },
+            on(And[Numeric, -> v { v >= 0 }]) { |v| reply v.succ },
+            # put last works as else
+            on(ANY) do |v| 
+              reply :bad_message
+              terminate [:bad_message, v]
+            end)            
+  end 
+end
+# => #<Concurrent::ErlangActor::Pid:0x000007 running>
+actor.ask 1                              # => 2
+actor.ask 2                              # => 3
+actor.ask :value                         # => "value"
+# this malformed message will terminate the actor
+actor.ask -1                             # => :bad_message
+# the actor is no longer alive, so ask fails
+actor.ask "junk" rescue $!
+# => #<Concurrent::ErlangActor::NoActor: #<Concurrent::ErlangActor::Pid:0x000007 terminated because of [:bad_message, -1]>>
+actor.terminated.result                  # => [false, nil, [:bad_message, -1]]
+```
+
+And a same thing for the actor on pool. 
+Since it cannot loop it will call the body method repeatedly.
+
+```ruby
+module Behaviour
+  def body
+    receive(on(Symbol) do |s| 
+              reply s.to_s 
+              body # call again  
+            end,
+            on(And[Numeric, -> v { v >= 0 }]) do |v| 
+              reply v.succ
+              body # call again 
+            end,
+            # put last works as else
+            on(ANY) do |v| 
+              reply :bad_message
+              terminate [:bad_message, v]
+            end)  
+  end
+end                                      # => :body
+
+actor = Concurrent::ErlangActor.spawn(:on_pool, environment: Behaviour) { body }
+# => #<Concurrent::ErlangActor::Pid:0x000008 running>
+actor.ask 1                              # => 2
+actor.ask 2                              # => 3
+actor.ask :value                         # => "value"
+# this malformed message will terminate the actor
+actor.ask -1                             # => :bad_message
+# the actor is no longer alive, so ask fails
+actor.ask "junk" rescue $!
+# => #<Concurrent::ErlangActor::NoActor: #<Concurrent::ErlangActor::Pid:0x000008 terminated because of [:bad_message, -1]>>
+actor.terminated.result                  # => [false, nil, [:bad_message, -1]]
+```
+
+Since the behavior is stable in this case we can simplify with the `:keep` option
+that will keep the receive rules until another receive is called
+replacing the kept rules.
+
+```ruby
+actor = Concurrent::ErlangActor.spawn(:on_pool) do
+  receive(on(Symbol) { |s| reply s.to_s },
+          on(And[Numeric, -> v { v >= 0 }]) { |v| reply v.succ },
+          # put last works as else
+          on(ANY) do |v| 
+            reply :bad_message
+            terminate [:bad_message, v]
+          end,
+          keep: true)            
+end
+# => #<Concurrent::ErlangActor::Pid:0x000009 running>
+actor.ask 1                              # => 2
+actor.ask 2                              # => 3
+actor.ask :value                         # => "value"
+# this malformed message will terminate the actor
+actor.ask -1                             # => :bad_message
+# the actor is no longer alive, so ask fails
+actor.ask "junk" rescue $!
+# => #<Concurrent::ErlangActor::NoActor: #<Concurrent::ErlangActor::Pid:0x000009 terminated because of [:bad_message, -1]>>
+actor.terminated.result                  # => [false, nil, [:bad_message, -1]]
+```
 
 ### Actor types
 
@@ -93,7 +210,7 @@ Let's have a look at how the bodies of actors differ between the types:
 
 ```ruby
 ping = Concurrent::ErlangActor.spawn(:on_thread) { reply receive }
-# => #<Concurrent::ErlangActor::Pid:0x000007>
+# => #<Concurrent::ErlangActor::Pid:0x00000a running>
 ping.ask 42                              # => 42
 ```
 
@@ -107,7 +224,7 @@ after the message is received has to be provided.
 
 ```ruby
 ping = Concurrent::ErlangActor.spawn(:on_pool) { receive { |m| reply m } }
-# => #<Concurrent::ErlangActor::Pid:0x000008>
+# => #<Concurrent::ErlangActor::Pid:0x00000b running>
 ping.ask 42                              # => 42
 ```
 
@@ -144,10 +261,11 @@ actor = Concurrent::ErlangActor.spawn(:on_thread) do
   trap # equivalent of process_flag(trap_exit, true) 
   receive  
 end
-# => #<Concurrent::ErlangActor::Pid:0x000009>
+# => #<Concurrent::ErlangActor::Pid:0x00000c running>
 actor.terminated.value!
-# => #<Concurrent::ErlangActor::Exit:0x00000a
-#     @from=#<Concurrent::ErlangActor::Pid:0x00000b>,
+# => #<Concurrent::ErlangActor::Exit:0x00000d
+#     @from=
+#      #<Concurrent::ErlangActor::Pid:0x00000e terminated because of err>,
 #     @link_terminated=true,
 #     @reason=:err>
 ```
@@ -159,3 +277,6 @@ actor.terminated.value!
 *   Back pressure with bounded mailbox
 *   _op methods
 *   types of actors
+*   always use timeout
+*   drop and log unrecognized messages, or just terminate
+*   Functions module

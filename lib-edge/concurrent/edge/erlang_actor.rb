@@ -33,11 +33,12 @@ module Concurrent
     # end
     # TODO (pitr-ch 06-Feb-2019): should actors be weakly linked from pid so they can be freed from memory?
     # TODO (pitr-ch 28-Jan-2019): improve matching support, take inspiration and/or port Algebrick ideas, push ANY and similar further up the namespace
+    # TODO (pitr-ch 08-Feb-2019): consider adding reply? which returns true,false if success, reply method will always return value
 
 
     # The public reference of the actor which can be stored and passed around.
     # Nothing else of the actor should be exposed.
-    # {ErlangActor.spawn} and {Environment#spawn} return pid.
+    # {Functions.spawn_actor} and {Environment#spawn} return the pid.
     class Pid < Synchronization::Object
 
       # The actor is asynchronously told a message.
@@ -64,12 +65,18 @@ module Concurrent
       # The actor is asked the message and blocks until a reply is available,
       # which is returned by the method.
       # If the reply is a rejection then the methods raises it.
+      #
+      # If the actor does not call {Environment#reply} or {Environment#reply_resolution}
+      # the method will raise NoReply error.
+      # If the actor is terminated it will raise NoActor.
+      # Therefore the ask is never left unanswered and blocking.
+      #
       # @param [Object] message
       # @param [Numeric] timeout the maximum time in second to wait
       # @param [Object] timeout_value the value returned on timeout
       # @return [Object, timeout_value] reply to the message
+      # @raise [NoReply, NoActor]
       def ask(message, timeout = nil, timeout_value = nil)
-        # TODO (pitr-ch 06-Feb-2019): document timout interaction with reply
         @Actor.ask message, timeout, timeout_value
       end
 
@@ -97,13 +104,18 @@ module Concurrent
 
       # @return [String] string representation
       def to_s
-        # TODO (pitr-ch 06-Feb-2019): consider to add state
         original = super
-        if @Name
-          format '%s %s>', original[0..-2], @Name
-        else
-          original
-        end
+        state    = case terminated.state
+                   when :pending
+                     'running'
+                   when :fulfilled
+                     "terminated normally with #{terminated.value}"
+                   when :rejected
+                     "terminated because of #{terminated.reason}"
+                   else
+                     raise
+                   end
+        [original[0..-2], *@Name, state].join(' ') << '>'
       end
 
       alias_method :inspect, :to_s
@@ -200,8 +212,8 @@ module Concurrent
       #   to process the message
       #   if single matcher is supplied
       # @yieldparam [Object] message the received message
+      # @see ErlangActor Receiving chapter in the ErlangActor examples
       def receive(*rules, timeout: nil, timeout_value: nil, **options, &block)
-        # TODO (pitr-ch 07-Feb-2019): add examples, keep: true, link them from this method
         @Actor.receive(*rules, timeout: timeout, timeout_value: timeout_value, **options, &block)
       end
 
@@ -343,9 +355,7 @@ module Concurrent
       #   the created actor is atomically created and linked with the calling actor
       # @param [true, false] monitor
       #   the created actor is atomically created and monitored by the calling actor
-      # @param [Hash] options
-      #   other options specific by type of the actor
-      # @option options [ExecutorService] :executor
+      # @param [ExecutorService] executor
       #   The executor service to use to execute the actor on.
       #   Applies only to :on_pool actor type.
       # @yield [] the body of the actor.
@@ -359,18 +369,18 @@ module Concurrent
                 channel: Promises::Channel.new,
                 environment: Environment,
                 name: nil,
+                executor: default_executor,
                 link: false,
                 monitor: false,
-                **options,
                 &body)
 
         @Actor.spawn(type,
                      channel:     channel,
                      environment: environment,
-                     name:        nil,
+                     name:        name,
+                     executor:    executor,
                      link:        link,
                      monitor:     monitor,
-                     **options,
                      &body)
       end
 
@@ -386,16 +396,22 @@ module Concurrent
 
       # Reply to the sender of the message currently being processed
       # if the actor was asked instead of told.
-      # The reply is stored in a {Promises::ResolvableFuture} so the resolvable_args are arguments for
-      # {Promises::ResolvableFuture#resolve} method.
+      # The reply is stored in a {Promises::ResolvableFuture}
+      # so the arguments are same as for {Promises::ResolvableFuture#resolve} method.
+      #
+      # The reply may timeout, then this will fail with false.
+      #
+      # @param [true, false] fulfilled
+      # @param [Object] value
+      # @param [Object] reason
+      #
       # @example
       #   actor = Concurrent::ErlangActor.spawn(:on_thread) { reply_resolution true, receive * 2, nil }
       #   actor.ask 2 #=> 4
       #
-      # @param resolve_args see Promises::ResolvableFuture#resolve
-      # @return [true, false] did the sender ask, and was it resolved
-      def reply_resolution(*resolve_args)
-        @Actor.reply_resolution(*resolve_args)
+      # @return [true, false] did the sender ask, and was it resolved before it timed out?
+      def reply_resolution(fulfilled = true, value = nil, reason = nil)
+        @Actor.reply_resolution(fulfilled, value, reason)
       end
 
       # If pid **is not** provided stops the execution of the calling actor
@@ -432,48 +448,90 @@ module Concurrent
         @Actor.terminate pid, reason, value: value
       end
 
+      def default_executor
+        @DefaultExecutor
+      end
+
       private
 
-      def initialize(actor)
+      def initialize(actor, executor)
         super()
-        @Actor = actor
+        @Actor           = actor
+        @DefaultExecutor = executor
       end
     end
 
-    # Creates an actor. Same as {Environment#spawn} but lacks link and monitor options.
-    # @param [:on_thread, :on_pool] type
-    # @param [Channel] channel
-    # @param [Environment, Module] environment
-    # @param [#to_s] name of the actor
-    # @param [Hash] options
-    # @option options [ExecutorService] :executor
-    # @return [Pid]
-    # @see Environment#spawn
-    def self.spawn(type,
-        channel: Promises::Channel.new,
-        environment: Environment,
-        name: nil,
-        **options,
-        &body)
+    # A module containing entry functions to actors like spawn_actor, terminate_actor.
+    # It can be included in environments working with actors.
+    # @example
+    #   include Concurrent::ErlangActors::Functions
+    #   actor = spawn_actor :on_pool do
+    #     receive { |data| process data }
+    #   end
+    # @see FunctionShortcuts
+    module Functions
+      # Creates an actor. Same as {Environment#spawn} but lacks link and monitor options.
+      # @param [:on_thread, :on_pool] type
+      # @param [Channel] channel
+      # @param [Environment, Module] environment
+      # @param [#to_s] name of the actor
+      # @param [ExecutorService] executor of the actor
+      # @return [Pid]
+      # @see Environment#spawn
+      def spawn_actor(type,
+                      channel: Promises::Channel.new,
+                      environment: Environment,
+                      name: nil,
+                      executor: default_actor_executor,
+                      &body)
 
-      actor = create type, channel, environment, name, **options, &body
-      actor.run
-      return actor.pid
-    end
-
-    # Same as {Environment#terminate}, but it requires pid.
-    # @param [Pid] pid
-    # @param [Object, :normal, :kill] reason
-    # @return [true]
-    def self.terminate(pid, reason)
-      if reason == :kill
-        pid.tell Kill.new(nil)
-      else
-        pid.tell Exit.new(nil, reason, false)
+        actor = ErlangActor.create type, channel, environment, name, executor, &body
+        actor.run
+        return actor.pid
       end
-      true
+
+      # Same as {Environment#terminate}, but it requires pid.
+      # @param [Pid] pid
+      # @param [Object, :normal, :kill] reason
+      # @return [true]
+      def terminate_actor(pid, reason)
+        if reason == :kill
+          pid.tell Kill.new(nil)
+        else
+          pid.tell Exit.new(nil, reason, false)
+        end
+        true
+      end
+
+      # @return [ExecutorService] the default executor service for actors
+      def default_actor_executor
+        default_executor
+      end
+
+      # @return [ExecutorService] the default executor service,
+      #   may be shared by other abstractions
+      def default_executor
+        :io
+      end
     end
 
+    # Constrains shortcuts for methods in {Functions}.
+    module FunctionShortcuts
+      # Optionally included shortcut method for {Functions#spawn_actor}
+      # @return [Pid]
+      def spawn(*args, &body)
+        spawn_actor *args, &body
+      end
+
+      # Optionally included shortcut method for {Functions#terminate_actor}
+      # @return [true]
+      def terminate(pid, reason)
+        terminate_actor(pid, reason)
+      end
+    end
+
+    extend Functions
+    extend FunctionShortcuts
     extend Concern::Logging
 
     class Token
@@ -575,7 +633,7 @@ module Concurrent
       safe_initialization!
 
       # @param [Promises::Channel] mailbox
-      def initialize(mailbox, environment, name)
+      def initialize(mailbox, environment, name, executor)
         super()
         @Mailbox                = mailbox
         @Pid                    = Pid.new self, name
@@ -588,9 +646,9 @@ module Concurrent
         @reply                  = nil
 
         @Environment = if environment.is_a?(Class) && environment <= Environment
-                         environment.new self
+                         environment.new self, executor
                        elsif environment.is_a? Module
-                         e = Environment.new self
+                         e = Environment.new self, executor
                          e.extend environment
                          e
                        else
@@ -600,40 +658,66 @@ module Concurrent
       end
 
       def tell_op(message)
-        log Logger::DEBUG, pid, told: message
-        @Mailbox.push_op(message).then { @Pid }
+        log Logger::DEBUG, @Pid, told: message
+        if @Mailbox
+          @Mailbox.push_op(message).then { @Pid }
+        else
+          Promises.fulfilled_future @Pid
+        end
       end
 
       def tell(message, timeout = nil)
-        log Logger::DEBUG, pid, told: message
-        timed_out = @Mailbox.push message, timeout
-        timeout ? timed_out : @Pid
+        log Logger::DEBUG, @Pid, told: message
+        if @Mailbox
+          timed_out = @Mailbox.push message, timeout
+          timeout ? timed_out : @Pid
+        else
+          timeout ? false : @Pid
+        end
       end
 
       def ask(message, timeout, timeout_value)
-        log Logger::DEBUG, pid, asked: message
-        probe    = Promises.resolvable_future
-        question = Ask.new(message, probe)
-        if timeout
-          start     = Concurrent.monotonic_time
-          timed_out = @Mailbox.push question, timeout
-          return timeout_value if timed_out
-          to_wait = timeout - (Concurrent.monotonic_time - start)
-          # TODO (pitr-ch 06-Feb-2019): allow negative timeout everywhere, interpret as 0
-          # TODO (pitr-ch 06-Feb-2019): test timeouts for tell and ask method
-          probe.value! to_wait >= 0 ? to_wait : 0,
-                       timeout_value,
-                       [true, :timed_out, nil]
-          # TODO (pitr-ch 06-Feb-2019): unify timed out values used to resolve resolvable futures on timing out
+        log Logger::DEBUG, @Pid, asked: message
+        if @Terminated.resolved?
+          raise NoActor.new(@Pid)
         else
-          @Mailbox.push question
-          probe.value!
+          probe    = Promises.resolvable_future
+          question = Ask.new(message, probe)
+          if timeout
+            start     = Concurrent.monotonic_time
+            in_time = tell question, timeout
+            # recheck it could have in the meantime terminated and drained mailbox
+            raise NoActor.new(@Pid) if @Terminated.resolved?
+            # has to be after resolved check, to catch case where it would return timeout_value
+            # when it was actually terminated
+            to_wait = if in_time
+                        time = timeout - (Concurrent.monotonic_time - start)
+                        time >= 0 ? time : 0
+                      else
+                        0
+                      end
+            # TODO (pitr-ch 06-Feb-2019): allow negative timeout everywhere, interpret as 0
+            # TODO (pitr-ch 06-Feb-2019): unify timed out values used to resolve resolvable futures on timing out
+            probe.value! to_wait, timeout_value, [true, :timed_out, nil]
+          else
+            raise NoActor.new(@Pid) if @Terminated.resolved?
+            tell question
+            raise NoActor.new(@Pid) if @Terminated.resolved?
+            probe.value!
+          end
         end
       end
 
       def ask_op(message, probe)
-        log Logger::DEBUG, pid, asked: message
-        @Mailbox.push_op(Ask.new(message, probe)).then { probe }.flat
+        log Logger::DEBUG, @Pid, asked: message
+        if @Terminated.resolved?
+          probe.reject NoActor.new(@Pid), false
+        else
+          tell_op(Ask.new(message, probe)).then do
+            probe.reject NoActor.new(@Pid), false if @Terminated.resolved?
+            probe
+          end.flat
+        end
       end
 
       def terminated
@@ -743,9 +827,9 @@ module Concurrent
                 name:,
                 link:,
                 monitor:,
-                **options,
+                executor:,
                 &body)
-        actor = ErlangActor.create type, channel, environment, name, **options, &body
+        actor = ErlangActor.create type, channel, environment, name, executor, &body
         pid   = actor.pid
         link pid if link
         ref = (monitor pid if monitor)
@@ -753,10 +837,9 @@ module Concurrent
         monitor ? [pid, ref] : pid
       end
 
-      def reply_resolution(*resolve_args)
+      def reply_resolution(fulfilled, value, reason)
         return false unless @reply
-
-        return @reply.resolve(*resolve_args)
+        return !!@reply.resolve(fulfilled, value, reason, false)
       end
 
       def terminate(pid = nil, reason, value: nil)
@@ -869,14 +952,13 @@ module Concurrent
         !!@reply
       end
 
-      def clean_reply
+      def clean_reply(reason = NoReply)
         if @reply
-          unless @reply.resolved?
-            @reply.is_a?(Promises::ResolvableFuture) ? @reply.reject(NoReply) : @reply.resolve
-          end
+          @reply.reject(reason, false)
           @reply = nil
         end
       end
+
 
       def consume_signal(message)
         if AbstractSignal === message
@@ -938,7 +1020,7 @@ module Concurrent
 
       def after_termination(final_reason)
         log Logger::DEBUG, @Pid, terminated: final_reason
-        clean_reply
+        clean_reply NoActor.new(@Pid)
         while true
           message = @Mailbox.try_pop NOTHING
           break if message == NOTHING
@@ -947,10 +1029,13 @@ module Concurrent
             message.from.tell Down.new(@Pid, message.reference, final_reason)
           when Link
             message.from.tell Exit.new(@Pid, final_reason)
+          when Ask
+            message.probe.reject(NoActor.new(@Pid), false)
           else
             # normal messages and other signals are thrown away
           end
         end
+        @Mailbox = nil
       end
     end
 
@@ -958,11 +1043,8 @@ module Concurrent
 
     class OnPool < AbstractActor
 
-      def initialize(channel, environment, name, executor: :io, **options, &body)
-        raise ArgumentError, "unrecognized options #{options}" unless options.empty?
-
-        # TODO (pitr-ch 06-Feb-2019): the default executor is not configurable, add factory methods
-        super channel, environment, name
+      def initialize(channel, environment, name, executor, &body)
+        super channel, environment, name, executor
         @Executor       = executor
         @behaviour      = []
         @keep_behaviour = false
@@ -1092,9 +1174,8 @@ module Concurrent
     private_constant :OnPool
 
     class OnThread < AbstractActor
-      def initialize(channel, environment, name, **options, &body)
-        raise ArgumentError, "unrecognized options #{options}" unless options.empty?
-        super channel, environment, name
+      def initialize(channel, environment, name, executor, &body)
+        super channel, environment, name, executor
         @Body   = body
         @Thread = nil
       end
@@ -1153,8 +1234,6 @@ module Concurrent
     end
 
     private_constant :OnThread
-
-    # TODO (pitr-ch 06-Feb-2019): document signals and constants
 
     class AbstractSignal < Synchronization::Object
       safe_initialization!
@@ -1334,7 +1413,7 @@ module Concurrent
       # @param [Pid] pid
       # @return [self]
       def initialize(pid = nil)
-        super("No proc with #{pid}")
+        super(pid.to_s)
         @pid = pid
       end
 
@@ -1357,8 +1436,8 @@ module Concurrent
     end
 
     # @!visibility private
-    def self.create(type, channel, environment, name, **options, &body)
-      actor = KLASS_MAP.fetch(type).new(channel, environment, name, **options, &body)
+    def self.create(type, channel, environment, name, executor, &body)
+      actor = KLASS_MAP.fetch(type).new(channel, environment, name, executor, &body)
     ensure
       log Logger::DEBUG, actor.pid, created: caller[1] if actor
     end

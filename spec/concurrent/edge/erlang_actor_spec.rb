@@ -1,12 +1,13 @@
 if Concurrent.ruby_version :>=, 2, 1, 0
   RSpec.describe 'Concurrent' do
     describe 'ErlangActor', edge: true do
+      # TODO (pitr-ch 06-Feb-2019): include constants instead
+      ANY      ||= Concurrent::ErlangActor::ANY
+      TIMEOUT  ||= Concurrent::ErlangActor::TIMEOUT
+      And      ||= Concurrent::ErlangActor::And
+      identity = -> v { v }
 
       shared_examples 'erlang actor' do
-        # TODO (pitr-ch 06-Feb-2019): include constants instead
-        ANY      ||= Concurrent::ErlangActor::ANY
-        TIMEOUT  ||= Concurrent::ErlangActor::TIMEOUT
-        identity = -> v { v }
 
         specify "run to termination" do
           expect(Concurrent::ErlangActor.spawn(type) do
@@ -881,10 +882,21 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                      on_pool:   -> { receive { |v| reply v; reply v } } }
             a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
             expect(a.ask(:v)).to eq :v
+            expect(a.terminated.value!).to be_falsey
 
-            expect(a.terminated.reason).to be_a_kind_of Concurrent::MultipleAssignmentError
-            body = { on_thread: -> { v = receive; reply v; reply_resolution true, v, nil, false },
-                     on_pool:   -> { receive { |v| reply v; reply_resolution true, v, nil, false } } }
+            body = { on_thread:
+                         -> do
+                           v = receive
+                           reply v
+                           reply_resolution true, v.to_s, nil
+                         end,
+                     on_pool:
+                         -> do
+                           receive do |v|
+                             reply v
+                             reply_resolution true, v.to_s, nil
+                           end
+                         end }
             a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
             expect(a.ask(:v)).to eq :v
             expect(a.terminated.value!).to be_falsey
@@ -900,13 +912,28 @@ if Concurrent.ruby_version :>=, 2, 1, 0
             expect(a.ask_op(:err).reason).to eq :err
           end
 
+          specify "timing out" do
+            body = { on_thread: -> { m = receive; sleep 0.01; reply m },
+                     on_pool:   -> { receive { |m| sleep 0.01; reply m } } }
+            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            expect(a.ask(:err, 0, 42)).to eq 42
+            expect(a.terminated.value!).to eq false
+
+            body = { on_thread: -> { reply receive },
+                     on_pool:   -> { receive { |m| reply m } } }
+            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            expect(a.ask(:v, 1, 42)).to eq :v
+            expect(a.terminated.value!).to eq true
+          end
+
           specify "rejects on no reply" do
             body = { on_thread: -> { receive; receive },
                      on_pool:   -> { receive { receive {} } } }
 
             a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
             expect(a.ask_op(:v).reason).to eq Concurrent::ErlangActor::NoReply
-            expect { raise a.ask_op(:v).wait }.to raise_error Concurrent::ErlangActor::NoReply
+            expect { raise a.ask_op(:v).wait }.to raise_error Concurrent::ErlangActor::NoActor
+            expect { raise a.ask(:v) }.to raise_error Concurrent::ErlangActor::NoActor
           end
 
         end
@@ -915,6 +942,23 @@ if Concurrent.ruby_version :>=, 2, 1, 0
       describe 'on thread' do
         let(:type) { :on_thread }
         it_behaves_like 'erlang actor'
+
+        specify do
+          actor = Concurrent::ErlangActor.spawn(:on_thread) do
+            Thread.abort_on_exception = true
+            while true
+              receive on(Symbol) { |s| reply s.to_s },
+                      on(And[Numeric, -> v { v >= 0 }]) { |v| reply v.succ },
+                      # put last works as else
+                      on(ANY) { |v| reply :bad_message; terminate [:bad_message, v] }
+            end
+          end
+          expect(actor.ask(1)).to eq 2
+          expect(actor.ask(:value)).to eq 'value'
+          expect(actor.ask(-1)).to eq :bad_message
+          expect { actor.ask 'junk' }.to raise_error Concurrent::ErlangActor::NoActor
+          expect(actor.terminated.reason).to eq [:bad_message, -1]
+        end
       end
 
       describe 'event based' do
