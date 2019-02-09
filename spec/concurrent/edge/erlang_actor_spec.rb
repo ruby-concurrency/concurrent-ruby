@@ -545,7 +545,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
               expect(trapped_exit).to be_a Concurrent::ErlangActor::Exit
               expect(trapped_exit.from).to eq b
               expect(trapped_exit.reason).to eq b.terminated.reason
-              expect(trapped_exit.reason).to be_a UncaughtThrowError
+              expect(trapped_exit.reason).to be_a ArgumentError
               expect(trapped_exit.reason.message).to eq 'uncaught throw :uncaught'
             end
           end
