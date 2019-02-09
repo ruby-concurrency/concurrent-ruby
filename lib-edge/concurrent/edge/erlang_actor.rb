@@ -697,8 +697,7 @@ module Concurrent
                         0
                       end
             # TODO (pitr-ch 06-Feb-2019): allow negative timeout everywhere, interpret as 0
-            # TODO (pitr-ch 06-Feb-2019): unify timed out values used to resolve resolvable futures on timing out
-            probe.value! to_wait, timeout_value, [true, :timed_out, nil]
+            probe.value! to_wait, timeout_value, [true, nil, nil]
           else
             raise NoActor.new(@Pid) if @Terminated.resolved?
             tell question
