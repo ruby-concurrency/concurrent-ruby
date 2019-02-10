@@ -10,6 +10,7 @@ module Concurrent
     # If the capacity is limited the {#push} method blocks and {#push_op} returns pending future.
     #
     # {include:file:docs-source/channel.out.md}
+    # @!macro warn.edge
     class Channel < Concurrent::Synchronization::Object
 
       # TODO (pitr-ch 06-Jan-2019): rename to Conduit?, to be able to place it into Concurrent namespace?

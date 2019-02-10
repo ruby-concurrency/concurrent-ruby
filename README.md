@@ -224,6 +224,34 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
     *Status: will be moved to core soon.*
 *   [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/LockFreeStack.html)
     *Status: missing documentation and tests.*
+*   [Promises::Channel](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises/Channel.html)
+    A first in first out channel that accepts messages with push family of methods and returns
+    messages with pop family of methods.
+    Pop and push operations can be represented as futures, see {#pop_op} and {#push_op}.
+    The capacity of the channel can be limited to support back pressure, use capacity option in {#initialize}.
+    {#pop} method blocks ans {#pop_op} returns pending future if there is no message in the channel.
+    If the capacity is limited the {#push} method blocks and {#push_op} returns pending future.
+*   [Cancellation](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Cancellation.html)
+    The Cancellation abstraction provides cooperative cancellation.
+
+    The standard methods `Thread#raise` of `Thread#kill` available in Ruby
+    are very dangerous (see linked the blog posts bellow).
+    Therefore concurrent-ruby provides an alternative.
+    
+    *   <https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/>
+    *   <http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/>
+    *   <http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html>
+
+    It provides an object which represents a task which can be executed,
+    the task has to get the reference to the object and periodically cooperatively check that it is not cancelled.
+    Good practices to make tasks cancellable:
+    *   check cancellation every cycle of a loop which does significant work,
+    *   do all blocking actions in a loop with a timeout then on timeout check cancellation
+        and if ok block again with the timeout 
+*   [Throttle](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Throttle.html)
+    A tool managing concurrency level of tasks.
+*   [ErlangActor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ErlangActor.html)
+    Actor implementation which matches Erlang actor behaviour.
 
 ## Supported Ruby versions
 

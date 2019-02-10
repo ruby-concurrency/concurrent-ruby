@@ -7,6 +7,7 @@ module Concurrent
   # This module provides actor abstraction that has same behaviour as Erlang actor.
   #
   # {include:file:docs-source/erlang_actor.out.md}
+  # @!macro warn.edge
   module ErlangActor
 
     # TODO (pitr-ch 04-Feb-2019): mode documentation.
