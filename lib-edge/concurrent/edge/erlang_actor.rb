@@ -702,7 +702,7 @@ module Concurrent
           else
             raise NoActor.new(@Pid) if @Terminated.resolved?
             tell question
-            raise NoActor.new(@Pid) if @Terminated.resolved?
+            probe.reject NoActor.new(@Pid), false if @Terminated.resolved?
             probe.value!
           end
         end
