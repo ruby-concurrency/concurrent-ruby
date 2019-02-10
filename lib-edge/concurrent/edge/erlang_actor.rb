@@ -660,8 +660,8 @@ module Concurrent
 
       def tell_op(message)
         log Logger::DEBUG, @Pid, told: message
-        if @Mailbox
-          @Mailbox.push_op(message).then { @Pid }
+        if (mailbox = @Mailbox)
+          mailbox.push_op(message).then { @Pid }
         else
           Promises.fulfilled_future @Pid
         end
@@ -669,8 +669,8 @@ module Concurrent
 
       def tell(message, timeout = nil)
         log Logger::DEBUG, @Pid, told: message
-        if @Mailbox
-          timed_out = @Mailbox.push message, timeout
+        if (mailbox = @Mailbox)
+          timed_out = mailbox.push message, timeout
           timeout ? timed_out : @Pid
         else
           timeout ? false : @Pid
