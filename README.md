@@ -344,6 +344,6 @@ and to the past maintainers
 *Concurrent Ruby* is free software released under the 
 [MIT License](http://www.opensource.org/licenses/MIT).
 
-The *Concurrent Ruby* [logo](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Logo) was
+The *Concurrent Ruby* [logo](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/docs-source/logo/concurrent-ruby-logo-300x300.png) was
 designed by [David Jones](https://twitter.com/zombyboy). It is Copyright &copy; 2014 
 [Jerry D'Antonio](https://twitter.com/jerrydantonio). All Rights Reserved.
