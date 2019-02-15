@@ -334,7 +334,7 @@ module Concurrent
     end
 
     module InternalStates
-      # @private
+      # @!visibility private
       class State
         def resolved?
           raise NotImplementedError
@@ -345,9 +345,7 @@ module Concurrent
         end
       end
 
-      private_constant :State
-
-      # @private
+      # @!visibility private
       class Pending < State
         def resolved?
           false
@@ -358,15 +356,11 @@ module Concurrent
         end
       end
 
-      private_constant :Pending
-
-      # @private
+      # @!visibility private
       class Reserved < Pending
       end
 
-      private_constant :Reserved
-
-      # @private
+      # @!visibility private
       class ResolvedWithResult < State
         def resolved?
           true
@@ -397,9 +391,7 @@ module Concurrent
         end
       end
 
-      private_constant :ResolvedWithResult
-
-      # @private
+      # @!visibility private
       class Fulfilled < ResolvedWithResult
 
         def initialize(value)
@@ -427,18 +419,14 @@ module Concurrent
         end
       end
 
-      private_constant :Fulfilled
-
-      # @private
+      # @!visibility private
       class FulfilledArray < Fulfilled
         def apply(args, block)
           block.call(*value, *args)
         end
       end
 
-      private_constant :FulfilledArray
-
-      # @private
+      # @!visibility private
       class Rejected < ResolvedWithResult
         def initialize(reason)
           @Reason = reason
@@ -465,9 +453,7 @@ module Concurrent
         end
       end
 
-      private_constant :Rejected
-
-      # @private
+      # @!visibility private
       class PartiallyRejected < ResolvedWithResult
         def initialize(value, reason)
           super()
@@ -496,17 +482,16 @@ module Concurrent
         end
       end
 
-      private_constant :PartiallyRejected
-
-      PENDING  = Pending.new
+      # @!visibility private
+      PENDING = Pending.new
+      # @!visibility private
       RESERVED = Reserved.new
+      # @!visibility private
       RESOLVED = Fulfilled.new(nil)
 
       def RESOLVED.to_sym
         :resolved
       end
-
-      private_constant :PENDING, :RESOLVED
     end
 
     private_constant :InternalStates
@@ -1202,7 +1187,7 @@ module Concurrent
       #     v < 5 ? Promises.future(v, &body) : v
       #   end
       #   Promises.future(0, &body).run.value! # => 5
-      def run(run_test = method(:run_test) )
+      def run(run_test = method(:run_test))
         RunFuturePromise.new_blocked_by1(self, @DefaultExecutor, run_test).future
       end
 
