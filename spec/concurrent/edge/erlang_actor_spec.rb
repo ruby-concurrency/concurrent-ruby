@@ -502,7 +502,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              b = spawn(link: true) { raise 'err' }
                              trap
-                             [receive(timeout: 0.01), b]
+                             [receive(timeout: 1), b]
                            end,
                        on_pool:
                            -> do
@@ -510,7 +510,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              trap
                              receive(on(ANY) { |v| [v, b] },
                                      on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                                     timeout: 1)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
@@ -961,7 +961,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
         end
       end
 
-      describe 'event based' do
+      describe 'on pool' do
         let(:type) { :on_pool }
         it_behaves_like 'erlang actor'
 
