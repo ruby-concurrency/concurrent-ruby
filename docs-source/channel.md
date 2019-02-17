@@ -193,7 +193,7 @@ def fibonacci(n, c)
 end
 
 chan = Concurrent::Channel.new(capacity: 10)
-Concurrent::Channel.go { fibonacci(chan.capacity, c) }
+Concurrent::Channel.go { fibonacci(chan.capacity, chan) }
 chan.each { |i| puts i }
 ```
 
