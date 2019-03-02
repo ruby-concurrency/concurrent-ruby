@@ -95,14 +95,30 @@
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    <p>This module provides actor abstraction that has same behaviour as Erlang actor.</p>
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p><strong>Edge Features</strong> are under active development and may change frequently.</p>
+
+<ul>
+<li>  Deprecations are not added before incompatible changes.</li>
+<li>  Edge version: <em>major</em> is always 0, <em>minor</em> bump means incompatible change,
+<em>patch</em> bump means compatible change.</li>
+<li>  Edge features may also lack tests and documentation.</li>
+<li>  Features developed in <code>concurrent-ruby-edge</code> are expected to move
+to <code>concurrent-ruby</code> when finalised.</li>
+</ul>
+</div>
+  </div>
+
+<p>This module provides actor abstraction that has same behaviour as Erlang actor.</p>
 
 <p><h2>Examples</h2>
 
 <p>The simplest example is to use the actor as an asynchronous execution.
 Although, <code>Promises.future { 1 + 1 }</code> is better suited for that purpose.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>addition</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>addition</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span>
 <span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000002 addition terminated normally with 2&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                  <span class='comment'># =&gt; 2
 </span></code></pre>
@@ -110,17 +126,18 @@ Although, <code>Promises.future { 1 + 1 }</code> is better suited for that purpo
 <p>Let&#39;s send some messages and maintain some internal state 
 which is what actors are good for.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>sum</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>do</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='comma'>,</span> <span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>sum</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>do</span>
   <span class='id identifier rubyid_sum'>sum</span> <span class='op'>=</span> <span class='int'>0</span> <span class='comment'># internal state
 </span>  <span class='comment'># receive and sum the messages until the actor gets :done
 </span>  <span class='kw'>while</span> <span class='kw'>true</span>
     <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='id identifier rubyid_receive'>receive</span>
     <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>==</span> <span class='symbol'>:done</span>
     <span class='comment'># if the message is asked and not only told, 
-</span>    <span class='comment'># reply with a current sum
+</span>    <span class='comment'># reply with the current sum (has no effect if actor was not asked)
 </span>    <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_sum'>sum</span> <span class='op'>+=</span> <span class='id identifier rubyid_message'>message</span>   
   <span class='kw'>end</span>
-  <span class='id identifier rubyid_sum'>sum</span>
+  <span class='comment'># The final value of the actor
+</span>  <span class='id identifier rubyid_sum'>sum</span>
 <span class='kw'>end</span>
 <span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000003 sum running&gt;
 </span></code></pre>
@@ -136,37 +153,97 @@ or asked. The ask method will block until actor replies.</p>
 </span><span class='comment'># stop the actor
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='symbol'>:done</span>
 <span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000003 sum running&gt;
+</span><span class='comment'># The final value of the actor 
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                  <span class='comment'># =&gt; 12
 </span></code></pre>
 
-<h3>Receiving</h3>
+<h3>Actor types</h3>
+
+<p>There are two types of actors. 
+The type is specified when calling spawn as a first argument, 
+<code>Concurrent::ErlangActor.spawn(type: :on_thread, ...</code> or 
+<code>Concurrent::ErlangActor.spawn(type: :on_pool, ...</code>.</p>
+
+<p>The main difference is in how receive method returns.</p>
+
+<ul>
+<li><p><code>:on_thread</code> it blocks the thread until message is available, 
+then it returns or calls the provided block first. </p></li>
+<li><p>However, <code>:on_pool</code> it has to free up the thread on the receive 
+call back to the pool. Therefore the call to receive ends the 
+execution of current scope. The receive has to be given block
+or blocks that act as a continuations and are called 
+when there is message available.</p></li>
+</ul>
+
+<p>Let&#39;s have a look at how the bodies of actors differ between the types:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ping'>ping</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_receive'>receive</span> <span class='rbrace'>}</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000004 running&gt;
+</span><span class='id identifier rubyid_ping'>ping</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>42</span>                              <span class='comment'># =&gt; 42
+</span></code></pre>
+
+<p>It first calls receive, which blocks the thread of the actor. 
+When it returns the received message is passed an an argument to reply,
+which replies the same value back to the ask method. 
+Then the actor terminates normally, because there is nothing else to do.</p>
+
+<p>However when running on pool a block with code which should be evaluated 
+after the message is received has to be provided. </p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ping'>ping</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_m'>m</span><span class='op'>|</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_m'>m</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000005 running&gt;
+</span><span class='id identifier rubyid_ping'>ping</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>42</span>                              <span class='comment'># =&gt; 42
+</span></code></pre>
+
+<p>It starts by calling receive which will remember the given block for later
+execution when a message is available and stops executing the current scope.
+Later when a message becomes available the previously provided block is given
+the message and called. The result of the block is the final value of the 
+normally terminated actor.</p>
+
+<p>The direct blocking style of <code>:on_thread</code> is simpler to write and more straight
+forward however it has limitations. Each <code>:on_thread</code> actor creates a Thread 
+taking time and resources. 
+There is also a limited number of threads the Ruby process can create 
+so you may hit the limit and fail to create more threads and therefore actors.  </p>
+
+<p>Since the <code>:on_pool</code> actor runs on a poll of threads, its creations 
+is faster and cheaper and it does not create new threads. 
+Therefore there is no limit (only RAM) on how many actors can be created.</p>
+
+<p>To simplify, if you need only few actors <code>:on_thread</code> is fine. 
+However if you will be creating hundreds of actors or 
+they will be short-lived <code>:on_pool</code> should be used.      </p>
+
+<h3>Receiving messages</h3>
 
 <p>Simplest message receive.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000004 running&gt;
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='rbrace'>}</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000006 running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='symbol'>:m</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000004 running&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000006 running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                  <span class='comment'># =&gt; :m
 </span></code></pre>
 
 <p>which also works for actor on pool, 
 because if no block is given it will use a default block <code>{ |v| v }</code> </p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000005 running&gt;
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000007 running&gt;
 </span><span class='comment'># can simply be following
-</span><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000006 running&gt;
+</span><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='rbrace'>}</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000008 running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='symbol'>:m</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000006 running&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000008 running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                  <span class='comment'># =&gt; :m
 </span></code></pre>
 
 <p>The received message type can be limited.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span>
-  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span><span class='period'>.</span>
+  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span><span class='period'>.</span>
   <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>junk</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span> <span class='comment'># ignored message
 </span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='int'>42</span><span class='rparen'>)</span><span class='period'>.</span>
   <span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                      <span class='comment'># =&gt; 43
@@ -175,7 +252,7 @@ because if no block is given it will use a default block <code>{ |v| v }</code> 
 <p>On pool it requires a block.</p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span>
-  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='period'>.</span>
+  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='period'>.</span>
   <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>junk</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span> <span class='comment'># ignored message
 </span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='int'>42</span><span class='rparen'>)</span><span class='period'>.</span>
   <span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                      <span class='comment'># =&gt; 43
@@ -185,7 +262,7 @@ because if no block is given it will use a default block <code>{ |v| v }</code> 
 as well. </p>
 
 <pre class="code ruby"><code class="ruby"><span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span>
-  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='period'>.</span>
+  <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='const'>Numeric</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span><span class='period'>.</span>
   <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>junk</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span> <span class='comment'># ignored message
 </span>  <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='int'>42</span><span class='rparen'>)</span><span class='period'>.</span>
   <span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>                      <span class='comment'># =&gt; 43
@@ -193,7 +270,7 @@ as well. </p>
 
 <p>The <code>receive</code> method can be also used to dispatch based on the received message.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='kw'>do</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='kw'>do</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
     <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_s'>s</span><span class='op'>|</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='rbrace'>}</span><span class='comma'>,</span>
             <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="ErlangActor/EnvironmentConstants/And.html" title="Concurrent::ErlangActor::EnvironmentConstants::And (class)">And</a></span></span><span class='lbracket'>[</span><span class='const'>Numeric</span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_v'>v</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>&gt;=</span> <span class='int'>0</span> <span class='rbrace'>}</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span><span class='comma'>,</span>
@@ -204,7 +281,7 @@ as well. </p>
             <span class='kw'>end</span><span class='rparen'>)</span>            
   <span class='kw'>end</span> 
 <span class='kw'>end</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000007 running&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000009 running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>1</span>                              <span class='comment'># =&gt; 2
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span>                              <span class='comment'># =&gt; 3
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='symbol'>:value</span>                         <span class='comment'># =&gt; &quot;value&quot;
@@ -212,7 +289,7 @@ as well. </p>
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='op'>-</span><span class='int'>1</span>                             <span class='comment'># =&gt; :bad_message
 </span><span class='comment'># the actor is no longer alive, so ask fails
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>junk</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>rescue</span> <span class='gvar'>$!</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::NoActor: #&lt;Concurrent::ErlangActor::Pid:0x000007 terminated because of [:bad_message, -1]&gt;&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::NoActor: #&lt;Concurrent::ErlangActor::Pid:0x000009 terminated because of [:bad_message, -1]&gt;&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>                  <span class='comment'># =&gt; [false, nil, [:bad_message, -1]]
 </span></code></pre>
 
@@ -237,8 +314,8 @@ Since it cannot loop it will call the body method repeatedly.</p>
   <span class='kw'>end</span>
 <span class='kw'>end</span>                                      <span class='comment'># =&gt; :body
 </span>
-<span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_pool</span><span class='comma'>,</span> <span class='label'>environment:</span> <span class='const'>Behaviour</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_body'>body</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000008 running&gt;
+<span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='comma'>,</span> <span class='label'>environment:</span> <span class='const'>Behaviour</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_body'>body</span> <span class='rbrace'>}</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x00000a running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>1</span>                              <span class='comment'># =&gt; 2
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span>                              <span class='comment'># =&gt; 3
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='symbol'>:value</span>                         <span class='comment'># =&gt; &quot;value&quot;
@@ -246,7 +323,7 @@ Since it cannot loop it will call the body method repeatedly.</p>
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='op'>-</span><span class='int'>1</span>                             <span class='comment'># =&gt; :bad_message
 </span><span class='comment'># the actor is no longer alive, so ask fails
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>junk</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>rescue</span> <span class='gvar'>$!</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::NoActor: #&lt;Concurrent::ErlangActor::Pid:0x000008 terminated because of [:bad_message, -1]&gt;&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::NoActor: #&lt;Concurrent::ErlangActor::Pid:0x00000a terminated because of [:bad_message, -1]&gt;&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>                  <span class='comment'># =&gt; [false, nil, [:bad_message, -1]]
 </span></code></pre>
 
@@ -254,7 +331,7 @@ Since it cannot loop it will call the body method repeatedly.</p>
 that will keep the receive rules until another receive is called
 replacing the kept rules.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='kw'>do</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='kw'>do</span>
   <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span><span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'>Symbol</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_s'>s</span><span class='op'>|</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_s'>s</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='rbrace'>}</span><span class='comma'>,</span>
           <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="ErlangActor/EnvironmentConstants/And.html" title="Concurrent::ErlangActor::EnvironmentConstants::And (class)">And</a></span></span><span class='lbracket'>[</span><span class='const'>Numeric</span><span class='comma'>,</span> <span class='tlambda'>-&gt;</span> <span class='id identifier rubyid_v'>v</span> <span class='tlambeg'>{</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>&gt;=</span> <span class='int'>0</span> <span class='rbrace'>}</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span> <span class='rbrace'>}</span><span class='comma'>,</span>
           <span class='comment'># put last works as else
@@ -264,7 +341,7 @@ replacing the kept rules.</p>
           <span class='kw'>end</span><span class='comma'>,</span>
           <span class='label'>keep:</span> <span class='kw'>true</span><span class='rparen'>)</span>            
 <span class='kw'>end</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000009 running&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x00000b running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>1</span>                              <span class='comment'># =&gt; 2
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>2</span>                              <span class='comment'># =&gt; 3
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='symbol'>:value</span>                         <span class='comment'># =&gt; &quot;value&quot;
@@ -272,75 +349,16 @@ replacing the kept rules.</p>
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='op'>-</span><span class='int'>1</span>                             <span class='comment'># =&gt; :bad_message
 </span><span class='comment'># the actor is no longer alive, so ask fails
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>junk</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>rescue</span> <span class='gvar'>$!</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::NoActor: #&lt;Concurrent::ErlangActor::Pid:0x000009 terminated because of [:bad_message, -1]&gt;&gt;
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::NoActor: #&lt;Concurrent::ErlangActor::Pid:0x00000b terminated because of [:bad_message, -1]&gt;&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span>                  <span class='comment'># =&gt; [false, nil, [:bad_message, -1]]
 </span></code></pre>
-
-<h3>Actor types</h3>
-
-<p>There are two types of actors. 
-The type is specified when calling spawn as a first argument, 
-<code>Concurrent::ErlangActor.spawn(:on_thread, ...</code> or 
-<code>Concurrent::ErlangActor.spawn(:on_pool, ...</code>.</p>
-
-<p>The main difference is in how receive method returns.</p>
-
-<ul>
-<li><p><code>:on_thread</code> it blocks the thread until message is available, 
-then it returns or calls the provided block first. </p></li>
-<li><p>However, <code>:on_pool</code> it has to free up the thread on the receive 
-call back to the pool. Therefore the call to receive ends the 
-execution of current scope. The receive has to be given block
-or blocks that act as a continuations and are called 
-when there is message available.</p></li>
-</ul>
-
-<p>Let&#39;s have a look at how the bodies of actors differ between the types:</p>
-
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ping'>ping</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_receive'>receive</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x00000a running&gt;
-</span><span class='id identifier rubyid_ping'>ping</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>42</span>                              <span class='comment'># =&gt; 42
-</span></code></pre>
-
-<p>It first calls receive, which blocks the thread of the actor. 
-When it returns the received message is passed an an argument to reply,
-which replies the same value back to the ask method. 
-Then the actor terminates normally, because there is nothing else to do.</p>
-
-<p>However when running on pool a block with code which should be evaluated 
-after the message is received has to be provided. </p>
-
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ping'>ping</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_pool</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_receive'>receive</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_m'>m</span><span class='op'>|</span> <span class='id identifier rubyid_reply'>reply</span> <span class='id identifier rubyid_m'>m</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x00000b running&gt;
-</span><span class='id identifier rubyid_ping'>ping</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='int'>42</span>                              <span class='comment'># =&gt; 42
-</span></code></pre>
-
-<p>It starts by calling receive which will remember the given block for later
-execution when a message is available and stops executing the current scope.
-Later when a message becomes available the previously provided block is given
-the message and called. The result of the block is the final value of the 
-normally terminated actor.</p>
-
-<p>The direct blocking style of <code>:on_thread</code> is simpler to write and more straight
-forward however it has limitations. Each <code>:on_thread</code> actor creates a Thread 
-taking time and resources. 
-There is also a limited number of threads the Ruby process can create 
-so you may hit the limit and fail to create more threads and therefore actors.  </p>
-
-<p>Since the <code>:on_pool</code> actor runs on a poll of threads, its creations 
-is faster and cheaper and it does not create new threads. 
-Therefore there is no limit (only RAM) on how many actors can be created.</p>
-
-<p>To simplify, if you need only few actors <code>:on_thread</code> is fine. 
-However if you will be creating hundreds of actors or 
-they will be short-lived <code>:on_pool</code> should be used.      </p>
 
 <h3>Erlang behaviour</h3>
 
 <p>The actor matches Erlang processes in behaviour. 
 Therefore it supports the usual Erlang actor linking, monitoring, exit behaviour, etc.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='kw'>do</span>
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ErlangActor</span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='symbol'>:on_thread</span><span class='rparen'>)</span> <span class='kw'>do</span>
   <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='label'>link:</span> <span class='kw'>true</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='comment'># equivalent of spawn_link in Erlang
 </span>    <span class='id identifier rubyid_terminate'>terminate</span> <span class='symbol'>:err</span> <span class='comment'># equivalent of exit in Erlang    
 </span>  <span class='kw'>end</span>
@@ -349,24 +367,42 @@ Therefore it supports the usual Erlang actor linking, monitoring, exit behaviour
 <span class='kw'>end</span>
 <span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x00000c running&gt;
 </span><span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
-<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Exit:0x00000d
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Terminated:0x00000d
 </span><span class='comment'>#     @from=
 </span><span class='comment'>#      #&lt;Concurrent::ErlangActor::Pid:0x00000e terminated because of err&gt;,
-</span><span class='comment'>#     @link_terminated=true,
 </span><span class='comment'>#     @reason=:err&gt;
 </span></code></pre>
 
-<h3>TODO</h3>
+<p>The methods have same or very similar name to be easily found. 
+The one exception from the original Erlang naming is exit.
+To avoid clashing with <code>Kernel#exit</code> it&#39;s called <code>terminate</code>. </p>
+
+<p>Until there is more information available here, the chapters listed below from 
+a book <a href="https://learnyousomeerlang.com">lern you some Erlang</a> 
+are excellent source of information. 
+The Ruby ErlangActor implementation has same behaviour. </p>
 
 <ul>
-<li>  receives</li>
-<li>  More erlang behaviour examples</li>
-<li>  Back pressure with bounded mailbox</li>
-<li>  _op methods</li>
-<li>  types of actors</li>
-<li>  always use timeout</li>
-<li>  drop and log unrecognized messages, or just terminate</li>
-<li>  Functions module</li>
+<li>  <a href="https://learnyousomeerlang.com/errors-and-processes#links">Links</a></li>
+<li>  <a href="https://learnyousomeerlang.com/errors-and-processes#its-a-trap">It&#39;s a trap</a></li>
+<li>  <a href="https://learnyousomeerlang.com/errors-and-processes#monitors">Monitors</a></li>
+</ul>
+
+<p>If anything behaves differently than in Erlang, please file an issue.</p>
+
+<h3>Chapters or points to be added</h3>
+
+<ul>
+<li>  More erlang behaviour examples.</li>
+<li>  The mailbox can be bounded in size, 
+then the tell and ask will block until there is space available in the mailbox.
+Useful for building systems with backpressure.</li>
+<li>  <code>#tell_op</code> and <code>ask_op</code> method examples, integration with promises.</li>
+<li>  Best practice: always use timeout, 
+and do something if the message does not arrive, don&#39;t leave the actor stuck.</li>
+<li>  Best practice: drop and log unrecognized messages, 
+or be even more defensive and terminate.</li>
+<li>  Environment definition for actors.</li>
 </ul>
 </p>
 
@@ -380,11 +416,11 @@ Therefore it supports the usual Erlang actor linking, monitoring, exit behaviour
 <p class="children">
   
     
-      <strong class="modules">Modules:</strong> <span class='object_link'><a href="ErlangActor/EnvironmentConstants.html" title="Concurrent::ErlangActor::EnvironmentConstants (module)">EnvironmentConstants</a></span>, <span class='object_link'><a href="ErlangActor/FunctionShortcuts.html" title="Concurrent::ErlangActor::FunctionShortcuts (module)">FunctionShortcuts</a></span>, <span class='object_link'><a href="ErlangActor/Functions.html" title="Concurrent::ErlangActor::Functions (module)">Functions</a></span>, <span class='object_link'><a href="ErlangActor/HasFrom.html" title="Concurrent::ErlangActor::HasFrom (module)">HasFrom</a></span>, <span class='object_link'><a href="ErlangActor/HasReference.html" title="Concurrent::ErlangActor::HasReference (module)">HasReference</a></span>
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="ErlangActor/EnvironmentConstants.html" title="Concurrent::ErlangActor::EnvironmentConstants (module)">EnvironmentConstants</a></span>, <span class='object_link'><a href="ErlangActor/FunctionShortcuts.html" title="Concurrent::ErlangActor::FunctionShortcuts (module)">FunctionShortcuts</a></span>, <span class='object_link'><a href="ErlangActor/Functions.html" title="Concurrent::ErlangActor::Functions (module)">Functions</a></span>
     
   
     
-      <strong class="classes">Classes:</strong> <span class='object_link'><a href="ErlangActor/Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span>, <span class='object_link'><a href="ErlangActor/Environment.html" title="Concurrent::ErlangActor::Environment (class)">Environment</a></span>, <span class='object_link'><a href="ErlangActor/Error.html" title="Concurrent::ErlangActor::Error (class)">Error</a></span>, <span class='object_link'><a href="ErlangActor/Exit.html" title="Concurrent::ErlangActor::Exit (class)">Exit</a></span>, <span class='object_link'><a href="ErlangActor/NoActor.html" title="Concurrent::ErlangActor::NoActor (class)">NoActor</a></span>, <span class='object_link'><a href="ErlangActor/NoReply.html" title="Concurrent::ErlangActor::NoReply (class)">NoReply</a></span>, <span class='object_link'><a href="ErlangActor/Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span>, <span class='object_link'><a href="ErlangActor/Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span>
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="ErlangActor/Down.html" title="Concurrent::ErlangActor::Down (class)">Down</a></span>, <span class='object_link'><a href="ErlangActor/Environment.html" title="Concurrent::ErlangActor::Environment (class)">Environment</a></span>, <span class='object_link'><a href="ErlangActor/Error.html" title="Concurrent::ErlangActor::Error (class)">Error</a></span>, <span class='object_link'><a href="ErlangActor/NoActor.html" title="Concurrent::ErlangActor::NoActor (class)">NoActor</a></span>, <span class='object_link'><a href="ErlangActor/NoReply.html" title="Concurrent::ErlangActor::NoReply (class)">NoReply</a></span>, <span class='object_link'><a href="ErlangActor/Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span>, <span class='object_link'><a href="ErlangActor/Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span>, <span class='object_link'><a href="ErlangActor/Terminated.html" title="Concurrent::ErlangActor::Terminated (class)">Terminated</a></span>
     
   
 </p>
@@ -490,7 +526,7 @@ Therefore it supports the usual Erlang actor linking, monitoring, exit behaviour
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#spawn_actor-class_method" title="#spawn_actor (class method)">.<strong>spawn_actor</strong>(type, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; Pid </a>
+      <a href="#spawn_actor-class_method" title="#spawn_actor (class method)">.<strong>spawn_actor</strong>(*args, type:, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; Pid </a>
     
 
     
@@ -722,7 +758,7 @@ may be shared by other abstractions</p>
       <div class="method_details ">
   <h3 class="signature " id="spawn_actor-class_method">
   
-    .<strong>spawn_actor</strong>(type, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; <tt><span class='object_link'><a href="ErlangActor/Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt> 
+    .<strong>spawn_actor</strong>(*args, type:, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; <tt><span class='object_link'><a href="ErlangActor/Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt> 
   
 
   
@@ -743,6 +779,17 @@ may be shared by other abstractions</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
   
     <li>
       

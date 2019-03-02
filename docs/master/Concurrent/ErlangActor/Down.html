@@ -69,14 +69,10 @@
   <dl>
     <dt>Inherits:</dt>
     <dd>
-      <span class="inheritName"><span class='object_link'>AbstractSignal</span></span>
+      <span class="inheritName">Object</span>
       
         <ul class="fullTree">
           <li>Object</li>
-          
-            <li class="next"><span class='object_link'><a href="../Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
-          
-            <li class="next"><span class='object_link'>AbstractSignal</span></li>
           
             <li class="next">Concurrent::ErlangActor::Down</li>
           
@@ -90,11 +86,6 @@
   
   
   
-  
-  <dl>
-      <dt>Includes:</dt>
-      <dd><span class='object_link'><a href="HasReference.html" title="Concurrent::ErlangActor::HasReference (module)">HasReference</a></span></dd>
-  </dl>
   
   
 
@@ -128,6 +119,33 @@
       <li class="public ">
   <span class="summary_signature">
     
+      <a href="#from-instance_method" title="#from (instance method)">#<strong>from</strong>  &#x21d2; Pid </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#info-instance_method" title="#info (instance method)">#<strong>info</strong>  &#x21d2; Object </a>
     
 
@@ -155,48 +173,11 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#from-instance_method" title="#from (instance method)">#<strong>from</strong>  &#x21d2; Pid </a>
-    
-
-    
-  </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="HasFrom.html#from-instance_method" title="Concurrent::ErlangActor::HasFrom#from (method)">HasFrom</a></span>
-    </span>
-  
-  
-  
-    
-      <span class="note title readonly">readonly</span>
-    
-    
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-    
-      <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#reference-instance_method" title="#reference (instance method)">#<strong>reference</strong>  &#x21d2; Reference </a>
     
 
     
   </span>
-  
-    <span class="note title not_defined_here">
-      included
-      from <span class='object_link'><a href="HasReference.html#reference-instance_method" title="Concurrent::ErlangActor::HasReference#reference (method)">HasReference</a></span>
-    </span>
   
   
   
@@ -235,6 +216,8 @@
       <a href="#==-instance_method" title="#== (instance method)">#<strong>==</strong>(o)  &#x21d2; true, false </a>
     
 
+    
+      (also: #eql?)
     
   </span>
   
@@ -299,21 +282,67 @@
   
 
 
-  
-  
-  
-  
-  
-  
-  
-  
   <div id="instance_attr_details" class="attr_details">
     <h2>Instance Attribute Details</h2>
     
       
       <span id=""></span>
       <div class="method_details first">
-  <h3 class="signature first" id="info-instance_method">
+  <h3 class="signature first" id="from-instance_method">
+  
+    #<strong>from</strong>  &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1462
+1463
+1464</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1462</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_from'>from</span>
+  <span class='ivar'>@from</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="info-instance_method">
   
     #<strong>info</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
   
@@ -349,12 +378,12 @@
       <pre class="lines">
 
 
-1380
-1381
-1382</pre>
+1466
+1467
+1468</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1380</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1466</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_info'>info</span>
   <span class='ivar'>@info</span>
@@ -367,47 +396,6 @@
       
       <span id=""></span>
       <div class="method_details ">
-  <h3 class="signature " id="from-instance_method">
-  
-    #<strong>from</strong>  &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>  <span class="extras">(readonly)</span>
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="HasFrom.html#from-instance_method" title="Concurrent::ErlangActor::HasFrom#from (method)">HasFrom</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      
-      <span id=""></span>
-      <div class="method_details ">
   <h3 class="signature " id="reference-instance_method">
   
     #<strong>reference</strong>  &#x21d2; <tt><span class='object_link'><a href="Reference.html" title="Concurrent::ErlangActor::Reference (class)">Reference</a></span></tt>  <span class="extras">(readonly)</span>
@@ -415,11 +403,6 @@
 
   
 
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="HasReference.html#reference-instance_method" title="Concurrent::ErlangActor::HasReference#reference (method)">HasReference</a></span>
-    </span>
   
 </h3><div class="docstring">
   <div class="discussion">
@@ -443,7 +426,25 @@
   
 </ul>
 
-</div>
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1464
+1465
+1466</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1464</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reference'>reference</span>
+  <span class='ivar'>@reference</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
 </div>
     
   </div>
@@ -459,6 +460,10 @@
     #<strong>==</strong>(o)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
   
 
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='eql?-instance_method'>eql?</span></span>
+    </span>
   
 
   
@@ -490,15 +495,15 @@
       <pre class="lines">
 
 
-1394
-1395
-1396</pre>
+1481
+1482
+1483</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1394</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1481</span>
 
 <span class='kw'>def</span> <span class='op'>==</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='rparen'>)</span>
-  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='op'>==</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span>
+  <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>==</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span> <span class='op'>==</span> <span class='ivar'>@from</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_reference'>reference</span> <span class='op'>==</span> <span class='ivar'>@reference</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='op'>==</span> <span class='ivar'>@info</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -542,12 +547,12 @@
       <pre class="lines">
 
 
-1399
-1400
-1401</pre>
+1488
+1489
+1490</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1399</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1488</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_hash'>hash</span>
   <span class='id identifier rubyid_to_ary'>to_ary</span><span class='period'>.</span><span class='id identifier rubyid_hash'>hash</span>
@@ -594,12 +599,12 @@
       <pre class="lines">
 
 
-1389
-1390
-1391</pre>
+1476
+1477
+1478</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1389</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 1476</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_ary'>to_ary</span>
   <span class='lbracket'>[</span><span class='ivar'>@from</span><span class='comma'>,</span> <span class='ivar'>@reference</span><span class='comma'>,</span> <span class='ivar'>@info</span><span class='rbracket'>]</span>

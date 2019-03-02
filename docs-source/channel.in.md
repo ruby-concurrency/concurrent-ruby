@@ -31,7 +31,7 @@ one will be blocked until new messages is pushed.
 ```ruby
 threads = Array.new(3) { |i| Thread.new { ch.pop } } #
 sleep 0.01 # let the threads run
-threads
+threads 
 ch.push message: 3
 threads.map(&:value)
 ```

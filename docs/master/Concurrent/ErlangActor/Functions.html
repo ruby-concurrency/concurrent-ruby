@@ -181,7 +181,7 @@ It can be included in environments working with actors.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#spawn_actor-instance_method" title="#spawn_actor (instance method)">#<strong>spawn_actor</strong>(type, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; Pid </a>
+      <a href="#spawn_actor-instance_method" title="#spawn_actor (instance method)">#<strong>spawn_actor</strong>(*args, type:, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; Pid </a>
     
 
     
@@ -275,12 +275,12 @@ It can be included in environments working with actors.</p>
       <pre class="lines">
 
 
-507
-508
-509</pre>
+516
+517
+518</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 507</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 516</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_actor_executor'>default_actor_executor</span>
   <span class='id identifier rubyid_default_executor'>default_executor</span>
@@ -334,12 +334,12 @@ may be shared by other abstractions</p>
       <pre class="lines">
 
 
-513
-514
-515</pre>
+522
+523
+524</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 513</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 522</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
   <span class='symbol'>:io</span>
@@ -352,7 +352,7 @@ may be shared by other abstractions</p>
       <div class="method_details ">
   <h3 class="signature " id="spawn_actor-instance_method">
   
-    #<strong>spawn_actor</strong>(type, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt> 
+    #<strong>spawn_actor</strong>(*args, type:, channel: Promises::Channel.new, environment: Environment, name: nil, executor: default_actor_executor, &amp;body)  &#x21d2; <tt><span class='object_link'><a href="Pid.html" title="Concurrent::ErlangActor::Pid (class)">Pid</a></span></tt> 
   
 
   
@@ -368,6 +368,17 @@ may be shared by other abstractions</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
+  
+    <li>
+      
+        <span class='name'>args</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
   
     <li>
       
@@ -461,30 +472,32 @@ may be shared by other abstractions</p>
       <pre class="lines">
 
 
-481
-482
-483
-484
-485
-486
-487
-488
 489
 490
-491</pre>
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 481</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 489</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_spawn_actor'>spawn_actor</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_spawn_actor'>spawn_actor</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span>
+                <span class='label'>type:</span><span class='comma'>,</span>
                 <span class='label'>channel:</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='comma'>,</span>
                 <span class='label'>environment:</span> <span class='const'><span class='object_link'><a href="Environment.html" title="Concurrent::ErlangActor::Environment (class)">Environment</a></span></span><span class='comma'>,</span>
                 <span class='label'>name:</span> <span class='kw'>nil</span><span class='comma'>,</span>
                 <span class='label'>executor:</span> <span class='id identifier rubyid_default_actor_executor'>default_actor_executor</span><span class='comma'>,</span>
                 <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span>
 
-  <span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'>create</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_environment'>environment</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span>
-  <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+  <span class='id identifier rubyid_actor'>actor</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_create'>create</span> <span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_environment'>environment</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span>
+  <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_body'>body</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_pid'>pid</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -556,23 +569,23 @@ may be shared by other abstractions</p>
       <pre class="lines">
 
 
-497
-498
-499
-500
-501
-502
-503
-504</pre>
+506
+507
+508
+509
+510
+511
+512
+513</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 497</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 506</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminate_actor'>terminate_actor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_reason'>reason</span> <span class='op'>==</span> <span class='symbol'>:kill</span>
     <span class='id identifier rubyid_pid'>pid</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>Kill</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>else</span>
-    <span class='id identifier rubyid_pid'>pid</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'><span class='object_link'><a href="Exit.html" title="Concurrent::ErlangActor::Exit (class)">Exit</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_pid'>pid</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>Terminate</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
   <span class='kw'>end</span>
   <span class='kw'>true</span>
 <span class='kw'>end</span></pre>

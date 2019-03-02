@@ -227,10 +227,10 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 *   [Promises::Channel](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises/Channel.html)
     A first in first out channel that accepts messages with push family of methods and returns
     messages with pop family of methods.
-    Pop and push operations can be represented as futures, see {#pop_op} and {#push_op}.
-    The capacity of the channel can be limited to support back pressure, use capacity option in {#initialize}.
-    {#pop} method blocks ans {#pop_op} returns pending future if there is no message in the channel.
-    If the capacity is limited the {#push} method blocks and {#push_op} returns pending future.
+    Pop and push operations can be represented as futures, see `#pop_op` and `#push_op`.
+    The capacity of the channel can be limited to support back pressure, use capacity option in `#initialize`.
+    `#pop` method blocks ans `#pop_op` returns pending future if there is no message in the channel.
+    If the capacity is limited the `#push` method blocks and `#push_op` returns pending future.
 *   [Cancellation](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Cancellation.html)
     The Cancellation abstraction provides cooperative cancellation.
 

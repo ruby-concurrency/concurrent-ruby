@@ -992,9 +992,12 @@ module Concurrent
       end
 
       # Allows rejected Future to be risen with `raise` method.
+      # If the reason is not an exception `Runtime.new(reason)` is returned.
+      #
       # @example
       #   raise Promises.rejected_future(StandardError.new("boom"))
-      # @raise [StandardError] when raising not rejected future
+      #   raise Promises.rejected_future("or just boom")
+      # @raise [Concurrent::Error] when raising not rejected future
       # @return [Exception]
       def exception(*args)
         raise Concurrent::Error, 'it is not rejected' unless rejected?
@@ -1181,6 +1184,12 @@ module Concurrent
       # will become reason of the returned future.
       #
       # @return [Future]
+      # @param [#call(value)] run_test
+      #   an object which when called returns either Future to keep running with
+      #   or nil, then the run completes with the value.
+      #   The run_test can be used to extract the Future from deeper structure,
+      #   or to distinguish Future which is a resulting value from a future
+      #   which is suppose to continue running.
       # @example
       #   body = lambda do |v|
       #     v += 1
@@ -1278,78 +1287,6 @@ module Concurrent
     # Marker module of Future, Event resolved manually.
     module Resolvable
       include InternalStates
-
-      # Reserves the event or future, if reserved others are prevented from resolving it.
-      # Advanced feature.
-      # Be careful about the order of reservation to avoid deadlocks,
-      # the method blocks if the future or event is already reserved
-      # until it is released or resolved.
-      #
-      # @example
-      #   f = Concurrent::Promises.resolvable_future
-      #   reserved = f.reserve
-      #   Thread.new { f.resolve true, :val, nil } # fails
-      #   f.resolve true, :val, nil, true if reserved # must be called only if reserved
-      # @return [true, false] on successful reservation
-      def reserve
-        while true
-          return true if compare_and_set_internal_state(PENDING, RESERVED)
-          return false if resolved?
-          # FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
-          Thread.pass
-        end
-      end
-
-      # @return [true, false] on successful release of the reservation
-      def release
-        compare_and_set_internal_state(RESERVED, PENDING)
-      end
-
-      # @return [Comparable] an item to sort the resolvable events or futures
-      #   by to get the right global locking order of resolvable events or futures
-      # @see .atomic_resolution
-      def self.locking_order_by(resolvable)
-        resolvable.object_id
-      end
-
-      # Resolves all passed events and futures to the given resolutions
-      # if possible (all are unresolved) or none.
-      #
-      # @param [Hash{Resolvable=>resolve_arguments}, Array<Array(Resolvable, resolve_arguments)>] resolvable_map
-      #   collection of resolvable events and futures which should be resolved all at once
-      #   and what should they be resolved to, examples:
-      #   ```ruby
-      #   { a_resolvable_future1 => [true, :val, nil],
-      #     a_resolvable_future2 => [false, nil, :err],
-      #     a_resolvable_event => [] }
-      #   ```
-      #    or
-      #   ```ruby
-      #   [[a_resolvable_future1, [true, :val, nil]],
-      #    [a_resolvable_future2, [false, nil, :err]],
-      #    [a_resolvable_event, []]]
-      #   ```
-      # @return [true, false] if success
-      def self.atomic_resolution(resolvable_map)
-        # atomic_resolution event => [], future => [true, :v, nil]
-        sorted = resolvable_map.to_a.sort_by { |resolvable, _| locking_order_by resolvable }
-
-        reserved = 0
-        while reserved < sorted.size && sorted[reserved].first.reserve
-          reserved += 1
-        end
-
-        if reserved == sorted.size
-          sorted.each { |resolvable, args| resolvable.resolve(*args, true, true) }
-          true
-        else
-          while reserved > 0
-            reserved -= 1
-            raise 'has to be reserved' unless sorted[reserved].first.release
-          end
-          false
-        end
-      end
     end
 
     # A Event which can be resolved by user.
@@ -1369,8 +1306,10 @@ module Concurrent
       #
       # @!macro promise.param.raise_on_reassign
       # @!macro promise.param.reserved
-      #   @param [true, false] reserved only set to true if the receiver is {#reserve}d by you.
-      #     Advanced feature, safe to ignore.
+      #   @param [true, false] reserved
+      #     Set to true if the resolvable is {#reserve}d by you,
+      #     marks resolution of reserved resolvable events and futures explicitly.
+      #     Advanced feature, ignore unless you use {Resolvable#reserve} from edge.
       def resolve(raise_on_reassign = true, reserved = false)
         resolve_with RESOLVED, raise_on_reassign, reserved
       end

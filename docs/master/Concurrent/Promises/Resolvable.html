@@ -83,7 +83,9 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/promises.rb</dd>
+    <dd>lib/concurrent/promises.rb<span class="defines">,<br />
+  lib-edge/concurrent/edge/promises.rb</span>
+</dd>
   </dl>
   
 </div>
@@ -300,29 +302,29 @@ and what should they be resolved to, examples:</p>
       <pre class="lines">
 
 
-1348
-1349
-1350
-1351
-1352
-1353
-1354
-1355
-1356
-1357
-1358
-1359
-1360
-1361
-1362
-1363
-1364
-1365
-1366
-1367</pre>
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1348</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 150</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_atomic_resolution'>atomic_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable_map'>resolvable_map</span><span class='rparen'>)</span>
   <span class='comment'># atomic_resolution event =&gt; [], future =&gt; [true, :v, nil]
@@ -400,12 +402,12 @@ by to get the right global locking order of resolvable events or futures</p>
       <pre class="lines">
 
 
-1326
-1327
-1328</pre>
+128
+129
+130</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1326</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 128</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_locking_order_by'>locking_order_by</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolvable'>resolvable</span><span class='period'>.</span><span class='id identifier rubyid_object_id'>object_id</span>
@@ -463,15 +465,15 @@ by to get the right global locking order of resolvable events or futures</p>
       <pre class="lines">
 
 
-1319
-1320
-1321</pre>
+121
+122
+123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1319</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 121</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release'>release</span>
-  <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="InternalStates.html#RESERVED-constant" title="Concurrent::Promises::InternalStates::RESERVED (constant)">RESERVED</a></span></span><span class='comma'>,</span> <span class='const'>PENDING</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'>RESERVED</span><span class='comma'>,</span> <span class='const'>PENDING</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -535,21 +537,21 @@ until it is released or resolved.</p>
       <pre class="lines">
 
 
-1309
-1310
-1311
-1312
-1313
-1314
-1315
-1316</pre>
+111
+112
+113
+114
+115
+116
+117
+118</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1309</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reserve'>reserve</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
-    <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'>PENDING</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="InternalStates.html#RESERVED-constant" title="Concurrent::Promises::InternalStates::RESERVED (constant)">RESERVED</a></span></span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'>PENDING</span><span class='comma'>,</span> <span class='const'>RESERVED</span><span class='rparen'>)</span>
     <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='id identifier rubyid_resolved?'>resolved?</span>
     <span class='comment'># FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
 </span>    <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_pass'>pass</span>
