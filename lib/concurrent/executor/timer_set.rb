@@ -48,11 +48,9 @@ module Concurrent
     def post(delay, *args, &task)
       raise ArgumentError.new('no block given') unless block_given?
       return false unless running?
-      opts = {
-        executor: @task_executor,
-        args: args,
-        timer_set: self
-      }
+      opts = { executor:  @task_executor,
+               args:      args,
+               timer_set: self }
       task = ScheduledTask.execute(delay, opts, &task) # may raise exception
       task.unscheduled? ? false : task
     end
@@ -74,11 +72,11 @@ module Concurrent
     # @param [Hash] opts the options to create the object with.
     # @!visibility private
     def ns_initialize(opts)
-      @queue          = Collection::NonConcurrentPriorityQueue.new(order: :min)
-      @task_executor  = Options.executor_from_options(opts) || Concurrent.global_io_executor
-      @timer_executor = SingleThreadExecutor.new
-      @condition      = Event.new
-      @ruby_pid       = $$ # detects if Ruby has forked
+      @queue              = Collection::NonConcurrentPriorityQueue.new(order: :min)
+      @task_executor      = Options.executor_from_options(opts) || Concurrent.global_io_executor
+      @timer_executor     = SingleThreadExecutor.new
+      @condition          = Event.new
+      @ruby_pid           = $$ # detects if Ruby has forked
       self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
 
@@ -90,7 +88,7 @@ module Concurrent
     #
     # @!visibility private
     def post_task(task)
-      synchronize{ ns_post_task(task) }
+      synchronize { ns_post_task(task) }
     end
 
     # @!visibility private
@@ -98,7 +96,7 @@ module Concurrent
       return false unless ns_running?
       ns_reset_if_forked
       if (task.initial_delay) <= 0.01
-        task.executor.post{ task.process_task }
+        task.executor.post { task.process_task }
       else
         @queue.push(task)
         # only post the process method when the queue is empty
@@ -116,7 +114,7 @@ module Concurrent
     #
     # @!visibility private
     def remove_task(task)
-      synchronize{ @queue.delete(task) }
+      synchronize { @queue.delete(task) }
     end
 
     # `ExecutorService` callback called during shutdown.
@@ -148,7 +146,7 @@ module Concurrent
         task = synchronize { @condition.reset; @queue.peek }
         break unless task
 
-        now = Concurrent.monotonic_time
+        now  = Concurrent.monotonic_time
         diff = task.schedule_time - now
 
         if diff <= 0
@@ -165,7 +163,7 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          task.executor.post{ task.process_task }
+          task.executor.post { task.process_task }
         else
           @condition.wait([diff, 60].min)
         end
