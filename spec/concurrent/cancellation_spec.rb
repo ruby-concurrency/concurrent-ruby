@@ -3,7 +3,7 @@ RSpec.describe 'Concurrent' do
     specify 'basic' do
       cancellation, origin = Concurrent::Cancellation.new
       expect(cancellation.origin).to eq origin
-      expect(cancellation.to_s).to match /Cancellation.*pending/
+      expect(cancellation.to_s).to match(/Cancellation.*pending/)
 
       futures1 = ::Array.new(2) do
         Concurrent::Promises.future(cancellation) do |c|
@@ -20,7 +20,7 @@ RSpec.describe 'Concurrent' do
 
       sleep 0.01
       origin.resolve
-      expect(cancellation.to_s).to match /Cancellation.*canceled/
+      expect(cancellation.to_s).to match(/Cancellation.*canceled/)
 
       futures1.each do |future|
         expect(future.value!).to eq :done

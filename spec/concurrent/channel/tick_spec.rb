@@ -18,8 +18,8 @@ module Concurrent
 
       specify '#utc returns a Time object in UTC' do
         t = subject.utc
-        expect(subject.utc).to be_a Time
-        expect(subject.utc.zone).to eq 'UTC'
+        expect(t).to be_a Time
+        expect(t.zone).to eq 'UTC'
       end
 
       specify '#epoch returns the UTC time as epoch seconds' do
@@ -45,7 +45,6 @@ module Concurrent
         end
 
         it 'correctly compares to a Time' do
-          present = Time.now
           past = Time.now - 42*60*60
           future = Time.now + 42*60*60
 

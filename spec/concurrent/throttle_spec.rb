@@ -41,7 +41,7 @@ RSpec.describe 'Concurrent' do
 
     specify '#to_s' do
       throttle = Concurrent::Throttle.new 2
-      expect(throttle.to_s).to match /Throttle.*available 2 of 2/
+      expect(throttle.to_s).to match(/Throttle.*available 2 of 2/)
     end
 
     specify '#on' do
@@ -76,8 +76,8 @@ RSpec.describe 'Concurrent' do
       ).value!
       expect(result.all? { |v| v <= limit }).to be_truthy, result.to_s
 
-      result = Array.new(20) do |i|
-        Thread.new(i) { |i| throttle.acquire { testing.call i } }
+      result = Array.new(20) do |i1|
+        Thread.new(i1) { |i2| throttle.acquire { testing.call i2 } }
       end.map(&:value)
       expect(result.all? { |v| v <= limit }).to be_truthy, result.to_s
 

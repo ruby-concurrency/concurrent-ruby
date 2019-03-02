@@ -10,17 +10,17 @@ module Concurrent
         subject { SafeTaskExecutor.new(task) }
 
         it 'should return success' do
-          success, value, reason = subject.execute
+          success, _value, _reason = subject.execute
           expect(success).to be_truthy
         end
 
         it 'should return task value' do
-          success, value, reason = subject.execute
+          _success, value, _reason = subject.execute
           expect(value).to eq 42
         end
 
         it 'should return a nil reason' do
-          success, value, reason = subject.execute
+          _success, _value, reason = subject.execute
           expect(reason).to be_nil
         end
 
@@ -43,17 +43,17 @@ module Concurrent
         subject { SafeTaskExecutor.new(task) }
 
         it 'should return false success' do
-          success, value, reason = subject.execute
+          success, _value, _reason = subject.execute
           expect(success).to be_falsey
         end
 
         it 'should return a nil value' do
-          success, value, reason = subject.execute
+          _success, value, _reason = subject.execute
           expect(value).to be_nil
         end
 
         it 'should return the reason' do
-          success, value, reason = subject.execute
+          _success, _value, reason = subject.execute
           expect(reason).to be_a(StandardError)
           expect(reason.message).to eq 'an error'
         end
