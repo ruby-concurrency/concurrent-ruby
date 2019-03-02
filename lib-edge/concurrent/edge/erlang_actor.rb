@@ -13,7 +13,6 @@ module Concurrent
     # TODO (pitr-ch 04-Feb-2019): mode documentation.
     # TODO (pitr-ch 21-Jan-2019): actor on promises should not call blocking calls like mailbox.pop or tell
     # it's fine for a actor on thread and event based though
-    # TODO (pitr-ch 16-Jan-2019): crate environments to run the body of the actors in
     # TODO (pitr-ch 17-Jan-2019): blocking actor should react to signals?
     # e.g. override sleep to wait for signal with a given timeout?
     # what about other blocking stuff
@@ -32,15 +31,13 @@ module Concurrent
     #     end
     #   end
     # end
-    # TODO (pitr-ch 06-Feb-2019): should actors be weakly linked from pid so they can be freed from memory?
     # TODO (pitr-ch 28-Jan-2019): improve matching support, take inspiration and/or port Algebrick ideas, push ANY and similar further up the namespace
-    # TODO (pitr-ch 08-Feb-2019): consider adding reply? which returns true,false if success, reply method will always return value
-
 
     # The public reference of the actor which can be stored and passed around.
     # Nothing else of the actor should be exposed.
     # {Functions.spawn_actor} and {Environment#spawn} return the pid.
     class Pid < Synchronization::Object
+      # TODO (pitr-ch 06-Feb-2019): when actor terminates, release it from memory keeping just pid
 
       # The actor is asynchronously told a message.
       # The method returns immediately unless
@@ -161,7 +158,7 @@ module Concurrent
       end
 
       # When trap is set to true,
-      # exit signals arriving to a actor are converted to {Exit} messages,
+      # exit signals arriving to a actor are converted to {Terminated} messages,
       # which can be received as ordinary messages.
       # If trap is set to false,
       # the actor exits
@@ -246,15 +243,15 @@ module Concurrent
       # that the link between the caller and the actor referred to by pid
       # has no effect on the caller in the future (unless the link is setup again).
       # If caller is trapping exits,
-      # an {Exit} message due to the link might have been placed
+      # an {Terminated} message due to the link might have been placed
       # in the caller's message queue prior to the call, though.
       #
-      # Note, the {Exit} message can be the result of the link,
+      # Note, the {Terminated} message can be the result of the link,
       # but can also be the result of calling #terminate method externally.
       # Therefore, it may be appropriate to cleanup the message queue
       # when trapping exits after the call to unlink, as follow:
       # ```ruby
-      # receive on(And[Exit, -> e { e.pid == pid }], true), timeout: 0
+      # receive on(And[Terminated, -> e { e.pid == pid }], true), timeout: 0
       # ```
       #
       # @return [true]
@@ -270,12 +267,12 @@ module Concurrent
 
       # The calling actor starts monitoring actor with given pid.
       #
-      # A {Down} message will be sent to the monitoring actor
+      # A {DownSignal} message will be sent to the monitoring actor
       # if the actor with given pid dies,
       # or if the actor with given pid does not exist.
       #
       # The monitoring is turned off either
-      # when the {Down} message is sent, or when {#demonitor} is called.
+      # when the {DownSignal} message is sent, or when {#demonitor} is called.
       #
       # Making several calls to monitor for the same pid is not an error;
       # it results in as many, completely independent, monitorings.
@@ -289,9 +286,9 @@ module Concurrent
       # this monitoring is turned off.
       # If the monitoring is already turned off, nothing happens.
       #
-      # Once demonitor has returned it is guaranteed that no {Down} message
+      # Once demonitor has returned it is guaranteed that no {DownSignal} message
       # due to the monitor will be placed in the caller's message queue in the future.
-      # A {Down} message might have been placed in the caller's message queue prior to the call, though.
+      # A {DownSignal} message might have been placed in the caller's message queue prior to the call, though.
       # Therefore, in most cases, it is advisable to remove such a 'DOWN' message from the message queue
       # after monitoring has been stopped.
       # `demonitor(reference, :flush)` can be used if this cleanup is wanted.
@@ -304,22 +301,22 @@ module Concurrent
       # In that case it may raise an ArgumentError or go unnoticed.
       #
       # Options:
-      # *   `:flush` - Remove (one) {Down} message,
+      # *   `:flush` - Remove (one) {DownSignal} message,
       #     if there is one, from the caller's message queue after monitoring has been stopped.
       #     Calling `demonitor(pid, :flush)` is equivalent to the following, but more efficient:
       #     ```ruby
       #     demonitor(pid)
-      #     receive on(And[Down, -> d { d.reference == reference}], true), timeout: 0, timeout_value: true
+      #     receive on(And[DownSignal, -> d { d.reference == reference}], true), timeout: 0, timeout_value: true
       #     ```
       #
       # *   `info`
       #     The returned value is one of the following:
       #
       #     -   `true` - The monitor was found and removed.
-      #         In this case no {Down} message due to this monitor have been
+      #         In this case no {DownSignal} message due to this monitor have been
       #         nor will be placed in the message queue of the caller.
       #     -   `false` - The monitor was not found and could not be removed.
-      #         This probably because someone already has placed a {Down} message
+      #         This probably because someone already has placed a {DownSignal} message
       #         corresponding to this monitor in the caller's message queue.
       #
       #     If the info option is combined with the flush option,
@@ -339,6 +336,7 @@ module Concurrent
 
       # Creates an actor.
       #
+      # @param [Object] args arguments for the actor body
       # @param [:on_thread, :on_pool] type
       #   of the actor to be created.
       # @param [Channel] channel
@@ -359,14 +357,19 @@ module Concurrent
       # @param [ExecutorService] executor
       #   The executor service to use to execute the actor on.
       #   Applies only to :on_pool actor type.
-      # @yield [] the body of the actor.
+      # @yield [*args] the body of the actor.
       #   When actor is spawned this block is evaluated
       #   until it terminates.
+      #   The on-thread actor requires a block.
+      #   The on-poll actor has a default `-> { start }`,
+      #   therefore if not block is given it executes a #start method
+      #   which needs to be provided with environment.
       # @return [Pid, ::Array(Pid, Reference)] a pid or a pid-reference pair when monitor is true
       # @see http://www1.erlang.org/doc/man/erlang.html#spawn-1
       # @see http://www1.erlang.org/doc/man/erlang.html#spawn_link-1
       # @see http://www1.erlang.org/doc/man/erlang.html#spawn_monitor-1
-      def spawn(type = @Actor.class,
+      def spawn(*args,
+                type: @Actor.class,
                 channel: Promises::Channel.new,
                 environment: Environment,
                 name: nil,
@@ -375,7 +378,8 @@ module Concurrent
                 monitor: false,
                 &body)
 
-        @Actor.spawn(type,
+        @Actor.spawn(*args,
+                     type:        type,
                      channel:     channel,
                      environment: environment,
                      name:        name,
@@ -392,6 +396,7 @@ module Concurrent
       # @param [Object] value
       # @return [true, false] did the sender ask, and was it resolved
       def reply(value)
+        # TODO (pitr-ch 08-Feb-2019): consider adding reply? which returns true,false if success, reply method will always return value
         reply_resolution true, value, nil
       end
 
@@ -426,11 +431,11 @@ module Concurrent
       # If pid is not trapping exits,
       # pid itself will exit with exit reason.
       # If pid is trapping exits,
-      # the exit signal is transformed into a message {Exit}
+      # the exit signal is transformed into a message {Terminated}
       # and delivered to the message queue of pid.
       #
       # If reason is the Symbol `:normal`, pid will not exit.
-      # If it is trapping exits, the exit signal is transformed into a message {Exit}
+      # If it is trapping exits, the exit signal is transformed into a message {Terminated}
       # and delivered to its message queue.
       #
       # If reason is the Symbol `:kill`, that is if `exit(pid, :kill)` is called,
@@ -449,6 +454,7 @@ module Concurrent
         @Actor.terminate pid, reason, value: value
       end
 
+      # @return [ExecutorService] a default executor which is picked by spawn call
       def default_executor
         @DefaultExecutor
       end
@@ -472,6 +478,7 @@ module Concurrent
     # @see FunctionShortcuts
     module Functions
       # Creates an actor. Same as {Environment#spawn} but lacks link and monitor options.
+      # @param [Object] args
       # @param [:on_thread, :on_pool] type
       # @param [Channel] channel
       # @param [Environment, Module] environment
@@ -479,15 +486,16 @@ module Concurrent
       # @param [ExecutorService] executor of the actor
       # @return [Pid]
       # @see Environment#spawn
-      def spawn_actor(type,
+      def spawn_actor(*args,
+                      type:,
                       channel: Promises::Channel.new,
                       environment: Environment,
                       name: nil,
                       executor: default_actor_executor,
                       &body)
 
-        actor = ErlangActor.create type, channel, environment, name, executor, &body
-        actor.run
+        actor = ErlangActor.create type, channel, environment, name, executor
+        actor.run(*args, &body)
         return actor.pid
       end
 
@@ -499,7 +507,7 @@ module Concurrent
         if reason == :kill
           pid.tell Kill.new(nil)
         else
-          pid.tell Exit.new(nil, reason, false)
+          pid.tell Terminate.new(nil, reason, false)
         end
         true
       end
@@ -685,7 +693,7 @@ module Concurrent
           probe    = Promises.resolvable_future
           question = Ask.new(message, probe)
           if timeout
-            start     = Concurrent.monotonic_time
+            start   = Concurrent.monotonic_time
             in_time = tell question, timeout
             # recheck it could have in the meantime terminated and drained mailbox
             raise NoActor.new(@Pid) if @Terminated.resolved?
@@ -733,7 +741,8 @@ module Concurrent
       end
 
       def trap(value = true)
-        old   = @trap
+        old = @trap
+        # noinspection RubySimplifyBooleanInspection
         @trap = !!value
         old
       end
@@ -752,9 +761,11 @@ module Concurrent
         if @Linked.add? pid
           pid.tell Link.new(@Pid)
           if pid.terminated.resolved?
+            # no race since it only could get NoActor
             if @trap
-              tell Exit.new pid, NoActor.new(pid)
+              tell Terminate.new pid, NoActor.new(pid)
             else
+              @Linked.delete pid
               raise NoActor.new(pid)
             end
           end
@@ -781,11 +792,12 @@ module Concurrent
         @Monitoring[reference] = pid
         if pid.terminated.resolved?
           # always return no-proc when terminated
-          tell Down.new(pid, reference, NoActor.new(pid))
+          tell DownSignal.new(pid, reference, NoActor.new(pid))
         else
           # otherwise let it race
           pid.tell Monitor.new(@Pid, reference)
-          tell Down.new(pid, reference, NoActor.new(pid)) if pid.terminated.resolved?
+          # no race, it cannot get anything else than NoActor
+          tell DownSignal.new(pid, reference, NoActor.new(pid)) if pid.terminated.resolved?
         end
         reference
       end
@@ -801,14 +813,14 @@ module Concurrent
 
         if flush
           # remove (one) down message having reference from mailbox
-          flushed = demonitoring ? !!@Mailbox.try_pop_matching(And[Down, -> m { m.reference == reference }]) : false
+          flushed = demonitoring ? !!@Mailbox.try_pop_matching(And[DownSignal, -> m { m.reference == reference }]) : false
           return info ? !flushed : true
         end
 
         if info
           return false unless demonitoring
 
-          if @Mailbox.peek_matching(And[Down, -> m { m.reference == reference }])
+          if @Mailbox.peek_matching(And[DownSignal, -> m { m.reference == reference }])
             @MonitoringLateDelivery[reference] = pid # allow to deliver the message once
             return false
           end
@@ -821,19 +833,20 @@ module Concurrent
         @Monitoring.include? reference
       end
 
-      def spawn(type,
-                channel: Promises::Channel.new,
+      def spawn(*args,
+                type:,
+                channel:,
                 environment:,
                 name:,
                 link:,
                 monitor:,
                 executor:,
                 &body)
-        actor = ErlangActor.create type, channel, environment, name, executor, &body
+        actor = ErlangActor.create type, channel, environment, name, executor
         pid   = actor.pid
         link pid if link
         ref = (monitor pid if monitor)
-        actor.run
+        actor.run(*args, &body)
         monitor ? [pid, ref] : pid
       end
 
@@ -848,7 +861,7 @@ module Concurrent
           if reason == :kill
             pid.tell Kill.new(@Pid)
           else
-            pid.tell Exit.new(@Pid, reason, false)
+            pid.tell Terminate.new(@Pid, reason, false)
           end
         else
           terminate_self(reason, value)
@@ -877,7 +890,7 @@ module Concurrent
           # TIMEOUT rule has to be first, to prevent any picking it up ANY
           has_timeout = nil
           i           = rules.size
-          rules.reverse_each do |r, j|
+          rules.reverse_each do |r, _|
             i -= 1
             if r == TIMEOUT
               has_timeout = i
@@ -900,52 +913,11 @@ module Concurrent
 
       def send_exit_messages(reason)
         @Linked.each do |pid|
-          pid.tell Exit.new(@Pid, reason)
+          pid.tell Terminate.new(@Pid, reason)
         end.clear
         @Monitors.each do |reference, pid|
-          pid.tell Down.new(@Pid, reference, reason)
+          pid.tell DownSignal.new(@Pid, reference, reason)
         end.clear
-      end
-
-      def consume_exit(exit_message)
-        from, reason = exit_message
-        if !exit_message.link_terminated || @Linked.delete(from)
-          case reason
-          when :normal
-            if @trap
-              false
-            else
-              if from == @Pid
-                terminate :normal
-              else
-                true # do nothing
-              end
-            end
-          else
-            if @trap
-              false # ends up in mailbox
-            else
-              terminate reason
-            end
-          end
-        else
-          # *link*          *exiting*
-          # send Link
-          #                 terminate
-          # terminated?
-          #                 drain signals # generates second Exit which is dropped here
-          # already processed exit message, do nothing
-          true
-        end
-      end
-
-      def consume_ask(message)
-        if message.is_a? Ask
-          @reply = message.probe
-          message.message
-        else
-          message
-        end
       end
 
       def asked?
@@ -959,31 +931,30 @@ module Concurrent
         end
       end
 
-
       def consume_signal(message)
         if AbstractSignal === message
           case message
           when Ask
-            # never consume, consume_ask takes care of it later
-            false
+            @reply = message.probe
+            message.message
           when Link
             @Linked.add message.from
-            true
+            NOTHING
           when UnLink
             @Linked.delete message.from
-            true
+            NOTHING
           when Monitor
             @Monitors[message.reference] = message.from
-            true
+            NOTHING
           when DeMonitor
             @Monitors.delete message.reference
-            true
+            NOTHING
           when Kill
             terminate :killed
-          when Down
+          when DownSignal
             if @Monitoring.delete(message.reference) || @MonitoringLateDelivery.delete(message.reference)
               # put into a queue
-              return false
+              return Down.new(message.from, message.reference, message.info)
             end
 
             # ignore down message if no longer monitoring, and following case
@@ -994,15 +965,47 @@ module Concurrent
             # terminated?
             #                 drain signals # generates second DOWN which is dropped here
             # already reported as :noproc
-            true
-          when Exit
+            NOTHING
+          when Terminate
             consume_exit message
           else
             raise "unknown message #{message}"
           end
         else
           # regular message
-          false
+          message
+        end
+      end
+
+      def consume_exit(exit_message)
+        from, reason = exit_message
+        if !exit_message.link_terminated || @Linked.delete(from)
+          case reason
+          when :normal
+            if @trap
+              Terminated.new from, reason
+            else
+              if from == @Pid
+                terminate :normal
+              else
+                NOTHING # do nothing
+              end
+            end
+          else
+            if @trap
+              Terminated.new from, reason
+            else
+              terminate reason
+            end
+          end
+        else
+          # *link*          *exiting*
+          # send Link
+          #                 terminate
+          # terminated?
+          #                 drain signals # generates second Terminated which is dropped here
+          # already processed exit message, do nothing
+          NOTHING
         end
       end
 
@@ -1010,7 +1013,7 @@ module Concurrent
         while true
           message = @Mailbox.try_pop
           break unless message
-          consume_signal message or raise 'it was not consumable signal'
+          consume_signal(message) == NOTHING or raise 'it was not consumable signal'
         end
       end
 
@@ -1026,9 +1029,13 @@ module Concurrent
           break if message == NOTHING
           case message
           when Monitor
-            message.from.tell Down.new(@Pid, message.reference, final_reason)
+            # The actor is terminated so we must return NoActor,
+            # even though we still know the reason.
+            # Otherwise it would return different reasons non-deterministically.
+            message.from.tell DownSignal.new(@Pid, message.reference, NoActor.new(@Pid))
           when Link
-            message.from.tell Exit.new(@Pid, final_reason)
+            # same as for Monitor
+            message.from.tell NoActor.new(@Pid)
           when Ask
             message.probe.reject(NoActor.new(@Pid), false)
           else
@@ -1043,17 +1050,18 @@ module Concurrent
 
     class OnPool < AbstractActor
 
-      def initialize(channel, environment, name, executor, &body)
+      def initialize(channel, environment, name, executor)
         super channel, environment, name, executor
         @Executor       = executor
         @behaviour      = []
         @keep_behaviour = false
-        @Body           = body || -> { start } # TODO (pitr-ch 06-Feb-2019): document
       end
 
-      def run()
+      def run(*args, &body)
+        body ||= -> { start }
+
         initial_signal_consumption
-        inner_run(true).
+        inner_run(*args, &body).
             run(Run::TEST).
             then(&method(:after_termination)).
             rescue { |e| log Logger::ERROR, e }
@@ -1072,27 +1080,27 @@ module Concurrent
 
       private
 
-      def start
-        @Environment.instance_exec(&@Body)
-      end
-
       def terminate_self(reason, value)
         throw JUMP, [TERMINATE, reason, value]
       end
 
-      def inner_run(first = false)
-        body = -> message, _actor do
-          kind, reason, value = if message.is_a?(::Array) && message.first == TERMINATE
-                                  message
-                                else
-                                  begin
-                                    catch(JUMP) do
-                                      [NOTHING, :normal, first ? start : apply_behaviour(message)]
-                                    end
-                                  rescue => e
-                                    [TERMINATE, e, nil]
-                                  end
-                                end
+      def inner_run(*args, &body)
+        first       = !!body
+        future_body = -> message, _actor do
+          kind, reason, value =
+              if message.is_a?(::Array) && message.first == TERMINATE
+                message
+              else
+                begin
+                  catch(JUMP) do
+                    [NOTHING,
+                     :normal,
+                     first ? @Environment.instance_exec(*args, &body) : apply_behaviour(message)]
+                  end
+                rescue => e
+                  [TERMINATE, e, nil]
+                end
+              end
 
           case kind
           when TERMINATE
@@ -1115,9 +1123,9 @@ module Concurrent
         end
 
         if first
-          Promises.future_on(@Executor, nil, self, &body)
+          Promises.future_on(@Executor, nil, self, &future_body)
         else
-          internal_receive.run(Run::TEST).then(self, &body)
+          internal_receive.run(Run::TEST).then(self, &future_body)
         end
       end
 
@@ -1147,14 +1155,14 @@ module Concurrent
                            raise
                          end
 
-        message_future.then(start) do |message, s|
+        message_future.then(start, self) do |message, s, _actor|
           log Logger::DEBUG, pid, got: message
           catch(JUMP) do
-            if consume_signal(message)
+            if (message = consume_signal(message)) == NOTHING
               @timeout = [@timeout + s - Concurrent.monotonic_time, 0].max if s
               Run[internal_receive]
             else
-              consume_ask(message)
+              message
             end
           end
         end
@@ -1174,23 +1182,22 @@ module Concurrent
     private_constant :OnPool
 
     class OnThread < AbstractActor
-      def initialize(channel, environment, name, executor, &body)
+      def initialize(channel, environment, name, executor)
         super channel, environment, name, executor
-        @Body   = body
         @Thread = nil
       end
 
       TERMINATE = Module.new
       private_constant :TERMINATE
 
-      def run()
+      def run(*args, &body)
         initial_signal_consumption
         @Thread = Thread.new(@Terminated, self) do |terminated, _actor| # sync point
           Thread.abort_on_exception = true
 
           final_reason = begin
             reason, value = catch(TERMINATE) do
-              [:normal, @Environment.instance_exec(&@Body)]
+              [:normal, @Environment.instance_exec(*args, &body)]
             end
             send_exit_messages reason
             terminated.resolve(reason == :normal, value, reason)
@@ -1217,8 +1224,7 @@ module Concurrent
         while true
           message = @Mailbox.pop_matching(matcher, timeout, TIMEOUT)
           log Logger::DEBUG, pid, got: message
-          unless consume_signal(message)
-            message = consume_ask(message)
+          unless (message = consume_signal(message)) == NOTHING
             rules.each do |rule, job|
               return eval_task(message, job) if rule === message
             end
@@ -1261,6 +1267,7 @@ module Concurrent
 
       # @!visibility private
       def initialize(from)
+        # noinspection RubySuperCallWithoutSuperclassInspection
         super()
         @from = from
       end
@@ -1278,24 +1285,19 @@ module Concurrent
       end
     end
 
-    # A message send when actor terminates.
-    class Exit < AbstractSignal
-      # TODO (pitr-ch 06-Feb-2019): rename to terminated
-      # TODO (pitr-ch 06-Feb-2019): link_terminated leaks to the user
+    private_constant :HasFrom
 
+    module HasReason
       include HasFrom
 
       # @return [Object]
       attr_reader :reason
 
       # @!visibility private
-      attr_reader :link_terminated
-
-      # @!visibility private
-      def initialize(from, reason, link_terminated = true)
+      def initialize(from, reason)
+        # noinspection RubySuperCallWithoutSuperclassInspection
         super from
-        @reason          = reason
-        @link_terminated = link_terminated
+        @reason = reason
       end
 
       # @return [::Array(Pid, Object)]
@@ -1305,14 +1307,62 @@ module Concurrent
 
       # @return [true, false]
       def ==(o)
+        # noinspection RubySuperCallWithoutSuperclassInspection
         super(o) && o.reason == self.reason
       end
 
       # @return [Integer]
       def hash
-        to_ary.hash
+        [@from, @reason].hash
       end
     end
+
+    private_constant :HasReason
+
+    module HasReference
+      include HasFrom
+
+      # @return [Reference]
+      attr_reader :reference
+
+      # @!visibility private
+      def initialize(from, reference)
+        # noinspection RubySuperCallWithoutSuperclassInspection
+        super from
+        @reference = reference
+      end
+
+      # @return [::Array(Pid, Reference)]
+      def to_ary
+        [@from, @reference]
+      end
+
+      # @return [true, false]
+      def ==(o)
+        # noinspection RubySuperCallWithoutSuperclassInspection
+        super(o) && o.reference == self.reference
+      end
+
+      # @return [Integer]
+      def hash
+        [@from, @reference].hash
+      end
+    end
+
+    private_constant :HasReference
+
+    class Terminate < AbstractSignal
+      include HasReason
+
+      attr_reader :link_terminated
+
+      def initialize(from, reason, link_terminated = true)
+        super from, reason
+        @link_terminated = link_terminated
+      end
+    end
+
+    private_constant :Terminate
 
     class Kill < AbstractSignal
       include HasFrom
@@ -1332,34 +1382,6 @@ module Concurrent
 
     private_constant :UnLink
 
-    module HasReference
-      include HasFrom
-
-      # @return [Reference]
-      attr_reader :reference
-
-      # @!visibility private
-      def initialize(from, reference)
-        super from
-        @reference = reference
-      end
-
-      # @return [::Array(Pid, Reference)]
-      def to_ary
-        [@from, @reference]
-      end
-
-      # @return [true, false]
-      def ==(o)
-        super(o) && o.reference == self.reference
-      end
-
-      # @return [Integer]
-      def hash
-        [@from, @reference].hash
-      end
-    end
-
     class Monitor < AbstractSignal
       include HasReference
     end
@@ -1372,8 +1394,39 @@ module Concurrent
 
     private_constant :DeMonitor
 
-    # A message send by a monitored actor when terminated.
-    class Down < AbstractSignal
+    # A message send when actor terminates.
+    class Terminated
+      # @return [Pid]
+      attr_reader :from
+      # @return [Object]
+      attr_reader :reason
+
+      # @!visibility private
+      def initialize(from, reason)
+        # noinspection RubySuperCallWithoutSuperclassInspection
+        @from   = from
+        @reason = reason
+      end
+
+      # @return [::Array(Pid, Object)]
+      def to_ary
+        [@from, @reason]
+      end
+
+      # @return [true, false]
+      def ==(o)
+        o.class == self.class && o.from == @from && o.reason == self.reason
+      end
+
+      alias_method :eql?, :==
+
+      # @return [Integer]
+      def hash
+        [@from, @reason].hash
+      end
+    end
+
+    class DownSignal < AbstractSignal
       include HasReference
 
       # @return [Object]
@@ -1394,6 +1447,42 @@ module Concurrent
       def ==(o)
         super(o) && o.info == self.info
       end
+
+      # @return [Integer]
+      def hash
+        to_ary.hash
+      end
+    end
+
+    private_constant :DownSignal
+
+    # A message send by a monitored actor when terminated.
+    class Down
+      # @return [Pid]
+      attr_reader :from
+      # @return [Reference]
+      attr_reader :reference
+      # @return [Object]
+      attr_reader :info
+
+      # @!visibility private
+      def initialize(from, reference, info)
+        @from      = from
+        @reference = reference
+        @info      = info
+      end
+
+      # @return [::Array(Pis, Reference, Object)]
+      def to_ary
+        [@from, @reference, @info]
+      end
+
+      # @return [true, false]
+      def ==(o)
+        o.class == self.class && o.from == @from && o.reference == @reference && o.info == @info
+      end
+
+      alias_method :eql?, :==
 
       # @return [Integer]
       def hash
@@ -1436,8 +1525,8 @@ module Concurrent
     end
 
     # @!visibility private
-    def self.create(type, channel, environment, name, executor, &body)
-      actor = KLASS_MAP.fetch(type).new(channel, environment, name, executor, &body)
+    def self.create(type, channel, environment, name, executor)
+      actor = KLASS_MAP.fetch(type).new(channel, environment, name, executor)
     ensure
       log Logger::DEBUG, actor.pid, created: caller[1] if actor
     end

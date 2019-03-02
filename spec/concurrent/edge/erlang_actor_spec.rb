@@ -10,9 +10,15 @@ if Concurrent.ruby_version :>=, 2, 1, 0
       shared_examples 'erlang actor' do
 
         specify "run to termination" do
-          expect(Concurrent::ErlangActor.spawn(type) do
+          expect(Concurrent::ErlangActor.spawn(type: type) do
             :v
           end.terminated.value!).to eq :v
+        end
+
+        specify "run to termination with arguments" do
+          expect(Concurrent::ErlangActor.
+              spawn(1, 2, type: type) { |a, b| a + b }.terminated.value!).
+              to eq 3
         end
 
         specify '#receive' do
@@ -43,20 +49,20 @@ if Concurrent.ruby_version :>=, 2, 1, 0
            [[:v, 1], -> { receive on(Numeric, &identity), on(TIMEOUT, :timeout), timeout: 1 }, 1],
            [[:v, 1], -> { receive on(Numeric, &succ), on(TIMEOUT, :timeout), timeout: 1 }, 2],
           ].each_with_index do |(messages, body, result), i|
-            a = Concurrent::ErlangActor.spawn(type, &body)
+            a = Concurrent::ErlangActor.spawn(type: type, &body)
             messages.each { |m| a.tell m }
             expect(a.terminated.value!).to eq(result), "body: #{body}"
           end
         end
 
         specify 'pid has name' do
-          actor = Concurrent::ErlangActor.spawn(type, name: 'test') {}
+          actor = Concurrent::ErlangActor.spawn(type: type, name: 'test') {}
           expect(actor.to_s).to match(/test/)
           expect(actor.inspect).to match(/test/)
         end
 
         specify "receives message" do
-          actor = Concurrent::ErlangActor.spawn(type,
+          actor = Concurrent::ErlangActor.spawn(type: type,
                                                 &{ on_thread: -> { receive },
                                                    on_pool:   -> { receive on(ANY, &identity) } }.fetch(type))
           actor.tell :v
@@ -81,7 +87,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                             end)
                           end)
                         end }
-          actor = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+          actor = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
           actor.tell 'junk'
           actor.tell 1
           actor.tell :v
@@ -116,8 +122,8 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              result
                            end
                          end }
-            a1   = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
-            a2   = Concurrent::ErlangActor.spawn(type, &body_receive.fetch(type))
+            a1   = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
+            a2   = Concurrent::ErlangActor.spawn(type: type, &body_receive.fetch(type))
             a1.tell a2
             expect(a1.terminated.value!).to eq [true, false]
             expect(a2.terminated.value!).to eq :finish
@@ -149,10 +155,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            end
                          end }
 
-            a1   = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a1   = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             body = { on_thread: -> { receive },
                      on_pool:   -> { receive(&identity) } }
-            a2   = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a2   = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             a1.tell a2
 
             a1.terminated.wait
@@ -186,10 +192,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            end
                          end }
 
-            a1   = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a1   = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             body = { on_thread: -> { receive },
                      on_pool:   -> { receive(&identity) } }
-            a2   = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a2   = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             a1.tell a2
 
             reference, monitored, monitoring, demonitor, message = a1.terminated.value!
@@ -216,7 +222,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            receive on(ANY) { |v| [b, ref, v] }
                          end }
 
-            a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
             b, ref, down = a.terminated.value!
             expect(down).to eq Concurrent::ErlangActor::Down.new(b, ref, :normal)
@@ -239,7 +245,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            receive(timeout: 1) { |v| [b, ref, v] }
                          end }
 
-            a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
             b, ref, down = a.terminated.value!
             expect(down).to eq Concurrent::ErlangActor::Down.new(b, ref, Concurrent::ErlangActor::NoActor.new(b))
@@ -274,8 +280,8 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                             end
                           end }
 
-            a1 = Concurrent::ErlangActor.spawn(type, &body1.fetch(type))
-            a2 = Concurrent::ErlangActor.spawn(type, &body_receive_test_linked.fetch(type))
+            a1 = Concurrent::ErlangActor.spawn(type: type, &body1.fetch(type))
+            a2 = Concurrent::ErlangActor.spawn(type: type, &body_receive_test_linked.fetch(type))
 
             a1.tell a2
             expect(a1.terminated.value!).to be_truthy
@@ -303,15 +309,15 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                             end
                           end }
 
-            a1 = Concurrent::ErlangActor.spawn(type, &body1.fetch(type))
-            a2 = Concurrent::ErlangActor.spawn(type, &body_receive_test_linked.fetch(type))
+            a1 = Concurrent::ErlangActor.spawn(type: type, &body1.fetch(type))
+            a2 = Concurrent::ErlangActor.spawn(type: type, &body_receive_test_linked.fetch(type))
             a1.tell a2
             expect(a1.terminated.value!).to be_falsey
             expect(a2.terminated.value!).to be_falsey
           end
 
           specify 'link dead' do
-            a = Concurrent::ErlangActor.spawn(type) do
+            a = Concurrent::ErlangActor.spawn(type: type) do
               b = spawn { :done }
               b.terminated.wait
               link b
@@ -339,10 +345,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                             receive { |v| [b, v] }
                           end }
 
-            a = Concurrent::ErlangActor.spawn(type, &body1.fetch(type))
+            a = Concurrent::ErlangActor.spawn(type: type, &body1.fetch(type))
 
             b, captured = a.terminated.value!
-            expect(captured).to eq Concurrent::ErlangActor::Exit.new(b, Concurrent::ErlangActor::NoActor.new(b))
+            expect(captured).to eq Concurrent::ErlangActor::Terminated.new(b, Concurrent::ErlangActor::NoActor.new(b))
           end
 
 
@@ -362,7 +368,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 0.01)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               message, b = a.terminated.value!
               expect(message).to eq nil
@@ -385,10 +391,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               message, b = a.terminated.value!
-              expect(message).to eq Concurrent::ErlangActor::Exit.new(b, :normal)
+              expect(message).to eq Concurrent::ErlangActor::Terminated.new(b, :normal)
               expect(b.terminated.value!).to eq :ok
             end
 
@@ -406,7 +412,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect(a.terminated.reason).to eq :boom
             end
@@ -427,10 +433,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               trapped_exit, b = a.terminated.value!
-              expect(trapped_exit).to eq Concurrent::ErlangActor::Exit.new(b, :boom)
+              expect(trapped_exit).to eq Concurrent::ErlangActor::Terminated.new(b, :boom)
               expect(b.terminated.reason).to eq :boom
             end
 
@@ -448,7 +454,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 0.01)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               message, b = a.terminated.value!
               expect(message).to eq nil
@@ -471,10 +477,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               message, b = a.terminated.value!
-              expect(message).to eq Concurrent::ErlangActor::Exit.new(b, :normal)
+              expect(message).to eq Concurrent::ErlangActor::Terminated.new(b, :normal)
               expect(b.terminated.value!).to eq :ok
             end
 
@@ -492,7 +498,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 0.01)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect { a.terminated.value! }.to raise_error(RuntimeError, 'err')
             end
@@ -513,10 +519,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               trapped_exit, b = a.terminated.value!
-              expect(trapped_exit).to be_a Concurrent::ErlangActor::Exit
+              expect(trapped_exit).to be_a Concurrent::ErlangActor::Terminated
               expect(trapped_exit.from).to eq b
               expect(trapped_exit.reason).to eq b.terminated.reason
               expect(trapped_exit.reason).to be_a RuntimeError
@@ -539,10 +545,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 0.01)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               trapped_exit, b = a.terminated.value!
-              expect(trapped_exit).to be_a Concurrent::ErlangActor::Exit
+              expect(trapped_exit).to be_a Concurrent::ErlangActor::Terminated
               expect(trapped_exit.from).to eq b
               expect(trapped_exit.reason).to eq b.terminated.reason
               expect(trapped_exit.reason).to be_a ArgumentError
@@ -568,7 +574,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 0.01)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect(a.terminated.value!).to eq nil
             end
@@ -587,10 +593,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              receive(on(ANY, &identity), on(TIMEOUT, nil), timeout: 0)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               captured_exit = a.terminated.value!
-              expect(captured_exit).to eq Concurrent::ErlangActor::Exit.new(a, :normal)
+              expect(captured_exit).to eq Concurrent::ErlangActor::Terminated.new(a, :normal)
             end
 
             specify 3 do
@@ -611,7 +617,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              terminate b, :normal
                              b
                            end }
-              a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               b = a.terminated.value!
               expect(b.terminated.value!).to eq :timeout
@@ -636,10 +642,10 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              terminate b, :normal
                              b
                            end }
-              a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               b = a.terminated.value!
-              expect(b.terminated.value!).to eq Concurrent::ErlangActor::Exit.new(a, :normal)
+              expect(b.terminated.value!).to eq Concurrent::ErlangActor::Terminated.new(a, :normal)
             end
 
             specify 5 do
@@ -663,12 +669,12 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              receive(on(ANY) { |v| [b, v] }, on(TIMEOUT, :timeout), timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               b, captured = a.terminated.value!
               expect(b.terminated.reason).to eq :continued
               # normal is never send from b to a back
-              expect(captured).to eq Concurrent::ErlangActor::Exit.new(b, :continued)
+              expect(captured).to eq Concurrent::ErlangActor::Terminated.new(b, :continued)
             end
 
             specify 6 do
@@ -687,7 +693,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
               a.terminated.wait
               expect(a.terminated.reason).to eq :remote_err
             end
@@ -710,7 +716,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               b, captured = a.terminated.value!
               expect(b.terminated.reason).to eq :remote_err
@@ -731,7 +737,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              receive(on(ANY, &identity), on(TIMEOUT, :timeout), timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect(a.terminated.reason).to eq :killed
             end
@@ -752,7 +758,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              receive(on(ANY) { |v| [b, v] }, on(TIMEOUT, :timeout), timeout: 1)
                            end }
 
-              a           = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a           = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
               b, captured = a.terminated.value!
               expect(b.terminated.reason).to eq :killed
               expect(captured.reason).to eq :killed
@@ -770,7 +776,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              receive(on(ANY, :continued), on(TIMEOUT, :timeout), timeout: 0)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect(a.terminated.reason).to eq :killed
             end
@@ -789,7 +795,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              receive(on(ANY, &identity), on(TIMEOUT, :timeout), timeout: 0)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect(a.terminated.reason).to eq :killed
             end
@@ -811,7 +817,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               expect(a.terminated.reason).to eq :kill
             end
@@ -832,25 +838,25 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                                      timeout: 1)
                            end }
 
-              a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+              a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
 
               b, captured = a.terminated.value!
 
               expect(b.terminated.reason).to eq :kill
-              expect(captured).to eq Concurrent::ErlangActor::Exit.new(b, :kill)
+              expect(captured).to eq Concurrent::ErlangActor::Terminated.new(b, :kill)
             end
 
           end
         end
 
         specify 'spawn(link: true)' do
-          a = Concurrent::ErlangActor.spawn(type) do
+          a = Concurrent::ErlangActor.spawn(type: type) do
             b = spawn(link: true) { :v }
             linked? b
           end
           expect(a.terminated.value!).to be_truthy
 
-          a = Concurrent::ErlangActor.spawn(type) do
+          a = Concurrent::ErlangActor.spawn(type: type) do
             b = spawn { :v }
             linked? b
           end
@@ -858,16 +864,16 @@ if Concurrent.ruby_version :>=, 2, 1, 0
         end
 
         specify 'termination' do
-          a = Concurrent::ErlangActor.spawn(type) { :v }
+          a = Concurrent::ErlangActor.spawn(type: type) { :v }
           expect(a.terminated.value!).to eq :v
 
-          a = Concurrent::ErlangActor.spawn(type) { raise 'err' }
+          a = Concurrent::ErlangActor.spawn(type: type) { raise 'err' }
           expect { a.terminated.value! }.to raise_error(RuntimeError, 'err')
 
-          a = Concurrent::ErlangActor.spawn(type) { terminate :normal, value: :val }
+          a = Concurrent::ErlangActor.spawn(type: type) { terminate :normal, value: :val }
           expect(a.terminated.value!).to eq :val
 
-          a = Concurrent::ErlangActor.spawn(type) { terminate :er }
+          a = Concurrent::ErlangActor.spawn(type: type) { terminate :er }
           expect(a.terminated.reason).to eq :er
         end
 
@@ -875,12 +881,12 @@ if Concurrent.ruby_version :>=, 2, 1, 0
           specify "replies" do
             body = { on_thread: -> { reply receive },
                      on_pool:   -> { receive { |v| reply v } } }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask(:v)).to eq :v
 
             body = { on_thread: -> { v = receive; reply v; reply v; },
                      on_pool:   -> { receive { |v| reply v; reply v } } }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask(:v)).to eq :v
             expect(a.terminated.value!).to be_falsey
 
@@ -897,31 +903,31 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              reply_resolution true, v.to_s, nil
                            end
                          end }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask(:v)).to eq :v
             expect(a.terminated.value!).to be_falsey
 
             body = { on_thread: -> { reply_resolution false, nil, receive },
                      on_pool:   -> { receive { |v| reply_resolution false, nil, v } } }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect { a.ask(:err) }.to raise_error StandardError, 'err'
 
             body = { on_thread: -> { reply_resolution false, nil, receive },
                      on_pool:   -> { receive { |v| reply_resolution false, nil, v } } }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask_op(:err).reason).to eq :err
           end
 
           specify "timing out" do
             body = { on_thread: -> { m = receive; sleep 0.01; reply m },
                      on_pool:   -> { receive { |m| sleep 0.01; reply m } } }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask(:err, 0, 42)).to eq 42
             expect(a.terminated.value!).to eq false
 
             body = { on_thread: -> { reply receive },
                      on_pool:   -> { receive { |m| reply m } } }
-            a    = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask(:v, 1, 42)).to eq :v
             expect(a.terminated.value!).to eq true
           end
@@ -930,7 +936,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
             body = { on_thread: -> { receive; receive },
                      on_pool:   -> { receive { receive {} } } }
 
-            a = Concurrent::ErlangActor.spawn(type, &body.fetch(type))
+            a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask_op(:v).reason).to eq Concurrent::ErlangActor::NoReply
             expect { raise a.ask_op(:v).wait }.to raise_error Concurrent::ErlangActor::NoActor
             expect { raise a.ask(:v) }.to raise_error Concurrent::ErlangActor::NoActor
@@ -944,7 +950,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
         it_behaves_like 'erlang actor'
 
         specify do
-          actor = Concurrent::ErlangActor.spawn(:on_thread) do
+          actor = Concurrent::ErlangActor.spawn(type: :on_thread) do
             Thread.abort_on_exception = true
             while true
               receive on(Symbol) { |s| reply s.to_s },
@@ -968,7 +974,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
         include Concurrent::ErlangActor::EnvironmentConstants
 
         specify "receives message repeatedly with keep" do
-          actor = Concurrent::ErlangActor.spawn(:on_pool) do
+          actor = Concurrent::ErlangActor.spawn(type: :on_pool) do
             receive on(ANY) { |v| v == :done ? terminate(:normal, value: 42) : reply(v) },
                     keep: true
           end
@@ -1005,13 +1011,13 @@ if Concurrent.ruby_version :>=, 2, 1, 0
             include definition_module
           end
 
-          actor = Concurrent::ErlangActor.spawn(:on_pool, environment: definition_class) { start }
+          actor = Concurrent::ErlangActor.spawn(type: :on_pool, environment: definition_class) { start }
           actor.tell 1
           expect(actor.ask(2)).to eq 3
           actor.tell :done
           expect(actor.terminated.value!).to eq 3
 
-          actor = Concurrent::ErlangActor.spawn(:on_pool, environment: definition_module)
+          actor = Concurrent::ErlangActor.spawn(type: :on_pool, environment: definition_module)
           actor.tell 1
           expect(actor.ask(2)).to eq 3
           expect(actor.terminated.reason).to eq :timeout

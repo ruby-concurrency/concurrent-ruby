@@ -694,7 +694,7 @@ RSpec.describe 'Concurrent::Promises' do
 
     if Concurrent.const_defined? :ErlangActor
       it 'with erlang actor' do
-        actor = Concurrent::ErlangActor.spawn :on_thread do
+        actor = Concurrent::ErlangActor.spawn type: :on_thread do
           reply receive * 2
         end
 
