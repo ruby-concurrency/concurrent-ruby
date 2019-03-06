@@ -24,6 +24,6 @@ Gem::Specification.new do |s|
     Modern concurrency tools including agents, futures, promises, thread pools, actors, supervisors, and more.
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   TXT
-
+  s.metadata["source_code_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby"
   s.required_ruby_version = '>= 1.9.3'
 end
