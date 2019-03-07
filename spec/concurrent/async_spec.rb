@@ -158,6 +158,11 @@ module Concurrent
         }.to raise_error(StandardError)
       end
 
+      it 'returns the existence of the method' do
+        expect(subject.async.respond_to?(:echo)).to be_truthy
+        expect(subject.async.respond_to?(:not_exist_method)).to be_falsy
+      end
+
       it 'returns a :pending IVar' do
         val = subject.async.wait(1)
         expect(val).to be_a Concurrent::IVar
@@ -222,6 +227,11 @@ module Concurrent
         expect {
           subject.await.echo(1, 2, 3, 4, 5)
         }.to raise_error(StandardError)
+      end
+
+      it 'returns the existence of the method' do
+        expect(subject.await.respond_to?(:echo)).to be_truthy
+        expect(subject.await.respond_to?(:not_exist_method)).to be_falsy
       end
 
       it 'returns a :fulfilled IVar' do
