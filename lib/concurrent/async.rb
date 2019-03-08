@@ -333,6 +333,13 @@ module Concurrent
         ivar
       end
 
+      # Check whether the method is responsive
+      #
+      # @param [Symbol] method the method being called
+      def respond_to_missing?(method, include_private = false)
+        @delegate.respond_to?(method) || super
+      end
+
       # Perform all enqueued tasks.
       #
       # This method must be called from within the executor. It must not be
@@ -382,6 +389,13 @@ module Concurrent
         ivar = @delegate.send(method, *args, &block)
         ivar.wait
         ivar
+      end
+
+      # Check whether the method is responsive
+      #
+      # @param [Symbol] method the method being called
+      def respond_to_missing?(method, include_private = false)
+        @delegate.respond_to?(method) || super
       end
     end
     private_constant :AwaitDelegator
