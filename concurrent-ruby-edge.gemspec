@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent/version')
+require File.join(File.dirname(__FILE__ ), 'lib-edge/concurrent/edge/version')
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")

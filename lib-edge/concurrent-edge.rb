@@ -1,5 +1,7 @@
 require 'concurrent'
 
+require 'concurrent/edge/version'
+
 require 'concurrent/actor'
 require 'concurrent/agent'
 require 'concurrent/channel'
