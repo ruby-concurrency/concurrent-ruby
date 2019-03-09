@@ -488,14 +488,12 @@ if Concurrent.ruby_version :>=, 2, 1, 0
               body = { on_thread:
                            -> do
                              spawn(link: true) { raise 'err' }
-                             receive(timeout: 0.01)
+                             receive(timeout: 1)
                            end,
                        on_pool:
                            -> do
                              spawn(link: true) { raise 'err' }
-                             receive(on(ANY) { |v| [v, b] },
-                                     on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                             receive(timeout: 1) { |v| v }
                            end }
 
               a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
@@ -534,7 +532,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                            -> do
                              b = spawn(link: true) { throw :uncaught }
                              trap
-                             [receive(timeout: 0.01), b]
+                             [receive(timeout: 1), b]
                            end,
                        on_pool:
                            -> do
@@ -542,7 +540,7 @@ if Concurrent.ruby_version :>=, 2, 1, 0
                              trap
                              receive(on(ANY) { |v| [v, b] },
                                      on(TIMEOUT) { |v| [nil, b] },
-                                     timeout: 0.01)
+                                     timeout: 1)
                            end }
 
               a = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
