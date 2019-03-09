@@ -152,6 +152,7 @@ module Concurrent
           end
         end
         clazz.class_exec(&block) unless block.nil?
+        clazz.singleton_class.send :alias_method, :[], :new
         clazz
       end
     end
