@@ -367,6 +367,9 @@ and to the past maintainers
 *   [Paweł Obrok](https://github.com/obrok)
 *   [Lucas Allan](https://github.com/lucasallan)
 
+and to [Ruby Association](https://www.ruby.or.jp/en/) for sponsoring a project 
+["Enhancing Ruby’s concurrency tooling"](https://www.ruby.or.jp/en/news/20181106) in 2018. 
+
 ## License and Copyright
 
 *Concurrent Ruby* is free software released under the 

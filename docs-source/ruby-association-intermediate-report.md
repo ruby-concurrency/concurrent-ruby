@@ -1,6 +1,6 @@
 # Intermediate report
 
-I started working on the project 6 Dec. 
+I started working on the project 6. Dec. 
 Since then I have worked on Throttle, Cancellation, Channel, and Actor.
 I did not yet start working on the planned job stealing pool.
 

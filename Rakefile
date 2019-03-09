@@ -171,6 +171,7 @@ begin
                       '-',
                       'docs-source/thread_pools.md',
                       'docs-source/promises.out.md',
+                      'docs-source/medium-example.out.rb',
                       'LICENSE.md',
                       'CHANGELOG.md']
       end

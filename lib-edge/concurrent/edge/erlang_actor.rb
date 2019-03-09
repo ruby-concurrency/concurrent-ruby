@@ -342,6 +342,9 @@ module Concurrent
       # @param [Channel] channel
       #   The mailbox of the actor, by default it has unlimited capacity.
       #   Crating the actor with a bounded queue is useful to create backpressure.
+      #   The channel can be shared with other abstractions
+      #   but actor has to be the only consumer
+      #   otherwise internal signals could be lost.
       # @param [Environment, Module] environment
       #   A class which is used to run the body of the actor in.
       #   It can either be a child of {Environment} or a module.
@@ -786,8 +789,8 @@ module Concurrent
         # *monitoring*    *monitored*
         # send Monitor
         # terminated?
-        #                 terminate
-        #                 drain signals
+        #                 terminate before getting Monitor
+        #                 drain signals including the Monitor
         reference              = Reference.new
         @Monitoring[reference] = pid
         if pid.terminated.resolved?

@@ -275,12 +275,12 @@ It can be included in environments working with actors.</p>
       <pre class="lines">
 
 
-516
-517
-518</pre>
+519
+520
+521</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 516</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 519</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_actor_executor'>default_actor_executor</span>
   <span class='id identifier rubyid_default_executor'>default_executor</span>
@@ -334,12 +334,12 @@ may be shared by other abstractions</p>
       <pre class="lines">
 
 
-522
-523
-524</pre>
+525
+526
+527</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 522</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 525</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
   <span class='symbol'>:io</span>
@@ -472,9 +472,6 @@ may be shared by other abstractions</p>
       <pre class="lines">
 
 
-489
-490
-491
 492
 493
 494
@@ -483,10 +480,13 @@ may be shared by other abstractions</p>
 497
 498
 499
-500</pre>
+500
+501
+502
+503</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 489</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 492</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_spawn_actor'>spawn_actor</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span>
                 <span class='label'>type:</span><span class='comma'>,</span>
@@ -569,17 +569,17 @@ may be shared by other abstractions</p>
       <pre class="lines">
 
 
-506
-507
-508
 509
 510
 511
 512
-513</pre>
+513
+514
+515
+516</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 506</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 509</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminate_actor'>terminate_actor</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_reason'>reason</span> <span class='op'>==</span> <span class='symbol'>:kill</span>

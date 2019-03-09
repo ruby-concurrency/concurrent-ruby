@@ -547,12 +547,12 @@
       <pre class="lines">
 
 
-458
-459
-460</pre>
+461
+462
+463</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 458</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 461</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
   <span class='ivar'>@DefaultExecutor</span>
@@ -1272,13 +1272,13 @@ when message becomes available.</p>
       <pre class="lines">
 
 
-398
-399
-400
-401</pre>
+401
+402
+403
+404</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 398</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 401</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reply'>reply</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='comment'># TODO (pitr-ch 08-Feb-2019): consider adding reply? which returns true,false if success, reply method will always return value
@@ -1388,12 +1388,12 @@ so the arguments are same as for <span class='object_link'><a href="../Promises/
       <pre class="lines">
 
 
-419
-420
-421</pre>
+422
+423
+424</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 419</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 422</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span> <span class='op'>=</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_reply_resolution'>reply_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_fulfilled'>fulfilled</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
@@ -1464,7 +1464,10 @@ so the arguments are same as for <span class='object_link'><a href="../Promises/
       
         &mdash;
         <div class='inline'><p>The mailbox of the actor, by default it has unlimited capacity.
-Crating the actor with a bounded queue is useful to create backpressure.</p>
+Crating the actor with a bounded queue is useful to create backpressure.
+The channel can be shared with other abstractions
+but actor has to be the only consumer
+otherwise internal signals could be lost.</p>
 </div>
       
     </li>
@@ -1610,9 +1613,6 @@ which needs to be provided with environment.</p>
       <pre class="lines">
 
 
-371
-372
-373
 374
 375
 376
@@ -1629,10 +1629,13 @@ which needs to be provided with environment.</p>
 387
 388
 389
-390</pre>
+390
+391
+392
+393</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 371</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 374</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span>
           <span class='label'>type:</span> <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span>
@@ -1767,12 +1770,12 @@ with exit reason <code>:killed</code>.</p>
       <pre class="lines">
 
 
-453
-454
-455</pre>
+456
+457
+458</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 453</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 456</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminate'>terminate</span><span class='lparen'>(</span><span class='id identifier rubyid_pid'>pid</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminate'>terminate</span> <span class='id identifier rubyid_pid'>pid</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_value'>value</span>
