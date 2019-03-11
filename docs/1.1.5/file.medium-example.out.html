@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: medium-example.out
+  
+    &mdash; Concurrent Ruby
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "medium-example.out";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: medium-example.out</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><div id='filecontents'><pre class="code ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>concurrent-edge</span><span class='tstring_end'>&#39;</span></span>                <span class='comment'># =&gt; true
+</span>
+<span class='comment'># This little bit more complicated commented example aims to
+</span><span class='comment'># demonstrate some of the capabilities of concurrent-ruby new abstractions.
+</span>
+<span class='comment'># It is a concurrent processing pipeline which on one side has several web crawlers.
+</span><span class='comment'># They are searching the web for data and filling buffer.
+</span><span class='comment'># On the other side there are data processors which are pop the data from buffer.
+</span><span class='comment'># They are processing the data and storing results into a DB
+</span><span class='comment'># which has limited concurrency level.
+</span><span class='comment'># Some of the parts like Web and DB are just stubs.
+</span><span class='comment'># Each part logs and increments counters to keep some stats about the pipeline.
+</span><span class='comment'># There is also a periodical readout of the stats into log scheduled.
+</span>
+<span class='comment'># Schema of the pipeline:
+</span>
+<span class='comment'># web-crawlers -&gt; buffer -&gt; data-processing -&gt; DB
+</span><span class='comment'>#            \____________________________\_____\___&gt; logging
+</span>
+<span class='comment'># TODO (pitr-ch 10-Mar-2019): replace with a better more realistic example using
+</span><span class='comment'># * actors for limited concurrency with state - local DB connection
+</span><span class='comment'># * throttled futures for REST API - limiting server load
+</span>
+<span class='comment'># The central logger is defined first.
+</span><span class='comment'># It has state like the logger instance, therefore the actor is used.
+</span><span class='comment'># It is better to exactly define the communication protocol of the logging actor.
+</span><span class='comment'># It will only understand these messages.
+</span><span class='const'>Log</span>      <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ImmutableStruct.html" title="Concurrent::ImmutableStruct (module)">ImmutableStruct</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/ImmutableStruct.html#new-class_method" title="Concurrent::ImmutableStruct.new (method)">new</a></span></span> <span class='symbol'>:severity</span><span class='comma'>,</span> <span class='symbol'>:message</span>
+<span class='comment'># =&gt; Log
+</span><span class='const'>SetLevel</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ImmutableStruct.html" title="Concurrent::ImmutableStruct (module)">ImmutableStruct</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/ImmutableStruct.html#new-class_method" title="Concurrent::ImmutableStruct.new (method)">new</a></span></span> <span class='symbol'>:level</span>
+<span class='comment'># =&gt; SetLevel
+</span>
+<span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>logger</span><span class='tstring_end'>&#39;</span></span>                         <span class='comment'># =&gt; false
+</span><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stringio</span><span class='tstring_end'>&#39;</span></span>                       <span class='comment'># =&gt; false
+</span>
+<span class='comment'># Including actor constants so this scope understands ANY etc.
+</span><span class='id identifier rubyid_include'>include</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ErlangActor/EnvironmentConstants.html" title="Concurrent::ErlangActor::EnvironmentConstants (module)">EnvironmentConstants</a></span></span>
+<span class='comment'># =&gt; Object
+</span><span class='comment'># The logger does not need a dedicated thread, let&#39;s use a pool.
+</span><span class='const'>LOGGING</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="Concurrent/ErlangActor/FunctionShortcuts.html#spawn-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#spawn (method)">spawn</a></span></span> <span class='const'>Logger</span><span class='op'>::</span><span class='const'>FATAL</span><span class='comma'>,</span>
+                                        <span class='label'>type:</span> <span class='symbol'>:on_pool</span><span class='comma'>,</span>
+                                        <span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>logger</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_level'>level</span><span class='op'>|</span>
+  <span class='comment'># a Logger instance with nicer formatting is created
+</span>  <span class='ivar'>@logger</span>           <span class='op'>=</span> <span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='gvar'>$captured_out</span><span class='rparen'>)</span>
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_level'>level</span>     <span class='op'>=</span> <span class='id identifier rubyid_level'>level</span>
+  <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_formatter'>formatter</span> <span class='op'>=</span> <span class='id identifier rubyid_lambda'>lambda</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_severity'>severity</span><span class='comma'>,</span> <span class='id identifier rubyid_datetime'>datetime</span><span class='comma'>,</span> <span class='id identifier rubyid_progname'>progname</span><span class='comma'>,</span> <span class='id identifier rubyid_msg'>msg</span><span class='op'>|</span>
+    <span class='id identifier rubyid_formatted_message'>formatted_message</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_msg'>msg</span>
+                        <span class='kw'>when</span> <span class='const'>String</span>
+                          <span class='id identifier rubyid_msg'>msg</span>
+                        <span class='kw'>when</span> <span class='const'>Exception</span>
+                          <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>%s (%s)\n%s</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                                 <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_backtrace'>backtrace</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+                        <span class='kw'>else</span>
+                          <span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span>
+                        <span class='kw'>end</span>
+    <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[%s] %5s -- %s: %s\n</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+           <span class='id identifier rubyid_datetime'>datetime</span><span class='period'>.</span><span class='id identifier rubyid_strftime'>strftime</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%Y-%m-%d %H:%M:%S.%L</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+           <span class='id identifier rubyid_severity'>severity</span><span class='comma'>,</span>
+           <span class='id identifier rubyid_progname'>progname</span><span class='comma'>,</span>
+           <span class='id identifier rubyid_formatted_message'>formatted_message</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># definition of the logging actor behaviour
+</span>  <span class='id identifier rubyid_receive'>receive</span><span class='lparen'>(</span>
+      <span class='comment'># log messages
+</span>      <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'>Log</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span> <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_log'>log</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_severity'>severity</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+      <span class='comment'># change level
+</span>      <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'>SetLevel</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span> <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_level'>level</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+      <span class='comment'># It is a good practice to read and log bad messages,
+</span>      <span class='comment'># otherwise they would accumulate in the inbox.
+</span>      <span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='const'>ANY</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_message'>message</span><span class='op'>|</span> <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span> <span class='label'>bad_message:</span> <span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+      <span class='comment'># The logger has static behaviour, therefore keep can be used, and the actor
+</span>      <span class='comment'># will behave the same with each message received as defined below.
+</span>      <span class='label'>keep:</span> <span class='kw'>true</span><span class='rparen'>)</span>
+<span class='kw'>end</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000002 logger running&gt;
+</span>
+<span class='comment'># testing the logger works as expected
+</span><span class='const'>LOGGING</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>Log</span><span class='lbracket'>[</span><span class='const'>Logger</span><span class='op'>::</span><span class='const'>FATAL</span><span class='comma'>,</span> <span class='symbol'>:tornado</span><span class='rbracket'>]</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000002 logger running&gt;
+</span><span class='const'>LOGGING</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>Log</span><span class='lbracket'>[</span><span class='const'>Logger</span><span class='op'>::</span><span class='const'>INFO</span><span class='comma'>,</span> <span class='symbol'>:wind</span><span class='rbracket'>]</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000002 logger running&gt;
+</span><span class='const'>LOGGING</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>SetLevel</span><span class='lbracket'>[</span><span class='const'>Logger</span><span class='op'>::</span><span class='const'>DEBUG</span><span class='rbracket'>]</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000002 logger running&gt;
+</span><span class='const'>LOGGING</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>Log</span><span class='lbracket'>[</span><span class='const'>Logger</span><span class='op'>::</span><span class='const'>INFO</span><span class='comma'>,</span> <span class='symbol'>:breeze</span><span class='rbracket'>]</span>
+<span class='comment'># =&gt; #&lt;Concurrent::ErlangActor::Pid:0x000002 logger running&gt;
+</span>
+<span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.05</span> <span class='comment'># the logging is asynchronous, we need to wait a bit until it&#39;s written
+</span><span class='id identifier rubyid_get_captured_output'>get_captured_output</span>
+<span class='comment'># =&gt; &quot;[2019-03-11 10:15:11.819] FATAL -- : :tornado\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.820]  INFO -- : :breeze\n&quot;
+</span>
+<span class='comment'># the logging could be wrapped in a method
+</span><span class='kw'>def</span> <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='id identifier rubyid_severity'>severity</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='const'>LOGGING</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='const'>Log</span><span class='lbracket'>[</span><span class='id identifier rubyid_severity'>severity</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rbracket'>]</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span>                                      <span class='comment'># =&gt; :log
+</span>
+<span class='id identifier rubyid_include'>include</span> <span class='const'>Logger</span><span class='op'>::</span><span class='const'>Severity</span>                 <span class='comment'># =&gt; Object
+</span><span class='id identifier rubyid_log'>log</span> <span class='const'>INFO</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>alive</span><span class='tstring_end'>&#39;</span></span>                        <span class='comment'># =&gt; true
+</span><span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.05</span>                               <span class='comment'># =&gt; 0
+</span><span class='id identifier rubyid_get_captured_output'>get_captured_output</span>
+<span class='comment'># =&gt; &quot;[2019-03-11 10:15:11.871]  INFO -- : alive\n&quot;
+</span>
+
+<span class='comment'># The stub which will represent the web
+</span><span class='kw'>module</span> <span class='const'>Web</span>
+  <span class='ivar'>@counter</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/AtomicFixnum.html#initialize-instance_method" title="Concurrent::AtomicFixnum#initialize (method)">new</a></span></span>
+
+  <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_search'>search</span>
+    <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.01</span>
+    <span class='ivar'>@counter</span><span class='period'>.</span><span class='id identifier rubyid_increment'>increment</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='lparen'>(</span><span class='int'>16</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span> 
+
+<span class='comment'># The cancellation which will be used to cancel the whole processing pipeline.
+</span><span class='ivar'>@cancellation</span><span class='comma'>,</span> <span class='id identifier rubyid_origin'>origin</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Cancellation:0x000003 pending&gt;
+</span>
+<span class='comment'># Buffer for work
+</span><span class='id identifier rubyid_buffer_capacity'>buffer_capacity</span>   <span class='op'>=</span> <span class='int'>10</span>                   <span class='comment'># =&gt; 10
+</span><span class='ivar'>@buffer</span>           <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises/Channel.html" title="Concurrent::Promises::Channel (class)">Channel</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_buffer_capacity'>buffer_capacity</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Channel:0x000004 capacity taken 0 of 10&gt;
+</span><span class='id identifier rubyid_web_crawler_count'>web_crawler_count</span> <span class='op'>=</span> <span class='int'>4</span>                    <span class='comment'># =&gt; 4
+</span>
+<span class='comment'># Track the number of data provided by each crawler
+</span><span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_web_crawler_count'>web_crawler_count</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
+  <span class='comment'># this is accessed by multiple threads so it should be a tread-safe counter
+</span>  <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/AtomicFixnum.html#initialize-instance_method" title="Concurrent::AtomicFixnum#initialize (method)">new</a></span></span>
+<span class='kw'>end</span> 
+<span class='comment'># the array is frozen which makes it immutable,
+</span><span class='comment'># therefore safe to use when concurrently accessed.
+</span><span class='comment'># Otherwise if it was being modified it wound has to be Concurrent::Array to make it safe.
+</span><span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+<span class='comment'># =&gt; [#&lt;Concurrent::AtomicFixnum:0x000005 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000006 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000007 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000008 value:0&gt;]
+</span>
+<span class='comment'># The web crawlers are defined directly with threads to start the example simply.
+</span><span class='comment'># They search the web and immediately as they find something they push
+</span><span class='comment'># the data into the buffer.
+</span><span class='comment'># The push will block if the buffer is full,
+</span><span class='comment'># regulating how fast is the work being found.
+</span><span class='comment'># This is called backpressure.
+</span><span class='id identifier rubyid_crawlers'>crawlers</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_web_crawler_count'>web_crawler_count</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='kw'>while</span> <span class='kw'>true</span>
+      <span class='comment'># crawl the web until cancelled
+</span>      <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@cancellation</span><span class='period'>.</span><span class='id identifier rubyid_canceled?'>canceled?</span>
+      <span class='comment'># will block and slow down the crawler if the buffer is full
+</span>      <span class='id identifier rubyid_data'>data</span> <span class='op'>=</span> <span class='const'>Web</span><span class='period'>.</span><span class='id identifier rubyid_search'>search</span>
+      <span class='kw'>until</span> <span class='ivar'>@buffer</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_data'>data</span><span class='comma'>,</span> <span class='float'>0.1</span>
+        <span class='comment'># It is a good practice to use timeouts on all blocking operations
+</span>        <span class='comment'># If the pipeline is cancelled and the data-processors finish
+</span>        <span class='comment'># before taking data from buffer a crawler could get stack on this push.
+</span>        <span class='kw'>break</span> <span class='kw'>if</span> <span class='ivar'>@cancellation</span><span class='period'>.</span><span class='id identifier rubyid_canceled?'>canceled?</span>
+      <span class='kw'>end</span>
+      <span class='comment'># it pushed data, increment its counter
+</span>      <span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_increment'>increment</span>
+      <span class='id identifier rubyid_log'>log</span> <span class='const'>DEBUG</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crawler </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_i'>i</span><span class='embexpr_end'>}</span><span class='tstring_content'> found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_data'>data</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+<span class='comment'># =&gt; [#&lt;Thread:0x000009@medium-example.in.rb:130 sleep&gt;,
+</span><span class='comment'>#     #&lt;Thread:0x00000a@medium-example.in.rb:130 sleep&gt;,
+</span><span class='comment'>#     #&lt;Thread:0x00000b@medium-example.in.rb:130 sleep&gt;,
+</span><span class='comment'>#     #&lt;Thread:0x00000c@medium-example.in.rb:130 run&gt;]
+</span>
+<span class='comment'># So far only the crawlers looking for data are defined
+</span><span class='comment'># pushing data into the buffer.
+</span><span class='comment'># The data processing definition follows.
+</span><span class='comment'># Threads are not used again directly but rather the data processing
+</span><span class='comment'># is defined using Futures.
+</span><span class='comment'># Even though that makes the definition more complicated
+</span><span class='comment'># it has a big advantage that data processors will not require a Thread each
+</span><span class='comment'># but they will share and run on a Thread pool.
+</span><span class='comment'># That removes an important limitation of the total number of threads process can have,
+</span><span class='comment'># which can be an issue in larger systems.
+</span><span class='comment'># This example would be fine with using the Threads
+</span><span class='comment'># however it would not demonstrate the more advanced usage then.
+</span>
+<span class='comment'># The data processing stores results in a DB,
+</span><span class='comment'># therefore the stub definition of a database precedes the data processing.
+</span><span class='kw'>module</span> <span class='const'>DB</span>
+  <span class='ivar'>@data</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Map.html" title="Concurrent::Map (class)">Map</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/Map.html#initialize-instance_method" title="Concurrent::Map#initialize (method)">new</a></span></span>
+
+  <span class='comment'># increment a counter for char
+</span>  <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span><span class='lparen'>(</span><span class='id identifier rubyid_char'>char</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='rparen'>)</span>
+    <span class='ivar'>@data</span><span class='period'>.</span><span class='id identifier rubyid_compute'>compute</span> <span class='id identifier rubyid_char'>char</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_old'>old</span><span class='op'>|</span>
+      <span class='lparen'>(</span><span class='id identifier rubyid_old'>old</span> <span class='op'>||</span> <span class='int'>0</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='id identifier rubyid_count'>count</span>
+    <span class='kw'>end</span>
+    <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># return the stored data as Hash
+</span>  <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_data'>data</span>
+    <span class='ivar'>@data</span><span class='period'>.</span><span class='id identifier rubyid_each_pair'>each_pair</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='rparen'>)</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='id identifier rubyid_k'>k</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>                                      <span class='comment'># =&gt; :data
+</span>
+<span class='comment'># Lets assume that instead having this DB
+</span><span class='comment'># we have limited number of connections
+</span><span class='comment'># and therefore there is a limit on
+</span><span class='comment'># how many threads can communicate with the DB at the same time.
+</span><span class='comment'># The throttle is created to limit the number of concurrent access to DB.
+</span><span class='ivar'>@db_throttle</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='int'>4</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Throttle:0x00000d capacity available 4 of 4&gt;
+</span>
+<span class='comment'># The data processing definition follows
+</span><span class='id identifier rubyid_data_processing_count'>data_processing_count</span> <span class='op'>=</span> <span class='int'>20</span> <span class='comment'># this could actually be thousands if required
+</span>
+<span class='comment'># track the number of data received by data processors
+</span><span class='ivar'>@data_processing_counters</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_data_processing_count'>data_processing_count</span> <span class='kw'>do</span>
+  <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Concurrent/AtomicFixnum.html#initialize-instance_method" title="Concurrent::AtomicFixnum#initialize (method)">new</a></span></span>
+<span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+<span class='comment'># =&gt; [#&lt;Concurrent::AtomicFixnum:0x00000e value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00000f value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000010 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000011 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000012 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000013 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000014 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000015 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000016 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000017 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000018 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000019 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00001a value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00001b value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00001c value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00001d value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00001e value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x00001f value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000020 value:0&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::AtomicFixnum:0x000021 value:0&gt;]
+</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_data_processing'>data_processing</span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span>
+  <span class='comment'># pop_op returns a future which is fulfilled with a message from buffer
+</span>  <span class='comment'># when a message is valuable.
+</span>  <span class='ivar'>@buffer</span><span class='period'>.</span><span class='id identifier rubyid_pop_op'>pop_op</span><span class='period'>.</span><span class='id identifier rubyid_then_on'>then_on</span><span class='lparen'>(</span><span class='symbol'>:fast</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+    <span class='comment'># then we process the message on :fast pool since this has no blocking
+</span>    <span class='id identifier rubyid_log'>log</span> <span class='const'>DEBUG</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>data-processor </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_i'>i</span><span class='embexpr_end'>}</span><span class='tstring_content'> got </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_data'>data</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='ivar'>@data_processing_counters</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_increment'>increment</span>
+    <span class='id identifier rubyid_sleep'>sleep</span> <span class='float'>0.1</span> <span class='comment'># simulate it actually doing something which take some time
+</span>    <span class='comment'># find the most frequent char
+</span>    <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_chars'>chars</span><span class='period'>.</span>
+        <span class='id identifier rubyid_group_by'>group_by</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span><span class='period'>.</span>
+        <span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ch'>ch</span><span class='comma'>,</span> <span class='id identifier rubyid_arr'>arr</span><span class='op'>|</span> <span class='lbracket'>[</span><span class='id identifier rubyid_ch'>ch</span><span class='comma'>,</span> <span class='id identifier rubyid_arr'>arr</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='rbracket'>]</span> <span class='rbrace'>}</span><span class='period'>.</span>
+        <span class='id identifier rubyid_max_by'>max_by</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ch'>ch</span><span class='comma'>,</span> <span class='id identifier rubyid_size'>size</span><span class='op'>|</span> <span class='id identifier rubyid_size'>size</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then_on'>then_on</span><span class='lparen'>(</span><span class='ivar'>@db_throttle</span><span class='period'>.</span><span class='id identifier rubyid_on'>on</span><span class='lparen'>(</span><span class='symbol'>:io</span><span class='rparen'>)</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_char'>char</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span><span class='op'>|</span>
+    <span class='comment'># the db access has to be limited therefore the db_throttle is used
+</span>    <span class='comment'># DBs use io therefore this part is executed on global thread pool wor :io
+</span>    <span class='const'>DB</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span> <span class='id identifier rubyid_char'>char</span><span class='comma'>,</span> <span class='id identifier rubyid_count'>count</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then_on'>then_on</span><span class='lparen'>(</span><span class='symbol'>:fast</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid__'>_</span><span class='op'>|</span>
+    <span class='comment'># last section executes back on :fast executor
+</span>    <span class='comment'># checks if it was cancelled
+</span>    <span class='comment'># if not then it calls itself recursively
+</span>    <span class='comment'># which in combination with #run will turn this into infinite data processing
+</span>    <span class='comment'># (until cancelled)
+</span>    <span class='comment'># The #run will keep flatting to the inner future as long the value is a future.
+</span>    <span class='kw'>if</span> <span class='ivar'>@cancellation</span><span class='period'>.</span><span class='id identifier rubyid_canceled?'>canceled?</span>
+      <span class='comment'># return something else then future, #run will stop executing
+</span>      <span class='symbol'>:done</span>
+    <span class='kw'>else</span>
+      <span class='comment'># continue running with a future returned by data_processing
+</span>      <span class='id identifier rubyid_data_processing'>data_processing</span> <span class='id identifier rubyid_i'>i</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span> 
+
+<span class='comment'># create the data processors
+</span><span class='id identifier rubyid_data_processors'>data_processors</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='id identifier rubyid_data_processing_count'>data_processing_count</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
+  <span class='id identifier rubyid_data_processing'>data_processing</span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+<span class='kw'>end</span>
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000022 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000023 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000024 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000025 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000026 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000027 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000028 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000029 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002a pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002b pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002c pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002d pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002e pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002f pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000030 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000031 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000032 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000033 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000034 pending&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000035 pending&gt;]
+</span>
+<span class='comment'># Some statics are collected in crawler_data_counter
+</span><span class='comment'># and @data_processing_counters.
+</span><span class='comment'># Schedule a periodical readout to a log.
+</span><span class='kw'>def</span> <span class='id identifier rubyid_readout'>readout</span><span class='lparen'>(</span><span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span><span class='rparen'>)</span>
+  <span class='comment'># schedule readout in 0.4 sec or on cancellation
+</span>  <span class='lparen'>(</span><span class='ivar'>@cancellation</span><span class='period'>.</span><span class='id identifier rubyid_origin'>origin</span> <span class='op'>|</span> <span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_schedule'><span class='object_link'><a href="Concurrent/Promises/FactoryMethods.html#schedule-instance_method" title="Concurrent::Promises::FactoryMethods#schedule (method)">schedule</a></span></span><span class='lparen'>(</span><span class='float'>0.4</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_log'>log</span> <span class='const'>INFO</span><span class='comma'>,</span>
+        <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\ncrawlers found: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+            <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>data processors consumed: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@data_processing_counters</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='kw'>do</span>
+    <span class='comment'># reschedule if not cancelled
+</span>    <span class='id identifier rubyid_readout'>readout</span> <span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span> <span class='kw'>unless</span> <span class='ivar'>@cancellation</span><span class='period'>.</span><span class='id identifier rubyid_canceled?'>canceled?</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>                                      <span class='comment'># =&gt; :readout
+</span>
+<span class='comment'># start the periodical readouts
+</span><span class='id identifier rubyid_readouts'>readouts</span> <span class='op'>=</span> <span class='id identifier rubyid_readout'>readout</span><span class='lparen'>(</span><span class='id identifier rubyid_crawler_data_counter'>crawler_data_counter</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000036 pending&gt;
+</span>
+<span class='id identifier rubyid_sleep'>sleep</span> <span class='int'>2</span> <span class='comment'># let the whole processing pipeline work
+</span><span class='comment'># cancel everything
+</span><span class='id identifier rubyid_origin'>origin</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::ResolvableEvent:0x000037 resolved&gt;
+</span>
+<span class='comment'># wait for everything to stop
+</span><span class='id identifier rubyid_crawlers'>crawlers</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:join</span><span class='rparen'>)</span>
+<span class='comment'># =&gt; [#&lt;Thread:0x000009@medium-example.in.rb:130 dead&gt;,
+</span><span class='comment'>#     #&lt;Thread:0x00000a@medium-example.in.rb:130 dead&gt;,
+</span><span class='comment'>#     #&lt;Thread:0x00000b@medium-example.in.rb:130 dead&gt;,
+</span><span class='comment'>#     #&lt;Thread:0x00000c@medium-example.in.rb:130 dead&gt;]
+</span><span class='id identifier rubyid_data_processors'>data_processors</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:wait!</span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='int'>10</span><span class='rbracket'>]</span>
+<span class='comment'># =&gt; [#&lt;Concurrent::Promises::Future:0x000022 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000023 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000024 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000025 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000026 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000027 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000028 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x000029 fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002a fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002b fulfilled with :done&gt;,
+</span><span class='comment'>#     #&lt;Concurrent::Promises::Future:0x00002c fulfilled with :done&gt;]
+</span><span class='id identifier rubyid_readouts'>readouts</span><span class='period'>.</span><span class='id identifier rubyid_wait!'>wait!</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000036 fulfilled with nil&gt;
+</span>
+<span class='comment'># terminate the logger
+</span><span class='const'><span class='object_link'><a href="Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Concurrent/ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_terminate'><span class='object_link'><a href="Concurrent/ErlangActor/FunctionShortcuts.html#terminate-instance_method" title="Concurrent::ErlangActor::FunctionShortcuts#terminate (method)">terminate</a></span></span> <span class='const'>LOGGING</span><span class='comma'>,</span> <span class='symbol'>:cancelled</span>
+<span class='comment'># =&gt; true
+</span><span class='const'>LOGGING</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span>
+<span class='comment'># =&gt; #&lt;Concurrent::Promises::Future:0x000038 rejected with :cancelled&gt;
+</span>
+<span class='comment'># inspect collected char frequencies
+</span><span class='const'>DB</span><span class='period'>.</span><span class='id identifier rubyid_data'>data</span>
+<span class='comment'># =&gt; {&quot;1&quot;=&gt;18,
+</span><span class='comment'>#     &quot;2&quot;=&gt;18,
+</span><span class='comment'>#     &quot;3&quot;=&gt;18,
+</span><span class='comment'>#     &quot;4&quot;=&gt;18,
+</span><span class='comment'>#     &quot;6&quot;=&gt;18,
+</span><span class='comment'>#     &quot;5&quot;=&gt;18,
+</span><span class='comment'>#     &quot;7&quot;=&gt;18,
+</span><span class='comment'>#     &quot;8&quot;=&gt;18,
+</span><span class='comment'>#     &quot;9&quot;=&gt;18,
+</span><span class='comment'>#     &quot;b&quot;=&gt;1,
+</span><span class='comment'>#     &quot;c&quot;=&gt;1,
+</span><span class='comment'>#     &quot;a&quot;=&gt;7,
+</span><span class='comment'>#     &quot;d&quot;=&gt;1,
+</span><span class='comment'>#     &quot;e&quot;=&gt;1,
+</span><span class='comment'>#     &quot;f&quot;=&gt;1}
+</span>
+<span class='comment'># see the logger output
+</span><span class='id identifier rubyid_get_captured_output'>get_captured_output</span>
+<span class='comment'># =&gt; &quot;[2019-03-11 10:15:11.939] DEBUG -- : crawler 2 found 1\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.941] DEBUG -- : crawler 1 found 2\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.942] DEBUG -- : data-processor 0 got 1\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.943] DEBUG -- : data-processor 1 got 2\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.944] DEBUG -- : crawler 0 found 3\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.944] DEBUG -- : data-processor 2 got 3\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.945] DEBUG -- : crawler 3 found 4\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.946] DEBUG -- : data-processor 3 got 4\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.951] DEBUG -- : crawler 2 found 5\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.952] DEBUG -- : crawler 1 found 6\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.953] DEBUG -- : data-processor 4 got 5\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.954] DEBUG -- : data-processor 5 got 6\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.955] DEBUG -- : crawler 0 found 7\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.956] DEBUG -- : data-processor 6 got 7\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.956] DEBUG -- : crawler 3 found 8\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.957] DEBUG -- : data-processor 7 got 8\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.962] DEBUG -- : crawler 2 found 9\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.964] DEBUG -- : crawler 1 found a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.964] DEBUG -- : crawler 0 found b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.965] DEBUG -- : crawler 3 found c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.973] DEBUG -- : crawler 2 found d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.974] DEBUG -- : crawler 1 found e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.975] DEBUG -- : crawler 3 found f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.977] DEBUG -- : crawler 0 found 10\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.986] DEBUG -- : crawler 2 found 11\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.987] DEBUG -- : crawler 1 found 12\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.988] DEBUG -- : crawler 3 found 13\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.989] DEBUG -- : crawler 0 found 14\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.997] DEBUG -- : crawler 2 found 15\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.998] DEBUG -- : crawler 1 found 16\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:11.999] DEBUG -- : crawler 3 found 17\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.000] DEBUG -- : crawler 0 found 18\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.010] DEBUG -- : crawler 2 found 19\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.011] DEBUG -- : crawler 1 found 1a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.012] DEBUG -- : crawler 3 found 1b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.014] DEBUG -- : crawler 0 found 1c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.022] DEBUG -- : crawler 2 found 1d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.023] DEBUG -- : crawler 1 found 1e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.044] DEBUG -- : data-processor 8 got 9\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.046] DEBUG -- : data-processor 9 got a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.047] DEBUG -- : data-processor 10 got b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.048] DEBUG -- : data-processor 11 got c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.056] DEBUG -- : data-processor 12 got d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.057] DEBUG -- : data-processor 13 got e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.058] DEBUG -- : data-processor 14 got f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.061] DEBUG -- : data-processor 15 got 10\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.149] DEBUG -- : data-processor 16 got 11\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.151] DEBUG -- : data-processor 17 got 12\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.152] DEBUG -- : data-processor 18 got 13\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.153] DEBUG -- : data-processor 19 got 14\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.163] DEBUG -- : data-processor 0 got 15\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.164] DEBUG -- : crawler 3 found 1f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.165] DEBUG -- : crawler 0 found 20\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.166] DEBUG -- : crawler 1 found 22\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.167] DEBUG -- : crawler 2 found 21\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.167] DEBUG -- : data-processor 1 got 16\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.168] DEBUG -- : data-processor 2 got 17\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.169] DEBUG -- : data-processor 3 got 18\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.174] DEBUG -- : crawler 3 found 23\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.174] DEBUG -- : crawler 0 found 24\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.175] DEBUG -- : crawler 2 found 25\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.176] DEBUG -- : crawler 1 found 26\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.185] DEBUG -- : crawler 3 found 27\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.185] DEBUG -- : crawler 1 found 28\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.186] DEBUG -- : crawler 2 found 29\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.187] DEBUG -- : crawler 0 found 2a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.254] DEBUG -- : data-processor 5 got 19\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.255] DEBUG -- : data-processor 4 got 1a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.256] DEBUG -- : data-processor 6 got 1b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.258] DEBUG -- : data-processor 7 got 1c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.267] DEBUG -- : data-processor 8 got 1d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.268] DEBUG -- : data-processor 10 got 1e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.269] DEBUG -- : data-processor 11 got 1f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.269] DEBUG -- : data-processor 9 got 20\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.336]  INFO -- : \n&quot; +
+</span><span class='comment'>#    &quot;crawlers found: 10, 11, 11, 10\n&quot; +
+</span><span class='comment'>#    &quot;data processors consumed: 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.361] DEBUG -- : data-processor 12 got 22\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.362] DEBUG -- : data-processor 13 got 21\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.363] DEBUG -- : data-processor 14 got 23\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.363] DEBUG -- : data-processor 15 got 24\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.364] DEBUG -- : crawler 3 found 2b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.365] DEBUG -- : crawler 1 found 2c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.365] DEBUG -- : crawler 0 found 2e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.366] DEBUG -- : crawler 2 found 2d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.371] DEBUG -- : data-processor 16 got 25\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.371] DEBUG -- : data-processor 17 got 26\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.372] DEBUG -- : data-processor 18 got 27\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.373] DEBUG -- : data-processor 19 got 28\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.374] DEBUG -- : crawler 3 found 2f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.374] DEBUG -- : crawler 2 found 30\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.375] DEBUG -- : crawler 0 found 31\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.376] DEBUG -- : crawler 1 found 32\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.383] DEBUG -- : crawler 3 found 33\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.384] DEBUG -- : crawler 2 found 34\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.385] DEBUG -- : crawler 0 found 35\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.385] DEBUG -- : crawler 1 found 36\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.465] DEBUG -- : data-processor 1 got 29\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.465] DEBUG -- : data-processor 2 got 2a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.467] DEBUG -- : data-processor 3 got 2b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.468] DEBUG -- : data-processor 0 got 2c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.479] DEBUG -- : data-processor 4 got 2e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.481] DEBUG -- : data-processor 6 got 2d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.482] DEBUG -- : crawler 3 found 37\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.483] DEBUG -- : crawler 2 found 38\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.484] DEBUG -- : crawler 0 found 39\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.484] DEBUG -- : data-processor 7 got 2f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.485] DEBUG -- : data-processor 5 got 30\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.486] DEBUG -- : crawler 1 found 3a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.491] DEBUG -- : crawler 3 found 3b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.492] DEBUG -- : crawler 2 found 3c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.493] DEBUG -- : crawler 0 found 3d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.494] DEBUG -- : crawler 1 found 3e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.503] DEBUG -- : crawler 2 found 3f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.504] DEBUG -- : crawler 3 found 40\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.506] DEBUG -- : crawler 0 found 41\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.507] DEBUG -- : crawler 1 found 42\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.568] DEBUG -- : data-processor 8 got 31\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.570] DEBUG -- : data-processor 11 got 32\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.571] DEBUG -- : data-processor 9 got 33\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.572] DEBUG -- : data-processor 10 got 34\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.583] DEBUG -- : data-processor 13 got 35\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.585] DEBUG -- : data-processor 15 got 36\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.586] DEBUG -- : data-processor 14 got 37\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.587] DEBUG -- : data-processor 12 got 38\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.675] DEBUG -- : data-processor 19 got 39\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.676] DEBUG -- : crawler 2 found 43\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.677] DEBUG -- : crawler 0 found 45\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.678] DEBUG -- : crawler 3 found 44\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.679] DEBUG -- : data-processor 17 got 3a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.679] DEBUG -- : data-processor 16 got 3b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.680] DEBUG -- : data-processor 18 got 3c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.681] DEBUG -- : crawler 1 found 46\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.688] DEBUG -- : crawler 0 found 47\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.690] DEBUG -- : data-processor 2 got 3d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.690] DEBUG -- : data-processor 1 got 3e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.691] DEBUG -- : crawler 1 found 48\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.692] DEBUG -- : crawler 3 found 49\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.693] DEBUG -- : data-processor 0 got 3f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.693] DEBUG -- : crawler 2 found 4a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.694] DEBUG -- : data-processor 3 got 40\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.700] DEBUG -- : crawler 0 found 4b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.701] DEBUG -- : crawler 1 found 4c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.702] DEBUG -- : crawler 3 found 4d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.702] DEBUG -- : crawler 2 found 4e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.743]  INFO -- : \n&quot; +
+</span><span class='comment'>#    &quot;crawlers found: 19, 20, 20, 19\n&quot; +
+</span><span class='comment'>#    &quot;data processors consumed: 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.780] DEBUG -- : data-processor 4 got 41\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.782] DEBUG -- : data-processor 7 got 42\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.783] DEBUG -- : data-processor 5 got 43\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.783] DEBUG -- : data-processor 6 got 45\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.793] DEBUG -- : data-processor 11 got 46\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.794] DEBUG -- : data-processor 9 got 44\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.795] DEBUG -- : data-processor 10 got 47\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.796] DEBUG -- : crawler 0 found 4f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.797] DEBUG -- : crawler 1 found 50\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.797] DEBUG -- : crawler 2 found 51\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.798] DEBUG -- : crawler 3 found 52\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.799] DEBUG -- : data-processor 8 got 48\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.806] DEBUG -- : crawler 0 found 53\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.807] DEBUG -- : crawler 1 found 54\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.808] DEBUG -- : crawler 3 found 55\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.808] DEBUG -- : crawler 2 found 56\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.816] DEBUG -- : crawler 2 found 57\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.817] DEBUG -- : crawler 1 found 58\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.818] DEBUG -- : crawler 0 found 59\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.819] DEBUG -- : crawler 3 found 5a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.883] DEBUG -- : data-processor 12 got 49\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.884] DEBUG -- : data-processor 15 got 4a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.885] DEBUG -- : data-processor 14 got 4b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.886] DEBUG -- : data-processor 13 got 4c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.897] DEBUG -- : data-processor 19 got 4d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.898] DEBUG -- : data-processor 18 got 4e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.899] DEBUG -- : data-processor 17 got 4f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.900] DEBUG -- : data-processor 16 got 50\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.989] DEBUG -- : data-processor 0 got 51\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.991] DEBUG -- : data-processor 2 got 52\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.992] DEBUG -- : crawler 2 found 5b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.993] DEBUG -- : crawler 1 found 5c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.994] DEBUG -- : crawler 0 found 5e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.994] DEBUG -- : crawler 3 found 5d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.995] DEBUG -- : data-processor 1 got 53\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:12.996] DEBUG -- : data-processor 3 got 54\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.001] DEBUG -- : data-processor 7 got 55\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.002] DEBUG -- : data-processor 4 got 56\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.003] DEBUG -- : crawler 2 found 5f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.004] DEBUG -- : crawler 1 found 60\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.004] DEBUG -- : crawler 0 found 61\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.005] DEBUG -- : crawler 3 found 62\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.006] DEBUG -- : data-processor 5 got 57\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.007] DEBUG -- : data-processor 6 got 58\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.011] DEBUG -- : crawler 2 found 63\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.012] DEBUG -- : crawler 1 found 64\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.013] DEBUG -- : crawler 0 found 65\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.013] DEBUG -- : crawler 3 found 66\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.091] DEBUG -- : data-processor 11 got 59\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.092] DEBUG -- : data-processor 10 got 5a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.093] DEBUG -- : data-processor 8 got 5b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.094] DEBUG -- : data-processor 9 got 5c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.104] DEBUG -- : data-processor 12 got 5e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.106] DEBUG -- : crawler 1 found 67\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.106] DEBUG -- : crawler 2 found 68\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.107] DEBUG -- : crawler 0 found 69\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.108] DEBUG -- : crawler 3 found 6a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.108] DEBUG -- : data-processor 15 got 5d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.109] DEBUG -- : data-processor 13 got 5f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.110] DEBUG -- : data-processor 14 got 60\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.116] DEBUG -- : crawler 1 found 6b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.117] DEBUG -- : crawler 2 found 6c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.117] DEBUG -- : crawler 0 found 6d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.118] DEBUG -- : crawler 3 found 6e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.128] DEBUG -- : crawler 1 found 6f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.129] DEBUG -- : crawler 2 found 70\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.130] DEBUG -- : crawler 3 found 71\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.131] DEBUG -- : crawler 0 found 72\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.147]  INFO -- : \n&quot; +
+</span><span class='comment'>#    &quot;crawlers found: 28, 29, 29, 28\n&quot; +
+</span><span class='comment'>#    &quot;data processors consumed: 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.195] DEBUG -- : data-processor 19 got 61\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.196] DEBUG -- : data-processor 16 got 62\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.197] DEBUG -- : data-processor 18 got 63\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.198] DEBUG -- : data-processor 17 got 64\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.207] DEBUG -- : data-processor 0 got 65\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.208] DEBUG -- : data-processor 1 got 66\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.211] DEBUG -- : data-processor 2 got 67\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.212] DEBUG -- : data-processor 3 got 68\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.302] DEBUG -- : data-processor 7 got 69\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.303] DEBUG -- : data-processor 4 got 6a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.305] DEBUG -- : data-processor 6 got 6b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.306] DEBUG -- : crawler 2 found 74\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.306] DEBUG -- : crawler 1 found 73\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.307] DEBUG -- : crawler 3 found 75\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.308] DEBUG -- : data-processor 5 got 6c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.309] DEBUG -- : crawler 0 found 76\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.311] DEBUG -- : data-processor 11 got 6d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.312] DEBUG -- : data-processor 9 got 6e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.313] DEBUG -- : crawler 1 found 77\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.314] DEBUG -- : crawler 2 found 78\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.314] DEBUG -- : crawler 3 found 79\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.316] DEBUG -- : data-processor 10 got 6f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.317] DEBUG -- : crawler 0 found 7a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.318] DEBUG -- : data-processor 8 got 70\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.324] DEBUG -- : crawler 1 found 7b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.325] DEBUG -- : crawler 3 found 7c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.326] DEBUG -- : crawler 2 found 7d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.327] DEBUG -- : crawler 0 found 7e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.406] DEBUG -- : data-processor 12 got 71\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.407] DEBUG -- : data-processor 15 got 72\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.408] DEBUG -- : data-processor 13 got 74\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.409] DEBUG -- : data-processor 14 got 73\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.419] DEBUG -- : data-processor 16 got 76\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.420] DEBUG -- : data-processor 18 got 75\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.421] DEBUG -- : crawler 2 found 7f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.422] DEBUG -- : crawler 3 found 80\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.423] DEBUG -- : crawler 1 found 81\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.424] DEBUG -- : crawler 0 found 82\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.424] DEBUG -- : data-processor 17 got 77\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.425] DEBUG -- : data-processor 19 got 78\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.430] DEBUG -- : crawler 2 found 83\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.431] DEBUG -- : crawler 3 found 84\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.431] DEBUG -- : crawler 1 found 85\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.432] DEBUG -- : crawler 0 found 86\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.441] DEBUG -- : crawler 2 found 87\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.442] DEBUG -- : crawler 1 found 88\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.443] DEBUG -- : crawler 3 found 89\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.443] DEBUG -- : crawler 0 found 8a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.511] DEBUG -- : data-processor 0 got 79\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.513] DEBUG -- : data-processor 1 got 7a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.514] DEBUG -- : data-processor 3 got 7b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.515] DEBUG -- : data-processor 2 got 7c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.524] DEBUG -- : data-processor 4 got 7d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.525] DEBUG -- : data-processor 6 got 7e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.526] DEBUG -- : data-processor 7 got 7f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.526] DEBUG -- : data-processor 5 got 80\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.553]  INFO -- : \n&quot; +
+</span><span class='comment'>#    &quot;crawlers found: 34, 35, 35, 34\n&quot; +
+</span><span class='comment'>#    &quot;data processors consumed: 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.615] DEBUG -- : data-processor 11 got 81\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.617] DEBUG -- : data-processor 9 got 82\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.618] DEBUG -- : data-processor 8 got 83\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.618] DEBUG -- : crawler 2 found 8b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.619] DEBUG -- : crawler 1 found 8c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.620] DEBUG -- : crawler 0 found 8e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.620] DEBUG -- : crawler 3 found 8d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.621] DEBUG -- : data-processor 10 got 84\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.628] DEBUG -- : data-processor 13 got 85\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.629] DEBUG -- : data-processor 12 got 86\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.629] DEBUG -- : data-processor 15 got 87\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.630] DEBUG -- : data-processor 14 got 88\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.631] DEBUG -- : crawler 2 found 8f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.631] DEBUG -- : crawler 1 found 90\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.632] DEBUG -- : crawler 3 found 91\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.633] DEBUG -- : crawler 0 found 92\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.640] DEBUG -- : crawler 2 found 93\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.640] DEBUG -- : crawler 0 found 94\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.641] DEBUG -- : crawler 3 found 95\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.642] DEBUG -- : crawler 1 found 96\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.718] DEBUG -- : data-processor 17 got 89\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.719] DEBUG -- : data-processor 19 got 8a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.720] DEBUG -- : data-processor 16 got 8b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.721] DEBUG -- : data-processor 18 got 8c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.736] DEBUG -- : data-processor 3 got 8e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.737] DEBUG -- : data-processor 2 got 8d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.738] DEBUG -- : data-processor 1 got 8f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.739] DEBUG -- : crawler 3 found 97\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.740] DEBUG -- : crawler 0 found 98\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.741] DEBUG -- : crawler 1 found 99\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.742] DEBUG -- : crawler 2 found 9a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.743] DEBUG -- : data-processor 0 got 90\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.747] DEBUG -- : crawler 3 found 9b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.748] DEBUG -- : crawler 0 found 9c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.749] DEBUG -- : crawler 1 found 9d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.750] DEBUG -- : crawler 2 found 9e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.757] DEBUG -- : crawler 0 found 9f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.758] DEBUG -- : crawler 3 found a0\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.759] DEBUG -- : crawler 1 found a1\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.760] DEBUG -- : crawler 2 found a2\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.822] DEBUG -- : data-processor 6 got 91\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.824] DEBUG -- : data-processor 4 got 92\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.825] DEBUG -- : data-processor 5 got 93\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.826] DEBUG -- : data-processor 7 got 94\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.840] DEBUG -- : data-processor 8 got 95\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.841] DEBUG -- : data-processor 10 got 96\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.842] DEBUG -- : data-processor 9 got 97\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.843] DEBUG -- : data-processor 11 got 98\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.933] DEBUG -- : data-processor 12 got 99\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.934] DEBUG -- : crawler 0 found a4\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.935] DEBUG -- : data-processor 15 got 9a\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.935] DEBUG -- : data-processor 14 got 9b\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.936] DEBUG -- : crawler 1 found a6\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.936] DEBUG -- : crawler 3 found a3\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.937] DEBUG -- : data-processor 13 got 9c\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.938] DEBUG -- : crawler 2 found a5\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.938]  INFO -- : \n&quot; +
+</span><span class='comment'>#    &quot;crawlers found: 41, 42, 42, 41\n&quot; +
+</span><span class='comment'>#    &quot;data processors consumed: 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.942] DEBUG -- : data-processor 17 got 9d\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.943] DEBUG -- : data-processor 19 got 9e\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.944] DEBUG -- : crawler 0 found a7\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.945] DEBUG -- : data-processor 16 got 9f\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.946] DEBUG -- : crawler 1 found a8\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:13.947] DEBUG -- : data-processor 18 got a0\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:14.033] DEBUG -- : data-processor 2 got a1\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:14.035] DEBUG -- : data-processor 3 got a2\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:14.035] DEBUG -- : data-processor 1 got a3\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:14.036] DEBUG -- : data-processor 0 got a4\n&quot; +
+</span><span class='comment'>#    &quot;[2019-03-11 10:15:14.044] DEBUG -- : data-processor 6 got a5\n&quot;</span></pre></div></div>
+
+      <div id="footer">
+  Generated by <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_blank">yard</a>.
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    </div>
+  </body>
+</html>

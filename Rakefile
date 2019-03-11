@@ -69,7 +69,7 @@ begin
   namespace :spec do
     desc '* Configured for ci'
     RSpec::Core::RakeTask.new(:ci) do |t|
-      options = %w[ --color
+      options      = %w[ --color
                     --backtrace
                     --order defined
                     --format documentation
@@ -98,7 +98,7 @@ rescue LoadError => e
   puts 'RSpec is not installed, skipping test task definitions: ' + e.message
 end
 
-current_yard_version_name = [*Concurrent::VERSION.split('.')[0..1], 'x'].join('.')
+current_yard_version_name = Concurrent::VERSION
 
 begin
   require 'yard'
@@ -196,7 +196,15 @@ begin
             begin
               FileUtils.cp_r 'docs', 'docs-copy', verbose: true
               Rake::Task["yard:#{name}"].invoke
-              sh 'diff -r docs/ docs-copy/'
+              sh 'diff -r docs/ docs-copy/' do |ok, res|
+                unless ok
+                  begin
+                    STDOUT.puts 'Command failed. Continue? (y/n)'
+                    input = STDIN.gets.strip.downcase
+                  end until %w(y n).include?(input)
+                  exit 1 if input == 'n'
+                end
+              end
             ensure
               FileUtils.rm_rf 'docs-copy', verbose: true
             end

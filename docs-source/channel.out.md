@@ -205,16 +205,16 @@ log
 #     "producer 1 pushing 0",
 #     "consumer 0 got 0. payload 0 from producer 0",
 #     "consumer 1 got 0. payload 1 from producer 0",
-#     "producer 1 pushing 1",
-#     "consumer 3 got 0. payload 2 from producer 0",
-#     "producer 1 pushing 2",
-#     "consumer 2 got 0. payload 0 from producer 1",
-#     "producer 1 pushing 3",
+#     "consumer 2 got 0. payload 2 from producer 0",
+#     "consumer 3 got 0. payload 0 from producer 1",
 #     "producer 0 pushing 3",
-#     "consumer 0 got 1. payload 1 from producer 1",
-#     "consumer 1 got 1. payload 2 from producer 1",
-#     "consumer 3 got 1. payload 3 from producer 1",
-#     "consumer 2 got 1. payload 3 from producer 0"]
+#     "producer 1 pushing 1",
+#     "producer 1 pushing 2",
+#     "consumer 0 got 1. payload 3 from producer 0",
+#     "consumer 1 got 1. payload 1 from producer 1",
+#     "consumer 3 got 1. payload 2 from producer 1",
+#     "producer 1 pushing 3",
+#     "consumer 2 got 1. payload 3 from producer 1"]
 ```
 
 The producers are much faster than consumers 
@@ -279,9 +279,9 @@ log
 #     "producer 1 pushing 2",
 #     "producer 0 pushing 3",
 #     "producer 1 pushing 3",
-#     "consumer 0 got 1. payload 2 from producer 1",
-#     "consumer 2 got 1. payload 3 from producer 0",
-#     "consumer 1 got 1. payload 2 from producer 0",
+#     "consumer 0 got 1. payload 2 from producer 0",
+#     "consumer 2 got 1. payload 2 from producer 1",
+#     "consumer 1 got 1. payload 3 from producer 0",
 #     "consumer 3 got 1. payload 3 from producer 1"]
 ```
 
