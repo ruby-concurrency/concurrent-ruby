@@ -53,7 +53,7 @@ module Concurrent
 
     # @param [Node] head
     # @return [true, false]
-    def empty?(head = self.head)
+    def empty?(head = head())
       head.equal? EMPTY
     end
 

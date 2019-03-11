@@ -56,7 +56,6 @@ module Concurrent
       it 'accepts a number of seconds (from now) as the schedule time' do
         expected = 60
         Timecop.freeze do
-          now = Time.now
           task = ScheduledTask.new(expected){ nil }.execute
           expect(task.initial_delay).to be_within(0.1).of(expected)
         end

@@ -55,7 +55,7 @@ module Concurrent
       it 'waits for another thread to #put' do
         m = MVar.new
 
-        putter = in_thread {
+        in_thread {
           sleep(0.1)
           m.put 14
         }
@@ -115,7 +115,7 @@ module Concurrent
       it 'waits for another thread to #take' do
         m = MVar.new(14)
 
-        putter = in_thread {
+        in_thread {
           sleep(0.1)
           m.take
         }
@@ -184,7 +184,7 @@ module Concurrent
       it 'waits for another thread to #put' do
         m = MVar.new
 
-        putter = in_thread {
+        in_thread {
           sleep(0.1)
           m.put 14
         }
@@ -198,7 +198,7 @@ module Concurrent
         # #modify conceptually does #take and #put - but it should be atomic.
         # Check that another #put can't sneak it during the #modify.
 
-        modifier = in_thread {
+        in_thread {
           m.modify do |v|
             sleep(0.5)
             1

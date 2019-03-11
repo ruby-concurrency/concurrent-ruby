@@ -79,10 +79,10 @@ module Concurrent
   #   @!method value=(value)
   #     @!macro atomic_fixnum_method_value_set
   #
-  #   @!method increment(delta)
+  #   @!method increment(delta = 1)
   #     @!macro atomic_fixnum_method_increment
   #
-  #   @!method decrement(delta)
+  #   @!method decrement(delta = 1)
   #     @!macro atomic_fixnum_method_decrement
   #
   #   @!method compare_and_set(expect, update)

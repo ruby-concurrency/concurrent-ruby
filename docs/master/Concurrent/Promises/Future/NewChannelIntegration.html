@@ -131,7 +131,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#then_push_channel-instance_method" title="#then_push_channel (instance method)">#<strong>then_push_channel</strong>(channel)  &#x21d2; Future </a>
+      <a href="#then_channel_push-instance_method" title="#then_channel_push (instance method)">#<strong>then_channel_push</strong>(channel)  &#x21d2; Future </a>
     
 
     
@@ -161,9 +161,9 @@ to <code>concurrent-ruby</code> when finalised.</li>
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="then_push_channel-instance_method">
+  <h3 class="signature first" id="then_channel_push-instance_method">
   
-    #<strong>then_push_channel</strong>(channel)  &#x21d2; <tt><span class='object_link'><a href="../Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
+    #<strong>then_channel_push</strong>(channel)  &#x21d2; <tt><span class='object_link'><a href="../Future.html" title="Concurrent::Promises::Future (class)">Future</a></span></tt> 
   
 
   
@@ -223,15 +223,15 @@ May take a moment if the channel is full.</p>
       <pre class="lines">
 
 
-150
-151
-152</pre>
+59
+60
+61</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 150</span>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 59</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_then_push_channel'>then_push_channel</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
-  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='op'>|</span> <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flat_future'>flat_future</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_then_channel_push'>then_channel_push</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ch'>ch</span><span class='op'>|</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push_op'>push_op</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flat_future'>flat_future</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

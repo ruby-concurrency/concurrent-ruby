@@ -269,6 +269,75 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(message, future, sender, address)  &#x21d2; Envelope </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Envelope.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reject!-instance_method" title="#reject! (instance method)">#<strong>reject!</strong>(error)  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sender_path-instance_method" title="#sender_path (instance method)">#<strong>sender_path</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#Child!-instance_method" title="#Child! (instance method)">#<strong>Child!</strong>(value, *types)  &#x21d2; undocumented </a>
     
 
@@ -323,31 +392,6 @@
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(message, future, sender, address)  &#x21d2; Envelope </a>
-    
-
-    
-  </span>
-  
-  
-    <span class="note title constructor">constructor</span>
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>A new instance of Envelope.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#Match!-instance_method" title="#Match! (instance method)">#<strong>Match!</strong>(value, *types)  &#x21d2; undocumented </a>
     
 
@@ -385,50 +429,6 @@
       included
       from <span class='object_link'><a href="TypeCheck.html#Match%3F-instance_method" title="Concurrent::Actor::TypeCheck#Match? (method)">TypeCheck</a></span>
     </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#reject!-instance_method" title="#reject! (instance method)">#<strong>reject!</strong>(error)  &#x21d2; undocumented </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#sender_path-instance_method" title="#sender_path (instance method)">#<strong>sender_path</strong>  &#x21d2; undocumented </a>
-    
-
-    
-  </span>
   
   
   
@@ -809,6 +809,92 @@
 </div>
     
       <div class="method_details ">
+  <h3 class="signature " id="reject!-instance_method">
+  
+    #<strong>reject!</strong>(error)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 36</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reject!'>reject!</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='id identifier rubyid_error'>error</span> <span class='kw'>unless</span> <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="sender_path-instance_method">
+  
+    #<strong>sender_path</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26
+27
+28
+29
+30</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sender_path'>sender_path</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="Reference.html" title="Concurrent::Actor::Reference (class)">Reference</a></span></span>
+    <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
   <h3 class="signature " id="Child!-instance_method">
   
     #<strong>Child!</strong>(value, *types)  &#x21d2; <tt>undocumented</tt> 
@@ -936,92 +1022,6 @@
 </ul>
 
 </div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="reject!-instance_method">
-  
-    #<strong>reject!</strong>(error)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-36
-37
-38</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 36</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_reject!'>reject!</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='id identifier rubyid_error'>error</span> <span class='kw'>unless</span> <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="sender_path-instance_method">
-  
-    #<strong>sender_path</strong>  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-24
-25
-26
-27
-28
-29
-30</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 24</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_sender_path'>sender_path</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="Reference.html" title="Concurrent::Actor::Reference (class)">Reference</a></span></span>
-    <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span>
-  <span class='kw'>else</span>
-    <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
 </div>
     
       <div class="method_details ">

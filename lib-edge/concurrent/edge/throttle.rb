@@ -1,102 +1,121 @@
 module Concurrent
-  # @!macro throttle.example.throttled_block
-  #   @example
-  #     max_two = Throttle.new 2
-  #     10.times.map do
-  #       Thread.new do
-  #         max_two.throttled_block do
-  #           # Only 2 at the same time
-  #           do_stuff
-  #         end
-  #       end
-  #     end
-  # @!macro throttle.example.throttled_future
-  #   @example
-  #     throttle.throttled_future(1) do |arg|
-  #       arg.succ
-  #     end
-  # @!macro throttle.example.throttled_future_chain
-  #   @example
-  #     throttle.throttled_future_chain do |trigger|
-  #       trigger.
-  #           # 2 throttled promises
-  #           chain { 1 }.
-  #           then(&:succ)
-  #     end
-  # @!macro throttle.example.then_throttled_by
-  #   @example
-  #     data     = (1..5).to_a
-  #     db       = data.reduce({}) { |h, v| h.update v => v.to_s }
-  #     max_two  = Throttle.new 2
+  # A tool managing concurrency level of tasks.
+  # The maximum capacity is set in constructor.
+  # Each acquire will lower the available capacity and release will increase it.
+  # When there is no available capacity the current thread may either be blocked or
+  # an event is returned which will be resolved when capacity becomes available.
   #
-  #     futures = data.map do |data|
-  #       Promises.future(data) do |data|
-  #         # un-throttled, concurrency level equal data.size
-  #         data + 1
-  #       end.then_throttled_by(max_two, db) do |v, db|
-  #         # throttled, only 2 tasks executed at the same time
-  #         # e.g. limiting access to db
-  #         db[v]
-  #       end
-  #     end
+  # The more common usage of the Throttle is with a proxy executor
+  # `a_throttle.on(Concurrent.global_io_executor)`.
+  # Anything executed on the proxy executor will be throttled and
+  # execute on the given executor. There can be more than one proxy executors.
+  # All abstractions which execute tasks have option to specify executor,
+  # therefore the proxy executor can be injected to any abstraction
+  # throttling its concurrency level.
   #
-  #     futures.map(&:value!) # => [2, 3, 4, 5, nil]
-
-  # A tool manage concurrency level of future tasks.
+  # {include:file:docs-source/throttle.out.md}
   #
-  # @!macro throttle.example.then_throttled_by
-  # @!macro throttle.example.throttled_future
-  # @!macro throttle.example.throttled_future_chain
-  # @!macro throttle.example.throttled_block
   # @!macro warn.edge
   class Throttle < Synchronization::Object
-    # TODO (pitr-ch 21-Dec-2016): consider using sized channel for implementation instead when available
-
     safe_initialization!
-    attr_atomic(:can_run)
-    private :can_run, :can_run=, :swap_can_run, :compare_and_set_can_run, :update_can_run
 
-    # New throttle.
-    # @param [Integer] limit
-    def initialize(limit)
+    attr_atomic(:capacity)
+    private :capacity, :capacity=, :swap_capacity, :compare_and_set_capacity, :update_capacity
+
+    # @return [Integer] The available capacity.
+    def available_capacity
+      current_capacity = capacity
+      current_capacity >= 0 ? current_capacity : 0
+    end
+
+    # Create throttle.
+    # @param [Integer] capacity How many tasks using this throttle can run at the same time.
+    def initialize(capacity)
       super()
-      @Limit       = limit
-      self.can_run = limit
-      @Queue       = LockFreeQueue.new
+      @MaxCapacity            = capacity
+      @Queue                  = LockFreeQueue.new
+      @executor_cache         = [nil, nil]
+      self.capacity = capacity
     end
 
-    # @return [Integer] The limit.
-    def limit
-      @Limit
+    # @return [Integer] The maximum capacity.
+    def max_capacity
+      @MaxCapacity
     end
 
-    # New event which will be resolved when depending tasks can execute.
-    # Has to be used and after the critical work is done {#release} must be called exactly once.
-    # @return [Promises::Event]
+    # Blocks current thread until there is capacity available in the throttle.
+    # The acquired capacity has to be returned to the throttle by calling {#release}.
+    # If block is passed then the block is called after the capacity is acquired and
+    # it is automatically released after the block is executed.
+    #
+    # @param [Numeric] timeout the maximum time in second to wait.
+    # @yield [] block to execute after the capacity is acquired
+    # @return [Object, self, true, false]
+    #   * When no timeout and no block it returns self
+    #   * When no timeout and with block it returns the result of the block
+    #   * When with timeout and no block it returns true when acquired and false when timed out
+    #   * When with timeout and with block it returns the result of the block of nil on timing out
     # @see #release
-    def trigger
-      while true
-        current_can_run = can_run
-        if compare_and_set_can_run current_can_run, current_can_run - 1
-          if current_can_run > 0
-            return Promises.resolved_event
+    def acquire(timeout = nil, &block)
+      event = acquire_or_event
+      if event
+        within_timeout = event.wait(timeout)
+        # release immediately when acquired later after the timeout since it is unused
+        event.on_resolution!(self, &:release) unless within_timeout
+      else
+        within_timeout = true
+      end
+
+      called = false
+      if timeout
+        if block
+          if within_timeout
+            called = true
+            block.call
           else
-            event = Promises.resolvable_event
-            @Queue.push event
-            return event
+            nil
           end
+        else
+          within_timeout
+        end
+      else
+        if block
+          called = true
+          block.call
+        else
+          self
+        end
+      end
+    ensure
+      release if called
+    end
+
+    # Tries to acquire capacity from the throttle.
+    # Returns true when there is capacity available.
+    # The acquired capacity has to be returned to the throttle by calling {#release}.
+    # @return [true, false]
+    # @see #release
+    def try_acquire
+      while true
+        current_capacity = capacity
+        if current_capacity > 0
+          return true if compare_and_set_capacity(
+              current_capacity, current_capacity - 1)
+        else
+          return false
         end
       end
     end
 
-    # Has to be called once for each trigger after it is ok to execute another throttled task.
+    # Releases previously acquired capacity back to Throttle.
+    # Has to be called exactly once for each acquired capacity.
     # @return [self]
-    # @see #trigger
+    # @see #acquire_operation, #acquire, #try_acquire
     def release
       while true
-        current_can_run = can_run
-        if compare_and_set_can_run current_can_run, current_can_run + 1
-          if current_can_run < 0
+        current_capacity = capacity
+        if compare_and_set_capacity current_capacity, current_capacity + 1
+          if current_capacity < 0
             # release called after trigger which pushed a trigger, busy wait is ok
             Thread.pass until (trigger = @Queue.pop)
             trigger.resolve
@@ -106,94 +125,101 @@ module Concurrent
       end
     end
 
-    # Blocks current thread until the block can be executed.
-    # @yield to throttled block
-    # @yieldreturn [Object] is used as a result of the method
-    # @return [Object] the result of the block
-    # @!macro throttle.example.throttled_block
-    def throttled_block(&block)
-      trigger.wait
-      block.call
-    ensure
-      release
-    end
-
     # @return [String] Short string representation.
     def to_s
-      format '%s limit:%s can_run:%d>', super[0..-2], @Limit, can_run
+      format '%s capacity available %d of %d>', super[0..-2], capacity, @MaxCapacity
     end
 
     alias_method :inspect, :to_s
 
-    module PromisesIntegration
-
-      # Allows to throttle a chain of promises.
-      # @yield [trigger] a trigger which has to be used to build up a chain of promises, the last one is result
-      #   of the block. When the last one resolves, {Throttle#release} is called on the throttle.
-      # @yieldparam [Promises::Event, Promises::Future] trigger
-      # @yieldreturn [Promises::Event, Promises::Future] The final future of the throttled chain.
-      # @return [Promises::Event, Promises::Future] The final future of the throttled chain.
-      # @!macro throttle.example.throttled_future_chain
-      def throttled_future_chain(&throttled_futures)
-        throttled_futures.call(trigger).on_resolution! { release }
-      end
-
-      # Behaves as {Promises::FactoryMethods#future} but the future is throttled.
-      # @return [Promises::Future]
-      # @see Promises::FactoryMethods#future
-      # @!macro throttle.example.throttled_future
-      def throttled_future(*args, &task)
-        trigger.chain(*args, &task).on_resolution! { release }
+    # @!visibility private
+    def acquire_or_event
+      while true
+        current_capacity = capacity
+        if compare_and_set_capacity current_capacity, current_capacity - 1
+          if current_capacity > 0
+            return nil
+          else
+            event = Promises.resolvable_event
+            @Queue.push event
+            return event
+          end
+        end
       end
     end
 
-    include PromisesIntegration
-  end
+    include Promises::FactoryMethods
 
-  module Promises
+    # @param [ExecutorService] executor
+    # @return [ExecutorService] An executor which wraps given executor and allows to post tasks only
+    #   as available capacity in the throttle allows.
+    # @example throttling future
+    #   a_future.then_on(a_throttle.on(:io)) { a_throttled_task }
+    def on(executor = Promises::FactoryMethods.default_executor)
+      current_executor, current_cache = @executor_cache
+      return current_cache if current_executor == executor && current_cache
 
-    class AbstractEventFuture < Synchronization::Object
-      module ThrottleIntegration
+      if current_executor.nil?
+        # cache first proxy
+        proxy_executor  = ProxyExecutor.new(self, Concurrent.executor(executor))
+        @executor_cache = [executor, proxy_executor]
+        return proxy_executor
+      else
+        # do not cache more than 1 executor
+        ProxyExecutor.new(self, Concurrent.executor(executor))
+      end
+    end
 
-        # @yieldparam [Future] a trigger
-        # @yieldreturn [Future, Event]
-        # @return [Future, Event]
-        def throttled_by(throttle, &throttled_futures)
-          a_trigger = self & self.chain { throttle.trigger }.flat_event
-          throttled_futures.call(a_trigger).on_resolution! { throttle.release }
-        end
+    # Uses executor provided by {#on} therefore
+    # all events and futures created using factory methods on this object will be throttled.
+    # Overrides {Promises::FactoryMethods#default_executor}.
+    #
+    # @return [ExecutorService]
+    # @see Promises::FactoryMethods#default_executor
+    def default_executor
+      on(super)
+    end
 
-        # Behaves as {AbstractEventFuture#chain} but the it is throttled.
-        # @return [Future, Event]
-        # @see AbstractEventFuture#chain
-        def chain_throttled_by(throttle, *args, &block)
-          throttled_by(throttle) { |trigger| trigger.chain(*args, &block) }
+    class ProxyExecutor < Synchronization::Object
+      safe_initialization!
+
+      include ExecutorService
+
+      def initialize(throttle, executor)
+        super()
+        @Throttle = throttle
+        @Executor = executor
+      end
+
+      def post(*args, &task)
+        if (event = @Throttle.acquire_or_event)
+          event.on_resolution! { inner_post(*args, &task) }
+        else
+          inner_post(*args, &task)
         end
       end
 
-      include ThrottleIntegration
-    end
-
-    class Future < AbstractEventFuture
-      module ThrottleIntegration
-
-        # Behaves as {Future#then} but the it is throttled.
-        # @return [Future]
-        # @see Future#then
-        # @!macro throttle.example.then_throttled_by
-        def then_throttled_by(throttle, *args, &block)
-          throttled_by(throttle) { |trigger| trigger.then(*args, &block) }
-        end
-
-        # Behaves as {Future#rescue} but the it is throttled.
-        # @return [Future]
-        # @see Future#rescue
-        def rescue_throttled_by(throttle, *args, &block)
-          throttled_by(throttle) { |trigger| trigger.rescue(*args, &block) }
-        end
+      def can_overflow?
+        @Executor.can_overflow?
       end
 
-      include ThrottleIntegration
+      def serialized?
+        @Executor.serialized?
+      end
+
+      private
+
+      def inner_post(*arguments, &task)
+        @Executor.post(*arguments) do |*args|
+          begin
+            task.call(*args)
+          ensure
+            @Throttle.release
+          end
+        end
+      end
     end
+
+    private_constant :ProxyExecutor
   end
 end

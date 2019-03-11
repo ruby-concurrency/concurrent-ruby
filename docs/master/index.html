@@ -309,6 +309,39 @@ inspiration from Clojure <a href="https://clojure.github.io/core.async/">core.as
 <em>Status: will be moved to core soon.</em></li>
 <li>  <span class='object_link'><a href="Concurrent/LockFreeStack.html" title="Concurrent::LockFreeStack (class)">LockFreeStack</a></span>
 <em>Status: missing documentation and tests.</em></li>
+<li>  <a href="http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises/Channel.html">Promises::Channel</a>
+A first in first out channel that accepts messages with push family of methods and returns
+messages with pop family of methods.
+Pop and push operations can be represented as futures, see <code>#pop_op</code> and <code>#push_op</code>.
+The capacity of the channel can be limited to support back pressure, use capacity option in <code>#initialize</code>.
+<code>#pop</code> method blocks ans <code>#pop_op</code> returns pending future if there is no message in the channel.
+If the capacity is limited the <code>#push</code> method blocks and <code>#push_op</code> returns pending future.</li>
+<li><p><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span>
+The Cancellation abstraction provides cooperative cancellation.</p>
+
+<p>The standard methods <code>Thread#raise</code> of <code>Thread#kill</code> available in Ruby
+are very dangerous (see linked the blog posts bellow).
+Therefore concurrent-ruby provides an alternative.</p>
+
+<ul>
+<li>  <a href="https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/">https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/</a></li>
+<li>  <a href="http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/">http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/</a></li>
+<li>  <a href="http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html">http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html</a></li>
+</ul>
+
+<p>It provides an object which represents a task which can be executed,
+the task has to get the reference to the object and periodically cooperatively check that it is not cancelled.
+Good practices to make tasks cancellable:</p>
+
+<ul>
+<li>  check cancellation every cycle of a loop which does significant work,</li>
+<li>  do all blocking actions in a loop with a timeout then on timeout check cancellation
+and if ok block again with the timeout </li>
+</ul></li>
+<li><p><span class='object_link'><a href="Concurrent/Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span>
+A tool managing concurrency level of tasks.</p></li>
+<li><p><span class='object_link'><a href="Concurrent/ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span>
+Actor implementation which matches Erlang actor behaviour.</p></li>
 </ul>
 
 <h2>Supported Ruby versions</h2>
@@ -422,6 +455,9 @@ best practice is to depend on <code>concurrent-ruby</code> and let users to deci
 <li>  <a href="https://github.com/obrok">Paweł Obrok</a></li>
 <li>  <a href="https://github.com/lucasallan">Lucas Allan</a></li>
 </ul>
+
+<p>and to <a href="https://www.ruby.or.jp/en/">Ruby Association</a> for sponsoring a project 
+<a href="https://www.ruby.or.jp/en/news/20181106">&quot;Enhancing Ruby’s concurrency tooling&quot;</a> in 2018. </p>
 
 <h2>License and Copyright</h2>
 

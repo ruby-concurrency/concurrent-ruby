@@ -309,6 +309,236 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#behaviour_definition-instance_method" title="#behaviour_definition (instance method)">#<strong>behaviour_definition</strong>  &#x21d2; Array&lt;Array(Behavior::Abstract, Array&lt;Object&gt;)&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dead_letter_routing-instance_method" title="#dead_letter_routing (instance method)">#<strong>dead_letter_routing</strong>  &#x21d2; Reference </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Defines an actor responsible for dead letters.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_executor-instance_method" title="#default_executor (instance method)">#<strong>default_executor</strong>  &#x21d2; Executor </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>override to se different default executor, e.g.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_reference_class-instance_method" title="#default_reference_class (instance method)">#<strong>default_reference_class</strong>  &#x21d2; CLass </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>override if different class for reference is needed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#envelope-instance_method" title="#envelope (instance method)">#<strong>envelope</strong>  &#x21d2; Envelope </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Current envelope, accessible inside #on_message processing.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_envelope-instance_method" title="#on_envelope (instance method)">#<strong>on_envelope</strong>(envelope)  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_event-instance_method" title="#on_event (instance method)">#<strong>on_event</strong>(event)  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>override to add custom code invocation on internal events like <code>:terminated</code>, <code>:resumed</code>, <code>anError</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_message-instance_method" title="#on_message (instance method)">#<strong>on_message</strong>(message)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  <span class="abstract note title">abstract</span>
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A result which will be used to set the Future supplied to Reference#ask.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pass-instance_method" title="#pass (instance method)">#<strong>pass</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>if you want to pass the message to next behaviour, usually <span class='object_link'><a href="Behaviour/ErrorsOnUnknownMessage.html" title="Concurrent::Actor::Behaviour::ErrorsOnUnknownMessage (class)">Behaviour::ErrorsOnUnknownMessage</a></span>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tell-instance_method" title="#tell (instance method)">#<strong>tell</strong>(message)  &#x21d2; undocumented </a>
+    
+
+    
+      (also: #&lt;&lt;)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>tell self a message.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#behaviour-instance_method" title="#behaviour (instance method)">#<strong>behaviour</strong>(behaviour_class)  &#x21d2; undocumented </a>
     
 
@@ -358,28 +588,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
   
     <span class="summary_desc"><div class='inline'><p>see Core#behaviour!.</p>
 </div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#behaviour_definition-instance_method" title="#behaviour_definition (instance method)">#<strong>behaviour_definition</strong>  &#x21d2; Array&lt;Array(Behavior::Abstract, Array&lt;Object&gt;)&gt; </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
   
 </li>
 
@@ -524,98 +732,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#dead_letter_routing-instance_method" title="#dead_letter_routing (instance method)">#<strong>dead_letter_routing</strong>  &#x21d2; Reference </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Defines an actor responsible for dead letters.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#default_executor-instance_method" title="#default_executor (instance method)">#<strong>default_executor</strong>  &#x21d2; Executor </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>override to se different default executor, e.g.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#default_reference_class-instance_method" title="#default_reference_class (instance method)">#<strong>default_reference_class</strong>  &#x21d2; CLass </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>override if different class for reference is needed.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#envelope-instance_method" title="#envelope (instance method)">#<strong>envelope</strong>  &#x21d2; Envelope </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Current envelope, accessible inside #on_message processing.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#executor-instance_method" title="#executor (instance method)">#<strong>executor</strong>  &#x21d2; undocumented </a>
     
 
@@ -752,74 +868,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#on_envelope-instance_method" title="#on_envelope (instance method)">#<strong>on_envelope</strong>(envelope)  &#x21d2; undocumented </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#on_event-instance_method" title="#on_event (instance method)">#<strong>on_event</strong>(event)  &#x21d2; undocumented </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>override to add custom code invocation on internal events like <code>:terminated</code>, <code>:resumed</code>, <code>anError</code>.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#on_message-instance_method" title="#on_message (instance method)">#<strong>on_message</strong>(message)  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  <span class="abstract note title">abstract</span>
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>A result which will be used to set the Future supplied to Reference#ask.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#parent-instance_method" title="#parent (instance method)">#<strong>parent</strong>  &#x21d2; undocumented </a>
     
 
@@ -840,29 +888,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 
   
     <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#pass-instance_method" title="#pass (instance method)">#<strong>pass</strong>  &#x21d2; undocumented </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>if you want to pass the message to next behaviour, usually <span class='object_link'><a href="Behaviour/ErrorsOnUnknownMessage.html" title="Concurrent::Actor::Behaviour::ErrorsOnUnknownMessage (class)">Behaviour::ErrorsOnUnknownMessage</a></span>.</p>
-</div></span>
   
 </li>
 
@@ -946,31 +971,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 
   
     <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#tell-instance_method" title="#tell (instance method)">#<strong>tell</strong>(message)  &#x21d2; undocumented </a>
-    
-
-    
-      (also: #&lt;&lt;)
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>tell self a message.</p>
-</div></span>
   
 </li>
 
@@ -1304,60 +1304,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="behaviour-instance_method">
-  
-    #<strong>behaviour</strong>(behaviour_class)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="InternalDelegations.html#behaviour-instance_method" title="Concurrent::Actor::InternalDelegations#behaviour (method)">InternalDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>see Core#behaviour</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="behaviour!-instance_method">
-  
-    #<strong>behaviour!</strong>(behaviour_class)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="InternalDelegations.html#behaviour!-instance_method" title="Concurrent::Actor::InternalDelegations#behaviour! (method)">InternalDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>see Core#behaviour!</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="behaviour_definition-instance_method">
   
     #<strong>behaviour_definition</strong>  &#x21d2; <tt><span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;<span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>(Behavior::Abstract, <span class='object_link'><a href="../Array.html" title="Concurrent::Array (class)">Array</a></span>&lt;Object&gt;)&gt;</tt> 
@@ -1420,180 +1366,6 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="Child!-instance_method">
-  
-    #<strong>Child!</strong>(value, *types)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="TypeCheck.html#Child!-instance_method" title="Concurrent::Actor::TypeCheck#Child! (method)">TypeCheck</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="Child?-instance_method">
-  
-    #<strong>Child?</strong>(value, *types)  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="TypeCheck.html#Child%3F-instance_method" title="Concurrent::Actor::TypeCheck#Child? (method)">TypeCheck</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="children-instance_method">
-  
-    #<strong>children</strong>  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="InternalDelegations.html#children-instance_method" title="Concurrent::Actor::InternalDelegations#children (method)">InternalDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="Core.html#children-instance_method" title="Concurrent::Actor::Core#children (method)">Core#children</a></span></li>
-    
-  </ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="context-instance_method">
-  
-    #<strong>context</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Actor::AbstractContext (class)">AbstractContext</a></span></tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="InternalDelegations.html#context-instance_method" title="Concurrent::Actor::InternalDelegations#context (method)">InternalDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Actor::AbstractContext (class)">AbstractContext</a></span></tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="context_class-instance_method">
-  
-    #<strong>context_class</strong>  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-    <span class="aliases">Also known as:
-    <span class="names"><span id='actor_class-instance_method'>actor_class</span></span>
-    </span>
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="PublicDelegations.html#context_class-instance_method" title="Concurrent::Actor::PublicDelegations#context_class (method)">PublicDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="Core.html#context_class-instance_method" title="Concurrent::Actor::Core#context_class (method)">Core#context_class</a></span></li>
-    
-  </ul>
-
-</div>
 </div>
     
       <div class="method_details ">
@@ -1823,171 +1595,6 @@ agent which will log warning.</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="executor-instance_method">
-  
-    #<strong>executor</strong>  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="PublicDelegations.html#executor-instance_method" title="Concurrent::Actor::PublicDelegations#executor (method)">PublicDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="Core.html#executor-instance_method" title="Concurrent::Actor::Core#executor (method)">Core#executor</a></span></li>
-    
-  </ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="log-instance_method">
-  
-    #<strong>log</strong>(level, message = nil, &amp;block)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="InternalDelegations.html#log-instance_method" title="Concurrent::Actor::InternalDelegations#log (method)">InternalDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>delegates to core.log</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li>Logging#log</li>
-    
-  </ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="Match!-instance_method">
-  
-    #<strong>Match!</strong>(value, *types)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="TypeCheck.html#Match!-instance_method" title="Concurrent::Actor::TypeCheck#Match! (method)">TypeCheck</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="Match?-instance_method">
-  
-    #<strong>Match?</strong>(value, *types)  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="TypeCheck.html#Match%3F-instance_method" title="Concurrent::Actor::TypeCheck#Match? (method)">TypeCheck</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="name-instance_method">
-  
-    #<strong>name</strong>  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="PublicDelegations.html#name-instance_method" title="Concurrent::Actor::PublicDelegations#name (method)">PublicDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="Core.html#name-instance_method" title="Concurrent::Actor::Core#name (method)">Core#name</a></span></li>
-    
-  </ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="on_envelope-instance_method">
   
     #<strong>on_envelope</strong>(envelope)  &#x21d2; <tt>undocumented</tt> 
@@ -2173,39 +1780,6 @@ instead</p>
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="parent-instance_method">
-  
-    #<strong>parent</strong>  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="PublicDelegations.html#parent-instance_method" title="Concurrent::Actor::PublicDelegations#parent (method)">PublicDelegations</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-
-  <p class="tag_title">See Also:</p>
-  <ul class="see">
-    
-      <li><span class='object_link'><a href="Core.html#parent-instance_method" title="Concurrent::Actor::Core#parent (method)">Core#parent</a></span></li>
-    
-  </ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
   <h3 class="signature " id="pass-instance_method">
   
     #<strong>pass</strong>  &#x21d2; <tt>undocumented</tt> 
@@ -2244,6 +1818,476 @@ instead</p>
     </td>
   </tr>
 </table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="tell-instance_method">
+  
+    #<strong>tell</strong>(message)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='<<-instance_method'>&lt;&lt;</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>tell self a message</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_reference'>reference</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='id identifier rubyid_message'>message</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="behaviour-instance_method">
+  
+    #<strong>behaviour</strong>(behaviour_class)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="InternalDelegations.html#behaviour-instance_method" title="Concurrent::Actor::InternalDelegations#behaviour (method)">InternalDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>see Core#behaviour</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="behaviour!-instance_method">
+  
+    #<strong>behaviour!</strong>(behaviour_class)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="InternalDelegations.html#behaviour!-instance_method" title="Concurrent::Actor::InternalDelegations#behaviour! (method)">InternalDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>see Core#behaviour!</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Child!-instance_method">
+  
+    #<strong>Child!</strong>(value, *types)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="TypeCheck.html#Child!-instance_method" title="Concurrent::Actor::TypeCheck#Child! (method)">TypeCheck</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Child?-instance_method">
+  
+    #<strong>Child?</strong>(value, *types)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="TypeCheck.html#Child%3F-instance_method" title="Concurrent::Actor::TypeCheck#Child? (method)">TypeCheck</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="children-instance_method">
+  
+    #<strong>children</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="InternalDelegations.html#children-instance_method" title="Concurrent::Actor::InternalDelegations#children (method)">InternalDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Core.html#children-instance_method" title="Concurrent::Actor::Core#children (method)">Core#children</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="context-instance_method">
+  
+    #<strong>context</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Actor::AbstractContext (class)">AbstractContext</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="InternalDelegations.html#context-instance_method" title="Concurrent::Actor::InternalDelegations#context (method)">InternalDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="Concurrent::Actor::AbstractContext (class)">AbstractContext</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="context_class-instance_method">
+  
+    #<strong>context_class</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='actor_class-instance_method'>actor_class</span></span>
+    </span>
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="PublicDelegations.html#context_class-instance_method" title="Concurrent::Actor::PublicDelegations#context_class (method)">PublicDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Core.html#context_class-instance_method" title="Concurrent::Actor::Core#context_class (method)">Core#context_class</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="executor-instance_method">
+  
+    #<strong>executor</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="PublicDelegations.html#executor-instance_method" title="Concurrent::Actor::PublicDelegations#executor (method)">PublicDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Core.html#executor-instance_method" title="Concurrent::Actor::Core#executor (method)">Core#executor</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="log-instance_method">
+  
+    #<strong>log</strong>(level, message = nil, &amp;block)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="InternalDelegations.html#log-instance_method" title="Concurrent::Actor::InternalDelegations#log (method)">InternalDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>delegates to core.log</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>Logging#log</li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Match!-instance_method">
+  
+    #<strong>Match!</strong>(value, *types)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="TypeCheck.html#Match!-instance_method" title="Concurrent::Actor::TypeCheck#Match! (method)">TypeCheck</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="Match?-instance_method">
+  
+    #<strong>Match?</strong>(value, *types)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="TypeCheck.html#Match%3F-instance_method" title="Concurrent::Actor::TypeCheck#Match? (method)">TypeCheck</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="name-instance_method">
+  
+    #<strong>name</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="PublicDelegations.html#name-instance_method" title="Concurrent::Actor::PublicDelegations#name (method)">PublicDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Core.html#name-instance_method" title="Concurrent::Actor::Core#name (method)">Core#name</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parent-instance_method">
+  
+    #<strong>parent</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="PublicDelegations.html#parent-instance_method" title="Concurrent::Actor::PublicDelegations#parent (method)">PublicDelegations</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Core.html#parent-instance_method" title="Concurrent::Actor::Core#parent (method)">Core#parent</a></span></li>
+    
+  </ul>
+
+</div>
 </div>
     
       <div class="method_details ">
@@ -2340,50 +2384,6 @@ instead</p>
   </ul>
 
 </div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="tell-instance_method">
-  
-    #<strong>tell</strong>(message)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-    <span class="aliases">Also known as:
-    <span class="names"><span id='<<-instance_method'>&lt;&lt;</span></span>
-    </span>
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>tell self a message</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-92
-93
-94</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 92</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_reference'>reference</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='id identifier rubyid_message'>message</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
 </div>
     
       <div class="method_details ">

@@ -1,7 +1,6 @@
 require 'concurrent/edge/promises'
 require 'thread'
 
-
 RSpec.describe 'Concurrent::Promises' do
 
   include Concurrent::Promises::FactoryMethods
@@ -30,6 +29,12 @@ RSpec.describe 'Concurrent::Promises' do
 
       future = fulfilled_future(1).then { |v| v + 1 }
       expect(future.value!).to eq 2
+
+      future = future(1, 2, &-> v { v })
+      expect { future.value! }.to raise_error ArgumentError, /wrong number of arguments/
+
+      future = fulfilled_future(1).then(2, &-> v { v })
+      expect { future.value! }.to raise_error ArgumentError, /wrong number of arguments/
     end
 
     it 'executes with args' do
@@ -86,7 +91,6 @@ RSpec.describe 'Concurrent::Promises' do
           then { |v| v + 1 }.
           then { |v| queue.push(v); queue.push(Time.now.to_f - start); queue }
 
-      future.wait!
       expect(future.value!).to eq queue
       expect(queue.pop).to eq 2
       expect(queue.pop).to be >= 0.09
@@ -173,7 +177,15 @@ RSpec.describe 'Concurrent::Promises' do
 
       q = Queue.new
       z1.then { |*args| q << args }
+      # first is an array because it is zipping so 2 arguments
       expect(q.pop).to eq [1, 2]
+
+      z1.then { |*args| args }.then { |*args| q << args }
+      # after then it is again just one argument
+      expect(q.pop).to eq [[1, 2]]
+
+      fulfilled_future([1, 2]).then { |*args| q << args }
+      expect(q.pop).to eq [[1, 2]]
 
       z1.then { |a1, b1, c1| q << [a1, b1, c1] }
       expect(q.pop).to eq [1, 2, nil]
@@ -383,6 +395,22 @@ RSpec.describe 'Concurrent::Promises' do
       TABLE
     end
 
+    it 'chains with correct arguments' do
+      heads   = [future { 1 },
+                 future { [2, 3] },
+                 fulfilled_future(4),
+                 fulfilled_future([5, 6])]
+      results = [1,
+                 [2, 3],
+                 4,
+                 [5, 6]]
+      heads.each_with_index do |head, i|
+        expect(head.then { |a| a }.value!).to eq results[i]
+        expect(head.then { |a, b| [a, b].compact }.value!).to eq (results[i].is_a?(Array) ? results[i] : [results[i]])
+        expect(head.then { |*a| a }.value!).to eq [results[i]]
+      end
+    end
+
     it 'constructs promise like tree' do
       # if head of the tree is not constructed with #future but with #delay it does not start execute,
       # it's triggered later by calling wait or value on any of the dependent futures or the delay itself
@@ -442,9 +470,11 @@ RSpec.describe 'Concurrent::Promises' do
       it 'rejects if inner value is not a future' do
         f = future { 'boo' }.flat
         expect(f.reason).to be_an_instance_of TypeError
+      end
 
+      it 'accepts inner event' do
         f = future { resolved_event }.flat
-        expect(f.reason).to be_an_instance_of TypeError
+        expect(f.result).to eq [true, nil, nil]
       end
 
       it 'propagates requests for values to delayed futures' do
@@ -486,6 +516,12 @@ RSpec.describe 'Concurrent::Promises' do
         v < 5 ? future(v, &body) : raise(v.to_s)
       end
       expect(future(0, &body).run.reason.message).to eq '5'
+
+      body = lambda do |v|
+        v += 1
+        v < 5 ? [future(v, &body)] : v
+      end
+      expect(future(0, &body).run(-> v { v.first if v.is_a? Array }).value!).to eq 5
     end
 
     it 'can be risen when rejected' do
@@ -514,8 +550,138 @@ RSpec.describe 'Concurrent::Promises' do
     end
   end
 
+  describe 'ResolvableEvent' do
+    specify "#wait" do
+      event = resolvable_event
+      expect(event.wait(0, false)).to be_falsey
+      expect(event.wait(0, true)).to be_falsey
+      expect(event.wait).to eq event
+      expect(event.wait(0, false)).to be_truthy
+      expect(event.wait(0, true)).to be_truthy
+    end
+
+    specify "reservation" do
+      event = resolvable_event
+      expect(event.reserve).to be_truthy
+      expect(event.pending?).to be_truthy
+      expect(event.state).to eq :pending
+      expect(event.resolve false).to be_falsey
+      expect(event.resolve true, true).to be_truthy
+    end
+  end
+
+  describe 'ResolvableFuture' do
+    specify "#wait" do
+      future = resolvable_future
+      expect(future.wait(0)).to be_falsey
+      expect(future.wait(0, [true, :v, nil])).to be_falsey
+      expect(future.wait).to eq future
+      expect(future.wait(0, nil)).to be_truthy
+      expect(future.wait(0, [true, :v, nil])).to be_truthy
+    end
+
+    specify "#wait!" do
+      future = resolvable_future
+      expect(future.wait!(0)).to be_falsey
+      expect(future.wait!(0, [true, :v, nil])).to be_falsey
+      expect(future.wait!).to eq future
+      expect(future.wait!(0, nil)).to be_truthy
+      expect(future.wait!(0, [true, :v, nil])).to be_truthy
+
+      future = resolvable_future
+      expect(future.wait!(0)).to be_falsey
+      expect(future.wait!(0, [false, nil, RuntimeError.new])).to be_falsey
+      expect { future.wait! }.to raise_error RuntimeError
+    end
+
+    specify "#value" do
+      future = resolvable_future
+      expect(future.value(0)).to eq nil
+      expect(future.value(0, :timeout, [true, :v, nil])).to eq :timeout
+      expect(future.value).to eq :v
+      expect(future.value(0)).to eq :v
+      expect(future.value(0, :timeout, [true, :v, nil])).to eq :v
+    end
+
+    specify "#value!" do
+      future = resolvable_future
+      expect(future.value!(0)).to eq nil
+      expect(future.value!(0, :timeout, [true, :v, nil])).to eq :timeout
+      expect(future.value!).to eq :v
+      expect(future.value!(0, :timeout, nil)).to eq :v
+      expect(future.value!(0, :timeout, [true, :v, nil])).to eq :v
+
+      future = resolvable_future
+      expect(future.wait!(0)).to be_falsey
+      expect(future.wait!(0, [false, nil, RuntimeError.new])).to be_falsey
+      expect { future.wait! }.to raise_error RuntimeError
+    end
+
+    specify "#reason" do
+      future = resolvable_future
+      expect(future.reason(0)).to eq nil
+      expect(future.reason(0, :timeout, [false, nil, :err])).to eq :timeout
+      expect(future.reason).to eq :err
+      expect(future.reason(0)).to eq :err
+      expect(future.reason(0, :timeout, [false, nil, :err])).to eq :err
+    end
+
+    specify "result" do
+      future = resolvable_future
+      expect(future.result(0)).to eq nil
+      expect(future.result(0, [true, :v, nil])).to be_falsey
+      expect(future.result).to eq [true, :v, nil]
+      expect(future.result(0)).to eq [true, :v, nil]
+      expect(future.result(0, [true, :v, nil])).to eq [true, :v, nil]
+    end
+
+    specify "reservation" do
+      future = resolvable_future
+      expect(future.reserve).to be_truthy
+      expect(future.pending?).to be_truthy
+      expect(future.state).to eq :pending
+      expect(future.resolve true, :value, nil, false).to be_falsey
+      expect(future.fulfill :value, false).to be_falsey
+      expect(future.reject :err, false).to be_falsey
+      expect { future.resolve true, :value, nil }.to raise_error(Concurrent::MultipleAssignmentError)
+      expect(future.resolve true, :value, nil, false, true).to be_truthy
+
+      future = resolvable_future
+      expect(future.reserve).to be_truthy
+      expect(future.fulfill :value, false, true).to be_truthy
+
+      future = resolvable_future
+      expect(future.reserve).to be_truthy
+      expect(future.reject :err, false, true).to be_truthy
+    end
+
+    specify "atomic_resolution" do
+      future1 = resolvable_future
+      future2 = resolvable_future
+
+      expect(Concurrent::Promises::Resolvable.
+          atomic_resolution(future1 => [true, :v, nil],
+                            future2 => [false, nil, :err])).to eq true
+      expect(future1.fulfilled?).to be_truthy
+      expect(future2.rejected?).to be_truthy
+
+      future1 = resolvable_future
+      future2 = resolvable_future.fulfill :val
+
+      expect(Concurrent::Promises::Resolvable.
+          atomic_resolution(future1 => [true, :v, nil],
+                            future2 => [false, nil, :err])).to eq false
+
+      expect(future1.pending?).to be_truthy
+      expect(future2.fulfilled?).to be_truthy
+
+      expect(future1.reserve).to be_truthy
+      expect(future2.reserve).to be_falsey
+    end
+  end
+
   describe 'interoperability' do
-    it 'with actor', if: !defined?(JRUBY_VERSION) do
+    it 'with processing actor', if: !defined?(JRUBY_VERSION) do
       actor = Concurrent::Actor::Utils::AdHoc.spawn :doubler do
         -> v { v * 2 }
       end
@@ -526,176 +692,40 @@ RSpec.describe 'Concurrent::Promises' do
           value!).to eq 6
     end
 
+    if Concurrent.const_defined? :ErlangActor
+      it 'with erlang actor' do
+        actor = Concurrent::ErlangActor.spawn type: :on_thread do
+          reply receive * 2
+        end
+
+        expect(future { 2 }.
+            then_ask(actor).
+            then { |v| v + 2 }.
+            value!).to eq 6
+      end
+    end
+
     it 'with channel' do
       ch1 = Concurrent::Promises::Channel.new
       ch2 = Concurrent::Promises::Channel.new
 
-      result = Concurrent::Promises.select_channel(ch1, ch2)
+      result = Concurrent::Promises::Channel.select_op([ch1, ch2])
       ch1.push 1
       expect(result.value!).to eq [ch1, 1]
 
-
-      future { 1+1 }.then_push_channel(ch1)
-      result = (Concurrent::Promises.future { '%02d' } & Concurrent::Promises.select_channel(ch1, ch2)).
-          then { |format, (channel, value)| format format, value }
+      future { 1 + 1 }.then_channel_push(ch1)
+      result = (Concurrent::Promises.future { '%02d' } & ch1.select_op(ch2)).
+          then { |format, (_channel, value)| format format, value }
       expect(result.value!).to eq '02'
     end
   end
 
-  describe 'Cancellation', edge: true do
-    specify do
-      source, token = Concurrent::Cancellation.create
-
-      futures = ::Array.new(2) { future(token) { |t| t.loop_until_canceled { Thread.pass }; :done } }
-
-      source.cancel
-      futures.each do |future|
-        expect(future.value!).to eq :done
-      end
-    end
-
-    specify do
-      source, token = Concurrent::Cancellation.create
-      source.cancel
-      expect(token.canceled?).to be_truthy
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.to_event).value).to be_nil
-      expect(cancellable_branch.resolved?).to be_falsey
-    end
-
-    specify do
-      source, token = Concurrent::Cancellation.create
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect(any_resolved_future(cancellable_branch, token.to_event).value).to eq 1
-      expect(cancellable_branch.resolved?).to be_truthy
-    end
-
-    specify do
-      source, token = Concurrent::Cancellation.create(
-          Concurrent::Promises.resolvable_future, false, nil, err = StandardError.new('Cancelled'))
-      source.cancel
-      expect(token.canceled?).to be_truthy
-
-      cancellable_branch = Concurrent::Promises.delay { 1 }
-      expect((cancellable_branch | token.to_future).reason).to eq err
-      expect(cancellable_branch.resolved?).to be_falsey
-    end
-  end
-
-  describe 'Throttling' do
-    specify do
-      limit    = 4
-      throttle = Concurrent::Throttle.new limit
-      counter  = Concurrent::AtomicFixnum.new
-      testing  = -> *args do
-        counter.increment
-        sleep rand * 0.02 + 0.02
-        # returns less then 3 since it's throttled
-        v = counter.decrement + 1
-        v
-      end
-
-      expect(Concurrent::Promises.zip(
-          *20.times.map do |i|
-            throttle.throttled_future_chain { |trigger| trigger.then(throttle, &testing) }
-          end).value!.all? { |v| v <= limit }).to be_truthy
-
-      expect(Concurrent::Promises.zip(
-          *20.times.map do |i|
-            throttle.throttled_future(throttle, &testing)
-          end).value!.all? { |v| v <= limit }).to be_truthy
-
-      expect(Concurrent::Promises.zip(
-          *20.times.map do |i|
-            Concurrent::Promises.
-                fulfilled_future(i).
-                throttled_by(throttle) { |trigger| trigger.then(throttle, &testing) }
-          end).value!.all? { |v| v <= limit }).to be_truthy
-
-      expect(Concurrent::Promises.zip(
-          *20.times.map do |i|
-            Concurrent::Promises.
-                fulfilled_future(i).
-                then_throttled_by(throttle, throttle, &testing)
-          end).value!.all? { |v| v <= limit }).to be_truthy
-    end
-  end
-
-  describe 'Promises::Channel' do
-    specify do
-      channel = Concurrent::Promises::Channel.new 1
-
-      pushed1 = channel.push 1
-      expect(pushed1.resolved?).to be_truthy
-      expect(pushed1.value!).to eq 1
-
-      pushed2 = channel.push 2
-      expect(pushed2.resolved?).to be_falsey
-
-      popped = channel.pop
-      expect(pushed1.value!).to eq 1
-      expect(pushed2.resolved?).to be_truthy
-      expect(pushed2.value!).to eq 2
-      expect(popped.value!).to eq 1
-
-      popped = channel.pop
-      expect(popped.value!).to eq 2
-
-      popped = channel.pop
-      expect(popped.resolved?).to be_falsey
-
-      pushed3 = channel.push 3
-      expect(popped.value!).to eq 3
-      expect(pushed3.resolved?).to be_truthy
-      expect(pushed3.value!).to eq 3
-    end
-
-    specify do
-      ch1 = Concurrent::Promises::Channel.new
-      ch2 = Concurrent::Promises::Channel.new
-      ch3 = Concurrent::Promises::Channel.new
-
-      add = -> do
-        (ch1.pop & ch2.pop).then do |a, b|
-          if a == :done && b == :done
-            :done
-          else
-            ch3.push a + b
-            add.call
-          end
-        end
-      end
-
-      ch1.push 1
-      ch2.push 2
-      ch1.push 'a'
-      ch2.push 'b'
-      ch1.push nil
-      ch2.push true
-
-      result = Concurrent::Promises.future(&add).run.result
-      expect(result[0..1]).to eq [false, nil]
-      expect(result[2]).to be_a_kind_of(NoMethodError)
-      expect(ch3.pop.value!).to eq 3
-      expect(ch3.pop.value!).to eq 'ab'
-
-      ch1.push 1
-      ch2.push 2
-      ch1.push 'a'
-      ch2.push 'b'
-      ch1.push :done
-      ch2.push :done
-
-      expect(Concurrent::Promises.future(&add).run.result).to eq [true, :done, nil]
-      expect(ch3.pop.value!).to eq 3
-      expect(ch3.pop.value!).to eq 'ab'
-    end
+  specify 'zip_futures_over' do
+    expect(zip_futures_over([1, 2]) { |v| v.succ }.value!).to eq [2, 3]
   end
 end
 
-RSpec.describe Concurrent::ProcessingActor do
+RSpec.describe 'Concurrent::ProcessingActor' do
   specify do
     actor = Concurrent::ProcessingActor.act do |the_actor|
       the_actor.receive.then do |message|
@@ -710,6 +740,9 @@ RSpec.describe Concurrent::ProcessingActor do
     def count(actor, count)
       # the block passed to receive is called when the actor receives the message
       actor.receive.then do |number_or_command, answer|
+        # number_or_command, answer = p a
+        # p number_or_command, answer
+
         # code which is evaluated after the number is received
         case number_or_command
         when :done
@@ -730,20 +763,21 @@ RSpec.describe Concurrent::ProcessingActor do
     end
 
     counter = Concurrent::ProcessingActor.act { |a| count a, 0 }
-    expect(counter.tell!(2).ask(:count).value!).to eq 2
+    answer  = counter.tell!(2).ask_op { |a| [:count, a] }.value!
     expect(counter.tell!(3).tell!(:done).termination.value!).to eq 5
+    expect(answer.value!).to eq 2
 
     add_once_actor = Concurrent::ProcessingActor.act do |the_actor|
-      the_actor.receive.then do |(a, b), answer|
+      the_actor.receive.then do |a, b, reply|
         result = a + b
-        answer.fulfill result
+        reply.fulfill result
         # terminate with result value
         result
       end
     end
 
-    expect(add_once_actor.ask([1, 2]).value!).to eq 3
-    expect(add_once_actor.ask(%w(ab cd)).reason).to be_a_kind_of RuntimeError
+    expect(add_once_actor.ask_op { |a| [1, 2, a] }.value!.value!).to eq 3
+    # expect(add_once_actor.ask_operation(%w(ab cd)).reason).to be_a_kind_of RuntimeError
     expect(add_once_actor.termination.value!).to eq 3
 
     def pair_adder(actor)
@@ -756,9 +790,10 @@ RSpec.describe Concurrent::ProcessingActor do
     end
 
     pair_adder = Concurrent::ProcessingActor.act { |a| pair_adder a }
-
-    expect(pair_adder.tell!(3).ask(2).value!).to eq 5
-    expect((pair_adder.ask('a') & pair_adder.ask('b')).value!).to eq %w[ab ab]
-    expect((pair_adder.ask('a') | pair_adder.ask('b')).value!).to eq 'ab'
+    pair_adder.ask_op { |a| [2, a] }
+    answer = pair_adder.ask_op { |a| [3, a] }.value!
+    expect(answer.value!).to eq 5
+    expect((pair_adder.ask_op { |a| ['a', a] }.value! & pair_adder.ask_op { |a| ['b', a] }.value!).value!).to eq %w[ab ab]
+    expect((pair_adder.ask_op { |a| ['a', a] }.value! | pair_adder.ask_op { |a| ['b', a] }.value!).value!).to eq 'ab'
   end
 end

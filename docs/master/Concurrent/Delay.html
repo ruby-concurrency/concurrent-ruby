@@ -212,6 +212,123 @@ or Haskell) as we are likely to get in Ruby.</p>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(opts = {}) { ... } &#x21d2; Delay </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>Delay</code> in the <code>:pending</code> state.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reconfigure-instance_method" title="#reconfigure (instance method)">#<strong>reconfigure</strong> { ... } &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Reconfigures the block returning the value if still <code>#incomplete?</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>(timeout = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value!-instance_method" title="#value! (instance method)">#<strong>value!</strong>(timeout = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait-instance_method" title="#wait (instance method)">#<strong>wait</strong>(timeout = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#complete%3F-instance_method" title="#complete? (instance method)">#<strong>complete?</strong>  &#x21d2; Boolean </a>
     
 
@@ -325,31 +442,6 @@ or Haskell) as we are likely to get in Ruby.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(opts = {}) { ... } &#x21d2; Delay </a>
-    
-
-    
-  </span>
-  
-  
-    <span class="note title constructor">constructor</span>
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Create a new <code>Delay</code> in the <code>:pending</code> state.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#pending%3F-instance_method" title="#pending? (instance method)">#<strong>pending?</strong>  &#x21d2; Boolean </a>
     
 
@@ -398,29 +490,6 @@ or Haskell) as we are likely to get in Ruby.</p>
 
   
     <span class="summary_desc"><div class='inline'><p>If an exception was raised during processing this will return the exception object.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#reconfigure-instance_method" title="#reconfigure (instance method)">#<strong>reconfigure</strong> { ... } &#x21d2; true, false </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Reconfigures the block returning the value if still <code>#incomplete?</code>.</p>
 </div></span>
   
 </li>
@@ -505,75 +574,6 @@ or Haskell) as we are likely to get in Ruby.</p>
 
   
     <span class="summary_desc"><div class='inline'><p>Is the obligation still unscheduled?.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>(timeout = nil)  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#value!-instance_method" title="#value! (instance method)">#<strong>value!</strong>(timeout = nil)  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#wait-instance_method" title="#wait (instance method)">#<strong>wait</strong>(timeout = nil)  &#x21d2; Object </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
 </div></span>
   
 </li>
@@ -802,255 +802,7 @@ argument then return the new value returned from the proc.</p>
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="complete?-instance_method">
-  
-    #<strong>complete?</strong>  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#complete%3F-instance_method" title="Concurrent::Concern::Obligation#complete? (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Has the obligation completed processing?</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="exception-instance_method">
-  
-    #<strong>exception</strong>(*args)  &#x21d2; <tt>undocumented</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#exception-instance_method" title="Concurrent::Concern::Obligation#exception (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    
-
-  </div>
-</div>
-<div class="tags">
-  
-  <div class="examples">
-    <p class="tag_title">Examples:</p>
-    
-      
-        <p class="example_title"><div class='inline'><p>allows Obligation to be risen</p>
-</div></p>
-      
-      <pre class="example code"><code><span class='id identifier rubyid_rejected_ivar'>rejected_ivar</span> <span class='op'>=</span> <span class='const'>Ivar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_fail'>fail</span>
-<span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_rejected_ivar'>rejected_ivar</span></code></pre>
-    
-  </div>
-
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="fulfilled?-instance_method">
-  
-    #<strong>fulfilled?</strong>  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-    <span class="aliases">Also known as:
-    <span class="names"><span id='realized?-instance_method'>realized?</span></span>
-    </span>
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#fulfilled%3F-instance_method" title="Concurrent::Concern::Obligation#fulfilled? (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Has the obligation been fulfilled?</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="incomplete?-instance_method">
-  
-    #<strong>incomplete?</strong>  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#incomplete%3F-instance_method" title="Concurrent::Concern::Obligation#incomplete? (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Is the obligation still awaiting completion of processing?</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="pending?-instance_method">
-  
-    #<strong>pending?</strong>  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#pending%3F-instance_method" title="Concurrent::Concern::Obligation#pending? (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Is obligation completion still pending?</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="reason-instance_method">
-  
-    #<strong>reason</strong>  &#x21d2; <tt>Exception</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#reason-instance_method" title="Concurrent::Concern::Obligation#reason (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>If an exception was raised during processing this will return the
-exception object. Will return <code>nil</code> when the state is pending or if
-the obligation has been successfully fulfilled.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Exception</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the exception raised during processing or <code>nil</code></p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="reconfigure-instance_method">
+  <h3 class="signature first" id="reconfigure-instance_method">
   
     #<strong>reconfigure</strong> { ... } &#x21d2; <tt>true</tt>, <tt>false</tt> 
   
@@ -1137,130 +889,6 @@ the obligation has been successfully fulfilled.</p>
     </td>
   </tr>
 </table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="rejected?-instance_method">
-  
-    #<strong>rejected?</strong>  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#rejected%3F-instance_method" title="Concurrent::Concern::Obligation#rejected? (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Has the obligation been rejected?</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="state-instance_method">
-  
-    #<strong>state</strong>  &#x21d2; <tt>Symbol</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#state-instance_method" title="Concurrent::Concern::Obligation#state (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>The current state of the obligation.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Symbol</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>the current state</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="unscheduled?-instance_method">
-  
-    #<strong>unscheduled?</strong>  &#x21d2; <tt>Boolean</tt> 
-  
-
-  
-
-  
-    <span class="not_defined_here">
-      Originally defined in module
-        <span class='object_link'><a href="Concern/Obligation.html#unscheduled%3F-instance_method" title="Concurrent::Concern::Obligation#unscheduled? (method)">Concern::Obligation</a></span>
-    </span>
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Is the obligation still unscheduled?</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div>
 </div>
     
       <div class="method_details ">
@@ -1624,6 +1252,378 @@ the value to be computed. When <code>nil</code> the caller will block indefinite
     </td>
   </tr>
 </table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="complete?-instance_method">
+  
+    #<strong>complete?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#complete%3F-instance_method" title="Concurrent::Concern::Obligation#complete? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has the obligation completed processing?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="exception-instance_method">
+  
+    #<strong>exception</strong>(*args)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#exception-instance_method" title="Concurrent::Concern::Obligation#exception (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>allows Obligation to be risen</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='id identifier rubyid_rejected_ivar'>rejected_ivar</span> <span class='op'>=</span> <span class='const'>Ivar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_fail'>fail</span>
+<span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_rejected_ivar'>rejected_ivar</span></code></pre>
+    
+  </div>
+
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fulfilled?-instance_method">
+  
+    #<strong>fulfilled?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='realized?-instance_method'>realized?</span></span>
+    </span>
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#fulfilled%3F-instance_method" title="Concurrent::Concern::Obligation#fulfilled? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has the obligation been fulfilled?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="incomplete?-instance_method">
+  
+    #<strong>incomplete?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#incomplete%3F-instance_method" title="Concurrent::Concern::Obligation#incomplete? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is the obligation still awaiting completion of processing?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pending?-instance_method">
+  
+    #<strong>pending?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#pending%3F-instance_method" title="Concurrent::Concern::Obligation#pending? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is obligation completion still pending?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reason-instance_method">
+  
+    #<strong>reason</strong>  &#x21d2; <tt>Exception</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#reason-instance_method" title="Concurrent::Concern::Obligation#reason (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>If an exception was raised during processing this will return the
+exception object. Will return <code>nil</code> when the state is pending or if
+the obligation has been successfully fulfilled.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the exception raised during processing or <code>nil</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rejected?-instance_method">
+  
+    #<strong>rejected?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#rejected%3F-instance_method" title="Concurrent::Concern::Obligation#rejected? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has the obligation been rejected?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="state-instance_method">
+  
+    #<strong>state</strong>  &#x21d2; <tt>Symbol</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#state-instance_method" title="Concurrent::Concern::Obligation#state (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The current state of the obligation.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current state</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unscheduled?-instance_method">
+  
+    #<strong>unscheduled?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#unscheduled%3F-instance_method" title="Concurrent::Concern::Obligation#unscheduled? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is the obligation still unscheduled?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
 </div>
     
       <div class="method_details ">

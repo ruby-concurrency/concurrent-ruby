@@ -16,43 +16,7 @@ edge_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-edge.
 
 require 'rake/javaextensiontask'
 
-class ConcurrentRubyJavaExtensionTask < Rake::JavaExtensionTask
-  def java_classpath_arg(*args)
-    jruby_cpath = nil
-
-    if RUBY_PLATFORM =~ /java/
-      begin
-        cpath       = Java::java.lang.System.getProperty('java.class.path').split(File::PATH_SEPARATOR)
-        cpath       += Java::java.lang.System.getProperty('sun.boot.class.path').split(File::PATH_SEPARATOR)
-        jruby_cpath = cpath.compact.join(File::PATH_SEPARATOR)
-      rescue => e
-      end
-
-      unless jruby_cpath
-        libdir = RbConfig::CONFIG['libdir']
-        if libdir.start_with? "classpath:"
-          raise 'Cannot build with jruby-complete'
-        end
-        jruby_cpath = File.join(libdir, "jruby.jar")
-      end
-    end
-
-    unless jruby_cpath
-      jruby_home = ENV['JRUBY_HOME']
-      if jruby_home
-        candidate = File.join(jruby_home, 'lib', 'jruby.jar')
-        jruby_cpath = candidate if File.exist? candidate
-      end
-    end
-
-    raise "jruby.jar path not found" unless jruby_cpath
-
-    jruby_cpath += File::PATH_SEPARATOR + args.join(File::PATH_SEPARATOR) unless args.empty?
-    jruby_cpath ? "-cp \"#{jruby_cpath}\"" : ""
-  end
-end
-
-ConcurrentRubyJavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
+Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.ext_dir = 'ext/concurrent-ruby'
   ext.lib_dir = 'lib/concurrent'
 end
@@ -79,7 +43,8 @@ namespace :repackage do
       sh 'bundle package'
 
       # build only the jar file not the whole gem for java platform, the jar is part the concurrent-ruby-x.y.z.gem
-      RakeCompilerDock.sh 'bundle install --local && bundle exec rake lib/concurrent/concurrent_ruby.jar --trace', rubyvm: :jruby
+      Rake::Task['lib/concurrent/concurrent_ruby.jar'].invoke
+
       # build all gem files
       RakeCompilerDock.sh 'bundle install --local && bundle exec rake cross native package --trace'
     end
@@ -101,15 +66,14 @@ begin
 
   RSpec::Core::RakeTask.new(:spec)
 
-  options = %w[ --color
-                --backtrace
-                --seed 1
-                --format documentation
-                --tag ~notravis ]
-
   namespace :spec do
     desc '* Configured for ci'
     RSpec::Core::RakeTask.new(:ci) do |t|
+      options = %w[ --color
+                    --backtrace
+                    --order defined
+                    --format documentation
+                    --tag ~notravis ]
       t.rspec_opts = [*options].join(' ')
     end
 
@@ -184,10 +148,19 @@ begin
     end
 
     define_yard_task = -> name do
+      output_dir = "docs/#{name}"
+
+      removal_name = "remove.#{name}"
+      task removal_name do
+        Dir.chdir __dir__ do
+          FileUtils.rm_rf output_dir
+        end
+      end
+
       desc "* of #{name} into subdir #{name}"
       YARD::Rake::YardocTask.new(name) do |yard|
         yard.options.push(
-            '--output-dir', "docs/#{name}",
+            '--output-dir', output_dir,
             '--main', 'tmp/README.md',
             *common_yard_options)
         yard.files = ['./lib/**/*.rb',
@@ -196,10 +169,11 @@ begin
                       '-',
                       'docs-source/thread_pools.md',
                       'docs-source/promises.out.md',
+                      'docs-source/medium-example.out.rb',
                       'LICENSE.md',
                       'CHANGELOG.md']
       end
-      Rake::Task[name].prerequisites.push 'yard:eval_md', 'yard:update_readme'
+      Rake::Task[name].prerequisites.push removal_name, 'yard:eval_md', 'yard:update_readme'
     end
 
     define_yard_task.call current_yard_version_name

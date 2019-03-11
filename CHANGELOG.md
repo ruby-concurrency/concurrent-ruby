@@ -1,5 +1,18 @@
 ## Current
 
+## Release v1.1.5, edge v0.5.0 (10 mar 2019)
+
+concurrent-ruby:
+
+* fix potential leak of context on JRuby and Java 7
+
+concurrent-ruby-edge:
+
+* Add finalized Concurrent::Cancellation
+* Add finalized Concurrent::Throttle
+* Add finalized Concurrent::Promises::Channel
+* Add new Concurrent::ErlangActor
+
 ## Release v1.1.4 (14 Dec 2018)
 
 * (#780) Remove java_alias of 'submit' method of Runnable to let executor service work on java 11

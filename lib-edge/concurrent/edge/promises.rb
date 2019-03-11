@@ -12,7 +12,7 @@ module Concurrent
         # Asks the actor with its value.
         # @return [Future] new future with the response form the actor
         def then_ask(actor)
-          self.then { |v| actor.ask(v) }.flat
+          self.then(actor) { |v, a| a.ask_op(v) }.flat
         end
       end
 
@@ -49,97 +49,6 @@ module Concurrent
       include FlatShortcuts
     end
 
-    # @!macro warn.edge
-    class Channel < Concurrent::Synchronization::Object
-      safe_initialization!
-
-      # Default size of the Channel, makes it accept unlimited number of messages.
-      UNLIMITED = ::Object.new
-      UNLIMITED.singleton_class.class_eval do
-        include Comparable
-
-        def <=>(other)
-          1
-        end
-
-        def to_s
-          'unlimited'
-        end
-      end
-
-      # A channel to pass messages between promises. The size is limited to support back pressure.
-      # @param [Integer, UNLIMITED] size the maximum number of messages stored in the channel.
-      def initialize(size = UNLIMITED)
-        super()
-        @Size        = size
-        # TODO (pitr-ch 26-Dec-2016): replace with lock-free implementation
-        @Mutex       = Mutex.new
-        @Probes      = []
-        @Messages    = []
-        @PendingPush = []
-      end
-
-
-      # Returns future which will fulfill when the message is added to the channel. Its value is the message.
-      # @param [Object] message
-      # @return [Future]
-      def push(message)
-        @Mutex.synchronize do
-          while true
-            if @Probes.empty?
-              if @Size > @Messages.size
-                @Messages.push message
-                return Promises.fulfilled_future message
-              else
-                pushed = Promises.resolvable_future
-                @PendingPush.push [message, pushed]
-                return pushed.with_hidden_resolvable
-              end
-            else
-              probe = @Probes.shift
-              if probe.fulfill [self, message], false
-                return Promises.fulfilled_future(message)
-              end
-            end
-          end
-        end
-      end
-
-      # Returns a future witch will become fulfilled with a value from the channel when one is available.
-      # @param [ResolvableFuture] probe the future which will be fulfilled with a channel value
-      # @return [Future] the probe, its value will be the message when available.
-      def pop(probe = Concurrent::Promises.resolvable_future)
-        # TODO (pitr-ch 26-Dec-2016): improve performance
-        pop_for_select(probe).then(&:last)
-      end
-
-      # @!visibility private
-      def pop_for_select(probe = Concurrent::Promises.resolvable_future)
-        @Mutex.synchronize do
-          if @Messages.empty?
-            @Probes.push probe
-          else
-            message = @Messages.shift
-            probe.fulfill [self, message]
-
-            unless @PendingPush.empty?
-              message, pushed = @PendingPush.shift
-              @Messages.push message
-              pushed.fulfill message
-            end
-          end
-        end
-        probe
-      end
-
-      # @return [String] Short string representation.
-      def to_s
-        format '%s size:%s>', super[0..-2], @Size
-      end
-
-      alias_method :inspect, :to_s
-    end
-
     class Future < AbstractEventFuture
       # @!macro warn.edge
       module NewChannelIntegration
@@ -147,8 +56,8 @@ module Concurrent
         # @param [Channel] channel to push to.
         # @return [Future] a future which is fulfilled after the message is pushed to the channel.
         #   May take a moment if the channel is full.
-        def then_push_channel(channel)
-          self.then { |value| channel.push value }.flat_future
+        def then_channel_push(channel)
+          self.then(channel) { |value, ch| ch.push_op value }.flat_future
         end
 
       end
@@ -157,22 +66,6 @@ module Concurrent
     end
 
     module FactoryMethods
-      # @!macro warn.edge
-      module NewChannelIntegration
-
-        # Selects a channel which is ready to be read from.
-        # @param [Channel] channels
-        # @return [Future] a future which is fulfilled with pair [channel, message] when one of the channels is
-        #   available for reading
-        def select_channel(*channels)
-          probe = Promises.resolvable_future
-          channels.each { |ch| ch.pop_for_select probe }
-          probe
-        end
-      end
-
-      include NewChannelIntegration
-
       # @!macro promises.shortcut.on
       # @return [Future]
       # @!macro warn.edge
@@ -199,6 +92,83 @@ module Concurrent
         zip_futures_on(default_executor, *enumerable.map { |e| future e, &future_factory })
       end
     end
+
+    module Resolvable
+      include InternalStates
+
+      # Reserves the event or future, if reserved others are prevented from resolving it.
+      # Advanced feature.
+      # Be careful about the order of reservation to avoid deadlocks,
+      # the method blocks if the future or event is already reserved
+      # until it is released or resolved.
+      #
+      # @example
+      #   f = Concurrent::Promises.resolvable_future
+      #   reserved = f.reserve
+      #   Thread.new { f.resolve true, :val, nil } # fails
+      #   f.resolve true, :val, nil, true if reserved # must be called only if reserved
+      # @return [true, false] on successful reservation
+      def reserve
+        while true
+          return true if compare_and_set_internal_state(PENDING, RESERVED)
+          return false if resolved?
+          # FIXME (pitr-ch 17-Jan-2019): sleep until given up or resolved instead of busy wait
+          Thread.pass
+        end
+      end
+
+      # @return [true, false] on successful release of the reservation
+      def release
+        compare_and_set_internal_state(RESERVED, PENDING)
+      end
+
+      # @return [Comparable] an item to sort the resolvable events or futures
+      #   by to get the right global locking order of resolvable events or futures
+      # @see .atomic_resolution
+      def self.locking_order_by(resolvable)
+        resolvable.object_id
+      end
+
+      # Resolves all passed events and futures to the given resolutions
+      # if possible (all are unresolved) or none.
+      #
+      # @param [Hash{Resolvable=>resolve_arguments}, Array<Array(Resolvable, resolve_arguments)>] resolvable_map
+      #   collection of resolvable events and futures which should be resolved all at once
+      #   and what should they be resolved to, examples:
+      #   ```ruby
+      #   { a_resolvable_future1 => [true, :val, nil],
+      #     a_resolvable_future2 => [false, nil, :err],
+      #     a_resolvable_event => [] }
+      #   ```
+      #    or
+      #   ```ruby
+      #   [[a_resolvable_future1, [true, :val, nil]],
+      #    [a_resolvable_future2, [false, nil, :err]],
+      #    [a_resolvable_event, []]]
+      #   ```
+      # @return [true, false] if success
+      def self.atomic_resolution(resolvable_map)
+        # atomic_resolution event => [], future => [true, :v, nil]
+        sorted = resolvable_map.to_a.sort_by { |resolvable, _| locking_order_by resolvable }
+
+        reserved = 0
+        while reserved < sorted.size && sorted[reserved].first.reserve
+          reserved += 1
+        end
+
+        if reserved == sorted.size
+          sorted.each { |resolvable, args| resolvable.resolve(*args, true, true) }
+          true
+        else
+          while reserved > 0
+            reserved -= 1
+            raise 'has to be reserved' unless sorted[reserved].first.release
+          end
+          false
+        end
+      end
+    end
+
 
   end
 end

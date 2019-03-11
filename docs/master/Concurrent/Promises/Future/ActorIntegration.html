@@ -210,7 +210,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
       <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 14</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_then_ask'>then_ask</span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='rparen'>)</span>
-  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_actor'>actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flat'>flat</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='id identifier rubyid_actor'>actor</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_ask_op'>ask_op</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flat'>flat</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

@@ -101,7 +101,16 @@
   
 </div>
 
+<div class="docstring">
+  <div class="discussion">
+    
 
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
 
 
 
@@ -115,6 +124,29 @@
     </h2>
 
     <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#compare_and_set_successor-instance_method" title="#compare_and_set_successor (instance method)">#<strong>compare_and_set_successor</strong>(expected_successor, new_successor)  &#x21d2; true, false </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Sets the successor to new_successor if the current successor is expected_successor.</p>
+</div></span>
+  
+</li>
+
       
         <li class="public ">
   <span class="summary_signature">
@@ -159,6 +191,98 @@
 
   
     <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#successor-instance_method" title="#successor (instance method)">#<strong>successor</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The successor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#successor=-instance_method" title="#successor= (instance method)">#<strong>successor=</strong>(new_successor)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Set the successor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#swap_successor-instance_method" title="#swap_successor (instance method)">#<strong>swap_successor</strong>(new_successor)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Set the successor to new_successor and return the old successor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#update_successor-instance_method" title="#update_successor (instance method)">#<strong>update_successor</strong> {|Object| ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Updates the successor using the block.</p>
+</div></span>
   
 </li>
 
@@ -225,7 +349,56 @@
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="item-instance_method">
+  <h3 class="signature first" id="compare_and_set_successor-instance_method">
+  
+    #<strong>compare_and_set_successor</strong>(expected_successor, new_successor)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Sets the successor to new_successor if the current successor is expected_successor</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_queue.rb', line 7</span>
+
+<span class='id identifier rubyid_attr_atomic'>attr_atomic</span> <span class='symbol'>:successor</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="item-instance_method">
   
     #<strong>item</strong>  &#x21d2; <tt>undocumented</tt> 
   
@@ -233,7 +406,16 @@
   
 
   
-</h3><table class="source_code">
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
   <tr>
     <td>
       <pre class="lines">
@@ -249,6 +431,254 @@
 <span class='kw'>def</span> <span class='id identifier rubyid_item'>item</span>
   <span class='ivar'>@Item</span>
 <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="successor-instance_method">
+  
+    #<strong>successor</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The successor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The successor.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_queue.rb', line 7</span>
+
+<span class='id identifier rubyid_attr_atomic'>attr_atomic</span> <span class='symbol'>:successor</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="successor=-instance_method">
+  
+    #<strong>successor=</strong>(new_successor)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Set the successor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>new_successor.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_queue.rb', line 7</span>
+
+<span class='id identifier rubyid_attr_atomic'>attr_atomic</span> <span class='symbol'>:successor</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="swap_successor-instance_method">
+  
+    #<strong>swap_successor</strong>(new_successor)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Set the successor to new_successor and return the old successor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>old successor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_queue.rb', line 7</span>
+
+<span class='id identifier rubyid_attr_atomic'>attr_atomic</span> <span class='symbol'>:successor</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="update_successor-instance_method">
+  
+    #<strong>update_successor</strong> {|Object| ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Updates the successor using the block.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Calculate a new successor using given (old) successor</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>old</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>successor</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>new successor</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+7</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_queue.rb', line 7</span>
+
+<span class='id identifier rubyid_attr_atomic'>attr_atomic</span> <span class='symbol'>:successor</span></pre>
     </td>
   </tr>
 </table>

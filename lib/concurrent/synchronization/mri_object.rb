@@ -1,6 +1,7 @@
 module Concurrent
   module Synchronization
 
+    # @!visibility private
     module MriAttrVolatile
       def self.included(base)
         base.extend(ClassMethods)

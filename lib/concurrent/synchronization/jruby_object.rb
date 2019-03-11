@@ -3,6 +3,7 @@ module Concurrent
 
     if Concurrent.on_jruby? && Concurrent.java_extensions_loaded?
 
+      # @!visibility private
       module JRubyAttrVolatile
         def self.included(base)
           base.extend(ClassMethods)

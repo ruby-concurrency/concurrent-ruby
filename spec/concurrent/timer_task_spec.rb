@@ -9,7 +9,7 @@ module Concurrent
 
       def kill_subject
         @subject.kill if defined?(@subject) && @subject
-      rescue Exception => ex
+      rescue Exception
         # prevent exceptions with mocks in tests
       end
 

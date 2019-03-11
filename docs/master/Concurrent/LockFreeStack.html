@@ -339,7 +339,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#empty%3F-instance_method" title="#empty? (instance method)">#<strong>empty?</strong>(head = self.head)  &#x21d2; true, false </a>
+      <a href="#empty%3F-instance_method" title="#empty? (instance method)">#<strong>empty?</strong>(head = head())  &#x21d2; true, false </a>
     
 
     
@@ -1092,7 +1092,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
       <div class="method_details ">
   <h3 class="signature " id="empty?-instance_method">
   
-    #<strong>empty?</strong>(head = self.head)  &#x21d2; <tt>true</tt>, <tt>false</tt> 
+    #<strong>empty?</strong>(head = head())  &#x21d2; <tt>true</tt>, <tt>false</tt> 
   
 
   
@@ -1116,7 +1116,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
         <span class='type'>(<tt><span class='object_link'><a href="LockFreeStack/Node.html" title="Concurrent::LockFreeStack::Node (class)">Node</a></span></tt>)</span>
       
       
-        <em class="default">(defaults to: <tt>self.head</tt>)</em>
+        <em class="default">(defaults to: <tt>head()</tt>)</em>
       
       
     </li>
@@ -1150,7 +1150,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 56</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_empty?'>empty?</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_head'>head</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_empty?'>empty?</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span> <span class='op'>=</span> <span class='id identifier rubyid_head'>head</span><span class='lparen'>(</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_equal?'>equal?</span> <span class='const'><span class='object_link'><a href="#EMPTY-constant" title="Concurrent::LockFreeStack::EMPTY (constant)">EMPTY</a></span></span>
 <span class='kw'>end</span></pre>
     </td>
