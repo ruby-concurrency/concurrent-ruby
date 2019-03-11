@@ -251,7 +251,8 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 *   [Throttle](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Throttle.html)
     A tool managing concurrency level of tasks.
 *   [ErlangActor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ErlangActor.html)
-    Actor implementation which matches Erlang actor behaviour.
+    Actor implementation which precisely matches Erlang actor behaviour. 
+    Requires at least Ruby 2.1 otherwise it's not loaded.
 
 ## Supported Ruby versions
 
