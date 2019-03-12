@@ -22,7 +22,7 @@ module Concurrent
       let!(:rejected_reason) { StandardError.new('mojo jojo') }
 
       let(:pending_subject) do
-        Delay.new(executor: :fast){ sleep 0.05; fulfilled_value }
+        Delay.new(executor: :fast){ sleep 0.1; fulfilled_value }
       end
 
       let(:fulfilled_subject) do

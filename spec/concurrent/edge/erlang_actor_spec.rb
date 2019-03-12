@@ -917,17 +917,19 @@ if Concurrent.ruby_version :>=, 2, 1, 0
           end
 
           specify "timing out" do
-            body = { on_thread: -> { m = receive; sleep 0.01; reply m },
-                     on_pool:   -> { receive { |m| sleep 0.01; reply m } } }
+            count_down = Concurrent::CountDownLatch.new
+            body = { on_thread: -> { m = receive; count_down.wait; reply m },
+                     on_pool:   -> { receive { |m| count_down.wait; reply m } } }
             a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
             expect(a.ask(:err, 0, 42)).to eq 42
+            count_down.count_down
             expect(a.terminated.value!).to eq false
 
             body = { on_thread: -> { reply receive },
                      on_pool:   -> { receive { |m| reply m } } }
-            a    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
-            expect(a.ask(:v, 1, 42)).to eq :v
-            expect(a.terminated.value!).to eq true
+            b    = Concurrent::ErlangActor.spawn(type: type, &body.fetch(type))
+            expect(b.ask(:v, 1, 42)).to eq :v
+            expect(b.terminated.value!).to eq true
           end
 
           specify "rejects on no reply" do
