@@ -1,4 +1,5 @@
 require_relative 'lib/concurrent/version'
+require_relative 'lib-edge/concurrent/edge/version'
 require_relative 'lib/concurrent/utility/engine'
 
 if Concurrent.ruby_version :<, 2, 0, 0
