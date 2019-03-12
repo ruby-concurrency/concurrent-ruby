@@ -25,5 +25,6 @@ Gem::Specification.new do |s|
     Inspired by Erlang, Clojure, Go, JavaScript, actors, and classic concurrency patterns.
   TXT
   s.metadata["source_code_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby"
+  s.metadata["changelog_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby/blob/master/CHANGELOG.md"
   s.required_ruby_version = '>= 1.9.3'
 end
