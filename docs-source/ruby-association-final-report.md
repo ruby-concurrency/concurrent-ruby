@@ -14,19 +14,55 @@ therefore they will be able to reuse their knowledge in Ruby.
     
 ## Erlang actors
 
-The actor implementation matches the Erlang's implementation.
-Mainly it has the same: 
-*   exit behavior (called termination in Ruby to avoid collision with `Kernel#exit`),
-*   ability to link and monitor actors, 
-*   ability to have much more actors then threads,
-*   ordering guarantees between messages and signals,
-*   message receiving features.
+The actor implementation matches the Erlang's implementation. 
+Mainly: 
+
+*   The `exit/1` and `exit/2` 
+    functions are reimplemented with the same arguments and effects. 
+    Even though the methods are named `terminate` to avoid collision with `Kernel#exit`.r
+    This re-implementation adds that the termination event not only sends signals to linked actors 
+    but it is represented as a Future 
+    which is fulfilled with the final value of the actor or rejected with the reason of abnormal termination.
+
+*   The linking and monitoring between actors (called processes in Erlang) is re-implemented.
+    Functions `link`, `unlink`, `spawn_link`, `monitor`, `demonitor`, `spawn_monitor`
+    have equivalent counterparts 
+    `link`, `unlink`, `spawn link:true`, `monitor`, `demonitor`, `spawn monitor: true`.
+    All the options applicable in this implementation are supported, 
+    they effects are the same 
+    and the ordering of signal and messages is the same as on Erlang.
+
+*   This implementation has two functionally equivalent types of actors
+    `spawn type: on_thread, ...` and `spawn type: on_pool, ...`. 
+    They differ in the execution mode. 
+    First requires its own thread second runs on shared thread pool
+    therefore allowing to have millions of short or long lived actors if required.
+ 
+*   Message and signal ordering of messages between two actors has same guarantee as in Erlang.
+    Messages and signals from A are always received by B in the order they were send. 
+    (Signals are internal messages produced by methods like `link`.)
+    The ordering guarantee does not scale up to more than 2 actors in Erlang nor in this implementation.
+
+*   Even though Ruby does not have pattern matching, this implementation provides `receive`
+    which is functionally equivalent. 
+    (It is sometimes more cumbersome to use though.)
+
+Exit behaviour, linking, and monitoring is very well described by 
+[the chapter of the book "learn you some Erlang"](https://learnyousomeerlang.com/errors-and-processes).
+This implementation matches the behaviours described there.
+
+Erlang method documentation can be found at 
+<http://erlang.org/documentation/doc-10.3/erts-10.3/doc/html/erlang.html>. 
+
+### Actor execution modes - types
 
 The actors can be written in 2 modes. First will require it's own thread, 
 second will run on a thread pool. 
 Please see 
 [Actor types section](http://blog.pitr.ch/concurrent-ruby/master/Concurrent/ErlangActor.html)
 for more details.
+
+### Ordering
 
 Especially ordering guarantees are not easy to get correct. 
 As an example lets have a look at the reasoning behind implementation of monitoring. 
