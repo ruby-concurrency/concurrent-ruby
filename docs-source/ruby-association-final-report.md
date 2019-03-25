@@ -1,8 +1,81 @@
 # Final report
 
-Since the midterm report I have continued working on the project until 8. February as planned.
-The remaining half of the time I was focusing on implementing actors 
-which would precisely match behaviour of Erlang actors.
+I started working on the project 6. Dec
+and I have continued working on the project until 8. February as planned. 
+I have worked on following abstractions Throttle, Cancellation, Channel, and ErlangActor.
+
+The code developed during this project is available in 
+<https://github.com/ruby-concurrency/concurrent-ruby/pull/791>.
+The documentation is available at
+<http://ruby-concurrency.github.io/concurrent-ruby/master/index.html>. 
+
+## Throttle
+
+The Throttle implementation originally had special APIs 
+to interact with other abstractions like promises. 
+However it was impractical and the API felt cumbersome.
+Therefore the Throttle was finalized with much smaller API surface.
+Capacity can be still directly acquired from the Throttle 
+and then released.
+
+The more common usage of the Throttle is with a proxy executor 
+`a_throttle.on(Concurrent.global_io_executor)`. 
+Anything executed on the proxy executor will be throttled and 
+execute on the given executor. There can be more than one proxy executors.
+All abstractions which execute tasks have option to specify executor, 
+therefore the proxy executor can be injected to any abstraction 
+throttling its concurrency level.
+
+The abstraction is released in `concurrent-ruby-edge-0.5.0`. 
+For more details see the documentation 
+<http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Throttle.html>.
+
+## Cancellation
+
+The Cancellation abstraction provides cooperative cancellation.
+
+The Cancellation abstraction was originally consisting of 2 classes,
+during its finalization it was however simplified 
+to be just a combination of Cancellation object 
+and an origin which is regular Event or Future,
+which improves compose-ability greatly. 
+Any Event or Future can be easily turned into cancellation.    
+
+The standard methods `Thread#raise` of `Thread#kill` available in Ruby
+are very dangerous (see linked the blog posts bellow).
+Therefore concurrent-ruby provides an alternative.
+* <https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/>
+* <http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/>
+* <http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html>
+
+It provides an object which represents a cancellation event 
+which can be shared between tasks.
+The task has to get the reference to the object 
+and periodically cooperatively check that it is not cancelled.
+
+The abstraction is released in `concurrent-ruby-edge-0.5.0`. 
+For more details see the documentation 
+<http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Cancellation.html>.
+
+## Channel
+
+The channel implementation is inspired by Go. 
+However this implementation is more flexible. 
+It has 3 major operations pop, push and select as expected.
+Where each operation has 3 variants. 
+`try_(pop|push|select)` which never blocks and returns always immediately.
+`(pop|push|select)` which blocks current thread until it can be done 
+or until it times out.
+`(pop|push|select)_op` which returns Future representing the operation,
+which can be easily composed with other asynchronous tasks.
+
+The abstraction is released in `concurrent-ruby-edge-0.5.0`. 
+For more details see the documentation
+<http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises/Channel.html>. 
+
+## Erlang actors
+
+The actor implementation matches the Erlang's implementation.
 The Erlang compatible implementation was chosen for two reasons. 
 First reason was to make porting of the Erlang's
 [OTP](https://learnyousomeerlang.com/what-is-otp) library possible.
@@ -11,10 +84,7 @@ Second reason was
 that there is an intersection between Ruby and Elixir programmers.
 Elixir runs on Erlang's VM and the programmers are familiar with OTP,
 therefore they will be able to reuse their knowledge in Ruby.    
-    
-## Erlang actors
-
-The actor implementation matches the Erlang's implementation. 
+ 
 Mainly: 
 
 *   The `exit/1` and `exit/2` 
@@ -59,7 +129,7 @@ Erlang method documentation can be found at
 The actors can be written in 2 modes. First will require it's own thread, 
 second will run on a thread pool. 
 Please see 
-[Actor types section](http://blog.pitr.ch/concurrent-ruby/master/Concurrent/ErlangActor.html)
+[Actor types section](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ErlangActor.html)
 for more details.
 
 ### Ordering
@@ -138,7 +208,7 @@ Other actor features like linking, demonitoring, etc. required similar approach.
 
 The abstraction is ready for release. 
 For more details about usage see the API documentation 
-<http://blog.pitr.ch/concurrent-ruby/master/Concurrent/ErlangActor.html>.
+<http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ErlangActor.html>.
 
 ## Integration
 
@@ -213,7 +283,7 @@ and the futures are executing on the global thread poll for `:fast` non-blocking
 This is of course not an exhaustive list of possible ways how the abstractions can be integrated
 but rather few examples to give a feeling what is possible.
 Please also see an executable 
-[example](http://blog.pitr.ch/concurrent-ruby/master/file.medium-example.out.html)
+[example](http://ruby-concurrency.github.io/concurrent-ruby/master/file.medium-example.out.html)
 using the integrations.
 
 ## What was not finished
