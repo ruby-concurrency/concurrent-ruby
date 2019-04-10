@@ -9,11 +9,11 @@ matrix:
     # Latest versions first
     - name: MRI 2.6.2 Latest
       rvm: 2.6.2
-    - name: JRuby 9.2.6.0 Latest on Java 11
-      rvm: jruby-9.2.6.0
+    - name: JRuby 9.2.7.0 Latest on Java 11
+      rvm: jruby-9.2.7.0
       jdk: oraclejdk11
-    - name: JRuby 9.2.6.0 Latest on Java 8
-      rvm: jruby-9.2.6.0
+    - name: JRuby 9.2.7.0 Latest on Java 8
+      rvm: jruby-9.2.7.0
       jdk: oraclejdk8
     - name: TruffleRuby Latest
       rvm: truffleruby
