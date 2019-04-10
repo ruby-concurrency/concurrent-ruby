@@ -26,8 +26,8 @@ matrix:
     # Older versions follow
     - name: MRI 2.5.5
       rvm: 2.5.5
-    - name: MRI 2.4.5
-      rvm: 2.4.5
+    - name: MRI 2.4.6
+      rvm: 2.4.6
     - name: MRI 2.3.8
       rvm: 2.3.8
     - name: MRI 2.2.10
