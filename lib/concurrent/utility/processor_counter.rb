@@ -22,6 +22,8 @@ module Concurrent
       # occasionally poll this property." Subsequently the result will NOT be
       # memoized under JRuby.
       #
+      # Ruby's Etc.nprocessors will be used if available (MRI 2.2+).
+      #
       # On Windows the Win32 API will be queried for the
       # `NumberOfLogicalProcessors from Win32_Processor`. This will return the
       # total number "logical processors for the current instance of the
@@ -76,6 +78,8 @@ module Concurrent
       def compute_processor_count
         if Concurrent.on_jruby?
           java.lang.Runtime.getRuntime.availableProcessors
+        elsif defined?(Etc) && Etc.respond_to?(:nprocessors) && (nprocessor = Etc.nprocessors rescue nil)
+          nprocessor
         else
           os_name = RbConfig::CONFIG["target_os"]
           if os_name =~ /mingw|mswin/
