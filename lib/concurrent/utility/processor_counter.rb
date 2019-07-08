@@ -1,3 +1,4 @@
+require 'etc'
 require 'rbconfig'
 require 'concurrent/delay'
 
@@ -78,7 +79,7 @@ module Concurrent
       def compute_processor_count
         if Concurrent.on_jruby?
           java.lang.Runtime.getRuntime.availableProcessors
-        elsif defined?(Etc) && Etc.respond_to?(:nprocessors) && (nprocessor = Etc.nprocessors rescue nil)
+        elsif Etc.respond_to?(:nprocessors) && (nprocessor = Etc.nprocessors rescue nil)
           nprocessor
         else
           os_name = RbConfig::CONFIG["target_os"]
