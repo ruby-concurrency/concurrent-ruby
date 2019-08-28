@@ -60,7 +60,7 @@ module Concurrent
       unless array = get_threadlocal_array(me)
         array = set_threadlocal_array([], me)
         LOCK.synchronize { ARRAYS[array.object_id] = array }
-        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
+        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array.object_id))
       end
       array[@index] = (value.nil? ? NULL : value)
       value
@@ -83,7 +83,7 @@ module Concurrent
     # @!visibility private
     def self.threadlocal_finalizer(index)
       proc do
-        Thread.new do # avoid error: can't be called from trap context
+        Thread.new(index) do |index| # avoid error: can't be called from trap context
           LOCK.synchronize do
             FREE.push(index)
             # The cost of GC'ing a TLV is linear in the number of threads using TLVs
@@ -98,13 +98,13 @@ module Concurrent
     end
 
     # @!visibility private
-    def self.thread_finalizer(array)
+    def self.thread_finalizer(id)
       proc do
-        Thread.new do # avoid error: can't be called from trap context
+        Thread.new(id) do |id| # avoid error: can't be called from trap context
           LOCK.synchronize do
             # The thread which used this thread-local array is now gone
             # So don't hold onto a reference to the array (thus blocking GC)
-            ARRAYS.delete(array.object_id)
+            ARRAYS.delete(id)
           end
         end
       end
