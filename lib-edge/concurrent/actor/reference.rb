@@ -35,12 +35,7 @@ module Concurrent
 
       alias_method :<<, :tell
 
-      # @note it's a good practice to use tell whenever possible. Ask should be used only for
-      # testing and when it returns very shortly. It can lead to deadlock if all threads in
-      # global_io_executor will block on while asking. It's fine to use it form outside of actors and
-      # global_io_executor.
-      #
-      # @note it's a good practice to use {#tell} whenever possible. Results can be send back with other messages.
+      # @note it's a good practice to use {#tell} whenever possible. Results can be sent back with other messages.
       #   Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
       #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
       #   global_io_executor.
@@ -61,7 +56,7 @@ module Concurrent
       # Sends the message synchronously and blocks until the message
       # is processed. Raises on error.
       #
-      # @note it's a good practice to use {#tell} whenever possible. Results can be send back with other messages.
+      # @note it's a good practice to use {#tell} whenever possible. Results can be sent back with other messages.
       #   Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
       #   global_io_executor will block on while asking. It's fine to use it form outside of actors and
       #   global_io_executor.
