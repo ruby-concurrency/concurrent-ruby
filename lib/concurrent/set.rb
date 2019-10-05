@@ -11,11 +11,11 @@ module Concurrent
   #   or writing at a time. This includes iteration methods like `#each`.
   #
   #   @note `a += b` is **not** a **thread-safe** operation on
-  #   `Concurrent::Set`. It reads Set `a`, then it creates new `Concurrent::Set`
-  #   which is union of `a` and `b`, then it writes the union to `a`.
-  #   The read and write are independent operations they do not form a single atomic
-  #   operation therefore when two `+=` operations are executed concurrently updates
-  #   may be lost. Use `#merge` instead.
+  #     `Concurrent::Set`. It reads Set `a`, then it creates new `Concurrent::Set`
+  #     which is union of `a` and `b`, then it writes the union to `a`.
+  #     The read and write are independent operations they do not form a single atomic
+  #     operation therefore when two `+=` operations are executed concurrently updates
+  #     may be lost. Use `#merge` instead.
   #
   #   @see http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html Ruby standard library `Set`
 

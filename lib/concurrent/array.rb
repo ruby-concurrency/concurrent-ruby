@@ -10,11 +10,11 @@ module Concurrent
   #   or writing at a time. This includes iteration methods like `#each`.
   #
   #   @note `a += b` is **not** a **thread-safe** operation on
-  #   `Concurrent::Array`. It reads array `a`, then it creates new `Concurrent::Array`
-  #   which is concatenation of `a` and `b`, then it writes the concatenation to `a`.
-  #   The read and write are independent operations they do not form a single atomic
-  #   operation therefore when two `+=` operations are executed concurrently updates
-  #   may be lost. Use `#concat` instead.
+  #     `Concurrent::Array`. It reads array `a`, then it creates new `Concurrent::Array`
+  #     which is concatenation of `a` and `b`, then it writes the concatenation to `a`.
+  #     The read and write are independent operations they do not form a single atomic
+  #     operation therefore when two `+=` operations are executed concurrently updates
+  #     may be lost. Use `#concat` instead.
   #
   #   @see http://ruby-doc.org/core-2.2.0/Array.html Ruby standard library `Array`
 
