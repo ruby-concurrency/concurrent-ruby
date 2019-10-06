@@ -75,14 +75,14 @@ module Concurrent
       context 'without pool name' do
         let(:pool_name) { }
         it 'sets counted name' do
-          expect(names.all? { |name| name =~ /^Concurrent.*Worker-\d+$/ }).to be true
+          expect(names.all? { |name| name =~ /^worker-\d+$/ }).to be true
         end
       end
 
       context 'with pool name' do
         let(:pool_name) { 'MyExecutor' }
         it 'sets counted name' do
-          expect(names.all? { |name| name =~ /^MyExecutor-Concurrent.*Worker-\d+$/ }).to be true
+          expect(names.all? { |name| name =~ /^MyExecutor-worker-\d+$/ }).to be true
         end
       end
     end
