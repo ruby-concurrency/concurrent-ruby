@@ -131,6 +131,7 @@ module Concurrent
       @scheduled_task_count = 0
       @completed_task_count = 0
       @largest_length       = 0
+      @workers_counter      = 0
       @ruby_pid             = $$ # detects if Ruby has forked
 
       @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
@@ -224,7 +225,8 @@ module Concurrent
     def ns_add_busy_worker
       return if @pool.size >= @max_length
 
-      @pool << (worker = Worker.new(self))
+      @workers_counter += 1
+      @pool << (worker = Worker.new(self, id: @workers_counter))
       @largest_length = @pool.length if @pool.length > @largest_length
       worker
     end
@@ -284,6 +286,7 @@ module Concurrent
         @scheduled_task_count = 0
         @completed_task_count = 0
         @largest_length       = 0
+        @workers_counter      = 0
         @ruby_pid             = $$
       end
     end
@@ -292,11 +295,12 @@ module Concurrent
     class Worker
       include Concern::Logging
 
-      def initialize(pool)
+      def initialize(pool, id: nil)
         # instance variables accessed only under pool's lock so no need to sync here again
         @queue  = Queue.new
         @pool   = pool
         @thread = create_worker @queue, pool, pool.idletime
+        @thread.name = [pool.name, self.class.name, id].compact.join('-')
       end
 
       def <<(message)
