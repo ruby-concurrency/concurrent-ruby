@@ -30,6 +30,7 @@ require 'concurrent/promise'
 require 'concurrent/scheduled_task'
 require 'concurrent/settable_struct'
 require 'concurrent/timer_task'
+require 'concurrent/timer_task2'
 require 'concurrent/tvar'
 require 'concurrent/promises'
 
