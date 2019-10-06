@@ -31,6 +31,10 @@ RSpec.shared_examples :thread_pool_executor do
     it 'defaults :fallback_policy to :abort' do
       expect(subject.fallback_policy).to eq :abort
     end
+
+    it 'defaults :name to nil' do
+      expect(subject.name).to be_nil
+    end
   end
 
   context "#initialize explicit values" do
@@ -99,6 +103,13 @@ RSpec.shared_examples :thread_pool_executor do
       expect {
         described_class.new(fallback_policy: :bogus)
       }.to raise_error(ArgumentError)
+    end
+
+    it 'sets :name' do
+      pool = described_class.new(name: 'MyPool')
+      expect(pool.name).to eq 'MyPool'
+      pool.shutdown
+      pool.wait_for_termination(pool_termination_timeout)
     end
   end
 

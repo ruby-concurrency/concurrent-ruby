@@ -16,10 +16,20 @@ module Concurrent
     # @!macro executor_service_attr_reader_fallback_policy
     attr_reader :fallback_policy
 
+    attr_reader :name
+
     # Create a new thread pool.
     def initialize(*args, &block)
       super(&nil)
-      synchronize { ns_initialize(*args, &block) }
+      synchronize do
+        ns_initialize(*args, &block)
+        opts = args.first || {}
+        @name = opts.fetch(:name) if opts.key?(:name)
+      end
+    end
+
+    def to_s
+      name ? "#{super[0..-2]} name: #{name}>" : super
     end
 
     # @!macro executor_service_method_shutdown
