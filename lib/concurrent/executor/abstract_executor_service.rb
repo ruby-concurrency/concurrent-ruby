@@ -19,11 +19,10 @@ module Concurrent
     attr_reader :name
 
     # Create a new thread pool.
-    def initialize(*args, &block)
+    def initialize(opts = {}, &block)
       super(&nil)
       synchronize do
-        ns_initialize(*args, &block)
-        opts = args.first || {}
+        ns_initialize(opts, &block)
         @name = opts.fetch(:name) if opts.key?(:name)
       end
     end
