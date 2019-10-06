@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent/version')
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/version')
 
 Gem::Specification.new do |s|
   s.name        = 'concurrent-ruby-ext'
