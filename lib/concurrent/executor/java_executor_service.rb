@@ -18,10 +18,6 @@ if Concurrent.on_jruby?
       }.freeze
       private_constant :FALLBACK_POLICY_CLASSES
 
-      def initialize(*args, &block)
-        super
-      end
-
       def post(*args, &task)
         raise ArgumentError.new('no block given') unless block_given?
         return handle_fallback(*args, &task) unless running?
