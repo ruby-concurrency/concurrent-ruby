@@ -88,7 +88,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/thread_safe/util/xor_shift_random.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/thread_safe/util/xor_shift_random.rb</dd>
   </dl>
   
 </div>
@@ -284,7 +284,7 @@ contending for the global +Kernel.rand+.</p>
 29</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/thread_safe/util/xor_shift_random.rb', line 27</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span>
   <span class='const'>Kernel</span><span class='period'>.</span><span class='id identifier rubyid_rand'>rand</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#MAX_XOR_SHIFTABLE_INT-constant" title="Concurrent::ThreadSafe::Util::XorShiftRandom::MAX_XOR_SHIFTABLE_INT (constant)">MAX_XOR_SHIFTABLE_INT</a></span></span><span class='rparen'>)</span> <span class='op'>+</span> <span class='int'>1</span> <span class='comment'># 0 can&#39;t be xorshifted
@@ -326,7 +326,7 @@ contending for the global +Kernel.rand+.</p>
 38</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/thread_safe/util/xor_shift_random.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_xorshift'>xorshift</span><span class='lparen'>(</span><span class='id identifier rubyid_x'>x</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='id identifier rubyid_x'>x</span> <span class='op'>&gt;&gt;</span> <span class='int'>3</span>
@@ -374,7 +374,7 @@ contending for the global +Kernel.rand+.</p>
 29</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/thread_safe/util/xor_shift_random.rb', line 27</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span>
   <span class='const'>Kernel</span><span class='period'>.</span><span class='id identifier rubyid_rand'>rand</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#MAX_XOR_SHIFTABLE_INT-constant" title="Concurrent::ThreadSafe::Util::XorShiftRandom::MAX_XOR_SHIFTABLE_INT (constant)">MAX_XOR_SHIFTABLE_INT</a></span></span><span class='rparen'>)</span> <span class='op'>+</span> <span class='int'>1</span> <span class='comment'># 0 can&#39;t be xorshifted
@@ -416,7 +416,7 @@ contending for the global +Kernel.rand+.</p>
 38</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/thread_safe/util/xor_shift_random.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/thread_safe/util/xor_shift_random.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_xorshift'>xorshift</span><span class='lparen'>(</span><span class='id identifier rubyid_x'>x</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_x'>x</span> <span class='op'>^=</span> <span class='id identifier rubyid_x'>x</span> <span class='op'>&gt;&gt;</span> <span class='int'>3</span>

@@ -88,7 +88,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/internal_delegations.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb</dd>
   </dl>
   
 </div>
@@ -526,7 +526,7 @@
 51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_behaviour'>behaviour</span><span class='lparen'>(</span><span class='id identifier rubyid_behaviour_class'>behaviour_class</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_behaviour'>behaviour</span><span class='lparen'>(</span><span class='id identifier rubyid_behaviour_class'>behaviour_class</span><span class='rparen'>)</span>
@@ -566,7 +566,7 @@
 56</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 54</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_behaviour!'>behaviour!</span><span class='lparen'>(</span><span class='id identifier rubyid_behaviour_class'>behaviour_class</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_behaviour!'>behaviour!</span><span class='lparen'>(</span><span class='id identifier rubyid_behaviour_class'>behaviour_class</span><span class='rparen'>)</span>
@@ -612,7 +612,7 @@
 10</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 8</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 8</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_children'>children</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span>
@@ -664,7 +664,7 @@
 46</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_context'>context</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span>
@@ -710,7 +710,7 @@
 36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_dead_letter_routing'>dead_letter_routing</span>
   <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_dead_letter_routing'>dead_letter_routing</span>
@@ -757,7 +757,7 @@
 31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 29</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 29</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
@@ -797,7 +797,7 @@
 41</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_redirect'>redirect</span><span class='lparen'>(</span><span class='id identifier rubyid_reference'>reference</span><span class='comma'>,</span> <span class='id identifier rubyid_envelope'>envelope</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_envelope'>envelope</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_reference'>reference</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='lparen'>(</span><span class='id identifier rubyid_envelope'>envelope</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_envelope'>envelope</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span><span class='rparen'>)</span>
@@ -844,7 +844,7 @@
 15</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 13</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 13</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminate!'>terminate!</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_behaviour!'>behaviour!</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Behaviour.html" title="Concurrent::Actor::Behaviour (module)">Behaviour</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Behaviour/Termination.html" title="Concurrent::Actor::Behaviour::Termination (class)">Termination</a></span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_terminate!'>terminate!</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
@@ -903,7 +903,7 @@
 20</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/internal_delegations.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminated?'>terminated?</span>
   <span class='id identifier rubyid_behaviour!'>behaviour!</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Behaviour.html" title="Concurrent::Actor::Behaviour (module)">Behaviour</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Behaviour/Termination.html" title="Concurrent::Actor::Behaviour::Termination (class)">Termination</a></span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_terminated?'>terminated?</span>

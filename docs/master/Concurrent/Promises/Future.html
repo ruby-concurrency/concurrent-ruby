@@ -103,8 +103,8 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/promises.rb<span class="defines">,<br />
-  lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/promises.rb,<br /> lib-edge/concurrent/edge/old_channel_integration.rb</span>
+    <dd>lib/concurrent-ruby/concurrent/promises.rb<span class="defines">,<br />
+  lib/concurrent-ruby-edge/concurrent/edge/promises.rb,<br /> lib/concurrent-ruby-edge/concurrent/edge/promises.rb,<br /> lib/concurrent-ruby-edge/concurrent/edge/old_channel_integration.rb</span>
 </dd>
   </dl>
   
@@ -1065,7 +1065,7 @@ first.</p>
 1076</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1074</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1074</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_any'>any</span><span class='lparen'>(</span><span class='id identifier rubyid_event_or_future'>event_or_future</span><span class='rparen'>)</span>
   <span class='const'>AnyResolvedFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by2'>new_blocked_by2</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_event_or_future'>event_or_future</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -1120,7 +1120,7 @@ In other words, it inserts delay into the chain of Futures making rest of it laz
 1087</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1084</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1084</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delay'>delay</span>
   <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'>DelayPromise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -1216,7 +1216,7 @@ If the reason is not an exception <code>Runtime.new(reason)</code> is returned.<
 1019</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1002</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1002</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Concurrent.html#Error-constant" title="Concurrent::Error (constant)">Error</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>it is not rejected</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
@@ -1285,7 +1285,7 @@ Be careful if the receiver rejects it will just resolve since Event does not hol
 1121</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1119</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1119</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_flat_event'>flat_event</span>
   <span class='const'>FlatEventPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_event'>event</span>
@@ -1364,7 +1364,7 @@ rejects it will have its rejection.</p>
 1111</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1109</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1109</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_flat_future'>flat_future</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='int'>1</span><span class='rparen'>)</span>
   <span class='const'>FlatFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_level'>level</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -1418,7 +1418,7 @@ rejects it will have its rejection.</p>
 913</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 910</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 910</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fulfilled?'>fulfilled?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='id identifier rubyid_internal_state'>internal_state</span>
@@ -1479,7 +1479,7 @@ rejects it will have its rejection.</p>
 1127</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1125</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1125</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_fulfillment'>on_fulfillment</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_on_fulfillment_using'>on_fulfillment_using</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span>
@@ -1587,7 +1587,7 @@ fulfilled. Does nothing on rejection.</p>
 1138</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1136</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1136</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_fulfillment!'>on_fulfillment!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:callback_on_fulfillment</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
@@ -1711,7 +1711,7 @@ global executor. The task is executed on it, default executor remains unchanged.
 1150</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1148</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1148</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_fulfillment_using'>on_fulfillment_using</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:async_callback_on_fulfillment</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
@@ -1771,7 +1771,7 @@ global executor. The task is executed on it, default executor remains unchanged.
 1156</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1154</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1154</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_rejection'>on_rejection</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_on_rejection_using'>on_rejection_using</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span>
@@ -1879,7 +1879,7 @@ rejected. Does nothing on fulfillment.</p>
 1167</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1165</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1165</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_rejection!'>on_rejection!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:callback_on_rejection</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
@@ -2003,7 +2003,7 @@ global executor. The task is executed on it, default executor remains unchanged.
 1179</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1177</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1177</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_rejection_using'>on_rejection_using</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_callback'>callback</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_callback'>add_callback</span> <span class='symbol'>:async_callback_on_rejection</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_callback'>callback</span>
@@ -2119,7 +2119,7 @@ Calls AbstractEventFuture#touch.</p>
 961</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 955</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 955</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reason'>reason</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -2177,7 +2177,7 @@ Calls AbstractEventFuture#touch.</p>
 920</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 917</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 917</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='id identifier rubyid_internal_state'>internal_state</span>
@@ -2238,7 +2238,7 @@ Calls AbstractEventFuture#touch.</p>
 1043</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1041</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1041</span>
 
 <span class='kw'>def</span> <span class='kw'>rescue</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_rescue_on'>rescue_on</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
@@ -2364,7 +2364,7 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
 1055</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1053</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1053</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rescue_on'>rescue_on</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='const'>RescuePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -2452,7 +2452,7 @@ on timeout.</p>
 972</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 970</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 970</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_result'>result</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_internal_state'>internal_state</span><span class='period'>.</span><span class='id identifier rubyid_result'>result</span> <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -2545,7 +2545,7 @@ which is suppose to continue running.</p>
 1201</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1199</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1199</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='id identifier rubyid_run_test'>run_test</span> <span class='op'>=</span> <span class='id identifier rubyid_method'>method</span><span class='lparen'>(</span><span class='symbol'>:run_test</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='const'>RunFuturePromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_run_test'>run_test</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -2623,7 +2623,7 @@ delay into the chain.</p>
 1096</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1091</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1091</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_schedule'>schedule</span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_chain'>chain</span> <span class='kw'>do</span>
@@ -2686,7 +2686,7 @@ delay into the chain.</p>
 1025</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1023</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1023</span>
 
 <span class='kw'>def</span> <span class='kw'>then</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_then_on'>then_on</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span>
@@ -2812,7 +2812,7 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
 1037</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1035</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1035</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_then_on'>then_on</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='const'>ThenPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@DefaultExecutor</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -2867,7 +2867,7 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
 1215</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1211</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1211</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_event'>to_event</span>
   <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_event'><span class='object_link'><a href="FactoryMethods.html#resolvable_event-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_event (method)">resolvable_event</a></span></span>
@@ -2922,7 +2922,7 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
 1221</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1219</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1219</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_future'>to_future</span>
   <span class='kw'>self</span>
@@ -2987,7 +2987,7 @@ raised exception becomes <span class='object_link'><a href="#reason-instance_met
 1230</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1224</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1224</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_resolved?'>resolved?</span>
@@ -3109,7 +3109,7 @@ nil on rejection.</p>
 945</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 939</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 939</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved'>wait_until_resolved</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -3248,7 +3248,7 @@ or timeout_value on timeout.</p>
 992</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 986</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 986</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_wait_until_resolved!'>wait_until_resolved!</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -3358,7 +3358,7 @@ and it was resolved, false implies it was not resolved within timeout.</p>
 979</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 976</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 976</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait!'>wait!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='id identifier rubyid_wait_until_resolved!'>wait_until_resolved!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
@@ -3413,7 +3413,7 @@ Any futures depending on it will use the new default executor.</p>
 1102</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1100</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1100</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_default_executor'>with_default_executor</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span>
   <span class='const'>FutureWrapperPromise</span><span class='period'>.</span><span class='id identifier rubyid_new_blocked_by1'>new_blocked_by1</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_future'>future</span>
@@ -3478,7 +3478,7 @@ then the result is as described in <span class='object_link'><a href="FactoryMet
 1065</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/promises.rb', line 1059</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/promises.rb', line 1059</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_zip'>zip</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="" title="Concurrent::Promises::Future (class)">Future</a></span></span><span class='rparen'>)</span>

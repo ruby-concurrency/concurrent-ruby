@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/wrapping_executor.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/executor/wrapping_executor.rb</dd>
   </dl>
   
 </div>
@@ -370,7 +370,7 @@ before the task is given to the target executor it delegates to.</p>
 27</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/wrapping_executor.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/executor/wrapping_executor.rb', line 23</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_wrapper'>wrapper</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -436,7 +436,7 @@ before the task is given to the target executor it delegates to.</p>
 40</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/wrapping_executor.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/executor/wrapping_executor.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_can_overflow?'>can_overflow?</span>
   <span class='ivar'>@Executor</span><span class='period'>.</span><span class='id identifier rubyid_can_overflow?'>can_overflow?</span>
@@ -555,7 +555,7 @@ is not running</p>
 35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/wrapping_executor.rb', line 32</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/executor/wrapping_executor.rb', line 32</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_task'>task</span> <span class='op'>=</span> <span class='ivar'>@Wrapper</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
@@ -615,7 +615,7 @@ occur simultaneously. Else false.</p>
 45</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/wrapping_executor.rb', line 43</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/executor/wrapping_executor.rb', line 43</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_serialized?'>serialized?</span>
   <span class='ivar'>@Executor</span><span class='period'>.</span><span class='id identifier rubyid_serialized?'>serialized?</span>

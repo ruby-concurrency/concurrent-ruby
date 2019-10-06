@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/collection/lock_free_stack.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb</dd>
   </dl>
   
 </div>
@@ -553,7 +553,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 52</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="#EMPTY-constant" title="Concurrent::LockFreeStack::EMPTY (constant)">EMPTY</a></span></span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -617,7 +617,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 122</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 116</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 116</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clear'>clear</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -712,7 +712,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 149</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 140</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 140</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clear_each'>clear_each</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -786,7 +786,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 128</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 126</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 126</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clear_if'>clear_if</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_compare_and_set_head'>compare_and_set_head</span> <span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="#EMPTY-constant" title="Concurrent::LockFreeStack::EMPTY (constant)">EMPTY</a></span></span>
@@ -853,7 +853,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 99</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 97</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 97</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_compare_and_clear'>compare_and_clear</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_compare_and_set_head'>compare_and_set_head</span> <span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="#EMPTY-constant" title="Concurrent::LockFreeStack::EMPTY (constant)">EMPTY</a></span></span>
@@ -920,7 +920,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 85</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 83</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_compare_and_pop'>compare_and_pop</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_compare_and_set_head'>compare_and_set_head</span> <span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_next_node'>next_node</span>
@@ -998,7 +998,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 65</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 63</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 63</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_compare_and_push'>compare_and_push</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_compare_and_set_head'>compare_and_set_head</span> <span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="LockFreeStack/Node.html" title="Concurrent::LockFreeStack::Node (class)">Node</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_head'>head</span><span class='rbracket'>]</span>
@@ -1073,7 +1073,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 113</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 105</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each'>each</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_to_enum'>to_enum</span><span class='lparen'>(</span><span class='symbol'>:each</span><span class='comma'>,</span> <span class='id identifier rubyid_head'>head</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1148,7 +1148,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_empty?'>empty?</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span> <span class='op'>=</span> <span class='id identifier rubyid_head'>head</span><span class='lparen'>(</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_head'>head</span><span class='period'>.</span><span class='id identifier rubyid_equal?'>equal?</span> <span class='const'><span class='object_link'><a href="#EMPTY-constant" title="Concurrent::LockFreeStack::EMPTY (constant)">EMPTY</a></span></span>
@@ -1200,7 +1200,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_peek'>peek</span>
   <span class='id identifier rubyid_head'>head</span>
@@ -1255,7 +1255,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 93</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 88</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 88</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pop'>pop</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -1328,7 +1328,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 74</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 69</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 69</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -1409,7 +1409,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 135</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 133</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 133</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_replace_if'>replace_if</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_new_head'>new_head</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_compare_and_set_head'>compare_and_set_head</span> <span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_new_head'>new_head</span>
@@ -1470,7 +1470,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 154</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/lock_free_stack.rb', line 152</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/lock_free_stack.rb', line 152</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s %s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_to_a'>to_a</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>

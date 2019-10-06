@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/tvar.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/tvar.rb</dd>
   </dl>
   
 </div>
@@ -120,7 +120,7 @@ of an update does not need to be known immediately.</li>
 uncoordinated, <em>synchronous</em> change of individual values. Best used when
 the value will undergo frequent reads but only occasional, though complex,
 updates. Suitable when the result of an update must be known immediately.</li>
-<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be
+<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be updated
 atomically. Updates are synchronous but fast. Best used when updates a
 simple set operations. Not suitable when updates are complex.
 <span class='object_link'><a href="AtomicBoolean.html" title="Concurrent::AtomicBoolean (class)">AtomicBoolean</a></span> and <span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span> are similar
@@ -513,7 +513,7 @@ statistically significant anyway.</li>
 20</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 16</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='ivar'>@value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
@@ -564,7 +564,7 @@ statistically significant anyway.</li>
 27</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 23</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span>
   <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
@@ -608,7 +608,7 @@ statistically significant anyway.</li>
 34</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value='>value=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>

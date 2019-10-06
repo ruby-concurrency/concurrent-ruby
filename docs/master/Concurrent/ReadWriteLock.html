@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/atomic/read_write_lock.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb</dd>
   </dl>
   
 </div>
@@ -412,7 +412,7 @@ wait (so writers are not starved).</p>
 63</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 58</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 58</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -520,7 +520,7 @@ is exceeded.</p>
 134</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 110</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 110</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_acquire_read_lock'>acquire_read_lock</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -646,7 +646,7 @@ is exceeded.</p>
 190</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 159</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 159</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_acquire_write_lock'>acquire_write_lock</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -732,7 +732,7 @@ is exceeded.</p>
 215</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 213</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 213</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_has_waiters?'>has_waiters?</span>
   <span class='id identifier rubyid_waiting_writer?'>waiting_writer?</span><span class='lparen'>(</span><span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
@@ -799,7 +799,7 @@ is exceeded.</p>
 151</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 139</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 139</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_read_lock'>release_read_lock</span>
   <span class='kw'>while</span> <span class='kw'>true</span>
@@ -870,7 +870,7 @@ is exceeded.</p>
 201</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 195</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release_write_lock'>release_write_lock</span>
   <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>unless</span> <span class='id identifier rubyid_running_writer?'>running_writer?</span>
@@ -985,7 +985,7 @@ is exceeded.</p>
 82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 74</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 74</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_read_lock'>with_read_lock</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1102,7 +1102,7 @@ is exceeded.</p>
 101</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 93</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 93</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_write_lock'>with_write_lock</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1165,7 +1165,7 @@ is exceeded.</p>
 208</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/read_write_lock.rb', line 206</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/read_write_lock.rb', line 206</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_write_locked?'>write_locked?</span>
   <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>&gt;=</span> <span class='const'>RUNNING_WRITER</span>

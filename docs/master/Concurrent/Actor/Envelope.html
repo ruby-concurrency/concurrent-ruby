@@ -99,7 +99,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/envelope.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/envelope.rb</dd>
   </dl>
   
 </div>
@@ -538,7 +538,7 @@
 22</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 17</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 17</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span><span class='comma'>,</span> <span class='id identifier rubyid_sender'>sender</span><span class='comma'>,</span> <span class='id identifier rubyid_address'>address</span><span class='rparen'>)</span>
   <span class='ivar'>@message</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span>
@@ -585,7 +585,7 @@
 15</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 15</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 15</span>
 
 <span class='id identifier rubyid_attr_reader'>attr_reader</span> <span class='symbol'>:message</span><span class='comma'>,</span> <span class='symbol'>:future</span><span class='comma'>,</span> <span class='symbol'>:sender</span><span class='comma'>,</span> <span class='symbol'>:address</span></pre>
     </td>
@@ -640,7 +640,7 @@
 15</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 15</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 15</span>
 
 <span class='id identifier rubyid_attr_reader'>attr_reader</span> <span class='symbol'>:message</span><span class='comma'>,</span> <span class='symbol'>:future</span><span class='comma'>,</span> <span class='symbol'>:sender</span><span class='comma'>,</span> <span class='symbol'>:address</span></pre>
     </td>
@@ -697,7 +697,7 @@
 17</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 15</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 15</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_message'>message</span>
   <span class='ivar'>@message</span>
@@ -754,7 +754,7 @@
 15</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 15</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 15</span>
 
 <span class='id identifier rubyid_attr_reader'>attr_reader</span> <span class='symbol'>:message</span><span class='comma'>,</span> <span class='symbol'>:future</span><span class='comma'>,</span> <span class='symbol'>:sender</span><span class='comma'>,</span> <span class='symbol'>:address</span></pre>
     </td>
@@ -798,7 +798,7 @@
 34</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 32</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 32</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_address_path'>address_path</span>
   <span class='id identifier rubyid_address'>address</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span>
@@ -837,7 +837,7 @@
 38</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 36</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 36</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reject!'>reject!</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span> <span class='id identifier rubyid_error'>error</span> <span class='kw'>unless</span> <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -880,7 +880,7 @@
 30</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/envelope.rb', line 24</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/envelope.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_sender_path'>sender_path</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_sender'>sender</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="Reference.html" title="Concurrent::Actor::Reference (class)">Reference</a></span></span>

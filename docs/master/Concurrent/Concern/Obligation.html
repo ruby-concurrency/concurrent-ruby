@@ -88,7 +88,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/concern/obligation.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/concern/obligation.rb</dd>
   </dl>
   
 </div>
@@ -464,7 +464,7 @@
 51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_complete?'>complete?</span>
   <span class='lbracket'>[</span><span class='symbol'>:fulfilled</span><span class='comma'>,</span> <span class='symbol'>:rejected</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_state'>state</span>
@@ -516,7 +516,7 @@
 129</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 126</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 126</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_exception'>exception</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>obligation is not rejected</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
@@ -574,7 +574,7 @@
 22</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 20</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 20</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fulfilled?'>fulfilled?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>==</span> <span class='symbol'>:fulfilled</span>
@@ -627,7 +627,7 @@
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_incomplete?'>incomplete?</span>
   <span class='op'>!</span> <span class='id identifier rubyid_complete?'>complete?</span>
@@ -680,7 +680,7 @@
 37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 35</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 35</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pending?'>pending?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>==</span> <span class='symbol'>:pending</span>
@@ -739,7 +739,7 @@ the obligation has been successfully fulfilled.</p>
 121</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 119</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 119</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reason'>reason</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@reason</span> <span class='rbrace'>}</span>
@@ -792,7 +792,7 @@ the obligation has been successfully fulfilled.</p>
 30</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 28</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_rejected?'>rejected?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>==</span> <span class='symbol'>:rejected</span>
@@ -849,7 +849,7 @@ the obligation has been successfully fulfilled.</p>
 112</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 110</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 110</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_state'>state</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@state</span> <span class='rbrace'>}</span>
@@ -902,7 +902,7 @@ the obligation has been successfully fulfilled.</p>
 44</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 42</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 42</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unscheduled?'>unscheduled?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>==</span> <span class='symbol'>:unscheduled</span>
@@ -982,7 +982,7 @@ pending or the operation has been rejected.</p>
 68</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 65</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 65</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_wait'>wait</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -1085,7 +1085,7 @@ raised during processing (but will not raise an exception on timeout).</p>
 105</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 98</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 98</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
@@ -1169,7 +1169,7 @@ raised during processing (but will not raise an exception on timeout).</p>
 77</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 74</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 74</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_event'>event</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>!=</span> <span class='int'>0</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_incomplete?'>incomplete?</span>
@@ -1271,7 +1271,7 @@ on timeout).</p>
 88</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/obligation.rb', line 86</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/obligation.rb', line 86</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait!'>wait!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_tap'>tap</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_raise'>raise</span> <span class='kw'>self</span> <span class='kw'>if</span> <span class='id identifier rubyid_rejected?'>rejected?</span> <span class='rbrace'>}</span>

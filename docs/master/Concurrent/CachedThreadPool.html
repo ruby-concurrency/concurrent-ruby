@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/cached_thread_pool.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/executor/cached_thread_pool.rb</dd>
   </dl>
   
 </div>
@@ -137,6 +137,9 @@ efficient at reclaiming unused resources.</p>
 
 <ul>
 <li><code>idletime</code>: The number of seconds that a thread may be idle before being reclaimed.</li>
+<li><code>name</code>: The name of the executor (optional). Printed in the executor&#39;s <code>#to_s</code> output and
+a <code>&lt;name&gt;-worker-&lt;id&gt;</code> name is given to its threads if supported by used Ruby
+implementation. <code>&lt;id&gt;</code> is uniq for each thread.</li>
 <li><code>max_queue</code>: The maximum number of tasks that may be waiting in the work queue at
 any one time. When the queue size reaches <code>max_queue</code> and no new threads can be created,
 subsequent tasks will be rejected in accordance with the configured <code>fallback_policy</code>.</li>
@@ -353,7 +356,7 @@ prevented by setting the thread pool&#39;s constructor <code>:auto_terminate</co
 45</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/cached_thread_pool.rb', line 39</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/cached_thread_pool.rb', line 39</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_defaults'>defaults</span>  <span class='op'>=</span> <span class='lbrace'>{</span> <span class='label'>idletime:</span>    <span class='const'>DEFAULT_THREAD_IDLETIMEOUT</span> <span class='rbrace'>}</span>

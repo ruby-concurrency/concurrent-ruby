@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/delay.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/delay.rb</dd>
   </dl>
   
 </div>
@@ -782,7 +782,7 @@ argument then return the new value returned from the proc.</p>
 66</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/delay.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -873,7 +873,7 @@ argument then return the new value returned from the proc.</p>
 156</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 146</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/delay.rb', line 146</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reconfigure'>reconfigure</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -996,7 +996,7 @@ can be accessed via the <code>#reason</code> method.</p>
 101</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/delay.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='ivar'>@executor</span> <span class='comment'># TODO (pitr 12-Sep-2015): broken unsafe read?
@@ -1134,7 +1134,7 @@ the operation has already been executed).</p>
 121</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 113</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/delay.rb', line 113</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='ivar'>@executor</span>
@@ -1238,7 +1238,7 @@ the value to be computed. When <code>nil</code> the caller will block indefinite
 140</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 132</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/delay.rb', line 132</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='ivar'>@executor</span>

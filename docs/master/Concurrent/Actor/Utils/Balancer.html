@@ -98,7 +98,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/utils/balancer.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/utils/balancer.rb</dd>
   </dl>
   
 </div>
@@ -254,7 +254,7 @@ It will buffer the messages if there is no worker registered.</p>
 14</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/balancer.rb', line 11</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/balancer.rb', line 11</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='ivar'>@receivers</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -303,7 +303,7 @@ It will buffer the messages if there is no worker registered.</p>
 39</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/balancer.rb', line 35</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/balancer.rb', line 35</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_distribute'>distribute</span>
   <span class='kw'>while</span> <span class='op'>!</span><span class='ivar'>@receivers</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ivar'>@buffer</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -359,7 +359,7 @@ It will buffer the messages if there is no worker registered.</p>
 33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/balancer.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/balancer.rb', line 16</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_message'>on_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_command'>command</span><span class='comma'>,</span> <span class='id identifier rubyid_who'>who</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span>

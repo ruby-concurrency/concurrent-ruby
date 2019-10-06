@@ -83,7 +83,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/promises.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/promises.rb</dd>
   </dl>
   
 </div>
@@ -228,7 +228,7 @@ May take a moment if the channel is full.</p>
 61</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/promises.rb', line 59</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_then_channel_push'>then_channel_push</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ch'>ch</span><span class='op'>|</span> <span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push_op'>push_op</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_flat_future'>flat_future</span>

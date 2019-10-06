@@ -83,7 +83,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/concern/observable.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/concern/observable.rb</dd>
   </dl>
   
 </div>
@@ -369,7 +369,7 @@ Default is :update</p>
 63</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/observable.rb', line 61</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/observable.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_observer'>add_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_func'>func</span> <span class='op'>=</span> <span class='symbol'>:update</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_observers'>observers</span><span class='period'>.</span><span class='id identifier rubyid_add_observer'>add_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span><span class='comma'>,</span> <span class='id identifier rubyid_func'>func</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
@@ -426,7 +426,7 @@ Default is :update</p>
 103</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/observable.rb', line 101</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/observable.rb', line 101</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_count_observers'>count_observers</span>
   <span class='id identifier rubyid_observers'>observers</span><span class='period'>.</span><span class='id identifier rubyid_count_observers'>count_observers</span>
@@ -503,7 +503,7 @@ longer receive notifications.</p>
 84</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/observable.rb', line 82</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/observable.rb', line 82</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_observer'>delete_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_observers'>observers</span><span class='period'>.</span><span class='id identifier rubyid_delete_observer'>delete_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span><span class='rparen'>)</span>
@@ -561,7 +561,7 @@ longer receive notifications.</p>
 94</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/observable.rb', line 91</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/observable.rb', line 91</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_observers'>delete_observers</span>
   <span class='id identifier rubyid_observers'>observers</span><span class='period'>.</span><span class='id identifier rubyid_delete_observers'>delete_observers</span>
@@ -658,7 +658,7 @@ longer receive notifications.</p>
 73</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/concern/observable.rb', line 70</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/concern/observable.rb', line 70</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_with_observer'>with_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_func'>func</span> <span class='op'>=</span> <span class='symbol'>:update</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add_observer'>add_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span><span class='comma'>,</span> <span class='id identifier rubyid_func'>func</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>

@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/atomic/cyclic_barrier.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb</dd>
   </dl>
   
 </div>
@@ -388,7 +388,7 @@ the last thread arrives and before the others are released</p>
 46</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/cyclic_barrier.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb', line 40</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_parties'>parties</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="Utility.html" title="Concurrent::Utility (module)">Utility</a></span></span><span class='op'>::</span><span class='const'>NativeInteger</span><span class='period'>.</span><span class='id identifier rubyid_ensure_integer_and_bounds'>ensure_integer_and_bounds</span> <span class='id identifier rubyid_parties'>parties</span>
@@ -463,7 +463,7 @@ the last thread arrives and before the others are released</p>
 107</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/cyclic_barrier.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb', line 105</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_broken?'>broken?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@generation</span><span class='period'>.</span><span class='id identifier rubyid_status'>status</span> <span class='op'>!=</span> <span class='symbol'>:waiting</span> <span class='rbrace'>}</span>
@@ -520,7 +520,7 @@ the last thread arrives and before the others are released</p>
 56</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/cyclic_barrier.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb', line 54</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_number_waiting'>number_waiting</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@number_waiting</span> <span class='rbrace'>}</span>
@@ -577,7 +577,7 @@ the last thread arrives and before the others are released</p>
 51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/cyclic_barrier.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parties'>parties</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@parties</span> <span class='rbrace'>}</span>
@@ -633,7 +633,7 @@ If the barrier is broken, this method restores it to the original state</p>
 97</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/cyclic_barrier.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb', line 95</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset'>reset</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_generation_done'>ns_generation_done</span> <span class='ivar'>@generation</span><span class='comma'>,</span> <span class='symbol'>:reset</span> <span class='rbrace'>}</span>
@@ -735,7 +735,7 @@ If a block has been passed to the constructor, it will be executed once by
 87</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/cyclic_barrier.rb', line 66</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/cyclic_barrier.rb', line 66</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
