@@ -77,6 +77,21 @@ module Concurrent
           expect(task.shutdown).to be_truthy
         end
       end
+
+      context '#execute?' do
+        it 'returns true if the task was started' do
+          task = TimerTask2.new { nil }
+          expect(task.execute?).to be_truthy
+          task.shutdown
+        end
+
+        it 'returns false if the task was already running' do
+          task = TimerTask2.new { nil }
+          task.execute
+          expect(task.execute?).to be_falsey
+          task.shutdown
+        end
+      end
     end
 
     context 'arguments' do
