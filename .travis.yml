@@ -14,7 +14,7 @@ matrix:
       jdk: oraclejdk11
     - name: JRuby 9.2.8.0 Latest on Java 8
       rvm: jruby-9.2.8.0
-      jdk: oraclejdk8
+      jdk: openjdk8
     - name: TruffleRuby Latest
       rvm: truffleruby
     - name: YARD uptodate in docs
@@ -40,19 +40,19 @@ matrix:
       rvm: 1.9.3
     - name: JRuby 9.1.17.0
       rvm: jruby-9.1.17.0
-      jdk: oraclejdk8
+      jdk: openjdk8
     - name: JRuby 9.0.5.0
       rvm: jruby-9.0.5.0
-      jdk: oraclejdk8
+      jdk: openjdk8
     - name: JRuby 1.7.27
       rvm: jruby-1.7.27
-      jdk: oraclejdk8
+      jdk: openjdk8
 
     - name: MRI head
       rvm: ruby-head
     - name: JRuby head
       rvm: jruby-head
-      jdk: oraclejdk8
+      jdk: openjdk8
 
     - name: Rubinius
       rvm: rbx-3
