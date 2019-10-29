@@ -300,7 +300,8 @@ module Concurrent
         @queue  = Queue.new
         @pool   = pool
         @thread = create_worker @queue, pool, pool.idletime
-        if Concurrent.on_cruby? && Concurrent.ruby_version(:>=, 2, 3, 0)
+
+        if @thread.respond_to?(:name=)
           @thread.name = [pool.name, 'worker', id].compact.join('-')
         end
       end
