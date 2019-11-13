@@ -1,6 +1,6 @@
+require 'concurrent/utility/engine'
 require 'concurrent/atomic/ruby_thread_local_var'
 require 'concurrent/atomic/java_thread_local_var'
-require 'concurrent/utility/engine'
 
 module Concurrent
 

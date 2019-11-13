@@ -1,6 +1,6 @@
+require 'concurrent/utility/engine'
 require 'concurrent/atomic/mutex_count_down_latch'
 require 'concurrent/atomic/java_count_down_latch'
-require 'concurrent/utility/engine'
 
 module Concurrent
 
