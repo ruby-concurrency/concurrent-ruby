@@ -1,6 +1,6 @@
+require 'concurrent/utility/engine'
 require 'concurrent/collection/java_non_concurrent_priority_queue'
 require 'concurrent/collection/ruby_non_concurrent_priority_queue'
-require 'concurrent/utility/engine'
 
 module Concurrent
   module Collection

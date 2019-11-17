@@ -1,3 +1,4 @@
+require 'concurrent/utility/engine'
 require 'concurrent/executor/ruby_single_thread_executor'
 
 module Concurrent
