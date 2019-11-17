@@ -32,6 +32,7 @@ module Concurrent
     FREE   = []
     LOCK   = Mutex.new
     ARRAYS = {} # used as a hash set
+    # noinspection RubyClassVariableUsageInspection
     @@next = 0
     QUEUE  = Queue.new
     THREAD = Thread.new do
@@ -62,7 +63,7 @@ module Concurrent
 
     # @!macro thread_local_var_method_get
     def value
-      if array = get_threadlocal_array
+      if (array = get_threadlocal_array)
         value = array[@index]
         if value.nil?
           default
@@ -82,7 +83,7 @@ module Concurrent
       # We could keep the thread-local arrays in a hash, keyed by Thread
       # But why? That would require locking
       # Using Ruby's built-in thread-local storage is faster
-      unless array = get_threadlocal_array(me)
+      unless (array = get_threadlocal_array(me))
         array = set_threadlocal_array([], me)
         LOCK.synchronize { ARRAYS[array.object_id] = array }
         ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array.object_id))
@@ -94,6 +95,7 @@ module Concurrent
     protected
 
     # @!visibility private
+    # noinspection RubyClassVariableUsageInspection
     def allocate_storage
       @index = LOCK.synchronize do
         FREE.pop || begin
@@ -107,6 +109,7 @@ module Concurrent
 
     # @!visibility private
     def self.thread_local_finalizer(index)
+      # avoid error: can't be called from trap context
       proc { QUEUE.push [:thread_local_finalizer, index] }
     end
 
@@ -142,21 +145,22 @@ module Concurrent
     # This exists only for use in testing
     # @!visibility private
     def value_for(thread)
-      if array = get_threadlocal_array(thread)
+      if (array = get_threadlocal_array(thread))
         value = array[@index]
         if value.nil?
-          default_for(thread)
+          get_default
         elsif value.equal?(NULL)
           nil
         else
           value
         end
       else
-        default_for(thread)
+        get_default
       end
     end
 
-    def default_for(thread)
+    # @!visibility private
+    def get_default
       if @default_block
         raise "Cannot use default_for with default block"
       else
