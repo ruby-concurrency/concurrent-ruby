@@ -226,7 +226,7 @@ module Concurrent
       return if @pool.size >= @max_length
 
       @workers_counter += 1
-      @pool << (worker = Worker.new(self, id: @workers_counter))
+      @pool << (worker = Worker.new(self, @workers_counter))
       @largest_length = @pool.length if @pool.length > @largest_length
       worker
     end
@@ -295,7 +295,7 @@ module Concurrent
     class Worker
       include Concern::Logging
 
-      def initialize(pool, id: nil)
+      def initialize(pool, id)
         # instance variables accessed only under pool's lock so no need to sync here again
         @queue  = Queue.new
         @pool   = pool
