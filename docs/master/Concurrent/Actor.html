@@ -218,9 +218,7 @@ message received.</em></p>
 Sends the message asynchronously to the actor and immediately returns
 <code>self</code> (the reference) allowing to chain message telling.</li>
 <li>  <span class='object_link'><a href="Actor/Reference.html#ask-instance_method" title="Concurrent::Actor::Reference#ask (method)">Reference#ask</a></span>
-testing and when it returns very shortly. It can lead to deadlock if all threads in
-global_io_executor will block on while asking. It&#39;s fine to use it form outside of actors and
-global_io_executor.</li>
+</li>
 <li>  <span class='object_link'><a href="Actor/Reference.html#ask!-instance_method" title="Concurrent::Actor::Reference#ask! (method)">Reference#ask!</a></span>
 Sends the message synchronously and blocks until the message
 is processed. Raises on error.</li>
