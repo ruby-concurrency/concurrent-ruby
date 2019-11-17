@@ -37,8 +37,8 @@ module Concurrent
       #   returning data to the caller (dereferencing).
       #
       #   @note Most classes that include this module will call `#set_deref_options`
-      #   from within the constructor, thus allowing these options to be set at
-      #   object creation.
+      #     from within the constructor, thus allowing these options to be set at
+      #     object creation.
       #
       #   @param [Hash] opts the options defining dereference behavior.
       #   @option opts [String] :dup_on_deref (false) call `#dup` before returning the data
