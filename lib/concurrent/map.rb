@@ -197,7 +197,7 @@ module Concurrent
     # Insert value into map with key if key is absent in one atomic step.
     # @param [Object] key
     # @param [Object] value
-    # @return [Object, nil] the value or nil when key was present
+    # @return [Object, nil] the previous value when key was present or nil when there was no key
     def put_if_absent(key, value)
       computed = false
       result   = compute_if_absent(key) do
