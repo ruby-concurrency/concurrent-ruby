@@ -32,12 +32,38 @@ module Concurrent
     FREE   = []
     LOCK   = Mutex.new
     ARRAYS = {} # used as a hash set
+    # noinspection RubyClassVariableUsageInspection
     @@next = 0
-    private_constant :FREE, :LOCK, :ARRAYS
+    QUEUE  = Queue.new
+    THREAD = Thread.new do
+      while true
+        method, i = QUEUE.pop
+        case method
+        when :thread_local_finalizer
+          LOCK.synchronize do
+            FREE.push(i)
+            # The cost of GC'ing a TLV is linear in the number of threads using TLVs
+            # But that is natural! More threads means more storage is used per TLV
+            # So naturally more CPU time is required to free more storage
+            ARRAYS.each_value do |array|
+              array[i] = nil
+            end
+          end
+        when :thread_finalizer
+          LOCK.synchronize do
+            # The thread which used this thread-local array is now gone
+            # So don't hold onto a reference to the array (thus blocking GC)
+            ARRAYS.delete(i)
+          end
+        end
+      end
+    end
+
+    private_constant :FREE, :LOCK, :ARRAYS, :QUEUE, :THREAD
 
     # @!macro thread_local_var_method_get
     def value
-      if array = get_threadlocal_array
+      if (array = get_threadlocal_array)
         value = array[@index]
         if value.nil?
           default
@@ -57,10 +83,10 @@ module Concurrent
       # We could keep the thread-local arrays in a hash, keyed by Thread
       # But why? That would require locking
       # Using Ruby's built-in thread-local storage is faster
-      unless array = get_threadlocal_array(me)
+      unless (array = get_threadlocal_array(me))
         array = set_threadlocal_array([], me)
         LOCK.synchronize { ARRAYS[array.object_id] = array }
-        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array))
+        ObjectSpace.define_finalizer(me, self.class.thread_finalizer(array.object_id))
       end
       array[@index] = (value.nil? ? NULL : value)
       value
@@ -69,6 +95,7 @@ module Concurrent
     protected
 
     # @!visibility private
+    # noinspection RubyClassVariableUsageInspection
     def allocate_storage
       @index = LOCK.synchronize do
         FREE.pop || begin
@@ -77,37 +104,19 @@ module Concurrent
           result
         end
       end
-      ObjectSpace.define_finalizer(self, self.class.threadlocal_finalizer(@index))
+      ObjectSpace.define_finalizer(self, self.class.thread_local_finalizer(@index))
     end
 
     # @!visibility private
-    def self.threadlocal_finalizer(index)
-      proc do
-        Thread.new do # avoid error: can't be called from trap context
-          LOCK.synchronize do
-            FREE.push(index)
-            # The cost of GC'ing a TLV is linear in the number of threads using TLVs
-            # But that is natural! More threads means more storage is used per TLV
-            # So naturally more CPU time is required to free more storage
-            ARRAYS.each_value do |array|
-              array[index] = nil
-            end
-          end
-        end
-      end
+    def self.thread_local_finalizer(index)
+      # avoid error: can't be called from trap context
+      proc { QUEUE.push [:thread_local_finalizer, index] }
     end
 
     # @!visibility private
-    def self.thread_finalizer(array)
-      proc do
-        Thread.new do # avoid error: can't be called from trap context
-          LOCK.synchronize do
-            # The thread which used this thread-local array is now gone
-            # So don't hold onto a reference to the array (thus blocking GC)
-            ARRAYS.delete(array.object_id)
-          end
-        end
-      end
+    def self.thread_finalizer(id)
+      # avoid error: can't be called from trap context
+      proc { QUEUE.push [:thread_finalizer, id] }
     end
 
     private
@@ -136,21 +145,22 @@ module Concurrent
     # This exists only for use in testing
     # @!visibility private
     def value_for(thread)
-      if array = get_threadlocal_array(thread)
+      if (array = get_threadlocal_array(thread))
         value = array[@index]
         if value.nil?
-          default_for(thread)
+          get_default
         elsif value.equal?(NULL)
           nil
         else
           value
         end
       else
-        default_for(thread)
+        get_default
       end
     end
 
-    def default_for(thread)
+    # @!visibility private
+    def get_default
       if @default_block
         raise "Cannot use default_for with default block"
       else
