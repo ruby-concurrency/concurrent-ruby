@@ -173,8 +173,8 @@ module Concurrent
     def initialize(opts = {}, &task)
       raise ArgumentError.new('no block given') unless block_given?
       raise ArgumentError.new('reschedule must be either :before or :after') unless [nil, :before, :after].include?(opts[:reschedule])
-      @Execution_interval = AtomicReference.new nil
-      @Timeout_interval = AtomicReference.new nil
+      @ExecutionInterval = AtomicReference.new nil
+      @TimeoutInterval = AtomicReference.new nil
       @Cancellation = AtomicReference.new nil
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
@@ -248,7 +248,7 @@ module Concurrent
     # @return [Fixnum] Number of seconds after the task completes before the
     #   task is performed again.
     def execution_interval
-      @Execution_interval.get
+      @ExecutionInterval.get
     end
 
     # @!attribute [rw] execution_interval
@@ -258,7 +258,7 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        @Execution_interval.set value
+        @ExecutionInterval.set value
       end
     end
 
@@ -266,7 +266,7 @@ module Concurrent
     # @return [Fixnum] Number of seconds the task can run before it is
     #   considered to have failed.
     def timeout_interval
-      @Timeout_interval.get
+      @TimeoutInterval.get
     end
 
     # @!attribute [rw] timeout_interval
@@ -276,7 +276,7 @@ module Concurrent
       if (value = value.to_f) <= 0.0
         raise ArgumentError.new('must be greater than zero')
       else
-        @Timeout_interval.set value
+        @TimeoutInterval.set value
       end
     end
 
