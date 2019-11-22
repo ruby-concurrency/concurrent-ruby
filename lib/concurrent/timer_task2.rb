@@ -135,7 +135,8 @@ module Concurrent
   #   channel.pop
   #
   # @see http://docs.oracle.com/javase/7/docs/api/java/util/TimerTask.html
-  class TimerTask2
+  class TimerTask2 < ::Concurrent::Synchronization::Object
+    safe_initialization!
 
     # Default `:execution_interval` in seconds.
     EXECUTION_INTERVAL = 60
