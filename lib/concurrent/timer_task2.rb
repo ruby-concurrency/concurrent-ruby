@@ -183,6 +183,7 @@ module Concurrent
 
       @Channel = opts[:channel]
 
+      @Stopped = false
       @Executor = SafeTaskExecutor.new(task)
       @Reschedule = opts[:reschedule] || :after
       @RunNow = opts[:now] || opts[:run_now]
@@ -219,6 +220,7 @@ module Concurrent
 
     def execute?
       return false if running?
+      raise IllegalOperationError.new('TimerTask2 cannot be resumed after it was stopped') if @Stopped
       @Cancellation.set(Cancellation.new)
       execute_task cancellation, @RunNow
       true
@@ -231,6 +233,7 @@ module Concurrent
 
     def kill
       return false unless running?
+      @Stopped = true
       cancellation = @Cancellation.get
       success = @Cancellation.compare_and_set cancellation, nil
       cancellation.origin.resolve if success
