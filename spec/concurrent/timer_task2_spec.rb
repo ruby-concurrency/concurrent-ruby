@@ -91,6 +91,39 @@ module Concurrent
           expect(task.execute?).to be_falsey
           task.shutdown
         end
+
+        it 'raises an exception is the task was shut down' do
+          task = TimerTask2.new { nil }
+          task.execute
+          task.shutdown
+          expect { task.execute }.to raise_error(IllegalOperationError)
+        end
+      end
+
+      context '#dup' do
+        it 'can be duplicated' do
+          task = TimerTask2.new(:execution => 256, :timeout => 128) { puts "Hey" }
+          task.execute.shutdown
+          task2 = task.dup
+          expect(task2.execution_interval).to eq(task.execution_interval)
+          expect(task2.timeout_interval).to eq(task.timeout_interval)
+          expect(task2.execute?).to be_truthy
+          task2.shutdown
+        end
+
+        it 'can have properties overridden' do
+          channel = Promises::Channel.new 1
+          task = TimerTask2.new(:execution => 256, :timeout => 128, :channel => channel, :reschedule => :before) { "Hey" }
+          channel2 = Promises::Channel.new 1
+          task = TimerTask2.new(:execution => 15, :timeout => 14, :channel => channel, :reschedule => :after, :now => true) { "Hi" }
+          task2 = task.dup(:channel => channel2)
+          expect(task2.execution_interval).to eq(15)
+          expect(task2.timeout_interval).to eq(14)
+          task2.execute
+          _, result, _ = channel2.pop
+          expect(result).to eq("Hi")
+          task2.shutdown
+        end
       end
     end
 

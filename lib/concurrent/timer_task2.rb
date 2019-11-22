@@ -184,9 +184,26 @@ module Concurrent
       @Channel = opts[:channel]
 
       @Stopped = false
+      @Task = task
       @Executor = SafeTaskExecutor.new(task)
       @Reschedule = opts[:reschedule] || :after
       @RunNow = opts[:now] || opts[:run_now]
+    end
+
+    # Create a new `TimerTask2` with the same configuration
+    #
+    # @example
+    #   task = Concurrent::TimerTask2.execute(execution_interval: 10) { puts "Hello" }
+    #   task2 = task2.dup
+    def dup(opts = {}, &task)
+      options = {
+        :channel => @Channel,
+        :execution => execution_interval,
+        :now => @RunNow,
+        :reschedule => @Reschedule,
+        :timeout => timeout_interval
+      }
+      self.class.new(options.merge(opts), &(task || @Task))
     end
 
     # Create and execute a new `TimerTask2`.
