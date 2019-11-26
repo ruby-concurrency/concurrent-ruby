@@ -18,7 +18,7 @@ require 'concurrent/synchronization'
 #     uncoordinated, *synchronous* change of individual values. Best used when
 #     the value will undergo frequent reads but only occasional, though complex,
 #     updates. Suitable when the result of an update must be known immediately.
-#   * *{Concurrent::AtomicReference}:* A simple object reference that can be
+#   * *{Concurrent::AtomicReference}:* A simple object reference that can be updated
 #     atomically. Updates are synchronous but fast. Best used when updates a
 #     simple set operations. Not suitable when updates are complex.
 #     {Concurrent::AtomicBoolean} and {Concurrent::AtomicFixnum} are similar
