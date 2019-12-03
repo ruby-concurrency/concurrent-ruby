@@ -41,13 +41,13 @@ module Concurrent
   #
   #   Explicitly sets the value to true.
   #
-  #   @return [Boolean] true is value has changed, otherwise false
+  #   @return [Boolean] true if value has changed, otherwise false
 
   # @!macro atomic_boolean_method_make_false
   #
   #   Explicitly sets the value to false.
   #
-  #   @return [Boolean] true is value has changed, otherwise false
+  #   @return [Boolean] true if value has changed, otherwise false
 
   ###################################################################
 
