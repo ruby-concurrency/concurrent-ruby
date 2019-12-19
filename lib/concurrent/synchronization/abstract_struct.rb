@@ -115,6 +115,13 @@ module Concurrent
         self.class.new(*self.to_h.merge(other, &block).values)
       end
 
+      # @!macro struct_initialize_copy
+      #
+      # @!visibility private
+      def ns_initialize_copy
+        @values = @values.map(&:clone)
+      end
+
       # @!visibility private
       def pr_underscore(clazz)
         word = clazz.to_s.dup # dup string to workaround JRuby 9.2.0.0 bug https://github.com/jruby/jruby/issues/5229

@@ -169,6 +169,16 @@ module Concurrent
       synchronize { ns_select(&block) }
     end
 
+    # @!macro struct_initialize_copy
+    #
+    # @!visibility private
+    def initialize_copy(original)
+      synchronize do
+        super
+        ns_initialize_copy
+      end
+    end
+
     # @!macro struct_set
     #
     #   Attribute Assignment

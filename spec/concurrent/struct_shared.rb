@@ -437,6 +437,69 @@ RSpec.shared_examples :struct do
       end
     end
   end
+
+  context 'copy' do
+    let(:this) do
+      described_class.new(:foo, :bar, :baz).new('foo'.freeze, ['bar'], 42)
+    end
+
+    context '#dup' do
+      it 'shallowly duplicates all members along with the struct' do
+        copy = this.dup
+        expect(copy.foo).not_to be this.foo
+        expect(copy.bar).not_to be this.bar
+        expect(copy.bar.first).to be this.bar.first
+        expect(copy.baz).to be this.baz
+      end
+
+      it 'discards frozen state of the struct' do
+        expect(this.freeze.dup).not_to be_frozen
+      end
+
+      it 'retains frozen state of members' do
+        expect(this.dup.foo).to be_frozen
+      end
+
+      it 'discards singleton class' do
+        this.define_singleton_method(:qux) { 'qux' }
+        expect(this.qux).to eq('qux')
+        expect{this.dup.qux}.to raise_error(NoMethodError)
+      end
+
+      it 'copies the singleton class of members' do
+        this.bar.define_singleton_method(:qux) { 'qux' }
+        expect(this.bar.qux).to eq('qux')
+        expect(this.dup.bar.qux).to eq('qux')
+      end
+    end
+
+    context '#clone' do
+      it 'shallowly clones all members along with the struct' do
+        copy = this.clone
+        expect(copy.foo).not_to be this.foo
+        expect(copy.bar).not_to be this.bar
+        expect(copy.bar.first).to be this.bar.first
+        expect(copy.baz).to be this.baz
+      end
+
+      it 'retains frozen state' do
+        expect(this.freeze.clone).to be_frozen
+        expect(this.clone.foo).to be_frozen
+      end
+
+      it 'copies the singleton class' do
+        this.define_singleton_method(:qux) { 'qux' }
+        expect(this.qux).to eq('qux')
+        expect(this.clone.qux).to eq('qux')
+      end
+
+      it 'copies the singleton class of members' do
+        this.bar.define_singleton_method(:qux) { 'qux' }
+        expect(this.bar.qux).to eq('qux')
+        expect(this.clone.bar.qux).to eq('qux')
+      end
+    end
+  end
 end
 
 RSpec.shared_examples :mergeable_struct do
