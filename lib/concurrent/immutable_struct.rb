@@ -70,11 +70,11 @@ module Concurrent
       ns_select(&block)
     end
 
-    # @!macro struct_initialize_copy
-    #
+    private
+
     # @!visibility private
     def initialize_copy(original)
-      super
+      super(original)
       ns_initialize_copy
     end
 

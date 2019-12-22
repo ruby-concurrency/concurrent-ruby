@@ -69,16 +69,6 @@ module Concurrent
       synchronize { ns_select(&block) }
     end
 
-    # @!macro struct_initialize_copy
-    #
-    # @!visibility private
-    def initialize_copy(original)
-      synchronize do
-        super
-        ns_initialize_copy
-      end
-    end
-
     # @!macro struct_set
     #
     # @raise [Concurrent::ImmutabilityError] if the given member has already been set
@@ -99,6 +89,16 @@ module Concurrent
       end
     rescue NoMethodError
       raise NameError.new("no member '#{member}' in struct")
+    end
+
+    private
+
+    # @!visibility private
+    def initialize_copy(original)
+      synchronize do
+        super(original)
+        ns_initialize_copy
+      end
     end
 
     # @!macro struct_new

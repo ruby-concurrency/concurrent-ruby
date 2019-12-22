@@ -115,8 +115,6 @@ module Concurrent
         self.class.new(*self.to_h.merge(other, &block).values)
       end
 
-      # @!macro struct_initialize_copy
-      #
       # @!visibility private
       def ns_initialize_copy
         @values = @values.map(&:clone)
