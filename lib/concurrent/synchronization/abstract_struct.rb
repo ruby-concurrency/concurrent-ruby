@@ -117,7 +117,13 @@ module Concurrent
 
       # @!visibility private
       def ns_initialize_copy
-        @values = @values.map(&:clone)
+        @values = @values.map do |val|
+          begin
+            val.clone
+          rescue TypeError
+            val
+          end
+        end
       end
 
       # @!visibility private
