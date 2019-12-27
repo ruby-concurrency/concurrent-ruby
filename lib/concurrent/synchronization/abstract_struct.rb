@@ -116,6 +116,17 @@ module Concurrent
       end
 
       # @!visibility private
+      def ns_initialize_copy
+        @values = @values.map do |val|
+          begin
+            val.clone
+          rescue TypeError
+            val
+          end
+        end
+      end
+
+      # @!visibility private
       def pr_underscore(clazz)
         word = clazz.to_s.dup # dup string to workaround JRuby 9.2.0.0 bug https://github.com/jruby/jruby/issues/5229
         word.gsub!(/::/, '/')

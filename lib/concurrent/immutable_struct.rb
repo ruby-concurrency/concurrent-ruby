@@ -70,6 +70,14 @@ module Concurrent
       ns_select(&block)
     end
 
+    private
+
+    # @!visibility private
+    def initialize_copy(original)
+      super(original)
+      ns_initialize_copy
+    end
+
     # @!macro struct_new
     def self.new(*args, &block)
       clazz_name = nil

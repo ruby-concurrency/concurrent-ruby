@@ -91,6 +91,16 @@ module Concurrent
       raise NameError.new("no member '#{member}' in struct")
     end
 
+    private
+
+    # @!visibility private
+    def initialize_copy(original)
+      synchronize do
+        super(original)
+        ns_initialize_copy
+      end
+    end
+
     # @!macro struct_new
     def self.new(*args, &block)
       clazz_name = nil
