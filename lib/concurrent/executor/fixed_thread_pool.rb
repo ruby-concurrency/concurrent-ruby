@@ -115,6 +115,9 @@ module Concurrent
   #   Thread pools support several configuration options:
   #
   #   * `idletime`: The number of seconds that a thread may be idle before being reclaimed.
+  #   * `name`: The name of the executor (optional). Printed in the executor's `#to_s` output and
+  #     a `<name>-worker-<id>` name is given to its threads if supported by used Ruby
+  #     implementation. `<id>` is uniq for each thread.
   #   * `max_queue`: The maximum number of tasks that may be waiting in the work queue at
   #     any one time. When the queue size reaches `max_queue` and no new threads can be created,
   #     subsequent tasks will be rejected in accordance with the configured `fallback_policy`.
