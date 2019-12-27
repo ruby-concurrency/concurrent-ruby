@@ -6,6 +6,7 @@ require 'concurrent/actor'
 require 'concurrent/agent'
 require 'concurrent/channel'
 require 'concurrent/lazy_register'
+require 'concurrent/executor/wrapping_executor'
 
 require 'concurrent/edge/lock_free_linked_set'
 require 'concurrent/edge/lock_free_queue'
