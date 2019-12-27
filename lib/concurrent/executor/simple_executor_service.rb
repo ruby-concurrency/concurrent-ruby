@@ -91,7 +91,7 @@ module Concurrent
 
     private
 
-    def ns_initialize
+    def ns_initialize(*args)
       @running = Concurrent::AtomicBoolean.new(true)
       @stopped = Concurrent::Event.new
       @count = Concurrent::AtomicFixnum.new(0)
