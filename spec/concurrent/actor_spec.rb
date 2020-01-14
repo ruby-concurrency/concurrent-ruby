@@ -205,7 +205,7 @@ module Concurrent
         terminate_actors monitor
       end
 
-      it 'links atomically' do
+      skip 'links atomically' do
         queue   = Queue.new
         failure = nil
         monitor = AdHoc.spawn!(:monitor) do
