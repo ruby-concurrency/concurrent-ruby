@@ -63,15 +63,16 @@ matrix:
 
   allow_failures:
     - rvm: ruby-head
-    - rvm: jruby-head
     - rvm: rbx-3
     - name: TruffleRuby Latest
     - name: YARD uptodate in docs
+    - name: JRuby 9.2.9.0 Latest on Java 11
 
 env:
   global:
     - JAVA_OPTS=-Xmx1024m
     - RUBYOPT=-w
+    - JRUBY_OPTS=--dev
 
 before_install:
   - gem install bundler --version 1.17.3
