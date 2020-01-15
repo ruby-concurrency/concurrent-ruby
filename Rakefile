@@ -61,11 +61,23 @@ Gem::PackageTask.new(edge_gemspec) {} if edge_gemspec
 
 CLEAN.include('lib/concurrent/2.*', 'lib/concurrent/*.jar')
 
+
 begin
   require 'rspec'
   require 'rspec/core/rake_task'
+  require "rake/testtask"
+
+  Rake::TestTask.new(:minitest) do |t|
+    t.libs << "test"
+    t.test_files = FileList['test/**/test*.rb']
+  end
 
   RSpec::Core::RakeTask.new(:spec)
+
+  desc "Run both minitest & rspec tests"
+  task test: %w[minitest spec] do
+
+  end
 
   namespace :spec do
     desc '* Configured for ci'
