@@ -9,6 +9,5 @@ class CachedThreadPoolTest < Minitest::Test
     pool.post do
       sleep
     end
-
   end
 end

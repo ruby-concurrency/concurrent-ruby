@@ -12,7 +12,6 @@ module Concurrent
       thread.setDaemon(@daemonize)
       return thread
     end
-
   end
 
 end
