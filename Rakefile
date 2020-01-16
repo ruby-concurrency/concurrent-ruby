@@ -75,9 +75,7 @@ begin
   RSpec::Core::RakeTask.new(:spec)
 
   desc "Run both minitest & rspec tests"
-  task test: %w[minitest spec] do
-
-  end
+  task test: %w[minitest spec]
 
   namespace :spec do
     desc '* Configured for ci'
