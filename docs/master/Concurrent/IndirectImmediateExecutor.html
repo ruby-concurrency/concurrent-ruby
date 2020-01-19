@@ -100,7 +100,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/indirect_immediate_executor.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/executor/indirect_immediate_executor.rb</dd>
   </dl>
   
 </div>
@@ -246,7 +246,7 @@ inconsistent with how it would behave for a threaded executor.</p>
 24</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/indirect_immediate_executor.rb', line 21</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/indirect_immediate_executor.rb', line 21</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='kw'>super</span>
@@ -378,7 +378,7 @@ is not running</p>
 42</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/indirect_immediate_executor.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/indirect_immediate_executor.rb', line 27</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>

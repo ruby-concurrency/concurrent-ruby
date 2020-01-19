@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/tvar.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/tvar.rb</dd>
   </dl>
   
 </div>
@@ -397,7 +397,7 @@
 175</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 172</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 172</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='ivar'>@read_log</span>  <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -435,7 +435,7 @@
 250</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 248</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 248</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span>
   <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:current_tvar_transaction</span><span class='rbracket'>]</span>
@@ -465,7 +465,7 @@
 254</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 252</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 252</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_current='>current=</span><span class='lparen'>(</span><span class='id identifier rubyid_transaction'>transaction</span><span class='rparen'>)</span>
   <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:current_tvar_transaction</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_transaction'>transaction</span>
@@ -501,7 +501,7 @@
 215</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 213</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 213</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_abort'>abort</span>
   <span class='id identifier rubyid_unlock'>unlock</span>
@@ -540,7 +540,7 @@
 228</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 217</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 217</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_commit'>commit</span>
   <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_valid?'>valid?</span>
@@ -586,7 +586,7 @@
 186</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 177</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 177</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_tvar'>tvar</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_abort_transaction'><span class='object_link'><a href="../Concurrent.html#abort_transaction-class_method" title="Concurrent.abort_transaction (method)">abort_transaction</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_valid?'>valid?</span>
@@ -625,7 +625,7 @@
 246</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 242</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 242</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unlock'>unlock</span>
   <span class='ivar'>@write_log</span><span class='period'>.</span><span class='id identifier rubyid_each_key'>each_key</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_tvar'>tvar</span><span class='op'>|</span>
@@ -687,7 +687,7 @@
 240</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 230</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 230</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_valid?'>valid?</span>
   <span class='ivar'>@read_log</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_log_entry'>log_entry</span><span class='op'>|</span>
@@ -746,7 +746,7 @@
 211</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tvar.rb', line 188</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 188</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_write'>write</span><span class='lparen'>(</span><span class='id identifier rubyid_tvar'>tvar</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='comment'># Have we already written to this TVar?

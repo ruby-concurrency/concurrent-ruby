@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/agent.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/agent.rb</dd>
   </dl>
   
 </div>
@@ -249,7 +249,7 @@ of an update does not need to be known immediately.</li>
 uncoordinated, <em>synchronous</em> change of individual values. Best used when
 the value will undergo frequent reads but only occasional, though complex,
 updates. Suitable when the result of an update must be known immediately.</li>
-<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be
+<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be updated
 atomically. Updates are synchronous but fast. Best used when updates a
 simple set operations. Not suitable when updates are complex.
 <span class='object_link'><a href="AtomicBoolean.html" title="Concurrent::AtomicBoolean (class)">AtomicBoolean</a></span> and <span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span> are similar
@@ -1088,7 +1088,7 @@ returning the value of the Agent before the error.</p>
 222</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 219</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 219</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_initial'>initial</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -1136,7 +1136,7 @@ returning the value of the Agent before the error.</p>
 185</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 183</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 183</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_error_mode'>error_mode</span>
   <span class='ivar'>@error_mode</span>
@@ -1230,7 +1230,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 451</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 448</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 448</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await'>await</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_agents'>agents</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_agent'>agent</span><span class='op'>|</span> <span class='id identifier rubyid_agent'>agent</span><span class='period'>.</span><span class='id identifier rubyid_await'>await</span> <span class='rbrace'>}</span>
@@ -1335,7 +1335,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 469</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 462</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 462</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_end_at'>end_at</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_monotonic_time'><span class='object_link'><a href="../Concurrent.html#monotonic_time-class_method" title="Concurrent.monotonic_time (method)">monotonic_time</a></span></span> <span class='op'>+</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
@@ -1457,7 +1457,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 484</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 481</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 481</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await_for!'>await_for!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Concurrent.html#TimeoutError-constant" title="Concurrent::TimeoutError (constant)">TimeoutError</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_agents'>agents</span><span class='rparen'>)</span>
@@ -1550,7 +1550,7 @@ value of the action. Appropriate for actions that may block on IO.</p>
 333</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 330</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 330</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;&lt;</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_send_off'>send_off</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
@@ -1623,7 +1623,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 352</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 349</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 349</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await'>await</span>
   <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='rparen'>)</span>
@@ -1708,7 +1708,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 364</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 362</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 362</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await_for'>await_for</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span><span class='rparen'>)</span>
@@ -1810,7 +1810,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 379</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 376</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 376</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await_for!'>await_for!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Concurrent.html#TimeoutError-constant" title="Concurrent::TimeoutError (constant)">TimeoutError</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span><span class='rparen'>)</span>
@@ -1874,7 +1874,7 @@ will <em>always</em> return <code>nil</code>.</p>
 241</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 239</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 239</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_error'>error</span>
   <span class='ivar'>@error</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
@@ -1938,7 +1938,7 @@ will <em>always</em> return <code>nil</code>.</p>
 403</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 401</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 401</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_failed?'>failed?</span>
   <span class='op'>!</span><span class='ivar'>@error</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -2088,7 +2088,7 @@ actions should be discarded on restart, else false (default: false)</p>
 434</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 423</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 423</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_restart'>restart</span><span class='lparen'>(</span><span class='id identifier rubyid_new_value'>new_value</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_clear_actions'>clear_actions</span> <span class='op'>=</span> <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='symbol'>:clear_actions</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
@@ -2276,7 +2276,7 @@ the Agent is <span class='object_link'><a href="#failed%3F-instance_method" titl
 279</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 277</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 277</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_enqueue_action_job'>enqueue_action_job</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_global_fast_executor'><span class='object_link'><a href="../Concurrent.html#global_fast_executor-class_method" title="Concurrent.global_fast_executor (method)">global_fast_executor</a></span></span><span class='rparen'>)</span>
@@ -2472,7 +2472,7 @@ action</p>
 289</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 286</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 286</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_send!'>send!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Error</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Agent/Error.html#initialize-instance_method" title="Concurrent::Agent::Error#initialize (method)">new</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
@@ -2656,7 +2656,7 @@ the Agent is <span class='object_link'><a href="#failed%3F-instance_method" titl
 295</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 293</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 293</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_send_off'>send_off</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_enqueue_action_job'>enqueue_action_job</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_global_io_executor'><span class='object_link'><a href="../Concurrent.html#global_io_executor-class_method" title="Concurrent.global_io_executor (method)">global_io_executor</a></span></span><span class='rparen'>)</span>
@@ -2852,7 +2852,7 @@ action</p>
 304</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 301</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 301</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_send_off!'>send_off!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Error</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Agent/Error.html#initialize-instance_method" title="Concurrent::Agent::Error#initialize (method)">new</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_send_off'>send_off</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
@@ -3048,7 +3048,7 @@ the Agent is <span class='object_link'><a href="#failed%3F-instance_method" titl
 312</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 310</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 310</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_enqueue_action_job'>enqueue_action_job</span><span class='lparen'>(</span><span class='id identifier rubyid_action'>action</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_executor'>executor</span><span class='rparen'>)</span>
@@ -3260,7 +3260,7 @@ action</p>
 321</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 318</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 318</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_send_via!'>send_via!</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Agent/Error.html" title="Concurrent::Agent::Error (class)">Error</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Agent/Error.html#initialize-instance_method" title="Concurrent::Agent::Error#initialize (method)">new</a></span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_send_via'>send_via</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_action'>action</span><span class='rparen'>)</span>
@@ -3323,7 +3323,7 @@ in-progress actions. The value is always available and is non-blocking.</p>
 230</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 228</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 228</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span>
   <span class='ivar'>@current</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='comment'># TODO (pitr 12-Sep-2015): broken unsafe read?
@@ -3414,7 +3414,7 @@ hopelessly deadlock the Agent with no possibility of recovery.</p>
 396</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/agent.rb', line 392</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/agent.rb', line 392</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_latch'>latch</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="CountDownLatch.html" title="Concurrent::CountDownLatch (class)">CountDownLatch</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="CountDownLatch.html#initialize-instance_method" title="Concurrent::CountDownLatch#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span>

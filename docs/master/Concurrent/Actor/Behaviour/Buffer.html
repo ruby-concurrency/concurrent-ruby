@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/behaviour/buffer.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb</dd>
   </dl>
   
 </div>
@@ -292,7 +292,7 @@ internal actor messages like (<code>:link</code>, <code>:supervise</code>) first
 16</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/buffer.rb', line 12</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb', line 12</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_core'>core</span><span class='comma'>,</span> <span class='id identifier rubyid_subsequent'>subsequent</span><span class='comma'>,</span> <span class='id identifier rubyid_core_options'>core_options</span><span class='rparen'>)</span>
   <span class='kw'>super</span> <span class='id identifier rubyid_core'>core</span><span class='comma'>,</span> <span class='id identifier rubyid_subsequent'>subsequent</span><span class='comma'>,</span> <span class='id identifier rubyid_core_options'>core_options</span>
@@ -342,7 +342,7 @@ internal actor messages like (<code>:link</code>, <code>:supervise</code>) first
 22</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/buffer.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_envelope'>on_envelope</span><span class='lparen'>(</span><span class='id identifier rubyid_envelope'>envelope</span><span class='rparen'>)</span>
   <span class='ivar'>@buffer</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_envelope'>envelope</span>
@@ -389,7 +389,7 @@ internal actor messages like (<code>:link</code>, <code>:supervise</code>) first
 52</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/buffer.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_event'>on_event</span><span class='lparen'>(</span><span class='id identifier rubyid_public'>public</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_event_name'>event_name</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span> <span class='op'>=</span> <span class='id identifier rubyid_event'>event</span>
@@ -439,7 +439,7 @@ internal actor messages like (<code>:link</code>, <code>:supervise</code>) first
 42</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/buffer.rb', line 35</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb', line 35</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_process_envelope'>process_envelope</span>
   <span class='id identifier rubyid_envelope'>envelope</span> <span class='op'>=</span> <span class='ivar'>@buffer</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
@@ -503,7 +503,7 @@ even though the Actor is flooded with messages.</p>
 33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/buffer.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb', line 28</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_process_envelopes?'>process_envelopes?</span>
   <span class='kw'>unless</span> <span class='ivar'>@buffer</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>||</span> <span class='ivar'>@receive_envelope_scheduled</span>

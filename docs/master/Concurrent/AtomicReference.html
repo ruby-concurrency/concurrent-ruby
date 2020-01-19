@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/atomic/atomic_reference.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb</dd>
   </dl>
   
 </div>
@@ -118,7 +118,7 @@ of an update does not need to be known immediately.</li>
 uncoordinated, <em>synchronous</em> change of individual values. Best used when
 the value will undergo frequent reads but only occasional, though complex,
 updates. Suitable when the result of an update must be known immediately.</li>
-<li><em><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be
+<li><em><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be updated
 atomically. Updates are synchronous but fast. Best used when updates a
 simple set operations. Not suitable when updates are complex.
 <span class='object_link'><a href="AtomicBoolean.html" title="Concurrent::AtomicBoolean (class)">AtomicBoolean</a></span> and <span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span> are similar
@@ -440,7 +440,7 @@ value must change together, in an all-or-nothing transaction.</li>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -553,7 +553,7 @@ the current value == the expected value.</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -622,7 +622,7 @@ the current value == the expected value.</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -710,7 +710,7 @@ the current value == the expected value.</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -798,7 +798,7 @@ the current value == the expected value.</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -865,7 +865,7 @@ the current value == the expected value.</p>
 200</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 198</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 198</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s value:%s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_get'>get</span>
@@ -975,7 +975,7 @@ given (old) value</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -1110,7 +1110,7 @@ given (old) value</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 
@@ -1218,7 +1218,7 @@ given (old) value</p>
 203</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/atomic_reference.rb', line 195</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb', line 195</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::AtomicReference (class)">AtomicReference</a></span></span> <span class='op'>&lt;</span> <span class='const'>AtomicReferenceImplementation</span>
 

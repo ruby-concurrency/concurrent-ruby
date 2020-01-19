@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/channel/selector/after_clause.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/channel/selector/after_clause.rb</dd>
   </dl>
   
 </div>
@@ -221,7 +221,7 @@
 14</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/selector/after_clause.rb', line 10</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/selector/after_clause.rb', line 10</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_seconds'>seconds</span><span class='comma'>,</span> <span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>timeout must 0.0 or more</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_seconds'>seconds</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span> <span class='op'>&lt;</span> <span class='float'>0.0</span>
@@ -274,7 +274,7 @@
 23</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/selector/after_clause.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/selector/after_clause.rb', line 16</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span>
   <span class='kw'>if</span> <span class='const'><span class='object_link'><a href="../../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_monotonic_time'><span class='object_link'><a href="../../../Concurrent.html#monotonic_time-class_method" title="Concurrent.monotonic_time (method)">monotonic_time</a></span></span> <span class='op'>&gt;</span> <span class='ivar'>@end</span>

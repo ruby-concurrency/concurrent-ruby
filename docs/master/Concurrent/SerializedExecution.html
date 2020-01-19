@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/serialized_execution.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/executor/serialized_execution.rb</dd>
   </dl>
   
 </div>
@@ -249,7 +249,7 @@
 14</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/serialized_execution.rb', line 11</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/serialized_execution.rb', line 11</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -384,7 +384,7 @@ is not running</p>
 37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/serialized_execution.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/serialized_execution.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_posts'>posts</span> <span class='lbracket'>[</span><span class='lbracket'>[</span><span class='id identifier rubyid_executor'>executor</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='id identifier rubyid_task'>task</span><span class='rbracket'>]</span><span class='rbracket'>]</span>
@@ -466,7 +466,7 @@ first is a <span class='object_link'>ExecutorService</span>, second is array of 
 66</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/serialized_execution.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/serialized_execution.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_posts'>posts</span><span class='lparen'>(</span><span class='id identifier rubyid_posts'>posts</span><span class='rparen'>)</span>
   <span class='comment'># if can_overflow?

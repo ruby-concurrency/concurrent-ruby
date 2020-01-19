@@ -203,20 +203,20 @@ module Concurrent
 
       context 'stress', notravis: true do
         configurations = [
-          { min_threads:     2,
-            max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-            auto_terminate:  false,
-            idletime:        0.1, # 1 minute
-            max_queue:       0, # unlimited
-            fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
-            gc_interval:     0.1 },
-            { min_threads:     2,
-              max_threads:     4,
-              auto_terminate:  false,
-              idletime:        0.1, # 1 minute
-              max_queue:       0, # unlimited
+            { min_threads:    2,
+              max_threads:    ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
+              auto_terminate: false,
+              idletime:       0.1, # 1 minute
+              max_queue: 0, # unlimited
               fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
-              gc_interval:     0.1 }
+              gc_interval: 0.1 },
+            { min_threads:    2,
+              max_threads:    4,
+              auto_terminate: false,
+              idletime:       0.1, # 1 minute
+              max_queue: 0, # unlimited
+              fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
+              gc_interval: 0.1 }
         ]
 
         configurations.each do |config|
@@ -235,6 +235,8 @@ module Concurrent
                 puts "ERRORSIZE #{pool.length} max #{config[:max_threads]}"
               end
             end
+
+            pool.shutdown
           end
         end
       end

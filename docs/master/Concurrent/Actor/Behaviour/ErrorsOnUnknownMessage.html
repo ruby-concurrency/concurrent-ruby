@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb</dd>
   </dl>
   
 </div>
@@ -214,7 +214,7 @@
 8</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb', line 6</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_envelope'>on_envelope</span><span class='lparen'>(</span><span class='id identifier rubyid_envelope'>envelope</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../UnknownMessage.html" title="Concurrent::Actor::UnknownMessage (class)">UnknownMessage</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_envelope'>envelope</span>

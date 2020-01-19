@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/cancellation.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb</dd>
   </dl>
   
 </div>
@@ -620,7 +620,7 @@ When it is resolved the cancellation is canceled.</p>
 55</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 52</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_origin'>origin</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_event'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_event-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_event (method)">resolvable_event</a></span></span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -701,7 +701,7 @@ When it is resolved the cancellation is canceled.</p>
 43</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 41</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 41</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_timeout'>timeout</span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_new'>new</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_schedule'><span class='object_link'><a href="Promises/FactoryMethods.html#schedule-instance_method" title="Concurrent::Promises::FactoryMethods#schedule (method)">schedule</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_intended_time'>intended_time</span><span class='rparen'>)</span>
@@ -761,7 +761,7 @@ Respective, was the origin of the cancellation resolved.</p>
 77</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 75</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_canceled?'>canceled?</span>
   <span class='ivar'>@Origin</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>
@@ -853,7 +853,7 @@ Respective, was the origin of the cancellation resolved.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 83</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_check!'>check!</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html#CancelledOperationError-constant" title="Concurrent::CancelledOperationError (constant)">CancelledOperationError</a></span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_error'>error</span> <span class='kw'>if</span> <span class='id identifier rubyid_canceled?'>canceled?</span>
@@ -931,7 +931,7 @@ of the supplied cancellations or self is cancelled.</p>
 95</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 93</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 93</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_cancellations'>cancellations</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="" title="Concurrent::Cancellation (class)">Cancellation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_any_event'><span class='object_link'><a href="Promises/FactoryMethods.html#any_event-instance_method" title="Concurrent::Promises::FactoryMethods#any_event (method)">any_event</a></span></span><span class='lparen'>(</span><span class='op'>*</span><span class='lbracket'>[</span><span class='ivar'>@Origin</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_cancellations'>cancellations</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:origin</span><span class='rparen'>)</span><span class='rbracket'>]</span><span class='rparen'>)</span>
@@ -984,7 +984,7 @@ of the supplied cancellations or self is cancelled.</p>
 70</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 68</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 68</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_origin'>origin</span>
   <span class='ivar'>@Origin</span>
@@ -1046,7 +1046,7 @@ of the supplied cancellations or self is cancelled.</p>
 64</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_ary'>to_ary</span>
   <span class='lbracket'>[</span><span class='kw'>self</span><span class='comma'>,</span> <span class='ivar'>@Origin</span><span class='rbracket'>]</span>
@@ -1103,7 +1103,7 @@ of the supplied cancellations or self is cancelled.</p>
 101</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/cancellation.rb', line 99</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/cancellation.rb', line 99</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s %s&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_canceled?'>canceled?</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>canceled</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>pending</span><span class='tstring_end'>&#39;</span></span>

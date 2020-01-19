@@ -98,7 +98,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/channel/buffer/buffered.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/channel/buffer/buffered.rb</dd>
   </dl>
   
 </div>
@@ -344,7 +344,7 @@ boolean indicating whether or not more items remain.</p>
 68</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/buffered.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/buffered.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='kw'>next</span>
   <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
@@ -447,7 +447,7 @@ false (always false when closed).</p>
 47</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/buffered.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/buffered.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_offer'>offer</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -520,7 +520,7 @@ the buffer is empty.</p>
 79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/buffered.rb', line 71</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/buffered.rb', line 71</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_poll'>poll</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -619,7 +619,7 @@ false (always false when closed).</p>
 31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/buffered.rb', line 19</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/buffered.rb', line 19</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_put'>put</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
@@ -692,7 +692,7 @@ the buffer has closed.</p>
 53</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/buffered.rb', line 50</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/buffered.rb', line 50</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_take'>take</span>
   <span class='id identifier rubyid_item'>item</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_next'>next</span>

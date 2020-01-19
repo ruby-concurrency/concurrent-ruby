@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/ivar.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/ivar.rb</dd>
   </dl>
   
 </div>
@@ -915,7 +915,7 @@ the internal value and returning the value returned from the proc</p>
 67</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 61</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/ivar.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>!=</span> <span class='const'>NULL</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1041,7 +1041,7 @@ fulfillment).</p>
 99</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 80</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/ivar.rb', line 80</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_observer'>add_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_func'>func</span> <span class='op'>=</span> <span class='symbol'>:update</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>cannot provide both an observer and a block</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_observer'>observer</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block'>block</span>
@@ -1154,7 +1154,7 @@ been set or otherwise completed</p>
 136</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 134</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/ivar.rb', line 134</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fail'>fail</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='const'>StandardError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_complete'>complete</span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span><span class='rparen'>)</span>
@@ -1291,7 +1291,7 @@ been set or otherwise completed</p>
 125</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 112</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/ivar.rb', line 112</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_check_for_block_or_value!'>check_for_block_or_value!</span><span class='lparen'>(</span><span class='id identifier rubyid_block_given?'>block_given?</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
@@ -1432,7 +1432,7 @@ been set or otherwise completed</p>
 149</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/ivar.rb', line 144</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/ivar.rb', line 144</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_try_set'>try_set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>

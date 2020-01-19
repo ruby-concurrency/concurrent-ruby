@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/lock_free_linked_set/node.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb</dd>
   </dl>
   
 </div>
@@ -359,7 +359,7 @@
 16</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 11</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 11</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_successor'>successor</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -411,7 +411,7 @@ split-ordering on the nodes in the set.</p>
 53</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 51</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 51</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;=&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='ivar'>@Key</span> <span class='op'>&lt;=&gt;</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_hash'>hash</span>
@@ -450,7 +450,7 @@ split-ordering on the nodes in the set.</p>
 20</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_data'>data</span>
   <span class='ivar'>@Data</span>
@@ -489,7 +489,7 @@ split-ordering on the nodes in the set.</p>
 28</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 26</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 26</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_key'>key</span>
   <span class='ivar'>@Key</span>
@@ -531,7 +531,7 @@ the nodes to be ordered.</p>
 46</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_key_for'>key_for</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_hash'>hash</span>
@@ -584,7 +584,7 @@ the nodes to be ordered.</p>
 33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 31</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 31</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_last?'>last?</span>
   <span class='ivar'>@SuccessorReference</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'><span class='object_link'><a href="Tail.html" title="Concurrent::Edge::LockFreeLinkedSet::Tail (class)">Tail</a></span></span>
@@ -625,7 +625,7 @@ of the next node, this is the actual Node itself.</p>
 39</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 37</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 37</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_next_node'>next_node</span>
   <span class='ivar'>@SuccessorReference</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
@@ -664,7 +664,7 @@ of the next node, this is the actual Node itself.</p>
 24</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 22</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 22</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_successor_reference'>successor_reference</span>
   <span class='ivar'>@SuccessorReference</span>

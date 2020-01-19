@@ -99,8 +99,8 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/lock_free_linked_set.rb<span class="defines">,<br />
-  lib-edge/concurrent/edge/lock_free_linked_set/node.rb,<br /> lib-edge/concurrent/edge/lock_free_linked_set/window.rb</span>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb<span class="defines">,<br />
+  lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb,<br /> lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/window.rb</span>
 </dd>
   </dl>
   
@@ -374,7 +374,7 @@ nodes they encounter while traversing the list.</p>
 35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb', line 28</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_initial_size'>initial_size</span> <span class='op'>=</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_val'>val</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@head</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="LockFreeLinkedSet/Head.html" title="Concurrent::Edge::LockFreeLinkedSet::Head (class)">Head</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -465,7 +465,7 @@ nodes they encounter while traversing the list.</p>
 75</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set.rb', line 72</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb', line 72</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;&lt;</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_add'>add</span> <span class='id identifier rubyid_item'>item</span>
@@ -560,7 +560,7 @@ despite being different objects.</p>
 63</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set.rb', line 48</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb', line 48</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add'>add</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
@@ -659,7 +659,7 @@ hashed contents of an object is what determines equality instead of
 96</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set.rb', line 87</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb', line 87</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_contains?'>contains?</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_curr'>curr</span> <span class='op'>=</span> <span class='ivar'>@head</span>
@@ -770,7 +770,7 @@ hashed contents of an object is what determines equality instead of
 145</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set.rb', line 132</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb', line 132</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each'>each</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_to_enum'>to_enum</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -872,7 +872,7 @@ hashed contents of an object is what determines equality instead of
 122</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set.rb', line 105</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_remove'>remove</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>

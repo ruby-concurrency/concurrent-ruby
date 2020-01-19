@@ -99,7 +99,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/tuple.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/tuple.rb</dd>
   </dl>
   
 </div>
@@ -373,7 +373,7 @@ Mixes in Ruby&#39;s <code>Enumerable</code> module for enhanced search, sort, an
 41</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tuple.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tuple.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_size'>size</span><span class='rparen'>)</span>
   <span class='ivar'>@size</span> <span class='op'>=</span> <span class='id identifier rubyid_size'>size</span>
@@ -426,7 +426,7 @@ Mixes in Ruby&#39;s <code>Enumerable</code> module for enhanced search, sort, an
 26</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tuple.rb', line 24</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tuple.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_size'>size</span>
   <span class='ivar'>@size</span>
@@ -545,7 +545,7 @@ value matches the given old value.</p>
 76</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tuple.rb', line 73</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tuple.rb', line 73</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='comma'>,</span> <span class='id identifier rubyid_old_value'>old_value</span><span class='comma'>,</span> <span class='id identifier rubyid_new_value'>new_value</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&gt;=</span> <span class='ivar'>@size</span> <span class='op'>||</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&lt;</span> <span class='int'>0</span>
@@ -605,7 +605,7 @@ value matches the given old value.</p>
 84</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tuple.rb', line 82</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tuple.rb', line 82</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each'>each</span>
   <span class='ivar'>@tuple</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_ref'>ref</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_ref'>ref</span><span class='period'>.</span><span class='id identifier rubyid_get'>get</span><span class='rbrace'>}</span>
@@ -686,7 +686,7 @@ value matches the given old value.</p>
 50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tuple.rb', line 47</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tuple.rb', line 47</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&gt;=</span> <span class='ivar'>@size</span> <span class='op'>||</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&lt;</span> <span class='int'>0</span>
@@ -783,7 +783,7 @@ value matches the given old value.</p>
 62</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/tuple.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tuple.rb', line 59</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&gt;=</span> <span class='ivar'>@size</span> <span class='op'>||</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&lt;</span> <span class='int'>0</span>

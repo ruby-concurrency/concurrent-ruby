@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/collection/copy_on_notify_observer_set.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb</dd>
   </dl>
   
 </div>
@@ -339,7 +339,7 @@ prevent concurrency issues</p>
 17</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 14</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 14</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -462,7 +462,7 @@ Default is :update</p>
 36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 20</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 20</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_add_observer'>add_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_func'>func</span> <span class='op'>=</span> <span class='symbol'>:update</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_observer'>observer</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_block'>block</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
@@ -537,7 +537,7 @@ Default is :update</p>
 57</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 55</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 55</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_count_observers'>count_observers</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@observers</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span> <span class='rbrace'>}</span>
@@ -621,7 +621,7 @@ longer receive notifications.</p>
 44</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 39</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 39</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_observer'>delete_observer</span><span class='lparen'>(</span><span class='id identifier rubyid_observer'>observer</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -688,7 +688,7 @@ longer receive notifications.</p>
 52</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 47</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 47</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_observers'>delete_observers</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -773,7 +773,7 @@ longer receive notifications.</p>
 76</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 72</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 72</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_notify_and_delete_observers'>notify_and_delete_observers</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_observers'>observers</span> <span class='op'>=</span> <span class='id identifier rubyid_duplicate_and_clear_observers'>duplicate_and_clear_observers</span>
@@ -857,7 +857,7 @@ longer receive notifications.</p>
 66</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/collection/copy_on_notify_observer_set.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/collection/copy_on_notify_observer_set.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_notify_observers'>notify_observers</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_observers'>observers</span> <span class='op'>=</span> <span class='id identifier rubyid_duplicate_observers'>duplicate_observers</span>

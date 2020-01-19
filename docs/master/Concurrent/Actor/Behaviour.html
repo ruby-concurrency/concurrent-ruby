@@ -78,8 +78,8 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/behaviour.rb<span class="defines">,<br />
-  lib-edge/concurrent/actor/behaviour/awaits.rb,<br /> lib-edge/concurrent/actor/behaviour/buffer.rb,<br /> lib-edge/concurrent/actor/behaviour/linking.rb,<br /> lib-edge/concurrent/actor/behaviour/pausing.rb,<br /> lib-edge/concurrent/actor/behaviour/abstract.rb,<br /> lib-edge/concurrent/actor/behaviour/supervising.rb,<br /> lib-edge/concurrent/actor/behaviour/termination.rb,<br /> lib-edge/concurrent/actor/behaviour/sets_results.rb,<br /> lib-edge/concurrent/actor/behaviour/removes_child.rb,<br /> lib-edge/concurrent/actor/behaviour/executes_context.rb,<br /> lib-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb</span>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb<span class="defines">,<br />
+  lib/concurrent-ruby-edge/concurrent/actor/behaviour/awaits.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/linking.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/abstract.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/supervising.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/sets_results.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/removes_child.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/executes_context.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb</span>
 </dd>
   </dl>
   
@@ -479,7 +479,7 @@ Array of behaviours and their construction parameters.</p>
 110</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 105</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_base'>base</span><span class='lparen'>(</span><span class='id identifier rubyid_on_error'>on_error</span><span class='rparen'>)</span>
   <span class='lbracket'>[</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="Behaviour/SetResults.html" title="Concurrent::Actor::Behaviour::SetResults (class)">SetResults</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_on_error'>on_error</span><span class='rbracket'>]</span><span class='comma'>,</span>
@@ -540,7 +540,7 @@ Array of behaviours and their construction parameters.</p>
 81</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_basic_behaviour_definition'>basic_behaviour_definition</span>
   <span class='lbracket'>[</span><span class='op'>*</span><span class='id identifier rubyid_base'>base</span><span class='lparen'>(</span><span class='symbol'>:terminate!</span><span class='rparen'>)</span><span class='comma'>,</span>
@@ -588,7 +588,7 @@ Array of behaviours and their construction parameters.</p>
 115</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 113</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 113</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_linking'>linking</span>
   <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="Behaviour/Linking.html" title="Concurrent::Actor::Behaviour::Linking (class)">Linking</a></span></span><span class='rbracket'>]</span>
@@ -650,7 +650,7 @@ Array of behaviours and their construction parameters.</p>
 102</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 96</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 96</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_restarting_behaviour_definition'>restarting_behaviour_definition</span><span class='lparen'>(</span><span class='id identifier rubyid_handle'>handle</span> <span class='op'>=</span> <span class='symbol'>:reset!</span><span class='comma'>,</span> <span class='id identifier rubyid_strategy'>strategy</span> <span class='op'>=</span> <span class='symbol'>:one_for_one</span><span class='rparen'>)</span>
   <span class='lbracket'>[</span><span class='op'>*</span><span class='id identifier rubyid_base'>base</span><span class='lparen'>(</span><span class='symbol'>:pause!</span><span class='rparen'>)</span><span class='comma'>,</span>
@@ -700,7 +700,7 @@ Array of behaviours and their construction parameters.</p>
 120</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 118</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 118</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_supervised'>supervised</span>
   <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="Behaviour/Pausing.html" title="Concurrent::Actor::Behaviour::Pausing (class)">Pausing</a></span></span><span class='rbracket'>]</span>
@@ -746,7 +746,7 @@ Array of behaviours and their construction parameters.</p>
 125</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 123</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 123</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_supervising'>supervising</span><span class='lparen'>(</span><span class='id identifier rubyid_handle'>handle</span> <span class='op'>=</span> <span class='symbol'>:reset!</span><span class='comma'>,</span> <span class='id identifier rubyid_strategy'>strategy</span> <span class='op'>=</span> <span class='symbol'>:one_for_one</span><span class='rparen'>)</span>
   <span class='lbracket'>[</span><span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="" title="Concurrent::Actor::Behaviour (module)">Behaviour</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Behaviour/Supervising.html" title="Concurrent::Actor::Behaviour::Supervising (class)">Supervising</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_handle'>handle</span><span class='comma'>,</span> <span class='id identifier rubyid_strategy'>strategy</span><span class='rbracket'>]</span><span class='rbracket'>]</span>
@@ -794,7 +794,7 @@ Array of behaviours and their construction parameters.</p>
 132</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb', line 128</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_user_messages'>user_messages</span>
   <span class='lbracket'>[</span><span class='const'><span class='object_link'><a href="Behaviour/Awaits.html" title="Concurrent::Actor::Behaviour::Awaits (class)">Awaits</a></span></span><span class='comma'>,</span>

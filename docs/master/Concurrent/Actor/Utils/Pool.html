@@ -98,7 +98,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/utils/pool.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/utils/pool.rb</dd>
   </dl>
   
 </div>
@@ -317,7 +317,7 @@ The worker should be descendant of AbstractWorker and supervised, see example.</
 37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/pool.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/pool.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_worker_initializer'>worker_initializer</span><span class='rparen'>)</span>
   <span class='ivar'>@balancer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Balancer.html" title="Concurrent::Actor::Utils::Balancer (class)">Balancer</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="../AbstractContext.html#spawn-class_method" title="Concurrent::Actor::AbstractContext.spawn (method)">spawn</a></span></span> <span class='label'>name:</span> <span class='symbol'>:balancer</span><span class='comma'>,</span> <span class='label'>supervise:</span> <span class='kw'>true</span>
@@ -377,7 +377,7 @@ The worker should be descendant of AbstractWorker and supervised, see example.</
 50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/pool.rb', line 39</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/pool.rb', line 39</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_message'>on_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_command'>command</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span>

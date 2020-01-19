@@ -103,7 +103,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/scheduled_task.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/scheduled_task.rb</dd>
   </dl>
   
 </div>
@@ -820,7 +820,7 @@ block on execution</p>
 181</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 165</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 165</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_delay'>delay</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1030,7 +1030,7 @@ argument then return the new value returned from the proc.</p>
 279</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 277</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 277</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_delay'>delay</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_delay'>delay</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span>
@@ -1101,7 +1101,7 @@ cancelled if it is pending or unscheduled.</p>
 231</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 222</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 222</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cancel'>cancel</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_state'>compare_and_set_state</span><span class='lparen'>(</span><span class='symbol'>:cancelled</span><span class='comma'>,</span> <span class='symbol'>:pending</span><span class='comma'>,</span> <span class='symbol'>:unscheduled</span><span class='rparen'>)</span>
@@ -1165,7 +1165,7 @@ cancelled if it is pending or unscheduled.</p>
 209</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 207</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 207</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cancelled?'>cancelled?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_check_state?'>ns_check_state?</span><span class='lparen'>(</span><span class='symbol'>:cancelled</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
@@ -1227,7 +1227,7 @@ in any state other than <code>:unscheduled</code>.</p>
 265</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 260</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 260</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_state'>compare_and_set_state</span><span class='lparen'>(</span><span class='symbol'>:pending</span><span class='comma'>,</span> <span class='symbol'>:unscheduled</span><span class='rparen'>)</span>
@@ -1287,7 +1287,7 @@ in any state other than <code>:unscheduled</code>.</p>
 188</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 186</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 186</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initial_delay'>initial_delay</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@delay</span> <span class='rbrace'>}</span>
@@ -1344,7 +1344,7 @@ in any state other than <code>:unscheduled</code>.</p>
 216</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 214</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 214</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_processing?'>processing?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_check_state?'>ns_check_state?</span><span class='lparen'>(</span><span class='symbol'>:processing</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
@@ -1440,7 +1440,7 @@ A task can only be reset while it is <code>:pending</code>.</p>
 253</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 249</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 249</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reschedule'>reschedule</span><span class='lparen'>(</span><span class='id identifier rubyid_delay'>delay</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_delay'>delay</span> <span class='op'>=</span> <span class='id identifier rubyid_delay'>delay</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
@@ -1500,7 +1500,7 @@ A task can only be reset while it is <code>:pending</code>.</p>
 239</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 237</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 237</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset'>reset</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span><span class='lbrace'>{</span> <span class='id identifier rubyid_ns_reschedule'>ns_reschedule</span><span class='lparen'>(</span><span class='ivar'>@delay</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
@@ -1557,7 +1557,7 @@ A task can only be reset while it is <code>:pending</code>.</p>
 195</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/scheduled_task.rb', line 193</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/scheduled_task.rb', line 193</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_schedule_time'>schedule_time</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@time</span> <span class='rbrace'>}</span>

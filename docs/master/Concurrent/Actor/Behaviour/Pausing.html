@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/behaviour/pausing.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb</dd>
   </dl>
   
 </div>
@@ -362,7 +362,7 @@ Reset also reinitialized context.</p>
 15</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 11</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 11</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_core'>core</span><span class='comma'>,</span> <span class='id identifier rubyid_subsequent'>subsequent</span><span class='comma'>,</span> <span class='id identifier rubyid_core_options'>core_options</span><span class='rparen'>)</span>
   <span class='kw'>super</span> <span class='id identifier rubyid_core'>core</span><span class='comma'>,</span> <span class='id identifier rubyid_subsequent'>subsequent</span><span class='comma'>,</span> <span class='id identifier rubyid_core_options'>core_options</span>
@@ -428,7 +428,7 @@ Reset also reinitialized context.</p>
 41</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 21</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 21</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_envelope'>on_envelope</span><span class='lparen'>(</span><span class='id identifier rubyid_envelope'>envelope</span><span class='rparen'>)</span>
   <span class='kw'>case</span> <span class='id identifier rubyid_envelope'>envelope</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
@@ -487,7 +487,7 @@ Reset also reinitialized context.</p>
 76</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 72</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 72</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_event'>on_event</span><span class='lparen'>(</span><span class='id identifier rubyid_public'>public</span><span class='comma'>,</span> <span class='id identifier rubyid_event'>event</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_event_name'>event_name</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span> <span class='op'>=</span> <span class='id identifier rubyid_event'>event</span>
@@ -530,7 +530,7 @@ Reset also reinitialized context.</p>
 47</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 43</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 43</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pause!'>pause!</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_do_pause'>do_pause</span>
@@ -584,7 +584,7 @@ Reset also reinitialized context.</p>
 19</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 17</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 17</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_paused?'>paused?</span>
   <span class='ivar'>@paused</span>
@@ -627,7 +627,7 @@ Reset also reinitialized context.</p>
 62</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset!'>reset!</span>
   <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_paused?'>paused?</span>
@@ -674,7 +674,7 @@ Reset also reinitialized context.</p>
 70</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 64</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 64</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_restart!'>restart!</span>
   <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_paused?'>paused?</span>
@@ -720,7 +720,7 @@ Reset also reinitialized context.</p>
 54</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/pausing.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_resume!'>resume!</span>
   <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_paused?'>paused?</span>

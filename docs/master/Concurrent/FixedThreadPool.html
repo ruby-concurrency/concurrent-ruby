@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/fixed_thread_pool.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/executor/fixed_thread_pool.rb</dd>
   </dl>
   
 </div>
@@ -125,6 +125,9 @@ from the pool and replaced.</p>
 
 <ul>
 <li><code>idletime</code>: The number of seconds that a thread may be idle before being reclaimed.</li>
+<li><code>name</code>: The name of the executor (optional). Printed in the executor&#39;s <code>#to_s</code> output and
+a <code>&lt;name&gt;-worker-&lt;id&gt;</code> name is given to its threads if supported by used Ruby
+implementation. <code>&lt;id&gt;</code> is uniq for each thread.</li>
 <li><code>max_queue</code>: The maximum number of tasks that may be waiting in the work queue at
 any one time. When the queue size reaches <code>max_queue</code> and no new threads can be created,
 subsequent tasks will be rejected in accordance with the configured <code>fallback_policy</code>.</li>
@@ -362,17 +365,17 @@ prevented by setting the thread pool&#39;s constructor <code>:auto_terminate</co
       <pre class="lines">
 
 
-197
-198
-199
 200
 201
 202
 203
-204</pre>
+204
+205
+206
+207</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/fixed_thread_pool.rb', line 197</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/fixed_thread_pool.rb', line 200</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_num_threads'>num_threads</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>number of threads must be greater than zero</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_num_threads'>num_threads</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span> <span class='op'>&lt;</span> <span class='int'>1</span>

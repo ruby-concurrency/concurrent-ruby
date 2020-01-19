@@ -98,7 +98,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/lock_free_linked_set/node.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb</dd>
   </dl>
   
 </div>
@@ -219,7 +219,7 @@ a self-loop.</p>
 62</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 60</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 60</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid__data'>_data</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid__succ'>_succ</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@SuccessorReference</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../AtomicMarkableReference.html" title="Concurrent::AtomicMarkableReference (class)">AtomicMarkableReference</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>self</span>
@@ -267,7 +267,7 @@ at the tail node since we are comparing node size in the traversal.</p>
 68</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/node.rb', line 66</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/node.rb', line 66</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;=&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid__other'>_other</span><span class='rparen'>)</span>
   <span class='int'>1</span>

@@ -83,7 +83,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/utils/ad_hoc.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/utils/ad_hoc.rb</dd>
   </dl>
   
 </div>
@@ -194,7 +194,7 @@
 8</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/ad_hoc.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/ad_hoc.rb', line 6</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_initializer'>initializer</span><span class='rparen'>)</span>
   <span class='ivar'>@on_message</span> <span class='op'>=</span> <span class='id identifier rubyid_Type!'>Type!</span> <span class='id identifier rubyid_initializer'>initializer</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='const'>Proc</span>
@@ -233,7 +233,7 @@
 12</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/utils/ad_hoc.rb', line 10</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/utils/ad_hoc.rb', line 10</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_message'>on_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_instance_exec'>instance_exec</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='ivar'>@on_message</span>

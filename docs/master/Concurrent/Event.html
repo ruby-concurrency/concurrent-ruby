@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/atomic/event.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/atomic/event.rb</dd>
   </dl>
   
 </div>
@@ -345,7 +345,7 @@ New threads calling <code>#wait</code> will return immediately. An <code>Event</
 43</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/event.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/event.rb', line 40</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='kw'>super</span>
@@ -417,7 +417,7 @@ Has no effect if the <code>Event</code> has not yet been set.</p>
 76</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/event.rb', line 68</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/event.rb', line 68</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset'>reset</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -481,7 +481,7 @@ waiting on the event. Has no effect if the <code>Event</code> has already been s
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/event.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/event.rb', line 56</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set'>set</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_set'>ns_set</span> <span class='rbrace'>}</span>
@@ -538,7 +538,7 @@ waiting on the event. Has no effect if the <code>Event</code> has already been s
 50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/event.rb', line 48</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/event.rb', line 48</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set?'>set?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@set</span> <span class='rbrace'>}</span>
@@ -590,7 +590,7 @@ waiting on the event. Has no effect if the <code>Event</code> has already been s
 62</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/event.rb', line 60</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/event.rb', line 60</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_try?'>try?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@set</span> <span class='op'>?</span> <span class='kw'>false</span> <span class='op'>:</span> <span class='id identifier rubyid_ns_set'>ns_set</span> <span class='rbrace'>}</span>
@@ -656,7 +656,7 @@ immediately if the <code>Event</code> has already been set.</p>
 92</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/atomic/event.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/event.rb', line 83</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
