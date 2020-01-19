@@ -5,7 +5,7 @@ Although, `Promises.future { 1 + 1 }` is better suited for that purpose.
 
 ```ruby
 actor = Concurrent::ErlangActor.spawn(type: :on_thread, name: 'addition') { 1 + 1 }
-# => #<Concurrent::ErlangActor::Pid:0x000002 addition terminated normally with 2>
+# => #<Concurrent::ErlangActor::Pid:0x000002 addition running>
 actor.terminated.value!                  # => 2
 ```
 

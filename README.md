@@ -253,6 +253,9 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 *   [ErlangActor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ErlangActor.html)
     Actor implementation which precisely matches Erlang actor behaviour. 
     Requires at least Ruby 2.1 otherwise it's not loaded.
+*   [WrappingExecutor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/WrappingExecutor.html) 
+    A delegating executor which modifies each task before the task is given to 
+    the target executor it delegates to.
 
 ## Supported Ruby versions
 
