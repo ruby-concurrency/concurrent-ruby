@@ -83,7 +83,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/type_check.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/type_check.rb</dd>
   </dl>
   
 </div>
@@ -286,7 +286,7 @@ supplies type-checking helpers whenever included</p>
 37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/type_check.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/type_check.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_Child!'>Child!</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_Child?'>Child?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span> <span class='kw'>or</span>
@@ -341,7 +341,7 @@ supplies type-checking helpers whenever included</p>
 31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/type_check.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/type_check.rb', line 28</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_Child?'>Child?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_Type?'>Type?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='const'>Class</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
@@ -383,7 +383,7 @@ supplies type-checking helpers whenever included</p>
 26</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/type_check.rb', line 22</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/type_check.rb', line 22</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_Match!'>Match!</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_Match?'>Match?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span> <span class='kw'>or</span>
@@ -437,7 +437,7 @@ supplies type-checking helpers whenever included</p>
 20</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/type_check.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/type_check.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_Match?'>Match?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_t'>t</span> <span class='op'>===</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span>
@@ -478,7 +478,7 @@ supplies type-checking helpers whenever included</p>
 16</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/type_check.rb', line 12</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/type_check.rb', line 12</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_Type!'>Type!</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_Type?'>Type?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span> <span class='kw'>or</span>
@@ -532,7 +532,7 @@ supplies type-checking helpers whenever included</p>
 10</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/type_check.rb', line 8</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/type_check.rb', line 8</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_Type?'>Type?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_types'>types</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='id identifier rubyid_t'>t</span> <span class='rbrace'>}</span>

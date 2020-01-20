@@ -98,7 +98,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/immediate_executor.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/executor/immediate_executor.rb</dd>
   </dl>
   
 </div>
@@ -381,7 +381,7 @@ during testing because it makes all operations deterministic.</p>
 23</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 21</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 21</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='ivar'>@stopped</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Event.html" title="Concurrent::Event (class)">Event</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Event.html#initialize-instance_method" title="Concurrent::Event#initialize (method)">new</a></span></span>
@@ -465,7 +465,7 @@ during testing because it makes all operations deterministic.</p>
 37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;&lt;</span><span class='lparen'>(</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
@@ -580,7 +580,7 @@ is not running</p>
 31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 26</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 26</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post'>post</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_task'>task</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -640,7 +640,7 @@ is not running</p>
 42</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 40</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_running?'>running?</span>
   <span class='op'>!</span> <span class='id identifier rubyid_shutdown?'>shutdown?</span>
@@ -687,7 +687,7 @@ thread pool is not running.</p>
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 55</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 55</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_shutdown'>shutdown</span>
   <span class='ivar'>@stopped</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span>
@@ -745,7 +745,7 @@ thread pool is not running.</p>
 52</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 50</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 50</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_shutdown?'>shutdown?</span>
   <span class='ivar'>@stopped</span><span class='period'>.</span><span class='id identifier rubyid_set?'>set?</span>
@@ -802,7 +802,7 @@ thread pool is not running.</p>
 47</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 45</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 45</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_shuttingdown?'>shuttingdown?</span>
   <span class='kw'>false</span>
@@ -889,7 +889,7 @@ passed.</p>
 64</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/immediate_executor.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/immediate_executor.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait_for_termination'>wait_for_termination</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@stopped</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>

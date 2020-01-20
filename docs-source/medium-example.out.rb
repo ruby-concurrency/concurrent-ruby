@@ -87,8 +87,8 @@ LOGGING.tell Log[Logger::INFO, :breeze]
 
 sleep 0.05 # the logging is asynchronous, we need to wait a bit until it's written
 get_captured_output
-# => "[2019-03-11 10:15:11.819] FATAL -- : :tornado\n" +
-#    "[2019-03-11 10:15:11.820]  INFO -- : :breeze\n"
+# => "[2020-01-19 18:53:43.022] FATAL -- : :tornado\n" +
+#    "[2020-01-19 18:53:43.023]  INFO -- : :breeze\n"
 
 # the logging could be wrapped in a method
 def log(severity, message)
@@ -100,7 +100,7 @@ include Logger::Severity                 # => Object
 log INFO, 'alive'                        # => true
 sleep 0.05                               # => 0
 get_captured_output
-# => "[2019-03-11 10:15:11.871]  INFO -- : alive\n"
+# => "[2020-01-19 18:53:43.073]  INFO -- : alive\n"
 
 
 # The stub which will represent the web
@@ -162,9 +162,9 @@ crawlers = Array.new web_crawler_count do |i|
     end
   end
 end.freeze
-# => [#<Thread:0x000009@medium-example.in.rb:130 sleep>,
-#     #<Thread:0x00000a@medium-example.in.rb:130 sleep>,
-#     #<Thread:0x00000b@medium-example.in.rb:130 sleep>,
+# => [#<Thread:0x000009@medium-example.in.rb:130 run>,
+#     #<Thread:0x00000a@medium-example.in.rb:130 run>,
+#     #<Thread:0x00000b@medium-example.in.rb:130 run>,
 #     #<Thread:0x00000c@medium-example.in.rb:130 run>]
 
 # So far only the crawlers looking for data are defined
@@ -347,372 +347,541 @@ LOGGING.terminated.wait
 
 # inspect collected char frequencies
 DB.data
-# => {"1"=>18,
-#     "2"=>18,
+# => {"2"=>18,
 #     "3"=>18,
 #     "4"=>18,
-#     "6"=>18,
-#     "5"=>18,
+#     "1"=>18,
 #     "7"=>18,
+#     "5"=>18,
 #     "8"=>18,
+#     "6"=>18,
 #     "9"=>18,
-#     "b"=>1,
-#     "c"=>1,
-#     "a"=>7,
-#     "d"=>1,
-#     "e"=>1,
-#     "f"=>1}
+#     "a"=>18,
+#     "b"=>18,
+#     "c"=>18,
+#     "d"=>18,
+#     "e"=>18,
+#     "f"=>6}
 
 # see the logger output
 get_captured_output
-# => "[2019-03-11 10:15:11.939] DEBUG -- : crawler 2 found 1\n" +
-#    "[2019-03-11 10:15:11.941] DEBUG -- : crawler 1 found 2\n" +
-#    "[2019-03-11 10:15:11.942] DEBUG -- : data-processor 0 got 1\n" +
-#    "[2019-03-11 10:15:11.943] DEBUG -- : data-processor 1 got 2\n" +
-#    "[2019-03-11 10:15:11.944] DEBUG -- : crawler 0 found 3\n" +
-#    "[2019-03-11 10:15:11.944] DEBUG -- : data-processor 2 got 3\n" +
-#    "[2019-03-11 10:15:11.945] DEBUG -- : crawler 3 found 4\n" +
-#    "[2019-03-11 10:15:11.946] DEBUG -- : data-processor 3 got 4\n" +
-#    "[2019-03-11 10:15:11.951] DEBUG -- : crawler 2 found 5\n" +
-#    "[2019-03-11 10:15:11.952] DEBUG -- : crawler 1 found 6\n" +
-#    "[2019-03-11 10:15:11.953] DEBUG -- : data-processor 4 got 5\n" +
-#    "[2019-03-11 10:15:11.954] DEBUG -- : data-processor 5 got 6\n" +
-#    "[2019-03-11 10:15:11.955] DEBUG -- : crawler 0 found 7\n" +
-#    "[2019-03-11 10:15:11.956] DEBUG -- : data-processor 6 got 7\n" +
-#    "[2019-03-11 10:15:11.956] DEBUG -- : crawler 3 found 8\n" +
-#    "[2019-03-11 10:15:11.957] DEBUG -- : data-processor 7 got 8\n" +
-#    "[2019-03-11 10:15:11.962] DEBUG -- : crawler 2 found 9\n" +
-#    "[2019-03-11 10:15:11.964] DEBUG -- : crawler 1 found a\n" +
-#    "[2019-03-11 10:15:11.964] DEBUG -- : crawler 0 found b\n" +
-#    "[2019-03-11 10:15:11.965] DEBUG -- : crawler 3 found c\n" +
-#    "[2019-03-11 10:15:11.973] DEBUG -- : crawler 2 found d\n" +
-#    "[2019-03-11 10:15:11.974] DEBUG -- : crawler 1 found e\n" +
-#    "[2019-03-11 10:15:11.975] DEBUG -- : crawler 3 found f\n" +
-#    "[2019-03-11 10:15:11.977] DEBUG -- : crawler 0 found 10\n" +
-#    "[2019-03-11 10:15:11.986] DEBUG -- : crawler 2 found 11\n" +
-#    "[2019-03-11 10:15:11.987] DEBUG -- : crawler 1 found 12\n" +
-#    "[2019-03-11 10:15:11.988] DEBUG -- : crawler 3 found 13\n" +
-#    "[2019-03-11 10:15:11.989] DEBUG -- : crawler 0 found 14\n" +
-#    "[2019-03-11 10:15:11.997] DEBUG -- : crawler 2 found 15\n" +
-#    "[2019-03-11 10:15:11.998] DEBUG -- : crawler 1 found 16\n" +
-#    "[2019-03-11 10:15:11.999] DEBUG -- : crawler 3 found 17\n" +
-#    "[2019-03-11 10:15:12.000] DEBUG -- : crawler 0 found 18\n" +
-#    "[2019-03-11 10:15:12.010] DEBUG -- : crawler 2 found 19\n" +
-#    "[2019-03-11 10:15:12.011] DEBUG -- : crawler 1 found 1a\n" +
-#    "[2019-03-11 10:15:12.012] DEBUG -- : crawler 3 found 1b\n" +
-#    "[2019-03-11 10:15:12.014] DEBUG -- : crawler 0 found 1c\n" +
-#    "[2019-03-11 10:15:12.022] DEBUG -- : crawler 2 found 1d\n" +
-#    "[2019-03-11 10:15:12.023] DEBUG -- : crawler 1 found 1e\n" +
-#    "[2019-03-11 10:15:12.044] DEBUG -- : data-processor 8 got 9\n" +
-#    "[2019-03-11 10:15:12.046] DEBUG -- : data-processor 9 got a\n" +
-#    "[2019-03-11 10:15:12.047] DEBUG -- : data-processor 10 got b\n" +
-#    "[2019-03-11 10:15:12.048] DEBUG -- : data-processor 11 got c\n" +
-#    "[2019-03-11 10:15:12.056] DEBUG -- : data-processor 12 got d\n" +
-#    "[2019-03-11 10:15:12.057] DEBUG -- : data-processor 13 got e\n" +
-#    "[2019-03-11 10:15:12.058] DEBUG -- : data-processor 14 got f\n" +
-#    "[2019-03-11 10:15:12.061] DEBUG -- : data-processor 15 got 10\n" +
-#    "[2019-03-11 10:15:12.149] DEBUG -- : data-processor 16 got 11\n" +
-#    "[2019-03-11 10:15:12.151] DEBUG -- : data-processor 17 got 12\n" +
-#    "[2019-03-11 10:15:12.152] DEBUG -- : data-processor 18 got 13\n" +
-#    "[2019-03-11 10:15:12.153] DEBUG -- : data-processor 19 got 14\n" +
-#    "[2019-03-11 10:15:12.163] DEBUG -- : data-processor 0 got 15\n" +
-#    "[2019-03-11 10:15:12.164] DEBUG -- : crawler 3 found 1f\n" +
-#    "[2019-03-11 10:15:12.165] DEBUG -- : crawler 0 found 20\n" +
-#    "[2019-03-11 10:15:12.166] DEBUG -- : crawler 1 found 22\n" +
-#    "[2019-03-11 10:15:12.167] DEBUG -- : crawler 2 found 21\n" +
-#    "[2019-03-11 10:15:12.167] DEBUG -- : data-processor 1 got 16\n" +
-#    "[2019-03-11 10:15:12.168] DEBUG -- : data-processor 2 got 17\n" +
-#    "[2019-03-11 10:15:12.169] DEBUG -- : data-processor 3 got 18\n" +
-#    "[2019-03-11 10:15:12.174] DEBUG -- : crawler 3 found 23\n" +
-#    "[2019-03-11 10:15:12.174] DEBUG -- : crawler 0 found 24\n" +
-#    "[2019-03-11 10:15:12.175] DEBUG -- : crawler 2 found 25\n" +
-#    "[2019-03-11 10:15:12.176] DEBUG -- : crawler 1 found 26\n" +
-#    "[2019-03-11 10:15:12.185] DEBUG -- : crawler 3 found 27\n" +
-#    "[2019-03-11 10:15:12.185] DEBUG -- : crawler 1 found 28\n" +
-#    "[2019-03-11 10:15:12.186] DEBUG -- : crawler 2 found 29\n" +
-#    "[2019-03-11 10:15:12.187] DEBUG -- : crawler 0 found 2a\n" +
-#    "[2019-03-11 10:15:12.254] DEBUG -- : data-processor 5 got 19\n" +
-#    "[2019-03-11 10:15:12.255] DEBUG -- : data-processor 4 got 1a\n" +
-#    "[2019-03-11 10:15:12.256] DEBUG -- : data-processor 6 got 1b\n" +
-#    "[2019-03-11 10:15:12.258] DEBUG -- : data-processor 7 got 1c\n" +
-#    "[2019-03-11 10:15:12.267] DEBUG -- : data-processor 8 got 1d\n" +
-#    "[2019-03-11 10:15:12.268] DEBUG -- : data-processor 10 got 1e\n" +
-#    "[2019-03-11 10:15:12.269] DEBUG -- : data-processor 11 got 1f\n" +
-#    "[2019-03-11 10:15:12.269] DEBUG -- : data-processor 9 got 20\n" +
-#    "[2019-03-11 10:15:12.336]  INFO -- : \n" +
-#    "crawlers found: 10, 11, 11, 10\n" +
-#    "data processors consumed: 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1\n" +
-#    "[2019-03-11 10:15:12.361] DEBUG -- : data-processor 12 got 22\n" +
-#    "[2019-03-11 10:15:12.362] DEBUG -- : data-processor 13 got 21\n" +
-#    "[2019-03-11 10:15:12.363] DEBUG -- : data-processor 14 got 23\n" +
-#    "[2019-03-11 10:15:12.363] DEBUG -- : data-processor 15 got 24\n" +
-#    "[2019-03-11 10:15:12.364] DEBUG -- : crawler 3 found 2b\n" +
-#    "[2019-03-11 10:15:12.365] DEBUG -- : crawler 1 found 2c\n" +
-#    "[2019-03-11 10:15:12.365] DEBUG -- : crawler 0 found 2e\n" +
-#    "[2019-03-11 10:15:12.366] DEBUG -- : crawler 2 found 2d\n" +
-#    "[2019-03-11 10:15:12.371] DEBUG -- : data-processor 16 got 25\n" +
-#    "[2019-03-11 10:15:12.371] DEBUG -- : data-processor 17 got 26\n" +
-#    "[2019-03-11 10:15:12.372] DEBUG -- : data-processor 18 got 27\n" +
-#    "[2019-03-11 10:15:12.373] DEBUG -- : data-processor 19 got 28\n" +
-#    "[2019-03-11 10:15:12.374] DEBUG -- : crawler 3 found 2f\n" +
-#    "[2019-03-11 10:15:12.374] DEBUG -- : crawler 2 found 30\n" +
-#    "[2019-03-11 10:15:12.375] DEBUG -- : crawler 0 found 31\n" +
-#    "[2019-03-11 10:15:12.376] DEBUG -- : crawler 1 found 32\n" +
-#    "[2019-03-11 10:15:12.383] DEBUG -- : crawler 3 found 33\n" +
-#    "[2019-03-11 10:15:12.384] DEBUG -- : crawler 2 found 34\n" +
-#    "[2019-03-11 10:15:12.385] DEBUG -- : crawler 0 found 35\n" +
-#    "[2019-03-11 10:15:12.385] DEBUG -- : crawler 1 found 36\n" +
-#    "[2019-03-11 10:15:12.465] DEBUG -- : data-processor 1 got 29\n" +
-#    "[2019-03-11 10:15:12.465] DEBUG -- : data-processor 2 got 2a\n" +
-#    "[2019-03-11 10:15:12.467] DEBUG -- : data-processor 3 got 2b\n" +
-#    "[2019-03-11 10:15:12.468] DEBUG -- : data-processor 0 got 2c\n" +
-#    "[2019-03-11 10:15:12.479] DEBUG -- : data-processor 4 got 2e\n" +
-#    "[2019-03-11 10:15:12.481] DEBUG -- : data-processor 6 got 2d\n" +
-#    "[2019-03-11 10:15:12.482] DEBUG -- : crawler 3 found 37\n" +
-#    "[2019-03-11 10:15:12.483] DEBUG -- : crawler 2 found 38\n" +
-#    "[2019-03-11 10:15:12.484] DEBUG -- : crawler 0 found 39\n" +
-#    "[2019-03-11 10:15:12.484] DEBUG -- : data-processor 7 got 2f\n" +
-#    "[2019-03-11 10:15:12.485] DEBUG -- : data-processor 5 got 30\n" +
-#    "[2019-03-11 10:15:12.486] DEBUG -- : crawler 1 found 3a\n" +
-#    "[2019-03-11 10:15:12.491] DEBUG -- : crawler 3 found 3b\n" +
-#    "[2019-03-11 10:15:12.492] DEBUG -- : crawler 2 found 3c\n" +
-#    "[2019-03-11 10:15:12.493] DEBUG -- : crawler 0 found 3d\n" +
-#    "[2019-03-11 10:15:12.494] DEBUG -- : crawler 1 found 3e\n" +
-#    "[2019-03-11 10:15:12.503] DEBUG -- : crawler 2 found 3f\n" +
-#    "[2019-03-11 10:15:12.504] DEBUG -- : crawler 3 found 40\n" +
-#    "[2019-03-11 10:15:12.506] DEBUG -- : crawler 0 found 41\n" +
-#    "[2019-03-11 10:15:12.507] DEBUG -- : crawler 1 found 42\n" +
-#    "[2019-03-11 10:15:12.568] DEBUG -- : data-processor 8 got 31\n" +
-#    "[2019-03-11 10:15:12.570] DEBUG -- : data-processor 11 got 32\n" +
-#    "[2019-03-11 10:15:12.571] DEBUG -- : data-processor 9 got 33\n" +
-#    "[2019-03-11 10:15:12.572] DEBUG -- : data-processor 10 got 34\n" +
-#    "[2019-03-11 10:15:12.583] DEBUG -- : data-processor 13 got 35\n" +
-#    "[2019-03-11 10:15:12.585] DEBUG -- : data-processor 15 got 36\n" +
-#    "[2019-03-11 10:15:12.586] DEBUG -- : data-processor 14 got 37\n" +
-#    "[2019-03-11 10:15:12.587] DEBUG -- : data-processor 12 got 38\n" +
-#    "[2019-03-11 10:15:12.675] DEBUG -- : data-processor 19 got 39\n" +
-#    "[2019-03-11 10:15:12.676] DEBUG -- : crawler 2 found 43\n" +
-#    "[2019-03-11 10:15:12.677] DEBUG -- : crawler 0 found 45\n" +
-#    "[2019-03-11 10:15:12.678] DEBUG -- : crawler 3 found 44\n" +
-#    "[2019-03-11 10:15:12.679] DEBUG -- : data-processor 17 got 3a\n" +
-#    "[2019-03-11 10:15:12.679] DEBUG -- : data-processor 16 got 3b\n" +
-#    "[2019-03-11 10:15:12.680] DEBUG -- : data-processor 18 got 3c\n" +
-#    "[2019-03-11 10:15:12.681] DEBUG -- : crawler 1 found 46\n" +
-#    "[2019-03-11 10:15:12.688] DEBUG -- : crawler 0 found 47\n" +
-#    "[2019-03-11 10:15:12.690] DEBUG -- : data-processor 2 got 3d\n" +
-#    "[2019-03-11 10:15:12.690] DEBUG -- : data-processor 1 got 3e\n" +
-#    "[2019-03-11 10:15:12.691] DEBUG -- : crawler 1 found 48\n" +
-#    "[2019-03-11 10:15:12.692] DEBUG -- : crawler 3 found 49\n" +
-#    "[2019-03-11 10:15:12.693] DEBUG -- : data-processor 0 got 3f\n" +
-#    "[2019-03-11 10:15:12.693] DEBUG -- : crawler 2 found 4a\n" +
-#    "[2019-03-11 10:15:12.694] DEBUG -- : data-processor 3 got 40\n" +
-#    "[2019-03-11 10:15:12.700] DEBUG -- : crawler 0 found 4b\n" +
-#    "[2019-03-11 10:15:12.701] DEBUG -- : crawler 1 found 4c\n" +
-#    "[2019-03-11 10:15:12.702] DEBUG -- : crawler 3 found 4d\n" +
-#    "[2019-03-11 10:15:12.702] DEBUG -- : crawler 2 found 4e\n" +
-#    "[2019-03-11 10:15:12.743]  INFO -- : \n" +
-#    "crawlers found: 19, 20, 20, 19\n" +
-#    "data processors consumed: 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3\n" +
-#    "[2019-03-11 10:15:12.780] DEBUG -- : data-processor 4 got 41\n" +
-#    "[2019-03-11 10:15:12.782] DEBUG -- : data-processor 7 got 42\n" +
-#    "[2019-03-11 10:15:12.783] DEBUG -- : data-processor 5 got 43\n" +
-#    "[2019-03-11 10:15:12.783] DEBUG -- : data-processor 6 got 45\n" +
-#    "[2019-03-11 10:15:12.793] DEBUG -- : data-processor 11 got 46\n" +
-#    "[2019-03-11 10:15:12.794] DEBUG -- : data-processor 9 got 44\n" +
-#    "[2019-03-11 10:15:12.795] DEBUG -- : data-processor 10 got 47\n" +
-#    "[2019-03-11 10:15:12.796] DEBUG -- : crawler 0 found 4f\n" +
-#    "[2019-03-11 10:15:12.797] DEBUG -- : crawler 1 found 50\n" +
-#    "[2019-03-11 10:15:12.797] DEBUG -- : crawler 2 found 51\n" +
-#    "[2019-03-11 10:15:12.798] DEBUG -- : crawler 3 found 52\n" +
-#    "[2019-03-11 10:15:12.799] DEBUG -- : data-processor 8 got 48\n" +
-#    "[2019-03-11 10:15:12.806] DEBUG -- : crawler 0 found 53\n" +
-#    "[2019-03-11 10:15:12.807] DEBUG -- : crawler 1 found 54\n" +
-#    "[2019-03-11 10:15:12.808] DEBUG -- : crawler 3 found 55\n" +
-#    "[2019-03-11 10:15:12.808] DEBUG -- : crawler 2 found 56\n" +
-#    "[2019-03-11 10:15:12.816] DEBUG -- : crawler 2 found 57\n" +
-#    "[2019-03-11 10:15:12.817] DEBUG -- : crawler 1 found 58\n" +
-#    "[2019-03-11 10:15:12.818] DEBUG -- : crawler 0 found 59\n" +
-#    "[2019-03-11 10:15:12.819] DEBUG -- : crawler 3 found 5a\n" +
-#    "[2019-03-11 10:15:12.883] DEBUG -- : data-processor 12 got 49\n" +
-#    "[2019-03-11 10:15:12.884] DEBUG -- : data-processor 15 got 4a\n" +
-#    "[2019-03-11 10:15:12.885] DEBUG -- : data-processor 14 got 4b\n" +
-#    "[2019-03-11 10:15:12.886] DEBUG -- : data-processor 13 got 4c\n" +
-#    "[2019-03-11 10:15:12.897] DEBUG -- : data-processor 19 got 4d\n" +
-#    "[2019-03-11 10:15:12.898] DEBUG -- : data-processor 18 got 4e\n" +
-#    "[2019-03-11 10:15:12.899] DEBUG -- : data-processor 17 got 4f\n" +
-#    "[2019-03-11 10:15:12.900] DEBUG -- : data-processor 16 got 50\n" +
-#    "[2019-03-11 10:15:12.989] DEBUG -- : data-processor 0 got 51\n" +
-#    "[2019-03-11 10:15:12.991] DEBUG -- : data-processor 2 got 52\n" +
-#    "[2019-03-11 10:15:12.992] DEBUG -- : crawler 2 found 5b\n" +
-#    "[2019-03-11 10:15:12.993] DEBUG -- : crawler 1 found 5c\n" +
-#    "[2019-03-11 10:15:12.994] DEBUG -- : crawler 0 found 5e\n" +
-#    "[2019-03-11 10:15:12.994] DEBUG -- : crawler 3 found 5d\n" +
-#    "[2019-03-11 10:15:12.995] DEBUG -- : data-processor 1 got 53\n" +
-#    "[2019-03-11 10:15:12.996] DEBUG -- : data-processor 3 got 54\n" +
-#    "[2019-03-11 10:15:13.001] DEBUG -- : data-processor 7 got 55\n" +
-#    "[2019-03-11 10:15:13.002] DEBUG -- : data-processor 4 got 56\n" +
-#    "[2019-03-11 10:15:13.003] DEBUG -- : crawler 2 found 5f\n" +
-#    "[2019-03-11 10:15:13.004] DEBUG -- : crawler 1 found 60\n" +
-#    "[2019-03-11 10:15:13.004] DEBUG -- : crawler 0 found 61\n" +
-#    "[2019-03-11 10:15:13.005] DEBUG -- : crawler 3 found 62\n" +
-#    "[2019-03-11 10:15:13.006] DEBUG -- : data-processor 5 got 57\n" +
-#    "[2019-03-11 10:15:13.007] DEBUG -- : data-processor 6 got 58\n" +
-#    "[2019-03-11 10:15:13.011] DEBUG -- : crawler 2 found 63\n" +
-#    "[2019-03-11 10:15:13.012] DEBUG -- : crawler 1 found 64\n" +
-#    "[2019-03-11 10:15:13.013] DEBUG -- : crawler 0 found 65\n" +
-#    "[2019-03-11 10:15:13.013] DEBUG -- : crawler 3 found 66\n" +
-#    "[2019-03-11 10:15:13.091] DEBUG -- : data-processor 11 got 59\n" +
-#    "[2019-03-11 10:15:13.092] DEBUG -- : data-processor 10 got 5a\n" +
-#    "[2019-03-11 10:15:13.093] DEBUG -- : data-processor 8 got 5b\n" +
-#    "[2019-03-11 10:15:13.094] DEBUG -- : data-processor 9 got 5c\n" +
-#    "[2019-03-11 10:15:13.104] DEBUG -- : data-processor 12 got 5e\n" +
-#    "[2019-03-11 10:15:13.106] DEBUG -- : crawler 1 found 67\n" +
-#    "[2019-03-11 10:15:13.106] DEBUG -- : crawler 2 found 68\n" +
-#    "[2019-03-11 10:15:13.107] DEBUG -- : crawler 0 found 69\n" +
-#    "[2019-03-11 10:15:13.108] DEBUG -- : crawler 3 found 6a\n" +
-#    "[2019-03-11 10:15:13.108] DEBUG -- : data-processor 15 got 5d\n" +
-#    "[2019-03-11 10:15:13.109] DEBUG -- : data-processor 13 got 5f\n" +
-#    "[2019-03-11 10:15:13.110] DEBUG -- : data-processor 14 got 60\n" +
-#    "[2019-03-11 10:15:13.116] DEBUG -- : crawler 1 found 6b\n" +
-#    "[2019-03-11 10:15:13.117] DEBUG -- : crawler 2 found 6c\n" +
-#    "[2019-03-11 10:15:13.117] DEBUG -- : crawler 0 found 6d\n" +
-#    "[2019-03-11 10:15:13.118] DEBUG -- : crawler 3 found 6e\n" +
-#    "[2019-03-11 10:15:13.128] DEBUG -- : crawler 1 found 6f\n" +
-#    "[2019-03-11 10:15:13.129] DEBUG -- : crawler 2 found 70\n" +
-#    "[2019-03-11 10:15:13.130] DEBUG -- : crawler 3 found 71\n" +
-#    "[2019-03-11 10:15:13.131] DEBUG -- : crawler 0 found 72\n" +
-#    "[2019-03-11 10:15:13.147]  INFO -- : \n" +
-#    "crawlers found: 28, 29, 29, 28\n" +
+# => "[2020-01-19 18:53:43.144] DEBUG -- : crawler 0 found 1\n" +
+#    "[2020-01-19 18:53:43.145] DEBUG -- : crawler 2 found 2\n" +
+#    "[2020-01-19 18:53:43.145] DEBUG -- : crawler 1 found 3\n" +
+#    "[2020-01-19 18:53:43.145] DEBUG -- : data-processor 2 got 3\n" +
+#    "[2020-01-19 18:53:43.146] DEBUG -- : crawler 3 found 4\n" +
+#    "[2020-01-19 18:53:43.146] DEBUG -- : data-processor 3 got 4\n" +
+#    "[2020-01-19 18:53:43.146] DEBUG -- : data-processor 0 got 1\n" +
+#    "[2020-01-19 18:53:43.147] DEBUG -- : data-processor 1 got 2\n" +
+#    "[2020-01-19 18:53:43.156] DEBUG -- : crawler 0 found 5\n" +
+#    "[2020-01-19 18:53:43.156] DEBUG -- : crawler 2 found 6\n" +
+#    "[2020-01-19 18:53:43.156] DEBUG -- : crawler 1 found 7\n" +
+#    "[2020-01-19 18:53:43.157] DEBUG -- : data-processor 6 got 7\n" +
+#    "[2020-01-19 18:53:43.157] DEBUG -- : crawler 3 found 8\n" +
+#    "[2020-01-19 18:53:43.157] DEBUG -- : data-processor 7 got 8\n" +
+#    "[2020-01-19 18:53:43.157] DEBUG -- : data-processor 4 got 5\n" +
+#    "[2020-01-19 18:53:43.158] DEBUG -- : data-processor 5 got 6\n" +
+#    "[2020-01-19 18:53:43.166] DEBUG -- : crawler 2 found 9\n" +
+#    "[2020-01-19 18:53:43.166] DEBUG -- : data-processor 8 got 9\n" +
+#    "[2020-01-19 18:53:43.166] DEBUG -- : crawler 0 found a\n" +
+#    "[2020-01-19 18:53:43.167] DEBUG -- : data-processor 9 got a\n" +
+#    "[2020-01-19 18:53:43.167] DEBUG -- : crawler 3 found b\n" +
+#    "[2020-01-19 18:53:43.167] DEBUG -- : data-processor 10 got b\n" +
+#    "[2020-01-19 18:53:43.168] DEBUG -- : crawler 1 found c\n" +
+#    "[2020-01-19 18:53:43.168] DEBUG -- : data-processor 11 got c\n" +
+#    "[2020-01-19 18:53:43.176] DEBUG -- : crawler 2 found d\n" +
+#    "[2020-01-19 18:53:43.176] DEBUG -- : crawler 0 found e\n" +
+#    "[2020-01-19 18:53:43.177] DEBUG -- : crawler 3 found f\n" +
+#    "[2020-01-19 18:53:43.179] DEBUG -- : crawler 1 found 10\n" +
+#    "[2020-01-19 18:53:43.188] DEBUG -- : crawler 2 found 11\n" +
+#    "[2020-01-19 18:53:43.188] DEBUG -- : crawler 0 found 12\n" +
+#    "[2020-01-19 18:53:43.189] DEBUG -- : crawler 3 found 13\n" +
+#    "[2020-01-19 18:53:43.189] DEBUG -- : crawler 1 found 14\n" +
+#    "[2020-01-19 18:53:43.200] DEBUG -- : crawler 1 found 15\n" +
+#    "[2020-01-19 18:53:43.201] DEBUG -- : crawler 2 found 16\n" +
+#    "[2020-01-19 18:53:43.201] DEBUG -- : crawler 0 found 17\n" +
+#    "[2020-01-19 18:53:43.201] DEBUG -- : crawler 3 found 18\n" +
+#    "[2020-01-19 18:53:43.211] DEBUG -- : crawler 1 found 19\n" +
+#    "[2020-01-19 18:53:43.212] DEBUG -- : crawler 3 found 1a\n" +
+#    "[2020-01-19 18:53:43.212] DEBUG -- : crawler 0 found 1b\n" +
+#    "[2020-01-19 18:53:43.212] DEBUG -- : crawler 2 found 1c\n" +
+#    "[2020-01-19 18:53:43.222] DEBUG -- : crawler 0 found 1d\n" +
+#    "[2020-01-19 18:53:43.223] DEBUG -- : crawler 3 found 1e\n" +
+#    "[2020-01-19 18:53:43.245] DEBUG -- : data-processor 12 got d\n" +
+#    "[2020-01-19 18:53:43.246] DEBUG -- : data-processor 13 got e\n" +
+#    "[2020-01-19 18:53:43.246] DEBUG -- : data-processor 14 got f\n" +
+#    "[2020-01-19 18:53:43.248] DEBUG -- : data-processor 15 got 10\n" +
+#    "[2020-01-19 18:53:43.256] DEBUG -- : data-processor 16 got 11\n" +
+#    "[2020-01-19 18:53:43.257] DEBUG -- : data-processor 17 got 12\n" +
+#    "[2020-01-19 18:53:43.257] DEBUG -- : data-processor 18 got 13\n" +
+#    "[2020-01-19 18:53:43.257] DEBUG -- : data-processor 19 got 14\n" +
+#    "[2020-01-19 18:53:43.267] DEBUG -- : data-processor 1 got 15\n" +
+#    "[2020-01-19 18:53:43.268] DEBUG -- : crawler 2 found 1f\n" +
+#    "[2020-01-19 18:53:43.268] DEBUG -- : crawler 1 found 20\n" +
+#    "[2020-01-19 18:53:43.268] DEBUG -- : crawler 0 found 21\n" +
+#    "[2020-01-19 18:53:43.269] DEBUG -- : crawler 3 found 22\n" +
+#    "[2020-01-19 18:53:43.269] DEBUG -- : data-processor 2 got 16\n" +
+#    "[2020-01-19 18:53:43.269] DEBUG -- : data-processor 3 got 17\n" +
+#    "[2020-01-19 18:53:43.270] DEBUG -- : data-processor 0 got 18\n" +
+#    "[2020-01-19 18:53:43.277] DEBUG -- : crawler 3 found 23\n" +
+#    "[2020-01-19 18:53:43.277] DEBUG -- : crawler 0 found 24\n" +
+#    "[2020-01-19 18:53:43.278] DEBUG -- : crawler 2 found 25\n" +
+#    "[2020-01-19 18:53:43.278] DEBUG -- : crawler 1 found 26\n" +
+#    "[2020-01-19 18:53:43.345] DEBUG -- : data-processor 6 got 19\n" +
+#    "[2020-01-19 18:53:43.345] DEBUG -- : data-processor 4 got 1a\n" +
+#    "[2020-01-19 18:53:43.346] DEBUG -- : data-processor 7 got 1b\n" +
+#    "[2020-01-19 18:53:43.353] DEBUG -- : data-processor 5 got 1c\n" +
+#    "[2020-01-19 18:53:43.357] DEBUG -- : data-processor 8 got 1d\n" +
+#    "[2020-01-19 18:53:43.357] DEBUG -- : crawler 3 found 27\n" +
+#    "[2020-01-19 18:53:43.358] DEBUG -- : data-processor 9 got 1e\n" +
+#    "[2020-01-19 18:53:43.358] DEBUG -- : data-processor 10 got 1f\n" +
+#    "[2020-01-19 18:53:43.358] DEBUG -- : crawler 1 found 28\n" +
+#    "[2020-01-19 18:53:43.358] DEBUG -- : crawler 2 found 29\n" +
+#    "[2020-01-19 18:53:43.358] DEBUG -- : crawler 0 found 2a\n" +
+#    "[2020-01-19 18:53:43.359] DEBUG -- : data-processor 11 got 20\n" +
+#    "[2020-01-19 18:53:43.367] DEBUG -- : crawler 1 found 2b\n" +
+#    "[2020-01-19 18:53:43.367] DEBUG -- : crawler 2 found 2c\n" +
+#    "[2020-01-19 18:53:43.368] DEBUG -- : data-processor 12 got 21\n" +
+#    "[2020-01-19 18:53:43.368] DEBUG -- : crawler 3 found 2d\n" +
+#    "[2020-01-19 18:53:43.368] DEBUG -- : crawler 0 found 2e\n" +
+#    "[2020-01-19 18:53:43.371] DEBUG -- : data-processor 13 got 22\n" +
+#    "[2020-01-19 18:53:43.371] DEBUG -- : data-processor 14 got 23\n" +
+#    "[2020-01-19 18:53:43.372] DEBUG -- : data-processor 15 got 24\n" +
+#    "[2020-01-19 18:53:43.447] DEBUG -- : data-processor 16 got 25\n" +
+#    "[2020-01-19 18:53:43.447] DEBUG -- : crawler 2 found 2f\n" +
+#    "[2020-01-19 18:53:43.447] DEBUG -- : crawler 3 found 30\n" +
+#    "[2020-01-19 18:53:43.448] DEBUG -- : data-processor 18 got 26\n" +
+#    "[2020-01-19 18:53:43.448] DEBUG -- : crawler 1 found 31\n" +
+#    "[2020-01-19 18:53:43.448] DEBUG -- : crawler 0 found 32\n" +
+#    "[2020-01-19 18:53:43.449] DEBUG -- : data-processor 17 got 27\n" +
+#    "[2020-01-19 18:53:43.454] DEBUG -- : data-processor 19 got 28\n" +
+#    "[2020-01-19 18:53:43.458] DEBUG -- : data-processor 1 got 29\n" +
+#    "[2020-01-19 18:53:43.458] DEBUG -- : data-processor 2 got 2a\n" +
+#    "[2020-01-19 18:53:43.458] DEBUG -- : crawler 1 found 33\n" +
+#    "[2020-01-19 18:53:43.459] DEBUG -- : crawler 2 found 34\n" +
+#    "[2020-01-19 18:53:43.459] DEBUG -- : crawler 3 found 35\n" +
+#    "[2020-01-19 18:53:43.459] DEBUG -- : crawler 0 found 36\n" +
+#    "[2020-01-19 18:53:43.460] DEBUG -- : data-processor 3 got 2b\n" +
+#    "[2020-01-19 18:53:43.460] DEBUG -- : data-processor 0 got 2c\n" +
+#    "[2020-01-19 18:53:43.468] DEBUG -- : data-processor 6 got 2d\n" +
+#    "[2020-01-19 18:53:43.469] DEBUG -- : crawler 3 found 37\n" +
+#    "[2020-01-19 18:53:43.469] DEBUG -- : crawler 1 found 38\n" +
+#    "[2020-01-19 18:53:43.469] DEBUG -- : crawler 2 found 39\n" +
+#    "[2020-01-19 18:53:43.469] DEBUG -- : crawler 0 found 3a\n" +
+#    "[2020-01-19 18:53:43.474] DEBUG -- : data-processor 4 got 2e\n" +
+#    "[2020-01-19 18:53:43.475] DEBUG -- : data-processor 7 got 2f\n" +
+#    "[2020-01-19 18:53:43.476] DEBUG -- : data-processor 5 got 30\n" +
+#    "[2020-01-19 18:53:43.479] DEBUG -- : crawler 2 found 3b\n" +
+#    "[2020-01-19 18:53:43.479] DEBUG -- : crawler 0 found 3c\n" +
+#    "[2020-01-19 18:53:43.480] DEBUG -- : crawler 3 found 3d\n" +
+#    "[2020-01-19 18:53:43.482] DEBUG -- : crawler 1 found 3e\n" +
+#    "[2020-01-19 18:53:43.529]  INFO -- : \n" +
+#    "crawlers found: 16, 15, 15, 16\n" +
+#    "data processors consumed: 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2\n" +
+#    "[2020-01-19 18:53:43.550] DEBUG -- : data-processor 10 got 31\n" +
+#    "[2020-01-19 18:53:43.550] DEBUG -- : data-processor 9 got 32\n" +
+#    "[2020-01-19 18:53:43.550] DEBUG -- : data-processor 8 got 33\n" +
+#    "[2020-01-19 18:53:43.554] DEBUG -- : data-processor 11 got 34\n" +
+#    "[2020-01-19 18:53:43.562] DEBUG -- : data-processor 12 got 35\n" +
+#    "[2020-01-19 18:53:43.562] DEBUG -- : data-processor 14 got 36\n" +
+#    "[2020-01-19 18:53:43.563] DEBUG -- : crawler 2 found 3f\n" +
+#    "[2020-01-19 18:53:43.563] DEBUG -- : crawler 0 found 40\n" +
+#    "[2020-01-19 18:53:43.563] DEBUG -- : data-processor 15 got 37\n" +
+#    "[2020-01-19 18:53:43.563] DEBUG -- : data-processor 13 got 38\n" +
+#    "[2020-01-19 18:53:43.564] DEBUG -- : crawler 3 found 41\n" +
+#    "[2020-01-19 18:53:43.564] DEBUG -- : crawler 1 found 42\n" +
+#    "[2020-01-19 18:53:43.568] DEBUG -- : data-processor 17 got 39\n" +
+#    "[2020-01-19 18:53:43.574] DEBUG -- : crawler 2 found 43\n" +
+#    "[2020-01-19 18:53:43.575] DEBUG -- : crawler 0 found 44\n" +
+#    "[2020-01-19 18:53:43.575] DEBUG -- : crawler 3 found 45\n" +
+#    "[2020-01-19 18:53:43.575] DEBUG -- : crawler 1 found 46\n" +
+#    "[2020-01-19 18:53:43.576] DEBUG -- : data-processor 16 got 3a\n" +
+#    "[2020-01-19 18:53:43.576] DEBUG -- : data-processor 18 got 3b\n" +
+#    "[2020-01-19 18:53:43.581] DEBUG -- : data-processor 19 got 3c\n" +
+#    "[2020-01-19 18:53:43.651] DEBUG -- : data-processor 0 got 3d\n" +
+#    "[2020-01-19 18:53:43.652] DEBUG -- : crawler 2 found 47\n" +
+#    "[2020-01-19 18:53:43.652] DEBUG -- : crawler 3 found 48\n" +
+#    "[2020-01-19 18:53:43.652] DEBUG -- : crawler 0 found 49\n" +
+#    "[2020-01-19 18:53:43.652] DEBUG -- : crawler 1 found 4a\n" +
+#    "[2020-01-19 18:53:43.653] DEBUG -- : data-processor 1 got 3e\n" +
+#    "[2020-01-19 18:53:43.653] DEBUG -- : data-processor 2 got 3f\n" +
+#    "[2020-01-19 18:53:43.658] DEBUG -- : data-processor 3 got 40\n" +
+#    "[2020-01-19 18:53:43.662] DEBUG -- : crawler 3 found 4b\n" +
+#    "[2020-01-19 18:53:43.662] DEBUG -- : crawler 0 found 4c\n" +
+#    "[2020-01-19 18:53:43.662] DEBUG -- : crawler 1 found 4d\n" +
+#    "[2020-01-19 18:53:43.663] DEBUG -- : crawler 2 found 4e\n" +
+#    "[2020-01-19 18:53:43.665] DEBUG -- : data-processor 6 got 41\n" +
+#    "[2020-01-19 18:53:43.666] DEBUG -- : data-processor 4 got 42\n" +
+#    "[2020-01-19 18:53:43.666] DEBUG -- : data-processor 7 got 43\n" +
+#    "[2020-01-19 18:53:43.666] DEBUG -- : data-processor 5 got 44\n" +
+#    "[2020-01-19 18:53:43.671] DEBUG -- : data-processor 10 got 45\n" +
+#    "[2020-01-19 18:53:43.672] DEBUG -- : crawler 3 found 4f\n" +
+#    "[2020-01-19 18:53:43.672] DEBUG -- : crawler 0 found 50\n" +
+#    "[2020-01-19 18:53:43.673] DEBUG -- : crawler 1 found 51\n" +
+#    "[2020-01-19 18:53:43.673] DEBUG -- : crawler 2 found 52\n" +
+#    "[2020-01-19 18:53:43.676] DEBUG -- : data-processor 8 got 46\n" +
+#    "[2020-01-19 18:53:43.677] DEBUG -- : data-processor 9 got 47\n" +
+#    "[2020-01-19 18:53:43.682] DEBUG -- : data-processor 11 got 48\n" +
+#    "[2020-01-19 18:53:43.683] DEBUG -- : crawler 3 found 53\n" +
+#    "[2020-01-19 18:53:43.683] DEBUG -- : crawler 1 found 54\n" +
+#    "[2020-01-19 18:53:43.684] DEBUG -- : crawler 0 found 55\n" +
+#    "[2020-01-19 18:53:43.684] DEBUG -- : crawler 2 found 56\n" +
+#    "[2020-01-19 18:53:43.754] DEBUG -- : data-processor 15 got 49\n" +
+#    "[2020-01-19 18:53:43.754] DEBUG -- : data-processor 14 got 4a\n" +
+#    "[2020-01-19 18:53:43.755] DEBUG -- : data-processor 13 got 4b\n" +
+#    "[2020-01-19 18:53:43.759] DEBUG -- : data-processor 12 got 4c\n" +
+#    "[2020-01-19 18:53:43.767] DEBUG -- : data-processor 17 got 4d\n" +
+#    "[2020-01-19 18:53:43.768] DEBUG -- : data-processor 16 got 4e\n" +
+#    "[2020-01-19 18:53:43.768] DEBUG -- : crawler 1 found 57\n" +
+#    "[2020-01-19 18:53:43.768] DEBUG -- : data-processor 18 got 4f\n" +
+#    "[2020-01-19 18:53:43.769] DEBUG -- : crawler 0 found 58\n" +
+#    "[2020-01-19 18:53:43.769] DEBUG -- : crawler 3 found 59\n" +
+#    "[2020-01-19 18:53:43.770] DEBUG -- : data-processor 19 got 50\n" +
+#    "[2020-01-19 18:53:43.770] DEBUG -- : crawler 2 found 5a\n" +
+#    "[2020-01-19 18:53:43.776] DEBUG -- : data-processor 0 got 51\n" +
+#    "[2020-01-19 18:53:43.780] DEBUG -- : crawler 1 found 5b\n" +
+#    "[2020-01-19 18:53:43.780] DEBUG -- : crawler 0 found 5c\n" +
+#    "[2020-01-19 18:53:43.780] DEBUG -- : crawler 3 found 5d\n" +
+#    "[2020-01-19 18:53:43.781] DEBUG -- : crawler 2 found 5e\n" +
+#    "[2020-01-19 18:53:43.781] DEBUG -- : data-processor 1 got 52\n" +
+#    "[2020-01-19 18:53:43.782] DEBUG -- : data-processor 2 got 53\n" +
+#    "[2020-01-19 18:53:43.783] DEBUG -- : data-processor 3 got 54\n" +
+#    "[2020-01-19 18:53:43.858] DEBUG -- : data-processor 4 got 55\n" +
+#    "[2020-01-19 18:53:43.859] DEBUG -- : data-processor 5 got 56\n" +
+#    "[2020-01-19 18:53:43.859] DEBUG -- : data-processor 7 got 57\n" +
+#    "[2020-01-19 18:53:43.860] DEBUG -- : crawler 1 found 5f\n" +
+#    "[2020-01-19 18:53:43.860] DEBUG -- : crawler 3 found 60\n" +
+#    "[2020-01-19 18:53:43.860] DEBUG -- : crawler 0 found 61\n" +
+#    "[2020-01-19 18:53:43.861] DEBUG -- : crawler 2 found 62\n" +
+#    "[2020-01-19 18:53:43.861] DEBUG -- : data-processor 6 got 58\n" +
+#    "[2020-01-19 18:53:43.869] DEBUG -- : crawler 1 found 63\n" +
+#    "[2020-01-19 18:53:43.869] DEBUG -- : crawler 3 found 64\n" +
+#    "[2020-01-19 18:53:43.870] DEBUG -- : crawler 0 found 65\n" +
+#    "[2020-01-19 18:53:43.870] DEBUG -- : data-processor 10 got 59\n" +
+#    "[2020-01-19 18:53:43.871] DEBUG -- : data-processor 8 got 5a\n" +
+#    "[2020-01-19 18:53:43.871] DEBUG -- : data-processor 9 got 5b\n" +
+#    "[2020-01-19 18:53:43.872] DEBUG -- : crawler 2 found 66\n" +
+#    "[2020-01-19 18:53:43.872] DEBUG -- : data-processor 11 got 5c\n" +
+#    "[2020-01-19 18:53:43.884] DEBUG -- : data-processor 14 got 5d\n" +
+#    "[2020-01-19 18:53:43.884] DEBUG -- : crawler 3 found 68\n" +
+#    "[2020-01-19 18:53:43.884] DEBUG -- : crawler 2 found 69\n" +
+#    "[2020-01-19 18:53:43.885] DEBUG -- : crawler 0 found 6a\n" +
+#    "[2020-01-19 18:53:43.885] DEBUG -- : crawler 1 found 67\n" +
+#    "[2020-01-19 18:53:43.885] DEBUG -- : data-processor 15 got 5e\n" +
+#    "[2020-01-19 18:53:43.885] DEBUG -- : data-processor 13 got 5f\n" +
+#    "[2020-01-19 18:53:43.887] DEBUG -- : data-processor 12 got 60\n" +
+#    "[2020-01-19 18:53:43.894] DEBUG -- : crawler 3 found 6b\n" +
+#    "[2020-01-19 18:53:43.894] DEBUG -- : crawler 2 found 6c\n" +
+#    "[2020-01-19 18:53:43.895] DEBUG -- : crawler 0 found 6d\n" +
+#    "[2020-01-19 18:53:43.895] DEBUG -- : crawler 1 found 6e\n" +
+#    "[2020-01-19 18:53:43.932]  INFO -- : \n" +
+#    "crawlers found: 28, 27, 27, 28\n" +
 #    "data processors consumed: 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4\n" +
-#    "[2019-03-11 10:15:13.195] DEBUG -- : data-processor 19 got 61\n" +
-#    "[2019-03-11 10:15:13.196] DEBUG -- : data-processor 16 got 62\n" +
-#    "[2019-03-11 10:15:13.197] DEBUG -- : data-processor 18 got 63\n" +
-#    "[2019-03-11 10:15:13.198] DEBUG -- : data-processor 17 got 64\n" +
-#    "[2019-03-11 10:15:13.207] DEBUG -- : data-processor 0 got 65\n" +
-#    "[2019-03-11 10:15:13.208] DEBUG -- : data-processor 1 got 66\n" +
-#    "[2019-03-11 10:15:13.211] DEBUG -- : data-processor 2 got 67\n" +
-#    "[2019-03-11 10:15:13.212] DEBUG -- : data-processor 3 got 68\n" +
-#    "[2019-03-11 10:15:13.302] DEBUG -- : data-processor 7 got 69\n" +
-#    "[2019-03-11 10:15:13.303] DEBUG -- : data-processor 4 got 6a\n" +
-#    "[2019-03-11 10:15:13.305] DEBUG -- : data-processor 6 got 6b\n" +
-#    "[2019-03-11 10:15:13.306] DEBUG -- : crawler 2 found 74\n" +
-#    "[2019-03-11 10:15:13.306] DEBUG -- : crawler 1 found 73\n" +
-#    "[2019-03-11 10:15:13.307] DEBUG -- : crawler 3 found 75\n" +
-#    "[2019-03-11 10:15:13.308] DEBUG -- : data-processor 5 got 6c\n" +
-#    "[2019-03-11 10:15:13.309] DEBUG -- : crawler 0 found 76\n" +
-#    "[2019-03-11 10:15:13.311] DEBUG -- : data-processor 11 got 6d\n" +
-#    "[2019-03-11 10:15:13.312] DEBUG -- : data-processor 9 got 6e\n" +
-#    "[2019-03-11 10:15:13.313] DEBUG -- : crawler 1 found 77\n" +
-#    "[2019-03-11 10:15:13.314] DEBUG -- : crawler 2 found 78\n" +
-#    "[2019-03-11 10:15:13.314] DEBUG -- : crawler 3 found 79\n" +
-#    "[2019-03-11 10:15:13.316] DEBUG -- : data-processor 10 got 6f\n" +
-#    "[2019-03-11 10:15:13.317] DEBUG -- : crawler 0 found 7a\n" +
-#    "[2019-03-11 10:15:13.318] DEBUG -- : data-processor 8 got 70\n" +
-#    "[2019-03-11 10:15:13.324] DEBUG -- : crawler 1 found 7b\n" +
-#    "[2019-03-11 10:15:13.325] DEBUG -- : crawler 3 found 7c\n" +
-#    "[2019-03-11 10:15:13.326] DEBUG -- : crawler 2 found 7d\n" +
-#    "[2019-03-11 10:15:13.327] DEBUG -- : crawler 0 found 7e\n" +
-#    "[2019-03-11 10:15:13.406] DEBUG -- : data-processor 12 got 71\n" +
-#    "[2019-03-11 10:15:13.407] DEBUG -- : data-processor 15 got 72\n" +
-#    "[2019-03-11 10:15:13.408] DEBUG -- : data-processor 13 got 74\n" +
-#    "[2019-03-11 10:15:13.409] DEBUG -- : data-processor 14 got 73\n" +
-#    "[2019-03-11 10:15:13.419] DEBUG -- : data-processor 16 got 76\n" +
-#    "[2019-03-11 10:15:13.420] DEBUG -- : data-processor 18 got 75\n" +
-#    "[2019-03-11 10:15:13.421] DEBUG -- : crawler 2 found 7f\n" +
-#    "[2019-03-11 10:15:13.422] DEBUG -- : crawler 3 found 80\n" +
-#    "[2019-03-11 10:15:13.423] DEBUG -- : crawler 1 found 81\n" +
-#    "[2019-03-11 10:15:13.424] DEBUG -- : crawler 0 found 82\n" +
-#    "[2019-03-11 10:15:13.424] DEBUG -- : data-processor 17 got 77\n" +
-#    "[2019-03-11 10:15:13.425] DEBUG -- : data-processor 19 got 78\n" +
-#    "[2019-03-11 10:15:13.430] DEBUG -- : crawler 2 found 83\n" +
-#    "[2019-03-11 10:15:13.431] DEBUG -- : crawler 3 found 84\n" +
-#    "[2019-03-11 10:15:13.431] DEBUG -- : crawler 1 found 85\n" +
-#    "[2019-03-11 10:15:13.432] DEBUG -- : crawler 0 found 86\n" +
-#    "[2019-03-11 10:15:13.441] DEBUG -- : crawler 2 found 87\n" +
-#    "[2019-03-11 10:15:13.442] DEBUG -- : crawler 1 found 88\n" +
-#    "[2019-03-11 10:15:13.443] DEBUG -- : crawler 3 found 89\n" +
-#    "[2019-03-11 10:15:13.443] DEBUG -- : crawler 0 found 8a\n" +
-#    "[2019-03-11 10:15:13.511] DEBUG -- : data-processor 0 got 79\n" +
-#    "[2019-03-11 10:15:13.513] DEBUG -- : data-processor 1 got 7a\n" +
-#    "[2019-03-11 10:15:13.514] DEBUG -- : data-processor 3 got 7b\n" +
-#    "[2019-03-11 10:15:13.515] DEBUG -- : data-processor 2 got 7c\n" +
-#    "[2019-03-11 10:15:13.524] DEBUG -- : data-processor 4 got 7d\n" +
-#    "[2019-03-11 10:15:13.525] DEBUG -- : data-processor 6 got 7e\n" +
-#    "[2019-03-11 10:15:13.526] DEBUG -- : data-processor 7 got 7f\n" +
-#    "[2019-03-11 10:15:13.526] DEBUG -- : data-processor 5 got 80\n" +
-#    "[2019-03-11 10:15:13.553]  INFO -- : \n" +
-#    "crawlers found: 34, 35, 35, 34\n" +
-#    "data processors consumed: 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6\n" +
-#    "[2019-03-11 10:15:13.615] DEBUG -- : data-processor 11 got 81\n" +
-#    "[2019-03-11 10:15:13.617] DEBUG -- : data-processor 9 got 82\n" +
-#    "[2019-03-11 10:15:13.618] DEBUG -- : data-processor 8 got 83\n" +
-#    "[2019-03-11 10:15:13.618] DEBUG -- : crawler 2 found 8b\n" +
-#    "[2019-03-11 10:15:13.619] DEBUG -- : crawler 1 found 8c\n" +
-#    "[2019-03-11 10:15:13.620] DEBUG -- : crawler 0 found 8e\n" +
-#    "[2019-03-11 10:15:13.620] DEBUG -- : crawler 3 found 8d\n" +
-#    "[2019-03-11 10:15:13.621] DEBUG -- : data-processor 10 got 84\n" +
-#    "[2019-03-11 10:15:13.628] DEBUG -- : data-processor 13 got 85\n" +
-#    "[2019-03-11 10:15:13.629] DEBUG -- : data-processor 12 got 86\n" +
-#    "[2019-03-11 10:15:13.629] DEBUG -- : data-processor 15 got 87\n" +
-#    "[2019-03-11 10:15:13.630] DEBUG -- : data-processor 14 got 88\n" +
-#    "[2019-03-11 10:15:13.631] DEBUG -- : crawler 2 found 8f\n" +
-#    "[2019-03-11 10:15:13.631] DEBUG -- : crawler 1 found 90\n" +
-#    "[2019-03-11 10:15:13.632] DEBUG -- : crawler 3 found 91\n" +
-#    "[2019-03-11 10:15:13.633] DEBUG -- : crawler 0 found 92\n" +
-#    "[2019-03-11 10:15:13.640] DEBUG -- : crawler 2 found 93\n" +
-#    "[2019-03-11 10:15:13.640] DEBUG -- : crawler 0 found 94\n" +
-#    "[2019-03-11 10:15:13.641] DEBUG -- : crawler 3 found 95\n" +
-#    "[2019-03-11 10:15:13.642] DEBUG -- : crawler 1 found 96\n" +
-#    "[2019-03-11 10:15:13.718] DEBUG -- : data-processor 17 got 89\n" +
-#    "[2019-03-11 10:15:13.719] DEBUG -- : data-processor 19 got 8a\n" +
-#    "[2019-03-11 10:15:13.720] DEBUG -- : data-processor 16 got 8b\n" +
-#    "[2019-03-11 10:15:13.721] DEBUG -- : data-processor 18 got 8c\n" +
-#    "[2019-03-11 10:15:13.736] DEBUG -- : data-processor 3 got 8e\n" +
-#    "[2019-03-11 10:15:13.737] DEBUG -- : data-processor 2 got 8d\n" +
-#    "[2019-03-11 10:15:13.738] DEBUG -- : data-processor 1 got 8f\n" +
-#    "[2019-03-11 10:15:13.739] DEBUG -- : crawler 3 found 97\n" +
-#    "[2019-03-11 10:15:13.740] DEBUG -- : crawler 0 found 98\n" +
-#    "[2019-03-11 10:15:13.741] DEBUG -- : crawler 1 found 99\n" +
-#    "[2019-03-11 10:15:13.742] DEBUG -- : crawler 2 found 9a\n" +
-#    "[2019-03-11 10:15:13.743] DEBUG -- : data-processor 0 got 90\n" +
-#    "[2019-03-11 10:15:13.747] DEBUG -- : crawler 3 found 9b\n" +
-#    "[2019-03-11 10:15:13.748] DEBUG -- : crawler 0 found 9c\n" +
-#    "[2019-03-11 10:15:13.749] DEBUG -- : crawler 1 found 9d\n" +
-#    "[2019-03-11 10:15:13.750] DEBUG -- : crawler 2 found 9e\n" +
-#    "[2019-03-11 10:15:13.757] DEBUG -- : crawler 0 found 9f\n" +
-#    "[2019-03-11 10:15:13.758] DEBUG -- : crawler 3 found a0\n" +
-#    "[2019-03-11 10:15:13.759] DEBUG -- : crawler 1 found a1\n" +
-#    "[2019-03-11 10:15:13.760] DEBUG -- : crawler 2 found a2\n" +
-#    "[2019-03-11 10:15:13.822] DEBUG -- : data-processor 6 got 91\n" +
-#    "[2019-03-11 10:15:13.824] DEBUG -- : data-processor 4 got 92\n" +
-#    "[2019-03-11 10:15:13.825] DEBUG -- : data-processor 5 got 93\n" +
-#    "[2019-03-11 10:15:13.826] DEBUG -- : data-processor 7 got 94\n" +
-#    "[2019-03-11 10:15:13.840] DEBUG -- : data-processor 8 got 95\n" +
-#    "[2019-03-11 10:15:13.841] DEBUG -- : data-processor 10 got 96\n" +
-#    "[2019-03-11 10:15:13.842] DEBUG -- : data-processor 9 got 97\n" +
-#    "[2019-03-11 10:15:13.843] DEBUG -- : data-processor 11 got 98\n" +
-#    "[2019-03-11 10:15:13.933] DEBUG -- : data-processor 12 got 99\n" +
-#    "[2019-03-11 10:15:13.934] DEBUG -- : crawler 0 found a4\n" +
-#    "[2019-03-11 10:15:13.935] DEBUG -- : data-processor 15 got 9a\n" +
-#    "[2019-03-11 10:15:13.935] DEBUG -- : data-processor 14 got 9b\n" +
-#    "[2019-03-11 10:15:13.936] DEBUG -- : crawler 1 found a6\n" +
-#    "[2019-03-11 10:15:13.936] DEBUG -- : crawler 3 found a3\n" +
-#    "[2019-03-11 10:15:13.937] DEBUG -- : data-processor 13 got 9c\n" +
-#    "[2019-03-11 10:15:13.938] DEBUG -- : crawler 2 found a5\n" +
-#    "[2019-03-11 10:15:13.938]  INFO -- : \n" +
-#    "crawlers found: 41, 42, 42, 41\n" +
-#    "data processors consumed: 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 7\n" +
-#    "[2019-03-11 10:15:13.942] DEBUG -- : data-processor 17 got 9d\n" +
-#    "[2019-03-11 10:15:13.943] DEBUG -- : data-processor 19 got 9e\n" +
-#    "[2019-03-11 10:15:13.944] DEBUG -- : crawler 0 found a7\n" +
-#    "[2019-03-11 10:15:13.945] DEBUG -- : data-processor 16 got 9f\n" +
-#    "[2019-03-11 10:15:13.946] DEBUG -- : crawler 1 found a8\n" +
-#    "[2019-03-11 10:15:13.947] DEBUG -- : data-processor 18 got a0\n" +
-#    "[2019-03-11 10:15:14.033] DEBUG -- : data-processor 2 got a1\n" +
-#    "[2019-03-11 10:15:14.035] DEBUG -- : data-processor 3 got a2\n" +
-#    "[2019-03-11 10:15:14.035] DEBUG -- : data-processor 1 got a3\n" +
-#    "[2019-03-11 10:15:14.036] DEBUG -- : data-processor 0 got a4\n" +
-#    "[2019-03-11 10:15:14.044] DEBUG -- : data-processor 6 got a5\n"
+#    "[2020-01-19 18:53:43.958] DEBUG -- : data-processor 16 got 61\n" +
+#    "[2020-01-19 18:53:43.958] DEBUG -- : data-processor 19 got 62\n" +
+#    "[2020-01-19 18:53:43.959] DEBUG -- : data-processor 17 got 63\n" +
+#    "[2020-01-19 18:53:43.959] DEBUG -- : data-processor 18 got 64\n" +
+#    "[2020-01-19 18:53:43.970] DEBUG -- : data-processor 0 got 65\n" +
+#    "[2020-01-19 18:53:43.970] DEBUG -- : data-processor 1 got 66\n" +
+#    "[2020-01-19 18:53:43.970] DEBUG -- : data-processor 2 got 67\n" +
+#    "[2020-01-19 18:53:43.971] DEBUG -- : crawler 3 found 6f\n" +
+#    "[2020-01-19 18:53:43.971] DEBUG -- : crawler 2 found 70\n" +
+#    "[2020-01-19 18:53:43.971] DEBUG -- : crawler 0 found 71\n" +
+#    "[2020-01-19 18:53:43.971] DEBUG -- : data-processor 3 got 68\n" +
+#    "[2020-01-19 18:53:43.971] DEBUG -- : crawler 1 found 72\n" +
+#    "[2020-01-19 18:53:43.982] DEBUG -- : crawler 3 found 73\n" +
+#    "[2020-01-19 18:53:43.982] DEBUG -- : crawler 2 found 74\n" +
+#    "[2020-01-19 18:53:43.983] DEBUG -- : crawler 1 found 75\n" +
+#    "[2020-01-19 18:53:43.983] DEBUG -- : crawler 0 found 76\n" +
+#    "[2020-01-19 18:53:43.988] DEBUG -- : data-processor 4 got 69\n" +
+#    "[2020-01-19 18:53:43.989] DEBUG -- : data-processor 5 got 6a\n" +
+#    "[2020-01-19 18:53:43.989] DEBUG -- : data-processor 7 got 6b\n" +
+#    "[2020-01-19 18:53:43.990] DEBUG -- : data-processor 6 got 6c\n" +
+#    "[2020-01-19 18:53:44.062] DEBUG -- : data-processor 8 got 6d\n" +
+#    "[2020-01-19 18:53:44.062] DEBUG -- : crawler 3 found 77\n" +
+#    "[2020-01-19 18:53:44.063] DEBUG -- : crawler 2 found 78\n" +
+#    "[2020-01-19 18:53:44.063] DEBUG -- : crawler 1 found 79\n" +
+#    "[2020-01-19 18:53:44.063] DEBUG -- : crawler 0 found 7a\n" +
+#    "[2020-01-19 18:53:44.063] DEBUG -- : data-processor 11 got 6e\n" +
+#    "[2020-01-19 18:53:44.064] DEBUG -- : data-processor 9 got 6f\n" +
+#    "[2020-01-19 18:53:44.064] DEBUG -- : data-processor 10 got 70\n" +
+#    "[2020-01-19 18:53:44.074] DEBUG -- : data-processor 15 got 71\n" +
+#    "[2020-01-19 18:53:44.074] DEBUG -- : data-processor 14 got 72\n" +
+#    "[2020-01-19 18:53:44.074] DEBUG -- : data-processor 13 got 73\n" +
+#    "[2020-01-19 18:53:44.075] DEBUG -- : data-processor 12 got 74\n" +
+#    "[2020-01-19 18:53:44.075] DEBUG -- : crawler 3 found 7b\n" +
+#    "[2020-01-19 18:53:44.075] DEBUG -- : crawler 2 found 7c\n" +
+#    "[2020-01-19 18:53:44.075] DEBUG -- : crawler 1 found 7d\n" +
+#    "[2020-01-19 18:53:44.075] DEBUG -- : crawler 0 found 7e\n" +
+#    "[2020-01-19 18:53:44.089] DEBUG -- : data-processor 16 got 75\n" +
+#    "[2020-01-19 18:53:44.090] DEBUG -- : data-processor 17 got 76\n" +
+#    "[2020-01-19 18:53:44.090] DEBUG -- : crawler 3 found 7f\n" +
+#    "[2020-01-19 18:53:44.090] DEBUG -- : crawler 2 found 80\n" +
+#    "[2020-01-19 18:53:44.091] DEBUG -- : crawler 1 found 81\n" +
+#    "[2020-01-19 18:53:44.091] DEBUG -- : crawler 0 found 82\n" +
+#    "[2020-01-19 18:53:44.091] DEBUG -- : data-processor 19 got 77\n" +
+#    "[2020-01-19 18:53:44.091] DEBUG -- : data-processor 18 got 78\n" +
+#    "[2020-01-19 18:53:44.100] DEBUG -- : crawler 3 found 83\n" +
+#    "[2020-01-19 18:53:44.100] DEBUG -- : crawler 2 found 84\n" +
+#    "[2020-01-19 18:53:44.100] DEBUG -- : crawler 1 found 85\n" +
+#    "[2020-01-19 18:53:44.100] DEBUG -- : crawler 0 found 86\n" +
+#    "[2020-01-19 18:53:44.162] DEBUG -- : data-processor 2 got 79\n" +
+#    "[2020-01-19 18:53:44.163] DEBUG -- : data-processor 0 got 7a\n" +
+#    "[2020-01-19 18:53:44.163] DEBUG -- : data-processor 1 got 7b\n" +
+#    "[2020-01-19 18:53:44.163] DEBUG -- : data-processor 3 got 7c\n" +
+#    "[2020-01-19 18:53:44.175] DEBUG -- : data-processor 4 got 7d\n" +
+#    "[2020-01-19 18:53:44.175] DEBUG -- : crawler 3 found 87\n" +
+#    "[2020-01-19 18:53:44.176] DEBUG -- : crawler 2 found 88\n" +
+#    "[2020-01-19 18:53:44.176] DEBUG -- : crawler 0 found 89\n" +
+#    "[2020-01-19 18:53:44.176] DEBUG -- : crawler 1 found 8a\n" +
+#    "[2020-01-19 18:53:44.176] DEBUG -- : data-processor 5 got 7e\n" +
+#    "[2020-01-19 18:53:44.177] DEBUG -- : data-processor 7 got 7f\n" +
+#    "[2020-01-19 18:53:44.177] DEBUG -- : data-processor 6 got 80\n" +
+#    "[2020-01-19 18:53:44.186] DEBUG -- : crawler 0 found 8b\n" +
+#    "[2020-01-19 18:53:44.186] DEBUG -- : crawler 1 found 8c\n" +
+#    "[2020-01-19 18:53:44.187] DEBUG -- : crawler 2 found 8d\n" +
+#    "[2020-01-19 18:53:44.187] DEBUG -- : crawler 3 found 8e\n" +
+#    "[2020-01-19 18:53:44.191] DEBUG -- : data-processor 8 got 81\n" +
+#    "[2020-01-19 18:53:44.192] DEBUG -- : data-processor 9 got 82\n" +
+#    "[2020-01-19 18:53:44.192] DEBUG -- : data-processor 11 got 83\n" +
+#    "[2020-01-19 18:53:44.192] DEBUG -- : data-processor 10 got 84\n" +
+#    "[2020-01-19 18:53:44.263] DEBUG -- : data-processor 15 got 85\n" +
+#    "[2020-01-19 18:53:44.264] DEBUG -- : data-processor 12 got 86\n" +
+#    "[2020-01-19 18:53:44.264] DEBUG -- : crawler 3 found 8f\n" +
+#    "[2020-01-19 18:53:44.264] DEBUG -- : crawler 0 found 90\n" +
+#    "[2020-01-19 18:53:44.266] DEBUG -- : crawler 1 found 91\n" +
+#    "[2020-01-19 18:53:44.266] DEBUG -- : crawler 2 found 92\n" +
+#    "[2020-01-19 18:53:44.266] DEBUG -- : data-processor 14 got 87\n" +
+#    "[2020-01-19 18:53:44.267] DEBUG -- : data-processor 13 got 88\n" +
+#    "[2020-01-19 18:53:44.274] DEBUG -- : crawler 3 found 93\n" +
+#    "[2020-01-19 18:53:44.274] DEBUG -- : crawler 0 found 94\n" +
+#    "[2020-01-19 18:53:44.274] DEBUG -- : crawler 2 found 95\n" +
+#    "[2020-01-19 18:53:44.274] DEBUG -- : crawler 1 found 96\n" +
+#    "[2020-01-19 18:53:44.276] DEBUG -- : data-processor 17 got 89\n" +
+#    "[2020-01-19 18:53:44.276] DEBUG -- : data-processor 16 got 8a\n" +
+#    "[2020-01-19 18:53:44.278] DEBUG -- : data-processor 19 got 8b\n" +
+#    "[2020-01-19 18:53:44.278] DEBUG -- : data-processor 18 got 8c\n" +
+#    "[2020-01-19 18:53:44.292] DEBUG -- : data-processor 0 got 8d\n" +
+#    "[2020-01-19 18:53:44.293] DEBUG -- : crawler 0 found 97\n" +
+#    "[2020-01-19 18:53:44.293] DEBUG -- : crawler 2 found 98\n" +
+#    "[2020-01-19 18:53:44.293] DEBUG -- : crawler 1 found 99\n" +
+#    "[2020-01-19 18:53:44.294] DEBUG -- : crawler 3 found 9a\n" +
+#    "[2020-01-19 18:53:44.294] DEBUG -- : data-processor 1 got 8e\n" +
+#    "[2020-01-19 18:53:44.294] DEBUG -- : data-processor 3 got 8f\n" +
+#    "[2020-01-19 18:53:44.294] DEBUG -- : data-processor 2 got 90\n" +
+#    "[2020-01-19 18:53:44.304] DEBUG -- : crawler 1 found 9b\n" +
+#    "[2020-01-19 18:53:44.304] DEBUG -- : crawler 3 found 9c\n" +
+#    "[2020-01-19 18:53:44.304] DEBUG -- : crawler 0 found 9d\n" +
+#    "[2020-01-19 18:53:44.304] DEBUG -- : crawler 2 found 9e\n" +
+#    "[2020-01-19 18:53:44.337]  INFO -- : \n" +
+#    "crawlers found: 40, 39, 39, 40\n" +
+#    "data processors consumed: 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7\n" +
+#    "[2020-01-19 18:53:44.364] DEBUG -- : data-processor 6 got 91\n" +
+#    "[2020-01-19 18:53:44.364] DEBUG -- : data-processor 5 got 92\n" +
+#    "[2020-01-19 18:53:44.364] DEBUG -- : data-processor 4 got 93\n" +
+#    "[2020-01-19 18:53:44.364] DEBUG -- : data-processor 7 got 94\n" +
+#    "[2020-01-19 18:53:44.377] DEBUG -- : data-processor 8 got 95\n" +
+#    "[2020-01-19 18:53:44.377] DEBUG -- : data-processor 10 got 96\n" +
+#    "[2020-01-19 18:53:44.377] DEBUG -- : crawler 1 found 9f\n" +
+#    "[2020-01-19 18:53:44.378] DEBUG -- : crawler 3 found a0\n" +
+#    "[2020-01-19 18:53:44.378] DEBUG -- : crawler 0 found a1\n" +
+#    "[2020-01-19 18:53:44.378] DEBUG -- : crawler 2 found a2\n" +
+#    "[2020-01-19 18:53:44.378] DEBUG -- : data-processor 9 got 97\n" +
+#    "[2020-01-19 18:53:44.383] DEBUG -- : data-processor 11 got 98\n" +
+#    "[2020-01-19 18:53:44.387] DEBUG -- : crawler 3 found a3\n" +
+#    "[2020-01-19 18:53:44.387] DEBUG -- : crawler 0 found a4\n" +
+#    "[2020-01-19 18:53:44.387] DEBUG -- : crawler 1 found a5\n" +
+#    "[2020-01-19 18:53:44.388] DEBUG -- : crawler 2 found a6\n" +
+#    "[2020-01-19 18:53:44.393] DEBUG -- : data-processor 15 got 99\n" +
+#    "[2020-01-19 18:53:44.393] DEBUG -- : data-processor 12 got 9a\n" +
+#    "[2020-01-19 18:53:44.393] DEBUG -- : data-processor 14 got 9b\n" +
+#    "[2020-01-19 18:53:44.394] DEBUG -- : data-processor 13 got 9c\n" +
+#    "[2020-01-19 18:53:44.466] DEBUG -- : data-processor 17 got 9d\n" +
+#    "[2020-01-19 18:53:44.466] DEBUG -- : data-processor 16 got 9e\n" +
+#    "[2020-01-19 18:53:44.466] DEBUG -- : data-processor 19 got 9f\n" +
+#    "[2020-01-19 18:53:44.467] DEBUG -- : data-processor 18 got a0\n" +
+#    "[2020-01-19 18:53:44.467] DEBUG -- : crawler 0 found a7\n" +
+#    "[2020-01-19 18:53:44.467] DEBUG -- : crawler 2 found a8\n" +
+#    "[2020-01-19 18:53:44.467] DEBUG -- : crawler 1 found a9\n" +
+#    "[2020-01-19 18:53:44.468] DEBUG -- : crawler 3 found aa\n" +
+#    "[2020-01-19 18:53:44.476] DEBUG -- : crawler 2 found ab\n" +
+#    "[2020-01-19 18:53:44.476] DEBUG -- : crawler 0 found ac\n" +
+#    "[2020-01-19 18:53:44.476] DEBUG -- : crawler 3 found ad\n" +
+#    "[2020-01-19 18:53:44.477] DEBUG -- : crawler 1 found ae\n" +
+#    "[2020-01-19 18:53:44.477] DEBUG -- : data-processor 0 got a1\n" +
+#    "[2020-01-19 18:53:44.477] DEBUG -- : data-processor 1 got a2\n" +
+#    "[2020-01-19 18:53:44.479] DEBUG -- : data-processor 3 got a3\n" +
+#    "[2020-01-19 18:53:44.483] DEBUG -- : data-processor 2 got a4\n" +
+#    "[2020-01-19 18:53:44.494] DEBUG -- : data-processor 6 got a5\n" +
+#    "[2020-01-19 18:53:44.494] DEBUG -- : crawler 1 found af\n" +
+#    "[2020-01-19 18:53:44.494] DEBUG -- : data-processor 5 got a6\n" +
+#    "[2020-01-19 18:53:44.494] DEBUG -- : crawler 0 found b0\n" +
+#    "[2020-01-19 18:53:44.495] DEBUG -- : crawler 2 found b1\n" +
+#    "[2020-01-19 18:53:44.495] DEBUG -- : crawler 3 found b2\n" +
+#    "[2020-01-19 18:53:44.495] DEBUG -- : data-processor 4 got a7\n" +
+#    "[2020-01-19 18:53:44.495] DEBUG -- : data-processor 7 got a8\n" +
+#    "[2020-01-19 18:53:44.504] DEBUG -- : crawler 2 found b3\n" +
+#    "[2020-01-19 18:53:44.504] DEBUG -- : crawler 1 found b4\n" +
+#    "[2020-01-19 18:53:44.505] DEBUG -- : crawler 3 found b5\n" +
+#    "[2020-01-19 18:53:44.505] DEBUG -- : crawler 0 found b6\n" +
+#    "[2020-01-19 18:53:44.567] DEBUG -- : data-processor 8 got a9\n" +
+#    "[2020-01-19 18:53:44.567] DEBUG -- : data-processor 10 got aa\n" +
+#    "[2020-01-19 18:53:44.569] DEBUG -- : data-processor 9 got ab\n" +
+#    "[2020-01-19 18:53:44.569] DEBUG -- : data-processor 11 got ac\n" +
+#    "[2020-01-19 18:53:44.583] DEBUG -- : data-processor 15 got ad\n" +
+#    "[2020-01-19 18:53:44.584] DEBUG -- : data-processor 12 got ae\n" +
+#    "[2020-01-19 18:53:44.584] DEBUG -- : data-processor 14 got af\n" +
+#    "[2020-01-19 18:53:44.584] DEBUG -- : crawler 3 found b7\n" +
+#    "[2020-01-19 18:53:44.584] DEBUG -- : crawler 2 found b8\n" +
+#    "[2020-01-19 18:53:44.585] DEBUG -- : crawler 0 found b9\n" +
+#    "[2020-01-19 18:53:44.585] DEBUG -- : crawler 1 found ba\n" +
+#    "[2020-01-19 18:53:44.587] DEBUG -- : data-processor 13 got b0\n" +
+#    "[2020-01-19 18:53:44.594] DEBUG -- : data-processor 19 got b1\n" +
+#    "[2020-01-19 18:53:44.595] DEBUG -- : data-processor 16 got b2\n" +
+#    "[2020-01-19 18:53:44.595] DEBUG -- : data-processor 17 got b3\n" +
+#    "[2020-01-19 18:53:44.595] DEBUG -- : data-processor 18 got b4\n" +
+#    "[2020-01-19 18:53:44.596] DEBUG -- : crawler 3 found bb\n" +
+#    "[2020-01-19 18:53:44.596] DEBUG -- : crawler 0 found bc\n" +
+#    "[2020-01-19 18:53:44.596] DEBUG -- : crawler 2 found bd\n" +
+#    "[2020-01-19 18:53:44.596] DEBUG -- : crawler 1 found be\n" +
+#    "[2020-01-19 18:53:44.670] DEBUG -- : data-processor 0 got b5\n" +
+#    "[2020-01-19 18:53:44.671] DEBUG -- : data-processor 1 got b6\n" +
+#    "[2020-01-19 18:53:44.671] DEBUG -- : crawler 3 found bf\n" +
+#    "[2020-01-19 18:53:44.671] DEBUG -- : crawler 0 found c0\n" +
+#    "[2020-01-19 18:53:44.672] DEBUG -- : crawler 2 found c1\n" +
+#    "[2020-01-19 18:53:44.672] DEBUG -- : crawler 1 found c2\n" +
+#    "[2020-01-19 18:53:44.672] DEBUG -- : data-processor 3 got b7\n" +
+#    "[2020-01-19 18:53:44.672] DEBUG -- : data-processor 2 got b8\n" +
+#    "[2020-01-19 18:53:44.681] DEBUG -- : crawler 3 found c3\n" +
+#    "[2020-01-19 18:53:44.681] DEBUG -- : crawler 0 found c4\n" +
+#    "[2020-01-19 18:53:44.682] DEBUG -- : crawler 2 found c5\n" +
+#    "[2020-01-19 18:53:44.682] DEBUG -- : crawler 1 found c6\n" +
+#    "[2020-01-19 18:53:44.683] DEBUG -- : data-processor 5 got b9\n" +
+#    "[2020-01-19 18:53:44.684] DEBUG -- : data-processor 4 got ba\n" +
+#    "[2020-01-19 18:53:44.687] DEBUG -- : data-processor 7 got bb\n" +
+#    "[2020-01-19 18:53:44.688] DEBUG -- : data-processor 6 got bc\n" +
+#    "[2020-01-19 18:53:44.695] DEBUG -- : data-processor 9 got bd\n" +
+#    "[2020-01-19 18:53:44.695] DEBUG -- : crawler 0 found c7\n" +
+#    "[2020-01-19 18:53:44.696] DEBUG -- : crawler 2 found c8\n" +
+#    "[2020-01-19 18:53:44.696] DEBUG -- : crawler 1 found c9\n" +
+#    "[2020-01-19 18:53:44.696] DEBUG -- : crawler 3 found ca\n" +
+#    "[2020-01-19 18:53:44.696] DEBUG -- : data-processor 11 got be\n" +
+#    "[2020-01-19 18:53:44.696] DEBUG -- : data-processor 8 got bf\n" +
+#    "[2020-01-19 18:53:44.697] DEBUG -- : data-processor 10 got c0\n" +
+#    "[2020-01-19 18:53:44.705] DEBUG -- : crawler 3 found cb\n" +
+#    "[2020-01-19 18:53:44.706] DEBUG -- : crawler 1 found cc\n" +
+#    "[2020-01-19 18:53:44.706] DEBUG -- : crawler 0 found cd\n" +
+#    "[2020-01-19 18:53:44.706] DEBUG -- : crawler 2 found ce\n" +
+#    "[2020-01-19 18:53:44.738]  INFO -- : \n" +
+#    "crawlers found: 52, 51, 51, 52\n" +
+#    "data processors consumed: 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 9, 9, 9, 9\n" +
+#    "[2020-01-19 18:53:44.771] DEBUG -- : data-processor 15 got c1\n" +
+#    "[2020-01-19 18:53:44.772] DEBUG -- : data-processor 14 got c2\n" +
+#    "[2020-01-19 18:53:44.772] DEBUG -- : data-processor 12 got c3\n" +
+#    "[2020-01-19 18:53:44.772] DEBUG -- : data-processor 13 got c4\n" +
+#    "[2020-01-19 18:53:44.788] DEBUG -- : data-processor 19 got c5\n" +
+#    "[2020-01-19 18:53:44.789] DEBUG -- : crawler 3 found cf\n" +
+#    "[2020-01-19 18:53:44.789] DEBUG -- : crawler 1 found d0\n" +
+#    "[2020-01-19 18:53:44.789] DEBUG -- : crawler 2 found d1\n" +
+#    "[2020-01-19 18:53:44.790] DEBUG -- : crawler 0 found d2\n" +
+#    "[2020-01-19 18:53:44.790] DEBUG -- : data-processor 18 got c6\n" +
+#    "[2020-01-19 18:53:44.791] DEBUG -- : data-processor 16 got c7\n" +
+#    "[2020-01-19 18:53:44.791] DEBUG -- : data-processor 17 got c8\n" +
+#    "[2020-01-19 18:53:44.795] DEBUG -- : data-processor 1 got c9\n" +
+#    "[2020-01-19 18:53:44.798] DEBUG -- : data-processor 2 got ca\n" +
+#    "[2020-01-19 18:53:44.798] DEBUG -- : data-processor 0 got cb\n" +
+#    "[2020-01-19 18:53:44.798] DEBUG -- : data-processor 3 got cc\n" +
+#    "[2020-01-19 18:53:44.799] DEBUG -- : crawler 1 found d3\n" +
+#    "[2020-01-19 18:53:44.799] DEBUG -- : crawler 2 found d4\n" +
+#    "[2020-01-19 18:53:44.799] DEBUG -- : crawler 0 found d5\n" +
+#    "[2020-01-19 18:53:44.800] DEBUG -- : crawler 3 found d6\n" +
+#    "[2020-01-19 18:53:44.872] DEBUG -- : data-processor 4 got cd\n" +
+#    "[2020-01-19 18:53:44.873] DEBUG -- : crawler 0 found d7\n" +
+#    "[2020-01-19 18:53:44.873] DEBUG -- : crawler 1 found d8\n" +
+#    "[2020-01-19 18:53:44.874] DEBUG -- : crawler 2 found d9\n" +
+#    "[2020-01-19 18:53:44.874] DEBUG -- : crawler 3 found da\n" +
+#    "[2020-01-19 18:53:44.874] DEBUG -- : data-processor 5 got ce\n" +
+#    "[2020-01-19 18:53:44.875] DEBUG -- : data-processor 7 got cf\n" +
+#    "[2020-01-19 18:53:44.875] DEBUG -- : data-processor 6 got d0\n" +
+#    "[2020-01-19 18:53:44.883] DEBUG -- : crawler 0 found db\n" +
+#    "[2020-01-19 18:53:44.883] DEBUG -- : crawler 1 found dc\n" +
+#    "[2020-01-19 18:53:44.883] DEBUG -- : crawler 2 found dd\n" +
+#    "[2020-01-19 18:53:44.884] DEBUG -- : crawler 3 found de\n" +
+#    "[2020-01-19 18:53:44.888] DEBUG -- : data-processor 9 got d1\n" +
+#    "[2020-01-19 18:53:44.889] DEBUG -- : data-processor 8 got d2\n" +
+#    "[2020-01-19 18:53:44.889] DEBUG -- : data-processor 10 got d3\n" +
+#    "[2020-01-19 18:53:44.891] DEBUG -- : data-processor 11 got d4\n" +
+#    "[2020-01-19 18:53:44.897] DEBUG -- : data-processor 14 got d5\n" +
+#    "[2020-01-19 18:53:44.897] DEBUG -- : crawler 0 found df\n" +
+#    "[2020-01-19 18:53:44.898] DEBUG -- : crawler 2 found e0\n" +
+#    "[2020-01-19 18:53:44.898] DEBUG -- : crawler 3 found e1\n" +
+#    "[2020-01-19 18:53:44.899] DEBUG -- : crawler 1 found e2\n" +
+#    "[2020-01-19 18:53:44.899] DEBUG -- : data-processor 12 got d6\n" +
+#    "[2020-01-19 18:53:44.901] DEBUG -- : data-processor 15 got d7\n" +
+#    "[2020-01-19 18:53:44.901] DEBUG -- : data-processor 13 got d8\n" +
+#    "[2020-01-19 18:53:44.907] DEBUG -- : crawler 2 found e3\n" +
+#    "[2020-01-19 18:53:44.908] DEBUG -- : crawler 3 found e4\n" +
+#    "[2020-01-19 18:53:44.909] DEBUG -- : crawler 1 found e5\n" +
+#    "[2020-01-19 18:53:44.909] DEBUG -- : crawler 0 found e6\n" +
+#    "[2020-01-19 18:53:44.973] DEBUG -- : data-processor 19 got d9\n" +
+#    "[2020-01-19 18:53:44.974] DEBUG -- : data-processor 18 got da\n" +
+#    "[2020-01-19 18:53:44.974] DEBUG -- : data-processor 17 got db\n" +
+#    "[2020-01-19 18:53:44.974] DEBUG -- : data-processor 16 got dc\n" +
+#    "[2020-01-19 18:53:44.991] DEBUG -- : data-processor 0 got dd\n" +
+#    "[2020-01-19 18:53:44.992] DEBUG -- : data-processor 1 got de\n" +
+#    "[2020-01-19 18:53:44.992] DEBUG -- : crawler 2 found e7\n" +
+#    "[2020-01-19 18:53:44.992] DEBUG -- : crawler 0 found e8\n" +
+#    "[2020-01-19 18:53:44.993] DEBUG -- : crawler 3 found e9\n" +
+#    "[2020-01-19 18:53:44.993] DEBUG -- : data-processor 2 got df\n" +
+#    "[2020-01-19 18:53:44.994] DEBUG -- : crawler 1 found ea\n" +
+#    "[2020-01-19 18:53:44.994] DEBUG -- : data-processor 3 got e0\n" +
+#    "[2020-01-19 18:53:44.997] DEBUG -- : data-processor 4 got e1\n" +
+#    "[2020-01-19 18:53:45.001] DEBUG -- : crawler 0 found eb\n" +
+#    "[2020-01-19 18:53:45.001] DEBUG -- : crawler 3 found ec\n" +
+#    "[2020-01-19 18:53:45.002] DEBUG -- : crawler 1 found ed\n" +
+#    "[2020-01-19 18:53:45.002] DEBUG -- : crawler 2 found ee\n" +
+#    "[2020-01-19 18:53:45.004] DEBUG -- : data-processor 5 got e2\n" +
+#    "[2020-01-19 18:53:45.004] DEBUG -- : data-processor 7 got e3\n" +
+#    "[2020-01-19 18:53:45.005] DEBUG -- : data-processor 6 got e4\n" +
+#    "[2020-01-19 18:53:45.074] DEBUG -- : data-processor 8 got e5\n" +
+#    "[2020-01-19 18:53:45.074] DEBUG -- : data-processor 9 got e6\n" +
+#    "[2020-01-19 18:53:45.074] DEBUG -- : crawler 0 found ef\n" +
+#    "[2020-01-19 18:53:45.075] DEBUG -- : crawler 3 found f0\n" +
+#    "[2020-01-19 18:53:45.075] DEBUG -- : crawler 1 found f1\n" +
+#    "[2020-01-19 18:53:45.075] DEBUG -- : crawler 2 found f2\n" +
+#    "[2020-01-19 18:53:45.076] DEBUG -- : data-processor 10 got e7\n" +
+#    "[2020-01-19 18:53:45.078] DEBUG -- : data-processor 11 got e8\n" +
+#    "[2020-01-19 18:53:45.085] DEBUG -- : crawler 3 found f3\n" +
+#    "[2020-01-19 18:53:45.085] DEBUG -- : crawler 0 found f4\n" +
+#    "[2020-01-19 18:53:45.086] DEBUG -- : crawler 1 found f5\n" +
+#    "[2020-01-19 18:53:45.086] DEBUG -- : crawler 2 found f6\n" +
+#    "[2020-01-19 18:53:45.091] DEBUG -- : data-processor 14 got e9\n" +
+#    "[2020-01-19 18:53:45.091] DEBUG -- : data-processor 13 got ea\n" +
+#    "[2020-01-19 18:53:45.091] DEBUG -- : data-processor 12 got eb\n" +
+#    "[2020-01-19 18:53:45.092] DEBUG -- : data-processor 15 got ec\n" +
+#    "[2020-01-19 18:53:45.100] DEBUG -- : data-processor 18 got ed\n" +
+#    "[2020-01-19 18:53:45.101] DEBUG -- : crawler 3 found f7\n" +
+#    "[2020-01-19 18:53:45.101] DEBUG -- : crawler 0 found f8\n" +
+#    "[2020-01-19 18:53:45.101] DEBUG -- : crawler 2 found f9\n" +
+#    "[2020-01-19 18:53:45.101] DEBUG -- : crawler 1 found fa\n" +
+#    "[2020-01-19 18:53:45.104] DEBUG -- : data-processor 17 got ee\n" +
+#    "[2020-01-19 18:53:45.104] DEBUG -- : data-processor 19 got ef\n" +
+#    "[2020-01-19 18:53:45.107] DEBUG -- : data-processor 16 got f0\n" +
+#    "[2020-01-19 18:53:45.110] DEBUG -- : crawler 1 found fb\n" +
+#    "[2020-01-19 18:53:45.113] DEBUG -- : crawler 3 found fc\n" +
+#    "[2020-01-19 18:53:45.113] DEBUG -- : crawler 0 found fd\n" +
+#    "[2020-01-19 18:53:45.113] DEBUG -- : crawler 2 found fe\n" +
+#    "[2020-01-19 18:53:45.133]  INFO -- : \n" +
+#    "crawlers found: 64, 63, 63, 64\n" +
+#    "data processors consumed: 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12\n" +
+#    "[2020-01-19 18:53:45.174] DEBUG -- : data-processor 0 got f1\n" +
+#    "[2020-01-19 18:53:45.175] DEBUG -- : data-processor 1 got f2\n" +
+#    "[2020-01-19 18:53:45.175] DEBUG -- : data-processor 2 got f3\n" +
+#    "[2020-01-19 18:53:45.178] DEBUG -- : data-processor 3 got f4\n" +
+#    "[2020-01-19 18:53:45.224] DEBUG -- : crawler 1 found ff\n" +
+#    "[2020-01-19 18:53:45.225] DEBUG -- : crawler 2 found 101\n" +
+#    "[2020-01-19 18:53:45.225] DEBUG -- : crawler 3 found 102\n" +
+#    "[2020-01-19 18:53:45.225] DEBUG -- : crawler 0 found 100\n"
 
 
 

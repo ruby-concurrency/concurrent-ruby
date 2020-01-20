@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/lazy_register.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/lazy_register.rb</dd>
   </dl>
   
 </div>
@@ -319,7 +319,7 @@ to <code>concurrent-ruby</code> when finalised.</li>
 28</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/lazy_register.rb', line 25</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/lazy_register.rb', line 25</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
   <span class='kw'>super</span>
@@ -419,7 +419,7 @@ if the stored item raised an exception when the block was evaluated.</p>
 41</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/lazy_register.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/lazy_register.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='op'>[]</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_delay'>delay</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span>
@@ -516,7 +516,7 @@ key given by key.</p>
 65</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/lazy_register.rb', line 61</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/lazy_register.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_register'>register</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_delay'>delay</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Delay.html" title="Concurrent::Delay (class)">Delay</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Delay.html#initialize-instance_method" title="Concurrent::Delay#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>executor:</span> <span class='symbol'>:immediate</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
@@ -594,7 +594,7 @@ key given by key.</p>
 49</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/lazy_register.rb', line 47</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/lazy_register.rb', line 47</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_registered?'>registered?</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span>
@@ -671,7 +671,7 @@ key given by key.</p>
 78</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/lazy_register.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/lazy_register.rb', line 75</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unregister'>unregister</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_update_data'>update_data</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span><span class='period'>.</span><span class='id identifier rubyid_tap'>tap</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_j'>j</span><span class='op'>|</span> <span class='id identifier rubyid_j'>j</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>

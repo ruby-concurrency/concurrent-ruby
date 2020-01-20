@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/behaviour/termination.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb</dd>
   </dl>
   
 </div>
@@ -358,7 +358,7 @@ can be configured on behaviour initialization.</p>
 21</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 15</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 15</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_core'>core</span><span class='comma'>,</span> <span class='id identifier rubyid_subsequent'>subsequent</span><span class='comma'>,</span> <span class='id identifier rubyid_core_options'>core_options</span><span class='comma'>,</span> <span class='id identifier rubyid_trapping'>trapping</span> <span class='op'>=</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='id identifier rubyid_terminate_children'>terminate_children</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
   <span class='kw'>super</span> <span class='id identifier rubyid_core'>core</span><span class='comma'>,</span> <span class='id identifier rubyid_subsequent'>subsequent</span><span class='comma'>,</span> <span class='id identifier rubyid_core_options'>core_options</span>
@@ -408,7 +408,7 @@ can be configured on behaviour initialization.</p>
 15</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 13</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 13</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminated'>terminated</span>
   <span class='ivar'>@terminated</span>
@@ -473,7 +473,7 @@ can be configured on behaviour initialization.</p>
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 37</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 37</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_envelope'>on_envelope</span><span class='lparen'>(</span><span class='id identifier rubyid_envelope'>envelope</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_command'>command</span><span class='comma'>,</span> <span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='id identifier rubyid_envelope'>envelope</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span>
@@ -550,7 +550,7 @@ Terminates all its children, does not wait until they are terminated.</p>
 81</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminate!'>terminate!</span><span class='lparen'>(</span><span class='id identifier rubyid_reason'>reason</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_envelope'>envelope</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_terminated?'>terminated?</span>
@@ -631,7 +631,7 @@ Terminates all its children, does not wait until they are terminated.</p>
 27</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 25</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 25</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminated?'>terminated?</span>
   <span class='ivar'>@terminated</span><span class='period'>.</span><span class='id identifier rubyid_resolved?'>resolved?</span>
@@ -670,7 +670,7 @@ Terminates all its children, does not wait until they are terminated.</p>
 35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_trapping='>trapping=</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
   <span class='ivar'>@trapping</span> <span class='op'>=</span> <span class='op'>!</span><span class='op'>!</span><span class='id identifier rubyid_val'>val</span>
@@ -722,7 +722,7 @@ Terminates all its children, does not wait until they are terminated.</p>
 31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/behaviour/termination.rb', line 29</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb', line 29</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_trapping?'>trapping?</span>
   <span class='ivar'>@trapping</span>

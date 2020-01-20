@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/erlang_actor.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb</dd>
   </dl>
   
 </div>
@@ -418,7 +418,7 @@ Therefore the ask is never left unanswered and blocking.</p>
 79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout_value'>timeout_value</span>
@@ -507,7 +507,7 @@ Therefore the ask is never left unanswered and blocking.</p>
 88</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 86</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 86</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask_op'>ask_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_probe'>probe</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="../Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_ask_op'>ask_op</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_probe'>probe</span>
@@ -564,7 +564,7 @@ Therefore the ask is never left unanswered and blocking.</p>
 101</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 99</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 99</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='ivar'>@Name</span>
@@ -657,7 +657,7 @@ This is useful for backpressure.</p>
 54</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 52</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_timeout'>timeout</span>
@@ -725,7 +725,7 @@ This is useful for backpressure.</p>
 61</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 59</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_tell_op'>tell_op</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
@@ -786,7 +786,7 @@ termination or a value if terminated normally.</p>
 96</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 94</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 94</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_terminated'>terminated</span>
   <span class='ivar'>@Actor</span><span class='period'>.</span><span class='id identifier rubyid_terminated'>terminated</span>
@@ -858,7 +858,7 @@ termination or a value if terminated normally.</p>
 117</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/erlang_actor.rb', line 104</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/erlang_actor.rb', line 104</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='id identifier rubyid_original'>original</span> <span class='op'>=</span> <span class='kw'>super</span>

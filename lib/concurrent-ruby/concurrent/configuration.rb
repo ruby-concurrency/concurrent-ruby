@@ -171,14 +171,16 @@ module Concurrent
         auto_terminate:  opts.fetch(:auto_terminate, true),
         idletime:        60, # 1 minute
         max_queue:       0, # unlimited
-        fallback_policy: :abort # shouldn't matter -- 0 max queue
+        fallback_policy: :abort, # shouldn't matter -- 0 max queue
+        name:            "fast"
     )
   end
 
   def self.new_io_executor(opts = {})
     CachedThreadPool.new(
         auto_terminate:  opts.fetch(:auto_terminate, true),
-        fallback_policy: :abort # shouldn't matter -- 0 max queue
+        fallback_policy: :abort, # shouldn't matter -- 0 max queue
+        name:            "io"
     )
   end
 end

@@ -99,7 +99,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/context.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/context.rb</dd>
   </dl>
   
 </div>
@@ -1128,7 +1128,7 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 30</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 28</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_core'>core</span>
   <span class='ivar'>@core</span>
@@ -1204,7 +1204,7 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 117</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 115</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 115</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_name_or_opts'>name_or_opts</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../Actor.html" title="Concurrent::Actor (module)">Actor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn'><span class='object_link'><a href="../Actor.html#spawn-class_method" title="Concurrent::Actor.spawn (method)">spawn</a></span></span> <span class='id identifier rubyid_to_spawn_options'>to_spawn_options</span><span class='lparen'>(</span><span class='id identifier rubyid_name_or_opts'>name_or_opts</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span>
@@ -1244,7 +1244,7 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 122</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 120</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 120</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn!'>spawn!</span><span class='lparen'>(</span><span class='id identifier rubyid_name_or_opts'>name_or_opts</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="../Actor.html" title="Concurrent::Actor (module)">Actor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_spawn!'><span class='object_link'><a href="../Actor.html#spawn!-class_method" title="Concurrent::Actor.spawn! (method)">spawn!</a></span></span> <span class='id identifier rubyid_to_spawn_options'>to_spawn_options</span><span class='lparen'>(</span><span class='id identifier rubyid_name_or_opts'>name_or_opts</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span>
@@ -1293,7 +1293,7 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 98</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 96</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 96</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>actor cannot ask itself</span><span class='tstring_end'>&#39;</span></span>
@@ -1358,7 +1358,7 @@ Uses <span class='object_link'><a href="Behaviour.html#restarting_behaviour_defi
 72</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 70</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 70</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_behaviour_definition'>behaviour_definition</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>
@@ -1417,7 +1417,7 @@ agent which will log warning.</p>
 67</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 65</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 65</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_dead_letter_routing'>dead_letter_routing</span>
   <span class='id identifier rubyid_parent'>parent</span><span class='period'>.</span><span class='id identifier rubyid_dead_letter_routing'>dead_letter_routing</span>
@@ -1470,7 +1470,7 @@ agent which will log warning.</p>
 89</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 87</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 87</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_executor'>default_executor</span>
   <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_global_io_executor'><span class='object_link'><a href="../../Concurrent.html#global_io_executor-class_method" title="Concurrent.global_io_executor (method)">global_io_executor</a></span></span>
@@ -1527,7 +1527,7 @@ agent which will log warning.</p>
 83</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 81</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 81</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_default_reference_class'>default_reference_class</span>
   <span class='const'><span class='object_link'><a href="Reference.html" title="Concurrent::Actor::Reference (class)">Reference</a></span></span>
@@ -1584,7 +1584,7 @@ agent which will log warning.</p>
 77</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 75</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_envelope'>envelope</span>
   <span class='ivar'>@envelope</span> <span class='kw'>or</span> <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>envelope not set</span><span class='tstring_end'>&#39;</span></span>
@@ -1630,7 +1630,7 @@ agent which will log warning.</p>
 49</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_envelope'>on_envelope</span><span class='lparen'>(</span><span class='id identifier rubyid_envelope'>envelope</span><span class='rparen'>)</span>
   <span class='ivar'>@envelope</span> <span class='op'>=</span> <span class='id identifier rubyid_envelope'>envelope</span>
@@ -1672,7 +1672,7 @@ agent which will log warning.</p>
 41</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 40</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_event'>on_event</span><span class='lparen'>(</span><span class='id identifier rubyid_event'>event</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
@@ -1769,7 +1769,7 @@ instead</p>
 37</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 35</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 35</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_message'>on_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>
@@ -1810,7 +1810,7 @@ instead</p>
 55</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 53</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 53</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pass'>pass</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_behaviour!'>behaviour!</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Behaviour.html" title="Concurrent::Actor::Behaviour (module)">Behaviour</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Behaviour/ExecutesContext.html" title="Concurrent::Actor::Behaviour::ExecutesContext (class)">ExecutesContext</a></span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_pass'>pass</span> <span class='id identifier rubyid_envelope'>envelope</span>
@@ -1854,7 +1854,7 @@ instead</p>
 94</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/context.rb', line 92</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/context.rb', line 92</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_reference'>reference</span><span class='period'>.</span><span class='id identifier rubyid_tell'>tell</span> <span class='id identifier rubyid_message'>message</span>

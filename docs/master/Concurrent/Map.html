@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/map.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/map.rb</dd>
   </dl>
   
 </div>
@@ -709,7 +709,7 @@ does. For most uses it should do fine though, and we recommend you consider
 127</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 118</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 118</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_kind_of?'>kind_of?</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Hash</span><span class='rparen'>)</span>
@@ -809,7 +809,7 @@ does. For most uses it should do fine though, and we recommend you consider
 144</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 132</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 132</span>
 
 <span class='kw'>def</span> <span class='op'>[]</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='kw'>super</span> <span class='comment'># non-falsy value is an existing mapping, return it right away
@@ -951,7 +951,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 61</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 61</span>
 
 </pre>
     </td>
@@ -1062,7 +1062,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 44</span>
 
 </pre>
     </td>
@@ -1188,7 +1188,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 52</span>
 
 </pre>
     </td>
@@ -1257,7 +1257,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 104</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 104</span>
 
 </pre>
     </td>
@@ -1337,7 +1337,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 110</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 110</span>
 
 </pre>
     </td>
@@ -1429,7 +1429,7 @@ This method is atomic.</p>
 243</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 241</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 241</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each_key'>each_key</span>
   <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_k'>k</span> <span class='rbrace'>}</span>
@@ -1539,7 +1539,7 @@ This method is atomic.</p>
 263</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 260</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 260</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each_pair'>each_pair</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_enum_for'>enum_for</span> <span class='symbol'>:each_pair</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -1634,7 +1634,7 @@ This method is atomic.</p>
 252</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 250</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 250</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_each_value'>each_value</span>
   <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>yield</span> <span class='id identifier rubyid_v'>v</span> <span class='rbrace'>}</span>
@@ -1688,7 +1688,7 @@ This method is atomic.</p>
 281</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 278</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 278</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_empty?'>empty?</span>
   <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>return</span> <span class='kw'>false</span> <span class='rbrace'>}</span>
@@ -1863,7 +1863,7 @@ or fail when no default_value is given.</p>
 178</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 168</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 168</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_default_value'>default_value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='const'>NULL</span> <span class='op'>!=</span> <span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_get_or_default'>get_or_default</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='const'>NULL</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -2019,7 +2019,7 @@ This method is atomic.</p>
 195</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 191</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 191</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_fetch_or_store'>fetch_or_store</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_default_value'>default_value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span> <span class='kw'>do</span>
@@ -2103,7 +2103,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 97</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 97</span>
 
 </pre>
     </td>
@@ -2178,7 +2178,7 @@ This method is atomic.</p>
 273</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 270</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 270</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_key'>key</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_each_pair'>each_pair</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_k'>k</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='kw'>return</span> <span class='id identifier rubyid_k'>k</span> <span class='kw'>if</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>==</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span>
@@ -2238,7 +2238,7 @@ This method is atomic.</p>
 226</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 222</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 222</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_keys'>keys</span>
   <span class='id identifier rubyid_arr'>arr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -2384,7 +2384,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 70</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 70</span>
 
 </pre>
     </td>
@@ -2447,7 +2447,7 @@ This method is atomic.</p>
       
       
         &mdash;
-        <div class='inline'><p>the value or nil when key was present</p>
+        <div class='inline'><p>the previous value when key was present or nil when there was no key</p>
 </div>
       
     </li>
@@ -2470,7 +2470,7 @@ This method is atomic.</p>
 208</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 201</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 201</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_put_if_absent'>put_if_absent</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_computed'>computed</span> <span class='op'>=</span> <span class='kw'>false</span>
@@ -2557,7 +2557,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 90</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 90</span>
 
 </pre>
     </td>
@@ -2649,7 +2649,7 @@ This method is atomic.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 81</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 81</span>
 
 </pre>
     </td>
@@ -2706,7 +2706,7 @@ This method is atomic.</p>
 289</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 285</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 285</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_size'>size</span>
   <span class='id identifier rubyid_count'>count</span> <span class='op'>=</span> <span class='int'>0</span>
@@ -2779,7 +2779,7 @@ This method is atomic.</p>
 218</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 213</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 213</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_value?'>value?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_each_value'>each_value</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
@@ -2841,7 +2841,7 @@ This method is atomic.</p>
 234</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/map.rb', line 230</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/map.rb', line 230</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_values'>values</span>
   <span class='id identifier rubyid_arr'>arr</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>

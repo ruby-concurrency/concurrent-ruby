@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/edge/lock_free_linked_set/window.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/window.rb</dd>
   </dl>
   
 </div>
@@ -271,7 +271,7 @@
 9</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/window.rb', line 7</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/window.rb', line 7</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_pred'>pred</span><span class='comma'>,</span> <span class='id identifier rubyid_curr'>curr</span><span class='rparen'>)</span>
   <span class='ivar'>@pred</span><span class='comma'>,</span> <span class='ivar'>@curr</span> <span class='op'>=</span> <span class='id identifier rubyid_pred'>pred</span><span class='comma'>,</span> <span class='id identifier rubyid_curr'>curr</span>
@@ -317,7 +317,7 @@
 7</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/window.rb', line 5</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/window.rb', line 5</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_curr'>curr</span>
   <span class='ivar'>@curr</span>
@@ -358,7 +358,7 @@
 7</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/window.rb', line 5</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/window.rb', line 5</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pred'>pred</span>
   <span class='ivar'>@pred</span>
@@ -436,7 +436,7 @@ having to retraverse the list to physically unlink nodes.</p>
 45</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/lock_free_linked_set/window.rb', line 16</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/lock_free_linked_set/window.rb', line 16</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span><span class='lparen'>(</span><span class='id identifier rubyid_head'>head</span><span class='comma'>,</span> <span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>

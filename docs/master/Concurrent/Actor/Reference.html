@@ -99,7 +99,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor/reference.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor/reference.rb</dd>
   </dl>
   
 </div>
@@ -177,7 +177,7 @@ see <span class='object_link'><a href="PublicDelegations.html" title="Concurrent
   
 
   
-    <span class="summary_desc"><div class='inline'><p>testing and when it returns very shortly.</p>
+    <span class="summary_desc"><div class='inline'><p>Supplied future.</p>
 </div></span>
   
 </li>
@@ -687,12 +687,12 @@ see <span class='object_link'><a href="PublicDelegations.html" title="Concurrent
       <pre class="lines">
 
 
-100
-101
-102</pre>
+95
+96
+97</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 100</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 95</span>
 
 <span class='kw'>def</span> <span class='op'>==</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_Type?'>Type?</span> <span class='id identifier rubyid_other'>other</span><span class='comma'>,</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span> <span class='kw'>and</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='symbol'>:core</span><span class='rparen'>)</span> <span class='op'>==</span> <span class='id identifier rubyid_core'>core</span>
@@ -720,22 +720,14 @@ see <span class='object_link'><a href="PublicDelegations.html" title="Concurrent
     
   <div class="note notetag">
     <strong>Note:</strong>
-    <div class='inline'><p>it&#39;s a good practice to use tell whenever possible. Ask should be used only for</p>
-</div>
-  </div>
-
-  <div class="note notetag">
-    <strong>Note:</strong>
-    <div class='inline'><p>it&#39;s a good practice to use <span class='object_link'><a href="#tell-instance_method" title="Concurrent::Actor::Reference#tell (method)">#tell</a></span> whenever possible. Results can be send back with other messages.
+    <div class='inline'><p>it&#39;s a good practice to use <span class='object_link'><a href="#tell-instance_method" title="Concurrent::Actor::Reference#tell (method)">#tell</a></span> whenever possible. Results can be sent back with other messages.
 Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
 global_io_executor will block on while asking. It&#39;s fine to use it form outside of actors and
 global_io_executor.</p>
 </div>
   </div>
 
-<p>testing and when it returns very shortly. It can lead to deadlock if all threads in
-global_io_executor will block on while asking. It&#39;s fine to use it form outside of actors and
-global_io_executor.</p>
+<p>Returns supplied future</p>
 
 
   </div>
@@ -808,12 +800,12 @@ global_io_executor.</p>
       <pre class="lines">
 
 
-54
-55
-56</pre>
+49
+50
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="../Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_message'>message</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span>
@@ -837,7 +829,7 @@ global_io_executor.</p>
     
   <div class="note notetag">
     <strong>Note:</strong>
-    <div class='inline'><p>it&#39;s a good practice to use <span class='object_link'><a href="#tell-instance_method" title="Concurrent::Actor::Reference#tell (method)">#tell</a></span> whenever possible. Results can be send back with other messages.
+    <div class='inline'><p>it&#39;s a good practice to use <span class='object_link'><a href="#tell-instance_method" title="Concurrent::Actor::Reference#tell (method)">#tell</a></span> whenever possible. Results can be sent back with other messages.
 Ask should be used only for testing and when it returns very shortly. It can lead to deadlock if all threads in
 global_io_executor will block on while asking. It&#39;s fine to use it form outside of actors and
 global_io_executor.</p>
@@ -934,12 +926,12 @@ is processed. Raises on error.</p>
       <pre class="lines">
 
 
-75
-76
-77</pre>
+70
+71
+72</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 70</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_ask!'>ask!</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="../Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
@@ -980,12 +972,12 @@ is processed. Raises on error.</p>
       <pre class="lines">
 
 
-90
-91
-92</pre>
+85
+86
+87</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 90</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 85</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_dead_letter_routing'>dead_letter_routing</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_dead_letter_routing'>dead_letter_routing</span>
@@ -1019,12 +1011,12 @@ is processed. Raises on error.</p>
       <pre class="lines">
 
 
-79
-80
-81</pre>
+74
+75
+76</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 79</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 74</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='id identifier rubyid_messages'>messages</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_messages'>messages</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_m'>m</span><span class='op'>|</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_ask'>ask</span><span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
@@ -1059,13 +1051,13 @@ is processed. Raises on error.</p>
       <pre class="lines">
 
 
-84
-85
-86
-87</pre>
+79
+80
+81
+82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 84</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 79</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_message'>message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_core'>core</span><span class='period'>.</span><span class='id identifier rubyid_on_envelope'>on_envelope</span> <span class='const'><span class='object_link'><a href="Envelope.html" title="Concurrent::Actor::Envelope (class)">Envelope</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Envelope.html#initialize-instance_method" title="Concurrent::Actor::Envelope#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_future'>future</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="../Actor.html" title="Concurrent::Actor (module)">Actor</a></span></span><span class='period'>.</span><span class='id identifier rubyid_current'><span class='object_link'><a href="../Actor.html#current-class_method" title="Concurrent::Actor.current (method)">current</a></span></span> <span class='op'>||</span> <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='comma'>,</span> <span class='kw'>self</span><span class='rparen'>)</span>
@@ -1154,7 +1146,7 @@ is processed. Raises on error.</p>
 34</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 32</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 32</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_tell'>tell</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_message'>message</span> <span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='kw'>nil</span>
@@ -1192,12 +1184,12 @@ is processed. Raises on error.</p>
       <pre class="lines">
 
 
-94
-95
-96</pre>
+89
+90
+91</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor/reference.rb', line 94</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor/reference.rb', line 89</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s %s (%s)&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='id identifier rubyid_actor_class'>actor_class</span>

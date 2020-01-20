@@ -96,7 +96,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/channel/buffer/base.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb</dd>
   </dl>
   
 </div>
@@ -494,7 +494,7 @@ used as a channel buffer should extend this class.</p>
 36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 27</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 27</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
@@ -549,7 +549,7 @@ it becomes full.</p>
 24</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 22</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 22</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_capacity'>capacity</span>
   <span class='ivar'>@capacity</span>
@@ -614,7 +614,7 @@ once it reaches its maximum capacity.</p>
 46</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 44</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_blocking?'>blocking?</span>
   <span class='kw'>true</span>
@@ -675,7 +675,7 @@ closed else false.</p>
 180</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 176</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 176</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_close'>close</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
@@ -734,7 +734,7 @@ closed else false.</p>
 189</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 187</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 187</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_closed?'>closed?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_closed?'>ns_closed?</span> <span class='rbrace'>}</span>
@@ -808,7 +808,7 @@ closed else false.</p>
 64</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_empty?'>empty?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_empty?'>ns_empty?</span> <span class='rbrace'>}</span>
@@ -882,7 +882,7 @@ closed else false.</p>
 75</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 73</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 73</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_full?'>full?</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_full?'>ns_full?</span> <span class='rbrace'>}</span>
@@ -974,7 +974,7 @@ boolean indicating whether or not more items remain.</p>
 153</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 151</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 151</span>
 
 <span class='kw'>def</span> <span class='kw'>next</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>
@@ -1073,7 +1073,7 @@ false (always false when closed).</p>
 108</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 106</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 106</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_offer'>offer</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>
@@ -1150,7 +1150,7 @@ the buffer is empty.</p>
 167</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 165</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 165</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_poll'>poll</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>
@@ -1246,7 +1246,7 @@ false (always false when closed).</p>
 90</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 88</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 88</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_put'>put</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>
@@ -1286,7 +1286,7 @@ false (always false when closed).</p>
 53</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 51</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 51</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_size'>size</span>
   <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_size'>ns_size</span> <span class='rbrace'>}</span>
@@ -1365,7 +1365,7 @@ the buffer has closed.</p>
 124</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/buffer/base.rb', line 122</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/buffer/base.rb', line 122</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_take'>take</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>NotImplementedError</span>

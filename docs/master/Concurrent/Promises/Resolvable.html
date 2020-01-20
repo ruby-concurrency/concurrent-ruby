@@ -83,8 +83,8 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/promises.rb<span class="defines">,<br />
-  lib-edge/concurrent/edge/promises.rb</span>
+    <dd>lib/concurrent-ruby/concurrent/promises.rb<span class="defines">,<br />
+  lib/concurrent-ruby-edge/concurrent/edge/promises.rb</span>
 </dd>
   </dl>
   
@@ -324,7 +324,7 @@ and what should they be resolved to, examples:</p>
 169</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 150</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/promises.rb', line 150</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_atomic_resolution'>atomic_resolution</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable_map'>resolvable_map</span><span class='rparen'>)</span>
   <span class='comment'># atomic_resolution event =&gt; [], future =&gt; [true, :v, nil]
@@ -407,7 +407,7 @@ by to get the right global locking order of resolvable events or futures</p>
 130</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/promises.rb', line 128</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_locking_order_by'>locking_order_by</span><span class='lparen'>(</span><span class='id identifier rubyid_resolvable'>resolvable</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resolvable'>resolvable</span><span class='period'>.</span><span class='id identifier rubyid_object_id'>object_id</span>
@@ -470,7 +470,7 @@ by to get the right global locking order of resolvable events or futures</p>
 123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 121</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/promises.rb', line 121</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_release'>release</span>
   <span class='id identifier rubyid_compare_and_set_internal_state'>compare_and_set_internal_state</span><span class='lparen'>(</span><span class='const'>RESERVED</span><span class='comma'>,</span> <span class='const'>PENDING</span><span class='rparen'>)</span>
@@ -547,7 +547,7 @@ until it is released or resolved.</p>
 118</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/promises.rb', line 111</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/edge/promises.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reserve'>reserve</span>
   <span class='kw'>while</span> <span class='kw'>true</span>

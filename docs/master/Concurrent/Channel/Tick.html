@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/channel/tick.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/channel/tick.rb</dd>
   </dl>
   
 </div>
@@ -362,7 +362,7 @@ time, or epoch time.</p>
 28</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/tick.rb', line 25</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/tick.rb', line 25</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_tick'>tick</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='period'>.</span><span class='id identifier rubyid_monotonic_time'><span class='object_link'><a href="../../Concurrent.html#monotonic_time-class_method" title="Concurrent.monotonic_time (method)">monotonic_time</a></span></span><span class='rparen'>)</span>
   <span class='ivar'>@monotonic</span> <span class='op'>=</span> <span class='id identifier rubyid_tick'>tick</span>
@@ -409,7 +409,7 @@ time, or epoch time.</p>
 25</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/tick.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/tick.rb', line 23</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_monotonic'>monotonic</span>
   <span class='ivar'>@monotonic</span>
@@ -450,7 +450,7 @@ time, or epoch time.</p>
 25</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/tick.rb', line 23</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/tick.rb', line 23</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_utc'>utc</span>
   <span class='ivar'>@utc</span>
@@ -504,7 +504,7 @@ time, or epoch time.</p>
 48</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/tick.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/tick.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;=&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_other'>other</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'>Numeric</span>
@@ -551,7 +551,7 @@ time, or epoch time.</p>
 32</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/tick.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/tick.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_epoch'>epoch</span>
   <span class='ivar'>@utc</span><span class='period'>.</span><span class='id identifier rubyid_to_f'>to_f</span>
@@ -590,7 +590,7 @@ time, or epoch time.</p>
 36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/tick.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/tick.rb', line 34</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='ivar'>@utc</span><span class='period'>.</span><span class='id identifier rubyid_strftime'>strftime</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#STRING_FORMAT-constant" title="Concurrent::Channel::Tick::STRING_FORMAT (constant)">STRING_FORMAT</a></span></span><span class='rparen'>)</span>

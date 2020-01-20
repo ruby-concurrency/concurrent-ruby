@@ -101,7 +101,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/maybe.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/maybe.rb</dd>
   </dl>
   
 </div>
@@ -560,7 +560,7 @@ When <code>Nothing</code> the <span class='object_link'><a href="#just-instance_
 116</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 114</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 114</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_just'>just</span>
   <span class='ivar'>@just</span>
@@ -606,7 +606,7 @@ When <code>Nothing</code> the <span class='object_link'><a href="#just-instance_
 119</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 117</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 117</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_nothing'>nothing</span>
   <span class='ivar'>@nothing</span>
@@ -755,7 +755,7 @@ arguments to the function.</p>
 145</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 137</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 137</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from'>from</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -837,7 +837,7 @@ arguments to the function.</p>
 154</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 152</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 152</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_just'>just</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='const'><span class='object_link'><a href="#NONE-constant" title="Concurrent::Maybe::NONE (constant)">NONE</a></span></span><span class='rparen'>)</span>
@@ -923,7 +923,7 @@ argument as the message. When no argument is given a new
 171</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 164</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 164</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_nothing'>nothing</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_error'>error</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Exception</span><span class='rparen'>)</span>
@@ -998,7 +998,7 @@ argument as the message. When no argument is given a new
 205</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 199</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 199</span>
 
 <span class='kw'>def</span> <span class='op'>&lt;=&gt;</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_nothing?'>nothing?</span>
@@ -1063,7 +1063,7 @@ argument as the message. When no argument is given a new
 178</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 176</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 176</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_just?'>just?</span>
   <span class='op'>!</span> <span class='id identifier rubyid_nothing?'>nothing?</span>
@@ -1124,7 +1124,7 @@ argument as the message. When no argument is given a new
 186</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 184</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 184</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_nothing?'>nothing?</span>
   <span class='ivar'>@nothing</span> <span class='op'>!=</span> <span class='const'><span class='object_link'><a href="#NONE-constant" title="Concurrent::Maybe::NONE (constant)">NONE</a></span></span>
@@ -1181,7 +1181,7 @@ argument as the message. When no argument is given a new
 212</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/maybe.rb', line 210</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/maybe.rb', line 210</span>
 
 <span class='kw'>def</span> <span class='kw'>or</span><span class='lparen'>(</span><span class='id identifier rubyid_other'>other</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_just?'>just?</span> <span class='op'>?</span> <span class='id identifier rubyid_just'>just</span> <span class='op'>:</span> <span class='id identifier rubyid_other'>other</span>

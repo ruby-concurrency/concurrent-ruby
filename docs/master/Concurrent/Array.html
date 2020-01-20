@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/array.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/array.rb</dd>
   </dl>
   
 </div>
@@ -104,19 +104,18 @@
     
   <div class="note notetag">
     <strong>Note:</strong>
-    <div class='inline'><p><code>a += b</code> is <strong>not</strong> a <strong>thread-safe</strong> operation on</p>
+    <div class='inline'><p><code>a += b</code> is <strong>not</strong> a <strong>thread-safe</strong> operation on
+<code>Concurrent::Array</code>. It reads array <code>a</code>, then it creates new <code>Concurrent::Array</code>
+which is concatenation of <code>a</code> and <code>b</code>, then it writes the concatenation to <code>a</code>.
+The read and write are independent operations they do not form a single atomic
+operation therefore when two <code>+=</code> operations are executed concurrently updates
+may be lost. Use <code>#concat</code> instead.</p>
 </div>
   </div>
 
 <p>A thread-safe subclass of Array. This version locks against the object
 itself for every method call, ensuring only one thread can be reading
 or writing at a time. This includes iteration methods like <code>#each</code>.</p>
-
-<p><code>Concurrent::Array</code>. It reads array <code>a</code>, then it creates new <code>Concurrent::Array</code>
-which is concatenation of <code>a</code> and <code>b</code>, then it writes the concatenation to <code>a</code>.
-The read and write are independent operations they do not form a single atomic
-operation therefore when two <code>+=</code> operations are executed concurrently updates
-may be lost. Use <code>#concat</code> instead.</p>
 
 
   </div>

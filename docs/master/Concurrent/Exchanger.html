@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/exchanger.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/exchanger.rb</dd>
   </dl>
   
 </div>
@@ -119,7 +119,7 @@ of an update does not need to be known immediately.</li>
 uncoordinated, <em>synchronous</em> change of individual values. Best used when
 the value will undergo frequent reads but only occasional, though complex,
 updates. Suitable when the result of an update must be known immediately.</li>
-<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be
+<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be updated
 atomically. Updates are synchronous but fast. Best used when updates a
 simple set operations. Not suitable when updates are complex.
 <span class='object_link'><a href="AtomicBoolean.html" title="Concurrent::AtomicBoolean (class)">AtomicBoolean</a></span> and <span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span> are similar
@@ -316,7 +316,7 @@ will remain correct.</li>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/exchanger.rb', line 337</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/exchanger.rb', line 337</span>
 
 </pre>
     </td>
@@ -423,7 +423,7 @@ using <span class='object_link'><a href="#exchange!-instance_method" title="Conc
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/exchanger.rb', line 340</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/exchanger.rb', line 340</span>
 
 </pre>
     </td>
@@ -536,7 +536,7 @@ block indefinitely.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/exchanger.rb', line 344</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/exchanger.rb', line 344</span>
 
 </pre>
     </td>
@@ -652,7 +652,7 @@ the item exchanged by the other thread as <code>#value</code>; on timeout a
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/exchanger.rb', line 351</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/exchanger.rb', line 351</span>
 
 </pre>
     </td>

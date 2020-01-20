@@ -98,7 +98,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/future.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/future.rb</dd>
   </dl>
   
 </div>
@@ -629,7 +629,7 @@ block on execution</p>
 36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
@@ -846,7 +846,7 @@ block on execution</p>
 79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 77</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='const'><span class='object_link'><a href="" title="Concurrent::Future (class)">Future</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Concurrent::Future#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span>
@@ -916,7 +916,7 @@ be cancelled once it has begun processing or has completed.</p>
 106</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 99</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 99</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cancel'>cancel</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_state'>compare_and_set_state</span><span class='lparen'>(</span><span class='symbol'>:cancelled</span><span class='comma'>,</span> <span class='symbol'>:pending</span><span class='rparen'>)</span>
@@ -974,7 +974,7 @@ be cancelled once it has begun processing or has completed.</p>
 113</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 111</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cancelled?'>cancelled?</span>
   <span class='id identifier rubyid_state'>state</span> <span class='op'>==</span> <span class='symbol'>:cancelled</span>
@@ -1057,7 +1057,7 @@ Does nothing if the <code>Future</code> is in any state other than <code>:unsche
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 53</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 53</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_state'>compare_and_set_state</span><span class='lparen'>(</span><span class='symbol'>:pending</span><span class='comma'>,</span> <span class='symbol'>:unscheduled</span><span class='rparen'>)</span>
@@ -1194,7 +1194,7 @@ been set or otherwise completed</p>
 92</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 82</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 82</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>NULL</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_check_for_block_or_value!'>check_for_block_or_value!</span><span class='lparen'>(</span><span class='id identifier rubyid_block_given?'>block_given?</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
@@ -1286,7 +1286,7 @@ else false</p>
 129</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/future.rb', line 121</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/future.rb', line 121</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wait_or_cancel'>wait_or_cancel</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>

@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/channel/selector/take_clause.rb</dd>
+    <dd>lib/concurrent-ruby-edge/concurrent/channel/selector/take_clause.rb</dd>
   </dl>
   
 </div>
@@ -207,7 +207,7 @@
 12</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/selector/take_clause.rb', line 9</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/selector/take_clause.rb', line 9</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='ivar'>@channel</span> <span class='op'>=</span> <span class='id identifier rubyid_channel'>channel</span>
@@ -258,7 +258,7 @@
 20</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/channel/selector/take_clause.rb', line 14</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/channel/selector/take_clause.rb', line 14</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_execute'>execute</span>
   <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='ivar'>@channel</span><span class='period'>.</span><span class='id identifier rubyid_poll?'>poll?</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_just?'>just?</span>

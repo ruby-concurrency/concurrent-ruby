@@ -94,7 +94,7 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib/concurrent/executor/thread_pool_executor.rb</dd>
+    <dd>lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb</dd>
   </dl>
   
 </div>
@@ -149,6 +149,9 @@ scenarios.</p>
 
 <ul>
 <li><code>idletime</code>: The number of seconds that a thread may be idle before being reclaimed.</li>
+<li><code>name</code>: The name of the executor (optional). Printed in the executor&#39;s <code>#to_s</code> output and
+a <code>&lt;name&gt;-worker-&lt;id&gt;</code> name is given to its threads if supported by used Ruby
+implementation. <code>&lt;id&gt;</code> is uniq for each thread.</li>
 <li><code>max_queue</code>: The maximum number of tasks that may be waiting in the work queue at
 any one time. When the queue size reaches <code>max_queue</code> and no new threads can be created,
 subsequent tasks will be rejected in accordance with the configured <code>fallback_policy</code>.</li>
@@ -1044,7 +1047,7 @@ in <code>FALLBACK_POLICIES</code></p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 86</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 86</span>
 
 </pre>
     </td>
@@ -1134,7 +1137,7 @@ in <code>FALLBACK_POLICIES</code></p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1249,7 +1252,7 @@ in <code>FALLBACK_POLICIES</code></p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1364,7 +1367,7 @@ in <code>FALLBACK_POLICIES</code></p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1479,7 +1482,7 @@ in <code>FALLBACK_POLICIES</code></p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1594,7 +1597,7 @@ in <code>FALLBACK_POLICIES</code></p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1709,7 +1712,7 @@ in <code>FALLBACK_POLICIES</code></p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1828,7 +1831,7 @@ accordance with the configured <code>fallback_policy</code>.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -1943,7 +1946,7 @@ accordance with the configured <code>fallback_policy</code>.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2058,7 +2061,7 @@ accordance with the configured <code>fallback_policy</code>.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2175,7 +2178,7 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2290,7 +2293,7 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2429,7 +2432,7 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2561,7 +2564,7 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2674,7 +2677,7 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2787,7 +2790,7 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -2886,7 +2889,7 @@ not running.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3053,7 +3056,7 @@ is not running</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3166,7 +3169,7 @@ is not running</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3281,7 +3284,7 @@ occur simultaneously. Else false.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3379,7 +3382,7 @@ thread pool is not running.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3492,7 +3495,7 @@ thread pool is not running.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3605,7 +3608,7 @@ thread pool is not running.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 
@@ -3748,7 +3751,7 @@ passed.</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent/executor/thread_pool_executor.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
 
 <span class='kw'>class</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::ThreadPoolExecutor (class)">ThreadPoolExecutor</a></span></span> <span class='op'>&lt;</span> <span class='const'>ThreadPoolExecutorImplementation</span>
 

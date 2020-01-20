@@ -78,8 +78,8 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>lib-edge/concurrent/actor.rb<span class="defines">,<br />
-  lib-edge/concurrent/actor/core.rb,<br /> lib-edge/concurrent/actor/root.rb,<br /> lib-edge/concurrent/actor/utils.rb,<br /> lib-edge/concurrent/actor/errors.rb,<br /> lib-edge/concurrent/actor/context.rb,<br /> lib-edge/concurrent/actor/envelope.rb,<br /> lib-edge/concurrent/actor/behaviour.rb,<br /> lib-edge/concurrent/actor/reference.rb,<br /> lib-edge/concurrent/actor/type_check.rb,<br /> lib-edge/concurrent/actor/utils/pool.rb,<br /> lib-edge/concurrent/actor/utils/ad_hoc.rb,<br /> lib-edge/concurrent/actor/utils/balancer.rb,<br /> lib-edge/concurrent/actor/utils/broadcast.rb,<br /> lib-edge/concurrent/actor/behaviour/awaits.rb,<br /> lib-edge/concurrent/actor/behaviour/buffer.rb,<br /> lib-edge/concurrent/actor/behaviour/linking.rb,<br /> lib-edge/concurrent/actor/behaviour/pausing.rb,<br /> lib-edge/concurrent/actor/behaviour/abstract.rb,<br /> lib-edge/concurrent/actor/public_delegations.rb,<br /> lib-edge/concurrent/actor/internal_delegations.rb,<br /> lib-edge/concurrent/actor/behaviour/supervising.rb,<br /> lib-edge/concurrent/actor/behaviour/termination.rb,<br /> lib-edge/concurrent/actor/behaviour/sets_results.rb,<br /> lib-edge/concurrent/actor/behaviour/removes_child.rb,<br /> lib-edge/concurrent/actor/behaviour/executes_context.rb,<br /> lib-edge/concurrent/actor/default_dead_letter_handler.rb,<br /> lib-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb</span>
+    <dd>lib/concurrent-ruby-edge/concurrent/actor.rb<span class="defines">,<br />
+  lib/concurrent-ruby-edge/concurrent/actor/core.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/root.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/utils.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/errors.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/context.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/envelope.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/reference.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/type_check.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/utils/pool.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/utils/ad_hoc.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/utils/balancer.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/utils/broadcast.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/awaits.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/buffer.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/linking.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/pausing.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/abstract.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/public_delegations.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/internal_delegations.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/supervising.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/termination.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/sets_results.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/removes_child.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/executes_context.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/default_dead_letter_handler.rb,<br /> lib/concurrent-ruby-edge/concurrent/actor/behaviour/errors_on_unknown_message.rb</span>
 </dd>
   </dl>
   
@@ -218,9 +218,7 @@ message received.</em></p>
 Sends the message asynchronously to the actor and immediately returns
 <code>self</code> (the reference) allowing to chain message telling.</li>
 <li>  <span class='object_link'><a href="Actor/Reference.html#ask-instance_method" title="Concurrent::Actor::Reference#ask (method)">Reference#ask</a></span>
-testing and when it returns very shortly. It can lead to deadlock if all threads in
-global_io_executor will block on while asking. It&#39;s fine to use it form outside of actors and
-global_io_executor.</li>
+</li>
 <li>  <span class='object_link'><a href="Actor/Reference.html#ask!-instance_method" title="Concurrent::Actor::Reference#ask! (method)">Reference#ask!</a></span>
 Sends the message synchronously and blocks until the message
 is processed. Raises on error.</li>
@@ -907,7 +905,7 @@ native threads. Actor is using constant number of threads.</p>
 35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span>
   <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:__current_actor__</span><span class='rbracket'>]</span>
@@ -947,7 +945,7 @@ native threads. Actor is using constant number of threads.</p>
 50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor.rb', line 48</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor.rb', line 48</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_root'><span class='object_link'><a href="../top-level-namespace.html" title="Top Level Namespace (root)">root</a></span></span>
   <span class='ivar'>@root</span><span class='period'>.</span><span class='id identifier rubyid_value!'>value!</span>
@@ -1079,7 +1077,7 @@ To see the list of available options see <span class='object_link'><a href="Acto
 81</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor.rb', line 71</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor.rb', line 71</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='id identifier rubyid_to_spawn_options'>to_spawn_options</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
@@ -1127,7 +1125,7 @@ To see the list of available options see <span class='object_link'><a href="Acto
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor.rb', line 84</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor.rb', line 84</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_spawn!'>spawn!</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_spawn'>spawn</span><span class='lparen'>(</span><span class='id identifier rubyid_to_spawn_options'>to_spawn_options</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='label'>initialized:</span> <span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_future'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_future-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_future (method)">resolvable_future</a></span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_tap'>tap</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_future'>future</span><span class='period'>.</span><span class='id identifier rubyid_wait!'>wait!</span> <span class='rbrace'>}</span>
@@ -1262,7 +1260,7 @@ To see the list of available options see <span class='object_link'><a href="Acto
 103</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/actor.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby-edge/concurrent/actor.rb', line 95</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_to_spawn_options'>to_spawn_options</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>1</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Hash</span><span class='rparen'>)</span>
