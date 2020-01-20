@@ -201,6 +201,29 @@ module Concurrent
         end
       end
 
+      context 'auto terminate' do
+
+        # https://github.com/ruby-concurrency/concurrent-ruby/issues/817
+        # https://github.com/ruby-concurrency/concurrent-ruby/issues/839
+        it 'does not stop shutdown ' do
+          Timeout::timeout(10) do
+            `
+          bundle exec ruby -e "
+            require 'concurrent-ruby'
+            # the test relies on replicating that Minitest messed up the AtExit handling
+            Concurrent.disable_at_exit_handlers!
+            pool = Concurrent::CachedThreadPool.new
+            pool.post do
+              sleep # sleep indefinitely
+            end
+            # the process main thread should quit out which should kill the daemon CachedThreadPool
+          "
+          `
+          end
+        end
+
+      end
+
       context 'stress', notravis: true do
         configurations = [
             { min_threads:    2,
