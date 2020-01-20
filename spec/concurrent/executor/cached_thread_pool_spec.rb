@@ -220,6 +220,7 @@ module Concurrent
           "
           `
           end
+          expect($?.success?).to eq true
         end
 
       end
