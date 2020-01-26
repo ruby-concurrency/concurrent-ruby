@@ -51,11 +51,13 @@ module Concurrent
     def ns_initialize(opts)
       super(opts)
       if Concurrent.on_jruby?
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
         @max_queue = 0
-        @executor = java.util.concurrent.Executors.newCachedThreadPool
+        @executor = java.util.concurrent.Executors.newCachedThreadPool(
+            Concurrent::DaemonThreadFactory.new(self.auto_terminate?)
+        )
         @executor.setRejectedExecutionHandler(FALLBACK_POLICY_CLASSES[@fallback_policy].new)
         @executor.setKeepAliveTime(opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT), java.util.concurrent.TimeUnit::SECONDS)
-        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end
