@@ -230,8 +230,8 @@ task :release => ['release:checks', 'release:build', 'release:test', 'release:pu
 namespace :release do
   # Depends on environment of @pitr-ch
 
-  mri_version   = '2.5.1'
-  jruby_version = 'jruby-9.1.17.1'
+  mri_version   = '2.6.5'
+  jruby_version = 'jruby-9.2.9.0'
 
   task :checks => "yard:#{current_yard_version_name}:uptodate" do
     Dir.chdir(__dir__) do
