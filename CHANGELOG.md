@@ -1,6 +1,22 @@
 ## Current
 
-## Release v1.1.5, edge v0.5.0 (10 mar 2019)
+## Release v1.1.6.pre1, edge v0.6.0.pre1 (26 Jan 2020)
+
+concurrent-ruby:
+
+* Allow to name executors, the name is also used to name their threads (#828)
+* Implement #dup and #clone for structs (#838)
+* Safer finalizers for thread local variables (#821)
+* Documentation fixes
+* Use Ruby's Etc.nprocessors if available (#814)
+* Fix directory structure not to mess with packaging tools (#812)
+* Fix termination of pools on JRuby (#840)
+
+concurrent-ruby-edge:
+
+* Add WrappingExecutor (#830)
+
+## Release v1.1.5, edge v0.5.0 (10 Mar 2019)
 
 concurrent-ruby:
 
