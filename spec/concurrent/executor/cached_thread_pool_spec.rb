@@ -45,14 +45,14 @@ module Concurrent
       end
 
       it 'returns zero while running' do
-        10.times{ subject.post{ nil } }
+        10.times { subject.post { nil } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         expect(subject.min_length).to eq 0
       end
 
       it 'returns zero once shutdown' do
-        10.times{ subject.post{ nil } }
+        10.times { subject.post { nil } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
@@ -68,14 +68,14 @@ module Concurrent
       end
 
       it 'returns :max_length while running' do
-        10.times{ subject.post{ nil } }
+        10.times { subject.post { nil } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         expect(subject.max_length).to eq described_class::DEFAULT_MAX_POOL_SIZE
       end
 
       it 'returns :max_length once shutdown' do
-        10.times{ subject.post{ nil } }
+        10.times { subject.post { nil } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
@@ -91,14 +91,14 @@ module Concurrent
       end
 
       it 'returns a non-zero number once tasks have been received' do
-        10.times{ subject.post{ sleep(0.1) } }
+        10.times { subject.post { sleep(0.1) } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         expect(subject.largest_length).to be > 0
       end
 
       it 'returns a non-zero number after shutdown if tasks have been received' do
-        10.times{ subject.post{ sleep(0.1) } }
+        10.times { subject.post { sleep(0.1) } }
         subject.post { latch.count_down }
         latch.wait(0.1)
         subject.shutdown
@@ -109,7 +109,7 @@ module Concurrent
 
     context '#idletime' do
 
-      subject{ described_class.new(idletime: 42) }
+      subject { described_class.new(idletime: 42) }
 
       it 'returns the thread idletime' do
         expect(subject.idletime).to eq 42
@@ -123,7 +123,7 @@ module Concurrent
         context '#initialize' do
 
           it 'sets :fallback_policy correctly' do
-            clazz = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
+            clazz  = java.util.concurrent.ThreadPoolExecutor::DiscardPolicy
             policy = clazz.new
             expect(clazz).to receive(:new).at_least(:once).with(any_args).and_return(policy)
 
@@ -206,21 +206,17 @@ module Concurrent
         # https://github.com/ruby-concurrency/concurrent-ruby/issues/817
         # https://github.com/ruby-concurrency/concurrent-ruby/issues/839
         it 'does not stop shutdown ' do
-          Timeout::timeout(10) do
-            `
-          bundle exec ruby -e "
-            require 'concurrent-ruby'
-            # the test relies on replicating that Minitest messed up the AtExit handling
-            Concurrent.disable_at_exit_handlers!
-            pool = Concurrent::CachedThreadPool.new
-            pool.post do
-              sleep # sleep indefinitely
+          Timeout.timeout(10) do
+            begin
+              test_file = File.join File.dirname(__FILE__), 'pool_quits.rb'
+              pid       = spawn RbConfig.ruby, test_file
+              Process.waitpid pid
+              expect($?.success?).to eq true
+            rescue Timeout::Error => e
+              Process.kill :KILL, pid
+              raise e
             end
-            # the process main thread should quit out which should kill the daemon CachedThreadPool
-          "
-          `
           end
-          expect($?.success?).to eq true
         end
 
       end
