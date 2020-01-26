@@ -17,6 +17,8 @@ edge_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-edge.
 
 require 'rake/javaextensiontask'
 
+ENV['JRUBY_HOME'] = ENV['CONCURRENT_JRUBY_HOME'] if ENV['CONCURRENT_JRUBY_HOME'] && !Concurrent.on_jruby?
+
 Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.ext_dir = 'ext/concurrent-ruby'
   ext.lib_dir = 'lib/concurrent-ruby/concurrent'
