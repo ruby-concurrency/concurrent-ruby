@@ -116,10 +116,27 @@ if Concurrent.on_jruby?
             idletime,
             java.util.concurrent.TimeUnit::SECONDS,
             queue,
-            Concurrent::DaemonThreadFactory.new(self.auto_terminate?),
+            DaemonThreadFactory.new(self.auto_terminate?),
             FALLBACK_POLICY_CLASSES[@fallback_policy].new)
 
       end
     end
+
+    class DaemonThreadFactory
+      # hide include from YARD
+      send :include, java.util.concurrent.ThreadFactory
+
+      def initialize(daemonize = true)
+        @daemonize = daemonize
+      end
+
+      def newThread(runnable)
+        thread = java.util.concurrent.Executors.defaultThreadFactory().newThread(runnable)
+        thread.setDaemon(@daemonize)
+        return thread
+      end
+    end
+
+    private_constant :DaemonThreadFactory
   end
 end

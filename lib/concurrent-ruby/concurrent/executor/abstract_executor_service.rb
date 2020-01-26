@@ -125,10 +125,10 @@ module Concurrent
     def ns_auto_terminate=(value)
       case value
       when true
-        AtExit.add(self) { terminate_at_exit }
+        AT_EXIT.add(self) { terminate_at_exit }
         @auto_terminate = true
       when false
-        AtExit.delete(self)
+        AT_EXIT.delete(self)
         @auto_terminate = false
       else
         raise ArgumentError

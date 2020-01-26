@@ -5,7 +5,6 @@ module Concurrent
 
   if Concurrent.on_jruby?
     require 'concurrent/executor/java_thread_pool_executor'
-    require 'concurrent/executor/java_daemon_thread_factory'
   end
 
   ThreadPoolExecutorImplementation = case

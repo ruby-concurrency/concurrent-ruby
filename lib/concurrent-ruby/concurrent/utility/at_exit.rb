@@ -91,7 +91,6 @@ module Concurrent
 
   private_constant :AtExitImplementation
 
-  # @see AtExitImplementation
   # @!visibility private
-  AtExit = AtExitImplementation.new.install
+  AT_EXIT = AtExitImplementation.new.install
 end

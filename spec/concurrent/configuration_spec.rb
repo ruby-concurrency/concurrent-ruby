@@ -24,7 +24,7 @@ module Concurrent
         expect(Concurrent.global_fast_executor).to receive(:kill).at_least(:once).with(no_args)
         expect(Concurrent.global_io_executor).to receive(:kill).at_least(:once).with(no_args)
         expect(Concurrent.global_timer_set).to receive(:kill).at_least(:once).with(no_args)
-        Concurrent::AtExit.run
+        Concurrent::AT_EXIT.run
       end
     end
    end
