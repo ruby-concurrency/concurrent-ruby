@@ -121,9 +121,7 @@ module Concurrent
   #   * `max_queue`: The maximum number of tasks that may be waiting in the work queue at
   #     any one time. When the queue size reaches `max_queue` and no new threads can be created,
   #     subsequent tasks will be rejected in accordance with the configured `fallback_policy`.
-  #   * `auto_terminate`: When true (default) an `at_exit` handler will be registered which
-  #     will stop the thread pool when the application exits. See below for more information
-  #     on shutting down thread pools.
+  #   * `auto_terminate`: When true (default), the threads started will be marked as daemon.
   #   * `fallback_policy`: The policy defining how rejected tasks are handled.
   #
   #   Three fallback policies are supported:
@@ -148,16 +146,12 @@ module Concurrent
   #
   #   On some runtime platforms (most notably the JVM) the application will not
   #   exit until all thread pools have been shutdown. To prevent applications from
-  #   "hanging" on exit all thread pools include an `at_exit` handler that will
-  #   stop the thread pool when the application exits. This handler uses a brute
-  #   force method to stop the pool and makes no guarantees regarding resources being
-  #   used by any tasks still running. Registration of this `at_exit` handler can be
-  #   prevented by setting the thread pool's constructor `:auto_terminate` option to
-  #   `false` when the thread pool is created. All thread pools support this option.
+  #   "hanging" on exit, all threads can be marked as daemon according to the
+  #   `:auto_terminate` option.
   #
   #   ```ruby
-  #   pool1 = Concurrent::FixedThreadPool.new(5) # an `at_exit` handler will be registered
-  #   pool2 = Concurrent::FixedThreadPool.new(5, auto_terminate: false) # prevent `at_exit` handler registration
+  #   pool1 = Concurrent::FixedThreadPool.new(5) # threads will be marked as daemon
+  #   pool2 = Concurrent::FixedThreadPool.new(5, auto_terminate: false) # mark threads as non-daemon
   #   ```
   #
   #   @note Failure to properly shutdown a thread pool can lead to unpredictable results.
@@ -166,7 +160,7 @@ module Concurrent
   #   @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
   #   @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html Java Executors class
   #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html Java ExecutorService interface
-  #   @see http://ruby-doc.org//core-2.2.0/Kernel.html#method-i-at_exit Kernel#at_exit
+  #   @see https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-
 
 
 

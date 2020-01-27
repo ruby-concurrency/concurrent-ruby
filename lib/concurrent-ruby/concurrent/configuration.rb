@@ -5,7 +5,6 @@ require 'concurrent/atomic/atomic_reference'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/immediate_executor'
 require 'concurrent/executor/cached_thread_pool'
-require 'concurrent/utility/at_exit'
 require 'concurrent/utility/processor_counter'
 
 module Concurrent
@@ -111,24 +110,6 @@ module Concurrent
   # @!visibility private
   GLOBAL_IMMEDIATE_EXECUTOR = ImmediateExecutor.new
   private_constant :GLOBAL_IMMEDIATE_EXECUTOR
-
-  # Disables AtExit handlers including pool auto-termination handlers.
-  # When disabled it will be the application programmer's responsibility
-  # to ensure that the handlers are shutdown properly prior to application
-  # exit by calling `AtExit.run` method.
-  #
-  # @note this option should be needed only because of `at_exit` ordering
-  #   issues which may arise when running some of the testing frameworks.
-  #   E.g. Minitest's test-suite runs itself in `at_exit` callback which
-  #   executes after the pools are already terminated. Then auto termination
-  #   needs to be disabled and called manually after test-suite ends.
-  # @note This method should *never* be called
-  #   from within a gem. It should *only* be used from within the main
-  #   application and even then it should be used only when necessary.
-  #
-  def self.disable_at_exit_handlers!
-    AT_EXIT.enabled = false
-  end
 
   # Global thread pool optimized for short, fast *operations*.
   #

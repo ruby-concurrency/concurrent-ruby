@@ -1,7 +1,6 @@
 require 'concurrent/errors'
 require 'concurrent/executor/executor_service'
 require 'concurrent/synchronization'
-require 'concurrent/utility/at_exit'
 
 module Concurrent
 
@@ -17,6 +16,8 @@ module Concurrent
     attr_reader :fallback_policy
 
     attr_reader :name
+
+    attr_accessor :ns_auto_terminate
 
     # Create a new thread pool.
     def initialize(opts = {}, &block)
@@ -119,25 +120,8 @@ module Concurrent
     end
 
     def ns_auto_terminate?
-      !!@auto_terminate
+      !!ns_auto_terminate
     end
 
-    def ns_auto_terminate=(value)
-      case value
-      when true
-        AT_EXIT.add(self) { terminate_at_exit }
-        @auto_terminate = true
-      when false
-        AT_EXIT.delete(self)
-        @auto_terminate = false
-      else
-        raise ArgumentError
-      end
-    end
-
-    def terminate_at_exit
-      kill # TODO be gentle first
-      wait_for_termination(10)
-    end
   end
 end
