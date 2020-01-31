@@ -63,6 +63,7 @@ matrix:
 
   allow_failures:
     - rvm: ruby-head
+    - rvm: jruby-head
     - rvm: rbx-3
     - name: TruffleRuby Latest
     - name: YARD uptodate in docs
