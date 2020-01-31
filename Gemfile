@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 require File.join(File.dirname(__FILE__), 'lib/concurrent-ruby/concurrent/version')
 require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby-edge/concurrent/edge/version')
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/utility/engine')
 
 no_path = ENV['NO_PATH']
 options = no_path ? {} : { path: '.' }
@@ -11,7 +12,7 @@ gem 'concurrent-ruby-edge', Concurrent::EDGE_VERSION, options
 gem 'concurrent-ruby-ext', Concurrent::VERSION, options.merge(platform: :mri)
 
 group :development do
-  gem 'rake', '~> 12.0'
+  gem 'rake', (Concurrent.ruby_version :<, 2, 2, 0) ? '~> 12.0' : '~> 13.0'
   gem 'rake-compiler', '~> 1.0', '>= 1.0.7'
   gem 'rake-compiler-dock', '~> 0.7.0'
   gem 'pry', '~> 0.11', platforms: :mri
