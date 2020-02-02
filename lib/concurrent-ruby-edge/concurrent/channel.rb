@@ -15,7 +15,7 @@ module Concurrent
     include Enumerable
 
     # NOTE: Move to global IO pool once stable
-    GOROUTINES = Concurrent::CachedThreadPool.new(auto_terminate: true)
+    GOROUTINES = Concurrent::CachedThreadPool.new
     private_constant :GOROUTINES
 
     BUFFER_TYPES = {

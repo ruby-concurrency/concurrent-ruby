@@ -17,12 +17,11 @@ if Concurrent.on_jruby?
       end
 
       private
-      
+
       def ns_initialize(opts)
         @executor = java.util.concurrent.Executors.newSingleThreadExecutor
         @fallback_policy = opts.fetch(:fallback_policy, :discard)
         raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.keys.include?(@fallback_policy)
-        self.auto_terminate = opts.fetch(:auto_terminate, true)
       end
     end
   end

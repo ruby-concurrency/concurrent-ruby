@@ -77,7 +77,6 @@ module Concurrent
       @timer_executor     = SingleThreadExecutor.new
       @condition          = Event.new
       @ruby_pid           = $$ # detects if Ruby has forked
-      self.auto_terminate = opts.fetch(:auto_terminate, true)
     end
 
     # Post the task to the internal queue.

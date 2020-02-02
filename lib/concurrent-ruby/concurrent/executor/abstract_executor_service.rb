@@ -1,4 +1,5 @@
 require 'concurrent/errors'
+require 'concurrent/concern/deprecation'
 require 'concurrent/executor/executor_service'
 require 'concurrent/synchronization'
 
@@ -8,6 +9,7 @@ module Concurrent
   # @!visibility private
   class AbstractExecutorService < Synchronization::LockableObject
     include ExecutorService
+    include Concern::Deprecation
 
     # The set of possible fallback policies that may be set at thread pool creation.
     FALLBACK_POLICIES = [:abort, :discard, :caller_runs].freeze
@@ -17,14 +19,14 @@ module Concurrent
 
     attr_reader :name
 
-    attr_accessor :ns_auto_terminate
-
     # Create a new thread pool.
     def initialize(opts = {}, &block)
       super(&nil)
       synchronize do
-        ns_initialize(opts, &block)
+        # TODO (pitr-ch 02-Feb-2020): check all documentation
+        @auto_terminate = opts.fetch(:auto_terminate, true)
         @name = opts.fetch(:name) if opts.key?(:name)
+        ns_initialize(opts, &block)
       end
     end
 
@@ -64,12 +66,12 @@ module Concurrent
 
     # @!macro executor_service_method_auto_terminate_question
     def auto_terminate?
-      synchronize { ns_auto_terminate? }
+      synchronize { @auto_terminate }
     end
 
     # @!macro executor_service_method_auto_terminate_setter
     def auto_terminate=(value)
-      synchronize { self.ns_auto_terminate = value }
+      deprecated "Method #auto_terminate= has no effect. Set :auto_terminate option when executor is initialized."
     end
 
     private
@@ -120,7 +122,7 @@ module Concurrent
     end
 
     def ns_auto_terminate?
-      !!ns_auto_terminate
+      @auto_terminate
     end
 
   end

@@ -38,7 +38,6 @@ if Concurrent.on_jruby?
 
       def shutdown
         synchronize do
-          self.ns_auto_terminate = false
           @executor.shutdown
           nil
         end
@@ -46,7 +45,6 @@ if Concurrent.on_jruby?
 
       def kill
         synchronize do
-          self.ns_auto_terminate = false
           @executor.shutdownNow
           nil
         end
