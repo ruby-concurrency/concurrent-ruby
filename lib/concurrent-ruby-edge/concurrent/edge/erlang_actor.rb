@@ -531,8 +531,8 @@ module Concurrent
     module FunctionShortcuts
       # Optionally included shortcut method for {Functions#spawn_actor}
       # @return [Pid]
-      def spawn(*args, &body)
-        spawn_actor(*args, &body)
+      def spawn(*args, **kwargs, &body)
+        spawn_actor(*args, **kwargs, &body)
       end
 
       # Optionally included shortcut method for {Functions#terminate_actor}
