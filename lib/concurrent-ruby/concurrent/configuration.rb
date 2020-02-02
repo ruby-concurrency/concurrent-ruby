@@ -129,7 +129,7 @@ module Concurrent
   # @deprecated Has no effect since it is not longer needed, see https://github.com/ruby-concurrency/concurrent-ruby/pull/841.
   #
   def self.disable_at_exit_handlers!
-    deprecated "Method #disable_at_exit_handlers! has no effect since it is not longer needed, see https://github.com/ruby-concurrency/concurrent-ruby/pull/841."
+    deprecated "Method #disable_at_exit_handlers! has no effect since it is no longer needed, see https://github.com/ruby-concurrency/concurrent-ruby/pull/841."
   end
 
   # Global thread pool optimized for short, fast *operations*.
