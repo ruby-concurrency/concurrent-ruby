@@ -2,7 +2,7 @@
 
 concurrent-ruby:
 
-* Concurrent.disable_at_exit_handlers! is not longer needed and was deprecated.
+* Concurrent.disable_at_exit_handlers! is no longer needed and was deprecated.
 * AbstractExecutorService#auto_terminate= was deprecated and has no effect. 
   Set :auto_terminate option instead when executor is initialized.
 
