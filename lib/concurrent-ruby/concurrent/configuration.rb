@@ -126,7 +126,7 @@ module Concurrent
   # @note This method should *never* be called
   #   from within a gem. It should *only* be used from within the main
   #   application and even then it should be used only when necessary.
-  # @deprecated Has no effect since it is not longer needed, see https://github.com/ruby-concurrency/concurrent-ruby/pull/841.
+  # @deprecated Has no effect since it is no longer needed, see https://github.com/ruby-concurrency/concurrent-ruby/pull/841.
   #
   def self.disable_at_exit_handlers!
     deprecated "Method #disable_at_exit_handlers! has no effect since it is no longer needed, see https://github.com/ruby-concurrency/concurrent-ruby/pull/841."
