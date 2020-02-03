@@ -81,5 +81,21 @@ if Concurrent.on_jruby?
       end
       private_constant :Job
     end
+
+    class DaemonThreadFactory
+      # hide include from YARD
+      send :include, java.util.concurrent.ThreadFactory
+
+      def initialize(daemonize = true)
+        @daemonize = daemonize
+      end
+
+      def newThread(runnable)
+        thread = java.util.concurrent.Executors.defaultThreadFactory().newThread(runnable)
+        thread.setDaemon(@daemonize)
+        return thread
+      end
+    end
+    
   end
 end

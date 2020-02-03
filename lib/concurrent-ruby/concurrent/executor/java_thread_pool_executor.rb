@@ -108,6 +108,8 @@ if Concurrent.on_jruby?
           queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)
         end
 
+        self.auto_terminate = opts.fetch(:auto_terminate, true)
+
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
             min_length,
             max_length,
@@ -120,21 +122,5 @@ if Concurrent.on_jruby?
       end
     end
 
-    class DaemonThreadFactory
-      # hide include from YARD
-      send :include, java.util.concurrent.ThreadFactory
-
-      def initialize(daemonize = true)
-        @daemonize = daemonize
-      end
-
-      def newThread(runnable)
-        thread = java.util.concurrent.Executors.defaultThreadFactory().newThread(runnable)
-        thread.setDaemon(@daemonize)
-        return thread
-      end
-    end
-
-    private_constant :DaemonThreadFactory
   end
 end
