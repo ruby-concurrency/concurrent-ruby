@@ -33,6 +33,28 @@ RSpec.shared_examples :executor_service do
     end
   end
 
+  context 'auto terminate' do
+
+    # https://github.com/ruby-concurrency/concurrent-ruby/issues/817
+    # https://github.com/ruby-concurrency/concurrent-ruby/issues/839
+    it 'does not stop shutdown ' do
+      Timeout.timeout(10) do
+        begin
+          test_file = File.join File.dirname(__FILE__), 'executor_quits.rb'
+          pid       = spawn RbConfig.ruby, test_file
+          Process.waitpid pid
+          expect($?.success?).to eq true
+        rescue Errno::ECHILD
+          # child already gone
+        rescue Timeout::Error => e
+          Process.kill :KILL, pid
+          raise e
+        end
+      end
+    end
+
+  end
+
   context '#running?' do
 
     it 'returns true when the thread pool is running' do
