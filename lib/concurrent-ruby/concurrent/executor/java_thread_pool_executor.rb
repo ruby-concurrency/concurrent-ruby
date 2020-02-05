@@ -108,8 +108,6 @@ if Concurrent.on_jruby?
           queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)
         end
 
-        self.auto_terminate = opts.fetch(:auto_terminate, true)
-
         @executor = java.util.concurrent.ThreadPoolExecutor.new(
             min_length,
             max_length,
