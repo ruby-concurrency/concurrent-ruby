@@ -96,6 +96,8 @@ if Concurrent.on_jruby?
         return thread
       end
     end
-    
+
+    private_constant :DaemonThreadFactory
+
   end
 end
