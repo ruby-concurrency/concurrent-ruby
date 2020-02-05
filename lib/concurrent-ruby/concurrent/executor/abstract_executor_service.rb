@@ -23,7 +23,6 @@ module Concurrent
     def initialize(opts = {}, &block)
       super(&nil)
       synchronize do
-        # TODO (pitr-ch 02-Feb-2020): check all documentation
         @auto_terminate = opts.fetch(:auto_terminate, true)
         @name = opts.fetch(:name) if opts.key?(:name)
         ns_initialize(opts, &block)
