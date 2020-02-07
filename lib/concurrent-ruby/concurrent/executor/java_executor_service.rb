@@ -38,7 +38,6 @@ if Concurrent.on_jruby?
 
       def shutdown
         synchronize do
-          self.ns_auto_terminate = false
           @executor.shutdown
           nil
         end
@@ -46,7 +45,6 @@ if Concurrent.on_jruby?
 
       def kill
         synchronize do
-          self.ns_auto_terminate = false
           @executor.shutdownNow
           nil
         end
@@ -83,5 +81,23 @@ if Concurrent.on_jruby?
       end
       private_constant :Job
     end
+
+    class DaemonThreadFactory
+      # hide include from YARD
+      send :include, java.util.concurrent.ThreadFactory
+
+      def initialize(daemonize = true)
+        @daemonize = daemonize
+      end
+
+      def newThread(runnable)
+        thread = java.util.concurrent.Executors.defaultThreadFactory().newThread(runnable)
+        thread.setDaemon(@daemonize)
+        return thread
+      end
+    end
+
+    private_constant :DaemonThreadFactory
+
   end
 end

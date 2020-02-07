@@ -15,7 +15,6 @@ module Concurrent
         max_queue: 0,
         idletime: DEFAULT_THREAD_IDLETIMEOUT,
         fallback_policy: opts.fetch(:fallback_policy, :discard),
-        auto_terminate: opts.fetch(:auto_terminate, true)
       )
     end
   end

@@ -122,8 +122,6 @@ module Concurrent
       raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @min_length < DEFAULT_MIN_POOL_SIZE
       raise ArgumentError.new("`min_threads` cannot be more than `max_threads`") if min_length > max_length
 
-      self.auto_terminate = opts.fetch(:auto_terminate, true)
-
       @pool                 = [] # all workers
       @ready                = [] # used as a stash (most idle worker is at the start)
       @queue                = [] # used as queue

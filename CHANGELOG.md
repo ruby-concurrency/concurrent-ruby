@@ -1,5 +1,11 @@
 ## Current
 
+concurrent-ruby:
+
+* Concurrent.disable_at_exit_handlers! is no longer needed and was deprecated.
+* AbstractExecutorService#auto_terminate= was deprecated and has no effect. 
+  Set :auto_terminate option instead when executor is initialized.
+
 ## Release v1.1.6.pre1, edge v0.6.0.pre1 (26 Jan 2020)
 
 concurrent-ruby:

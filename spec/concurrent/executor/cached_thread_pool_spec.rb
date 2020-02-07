@@ -201,38 +201,16 @@ module Concurrent
         end
       end
 
-      context 'auto terminate' do
-
-        # https://github.com/ruby-concurrency/concurrent-ruby/issues/817
-        # https://github.com/ruby-concurrency/concurrent-ruby/issues/839
-        it 'does not stop shutdown ' do
-          Timeout.timeout(10) do
-            begin
-              test_file = File.join File.dirname(__FILE__), 'pool_quits.rb'
-              pid       = spawn RbConfig.ruby, test_file
-              Process.waitpid pid
-              expect($?.success?).to eq true
-            rescue Timeout::Error => e
-              Process.kill :KILL, pid
-              raise e
-            end
-          end
-        end
-
-      end
-
       context 'stress', notravis: true do
         configurations = [
             { min_threads:    2,
               max_threads:    ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-              auto_terminate: false,
               idletime:       0.1, # 1 minute
               max_queue: 0, # unlimited
               fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
               gc_interval: 0.1 },
             { min_threads:    2,
               max_threads:    4,
-              auto_terminate: false,
               idletime:       0.1, # 1 minute
               max_queue: 0, # unlimited
               fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue

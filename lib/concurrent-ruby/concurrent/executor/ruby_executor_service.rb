@@ -27,7 +27,6 @@ module Concurrent
     def shutdown
       synchronize do
         break unless running?
-        self.ns_auto_terminate = false
         stop_event.set
         ns_shutdown_execution
       end
@@ -37,7 +36,6 @@ module Concurrent
     def kill
       synchronize do
         break if shutdown?
-        self.ns_auto_terminate = false
         stop_event.set
         ns_kill_execution
         stopped_event.set

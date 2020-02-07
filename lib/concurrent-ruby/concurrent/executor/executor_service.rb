@@ -111,10 +111,10 @@ module Concurrent
 
   # @!macro executor_service_method_auto_terminate_setter
   #
+  #
   #   Set the auto-terminate behavior for this executor.
-  #
+  #   @deprecated Has no effect
   #   @param [Boolean] value The new auto-terminate value to set for this executor.
-  #
   #   @return [Boolean] `true` when auto-termination is enabled else `false`.
 
   ###################################################################
