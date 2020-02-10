@@ -59,18 +59,28 @@
 
       <div id="content"><div id='filecontents'><h2>Current</h2>
 
+<h2>Release v1.1.6, edge v0.6.0 (10 Feb 2020)</h2>
+
+<p>concurrent-ruby:</p>
+
+<ul>
+<li>(#841) Concurrent.disable_at_exit_handlers! is no longer needed and was deprecated.</li>
+<li>(#841) AbstractExecutorService#auto_terminate= was deprecated and has no effect. 
+Set :auto_terminate option instead when executor is initialized.</li>
+</ul>
+
 <h2>Release v1.1.6.pre1, edge v0.6.0.pre1 (26 Jan 2020)</h2>
 
 <p>concurrent-ruby:</p>
 
 <ul>
-<li>Allow to name executors, the name is also used to name their threads (#828)</li>
-<li>Implement #dup and #clone for structs (#838)</li>
-<li>Safer finalizers for thread local variables (#821)</li>
+<li>(#828) Allow to name executors, the name is also used to name their threads </li>
+<li>(#838) Implement #dup and #clone for structs</li>
+<li>(#821) Safer finalizers for thread local variables</li>
 <li>Documentation fixes</li>
-<li>Use Ruby&#39;s Etc.nprocessors if available (#814)</li>
-<li>Fix directory structure not to mess with packaging tools (#812)</li>
-<li>Fix termination of pools on JRuby (#840)</li>
+<li>(#814) Use Ruby&#39;s Etc.nprocessors if available</li>
+<li>(#812) Fix directory structure not to mess with packaging tools</li>
+<li>(#840) Fix termination of pools on JRuby</li>
 </ul>
 
 <p>concurrent-ruby-edge:</p>

@@ -176,7 +176,9 @@ begin
                       'LICENSE.md',
                       'CHANGELOG.md']
       end
-      Rake::Task[name].prerequisites.push removal_name, 'yard:eval_md', 'yard:update_readme'
+      Rake::Task[name].prerequisites.push removal_name,
+                                          # 'yard:eval_md',
+                                          'yard:update_readme'
     end
 
     define_yard_task.call current_yard_version_name

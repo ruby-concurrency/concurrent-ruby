@@ -148,7 +148,7 @@ since the channel is full. </p>
 
 <p>When message is popped the last thread continues and finishes as well.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                                   <span class='comment'># => {:message=>0}
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>                                   <span class='comment'># => {:message=>1}
 </span><span class='id identifier rubyid_threads'>threads</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&</span><span class='symbol'>:join</span><span class='rparen'>)</span>
 <span class='comment'># => [#<Thread:0x000003@channel.in.md:14 dead>,
 </span><span class='comment'>#     #<Thread:0x000004@channel.in.md:14 dead>,
@@ -169,7 +169,7 @@ one will be blocked until new messages is pushed.</p>
 </span><span class='id identifier rubyid_ch'>ch</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='label'>message:</span> <span class='int'>3</span>
 <span class='comment'># => #<Concurrent::Promises::Channel:0x000002 capacity taken 0 of 2>
 </span><span class='id identifier rubyid_threads'>threads</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&</span><span class='symbol'>:value</span><span class='rparen'>)</span>
-<span class='comment'># => [{:message=>1}, {:message=>2}, {:message=>3}]
+<span class='comment'># => [{:message=>0}, {:message=>2}, {:message=>3}]
 </span></code></pre>
 
 <h3>Promises integration</h3>
@@ -325,14 +325,14 @@ if the consumers are not keeping up.</p>
 </span><span class='comment'>#     "producer 1 pushing 0",
 </span><span class='comment'>#     "consumer 0 got 0. payload 0 from producer 0",
 </span><span class='comment'>#     "producer 0 pushing 3",
-</span><span class='comment'>#     "consumer 2 got 0. payload 1 from producer 0",
+</span><span class='comment'>#     "consumer 1 got 0. payload 1 from producer 0",
+</span><span class='comment'>#     "consumer 2 got 0. payload 2 from producer 0",
+</span><span class='comment'>#     "consumer 3 got 0. payload 0 from producer 1",
 </span><span class='comment'>#     "producer 1 pushing 1",
-</span><span class='comment'>#     "consumer 3 got 0. payload 2 from producer 0",
-</span><span class='comment'>#     "consumer 1 got 0. payload 0 from producer 1",
 </span><span class='comment'>#     "producer 1 pushing 2",
-</span><span class='comment'>#     "consumer 2 got 1. payload 3 from producer 0",
-</span><span class='comment'>#     "consumer 1 got 1. payload 1 from producer 1",
+</span><span class='comment'>#     "consumer 1 got 1. payload 3 from producer 0",
 </span><span class='comment'>#     "producer 1 pushing 3",
+</span><span class='comment'>#     "consumer 2 got 1. payload 1 from producer 1",
 </span><span class='comment'>#     "consumer 3 got 1. payload 2 from producer 1",
 </span><span class='comment'>#     "consumer 0 got 1. payload 3 from producer 1"]
 </span></code></pre>
@@ -387,21 +387,21 @@ that run a thread pool.</p>
 </span><span class='comment'># investigate log
 </span><span class='id identifier rubyid_log'>log</span>
 <span class='comment'># => ["producer 0 pushing 0",
+</span><span class='comment'>#     "producer 1 pushing 0",
+</span><span class='comment'>#     "producer 1 pushing 1",
+</span><span class='comment'>#     "consumer 1 got 0. payload 0 from producer 1",
+</span><span class='comment'>#     "consumer 2 got 0. payload 1 from producer 1",
 </span><span class='comment'>#     "producer 0 pushing 1",
 </span><span class='comment'>#     "producer 0 pushing 2",
-</span><span class='comment'>#     "producer 1 pushing 0",
-</span><span class='comment'>#     "consumer 1 got 0. payload 1 from producer 0",
 </span><span class='comment'>#     "producer 0 pushing 3",
-</span><span class='comment'>#     "consumer 0 got 0. payload 0 from producer 0",
-</span><span class='comment'>#     "producer 1 pushing 1",
-</span><span class='comment'>#     "consumer 2 got 0. payload 2 from producer 0",
-</span><span class='comment'>#     "consumer 3 got 0. payload 0 from producer 1",
 </span><span class='comment'>#     "producer 1 pushing 2",
-</span><span class='comment'>#     "consumer 3 got 1. payload 1 from producer 1",
+</span><span class='comment'>#     "consumer 0 got 0. payload 0 from producer 0",
+</span><span class='comment'>#     "consumer 3 got 0. payload 1 from producer 0",
 </span><span class='comment'>#     "producer 1 pushing 3",
+</span><span class='comment'>#     "consumer 2 got 1. payload 2 from producer 0",
 </span><span class='comment'>#     "consumer 1 got 1. payload 3 from producer 0",
-</span><span class='comment'>#     "consumer 0 got 1. payload 2 from producer 1",
-</span><span class='comment'>#     "consumer 2 got 1. payload 3 from producer 1"]
+</span><span class='comment'>#     "consumer 3 got 1. payload 3 from producer 1",
+</span><span class='comment'>#     "consumer 0 got 1. payload 2 from producer 1"]
 </span></code></pre>
 
 <h3>Synchronization of workers by passing a value</h3>

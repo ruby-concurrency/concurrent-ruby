@@ -155,9 +155,7 @@ implementation. <code>&lt;id&gt;</code> is uniq for each thread.</li>
 <li><code>max_queue</code>: The maximum number of tasks that may be waiting in the work queue at
 any one time. When the queue size reaches <code>max_queue</code> and no new threads can be created,
 subsequent tasks will be rejected in accordance with the configured <code>fallback_policy</code>.</li>
-<li><code>auto_terminate</code>: When true (default) an <code>at_exit</code> handler will be registered which
-will stop the thread pool when the application exits. See below for more information
-on shutting down thread pools.</li>
+<li><code>auto_terminate</code>: When true (default), the threads started will be marked as daemon.</li>
 <li><code>fallback_policy</code>: The policy defining how rejected tasks are handled.</li>
 </ul>
 
@@ -187,15 +185,11 @@ the orderly shutdown to complete</li>
 
 <p>On some runtime platforms (most notably the JVM) the application will not
 exit until all thread pools have been shutdown. To prevent applications from
-&quot;hanging&quot; on exit all thread pools include an <code>at_exit</code> handler that will
-stop the thread pool when the application exits. This handler uses a brute
-force method to stop the pool and makes no guarantees regarding resources being
-used by any tasks still running. Registration of this <code>at_exit</code> handler can be
-prevented by setting the thread pool&#39;s constructor <code>:auto_terminate</code> option to
-<code>false</code> when the thread pool is created. All thread pools support this option.</p>
+&quot;hanging&quot; on exit, all threads can be marked as daemon according to the
+<code>:auto_terminate</code> option.</p>
 
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool1'>pool1</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="FixedThreadPool.html" title="Concurrent::FixedThreadPool (class)">FixedThreadPool</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="FixedThreadPool.html#initialize-instance_method" title="Concurrent::FixedThreadPool#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>5</span><span class='rparen'>)</span> <span class='comment'># an `at_exit` handler will be registered
-</span><span class='id identifier rubyid_pool2'>pool2</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="FixedThreadPool.html" title="Concurrent::FixedThreadPool (class)">FixedThreadPool</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="FixedThreadPool.html#initialize-instance_method" title="Concurrent::FixedThreadPool#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>5</span><span class='comma'>,</span> <span class='label'>auto_terminate:</span> <span class='kw'>false</span><span class='rparen'>)</span> <span class='comment'># prevent `at_exit` handler registration
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool1'>pool1</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="FixedThreadPool.html" title="Concurrent::FixedThreadPool (class)">FixedThreadPool</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="FixedThreadPool.html#initialize-instance_method" title="Concurrent::FixedThreadPool#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>5</span><span class='rparen'>)</span> <span class='comment'># threads will be marked as daemon
+</span><span class='id identifier rubyid_pool2'>pool2</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="FixedThreadPool.html" title="Concurrent::FixedThreadPool (class)">FixedThreadPool</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="FixedThreadPool.html#initialize-instance_method" title="Concurrent::FixedThreadPool#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>5</span><span class='comma'>,</span> <span class='label'>auto_terminate:</span> <span class='kw'>false</span><span class='rparen'>)</span> <span class='comment'># mark threads as non-daemon
 </span></code></pre>
 
 
@@ -213,7 +207,7 @@ prevented by setting the thread pool&#39;s constructor <code>:auto_terminate</co
     
       <li><a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html" target="_parent" title="Java ExecutorService interface">Java ExecutorService interface</a></li>
     
-      <li><a href="http://ruby-doc.org//core-2.2.0/Kernel.html#method-i-at_exit" target="_parent" title="Kernel#at_exit">Kernel#at_exit</a></li>
+      <li><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-" target="_parent" title="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-">https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-</a></li>
     
   </ul>
 
@@ -572,7 +566,7 @@ prevented by setting the thread pool&#39;s constructor <code>:auto_terminate</co
 </li>
 
       
-        <li class="public ">
+        <li class="public deprecated">
   <span class="summary_signature">
     
       <a href="#auto_terminate=-instance_method" title="#auto_terminate= (instance method)">#<strong>auto_terminate=</strong>(value)  &#x21d2; Boolean </a>
@@ -585,11 +579,11 @@ prevented by setting the thread pool&#39;s constructor <code>:auto_terminate</co
   
   
   
-  
+  <span class="deprecated note title">deprecated</span>
   
 
   
-    <span class="summary_desc"><div class='inline'><p>Set the auto-terminate behavior for this executor.</p>
+    <span class="summary_desc"><strong>Deprecated.</strong> <div class='inline'><p>Has no effect</p>
 </div></span>
   
 </li>
@@ -2253,7 +2247,9 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Set the auto-terminate behavior for this executor.</p>
+    <div class="note deprecated"><strong>Deprecated.</strong> <div class='inline'><p>Has no effect</p>
+</div></div>
+<p>Set the auto-terminate behavior for this executor.</p>
 
 
   </div>
