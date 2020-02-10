@@ -23,9 +23,21 @@ module Concurrent
   # @!macro internal_implementation_note
   SetImplementation = case
                       when Concurrent.on_cruby?
-                        # Because MRI never runs code in parallel, the existing
-                        # non-thread-safe structures should usually work fine.
-                        ::Set
+                        # The CRuby implementation of Set is written in Ruby itself and is
+                        # not thread safe for certain methods.
+                        require 'monitor'
+                        require 'concurrent/thread_safe/util/data_structures'
+
+                        class CRubySet < ::Set
+                          def initialize(*args)
+                            self.send(:_mon_initialize)
+                            super(*args)
+                          end
+                        end
+
+                        # make use of the same RBX
+                        ThreadSafe::Util.make_synchronized_on_rbx Concurrent::CRubySet
+                        CRubySet
 
                       when Concurrent.on_jruby?
                         require 'jruby/synchronized'
