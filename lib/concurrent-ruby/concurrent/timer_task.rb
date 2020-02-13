@@ -325,7 +325,6 @@ module Concurrent
     def timeout_task(completion)
       return unless @running.true?
       if completion.try?
-        self.value = value
         schedule_next_task
         observers.notify_observers(Time.now, nil, Concurrent::TimeoutError.new)
       end
