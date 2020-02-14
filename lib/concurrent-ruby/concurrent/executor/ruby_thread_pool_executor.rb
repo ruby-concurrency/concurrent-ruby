@@ -246,7 +246,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_ready_worker(worker, success = true)
-        task_and_args = @queue.shift
+      task_and_args = @queue.shift
       if task_and_args
         worker << task_and_args
       else
