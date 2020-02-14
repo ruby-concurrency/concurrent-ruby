@@ -3,6 +3,7 @@ require 'concurrent/atomic/event'
 require 'concurrent/concern/logging'
 require 'concurrent/executor/ruby_executor_service'
 require 'concurrent/utility/monotonic_time'
+require 'concurrent/mvar'
 
 module Concurrent
 
@@ -23,6 +24,9 @@ module Concurrent
     # @!macro thread_pool_executor_constant_default_thread_timeout
     DEFAULT_THREAD_IDLETIMEOUT = 60
 
+    # @!macro thread_pool_executor_constant_default_synchronous
+    DEFAULT_SYNCHRONOUS = false
+
     # @!macro thread_pool_executor_attr_reader_max_length
     attr_reader :max_length
 
@@ -34,6 +38,9 @@ module Concurrent
 
     # @!macro thread_pool_executor_attr_reader_max_queue
     attr_reader :max_queue
+
+    # @!macro thread_pool_executor_attr_reader_synchronous
+    attr_reader :synchronous
 
     # @!macro thread_pool_executor_method_initialize
     def initialize(opts = {})
@@ -114,9 +121,11 @@ module Concurrent
       @max_length      = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
       @idletime        = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
       @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+      @synchronous     = opts.fetch(:synchronous, DEFAULT_SYNCHRONOUS)
       @fallback_policy = opts.fetch(:fallback_policy, :abort)
-      raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
 
+      raise ArgumentError.new("`synchronous` cannot be set unless `max_queue` is 0") if @synchronous && @max_queue > 0
+      raise ArgumentError.new("#{@fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICIES.include?(@fallback_policy)
       raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @max_length < DEFAULT_MIN_POOL_SIZE
       raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if @max_length > DEFAULT_MAX_POOL_SIZE
       raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if @min_length < DEFAULT_MIN_POOL_SIZE
@@ -145,8 +154,11 @@ module Concurrent
     def ns_execute(*args, &task)
       ns_reset_if_forked
 
-      if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
+      assigned_worker = ns_assign_worker(*args, &task)
+      if assigned_worker
         @scheduled_task_count += 1
+      elsif !@synchronous
+        ns_enqueue(*args, &task)
       else
         handle_fallback(*args, &task)
       end
@@ -233,7 +245,7 @@ module Concurrent
     #
     # @!visibility private
     def ns_ready_worker(worker, success = true)
-      task_and_args = @queue.shift
+        task_and_args = @queue.shift
       if task_and_args
         worker << task_and_args
       else

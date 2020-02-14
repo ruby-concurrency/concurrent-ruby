@@ -73,7 +73,8 @@ module Concurrent
     #   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
     #     tasks that are received when the queue size has reached
     #     `max_queue` or the executor has shut down
-    #
+    #   @options opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+    #     for :max_queue means the queue must perform direct hand-off rather than unbounded.
     #   @raise [ArgumentError] if `:max_threads` is less than one
     #   @raise [ArgumentError] if `:min_threads` is less than zero
     #   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
