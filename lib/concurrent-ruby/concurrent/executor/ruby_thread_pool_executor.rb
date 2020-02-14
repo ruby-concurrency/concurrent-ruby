@@ -154,11 +154,8 @@ module Concurrent
     def ns_execute(*args, &task)
       ns_reset_if_forked
 
-      assigned_worker = ns_assign_worker(*args, &task)
-      if assigned_worker
+      if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
         @scheduled_task_count += 1
-      elsif !@synchronous
-        ns_enqueue(*args, &task)
       else
         handle_fallback(*args, &task)
       end
@@ -213,6 +210,10 @@ module Concurrent
     #
     # @!visibility private
     def ns_enqueue(*args, &task)
+      if @synchronous
+        return false
+      end
+      
       if !ns_limited_queue? || @queue.size < @max_queue
         @queue << [task, args]
         true
