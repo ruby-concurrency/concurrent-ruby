@@ -97,7 +97,7 @@ module Concurrent
             # TODO: this only adds padding after the :value slot, need to find a way to add padding before the slot
             # TODO (pitr-ch 28-Jul-2018): the padding instance vars may not be created
             # hide from yardoc in a method
-            attr_reader *(12.times.collect{ |i| "padding_#{i}".to_sym })
+            attr_reader :padding_0, :padding_1, :padding_2, :padding_3, :padding_4, :padding_5, :padding_6, :padding_7, :padding_8, :padding_9, :padding_10, :padding_11
           end
           padding
         end
