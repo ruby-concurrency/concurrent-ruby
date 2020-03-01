@@ -16,6 +16,9 @@ module Concurrent
   #   Default maximum number of seconds a thread in the pool may remain idle
   #   before being reclaimed.
 
+  # @!macro thread_pool_executor_constant_default_synchronous
+  #   Default value of the :synchronous option.
+
   # @!macro thread_pool_executor_attr_reader_max_length
   #   The maximum number of threads that may be created in the pool.
   #   @return [Integer] The maximum number of threads that may be created in the pool.
@@ -39,6 +42,10 @@ module Concurrent
   # @!macro thread_pool_executor_attr_reader_idletime
   #   The number of seconds that a thread may be idle before being reclaimed.
   #   @return [Integer] The number of seconds that a thread may be idle before being reclaimed.
+
+  # @!macro thread_pool_executor_attr_reader_synchronous
+  #   Whether or not a value of 0 for :max_queue option means the queue must perform direct hand-off or rather unbounded queue.
+  #   @return [true, false]
 
   # @!macro thread_pool_executor_attr_reader_max_queue
   #   The maximum number of tasks that may be waiting in the work queue at any one time.
