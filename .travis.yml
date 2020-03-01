@@ -69,7 +69,6 @@ matrix:
     - rvm: rbx-3
     - name: TruffleRuby Latest
     - name: YARD uptodate in docs
-    - name: JRuby 9.2.10.0 Latest on Java 11
 
 env:
   global:
