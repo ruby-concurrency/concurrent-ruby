@@ -95,7 +95,7 @@ puts ~ch
 
 ## Channel Synchronization
 
-The main purpose of channels is to synchronize operations across goroutines. One common pattern for this is to created a `capacity: 1` buffered channel which is used to signal that work is complete. The following example calls a `worker` function on a goroutine and passes it a "done" channel. The main thread then calls `take` on the "done" channel and blocks until signaled.
+The main purpose of channels is to synchronize operations across goroutines. One common pattern for this is to create a `capacity: 1` buffered channel which is used to signal that work is complete. The following example calls a `worker` function on a goroutine and passes it a "done" channel. The main thread then calls `take` on the "done" channel and blocks until signaled.
 
 ```ruby
 def worker(done_channel)
