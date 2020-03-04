@@ -1,5 +1,9 @@
 ## Current
 
+concurrent-ruby:
+
+* (#853) Introduce ThreadPoolExecutor without a Queue
+
 ## Release v1.1.6, edge v0.6.0 (10 Feb 2020)
 
 concurrent-ruby:

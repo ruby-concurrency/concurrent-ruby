@@ -21,11 +21,17 @@ if Concurrent.on_jruby?
       # @!macro thread_pool_executor_constant_default_thread_timeout
       DEFAULT_THREAD_IDLETIMEOUT = 60
 
+      # @!macro thread_pool_executor_constant_default_synchronous
+      DEFAULT_SYNCHRONOUS = false
+
       # @!macro thread_pool_executor_attr_reader_max_length
       attr_reader :max_length
 
       # @!macro thread_pool_executor_attr_reader_max_queue
       attr_reader :max_queue
+
+      # @!macro thread_pool_executor_attr_reader_synchronous
+      attr_reader :synchronous
 
       # @!macro thread_pool_executor_method_initialize
       def initialize(opts = {})
@@ -94,8 +100,10 @@ if Concurrent.on_jruby?
         max_length       = opts.fetch(:max_threads, DEFAULT_MAX_POOL_SIZE).to_i
         idletime         = opts.fetch(:idletime, DEFAULT_THREAD_IDLETIMEOUT).to_i
         @max_queue       = opts.fetch(:max_queue, DEFAULT_MAX_QUEUE_SIZE).to_i
+        @synchronous     = opts.fetch(:synchronous, DEFAULT_SYNCHRONOUS)
         @fallback_policy = opts.fetch(:fallback_policy, :abort)
 
+        raise ArgumentError.new("`synchronous` cannot be set unless `max_queue` is 0") if @synchronous && @max_queue > 0
         raise ArgumentError.new("`max_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if max_length < DEFAULT_MIN_POOL_SIZE
         raise ArgumentError.new("`max_threads` cannot be greater than #{DEFAULT_MAX_POOL_SIZE}") if max_length > DEFAULT_MAX_POOL_SIZE
         raise ArgumentError.new("`min_threads` cannot be less than #{DEFAULT_MIN_POOL_SIZE}") if min_length < DEFAULT_MIN_POOL_SIZE
@@ -103,7 +111,11 @@ if Concurrent.on_jruby?
         raise ArgumentError.new("#{fallback_policy} is not a valid fallback policy") unless FALLBACK_POLICY_CLASSES.include?(@fallback_policy)
 
         if @max_queue == 0
-          queue = java.util.concurrent.LinkedBlockingQueue.new
+          if @synchronous
+            queue = java.util.concurrent.SynchronousQueue.new
+          else
+            queue = java.util.concurrent.LinkedBlockingQueue.new
+          end
         else
           queue = java.util.concurrent.LinkedBlockingQueue.new(@max_queue)
         end
