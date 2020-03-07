@@ -57,7 +57,8 @@ matrix:
       jdk: openjdk8
 
     - name: Rubinius
-      rvm: rbx-3
+      rvm: rbx-3.107
+      dist: trusty
 
     - name: Coverage on MRI 2.3.8
       rvm: 2.3.8
@@ -66,7 +67,7 @@ matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
-    - rvm: rbx-3
+    - name: Rubinius
     - name: TruffleRuby Latest
     - name: YARD uptodate in docs
 
