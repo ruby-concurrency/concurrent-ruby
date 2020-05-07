@@ -9,7 +9,7 @@ module Concurrent
   # or any time thereafter. Attempting to assign a value to a member
   # that has already been set will result in a `Concurrent::ImmutabilityError`.
   #
-  # @see http://ruby-doc.org/core-2.2.0/Struct.html Ruby standard library `Struct`
+  # @see http://ruby-doc.org/core/Struct.html Ruby standard library `Struct`
   # @see http://en.wikipedia.org/wiki/Final_(Java) Java `final` keyword
   module SettableStruct
     include Synchronization::AbstractStruct

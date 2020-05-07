@@ -5,7 +5,7 @@ module Concurrent
 
   # A thread-safe, immutable variation of Ruby's standard `Struct`.
   #
-  # @see http://ruby-doc.org/core-2.2.0/Struct.html Ruby standard library `Struct`
+  # @see http://ruby-doc.org/core/Struct.html Ruby standard library `Struct`
   module ImmutableStruct
     include Synchronization::AbstractStruct
 

@@ -105,9 +105,9 @@ We also have a [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby
 Collection classes that were originally part of the (deprecated) `thread_safe` gem:
 
 *   [Array](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Array.html) A thread-safe
-    subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
+    subclass of Ruby's standard [Array](http://ruby-doc.org/core/Array.html).
 *   [Hash](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Hash.html) A thread-safe
-    subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
+    subclass of Ruby's standard [Hash](http://ruby-doc.org/core/Hash.html).
 *   [Set](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Set.html) A thread-safe
     subclass of Ruby's standard [Set](http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html).
 *   [Map](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Map.html) A hash-like object
@@ -122,7 +122,7 @@ Value objects inspired by other languages:
     immutable object representing an optional value, based on 
     [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
 
-Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
+Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core/Struct.html):
 
 *   [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ImmutableStruct.html)
     Immutable struct where values are set at construction and cannot be changed later.
