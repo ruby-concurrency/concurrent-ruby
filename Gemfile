@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
-require File.join(File.dirname(__FILE__), 'lib/concurrent-ruby/concurrent/version')
+require File.join(File.dirname(__FILE__), 'lib/concurrent/version')
 require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby-edge/concurrent/edge/version')
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/utility/engine')
+require File.join(File.dirname(__FILE__ ), 'lib/concurrent/utility/engine')
 
 no_path = ENV['NO_PATH']
 options = no_path ? {} : { path: '.' }

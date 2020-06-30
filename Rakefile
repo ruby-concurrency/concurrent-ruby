@@ -1,6 +1,6 @@
-require_relative 'lib/concurrent-ruby/concurrent/version'
+require_relative 'lib/concurrent/version'
 require_relative 'lib/concurrent-ruby-edge/concurrent/edge/version'
-require_relative 'lib/concurrent-ruby/concurrent/utility/engine'
+require_relative 'lib/concurrent/utility/engine'
 
 if Concurrent.ruby_version :<, 2, 0, 0
   # @!visibility private
@@ -21,7 +21,7 @@ ENV['JRUBY_HOME'] = ENV['CONCURRENT_JRUBY_HOME'] if ENV['CONCURRENT_JRUBY_HOME']
 
 Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.ext_dir = 'ext/concurrent-ruby'
-  ext.lib_dir = 'lib/concurrent-ruby/concurrent'
+  ext.lib_dir = 'lib/concurrent'
 end
 
 unless Concurrent.on_jruby?
@@ -29,7 +29,7 @@ unless Concurrent.on_jruby?
 
   Rake::ExtensionTask.new('concurrent_ruby_ext', ext_gemspec) do |ext|
     ext.ext_dir        = 'ext/concurrent-ruby-ext'
-    ext.lib_dir        = 'lib/concurrent-ruby/concurrent'
+    ext.lib_dir        = 'lib/concurrent'
     ext.source_pattern = '*.{c,h}'
 
     ext.cross_compile  = true
@@ -46,7 +46,7 @@ namespace :repackage do
       sh 'bundle package'
 
       # build only the jar file not the whole gem for java platform, the jar is part the concurrent-ruby-x.y.z.gem
-      Rake::Task['lib/concurrent-ruby/concurrent/concurrent_ruby.jar'].invoke
+      Rake::Task['lib/concurrent/concurrent_ruby.jar'].invoke
 
       # build all gem files
       RakeCompilerDock.sh 'bundle install --local && bundle exec rake cross native package --trace'
@@ -61,7 +61,7 @@ Gem::PackageTask.new(core_gemspec) {} if core_gemspec
 Gem::PackageTask.new(ext_gemspec) {} if ext_gemspec && !Concurrent.on_jruby?
 Gem::PackageTask.new(edge_gemspec) {} if edge_gemspec
 
-CLEAN.include('lib/concurrent-ruby/concurrent/2.*', 'lib/concurrent-ruby/concurrent/*.jar')
+CLEAN.include('lib/concurrent/2.*', 'lib/concurrent/*.jar')
 
 begin
   require 'rspec'
@@ -166,7 +166,9 @@ begin
             '--output-dir', output_dir,
             '--main', 'tmp/README.md',
             *common_yard_options)
-        yard.files = ['./lib/concurrent-ruby/**/*.rb',
+        yard.files = ['./lib/concurrent/**/*.rb',
+                      './lib/concurrent.rb',
+                      './lib/concurrent-ruby.rb',
                       './lib/concurrent-ruby-edge/**/*.rb',
                       './ext/concurrent_ruby_ext/**/*.c',
                       '-',
