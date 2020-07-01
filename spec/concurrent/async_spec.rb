@@ -296,5 +296,18 @@ module Concurrent
         expect(object.bucket).to eq [:a, :b, :c, :d]
       end
     end
+
+    context 'fork safety' do
+      it 'does not hang when forked' do
+        skip "Platform does not support fork" unless Process.respond_to?(:fork)
+        object = Class.new {
+          include Concurrent::Async
+          def foo; end
+        }.new
+        object.async.foo
+        _, status = Process.waitpid2(fork {object.await.foo})
+        expect(status.exitstatus).to eq 0
+      end
+    end
   end
 end
