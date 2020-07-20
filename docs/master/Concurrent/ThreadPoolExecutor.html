@@ -900,7 +900,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -925,7 +926,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1015,7 +1017,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1040,7 +1043,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1130,7 +1134,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1155,7 +1160,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1245,7 +1251,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1270,7 +1277,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1360,7 +1368,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1385,7 +1394,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1475,7 +1485,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1500,7 +1511,8 @@ exit until all thread pools have been shutdown. To prevent applications from
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1594,7 +1606,8 @@ accordance with the configured <code>fallback_policy</code>.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1619,7 +1632,8 @@ accordance with the configured <code>fallback_policy</code>.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1709,7 +1723,8 @@ accordance with the configured <code>fallback_policy</code>.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1734,7 +1749,8 @@ accordance with the configured <code>fallback_policy</code>.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1824,7 +1840,8 @@ accordance with the configured <code>fallback_policy</code>.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1849,7 +1866,8 @@ accordance with the configured <code>fallback_policy</code>.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -1941,7 +1959,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -1966,7 +1985,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2056,7 +2076,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2081,7 +2102,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2195,7 +2217,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2220,7 +2243,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2329,7 +2353,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2354,7 +2379,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2442,7 +2468,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2467,7 +2494,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2555,7 +2583,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2580,7 +2609,8 @@ new tasks. A value of -1 indicates that the queue may grow without bound.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2654,7 +2684,8 @@ not running.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2679,7 +2710,8 @@ not running.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2821,7 +2853,8 @@ is not running</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2846,7 +2879,8 @@ is not running</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -2934,7 +2968,8 @@ is not running</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -2959,7 +2994,8 @@ is not running</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -3049,7 +3085,8 @@ occur simultaneously. Else false.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -3074,7 +3111,8 @@ occur simultaneously. Else false.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -3147,7 +3185,8 @@ thread pool is not running.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -3172,7 +3211,8 @@ thread pool is not running.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -3260,7 +3300,8 @@ thread pool is not running.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -3285,7 +3326,8 @@ thread pool is not running.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -3373,7 +3415,8 @@ thread pool is not running.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -3398,7 +3441,8 @@ thread pool is not running.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
@@ -3516,7 +3560,8 @@ passed.</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb', line 56</span>
@@ -3541,7 +3586,8 @@ passed.</p>
 </span>  <span class='comment'>#   @option opts [Symbol] :fallback_policy (:abort) the policy for handling new
 </span>  <span class='comment'>#     tasks that are received when the queue size has reached
 </span>  <span class='comment'>#     `max_queue` or the executor has shut down
-</span>  <span class='comment'>#
+</span>  <span class='comment'>#   @option opts [Boolean] :synchronous (DEFAULT_SYNCHRONOUS) whether or not a value of 0
+</span>  <span class='comment'>#     for :max_queue means the queue must perform direct hand-off rather than unbounded.
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:max_threads` is less than one
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:min_threads` is less than zero
 </span>  <span class='comment'>#   @raise [ArgumentError] if `:fallback_policy` is not one of the values specified
