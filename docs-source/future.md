@@ -80,7 +80,7 @@ class Ticker
   end
 end
 
-yahoo = Finance.new('YAHOO')
+yahoo = Ticker.new('YAHOO')
 future = Concurrent::Future.new { yahoo.update.suggested_symbols }
 future.add_observer(Ticker.new)
 future.execute
