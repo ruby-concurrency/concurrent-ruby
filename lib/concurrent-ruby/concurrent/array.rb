@@ -16,7 +16,7 @@ module Concurrent
   #     operation therefore when two `+=` operations are executed concurrently updates
   #     may be lost. Use `#concat` instead.
   #
-  #   @see http://ruby-doc.org/core-2.2.0/Array.html Ruby standard library `Array`
+  #   @see http://ruby-doc.org/core/Array.html Ruby standard library `Array`
 
   # @!macro internal_implementation_note
   ArrayImplementation = case

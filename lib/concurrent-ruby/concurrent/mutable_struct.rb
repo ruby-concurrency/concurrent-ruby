@@ -6,7 +6,7 @@ module Concurrent
   # An thread-safe variation of Ruby's standard `Struct`. Values can be set at
   # construction or safely changed at any time during the object's lifecycle.
   #
-  # @see http://ruby-doc.org/core-2.2.0/Struct.html Ruby standard library `Struct`
+  # @see http://ruby-doc.org/core/Struct.html Ruby standard library `Struct`
   module MutableStruct
     include Synchronization::AbstractStruct
 
@@ -40,7 +40,7 @@ module Concurrent
     #   struct. Unset parameters default to nil. Passing more parameters than number of attributes
     #   will raise an `ArgumentError`.
     #
-    #   @see http://ruby-doc.org/core-2.2.0/Struct.html#method-c-new Ruby standard library `Struct#new`
+    #   @see http://ruby-doc.org/core/Struct.html#method-c-new Ruby standard library `Struct#new`
 
     # @!macro struct_values
     #

@@ -10,7 +10,7 @@ module Concurrent
   #   or writing at a time. This includes iteration methods like `#each`,
   #   which takes the lock repeatedly when reading an item.
   #
-  #   @see http://ruby-doc.org/core-2.2.0/Hash.html Ruby standard library `Hash`
+  #   @see http://ruby-doc.org/core/Hash.html Ruby standard library `Hash`
 
   # @!macro internal_implementation_note
   HashImplementation = case

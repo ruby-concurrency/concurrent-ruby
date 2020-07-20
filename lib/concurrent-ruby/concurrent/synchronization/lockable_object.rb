@@ -26,8 +26,8 @@ module Concurrent
     #   the classes using it. Use {Synchronization::Object} not this abstract class.
     #
     #   @note this object does not support usage together with
-    #     [`Thread#wakeup`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-wakeup)
-    #     and [`Thread#raise`](http://ruby-doc.org/core-2.2.0/Thread.html#method-i-raise).
+    #     [`Thread#wakeup`](http://ruby-doc.org/core/Thread.html#method-i-wakeup)
+    #     and [`Thread#raise`](http://ruby-doc.org/core/Thread.html#method-i-raise).
     #     `Thread#sleep` and `Thread#wakeup` will work as expected but mixing `Synchronization::Object#wait` and
     #     `Thread#wakeup` will not work on all platforms.
     #
