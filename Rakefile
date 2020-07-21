@@ -173,7 +173,7 @@ begin
                       'docs-source/thread_pools.md',
                       'docs-source/promises.out.md',
                       'docs-source/medium-example.out.rb',
-                      'LICENSE.md',
+                      'LICENSE.txt',
                       'CHANGELOG.md']
       end
       Rake::Task[name].prerequisites.push removal_name,
