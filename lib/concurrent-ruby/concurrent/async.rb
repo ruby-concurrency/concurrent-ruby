@@ -58,26 +58,6 @@ module Concurrent
   # end
   # ```
   #
-  # When defining a constructor it is critical that the first line be a call to
-  # `super` with no arguments. The `super` method initializes the background
-  # thread and other asynchronous components.
-  #
-  # ```
-  # class BackgroundLogger
-  #   include Concurrent::Async
-  #
-  #   def initialize(level)
-  #     super()
-  #     @logger = Logger.new(STDOUT)
-  #     @logger.level = level
-  #   end
-  #
-  #   def info(msg)
-  #     @logger.info(msg)
-  #   end
-  # end
-  # ```
-  #
   # Mixing this module into a class provides each object two proxy methods:
   # `async` and `await`. These methods are thread safe with respect to the
   # enclosing object. The former proxy allows methods to be called
