@@ -1,7 +1,12 @@
 ## Current
 
+## Release v1.1.7 (6 August 2020)
+
 concurrent-ruby:
 
+* (#879) Consider falsy value on `Concurrent::Map#compute_if_absent` for fast non-blocking path
+* (#876) Reset Async queue on forking, makes Async fork-safe
+* (#856) Avoid running problematic code in RubyThreadLocalVar on MRI that occasionally results in segfault
 * (#853) Introduce ThreadPoolExecutor without a Queue
 
 ## Release v1.1.6, edge v0.6.0 (10 Feb 2020)

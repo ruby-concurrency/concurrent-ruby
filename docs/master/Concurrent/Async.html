@@ -137,25 +137,6 @@ background one at a time in the order they are received.</p>
 <span class='kw'>end</span>
 </code></pre>
 
-<p>When defining a constructor it is critical that the first line be a call to
-<code>super</code> with no arguments. The <code>super</code> method initializes the background
-thread and other asynchronous components.</p>
-
-<pre class="code ruby"><code class="ruby"><span class='kw'>class</span> <span class='const'>BackgroundLogger</span>
-  <span class='id identifier rubyid_include'>include</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>Async</span>
-
-  <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_level'>level</span><span class='rparen'>)</span>
-    <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
-    <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='const'>Logger</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='const'>STDOUT</span><span class='rparen'>)</span>
-    <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_level'>level</span> <span class='op'>=</span> <span class='id identifier rubyid_level'>level</span>
-  <span class='kw'>end</span>
-
-  <span class='kw'>def</span> <span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='rparen'>)</span>
-    <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='rparen'>)</span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span>
-</code></pre>
-
 <p>Mixing this module into a class provides each object two proxy methods:
 <code>async</code> and <code>await</code>. These methods are thread safe with respect to the
 enclosing object. The former proxy allows methods to be called
@@ -520,7 +501,7 @@ object&#39;s initializer.</p>
 </pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/async.rb', line 239</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/async.rb', line 219</span>
 
 </pre>
     </td>
@@ -627,12 +608,12 @@ the requested method</p>
       <pre class="lines">
 
 
-431
-432
-433</pre>
+411
+412
+413</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/async.rb', line 431</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/async.rb', line 411</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_async'>async</span>
   <span class='ivar'>@__async_delegator__</span>
@@ -735,12 +716,12 @@ requested method</p>
       <pre class="lines">
 
 
-449
-450
-451</pre>
+429
+430
+431</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/async.rb', line 449</span>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/async.rb', line 429</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_await'>await</span>
   <span class='ivar'>@__await_delegator__</span>

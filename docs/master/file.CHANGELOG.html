@@ -59,9 +59,14 @@
 
       <div id="content"><div id='filecontents'><h2>Current</h2>
 
+<h2>Release v1.1.7 (6 August 2020)</h2>
+
 <p>concurrent-ruby:</p>
 
 <ul>
+<li>(#879) Consider falsy value on <code>Concurrent::Map#compute_if_absent</code> for fast non-blocking path</li>
+<li>(#876) Reset Async queue on forking, makes Async fork-safe</li>
+<li>(#856) Avoid running problematic code in RubyThreadLocalVar on MRI that occasionally results in segfault</li>
 <li>(#853) Introduce ThreadPoolExecutor without a Queue</li>
 </ul>
 
