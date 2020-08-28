@@ -97,7 +97,10 @@ module Concurrent
           # The cost of GC'ing a TLV is linear in the number of threads using TLVs
           # But that is natural! More threads means more storage is used per TLV
           # So naturally more CPU time is required to free more storage
-          THREAD_LOCAL_ARRAYS.each_value { |array| array[index] = nil }
+          #
+          # DO NOT use each_value which might conflict with new pair assignment
+          # into the hash in #value= method
+          THREAD_LOCAL_ARRAYS.values.each { |array| array[index] = nil }
           # free index has to be published after the arrays are cleared
           FREE.push(index)
         end
