@@ -188,7 +188,10 @@ module Concurrent
     def write(tvar, value)
       # Have we already written to this TVar?
 
-      unless @write_log.has_key? tvar
+      if @write_log.has_key? tvar
+        # Record the value written
+        @write_log[tvar] = value
+      else
         # Try to lock the TVar
 
         unless tvar.unsafe_lock.try_lock
@@ -196,7 +199,11 @@ module Concurrent
           Concurrent::abort_transaction
         end
 
-        # If we previously wrote to it, check the version hasn't changed
+        # Record the value written
+  
+        @write_log[tvar] = value
+
+        # If we previously read from it, check the version hasn't changed
 
         @read_log.each do |log_entry|
           if log_entry.tvar == tvar and tvar.unsafe_version > log_entry.version
@@ -204,10 +211,6 @@ module Concurrent
           end
         end
       end
-
-      # Record the value written
-
-      @write_log[tvar] = value
     end
 
     def abort
