@@ -25,13 +25,79 @@ We only support strong isolation if you use the API correctly. In order words,
 we do not support strong isolation.
 
 Our implementation uses a very simple two-phased locking with versioned locks
-algorithm and lazy writes, as per [1]. In the future we will look at more
-advanced algorithms, contention management and using existing Java
-implementations when in JRuby.
+algorithm and lazy writes, as per [1].
 
 See:
 
 1.  T. Harris, J. Larus, and R. Rajwar. Transactional Memory. Morgan & Claypool, second edition, 2010.
+
+Note that this implementation allows transactions to continue in a zombie state
+with inconsistent reads, so it's possible for the marked exception to be raised
+in the example below.
+
+```ruby
+require 'concurrent-ruby'
+
+v1 = Concurrent::TVar.new(0)
+v2 = Concurrent::TVar.new(0)
+
+2.times.map{
+  Thread.new do
+    while true
+      Concurrent::atomically do
+        t1 = v1.value
+        t2 = v2.value
+        raise [t1, t2].inspect if t1 != t2 # detect zombie transactions
+      end
+    end
+  end
+
+  Thread.new do
+    100_000.times do
+      Concurrent::atomically do
+        v1.value += 1
+        v2.value += 1
+      end
+    end
+  end
+}.each { |t| p t.join }
+```
+
+However, the inconsistent reads are detected correctly at commit time. This
+means the script below will always print `[2000000, 200000]`.
+
+```ruby
+require 'concurrent-ruby'
+
+v1 = Concurrent::TVar.new(0)
+v2 = Concurrent::TVar.new(0)
+
+2.times.map{
+  Thread.new do
+    while true
+      Concurrent::atomically do
+        t1 = v1.value
+        t2 = v2.value
+      end
+    end
+  end
+
+  Thread.new do
+    100_000.times do
+      Concurrent::atomically do
+        v1.value += 1
+        v2.value += 1
+      end
+    end
+  end
+}.each { |t| p t.join }
+
+p [v1.value, v2.value]
+```
+
+This is called a lack of *opacity*. In the future we will look at more advanced
+algorithms, contention management and using existing Java implementations when
+in JRuby.
 
 ## Motivation
 
