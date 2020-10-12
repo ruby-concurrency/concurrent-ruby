@@ -24,16 +24,9 @@ We implement nested transactions by flattening.
 We only support strong isolation if you use the API correctly. In order words,
 we do not support strong isolation.
 
-Our implementation uses a very simple two-phased locking with versioned locks
-algorithm and lazy writes, as per [1].
-
-See:
-
-1.  T. Harris, J. Larus, and R. Rajwar. Transactional Memory. Morgan & Claypool, second edition, 2010.
-
-Note that this implementation allows transactions to continue in a zombie state
-with inconsistent reads, so it's possible for the marked exception to be raised
-in the example below.
+Our implementation uses a very simple algorithm that locks each `TVar` when it
+is first read or written. If it cannot lock a `TVar` it aborts and retries.
+There is no contention manager so competing transactions may retry eternally.
 
 ```ruby
 require 'concurrent-ruby'

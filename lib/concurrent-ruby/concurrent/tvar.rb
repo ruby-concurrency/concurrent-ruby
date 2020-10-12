@@ -15,7 +15,6 @@ module Concurrent
     # Create a new `TVar` with an initial value.
     def initialize(value)
       @value = value
-      @version = 0
       @lock = Mutex.new
     end
 
@@ -41,16 +40,6 @@ module Concurrent
     # @!visibility private
     def unsafe_value=(value) # :nodoc:
       @value = value
-    end
-
-    # @!visibility private
-    def unsafe_version # :nodoc:
-      @version
-    end
-
-    # @!visibility private
-    def unsafe_increment_version # :nodoc:
-      @version += 1
     end
 
     # @!visibility private
@@ -164,53 +153,39 @@ module Concurrent
 
     ABORTED = ::Object.new
 
-    ReadLogEntry = Struct.new(:tvar, :version)
+    OpenEntry = Struct.new(:value, :modified)
 
     AbortError = Class.new(StandardError)
     LeaveError = Class.new(StandardError)
 
     def initialize
-      @read_log  = []
-      @write_log = {}
+      @open_tvars = {}
     end
 
     def read(tvar)
-      Concurrent::abort_transaction unless valid?
-
-      if @write_log.has_key? tvar
-        @write_log[tvar]
-      else
-        @read_log.push(ReadLogEntry.new(tvar, tvar.unsafe_version))
-        tvar.unsafe_value
-      end
+      entry = open(tvar)
+      entry.value
     end
 
     def write(tvar, value)
-      # Have we already written to this TVar?
+      entry = open(tvar)
+      entry.modified = true
+      entry.value = value
+    end
 
-      if @write_log.has_key? tvar
-        # Record the value written
-        @write_log[tvar] = value
-      else
-        # Try to lock the TVar
+    def open(tvar)
+      entry = @open_tvars[tvar]
 
+      unless entry
         unless tvar.unsafe_lock.try_lock
-          # Someone else is writing to this TVar - abort
           Concurrent::abort_transaction
         end
 
-        # Record the value written
-  
-        @write_log[tvar] = value
-
-        # If we previously read from it, check the version hasn't changed
-
-        @read_log.each do |log_entry|
-          if log_entry.tvar == tvar and tvar.unsafe_version > log_entry.version
-            Concurrent::abort_transaction
-          end
-        end
+        entry = OpenEntry.new(tvar.unsafe_value, false)
+        @open_tvars[tvar] = entry
       end
+
+      entry
     end
 
     def abort
@@ -218,32 +193,17 @@ module Concurrent
     end
 
     def commit
-      return false unless valid?
-
-      @write_log.each_pair do |tvar, value|
-        tvar.unsafe_value = value
-        tvar.unsafe_increment_version
-      end
-
-      unlock
-
-      true
-    end
-
-    def valid?
-      @read_log.each do |log_entry|
-        unless @write_log.has_key? log_entry.tvar
-          if log_entry.tvar.unsafe_version > log_entry.version
-            return false
-          end
+      @open_tvars.each do |tvar, entry|
+        if entry.modified
+          tvar.unsafe_value = entry.value
         end
       end
 
-      true
+      unlock
     end
 
     def unlock
-      @write_log.each_key do |tvar|
+      @open_tvars.each_key do |tvar|
         tvar.unsafe_lock.unlock
       end
     end
