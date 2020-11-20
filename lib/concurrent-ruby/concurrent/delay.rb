@@ -4,10 +4,6 @@ require 'concurrent/executor/immediate_executor'
 require 'concurrent/synchronization'
 
 module Concurrent
-
-  # This file has circular require issues. It must be autoloaded here.
-  autoload :Options, 'concurrent/options'
-
   # Lazy evaluation of a block yielding an immutable result. Useful for
   # expensive operations that may never be needed. It may be non-blocking,
   # supports the `Concern::Obligation` interface, and accepts the injection of

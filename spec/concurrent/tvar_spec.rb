@@ -1,5 +1,4 @@
 module Concurrent
-
   RSpec.describe TVar do
 
     context '#initialize' do

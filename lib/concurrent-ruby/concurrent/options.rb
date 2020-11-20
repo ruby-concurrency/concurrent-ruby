@@ -1,5 +1,3 @@
-require 'concurrent/configuration'
-
 module Concurrent
 
   # @!visibility private

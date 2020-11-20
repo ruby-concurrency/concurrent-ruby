@@ -7,13 +7,14 @@ module Concurrent
   # @!visibility private
   module Collection
 
+    autoload :MriMapBackend, 'concurrent/collection/map/mri_map_backend'
+
     # @!visibility private
     MapImplementation = case
                         when Concurrent.on_jruby?
                           # noinspection RubyResolve
                           JRubyMapBackend
                         when Concurrent.on_cruby?
-                          require 'concurrent/collection/map/mri_map_backend'
                           MriMapBackend
                         when Concurrent.on_rbx? || Concurrent.on_truffleruby?
                           require 'concurrent/collection/map/atomic_reference_map_backend'

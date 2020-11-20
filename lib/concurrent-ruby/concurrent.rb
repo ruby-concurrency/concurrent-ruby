@@ -1,42 +1,12 @@
-require 'concurrent/version'
-require 'concurrent/constants'
-require 'concurrent/errors'
-require 'concurrent/configuration'
+# frozen_string_literal: true
 
-require 'concurrent/atomics'
-require 'concurrent/executors'
-require 'concurrent/synchronization'
-
-require 'concurrent/atomic/atomic_markable_reference'
-require 'concurrent/atomic/atomic_reference'
-require 'concurrent/agent'
-require 'concurrent/atom'
-require 'concurrent/array'
-require 'concurrent/hash'
-require 'concurrent/set'
-require 'concurrent/map'
-require 'concurrent/tuple'
-require 'concurrent/async'
 require 'concurrent/dataflow'
-require 'concurrent/delay'
-require 'concurrent/exchanger'
-require 'concurrent/future'
-require 'concurrent/immutable_struct'
-require 'concurrent/ivar'
-require 'concurrent/maybe'
-require 'concurrent/mutable_struct'
-require 'concurrent/mvar'
-require 'concurrent/promise'
-require 'concurrent/scheduled_task'
-require 'concurrent/settable_struct'
-require 'concurrent/timer_task'
-require 'concurrent/tvar'
-require 'concurrent/promises'
 
-require 'concurrent/thread_safe/synchronized_delegator'
-require 'concurrent/thread_safe/util'
+require 'concurrent/executors'
+require 'concurrent/atomics'
+require 'concurrent/collection'
 
-require 'concurrent/options'
+require 'concurrent/configuration'
 
 # @!macro internal_implementation_note
 #
@@ -131,4 +101,33 @@ require 'concurrent/options'
 
 # {include:file:README.md}
 module Concurrent
+  autoload :VERSION, 'concurrent/version'
+  autoload :NULL, 'concurrent/constants'
+  autoload :Agent, 'concurrent/agent'
+  autoload :Atom, 'concurrent/atom'
+
+  autoload :Array, 'concurrent/array'
+  autoload :Hash, 'concurrent/hash'
+  autoload :Set, 'concurrent/set'
+  autoload :Map, 'concurrent/map'
+  autoload :Tuple, 'concurrent/tuple'
+
+  autoload :Async, 'concurrent/async'
+  autoload :Delay, 'concurrent/delay'
+
+  autoload :RubyExchanger, 'concurrent/exchanger'
+  autoload :Future, 'concurrent/future'
+  autoload :ImmutableStruct, 'concurrent/immutable_struct'
+
+  autoload :IVar, 'concurrent/ivar'
+
+  autoload :Maybe, 'concurrent/maybe'
+  autoload :MutableStruct, 'concurrent/mutable_struct'
+  autoload :MVar, 'concurrent/mvar'
+  autoload :Promise, 'concurrent/promise'
+  autoload :ScheduledTask, 'concurrent/scheduled_task'
+  autoload :SettableStruct, 'concurrent/settable_struct'
+  autoload :TimerTask, 'concurrent/timer_task'
+  autoload :TVar, 'concurrent/tvar'
+  autoload :Promises, 'concurrent/promises'
 end

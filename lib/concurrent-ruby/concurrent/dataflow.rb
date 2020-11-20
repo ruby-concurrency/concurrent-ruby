@@ -1,5 +1,4 @@
-require 'concurrent/future'
-require 'concurrent/atomic/atomic_fixnum'
+# frozen_string_literal: true
 
 module Concurrent
 
