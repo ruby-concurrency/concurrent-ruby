@@ -1,10 +1,3 @@
-require 'concurrent/constants'
-require 'concurrent/errors'
-require 'concurrent/collection/copy_on_write_observer_set'
-require 'concurrent/concern/obligation'
-require 'concurrent/concern/observable'
-require 'concurrent/synchronization'
-
 module Concurrent
 
   # An `IVar` is like a future that you can assign. As a future is a value that

@@ -1,7 +1,4 @@
 require 'thread'
-require 'concurrent/constants'
-require 'concurrent/synchronization'
-require 'concurrent/utility/engine'
 
 module Concurrent
   # @!visibility private
@@ -9,6 +6,7 @@ module Concurrent
 
     autoload :MriMapBackend, 'concurrent/collection/map/mri_map_backend'
 
+    # TODO: Autoload requires within the CASE?
     # @!visibility private
     MapImplementation = case
                         when Concurrent.on_jruby?

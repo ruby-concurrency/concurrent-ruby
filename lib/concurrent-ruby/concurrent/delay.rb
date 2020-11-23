@@ -1,7 +1,4 @@
 require 'thread'
-require 'concurrent/concern/obligation'
-require 'concurrent/executor/immediate_executor'
-require 'concurrent/synchronization'
 
 module Concurrent
   # Lazy evaluation of a block yielding an immutable result. Useful for

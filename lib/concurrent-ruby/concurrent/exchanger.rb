@@ -1,11 +1,3 @@
-require 'concurrent/constants'
-require 'concurrent/errors'
-require 'concurrent/maybe'
-require 'concurrent/atomic/atomic_reference'
-require 'concurrent/atomic/count_down_latch'
-require 'concurrent/utility/engine'
-require 'concurrent/utility/monotonic_time'
-
 module Concurrent
 
   # @!macro exchanger

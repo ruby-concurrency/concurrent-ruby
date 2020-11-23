@@ -1,5 +1,3 @@
-require 'concurrent/utility/engine'
-require 'concurrent/thread_safe/util'
 require 'set'
 
 module Concurrent

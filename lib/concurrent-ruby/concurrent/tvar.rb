@@ -1,5 +1,4 @@
 require 'set'
-require 'concurrent/synchronization'
 
 module Concurrent
 

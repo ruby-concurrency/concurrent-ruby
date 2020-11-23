@@ -1,6 +1,4 @@
-require 'concurrent/configuration'
-require 'concurrent/ivar'
-require 'concurrent/synchronization/lockable_object'
+# frozen_string_literal: true
 
 module Concurrent
 

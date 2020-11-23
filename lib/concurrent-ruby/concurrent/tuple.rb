@@ -1,5 +1,3 @@
-require 'concurrent/atomic/atomic_reference'
-
 module Concurrent
 
   # A fixed size array with volatile (synchronized, thread safe) getters/setters.

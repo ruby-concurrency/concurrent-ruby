@@ -1,9 +1,4 @@
-require 'concurrent/configuration'
-require 'concurrent/atomic/atomic_reference'
-require 'concurrent/atomic/thread_local_var'
-require 'concurrent/collection/copy_on_write_observer_set'
-require 'concurrent/concern/observable'
-require 'concurrent/synchronization'
+# frozen_string_literal: true
 
 module Concurrent
 

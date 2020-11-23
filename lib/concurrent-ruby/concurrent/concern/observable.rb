@@ -1,5 +1,4 @@
-require 'concurrent/collection/copy_on_notify_observer_set'
-require 'concurrent/collection/copy_on_write_observer_set'
+# frozen_string_literal: true
 
 module Concurrent
   module Concern

@@ -1,6 +1,3 @@
-require 'concurrent/concern/dereferenceable'
-require 'concurrent/synchronization'
-
 module Concurrent
 
   # An `MVar` is a synchronized single element container. They are empty or

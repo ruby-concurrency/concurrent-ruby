@@ -1,6 +1,3 @@
-require 'concurrent/utility/engine'
-require 'concurrent/thread_safe/util'
-
 module Concurrent
 
   # @!macro concurrent_array

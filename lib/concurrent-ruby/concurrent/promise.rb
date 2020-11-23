@@ -1,10 +1,4 @@
 require 'thread'
-require 'concurrent/constants'
-require 'concurrent/errors'
-require 'concurrent/ivar'
-require 'concurrent/executor/safe_task_executor'
-
-require 'concurrent/options'
 
 module Concurrent
 

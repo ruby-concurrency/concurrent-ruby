@@ -1,10 +1,3 @@
-require 'concurrent/synchronization'
-require 'concurrent/atomic/atomic_boolean'
-require 'concurrent/atomic/atomic_fixnum'
-require 'concurrent/collection/lock_free_stack'
-require 'concurrent/errors'
-require 'concurrent/re_include'
-
 module Concurrent
 
   # {include:file:docs-source/promises-main.md}

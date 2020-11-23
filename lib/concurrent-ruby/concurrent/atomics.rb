@@ -2,7 +2,7 @@
 
 module Concurrent
   autoload :AtomicReference, 'concurrent/atomic/atomic_reference'
-  autoload :AtomicBoolean, 'concurrent/atomic/atomic_boolean'
+  autoload :MutexAtomicBoolean, 'concurrent/atomic/atomic_boolean'
   autoload :AtomicFixnum, 'concurrent/atomic/atomic_fixnum'
   autoload :CyclicBarrier, 'concurrent/atomic/cyclic_barrier'
   autoload :MutexCountDownLatch, 'concurrent/atomic/count_down_latch'

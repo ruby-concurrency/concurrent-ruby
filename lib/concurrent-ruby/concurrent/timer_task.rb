@@ -1,12 +1,3 @@
-require 'concurrent/collection/copy_on_notify_observer_set'
-require 'concurrent/concern/dereferenceable'
-require 'concurrent/concern/observable'
-require 'concurrent/atomic/atomic_boolean'
-require 'concurrent/executor/executor_service'
-require 'concurrent/executor/ruby_executor_service'
-require 'concurrent/executor/safe_task_executor'
-require 'concurrent/scheduled_task'
-
 module Concurrent
 
   # A very common concurrency pattern is to run a thread that performs a task at

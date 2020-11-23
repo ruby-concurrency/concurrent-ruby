@@ -1,5 +1,3 @@
-require 'concurrent/synchronization'
-
 module Concurrent
 
   # @!macro atomic_boolean

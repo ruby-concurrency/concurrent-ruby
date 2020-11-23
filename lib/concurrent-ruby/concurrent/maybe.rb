@@ -1,5 +1,3 @@
-require 'concurrent/synchronization'
-
 module Concurrent
 
   # A `Maybe` encapsulates an optional value. A `Maybe` either contains a value

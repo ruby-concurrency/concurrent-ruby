@@ -1,7 +1,3 @@
-require 'concurrent/synchronization/abstract_struct'
-require 'concurrent/errors'
-require 'concurrent/synchronization'
-
 module Concurrent
 
   # An thread-safe, write-once variation of Ruby's standard `Struct`.

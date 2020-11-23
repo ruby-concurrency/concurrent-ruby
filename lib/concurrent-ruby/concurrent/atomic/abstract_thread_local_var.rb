@@ -1,5 +1,3 @@
-require 'concurrent/constants'
-
 module Concurrent
 
   # @!macro thread_local_var

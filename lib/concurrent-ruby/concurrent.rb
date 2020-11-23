@@ -8,6 +8,8 @@ require 'concurrent/dataflow'
 require 'concurrent/executors'
 require 'concurrent/atomics'
 require 'concurrent/collection'
+require 'concurrent/concern'
+require 'concurrent/synchronization'
 
 require 'concurrent/configuration'
 
@@ -131,4 +133,6 @@ module Concurrent
   autoload :TimerTask, 'concurrent/timer_task'
   autoload :TVar, 'concurrent/tvar'
   autoload :Promises, 'concurrent/promises'
+
+  autoload :ReInclude, 'concurrent/re_include'
 end

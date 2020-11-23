@@ -1,8 +1,3 @@
-require 'concurrent/atomic/atomic_reference'
-require 'concurrent/collection/copy_on_notify_observer_set'
-require 'concurrent/concern/observable'
-require 'concurrent/synchronization'
-
 # @!macro thread_safe_variable_comparison
 #
 #   ## Thread-safe Variable Classes

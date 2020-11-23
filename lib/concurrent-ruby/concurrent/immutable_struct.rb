@@ -1,6 +1,3 @@
-require 'concurrent/synchronization/abstract_struct'
-require 'concurrent/synchronization'
-
 module Concurrent
 
   # A thread-safe, immutable variation of Ruby's standard `Struct`.
