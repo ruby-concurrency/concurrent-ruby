@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'concurrent/version'
+require 'concurrent/constants'
+
 require 'concurrent/dataflow'
 
 require 'concurrent/executors'
@@ -101,8 +104,6 @@ require 'concurrent/configuration'
 
 # {include:file:README.md}
 module Concurrent
-  autoload :VERSION, 'concurrent/version'
-  autoload :NULL, 'concurrent/constants'
   autoload :Agent, 'concurrent/agent'
   autoload :Atom, 'concurrent/atom'
 
