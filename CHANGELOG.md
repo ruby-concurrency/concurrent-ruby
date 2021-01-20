@@ -1,5 +1,10 @@
 ## Current
 
+## Release v1.1.8 (20 January 2021)
+
+* (#885) Fix race condition in TVar for stale reads 
+* (#884) RubyThreadLocalVar: Do not iterate over hash which might conflict with new pair addition
+
 ## Release v1.1.7 (6 August 2020)
 
 concurrent-ruby:

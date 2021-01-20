@@ -49,7 +49,9 @@ namespace :repackage do
       Rake::Task['lib/concurrent-ruby/concurrent/concurrent_ruby.jar'].invoke
 
       # build all gem files
-      RakeCompilerDock.sh 'bundle install --local && bundle exec rake cross native package --trace'
+      %w[x86-mingw32 x64-mingw32].each do |plat|
+        RakeCompilerDock.sh "bundle install --local && bundle exec rake native:#{plat} gem --trace", platform: plat
+      end
     end
   end
 end
@@ -302,7 +304,7 @@ namespace :release do
     end
 
     desc '** tag HEAD with current version and push to github'
-    task :tag do
+    task :tag => :ask do
       Dir.chdir(__dir__) do
         sh "git tag v#{Concurrent::VERSION}"
         sh "git push origin v#{Concurrent::VERSION}"
@@ -312,7 +314,7 @@ namespace :release do
     end
 
     desc '** push all *.gem files to rubygems'
-    task :rubygems do
+    task :rubygems => :ask do
       Dir.chdir(__dir__) do
         sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
         sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem" if publish_edge
