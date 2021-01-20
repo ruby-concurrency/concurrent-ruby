@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Concurrent::ReentrantReadWriteLock
+  
+    &mdash; Concurrent Ruby
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "Concurrent::ReentrantReadWriteLock";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">ReentrantReadWriteLock</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Concurrent::ReentrantReadWriteLock
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
+          
+            <li class="next">Concurrent::ReentrantReadWriteLock</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Re-entrant read-write lock implementation</p>
+
+<p>Allows any number of concurrent readers, but only one concurrent writer
+(And while the &quot;write&quot; lock is taken, no read locks can be obtained either.
+Hence, the write lock can also be called an &quot;exclusive&quot; lock.)</p>
+
+<p>If another thread has taken a read lock, any thread which wants a write lock
+will block until all the readers release their locks. However, once a thread
+starts waiting to obtain a write lock, any additional readers that come along
+will also wait (so writers are not starved).</p>
+
+<p>A thread can acquire both a read and write lock at the same time. A thread can
+also acquire a read lock OR a write lock more than once. Only when the read (or
+write) lock is released as many times as it was acquired, will the thread
+actually let it go, allowing other threads which might have been waiting
+to proceed. Therefore the lock can be upgraded by first acquiring
+read lock and then write lock and that the lock can be downgraded by first
+having both read and write lock a releasing just the write lock.</p>
+
+<p>If both read and write locks are acquired by the same thread, it is not strictly
+necessary to release them in the same order they were acquired. In other words,
+the following code is legal:</p>
+
+<p>This implementation was inspired by <code>java.util.concurrent.ReentrantReadWriteLock</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_lock'>lock</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ReentrantReadWriteLock</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_acquire_write_lock'>acquire_write_lock</span>
+<span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_acquire_read_lock'>acquire_read_lock</span>
+<span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_release_write_lock'>release_write_lock</span>
+<span class='comment'># At this point, the current thread is holding only a read lock, not a write
+</span><span class='comment'># lock. So other threads can take read locks, but not a write lock.
+</span><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_release_read_lock'>release_read_lock</span>
+<span class='comment'># Now the current thread is not holding either a read or write lock, so
+</span><span class='comment'># another thread could potentially acquire a write lock.</span></code></pre>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_lock'>lock</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>ReentrantReadWriteLock</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_with_read_lock'>with_read_lock</span>  <span class='lbrace'>{</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_retrieve'>retrieve</span> <span class='rbrace'>}</span>
+<span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_with_write_lock'>with_write_lock</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_modify!'>modify!</span> <span class='rbrace'>}</span></code></pre>
+    
+  </div>
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/locks/ReentrantReadWriteLock.html" target="_parent" title="java.util.concurrent.ReentrantReadWriteLock">java.util.concurrent.ReentrantReadWriteLock</a></li>
+    
+  </ul>
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#acquire_read_lock-instance_method" title="#acquire_read_lock (instance method)">#<strong>acquire_read_lock</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Acquire a read lock.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#acquire_write_lock-instance_method" title="#acquire_write_lock (instance method)">#<strong>acquire_write_lock</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Acquire a write lock.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; ReentrantReadWriteLock </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>ReentrantReadWriteLock</code> in the unlocked state.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#release_read_lock-instance_method" title="#release_read_lock (instance method)">#<strong>release_read_lock</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Release a previously acquired read lock.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#release_write_lock-instance_method" title="#release_write_lock (instance method)">#<strong>release_write_lock</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Release a previously acquired write lock.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#try_read_lock-instance_method" title="#try_read_lock (instance method)">#<strong>try_read_lock</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Try to acquire a read lock and return true if we succeed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#try_write_lock-instance_method" title="#try_write_lock (instance method)">#<strong>try_write_lock</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Try to acquire a write lock and return true if we succeed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_read_lock-instance_method" title="#with_read_lock (instance method)">#<strong>with_read_lock</strong> { ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Execute a block operation within a read lock.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_write_lock-instance_method" title="#with_write_lock (instance method)">#<strong>with_write_lock</strong> { ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Execute a block operation within a write lock.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::ReentrantReadWriteLock (class)">ReentrantReadWriteLock</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>ReentrantReadWriteLock</code> in the unlocked state.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+107
+108
+109
+110
+111
+112
+113</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 107</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
+  <span class='ivar'>@Counter</span>    <span class='op'>=</span> <span class='const'><span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="AtomicFixnum.html#initialize-instance_method" title="Concurrent::AtomicFixnum#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>       <span class='comment'># single integer which represents lock state
+</span>  <span class='ivar'>@ReadQueue</span>  <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Synchronization.html" title="Concurrent::Synchronization (module)">Synchronization</a></span></span><span class='op'>::</span><span class='const'>Lock</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization.html#initialize-instance_method" title="Concurrent::Synchronization#initialize (method)">new</a></span></span> <span class='comment'># used to queue waiting readers
+</span>  <span class='ivar'>@WriteQueue</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Synchronization.html" title="Concurrent::Synchronization (module)">Synchronization</a></span></span><span class='op'>::</span><span class='const'>Lock</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization.html#initialize-instance_method" title="Concurrent::Synchronization#initialize (method)">new</a></span></span> <span class='comment'># used to queue waiting writers
+</span>  <span class='ivar'>@HeldCount</span>  <span class='op'>=</span> <span class='const'><span class='object_link'><a href="ThreadLocalVar.html" title="Concurrent::ThreadLocalVar (class)">ThreadLocalVar</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="ThreadLocalVar.html#initialize-instance_method" title="Concurrent::ThreadLocalVar#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>     <span class='comment'># indicates # of R &amp; W locks held by this thread
+</span><span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="acquire_read_lock-instance_method">
+  
+    #<strong>acquire_read_lock</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Acquire a read lock. If a write lock is held by another thread, will block
+until it is released.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the lock is successfully acquired</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Concurrent.html#ResourceLimitError-constant" title="Concurrent::ResourceLimitError (constant)">Concurrent::ResourceLimitError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the maximum number of readers
+is exceeded.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_acquire_read_lock'>acquire_read_lock</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_held'>held</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+    <span class='comment'># If we already have a lock, there&#39;s no need to wait
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>&amp;</span> <span class='const'>READ_LOCK_MASK</span> <span class='op'>==</span> <span class='int'>0</span>
+      <span class='comment'># But we do need to update the counter, if we were holding a write
+</span>      <span class='comment'>#   lock but not a read lock
+</span>      <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span> <span class='id identifier rubyid_c'>c</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='int'>1</span>
+    <span class='kw'>return</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>while</span> <span class='kw'>true</span>
+    <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../Concurrent.html#ResourceLimitError-constant" title="Concurrent::ResourceLimitError (constant)">ResourceLimitError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Concurrent.html#initialize-instance_method" title="Concurrent#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Too many reader threads</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_max_readers?'>max_readers?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+
+    <span class='comment'># If a writer is waiting OR running when we first queue up, we need to wait
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_waiting_or_running_writer?'>waiting_or_running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+      <span class='comment'># Before going to sleep, check again with the ReadQueue mutex held
+</span>      <span class='ivar'>@ReadQueue</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+        <span class='ivar'>@ReadQueue</span><span class='period'>.</span><span class='id identifier rubyid_ns_wait'>ns_wait</span> <span class='kw'>if</span> <span class='id identifier rubyid_waiting_or_running_writer?'>waiting_or_running_writer?</span>
+      <span class='kw'>end</span>
+      <span class='comment'># Note: the above &#39;synchronize&#39; block could have used #wait_until,
+</span>      <span class='comment'>#   but that waits repeatedly in a loop, checking the wait condition
+</span>      <span class='comment'>#   each time it wakes up (to protect against spurious wakeups)
+</span>      <span class='comment'># But we are already in a loop, which is only broken when we successfully
+</span>      <span class='comment'>#   acquire the lock! So we don&#39;t care about spurious wakeups, and would
+</span>      <span class='comment'>#   rather not pay the extra overhead of using #wait_until
+</span>
+      <span class='comment'># After a reader has waited once, they are allowed to &quot;barge&quot; ahead of waiting writers
+</span>      <span class='comment'># But if a writer is *running*, the reader still needs to wait (naturally)
+</span>      <span class='kw'>while</span> <span class='kw'>true</span>
+        <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_running_writer?'>running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+          <span class='ivar'>@ReadQueue</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+            <span class='ivar'>@ReadQueue</span><span class='period'>.</span><span class='id identifier rubyid_ns_wait'>ns_wait</span> <span class='kw'>if</span> <span class='id identifier rubyid_running_writer?'>running_writer?</span>
+          <span class='kw'>end</span>
+        <span class='kw'>elsif</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='int'>1</span><span class='rparen'>)</span>
+          <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='int'>1</span>
+          <span class='kw'>return</span> <span class='kw'>true</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>elsif</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='int'>1</span><span class='rparen'>)</span>
+      <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='int'>1</span>
+      <span class='kw'>return</span> <span class='kw'>true</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="acquire_write_lock-instance_method">
+  
+    #<strong>acquire_write_lock</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Acquire a write lock. Will block and wait for all active readers and writers.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the lock is successfully acquired</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Concurrent.html#ResourceLimitError-constant" title="Concurrent::ResourceLimitError (constant)">Concurrent::ResourceLimitError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the maximum number of writers
+is exceeded.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 255</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_acquire_write_lock'>acquire_write_lock</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_held'>held</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>&gt;=</span> <span class='const'>WRITE_LOCK_HELD</span>
+    <span class='comment'># if we already have a write (exclusive) lock, there&#39;s no need to wait
+</span>    <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='const'>WRITE_LOCK_HELD</span>
+    <span class='kw'>return</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>while</span> <span class='kw'>true</span>
+    <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../Concurrent.html#ResourceLimitError-constant" title="Concurrent::ResourceLimitError (constant)">ResourceLimitError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Concurrent.html#initialize-instance_method" title="Concurrent#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Too many writer threads</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_max_writers?'>max_writers?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+
+    <span class='comment'># To go ahead and take the lock without waiting, there must be no writer
+</span>    <span class='comment'>#   running right now, AND no writers who came before us still waiting to
+</span>    <span class='comment'>#   acquire the lock
+</span>    <span class='comment'># Additionally, if any read locks have been taken, we must hold all of them
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_c'>c</span> <span class='op'>==</span> <span class='id identifier rubyid_held'>held</span>
+      <span class='comment'># If we successfully swap the RUNNING_WRITER bit on, then we can go ahead
+</span>      <span class='kw'>if</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='const'>RUNNING_WRITER</span><span class='rparen'>)</span>
+        <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='const'>WRITE_LOCK_HELD</span>
+        <span class='kw'>return</span> <span class='kw'>true</span>
+      <span class='kw'>end</span>
+    <span class='kw'>elsif</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='const'>WAITING_WRITER</span><span class='rparen'>)</span>
+      <span class='kw'>while</span> <span class='kw'>true</span>
+        <span class='comment'># Now we have successfully incremented, so no more readers will be able to increment
+</span>        <span class='comment'>#   (they will wait instead)
+</span>        <span class='comment'># However, readers OR writers could decrement right here
+</span>        <span class='ivar'>@WriteQueue</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+          <span class='comment'># So we have to do another check inside the synchronized section
+</span>          <span class='comment'># If a writer OR another reader is running, then go to sleep
+</span>          <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+          <span class='ivar'>@WriteQueue</span><span class='period'>.</span><span class='id identifier rubyid_ns_wait'>ns_wait</span> <span class='kw'>if</span> <span class='id identifier rubyid_running_writer?'>running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_running_readers'>running_readers</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='id identifier rubyid_held'>held</span>
+        <span class='kw'>end</span>
+        <span class='comment'># Note: if you are thinking of replacing the above &#39;synchronize&#39; block
+</span>        <span class='comment'># with #wait_until, read the comment in #acquire_read_lock first!
+</span>
+        <span class='comment'># We just came out of a wait
+</span>        <span class='comment'># If we successfully turn the RUNNING_WRITER bit on with an atomic swap,
+</span>        <span class='comment'>#   then we are OK to stop waiting and go ahead
+</span>        <span class='comment'># Otherwise go back and wait again
+</span>        <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+        <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_running_writer?'>running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
+           <span class='id identifier rubyid_running_readers'>running_readers</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>==</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>&amp;&amp;</span>
+           <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='const'>RUNNING_WRITER</span><span class='op'>-</span><span class='const'>WAITING_WRITER</span><span class='rparen'>)</span>
+          <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='const'>WRITE_LOCK_HELD</span>
+          <span class='kw'>return</span> <span class='kw'>true</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="release_read_lock-instance_method">
+  
+    #<strong>release_read_lock</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Release a previously acquired read lock.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the lock is successfully released</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 234</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_release_read_lock'>release_read_lock</span>
+  <span class='id identifier rubyid_held'>held</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-</span> <span class='int'>1</span>
+  <span class='id identifier rubyid_rlocks_held'>rlocks_held</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>&amp;</span> <span class='const'>READ_LOCK_MASK</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_rlocks_held'>rlocks_held</span> <span class='op'>==</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_counter'>counter</span><span class='op'>|</span> <span class='id identifier rubyid_counter'>counter</span> <span class='op'>-</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+    <span class='comment'># If one or more writers were waiting, and we were the last reader, wake a writer up
+</span>    <span class='kw'>if</span> <span class='id identifier rubyid_waiting_or_running_writer?'>waiting_or_running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_running_readers'>running_readers</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>==</span> <span class='int'>0</span>
+      <span class='ivar'>@WriteQueue</span><span class='period'>.</span><span class='id identifier rubyid_signal'>signal</span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_rlocks_held'>rlocks_held</span> <span class='op'>==</span> <span class='const'>READ_LOCK_MASK</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../Concurrent.html#IllegalOperationError-constant" title="Concurrent::IllegalOperationError (constant)">IllegalOperationError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot release a read lock which is not held</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="release_write_lock-instance_method">
+  
+    #<strong>release_write_lock</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Release a previously acquired write lock.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the lock is successfully released</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 329</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_release_write_lock'>release_write_lock</span>
+  <span class='id identifier rubyid_held'>held</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-</span> <span class='const'>WRITE_LOCK_HELD</span>
+  <span class='id identifier rubyid_wlocks_held'>wlocks_held</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>&amp;</span> <span class='const'>WRITE_LOCK_MASK</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_wlocks_held'>wlocks_held</span> <span class='op'>==</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_counter'>counter</span><span class='op'>|</span> <span class='id identifier rubyid_counter'>counter</span> <span class='op'>-</span> <span class='const'>RUNNING_WRITER</span> <span class='rbrace'>}</span>
+    <span class='ivar'>@ReadQueue</span><span class='period'>.</span><span class='id identifier rubyid_broadcast'>broadcast</span>
+    <span class='ivar'>@WriteQueue</span><span class='period'>.</span><span class='id identifier rubyid_signal'>signal</span> <span class='kw'>if</span> <span class='id identifier rubyid_waiting_writers'>waiting_writers</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_wlocks_held'>wlocks_held</span> <span class='op'>==</span> <span class='const'>WRITE_LOCK_MASK</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../Concurrent.html#IllegalOperationError-constant" title="Concurrent::IllegalOperationError (constant)">IllegalOperationError</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot release a write lock which is not held</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="try_read_lock-instance_method">
+  
+    #<strong>try_read_lock</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Try to acquire a read lock and return true if we succeed. If it cannot be
+acquired immediately, return false.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the lock is successfully acquired</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 213</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_try_read_lock'>try_read_lock</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_held'>held</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>&amp;</span> <span class='const'>READ_LOCK_MASK</span> <span class='op'>==</span> <span class='int'>0</span>
+      <span class='comment'># If we hold a write lock, but not a read lock...
+</span>      <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_c'>c</span><span class='op'>|</span> <span class='id identifier rubyid_c'>c</span> <span class='op'>+</span> <span class='int'>1</span> <span class='rbrace'>}</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='int'>1</span>
+    <span class='kw'>return</span> <span class='kw'>true</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_waiting_or_running_writer?'>waiting_or_running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='int'>1</span><span class='rparen'>)</span>
+      <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='int'>1</span>
+      <span class='kw'>return</span> <span class='kw'>true</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="try_write_lock-instance_method">
+  
+    #<strong>try_write_lock</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Try to acquire a write lock and return true if we succeed. If it cannot be
+acquired immediately, return false.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the lock is successfully acquired</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 310</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_try_write_lock'>try_write_lock</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_held'>held</span> <span class='op'>=</span> <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span> <span class='op'>&gt;=</span> <span class='const'>WRITE_LOCK_HELD</span>
+    <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='const'>WRITE_LOCK_HELD</span>
+    <span class='kw'>return</span> <span class='kw'>true</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_waiting_or_running_writer?'>waiting_or_running_writer?</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
+       <span class='id identifier rubyid_running_readers'>running_readers</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span> <span class='op'>==</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>&amp;&amp;</span>
+       <span class='ivar'>@Counter</span><span class='period'>.</span><span class='id identifier rubyid_compare_and_set'>compare_and_set</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span><span class='op'>+</span><span class='const'>RUNNING_WRITER</span><span class='rparen'>)</span>
+       <span class='ivar'>@HeldCount</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_held'>held</span> <span class='op'>+</span> <span class='const'>WRITE_LOCK_HELD</span>
+      <span class='kw'>return</span> <span class='kw'>true</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="with_read_lock-instance_method">
+  
+    #<strong>with_read_lock</strong> { ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Execute a block operation within a read lock.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>the task to be performed within the lock.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the result of the block operation.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when no block is given.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Concurrent.html#ResourceLimitError-constant" title="Concurrent::ResourceLimitError (constant)">Concurrent::ResourceLimitError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the maximum number of readers
+is exceeded.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+124
+125
+126
+127
+128
+129
+130
+131
+132</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 124</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_with_read_lock'>with_read_lock</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+  <span class='id identifier rubyid_acquire_read_lock'>acquire_read_lock</span>
+  <span class='kw'>begin</span>
+    <span class='kw'>yield</span>
+  <span class='kw'>ensure</span>
+    <span class='id identifier rubyid_release_read_lock'>release_read_lock</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="with_write_lock-instance_method">
+  
+    #<strong>with_write_lock</strong> { ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Execute a block operation within a write lock.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>the task to be performed within the lock.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the result of the block operation.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when no block is given.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Concurrent.html#ResourceLimitError-constant" title="Concurrent::ResourceLimitError (constant)">Concurrent::ResourceLimitError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the maximum number of readers
+is exceeded.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+143
+144
+145
+146
+147
+148
+149
+150
+151</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/atomic/reentrant_read_write_lock.rb', line 143</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_with_write_lock'>with_write_lock</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+  <span class='id identifier rubyid_acquire_write_lock'>acquire_write_lock</span>
+  <span class='kw'>begin</span>
+    <span class='kw'>yield</span>
+  <span class='kw'>ensure</span>
+    <span class='id identifier rubyid_release_write_lock'>release_write_lock</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated by <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_blank">yard</a>.
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    </div>
+  </body>
+</html>
