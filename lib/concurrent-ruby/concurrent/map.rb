@@ -143,8 +143,15 @@ module Concurrent
       end
     end
 
+    # Set a value with key
+    # @param [Object] key
+    # @param [Object] value
+    # @return [Object] the new value
+    def []=(key, value)
+      super
+    end
+
     alias_method :get, :[]
-    # TODO (pitr-ch 30-Oct-2018): doc
     alias_method :put, :[]=
 
     # Get a value with key, or default_value when key is absent,
