@@ -42,7 +42,7 @@ module Concurrent
     end
 
     context 'concurrency' do
-      it do
+      it '#add and #delete' do
         (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
           in_thread do
             1000.times do
@@ -54,6 +54,36 @@ module Concurrent
           end
         end.map(&:join)
         expect(set).to be_empty
+      end
+
+      it '#each' do
+        threads = []
+        ("a".."z").inject(set, &:<<) # setup a non-empty set
+
+        threads << in_thread do
+          2000.times do
+            size = nil
+            set.each do |member|
+              if size.nil?
+                size = set.length
+              else
+                expect(set.length).to eq(size)
+              end
+            end
+          end
+        end
+
+        threads += (1..19).map do |i|
+          in_thread do
+            v = i * 1000
+            10.times do
+              200.times { |j| set << (v+j) }
+              200.times { |j| set.delete(v+j) }
+            end
+          end
+        end
+
+        threads.map(&:join)
       end
     end
   end
