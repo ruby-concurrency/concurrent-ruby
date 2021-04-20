@@ -23,9 +23,13 @@ module Concurrent
   # @!macro internal_implementation_note
   SetImplementation = case
                       when Concurrent.on_cruby?
-                        # Because MRI never runs code in parallel, the existing
-                        # non-thread-safe structures should usually work fine.
-                        ::Set
+                        require 'monitor'
+                        require 'concurrent/thread_safe/util/data_structures'
+
+                        class CRubySet < ::Set
+                        end
+                        ThreadSafe::Util.make_synchronized_on_cruby Concurrent::CRubySet
+                        CRubySet
 
                       when Concurrent.on_jruby?
                         require 'jruby/synchronized'
