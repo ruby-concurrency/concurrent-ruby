@@ -1,0 +1,38 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [2.7, jruby, jruby-head, truffleruby-head]
+        experimental: [false]
+        include:
+          - ruby: head
+            experimental: true
+          - ruby: truffleruby
+            experimental: true
+
+    env:
+      JAVA_OPTS: '-Xmx1024m'
+      RUBYOPT: '-w'
+      JRUBY_OPTS: '--dev'
+
+    name: "Tests: Ruby ${{ matrix.ruby }}"
+    steps:
+    - name: Clone Repo
+      uses: actions/checkout@v2
+    - name: Setup system Ruby ${{ matrix.ruby }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+    - name: Run tests
+      run: |
+        gem install bundler --version 1.17.3
+        echo JAVA_OPTS: $JAVA_OPTS
+        bundle exec rake ci
