@@ -15,14 +15,12 @@ module Concurrent
                         when Concurrent.on_cruby?
                           require 'concurrent/collection/map/mri_map_backend'
                           MriMapBackend
-                        when Concurrent.on_rbx? || Concurrent.on_truffleruby?
-                          if defined?(::TruffleRuby::ConcurrentMap)
-                            require 'concurrent/collection/map/truffleruby_map_backend'
-                            TruffleRubyMapBackend
-                          else
-                            require 'concurrent/collection/map/atomic_reference_map_backend'
-                            AtomicReferenceMapBackend
-                          end
+                        when Concurrent.on_truffleruby? && defined?(::TruffleRuby::ConcurrentMap)
+                          require 'concurrent/collection/map/truffleruby_map_backend'
+                          TruffleRubyMapBackend
+                        when Concurrent.on_truffleruby? || Concurrent.on_rbx?
+                          require 'concurrent/collection/map/atomic_reference_map_backend'
+                          AtomicReferenceMapBackend
                         else
                           warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation'
                           require 'concurrent/collection/map/synchronized_map_backend'
@@ -118,7 +116,6 @@ module Concurrent
     #   @param [Object] value
     #   @return [true, false] true if deleted
     #   @!macro map.atomic_method
-
 
     def initialize(options = nil, &block)
       if options.kind_of?(::Hash)
