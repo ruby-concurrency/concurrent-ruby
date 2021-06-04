@@ -42,7 +42,7 @@ module Concurrent
           private
 
           def _mon_initialize
-            @_monitor = Monitor.new unless @_monitor # avoid double initialisation
+            @_monitor ||= Monitor.new # avoid double initialisation
           end
 
           def self.new(*args)
