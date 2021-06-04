@@ -12,6 +12,12 @@ module Concurrent
         @__owner__   = nil
       end
 
+      def initialize_copy(other)
+        super
+        @__Waiters__ = []
+        @__owner__   = nil
+      end
+
       protected
 
       def synchronize(&block)

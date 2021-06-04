@@ -32,6 +32,12 @@ module Concurrent
         @__Condition__ = ::ConditionVariable.new
       end
 
+      def initialize_copy(other)
+        super
+        @__Lock__      = ::Mutex.new
+        @__Condition__ = ::ConditionVariable.new
+      end
+
       protected
 
       def synchronize
@@ -58,6 +64,12 @@ module Concurrent
       def initialize(*defaults)
         super(*defaults)
         @__Lock__      = ::Monitor.new
+        @__Condition__ = @__Lock__.new_cond
+      end
+
+      def initialize_copy(other)
+        super
+        @__Lock__      = ::Mutex.new
         @__Condition__ = @__Lock__.new_cond
       end
 
