@@ -250,6 +250,7 @@ module Concurrent
           realize(@promise_body)
         end
       else
+        compare_and_set_state(:pending, :unscheduled)
         @parent.execute
       end
       self
