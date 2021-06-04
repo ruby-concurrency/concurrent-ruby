@@ -19,13 +19,19 @@ module Concurrent
   #
   #   @see http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html Ruby standard library `Set`
 
-
   # @!macro internal_implementation_note
   SetImplementation = case
                       when Concurrent.on_cruby?
-                        # Because MRI never runs code in parallel, the existing
-                        # non-thread-safe structures should usually work fine.
-                        ::Set
+                        # The CRuby implementation of Set is written in Ruby itself and is
+                        # not thread safe for certain methods.
+                        require 'monitor'
+                        require 'concurrent/thread_safe/util/data_structures'
+
+                        class CRubySet < ::Set
+                        end
+
+                        ThreadSafe::Util.make_synchronized_on_cruby CRubySet
+                        CRubySet
 
                       when Concurrent.on_jruby?
                         require 'jruby/synchronized'
@@ -33,6 +39,7 @@ module Concurrent
                         class JRubySet < ::Set
                           include JRuby::Synchronized
                         end
+
                         JRubySet
 
                       when Concurrent.on_rbx?
@@ -41,7 +48,8 @@ module Concurrent
 
                         class RbxSet < ::Set
                         end
-                        ThreadSafe::Util.make_synchronized_on_rbx Concurrent::RbxSet
+
+                        ThreadSafe::Util.make_synchronized_on_rbx RbxSet
                         RbxSet
 
                       when Concurrent.on_truffleruby?
@@ -50,7 +58,7 @@ module Concurrent
                         class TruffleRubySet < ::Set
                         end
 
-                        ThreadSafe::Util.make_synchronized_on_truffleruby Concurrent::TruffleRubySet
+                        ThreadSafe::Util.make_synchronized_on_truffleruby TruffleRubySet
                         TruffleRubySet
 
                       else
