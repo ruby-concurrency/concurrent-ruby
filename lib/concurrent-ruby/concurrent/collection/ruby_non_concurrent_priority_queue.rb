@@ -30,7 +30,7 @@ module Concurrent
           if @queue[k] == item
             swap(k, @length)
             @length -= 1
-            sink(k)
+            sink(k) || swim(k)
             @queue.pop
           else
             k += 1
@@ -126,12 +126,17 @@ module Concurrent
       # 
       # @!visibility private
       def sink(k)
+        success = false
+
         while (j = (2 * k)) <= @length do
           j += 1 if j < @length && ! ordered?(j, j+1)
           break if ordered?(k, j)
           swap(k, j)
+          success = true
           k = j
         end
+
+        success
       end
 
       # Percolate up to maintain heap invariant.
@@ -140,10 +145,15 @@ module Concurrent
       # 
       # @!visibility private
       def swim(k)
+        success = false
+
         while k > 1 && ! ordered?(k/2, k) do
           swap(k, k/2)
           k = k/2
+          success = true
         end
+
+        success
       end
     end
   end
