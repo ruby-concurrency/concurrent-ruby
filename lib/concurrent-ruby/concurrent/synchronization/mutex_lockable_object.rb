@@ -69,7 +69,7 @@ module Concurrent
 
       def initialize_copy(other)
         super
-        @__Lock__      = ::Mutex.new
+        @__Lock__      = ::Monitor.new
         @__Condition__ = @__Lock__.new_cond
       end
 
