@@ -436,23 +436,54 @@ and load the appropriate C extensions.</p>
 <p>No gems should depend on <code>concurrent-ruby-ext</code>. Doing so will force C extensions on your users. The
 best practice is to depend on <code>concurrent-ruby</code> and let users to decide if they want C extensions.</p>
 
+<h2>Building the gem</h2>
+
+<h3>Requirements</h3>
+
+<ul>
+<li>Recent CRuby</li>
+<li>JRuby, <code>rbenv install jruby-9.2.17.0</code></li>
+<li>Set env variable <code>CONCURRENT_JRUBY_HOME</code> to point to it, e.g. <code>/usr/local/opt/rbenv/versions/jruby-9.2.17.0</code></li>
+<li>Install Docker, required for Windows builds</li>
+</ul>
+
+<h3>Publishing the Gem</h3>
+
+<ul>
+<li>Update<code>version.rb</code></li>
+<li>Update the CHANGELOG</li>
+<li>Update the Yard documentation
+
+<ul>
+<li>Add the new version to <code>docs-source/signpost.md</code>. Needs to be done only if there are visible changes in the
+documentation.</li>
+<li>Run <code>bundle exec rake yard</code> to update the master documentation and signpost.</li>
+<li>Run <code>bundle exec rake yard:&lt;new-version&gt;</code> to add or update the documentation of the new version.</li>
+</ul></li>
+<li>Commit (and push) the changes.</li>
+<li>Use <code>be rake release</code> to release the gem. It consists
+of <code>[&#39;release:checks&#39;, &#39;release:build&#39;, &#39;release:test&#39;, &#39;release:publish&#39;]</code> steps. It will ask at the end before
+publishing anything. Steps can also be executed individually.</li>
+</ul>
+
 <h2>Maintainers</h2>
 
 <ul>
-<li>  <a href="https://github.com/pitr-ch">Petr Chalupa</a> (lead maintainer, point-of-contact)</li>
-<li>  <a href="https://github.com/jdantonio">Jerry D&#39;Antonio</a> (creator)</li>
-<li>  <a href="https://github.com/chrisseaton">Chris Seaton</a></li>
+<li>  <a href="https://github.com/pitr-ch">Petr Chalupa</a> — Lead maintainer, point-of-contact.</li>
+<li>  <a href="https://github.com/chrisseaton">Chris Seaton</a> —
+If Petr is not available Chris can help or poke Petr to pay attention where it is needed.</li>
 </ul>
 
 <h3>Special Thanks to</h3>
 
 <ul>
+<li>  <a href="https://github.com/jdantonio">Jerry D&#39;Antonio</a> for creating the gem</li>
 <li>  <a href="https://github.com/bdurand">Brian Durand</a> for the <code>ref</code> gem</li>
 <li>  <a href="https://github.com/headius">Charles Oliver Nutter</a> for the <code>atomic</code> and <code>thread_safe</code> gems</li>
 <li>  <a href="https://github.com/thedarkone">thedarkone</a> for the <code>thread_safe</code> gem</li>
 </ul>
 
-<p>and to the past maintainers</p>
+<p>to the past maintainers</p>
 
 <ul>
 <li>  <a href="https://github.com/mighe">Michele Della Torre</a></li>

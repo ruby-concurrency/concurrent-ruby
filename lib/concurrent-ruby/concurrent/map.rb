@@ -117,6 +117,7 @@ module Concurrent
     #   @return [true, false] true if deleted
     #   @!macro map.atomic_method
 
+    #
     def initialize(options = nil, &block)
       if options.kind_of?(::Hash)
         validate_options_hash!(options)
