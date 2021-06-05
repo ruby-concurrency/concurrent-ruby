@@ -234,9 +234,6 @@ task :release => ['release:checks', 'release:build', 'release:test', 'release:pu
 namespace :release do
   # Depends on environment of @pitr-ch
 
-  mri_version   = '2.6.5'
-  jruby_version = 'jruby-9.2.9.0'
-
   task :checks => "yard:#{current_yard_version_name}:uptodate" do
     Dir.chdir(__dir__) do
       sh 'test -z "$(git status --porcelain)"' do |ok, res|
@@ -270,6 +267,12 @@ namespace :release do
   task :test do
     Dir.chdir(__dir__) do
       old = ENV['RBENV_VERSION']
+
+      mri_version   = `ruby -e 'puts RUBY_VERSION'`.chomp
+      jruby_version = File.basename(ENV['CONCURRENT_JRUBY_HOME'])
+
+      puts "Using following version:"
+      pp mri_version: mri_version, jruby_version: jruby_version
 
       ENV['RBENV_VERSION'] = mri_version
       sh 'rbenv version'
