@@ -353,19 +353,43 @@ and load the appropriate C extensions.
 No gems should depend on `concurrent-ruby-ext`. Doing so will force C extensions on your users. The
 best practice is to depend on `concurrent-ruby` and let users to decide if they want C extensions.
 
+## Building the gem
+
+### Requirements
+
+* Recent CRuby
+* JRuby, `rbenv install jruby-9.2.17.0`
+* Set env variable `CONCURRENT_JRUBY_HOME` to point to it, e.g. `/usr/local/opt/rbenv/versions/jruby-9.2.17.0`
+* Install Docker, required for Windows builds
+
+### Publishing the Gem
+
+* Update`version.rb`
+* Update the CHANGELOG
+* Update the Yard documentation
+    - Add the new version to `docs-source/signpost.md`. Needs to be done only if there are visible changes in the
+      documentation.
+    - Run `bundle exec rake yard` to update the master documentation and signpost.
+    - Run `bundle exec rake yard:<new-version>` to add or update the documentation of the new version.
+* Commit (and push) the changes.
+* Use `be rake release` to release the gem. It consists
+  of `['release:checks', 'release:build', 'release:test', 'release:publish']` steps. It will ask at the end before
+  publishing anything. Steps can also be executed individually.
+
 ## Maintainers
 
-*   [Petr Chalupa](https://github.com/pitr-ch) (lead maintainer, point-of-contact)
-*   [Jerry D'Antonio](https://github.com/jdantonio) (creator)
-*   [Chris Seaton](https://github.com/chrisseaton)
+*   [Petr Chalupa](https://github.com/pitr-ch) — Lead maintainer, point-of-contact.
+*   [Chris Seaton](https://github.com/chrisseaton) —
+    If Petr is not available Chris can help or poke Petr to pay attention where it is needed.
 
 ### Special Thanks to
 
+*   [Jerry D'Antonio](https://github.com/jdantonio) for creating the gem
 *   [Brian Durand](https://github.com/bdurand) for the `ref` gem
 *   [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
 *   [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
-and to the past maintainers
+to the past maintainers
 
 *   [Michele Della Torre](https://github.com/mighe)
 *   [Paweł Obrok](https://github.com/obrok)

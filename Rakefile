@@ -135,7 +135,7 @@ begin
     task :update_readme do
       Dir.chdir __dir__ do
         content = File.read(File.join('README.md')).
-            gsub(/\[([\w ]+)\]\(http:\/\/ruby-concurrency\.github\.io\/concurrent-ruby\/master\/.*\)/) do |_|
+          gsub(/\[([\w ]+)\]\(http:\/\/ruby-concurrency\.github\.io\/concurrent-ruby\/master\/.*\)/) do |_|
           case $1
           when 'LockFreeLinkedSet'
             "{Concurrent::Edge::#{$1} #{$1}}"
@@ -165,9 +165,9 @@ begin
       desc "* of #{name} into subdir #{name}"
       YARD::Rake::YardocTask.new(name) do |yard|
         yard.options.push(
-            '--output-dir', output_dir,
-            '--main', 'tmp/README.md',
-            *common_yard_options)
+          '--output-dir', output_dir,
+          '--main', 'tmp/README.md',
+          *common_yard_options)
         yard.files = ['./lib/concurrent-ruby/**/*.rb',
                       './lib/concurrent-ruby-edge/**/*.rb',
                       './ext/concurrent_ruby_ext/**/*.c',
@@ -189,9 +189,9 @@ begin
     desc "* signpost for versions"
     YARD::Rake::YardocTask.new(:signpost) do |yard|
       yard.options.push(
-          '--output-dir', 'docs',
-          '--main', 'docs-source/signpost.md',
-          *common_yard_options)
+        '--output-dir', 'docs',
+        '--main', 'docs-source/signpost.md',
+        *common_yard_options)
       yard.files = ['no-lib']
     end
 
@@ -206,7 +206,7 @@ begin
               sh 'diff -r docs/ docs-copy/' do |ok, res|
                 unless ok
                   begin
-                    STDOUT.puts 'Command failed. Continue? (y/n)'
+                    STDOUT.puts "yard:#{name} is not properly generated and committed.", "Continue? (y/n)"
                     input = STDIN.gets.strip.downcase
                   end until %w(y n).include?(input)
                   exit 1 if input == 'n'
@@ -242,7 +242,8 @@ namespace :release do
       sh 'test -z "$(git status --porcelain)"' do |ok, res|
         unless ok
           begin
-            STDOUT.puts 'Command failed. Continue? (y/n)'
+            status = `git status --porcelain`
+            STDOUT.puts 'There are local changes that you might want to commit.', status, 'Continue? (y/n)'
             input = STDIN.gets.strip.downcase
           end until %w(y n).include?(input)
           exit 1 if input == 'n'
@@ -250,10 +251,10 @@ namespace :release do
       end
       sh 'git fetch'
       sh 'test $(git show-ref --verify --hash refs/heads/master) = ' +
-             '$(git show-ref --verify --hash refs/remotes/origin/master)' do |ok, res|
+           '$(git show-ref --verify --hash refs/remotes/origin/master)' do |ok, res|
         unless ok
           begin
-            STDOUT.puts 'Command failed. Continue? (y/n)'
+            STDOUT.puts 'Local master branch is not pushed to origin.', 'Continue? (y/n)'
             input = STDIN.gets.strip.downcase
           end until %w(y n).include?(input)
           exit 1 if input == 'n'
@@ -292,12 +293,12 @@ namespace :release do
 
     task :ask do
       begin
-        STDOUT.puts 'Do you want to publish anything? (y/n)'
+        STDOUT.puts 'Do you want to publish anything now? (y/n)'
         input = STDIN.gets.strip.downcase
       end until %w(y n).include?(input)
       exit 1 if input == 'n'
       begin
-        STDOUT.puts 'Do you want to publish edge? (y/n)'
+        STDOUT.puts 'It will publish `concurrent-ruby`. Do you want to publish `concurrent-ruby-edge`? (y/n)'
         input = STDIN.gets.strip.downcase
       end until %w(y n).include?(input)
       publish_edge = input == 'y'
@@ -326,9 +327,10 @@ namespace :release do
 
     desc '** print post release steps'
     task :post_steps do
-      puts 'Manually: create a release on GitHub with relevant changelog part'
-      puts 'Manually: send email same as release with relevant changelog part'
-      puts 'Manually: tweet'
+      # TODO: (petr 05-Jun-2021) automate and renew the process
+      # puts 'Manually: create a release on GitHub with relevant changelog part'
+      # puts 'Manually: send email same as release with relevant changelog part'
+      # puts 'Manually: tweet'
     end
   end
 end
