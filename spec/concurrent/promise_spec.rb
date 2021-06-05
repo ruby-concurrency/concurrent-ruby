@@ -199,8 +199,10 @@ module Concurrent
         context "when called on child after parent completes" do
           let(:parent_promise) { Concurrent::Promise.execute { 1 + 1 }.tap { |p| p.wait } }
           it 'sets state to :pending immediately' do
-            child_promise = parent_promise.then { |two| two + 2 }.execute
+            latch = CountDownLatch.new
+            child_promise = parent_promise.then { |_| latch.wait }.execute
             expect(child_promise.state).to eq(:pending)
+            latch.count_down
           end
         end
       end
