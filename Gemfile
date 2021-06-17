@@ -26,7 +26,7 @@ end
 
 group :testing do
   gem 'rspec', '~> 3.7'
-  gem 'timecop', '~> 0.7.4'
+  gem 'timecop', '~> 0.9'
   gem 'sigdump', require: false
 end
 
