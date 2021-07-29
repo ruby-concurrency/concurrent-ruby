@@ -119,7 +119,7 @@ module Concurrent
 
       def compute_physical_processor_count
         ppc = case RbConfig::CONFIG["target_os"]
-              when /darwin1/
+              when /darwin\d\d/
                 IO.popen("/usr/sbin/sysctl -n hw.physicalcpu", &:read).to_i
               when /linux/
                 cores = {} # unique physical ID / core ID combinations
