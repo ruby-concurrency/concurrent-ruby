@@ -267,12 +267,10 @@ module Concurrent
         #   running right now, AND no writers who came before us still waiting to
         #   acquire the lock
         # Additionally, if any read locks have been taken, we must hold all of them
-        if c == held
-          # If we successfully swap the RUNNING_WRITER bit on, then we can go ahead
-          if @Counter.compare_and_set(c, c+RUNNING_WRITER)
-            @HeldCount.value = held + WRITE_LOCK_HELD
-            return true
-          end
+        if held > 0 && @Counter.compare_and_set(1, c+RUNNING_WRITER)
+          # If we are the only one reader and successfully swap the RUNNING_WRITER bit on, then we can go ahead
+          @HeldCount.value = held + WRITE_LOCK_HELD
+          return true
         elsif @Counter.compare_and_set(c, c+WAITING_WRITER)
           while true
             # Now we have successfully incremented, so no more readers will be able to increment
