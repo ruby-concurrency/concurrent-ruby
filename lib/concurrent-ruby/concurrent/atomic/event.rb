@@ -19,7 +19,7 @@ module Concurrent
   #   t1 = Thread.new do
   #     puts "t1 is waiting"
   #     event.wait(1)
-  #     puts "event ocurred"
+  #     puts "event occurred"
   #   end
   #
   #   t2 = Thread.new do
@@ -30,8 +30,8 @@ module Concurrent
   #   [t1, t2].each(&:join)
   #
   #   # prints:
-  #   # t2 calling set
   #   # t1 is waiting
+  #   # t2 calling set
   #   # event occurred
   class Event < Synchronization::LockableObject
 
