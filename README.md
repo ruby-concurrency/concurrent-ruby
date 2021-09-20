@@ -37,6 +37,8 @@ The design goals of this gem are:
 appreciate your help. Would you like to contribute? Great! Have a look at 
 [issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).** And if you pick something up let us know on the issue.
 
+You can also get started by triaging issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to concurrent-ruby on CodeTriage](https://www.codetriage.com/ruby-concurrency/concurrent-ruby). [![Open Source Helpers](https://www.codetriage.com/ruby-concurrency/concurrent-ruby/badges/users.svg)](https://www.codetriage.com/ruby-concurrency/concurrent-ruby)
+
 ## Thread Safety
 
 *Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency 
