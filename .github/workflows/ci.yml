@@ -27,6 +27,5 @@ jobs:
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
     - name: Run tests
       run: |
-        gem install bundler --version 1.17.3
         echo JAVA_OPTS: $JAVA_OPTS
         bundle exec rake ci
