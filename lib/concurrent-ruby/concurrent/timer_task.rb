@@ -25,9 +25,7 @@ module Concurrent
   # Should the task experience an unrecoverable crash only the task thread will
   # crash. This makes the `TimerTask` very fault tolerant. Additionally, the
   # `TimerTask` thread can respond to the success or failure of the task,
-  # performing logging or ancillary operations. `TimerTask` can also be
-  # configured with a timeout value allowing it to kill a task that runs too
-  # long.
+  # performing logging or ancillary operations.
   #
   # One other advantage of `TimerTask` is that it forces the business logic to
   # be completely decoupled from the concurrency logic. The business logic can
@@ -48,9 +46,7 @@ module Concurrent
   # {http://ruby-doc.org/stdlib-2.0/libdoc/observer/rdoc/Observable.html
   # Observable} module. On execution the `TimerTask` will notify the observers
   # with three arguments: time of execution, the result of the block (or nil on
-  # failure), and any raised exceptions (or nil on success). If the timeout
-  # interval is exceeded the observer will receive a `Concurrent::TimeoutError`
-  # object as the third argument.
+  # failure), and any raised exceptions (or nil on success).
   #
   # @!macro copy_options
   #
@@ -59,20 +55,18 @@ module Concurrent
   #   task.execute
   #
   #   task.execution_interval #=> 60 (default)
-  #   task.timeout_interval   #=> 30 (default)
   #
   #   # wait 60 seconds...
   #   #=> 'Boom!'
   #
   #   task.shutdown #=> true
   #
-  # @example Configuring `:execution_interval` and `:timeout_interval`
-  #   task = Concurrent::TimerTask.new(execution_interval: 5, timeout_interval: 5) do
+  # @example Configuring `:execution_interval`
+  #   task = Concurrent::TimerTask.new(execution_interval: 5) do
   #          puts 'Boom!'
   #        end
   #
   #   task.execution_interval #=> 5
-  #   task.timeout_interval   #=> 5
   #
   # @example Immediate execution with `:run_now`
   #   task = Concurrent::TimerTask.new(run_now: true){ puts 'Boom!' }
@@ -115,15 +109,13 @@ module Concurrent
   #     def update(time, result, ex)
   #       if result
   #         print "(#{time}) Execution successfully returned #{result}\n"
-  #       elsif ex.is_a?(Concurrent::TimeoutError)
-  #         print "(#{time}) Execution timed out\n"
   #       else
   #         print "(#{time}) Execution failed with error #{ex}\n"
   #       end
   #     end
   #   end
   #
-  #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ 42 }
+  #   task = Concurrent::TimerTask.new(execution_interval: 1){ 42 }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
   #   sleep 4
@@ -133,7 +125,7 @@ module Concurrent
   #   #=> (2013-10-13 19:09:00 -0400) Execution successfully returned 42
   #   task.shutdown
   #
-  #   task = Concurrent::TimerTask.new(execution_interval: 1, timeout_interval: 1){ sleep }
+  #   task = Concurrent::TimerTask.new(execution_interval: 1){ sleep }
   #   task.add_observer(TaskObserver.new)
   #   task.execute
   #
@@ -160,17 +152,12 @@ module Concurrent
     # Default `:execution_interval` in seconds.
     EXECUTION_INTERVAL = 60
 
-    # Default `:timeout_interval` in seconds.
-    TIMEOUT_INTERVAL = 30
-
     # Create a new TimerTask with the given task and configuration.
     #
     # @!macro timer_task_initialize
     #   @param [Hash] opts the options defining task execution.
     #   @option opts [Integer] :execution_interval number of seconds between
     #     task executions (default: EXECUTION_INTERVAL)
-    #   @option opts [Integer] :timeout_interval number of seconds a task can
-    #     run before it is considered to have failed (default: TIMEOUT_INTERVAL)
     #   @option opts [Boolean] :run_now Whether to run the task immediately
     #     upon instantiation or to wait until the first #  execution_interval
     #     has passed (default: false)
@@ -252,24 +239,6 @@ module Concurrent
       end
     end
 
-    # @!attribute [rw] timeout_interval
-    # @return [Fixnum] Number of seconds the task can run before it is
-    #   considered to have failed.
-    def timeout_interval
-      synchronize { @timeout_interval }
-    end
-
-    # @!attribute [rw] timeout_interval
-    # @return [Fixnum] Number of seconds the task can run before it is
-    #   considered to have failed.
-    def timeout_interval=(value)
-      if (value = value.to_f) <= 0.0
-        raise ArgumentError.new('must be greater than zero')
-      else
-        synchronize { @timeout_interval = value }
-      end
-    end
-
     private :post, :<<
 
     private
@@ -278,7 +247,6 @@ module Concurrent
       set_deref_options(opts)
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
-      self.timeout_interval = opts[:timeout] || opts[:timeout_interval] || TIMEOUT_INTERVAL
       @run_now = opts[:now] || opts[:run_now]
       @executor = Concurrent::SafeTaskExecutor.new(task)
       @running = Concurrent::AtomicBoolean.new(false)
@@ -308,7 +276,6 @@ module Concurrent
     # @!visibility private
     def execute_task(completion)
       return nil unless @running.true?
-      ScheduledTask.execute(timeout_interval, args: [completion], &method(:timeout_task))
       _success, value, reason = @executor.execute(self)
       if completion.try?
         self.value = value
@@ -319,15 +286,6 @@ module Concurrent
         end
       end
       nil
-    end
-
-    # @!visibility private
-    def timeout_task(completion)
-      return unless @running.true?
-      if completion.try?
-        schedule_next_task
-        observers.notify_observers(Time.now, nil, Concurrent::TimeoutError.new)
-      end
     end
   end
 end
