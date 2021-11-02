@@ -267,8 +267,8 @@ module Concurrent
 
     # @!visibility private
     module ClassMethods
-      def new(*args, &block)
-        obj = original_new(*args, &block)
+      def new(*args, **kwargs, &block)
+        obj = original_new(*args, **kwargs, &block)
         obj.send(:init_synchronization)
         obj
       end
