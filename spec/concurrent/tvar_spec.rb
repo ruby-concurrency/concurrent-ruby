@@ -106,48 +106,6 @@ module Concurrent
       expect(t2.value).to eq 0
     end
 
-    it 'provides weak isolation' do
-      t = TVar.new(0)
-
-      a = CountDownLatch.new
-      b = CountDownLatch.new
-
-      in_thread do
-        Concurrent::atomically do
-          t.value = 1
-          a.count_down
-          b.wait
-          Concurrent.leave_transaction
-        end
-      end
-
-      Concurrent::atomically do
-        a.wait
-        expect(t.value).to eq 0
-        b.count_down
-        Concurrent.leave_transaction
-      end
-    end
-
-    it 'is implemented with lazy writes' do
-      t = TVar.new(0)
-
-      a = CountDownLatch.new
-      b = CountDownLatch.new
-
-      in_thread do
-        Concurrent::atomically do
-          t.value = 1
-          a.count_down
-          b.wait
-        end
-      end
-
-      a.wait
-      expect(t.value).to eq 0
-      b.count_down
-    end
-
     it 'nests' do
       t = TVar.new(0)
 
