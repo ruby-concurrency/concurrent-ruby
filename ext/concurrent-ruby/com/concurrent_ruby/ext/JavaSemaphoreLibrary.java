@@ -45,9 +45,13 @@ public class JavaSemaphoreLibrary {
         }
 
         @JRubyMethod
-        public IRubyObject acquire(ThreadContext context, IRubyObject value) throws InterruptedException {
-            this.semaphore.acquire(rubyFixnumToPositiveInt(value, "permits"));
-            return context.nil;
+        public IRubyObject acquire(ThreadContext context) throws InterruptedException {
+            return this.acquire(context, 1);
+        }
+
+        @JRubyMethod
+        public IRubyObject acquire(ThreadContext context, IRubyObject permits) throws InterruptedException {
+            return this.acquire(context, rubyFixnumToPositiveInt(permits, "permits"));
         }
 
         @JRubyMethod(name = "available_permits")
@@ -60,30 +64,32 @@ public class JavaSemaphoreLibrary {
             return getRuntime().newFixnum(this.semaphore.drainPermits());
         }
 
-        @JRubyMethod
-        public IRubyObject acquire(ThreadContext context) throws InterruptedException {
-            this.semaphore.acquire(1);
-            return context.nil;
-        }
-
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context) throws InterruptedException {
-           return getRuntime().newBoolean(semaphore.tryAcquire(1));
+            int permitsInt = 1;
+            boolean acquired = semaphore.tryAcquire(permitsInt);
+
+            return triedAcquire(context, acquired);
         }
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context, IRubyObject permits) throws InterruptedException {
-           return getRuntime().newBoolean(semaphore.tryAcquire(rubyFixnumToPositiveInt(permits, "permits")));
+            int permitsInt = rubyFixnumToPositiveInt(permits, "permits");
+            boolean acquired = semaphore.tryAcquire(permitsInt);
+
+            return triedAcquire(context, acquired);
         }
 
         @JRubyMethod(name = "try_acquire")
         public IRubyObject tryAcquire(ThreadContext context, IRubyObject permits, IRubyObject timeout) throws InterruptedException {
-             return getRuntime().newBoolean(
-                        semaphore.tryAcquire(
-                                rubyFixnumToPositiveInt(permits, "permits"),
-                                rubyNumericToLong(timeout, "timeout"),
-                                java.util.concurrent.TimeUnit.SECONDS)
-                );
+            int permitsInt = rubyFixnumToPositiveInt(permits, "permits");
+            boolean acquired = semaphore.tryAcquire(
+                    permitsInt,
+                    rubyNumericToLong(timeout, "timeout"),
+                    java.util.concurrent.TimeUnit.SECONDS,
+                    );
+
+            return triedAcquire(context, acquired);
         }
 
         @JRubyMethod
@@ -93,8 +99,8 @@ public class JavaSemaphoreLibrary {
         }
 
         @JRubyMethod
-        public IRubyObject release(ThreadContext context, IRubyObject value) {
-            this.semaphore.release(rubyFixnumToPositiveInt(value, "permits"));
+        public IRubyObject release(ThreadContext context, IRubyObject permits) {
+            this.semaphore.release(rubyFixnumToPositiveInt(permits, "permits"));
             return getRuntime().newBoolean(true);
         }
 
@@ -102,6 +108,16 @@ public class JavaSemaphoreLibrary {
         public IRubyObject reducePermits(ThreadContext context, IRubyObject reduction) throws InterruptedException {
             this.semaphore.publicReducePermits(rubyFixnumToNonNegativeInt(reduction, "reduction"));
             return context.nil;
+        }
+
+        private IRubyObject acquire(ThreadContext context, int permits) throws InterruptedException {
+            this.semaphore.acquire(permits);
+
+            return context.nil;
+        }
+
+        private IRubyObject triedAcquire(ThreadContext context, int permits, boolean acquired) {
+            return getRuntime().newBoolean(acquired);
         }
 
         private int rubyFixnumInt(IRubyObject value, String paramName) {

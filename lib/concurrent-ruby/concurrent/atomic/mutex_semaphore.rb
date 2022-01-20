@@ -23,8 +23,9 @@ module Concurrent
 
       synchronize do
         try_acquire_timed(permits, nil)
-        nil
       end
+
+      nil
     end
 
     # @!macro semaphore_method_available_permits
