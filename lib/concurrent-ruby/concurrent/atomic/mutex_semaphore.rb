@@ -25,7 +25,13 @@ module Concurrent
         try_acquire_timed(permits, nil)
       end
 
-      nil
+      return unless block_given?
+
+      begin
+        yield
+      ensure
+        release(permits)
+      end
     end
 
     # @!macro semaphore_method_available_permits
@@ -49,12 +55,21 @@ module Concurrent
       Utility::NativeInteger.ensure_integer_and_bounds permits
       Utility::NativeInteger.ensure_positive permits
 
-      synchronize do
+      acquired = synchronize do
         if timeout.nil?
           try_acquire_now(permits)
         else
           try_acquire_timed(permits, timeout)
         end
+      end
+
+      return acquired unless block_given?
+      return unless acquired
+
+      begin
+        yield
+      ensure
+        release(permits)
       end
     end
 

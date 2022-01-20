@@ -16,14 +16,16 @@ module Concurrent
   # @!macro semaphore_method_acquire
   #
   #   Acquires the given number of permits from this semaphore,
-  #     blocking until all are available.
+  #     blocking until all are available. If a block is given,
+  #     yields to it and releases the permits afterwards.
   #
   #   @param [Fixnum] permits Number of permits to acquire
   #
   #   @raise [ArgumentError] if `permits` is not an integer or is less than
   #     one
   #
-  #   @return [nil]
+  #   @return [nil, BasicObject] Without a block, `nil` is returned. If a block
+  #   is given, its return value is returned.
 
   # @!macro semaphore_method_available_permits
   #
@@ -41,7 +43,9 @@ module Concurrent
   #
   #   Acquires the given number of permits from this semaphore,
   #     only if all are available at the time of invocation or within
-  #     `timeout` interval
+  #     `timeout` interval. If a block is given, yields to it if the permits
+  #     were successfully acquired, and releases them afterward, returning the
+  #     block's return value.
   #
   #   @param [Fixnum] permits the number of permits to acquire
   #
@@ -51,8 +55,10 @@ module Concurrent
   #   @raise [ArgumentError] if `permits` is not an integer or is less than
   #     one
   #
-  #   @return [Boolean] `false` if no permits are available, `true` when
-  #     acquired a permit
+  #   @return [true, false, nil, BasicObject] `false` if no permits are
+  #     available, `true` when acquired a permit. If a block is given, the
+  #     block's return value is returned if the permits were acquired; if not,
+  #     `nil` is returned.
 
   # @!macro semaphore_method_release
   #
@@ -106,6 +112,8 @@ module Concurrent
   #   releasing a blocking acquirer.
   #   However, no actual permit objects are used; the Semaphore just keeps a
   #   count of the number available and acts accordingly.
+  #   Alternatively, permits may be acquired within a block, and automatically
+  #   released after the block finishes executing.
   #
   # @!macro semaphore_public_api
   # @example
@@ -140,6 +148,19 @@ module Concurrent
   #   # Thread 4 releasing semaphore
   #   # Thread 1 acquired semaphore
   #
+  # @example
+  #   semaphore = Concurrent::Semaphore.new(1)
+  #
+  #   puts semaphore.available_permits
+  #   semaphore.acquire do
+  #     puts semaphore.available_permits
+  #   end
+  #   puts semaphore.available_permits
+  #
+  #   # prints:
+  #   # 1
+  #   # 0
+  #   # 1
   class Semaphore < SemaphoreImplementation
   end
 end
