@@ -21,13 +21,10 @@ jobs:
     steps:
     - name: Clone Repo
       uses: actions/checkout@v2
-    - name: Setup system Ruby ${{ matrix.ruby }}
+    - name: Setup Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+        bundler-cache: true
     - name: Run tests
-      run: |
-        gem install bundler --version 1.17.3
-        echo JAVA_OPTS: $JAVA_OPTS
-        bundle exec rake ci
+      run: bundle exec rake ci
