@@ -378,22 +378,22 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 ## Maintainers
 
-*   [Petr Chalupa](https://github.com/pitr-ch) — Lead maintainer, point-of-contact.
-*   [Chris Seaton](https://github.com/chrisseaton) —
-    If Petr is not available Chris can help or poke Petr to pay attention where it is needed.
+* [Chris Seaton](https://github.com/chrisseaton) — Lead maintainer, point-of-contact.
+* [Benoit Daloze](https://github.com/eregon) — If Chris is not available Benoit can help.
 
 ### Special Thanks to
 
-*   [Jerry D'Antonio](https://github.com/jdantonio) for creating the gem
-*   [Brian Durand](https://github.com/bdurand) for the `ref` gem
-*   [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
-*   [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
+* [Jerry D'Antonio](https://github.com/jdantonio) for creating the gem
+* [Brian Durand](https://github.com/bdurand) for the `ref` gem
+* [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
+* [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
 to the past maintainers
 
-*   [Michele Della Torre](https://github.com/mighe)
-*   [Paweł Obrok](https://github.com/obrok)
-*   [Lucas Allan](https://github.com/lucasallan)
+* [Petr Chalupa](https://github.com/pitr-ch)
+* [Michele Della Torre](https://github.com/mighe)
+* [Paweł Obrok](https://github.com/obrok)
+* [Lucas Allan](https://github.com/lucasallan)
 
 and to [Ruby Association](https://www.ruby.or.jp/en/) for sponsoring a project 
 ["Enhancing Ruby’s concurrency tooling"](https://www.ruby.or.jp/en/news/20181106) in 2018. 
