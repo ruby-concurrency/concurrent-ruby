@@ -72,36 +72,14 @@ module Concurrent
           }.to raise_error(ArgumentError)
         end
 
-        it 'raises an exception if :timeout_interval is not greater than zero' do
-          expect {
-            Concurrent::TimerTask.new(timeout_interval: 0) { nil }
-          }.to raise_error(ArgumentError)
-        end
-
-        it 'raises an exception if :timeout_interval is not an integer' do
-          expect {
-            Concurrent::TimerTask.new(timeout_interval: 'one') { nil }
-          }.to raise_error(ArgumentError)
-        end
-
         it 'uses the default execution interval when no interval is given' do
           subject = TimerTask.new { nil }
           expect(subject.execution_interval).to eq TimerTask::EXECUTION_INTERVAL
         end
 
-        it 'uses the default timeout interval when no interval is given' do
-          subject = TimerTask.new { nil }
-          expect(subject.timeout_interval).to eq TimerTask::TIMEOUT_INTERVAL
-        end
-
         it 'uses the given execution interval' do
           subject = TimerTask.new(execution_interval: 5) { nil }
           expect(subject.execution_interval).to eq 5
-        end
-
-        it 'uses the given timeout interval' do
-          subject = TimerTask.new(timeout_interval: 5) { nil }
-          expect(subject.timeout_interval).to eq 5
         end
       end
 
@@ -135,8 +113,7 @@ module Concurrent
       specify '#execution_interval is writeable' do
 
         latch   = CountDownLatch.new(1)
-        subject = TimerTask.new(timeout_interval: 1,
-                                execution_interval: 1,
+        subject = TimerTask.new(execution_interval: 1,
                                 run_now: true) do |task|
           task.execution_interval = 3
           latch.count_down
@@ -150,27 +127,6 @@ module Concurrent
         latch.wait(0.2)
 
         expect(subject.execution_interval).to eq(3)
-        subject.kill
-      end
-
-      specify '#timeout_interval is writeable' do
-
-        latch   = CountDownLatch.new(1)
-        subject = TimerTask.new(timeout_interval: 1,
-                                execution_interval: 0.1,
-                                run_now: true) do |task|
-          task.timeout_interval = 3
-          latch.count_down
-        end
-
-        expect(subject.timeout_interval).to eq(1)
-        subject.timeout_interval = 2
-        expect(subject.timeout_interval).to eq(2)
-
-        subject.execute
-        latch.wait(0.2)
-
-        expect(subject.timeout_interval).to eq(3)
         subject.kill
       end
     end
@@ -240,16 +196,6 @@ module Concurrent
         observer.latch.wait(1)
         expect(observer.value).to eq(42)
         expect(observer.ex).to be_nil
-        subject.kill
-      end
-
-      it 'notifies all observers on timeout' do
-        subject = TimerTask.new(run_now: true, execution: 2, timeout: 0.1) { sleep }
-        subject.add_observer(observer)
-        subject.execute
-        observer.latch.wait(1)
-        expect(observer.value).to be_nil
-        expect(observer.ex).to be_a(Concurrent::TimeoutError)
         subject.kill
       end
 
