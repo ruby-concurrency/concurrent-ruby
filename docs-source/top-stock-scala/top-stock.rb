@@ -5,14 +5,15 @@ require 'open-uri'
 def get_year_end_closing(symbol, year, api_key)
   uri = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=#{symbol}&apikey=#{api_key}&datatype=csv"
   data = []
-  URI.open(uri) do |f|
-    CSV.parse(f, headers: true) do |row|
-      data << row['close'] if row['timestamp'].include?(year.to_s)
-    end
+  csv = URI.parse(uri).read
+  if csv.include?('call frequency')
+    return :rate_limit_exceeded
+  end
+  CSV.parse(csv, headers: true) do |row|
+    data << row['close'].to_f if row['timestamp'].include?(year.to_s)
   end
   price = data.max
-  price.to_f
-  [symbol, price.to_f]
+  [symbol, price]
 end
 
 def get_top_stock(symbols, year, timeout = 10)
@@ -21,6 +22,7 @@ def get_top_stock(symbols, year, timeout = 10)
 
   stock_prices = symbols.collect{|symbol| Concurrent::dataflow{ get_year_end_closing(symbol, year, api_key) }}
   Concurrent::dataflow(*stock_prices) { |*prices|
+    next :rate_limit_exceeded if prices.include?(:rate_limit_exceeded)
     prices.reduce(['', 0.0]){|highest, price| price.last > highest.last ? price : highest}
   }.value(timeout)
 end
@@ -34,8 +36,13 @@ def error_message
 end
 
 symbols = ['AAPL', 'GOOG', 'IBM', 'ORCL', 'MSFT']
-year = 2008
+year = 2018
 
-top_stock, highest_price = get_top_stock(symbols, year)
+result = get_top_stock(symbols, year)
 
-puts "Top stock of #{year} is #{top_stock} closing at price $#{highest_price}"
+if result == :rate_limit_exceeded
+  puts "API rate limit exceeded"
+else
+  top_stock, highest_price = result
+  puts "Top stock of #{year} is #{top_stock} closing at price $#{highest_price}"
+end
