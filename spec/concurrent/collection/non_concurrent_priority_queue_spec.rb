@@ -125,6 +125,41 @@ RSpec.shared_examples :priority_queue do
     it 'returns false when called on an empty queue' do
       expect(subject.delete(:foo)).to be_falsey
     end
+
+    def dequeue_all(queue)
+      queue.size.times.inject([]) do |acc, _|
+        acc << queue.pop
+      end
+    end
+
+    it 'deletes the requested item when it is "smaller" than the last element' do
+      [
+        100,
+        9, 90,
+        7, 8, 70, 80,
+        3, 4, 5, 6, 30, 40, 50, 60
+      ].each do |item|
+        subject << item
+      end
+
+      subject.delete(8)
+
+      expect(subject.length).to eq 14
+      expect(subject.pop).to eq 100
+      expect(subject.pop).to eq 90
+      expect(subject.pop).to eq 80
+      expect(subject.pop).to eq 70
+      expect(subject.pop).to eq 60
+      expect(subject.pop).to eq 50
+      expect(subject.pop).to eq 40
+      expect(subject.pop).to eq 30
+      expect(subject.pop).to eq 9
+      expect(subject.pop).to eq 7
+      expect(subject.pop).to eq 6
+      expect(subject.pop).to eq 5
+      expect(subject.pop).to eq 4
+      expect(subject.pop).to eq 3
+    end
   end
 
   context '#empty?' do

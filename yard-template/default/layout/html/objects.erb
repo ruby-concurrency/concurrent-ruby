@@ -16,6 +16,8 @@
         <ul id="alpha_<%= letter %>" class="alpha">
           <li class="letter"><%= letter %></li>
           <ul>
+            <%# better sorting on docs/master/_index.html %>
+            <%# objects.each do |obj| %>
             <% objects.sort_by { |o| [o.name, o.namespace.path] }.each do |obj| %>
               <li>
                 <%= linkify obj, obj.name %>

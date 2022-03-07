@@ -149,6 +149,23 @@ unless Concurrent.on_jruby?
           end
         end
 
+        it "can be upgraded to a write lock when read lock acquired more than once" do
+          Timeout.timeout(3) do
+            expect(lock.acquire_read_lock).to be true
+            expect(lock.acquire_read_lock).to be true
+            expect(Thread.current).to hold(lock).for_read
+
+            # now we want to upgrade...
+            expect(lock.acquire_write_lock).to be true
+            expect(lock.release_read_lock).to be true
+            expect(lock.release_read_lock).to be true
+            expect(Thread.current).to hold(lock).for_write
+
+            expect(lock.release_write_lock).to be true
+            expect(lock).to be_free
+          end
+        end
+
         it "cannot be released when not held" do
           expect { lock.release_read_lock }.to raise_error(IllegalOperationError)
         end

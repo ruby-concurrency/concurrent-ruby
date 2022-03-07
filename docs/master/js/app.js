@@ -171,6 +171,7 @@ function generateTOC() {
   var counter = 0;
   var tags = ['h2', 'h3', 'h4', 'h5', 'h6'];
   var i;
+  var curli;
   if ($('#filecontents h1').length > 1) tags.unshift('h1');
   for (i = 0; i < tags.length; i++) { tags[i] = '#filecontents ' + tags[i]; }
   var lastTag = parseInt(tags[0][1], 10);
@@ -190,15 +191,25 @@ function generateTOC() {
     }
     if (thisTag > lastTag) {
       for (i = 0; i < thisTag - lastTag; i++) {
-        var tmp = $('<ol/>'); toc.append(tmp); toc = tmp;
+        if ( typeof(curli) == "undefined" ) {
+          curli = $('<li/>');
+          toc.append(curli);
+        }
+        toc = $('<ol/>');
+        curli.append(toc);
+        curli = undefined;
       }
     }
     if (thisTag < lastTag) {
-      for (i = 0; i < lastTag - thisTag; i++) toc = toc.parent();
+      for (i = 0; i < lastTag - thisTag; i++) {
+        toc = toc.parent();
+        toc = toc.parent();
+      }
     }
     var title = $(this).attr('toc-title');
     if (typeof(title) == "undefined") title = $(this).text();
-    toc.append('<li><a href="#' + this.id + '">' + title + '</a></li>');
+    curli =$('<li><a href="#' + this.id + '">' + title + '</a></li>'); 
+    toc.append(curli);
     lastTag = thisTag;
   });
   if (!show) return;
@@ -275,6 +286,16 @@ function mainFocus() {
   setTimeout(function() { $('#main').focus(); }, 10);
 }
 
+function navigationChange() {
+  // This works around the broken anchor navigation with the YARD template.
+  window.onpopstate = function() {
+    var hash = window.location.hash;
+    if (hash !== '' && $(hash)[0]) {
+      $(hash)[0].scrollIntoView();
+    }
+  };
+}
+
 $(document).ready(function() {
   navResizer();
   navExpander();
@@ -287,6 +308,7 @@ $(document).ready(function() {
   constantSummaryToggle();
   generateTOC();
   mainFocus();
+  navigationChange();
 });
 
 })();

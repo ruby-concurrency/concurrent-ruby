@@ -1,9 +1,106 @@
 ## Current
 
+## Release v1.1.9 (5 Jun 2021)
+
+concurrent-ruby:
+
+* (#866) Child promise state not set to :pending immediately after #execute when parent has completed 
+* (#905, #872) Fix RubyNonConcurrentPriorityQueue#delete method
+* (2df0337d) Make sure locks are not shared on shared when objects are dup/cloned
+* (#900, #906, #796, #847, #911) Fix Concurrent::Set tread-safety issues on CRuby
+* (#907) Add new ConcurrentMap backend for TruffleRuby
+
+## Release v1.1.8 (20 January 2021)
+
+concurrent-ruby:
+
+* (#885) Fix race condition in TVar for stale reads 
+* (#884) RubyThreadLocalVar: Do not iterate over hash which might conflict with new pair addition
+
+## Release v1.1.7 (6 August 2020)
+
+concurrent-ruby:
+
+* (#879) Consider falsy value on `Concurrent::Map#compute_if_absent` for fast non-blocking path
+* (#876) Reset Async queue on forking, makes Async fork-safe
+* (#856) Avoid running problematic code in RubyThreadLocalVar on MRI that occasionally results in segfault
+* (#853) Introduce ThreadPoolExecutor without a Queue
+
+## Release v1.1.6, edge v0.6.0 (10 Feb 2020)
+
+concurrent-ruby:
+
+* (#841) Concurrent.disable_at_exit_handlers! is no longer needed and was deprecated.
+* (#841) AbstractExecutorService#auto_terminate= was deprecated and has no effect. 
+  Set :auto_terminate option instead when executor is initialized.
+
+## Release v1.1.6.pre1, edge v0.6.0.pre1 (26 Jan 2020)
+
+concurrent-ruby:
+
+* (#828) Allow to name executors, the name is also used to name their threads 
+* (#838) Implement #dup and #clone for structs
+* (#821) Safer finalizers for thread local variables
+* Documentation fixes
+* (#814) Use Ruby's Etc.nprocessors if available
+* (#812) Fix directory structure not to mess with packaging tools
+* (#840) Fix termination of pools on JRuby
+
+concurrent-ruby-edge:
+
+* Add WrappingExecutor (#830)
+
+## Release v1.1.5, edge v0.5.0 (10 Mar 2019)
+
+concurrent-ruby:
+
+* fix potential leak of context on JRuby and Java 7
+
+concurrent-ruby-edge:
+
+* Add finalized Concurrent::Cancellation
+* Add finalized Concurrent::Throttle
+* Add finalized Concurrent::Promises::Channel
+* Add new Concurrent::ErlangActor
+
+## Release v1.1.4 (14 Dec 2018)
+
+* (#780) Remove java_alias of 'submit' method of Runnable to let executor service work on java 11
+* (#776) Fix NameError on defining a struct with a name which is already taken in an ancestor
+
+## Release v1.1.3 (7 Nov 2018)
+
+* (#775) fix partial require of the gem (although not officially supported)
+
+## Release v1.1.2 (6 Nov 2018)
+
+* (#773) more defensive 1.9.3 support
+
+## Release v1.1.1, edge v0.4.1 (1 Nov 2018)
+
+* (#768) add support for 1.9.3 back 
+
+## Release v1.1.0, edge v0.4.0 (31 OCt 2018) (yanked)
+
+* (#768) yanked because of issues with removed 1.9.3 support 
+
+## Release v1.1.0.pre2, edge v0.4.0.pre2 (18 Sep 2018)
+
+concurrent-ruby:
+
+* fixed documentation and README links
+* fix Set for TruffleRuby and Rubinius
+* use properly supported TruffleRuby APIs
+
+concurrent-ruby-edge:
+
+* add Promises.zip_futures_over_on
+
 ## Release v1.1.0.pre1, edge v0.4.0.pre1 (15 Aug 2018)
 
 concurrent-ruby:
 
+* requires at least Ruby 2.0
 * [Promises](http://ruby-concurrency.github.io/concurrent-ruby/1.1.0/Concurrent/Promises.html)
   are moved from `concurrent-ruby-edge` to `concurrent-ruby`
 * Add support for TruffleRuby

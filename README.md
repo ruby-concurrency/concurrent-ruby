@@ -1,8 +1,6 @@
 # Concurrent Ruby
 
 [![Gem Version](https://badge.fury.io/rb/concurrent-ruby.svg)](http://badge.fury.io/rb/concurrent-ruby)
-[![Build Status](https://travis-ci.org/ruby-concurrency/concurrent-ruby.svg?branch=master)](https://travis-ci.org/ruby-concurrency/concurrent-ruby)
-[![Build status](https://ci.appveyor.com/api/projects/status/iq8aboyuu3etad4w?svg=true)](https://ci.appveyor.com/project/rubyconcurrency/concurrent-ruby)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](http://opensource.org/licenses/MIT)
 [![Gitter chat](https://img.shields.io/badge/IRC%20(gitter)-devs%20%26%20users-brightgreen.svg)](https://gitter.im/ruby-concurrency/concurrent-ruby)
 
@@ -39,11 +37,13 @@ The design goals of this gem are:
 appreciate your help. Would you like to contribute? Great! Have a look at 
 [issues with `looking-for-contributor` label](https://github.com/ruby-concurrency/concurrent-ruby/issues?q=is%3Aissue+is%3Aopen+label%3Alooking-for-contributor).** And if you pick something up let us know on the issue.
 
+You can also get started by triaging issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to concurrent-ruby on CodeTriage](https://www.codetriage.com/ruby-concurrency/concurrent-ruby). [![Open Source Helpers](https://www.codetriage.com/ruby-concurrency/concurrent-ruby/badges/users.svg)](https://www.codetriage.com/ruby-concurrency/concurrent-ruby)
+
 ## Thread Safety
 
 *Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency 
-library, providing consistent behavior and guarantees on all three of the main Ruby interpreters 
-(MRI/CRuby, JRuby, and Rubinius).*
+library, providing consistent behavior and guarantees on all four of the main Ruby interpreters 
+(MRI/CRuby, JRuby, Rubinius, TruffleRuby).*
 
 Every abstraction in this library is thread safe. Specific thread safety guarantees are documented 
 with each abstraction.
@@ -59,7 +59,7 @@ Concurrent Ruby is also the only Ruby library which provides a full suite of thr
 immutable variable types and data structures.
 
 We've also initiated discussion to document [memory model](docs-source/synchronization.md) of Ruby which 
-would provide consistent behaviour and guarantees on all three of the main Ruby interpreters 
+would provide consistent behaviour and guarantees on all four of the main Ruby interpreters 
 (MRI/CRuby, JRuby, Rubinius, TruffleRuby).
 
 ## Features & Documentation
@@ -105,9 +105,9 @@ We also have a [IRC (gitter)](https://gitter.im/ruby-concurrency/concurrent-ruby
 Collection classes that were originally part of the (deprecated) `thread_safe` gem:
 
 *   [Array](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Array.html) A thread-safe
-    subclass of Ruby's standard [Array](http://ruby-doc.org/core-2.2.0/Array.html).
+    subclass of Ruby's standard [Array](http://ruby-doc.org/core/Array.html).
 *   [Hash](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Hash.html) A thread-safe
-    subclass of Ruby's standard [Hash](http://ruby-doc.org/core-2.2.0/Hash.html).
+    subclass of Ruby's standard [Hash](http://ruby-doc.org/core/Hash.html).
 *   [Set](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Set.html) A thread-safe
     subclass of Ruby's standard [Set](http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html).
 *   [Map](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Map.html) A hash-like object
@@ -122,7 +122,7 @@ Value objects inspired by other languages:
     immutable object representing an optional value, based on 
     [Haskell Data.Maybe](https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html).
 
-Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core-2.2.0/Struct.html):
+Structure classes derived from Ruby's [Struct](http://ruby-doc.org/core/Struct.html):
 
 *   [ImmutableStruct](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ImmutableStruct.html)
     Immutable struct where values are set at construction and cannot be changed later.
@@ -224,11 +224,47 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
     *Status: will be moved to core soon.*
 *   [LockFreeStack](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/LockFreeStack.html)
     *Status: missing documentation and tests.*
+*   [Promises::Channel](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises/Channel.html)
+    A first in first out channel that accepts messages with push family of methods and returns
+    messages with pop family of methods.
+    Pop and push operations can be represented as futures, see `#pop_op` and `#push_op`.
+    The capacity of the channel can be limited to support back pressure, use capacity option in `#initialize`.
+    `#pop` method blocks ans `#pop_op` returns pending future if there is no message in the channel.
+    If the capacity is limited the `#push` method blocks and `#push_op` returns pending future.
+*   [Cancellation](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Cancellation.html)
+    The Cancellation abstraction provides cooperative cancellation.
+
+    The standard methods `Thread#raise` of `Thread#kill` available in Ruby
+    are very dangerous (see linked the blog posts bellow).
+    Therefore concurrent-ruby provides an alternative.
+    
+    *   <https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/>
+    *   <http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/>
+    *   <http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html>
+
+    It provides an object which represents a task which can be executed,
+    the task has to get the reference to the object and periodically cooperatively check that it is not cancelled.
+    Good practices to make tasks cancellable:
+    *   check cancellation every cycle of a loop which does significant work,
+    *   do all blocking actions in a loop with a timeout then on timeout check cancellation
+        and if ok block again with the timeout 
+*   [Throttle](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Throttle.html)
+    A tool managing concurrency level of tasks.
+*   [ErlangActor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/ErlangActor.html)
+    Actor implementation which precisely matches Erlang actor behaviour. 
+    Requires at least Ruby 2.1 otherwise it's not loaded.
+*   [WrappingExecutor](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/WrappingExecutor.html) 
+    A delegating executor which modifies each task before the task is given to 
+    the target executor it delegates to.
 
 ## Supported Ruby versions
 
-MRI 2.0 and above, JRuby 9000, TruffleRuby are supported. 
-This gem should be fully compatible with any interpreter that is compliant with Ruby 2.0 or newer.
+* MRI 2.0 and above
+* JRuby 9000
+* TruffleRuby are supported.
+* Any Ruby interpreter that is compliant with Ruby 2.0 or newer.
+
+Actually we still support mri 1.9.3 and jruby 1.7.27 but we are looking at ways how to drop the support.
 Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.
 
 The legacy support for Rubinius is kept but it is no longer maintained, if you would like to help 
@@ -317,29 +353,56 @@ and load the appropriate C extensions.
 No gems should depend on `concurrent-ruby-ext`. Doing so will force C extensions on your users. The
 best practice is to depend on `concurrent-ruby` and let users to decide if they want C extensions.
 
+## Building the gem
+
+### Requirements
+
+* Recent CRuby
+* JRuby, `rbenv install jruby-9.2.17.0`
+* Set env variable `CONCURRENT_JRUBY_HOME` to point to it, e.g. `/usr/local/opt/rbenv/versions/jruby-9.2.17.0`
+* Install Docker, required for Windows builds
+
+### Publishing the Gem
+
+* Update`version.rb`
+* Update the CHANGELOG
+* Update the Yard documentation
+    - Add the new version to `docs-source/signpost.md`. Needs to be done only if there are visible changes in the
+      documentation.
+    - Run `bundle exec rake yard` to update the master documentation and signpost.
+    - Run `bundle exec rake yard:<new-version>` to add or update the documentation of the new version.
+* Commit (and push) the changes.
+* Use `be rake release` to release the gem. It consists
+  of `['release:checks', 'release:build', 'release:test', 'release:publish']` steps. It will ask at the end before
+  publishing anything. Steps can also be executed individually.
+
 ## Maintainers
 
-*   [Petr Chalupa](https://github.com/pitr-ch) (lead maintainer, point-of-contact)
-*   [Jerry D'Antonio](https://github.com/jdantonio) (creator)
-*   [Chris Seaton](https://github.com/chrisseaton)
+* [Chris Seaton](https://github.com/chrisseaton) — Lead maintainer, point-of-contact.
+* [Benoit Daloze](https://github.com/eregon) — If Chris is not available Benoit can help.
 
 ### Special Thanks to
 
-*   [Brian Durand](https://github.com/bdurand) for the `ref` gem
-*   [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
-*   [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
+* [Jerry D'Antonio](https://github.com/jdantonio) for creating the gem
+* [Brian Durand](https://github.com/bdurand) for the `ref` gem
+* [Charles Oliver Nutter](https://github.com/headius) for the `atomic` and `thread_safe` gems
+* [thedarkone](https://github.com/thedarkone) for the `thread_safe` gem
 
-and to the past maintainers
+to the past maintainers
 
-*   [Michele Della Torre](https://github.com/mighe)
-*   [Paweł Obrok](https://github.com/obrok)
-*   [Lucas Allan](https://github.com/lucasallan)
+* [Petr Chalupa](https://github.com/pitr-ch)
+* [Michele Della Torre](https://github.com/mighe)
+* [Paweł Obrok](https://github.com/obrok)
+* [Lucas Allan](https://github.com/lucasallan)
+
+and to [Ruby Association](https://www.ruby.or.jp/en/) for sponsoring a project 
+["Enhancing Ruby’s concurrency tooling"](https://www.ruby.or.jp/en/news/20181106) in 2018. 
 
 ## License and Copyright
 
 *Concurrent Ruby* is free software released under the 
 [MIT License](http://www.opensource.org/licenses/MIT).
 
-The *Concurrent Ruby* [logo](https://github.com/ruby-concurrency/concurrent-ruby/wiki/Logo) was
+The *Concurrent Ruby* [logo](https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/docs-source/logo/concurrent-ruby-logo-300x300.png) was
 designed by [David Jones](https://twitter.com/zombyboy). It is Copyright &copy; 2014 
 [Jerry D'Antonio](https://twitter.com/jerrydantonio). All Rights Reserved.

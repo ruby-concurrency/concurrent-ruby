@@ -1,4 +1,4 @@
---use-bundle-exec-rake-yard-instead
+--error:" use `bundle exec rake yard` instead"
 --output-dir tmp
 --
 no-lib

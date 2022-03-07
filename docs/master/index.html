@@ -10,11 +10,11 @@
   
 </title>
 
-  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
 
-  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
 
-<script type="text/javascript" charset="utf-8">
+<script type="text/javascript">
   pathId = "README";
   relpath = '';
 </script>
@@ -103,8 +103,8 @@ appreciate your help. Would you like to contribute? Great! Have a look at
 <h2>Thread Safety</h2>
 
 <p><em>Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency 
-library, providing consistent behavior and guarantees on all three of the main Ruby interpreters 
-(MRI/CRuby, JRuby, and Rubinius).</em></p>
+library, providing consistent behavior and guarantees on all four of the main Ruby interpreters 
+(MRI/CRuby, JRuby, Rubinius, TruffleRuby).</em></p>
 
 <p>Every abstraction in this library is thread safe. Specific thread safety guarantees are documented 
 with each abstraction.</p>
@@ -120,7 +120,7 @@ Concurrent Ruby is also the only Ruby library which provides a full suite of thr
 immutable variable types and data structures.</p>
 
 <p>We&#39;ve also initiated discussion to document <a href="docs-source/synchronization.md">memory model</a> of Ruby which 
-would provide consistent behaviour and guarantees on all three of the main Ruby interpreters 
+would provide consistent behaviour and guarantees on all four of the main Ruby interpreters 
 (MRI/CRuby, JRuby, Rubinius, TruffleRuby).</p>
 
 <h2>Features &amp; Documentation</h2>
@@ -173,9 +173,9 @@ framework. It extensively uses the new synchronization layer to make all the fea
 
 <ul>
 <li>  <span class='object_link'><a href="Concurrent/Array.html" title="Concurrent::Array (class)">Array</a></span> A thread-safe
-subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/core-2.2.0/Array.html">Array</a>.</li>
+subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/core/Array.html">Array</a>.</li>
 <li>  <span class='object_link'><a href="Concurrent/Hash.html" title="Concurrent::Hash (class)">Hash</a></span> A thread-safe
-subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/core-2.2.0/Hash.html">Hash</a>.</li>
+subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/core/Hash.html">Hash</a>.</li>
 <li>  <span class='object_link'><a href="Concurrent/Set.html" title="Concurrent::Set (class)">Set</a></span> A thread-safe
 subclass of Ruby&#39;s standard <a href="http://ruby-doc.org/stdlib-2.4.0/libdoc/set/rdoc/Set.html">Set</a>.</li>
 <li>  <span class='object_link'><a href="Concurrent/Map.html" title="Concurrent::Map (class)">Map</a></span> A hash-like object
@@ -193,7 +193,7 @@ immutable object representing an optional value, based on
 <a href="https://hackage.haskell.org/package/base-4.2.0.1/docs/Data-Maybe.html">Haskell Data.Maybe</a>.</li>
 </ul>
 
-<p>Structure classes derived from Ruby&#39;s <a href="http://ruby-doc.org/core-2.2.0/Struct.html">Struct</a>:</p>
+<p>Structure classes derived from Ruby&#39;s <a href="http://ruby-doc.org/core/Struct.html">Struct</a>:</p>
 
 <ul>
 <li>  <span class='object_link'><a href="Concurrent/ImmutableStruct.html" title="Concurrent::ImmutableStruct (module)">ImmutableStruct</a></span>
@@ -307,14 +307,57 @@ inspiration from Clojure <a href="https://clojure.github.io/core.async/">core.as
 <li>  <span class='object_link'><a href="Concurrent/LazyRegister.html" title="Concurrent::LazyRegister (class)">LazyRegister</a></span></li>
 <li>  <span class='object_link'><a href="Concurrent/Edge/LockFreeLinkedSet.html" title="Concurrent::Edge::LockFreeLinkedSet (class)">LockFreeLinkedSet</a></span>
 <em>Status: will be moved to core soon.</em></li>
-<li>  <span class='object_link'>LockFreeStack</span>
+<li>  <span class='object_link'><a href="Concurrent/LockFreeStack.html" title="Concurrent::LockFreeStack (class)">LockFreeStack</a></span>
 <em>Status: missing documentation and tests.</em></li>
+<li>  <a href="http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Promises/Channel.html">Promises::Channel</a>
+A first in first out channel that accepts messages with push family of methods and returns
+messages with pop family of methods.
+Pop and push operations can be represented as futures, see <code>#pop_op</code> and <code>#push_op</code>.
+The capacity of the channel can be limited to support back pressure, use capacity option in <code>#initialize</code>.
+<code>#pop</code> method blocks ans <code>#pop_op</code> returns pending future if there is no message in the channel.
+If the capacity is limited the <code>#push</code> method blocks and <code>#push_op</code> returns pending future.</li>
+<li><p><span class='object_link'><a href="Concurrent/Cancellation.html" title="Concurrent::Cancellation (class)">Cancellation</a></span>
+The Cancellation abstraction provides cooperative cancellation.</p>
+
+<p>The standard methods <code>Thread#raise</code> of <code>Thread#kill</code> available in Ruby
+are very dangerous (see linked the blog posts bellow).
+Therefore concurrent-ruby provides an alternative.</p>
+
+<ul>
+<li>  <a href="https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/">https://jvns.ca/blog/2015/11/27/why-rubys-timeout-is-dangerous-and-thread-dot-raise-is-terrifying/</a></li>
+<li>  <a href="http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/">http://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/</a></li>
+<li>  <a href="http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html">http://blog.headius.com/2008/02/rubys-threadraise-threadkill-timeoutrb.html</a></li>
+</ul>
+
+<p>It provides an object which represents a task which can be executed,
+the task has to get the reference to the object and periodically cooperatively check that it is not cancelled.
+Good practices to make tasks cancellable:</p>
+
+<ul>
+<li>  check cancellation every cycle of a loop which does significant work,</li>
+<li>  do all blocking actions in a loop with a timeout then on timeout check cancellation
+and if ok block again with the timeout </li>
+</ul></li>
+<li><p><span class='object_link'><a href="Concurrent/Throttle.html" title="Concurrent::Throttle (class)">Throttle</a></span>
+A tool managing concurrency level of tasks.</p></li>
+<li><p><span class='object_link'><a href="Concurrent/ErlangActor.html" title="Concurrent::ErlangActor (module)">ErlangActor</a></span>
+Actor implementation which precisely matches Erlang actor behaviour. 
+Requires at least Ruby 2.1 otherwise it&#39;s not loaded.</p></li>
+<li><p><span class='object_link'><a href="Concurrent/WrappingExecutor.html" title="Concurrent::WrappingExecutor (class)">WrappingExecutor</a></span> 
+A delegating executor which modifies each task before the task is given to 
+the target executor it delegates to.</p></li>
 </ul>
 
 <h2>Supported Ruby versions</h2>
 
-<p>MRI 2.0 and above, JRuby 9000, TruffleRuby are supported. 
-This gem should be fully compatible with any interpreter that is compliant with Ruby 2.0 or newer.
+<ul>
+<li>MRI 2.0 and above</li>
+<li>JRuby 9000</li>
+<li>TruffleRuby are supported.</li>
+<li>Any Ruby interpreter that is compliant with Ruby 2.0 or newer.</li>
+</ul>
+
+<p>Actually we still support mri 1.9.3 and jruby 1.7.27 but we are looking at ways how to drop the support.
 Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.</p>
 
 <p>The legacy support for Rubinius is kept but it is no longer maintained, if you would like to help 
@@ -393,23 +436,54 @@ and load the appropriate C extensions.</p>
 <p>No gems should depend on <code>concurrent-ruby-ext</code>. Doing so will force C extensions on your users. The
 best practice is to depend on <code>concurrent-ruby</code> and let users to decide if they want C extensions.</p>
 
+<h2>Building the gem</h2>
+
+<h3>Requirements</h3>
+
+<ul>
+<li>Recent CRuby</li>
+<li>JRuby, <code>rbenv install jruby-9.2.17.0</code></li>
+<li>Set env variable <code>CONCURRENT_JRUBY_HOME</code> to point to it, e.g. <code>/usr/local/opt/rbenv/versions/jruby-9.2.17.0</code></li>
+<li>Install Docker, required for Windows builds</li>
+</ul>
+
+<h3>Publishing the Gem</h3>
+
+<ul>
+<li>Update<code>version.rb</code></li>
+<li>Update the CHANGELOG</li>
+<li>Update the Yard documentation
+
+<ul>
+<li>Add the new version to <code>docs-source/signpost.md</code>. Needs to be done only if there are visible changes in the
+documentation.</li>
+<li>Run <code>bundle exec rake yard</code> to update the master documentation and signpost.</li>
+<li>Run <code>bundle exec rake yard:&lt;new-version&gt;</code> to add or update the documentation of the new version.</li>
+</ul></li>
+<li>Commit (and push) the changes.</li>
+<li>Use <code>be rake release</code> to release the gem. It consists
+of <code>[&#39;release:checks&#39;, &#39;release:build&#39;, &#39;release:test&#39;, &#39;release:publish&#39;]</code> steps. It will ask at the end before
+publishing anything. Steps can also be executed individually.</li>
+</ul>
+
 <h2>Maintainers</h2>
 
 <ul>
-<li>  <a href="https://github.com/pitr-ch">Petr Chalupa</a> (lead maintainer, point-of-contact)</li>
-<li>  <a href="https://github.com/jdantonio">Jerry D&#39;Antonio</a> (creator)</li>
-<li>  <a href="https://github.com/chrisseaton">Chris Seaton</a></li>
+<li>  <a href="https://github.com/pitr-ch">Petr Chalupa</a> — Lead maintainer, point-of-contact.</li>
+<li>  <a href="https://github.com/chrisseaton">Chris Seaton</a> —
+If Petr is not available Chris can help or poke Petr to pay attention where it is needed.</li>
 </ul>
 
 <h3>Special Thanks to</h3>
 
 <ul>
+<li>  <a href="https://github.com/jdantonio">Jerry D&#39;Antonio</a> for creating the gem</li>
 <li>  <a href="https://github.com/bdurand">Brian Durand</a> for the <code>ref</code> gem</li>
 <li>  <a href="https://github.com/headius">Charles Oliver Nutter</a> for the <code>atomic</code> and <code>thread_safe</code> gems</li>
 <li>  <a href="https://github.com/thedarkone">thedarkone</a> for the <code>thread_safe</code> gem</li>
 </ul>
 
-<p>and to the past maintainers</p>
+<p>to the past maintainers</p>
 
 <ul>
 <li>  <a href="https://github.com/mighe">Michele Della Torre</a></li>
@@ -417,12 +491,15 @@ best practice is to depend on <code>concurrent-ruby</code> and let users to deci
 <li>  <a href="https://github.com/lucasallan">Lucas Allan</a></li>
 </ul>
 
+<p>and to <a href="https://www.ruby.or.jp/en/">Ruby Association</a> for sponsoring a project 
+<a href="https://www.ruby.or.jp/en/news/20181106">&quot;Enhancing Ruby’s concurrency tooling&quot;</a> in 2018. </p>
+
 <h2>License and Copyright</h2>
 
 <p><em>Concurrent Ruby</em> is free software released under the 
 <a href="http://www.opensource.org/licenses/MIT">MIT License</a>.</p>
 
-<p>The <em>Concurrent Ruby</em> <a href="https://github.com/ruby-concurrency/concurrent-ruby/wiki/Logo">logo</a> was
+<p>The <em>Concurrent Ruby</em> <a href="https://raw.githubusercontent.com/ruby-concurrency/concurrent-ruby/master/docs-source/logo/concurrent-ruby-logo-300x300.png">logo</a> was
 designed by <a href="https://twitter.com/zombyboy">David Jones</a>. It is Copyright &copy; 2014 
 <a href="https://twitter.com/jerrydantonio">Jerry D&#39;Antonio</a>. All Rights Reserved.</p>
 </div></div>

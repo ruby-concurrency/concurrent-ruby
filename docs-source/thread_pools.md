@@ -23,7 +23,8 @@ end
 
 What happens if you post new work when all (e.g.) 5 threads are currently busy? It will be added to a queue, and executed when a thread becomes available.  In a `FixedThreadPool`, if you post work to the pool much faster than the work can be completed, the queue may grow without bounds, as the work piles up in the holding queue, using up memory without bounds.  To limit the queue and apply some form of 'back pressure' instead, you can use the more configurable `ThreadPoolExecutor` (See below).
 
-If you'd like to base the number of threads in the pool on the number of processors available, your code can consult [Concurrent.processor_count](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ProcessorCounter.html#processor_count-instance_method).
+If you'd like to base the number of threads in the pool on the number of processors available, your code can consult [Concurrent.processor_count](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent.html#processor_count-class_method).
+
 
 The `FixedThreadPool` is based on the semantics used in Java for [java.util.concurrent.Executors.newFixedThreadPool(int nThreads)](https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool(int))
 

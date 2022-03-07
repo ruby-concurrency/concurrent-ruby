@@ -181,10 +181,20 @@ module Concurrent
 
       specify 'final field always visible' do
         store = BClass.new 'asd'
-        t1    = in_thread { 1000000000.times { |i| store = BClass.new i.to_s } }
-        t2    = in_thread { 10.times { expect(store.final).not_to be_nil; Thread.pass } }
-        t2.join
-        t1.kill
+        done  = CountDownLatch.new
+        in_thread do
+          1000000000.times do |i|
+            store = BClass.new i.to_s
+            break if done.count == 0
+          end
+        end
+        in_thread do
+          10.times do
+            expect(store.final).not_to be_nil
+            Thread.pass
+          end
+          done.count_down
+        end
       end
 
       let(:store) { BClass.new }

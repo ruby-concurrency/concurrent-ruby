@@ -75,9 +75,8 @@ module Concurrent
       end
 
       specify 'upon validation the new value will be set to the block return value' do
-        actual    = nil
         expected  = 42
-        validator = ->(new_value) { true }
+        validator = ->(_new_value) { true }
         subject   = Agent.new(0, validator: validator)
         subject.send_via(immediate) { expected }
         expect(subject.value).to eq expected
@@ -323,8 +322,6 @@ module Concurrent
         end
 
         it 'does not block further action processing' do
-          expected = 42
-          actual   = nil
           subject  = Agent.new(0, error_mode: :continue)
           subject.send_via(immediate) { raise StandardError }
           subject.send_via(immediate) { 42 }

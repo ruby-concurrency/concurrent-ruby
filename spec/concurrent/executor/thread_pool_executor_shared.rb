@@ -31,6 +31,10 @@ RSpec.shared_examples :thread_pool_executor do
     it 'defaults :fallback_policy to :abort' do
       expect(subject.fallback_policy).to eq :abort
     end
+
+    it 'defaults :name to nil' do
+      expect(subject.name).to be_nil
+    end
   end
 
   context "#initialize explicit values" do
@@ -100,6 +104,13 @@ RSpec.shared_examples :thread_pool_executor do
         described_class.new(fallback_policy: :bogus)
       }.to raise_error(ArgumentError)
     end
+
+    it 'sets :name' do
+      pool = described_class.new(name: 'MyPool')
+      expect(pool.name).to eq 'MyPool'
+      pool.shutdown
+      pool.wait_for_termination(pool_termination_timeout)
+    end
   end
 
   context '#max_queue' do
@@ -124,6 +135,55 @@ RSpec.shared_examples :thread_pool_executor do
       expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject.max_queue).to eq expected_max
     end
+  end
+
+  context '#synchronous' do
+
+    subject do
+      described_class.new(
+          min_threads: 1,
+          max_threads: 2,
+          max_queue: 0,
+          synchronous: true,
+          fallback_policy: :abort
+      )
+    end
+
+    it 'cannot be set unless `max_queue` is zero' do
+      expect {
+        described_class.new(
+            min_threads: 2,
+            max_threads: 5,
+            max_queue: 1,
+            fallback_policy: :discard,
+            synchronous: true
+        )
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'executes fallback policy once max_threads has been reached' do
+      latch = Concurrent::CountDownLatch.new(1)
+      (subject.max_length).times do
+        subject.post {
+          latch.wait
+        }
+      end
+
+      expect(subject.queue_length).to eq 0
+
+      # verify nothing happening
+      20.times {
+        expect {
+          subject.post {
+            sleep
+          }
+        }.to raise_error(Concurrent::RejectedExecutionError)
+      }
+
+      # release
+      latch.count_down
+    end
+
   end
 
   context '#queue_length', :truffle_bug => true do # only actually fails for RubyThreadPoolExecutor
