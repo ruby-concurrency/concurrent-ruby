@@ -2,6 +2,8 @@ name: Experimental Rubies CI Run
 on:
   schedule:
     - cron:  '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch:
+    branches: [ master ]
 
 jobs:
   build:
