@@ -16,10 +16,10 @@ module Concurrent
 
     # @return [Array]
     def execute(*args)
-      synchronize do
-        success = false
-        value   = reason = nil
+      success = true
+      value   = reason = nil
 
+      synchronize do
         begin
           value   = @task.call(*args)
           success = true
@@ -27,9 +27,9 @@ module Concurrent
           reason  = ex
           success = false
         end
-
-        [success, value, reason]
       end
+
+      [success, value, reason]
     end
   end
 end
