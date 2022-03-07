@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: thread_pools
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.thread_pools.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: thread_pools</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><h1>Thread Pools</h1>
+
+<p>A Thread Pool is an abstraction that you can give a unit of work to, and the work will be executed by one of possibly several threads in the pool. One motivation for using thread pools is the overhead of creating and destroying threads. Creating a pool of reusable worker threads then repeatedly re-using threads from the pool can have huge performance benefits for a long-running application like a service.</p>
+
+<p><code>concurrent-ruby</code> also offers some higher level abstractions than thread pools. For many problems, you will be better served by using one of these -- if you are thinking of using a thread pool, we especially recommend you look at and understand <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Future.html">Future</a>s before deciding to use thread pools directly instead.  Futures are implemented using thread pools, but offer a higher level abstraction.</p>
+
+<p>But there are some problems for which directly using a thread pool is an appropriate solution. Or, you may wish to make your own thread pool to run Futures on, to be separate or have different characteristics than the global thread pool that Futures run on by default.</p>
+
+<p>Thread pools are considered &#39;executors&#39; -- an object you can give a unit of work to, to have it executed.  In fact, thread pools are the main kind of executor you will see - others are mainly for testing or odd edge cases. In some documentation or source code you&#39;ll see reference to an &#39;executor&#39; -- this is commonly a thread pool, or else something similar that executes units of work (usually supplied as Ruby blocks).</p>
+
+<h2>FixedThreadPool</h2>
+
+<p>A <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/FixedThreadPool.html">FixedThreadPool</a> contains a fixed number of threads. When you give a unit of work to it, an available thread will be used to execute.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>FixedThreadPool</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>5</span><span class='rparen'>)</span> <span class='comment'># 5 threads
+</span><span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_post'>post</span> <span class='kw'>do</span>
+   <span class='comment'># some parallel work
+</span><span class='kw'>end</span>
+<span class='comment'># As with all thread pools, execution resumes immediately here in the caller thread,
+</span><span class='comment'># while work is concurrently being done in the thread pool, at some possibly future point.
+</span></code></pre>
+
+<p>What happens if you post new work when all (e.g.) 5 threads are currently busy? It will be added to a queue, and executed when a thread becomes available.  In a <code>FixedThreadPool</code>, if you post work to the pool much faster than the work can be completed, the queue may grow without bounds, as the work piles up in the holding queue, using up memory without bounds.  To limit the queue and apply some form of &#39;back pressure&#39; instead, you can use the more configurable <code>ThreadPoolExecutor</code> (See below).</p>
+
+<p>If you&#39;d like to base the number of threads in the pool on the number of processors available, your code can consult <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ProcessorCounter.html#processor_count-instance_method">Concurrent.processor_count</a>.</p>
+
+<p>The <code>FixedThreadPool</code> is based on the semantics used in Java for <a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool(int)">java.util.concurrent.Executors.newFixedThreadPool(int nThreads)</a></p>
+
+<h2>CachedThreadPool</h2>
+
+<p>A <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CachedThreadPool.html">CachedThreadPool</a> will create as many threads as necessary for work posted to it. If you post work to a <code>CachedThreadPool</code> when all its existing threads are busy, it will create a new thread to execute that work, and then keep that thread cached for future work. Cached threads are reclaimed (destroyed) after they are idle for a while.</p>
+
+<p>CachedThreadPools typically improve the performance of programs that execute many short-lived asynchronous tasks.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>CachedThreadPool</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_post'>post</span> <span class='kw'>do</span>
+  <span class='comment'># some parallel work
+</span><span class='kw'>end</span>
+</code></pre>
+
+<p>The behavior of <code>CachedThreadPool</code> is based on Java&#39;s <a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()">java.util.concurrent.Executors.newCachedThreadPool()</a></p>
+
+<p>If you&#39;d like to configure a maximum number of threads, you can use the more general configurable <code>ThreadPoolExecutor</code>.</p>
+
+<h2>ThreadPoolExecutor</h2>
+
+<p>A <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html">ThreadPoolExecutor</a> is a general-purpose thread pool that can be configured to have various behaviors.</p>
+
+<p>A <code>ThreadPoolExecutor</code> will automatically adjust the pool size according to the bounds set by <code>min-threads</code> and <code>max-threads</code>.
+When a new task is submitted and fewer than <code>min-threads</code> threads are running, a new thread is created to handle the request, even if other worker threads are idle.
+If there are more than <code>min-threads</code> but less than <code>max-threads</code> threads running, a new thread will be created only if the queue is full.</p>
+
+<p>The <code>CachedThreadPool</code> and <code>FixedThreadPool</code> are simply <code>ThreadPoolExecutors</code> with certain configuration pre-determined. For instance, to create a <code>ThreadPoolExecutor</code> that works just like a <code>FixedThreadPool.new 5</code>, you could:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>ThreadPoolExecutor</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span>
+   <span class='label'>min_threads:</span> <span class='int'>5</span><span class='comma'>,</span>
+   <span class='label'>max_threads:</span> <span class='int'>5</span><span class='comma'>,</span>
+   <span class='label'>max_queue:</span> <span class='int'>0</span> <span class='comment'># unbounded work queue
+</span><span class='rparen'>)</span>
+</code></pre>
+
+<p>If you want to provide a maximum queue size, you may also consider the <code>fallback_policy</code> which defines what will happen if work is posted to a pool when the queue of waiting work has reached the maximum size and no new threads can be created. Available policies:</p>
+
+<ul>
+<li>abort: Raise a <code>Concurrent::RejectedExecutionError</code> exception and discard the task. (default policy)</li>
+<li>discard: Silently discard the task and return nil as the task result.</li>
+<li>caller_runs: The work will be executed in the thread of the caller, instead of being given to another thread in the pool.</li>
+</ul>
+
+<p>For example:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>ThreadPoolExecutor</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span>
+   <span class='label'>min_threads:</span> <span class='int'>5</span><span class='comma'>,</span>
+   <span class='label'>max_threads:</span> <span class='int'>5</span><span class='comma'>,</span>
+   <span class='label'>max_queue:</span> <span class='int'>100</span><span class='comma'>,</span>
+   <span class='label'>fallback_policy:</span> <span class='symbol'>:caller_runs</span>
+<span class='rparen'>)</span>
+</code></pre>
+
+<p>You can create something similar to a <code>CachedThreadPool</code>, but with a maximum number of threads and a bounded queue.
+A new thread will be created for the first 3 tasks submitted, and then, once the queue is full, up to an additional 7 threads (10 total) will be created.
+If all 10 threads are busy and 100 tasks are already queued, additional tasks will be rejected.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>ThreadPoolExecutor</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span>
+   <span class='label'>min_threads:</span> <span class='int'>3</span><span class='comma'>,</span> <span class='comment'># create up to 3 threads before queueing tasks
+</span>   <span class='label'>max_threads:</span> <span class='int'>10</span><span class='comma'>,</span> <span class='comment'># create at most 10 threads
+</span>   <span class='label'>max_queue:</span> <span class='int'>100</span><span class='comma'>,</span> <span class='comment'># at most 100 jobs waiting in the queue
+</span><span class='rparen'>)</span>
+</code></pre>
+
+<p>ThreadPoolExecutors with <code>min_threads</code> and <code>max_threads</code> set to different values will ordinarily reclaim idle threads.  You can supply an <code>idletime</code> argument, number of seconds that a thread may be idle before being reclaimed. The default is 60 seconds.</p>
+
+<p><code>concurrent-ruby</code> thread pools are based on designs from <code>java.util.concurrent</code> --  a well-designed, stable, scalable, and battle-tested concurrency library. The <code>ThreadPoolExecutor</code> is based on Java <a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html">java.util.concurrent.ThreadPoolExecutor</a>, and is in fact implemented with a Java ThreadPoolExecutor when running under JRuby. For more information on the design and concepts, you may find the Java documentation helpful:</p>
+
+<ul>
+<li><a href="http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html">http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html</a></li>
+<li><a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html">http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html</a></li>
+<li><a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html">http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html</a></li>
+</ul>
+
+<h2>Thread Pool Status and Shutdown</h2>
+
+<p>A running thread pool can be shutdown in an orderly or disruptive manner. Once a thread pool has been shutdown it cannot be started again.</p>
+
+<p>The <code>shutdown</code> method can be used to initiate an orderly shutdown of the thread pool. All new post calls will be handled according to the <code>fallback_policy</code> (i.e. failing with a RejectedExecutionError by default). Threads in the pool will continue to process all in-progress work and will process all tasks still in the queue.</p>
+
+<p>The <code>kill</code> method can be used to immediately shutdown the pool. All new post calls will be handled according to the <code>fallback_policy</code>. Ruby&#39;s <code>Thread.kill</code> will be called on all threads in the pool, aborting all in-progress work. Tasks in the queue will be discarded.</p>
+
+<p>The method <code>wait_for_termination</code> can be used to block and wait for pool shutdown to complete. This is useful when shutting down an application and ensuring the app doesn&#39;t exit before pool processing is complete. The method wait_for_termination will block for a maximum of the given number of seconds then return true (if shutdown completed successfully) or false (if it was still ongoing). When the timeout value is <code>nil</code> the call will block indefinitely. Calling <code>wait_for_termination</code> on a stopped thread pool will immediately return true.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='comment'># tell the pool to shutdown in an orderly fashion, allowing in progress work to complete
+</span><span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_shutdown'>shutdown</span>
+<span class='comment'># now wait for all work to complete, wait as long as it takes
+</span><span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_wait_for_termination'>wait_for_termination</span>
+</code></pre>
+
+<p>You can check for current pool status:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_running?'>running?</span>
+<span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_shuttingdown?'>shuttingdown?</span> <span class='comment'># in process of shutting down, can&#39;t take any more work
+</span><span class='id identifier rubyid_pool'>pool</span><span class='period'>.</span><span class='id identifier rubyid_shutdown?'>shutdown?</span> <span class='comment'># it&#39;s done
+</span></code></pre>
+
+<p>The <code>shutdown?</code> method will return true for a stopped pool, regardless of whether the pool was stopped with <code>shutdown</code> or <code>kill</code>.</p>
+
+<h2>Other Executors</h2>
+
+<p>There are several other thread pools and executors in the <code>concurrent-ruby</code> library. See the API documentation for more information:</p>
+
+<ul>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/CachedThreadPool.html">CachedThreadPool</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/FixedThreadPool.html">FixedThreadPool</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ImmediateExecutor.html">ImmediateExecutor</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/PerThreadExecutor.html">PerThreadExecutor</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SafeTaskExecutor.html">SafeTaskExecutor</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SerializedExecution.html">SerializedExecution</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SerializedExecutionDelegator.html">SerializedExecutionDelegator</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/SingleThreadExecutor.html">SingleThreadExecutor</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/ThreadPoolExecutor.html">ThreadPoolExecutor</a></li>
+<li><a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TimerSet.html">TimerSet</a></li>
+</ul>
+
+<h2>Global Thread Pools</h2>
+
+<p>Concurrent Ruby provides several global thread pools. Higher-level abstractions use global thread pools, by default, for running asynchronous operations without creating new threads more often than necessary. These executors are lazy-loaded so they do not create overhead when not needed. The global executors may also be accessed directly if desired. For more information regarding the global thread pools and their configuration, refer to the <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Configuration.html">API documentation</a>.</p>
+
+<p>When using a higher-level abstraction, which ordinarily uses a global thread pool, you may wish to instead supply your own thread pool, for separation of work, or to control the thread pool behavior with configuration.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_pool'>pool</span> <span class='op'>=</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>ThreadPoolExecutor</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span>
+  <span class='symbol'>:min_threads</span> <span class='op'>=&gt;</span> <span class='lbracket'>[</span><span class='int'>2</span><span class='comma'>,</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_processor_count'>processor_count</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span><span class='comma'>,</span>
+  <span class='symbol'>:max_threads</span> <span class='op'>=&gt;</span> <span class='lbracket'>[</span><span class='int'>2</span><span class='comma'>,</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_processor_count'>processor_count</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span><span class='comma'>,</span>
+  <span class='symbol'>:max_queue</span>   <span class='op'>=&gt;</span> <span class='lbracket'>[</span><span class='int'>2</span><span class='comma'>,</span> <span class='const'>Concurrent</span><span class='period'>.</span><span class='id identifier rubyid_processor_count'>processor_count</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_max'>max</span> <span class='op'>*</span> <span class='int'>5</span><span class='comma'>,</span>
+  <span class='symbol'>:fallback_policy</span> <span class='op'>=&gt;</span> <span class='symbol'>:caller_runs</span>
+<span class='rparen'>)</span>
+
+<span class='id identifier rubyid_future'>future</span> <span class='op'>=</span> <span class='const'>Future</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='symbol'>:executor</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_pool'>pool</span><span class='rparen'>)</span> <span class='kw'>do</span>
+   <span class='comment'>#work
+</span><span class='kw'>end</span>
+</code></pre>
+
+<h2>Forking</h2>
+
+<p>Some Ruby versions allow the Ruby process to be <a href="http://ruby-doc.org/core-2.3.0/Process.html#method-c-fork">forked</a>. Generally, mixing threading and forking is an <a href="https://en.wikipedia.org/wiki/Anti-pattern">anti-pattern</a>. Threading and forking are both concurrency techniques and mixing the two is rarely beneficial. Moreover, threads created before the fork become unusable (&quot;dead&quot;) in the forked process. This aspect of forking is a significant issue for any application or library which spawns threads. It is strongly advised that applications using <code>ThreadPoolExecutor</code> do <strong>not</strong> also fork. Since Concurrent Ruby is a foundational library often used by gems which are in turn used by other applications, it is impossible to predict or prevent upstream forking. Concurrent Ruby therefore makes a few guarantees about the behavior of <code>ThreadPoolExecutor</code> after forking.</p>
+
+<p><em>Concurrent Ruby guarantees that jobs post on the parent process will be handled on the parent process; the child process does not inherit any jobs at the time of the fork. Concurrent Ruby also guarantees that thread pools copied to the child process will continue to function normally.</em></p>
+
+<p>When a fork occurs the <code>ThreadPoolExecutor</code> in the <em>forking</em> process takes no special actions whatsoever. It has no way of knowing that a fork occurred. It proceeds to process its jobs as normal and makes no attempt whatsoever to distribute those jobs to the forked process(es).</p>
+
+<p>When a <code>ThreadPoolExecutor</code> in the <em>forked</em> process detects that a fork has occurred it immediately takes the following actions:</p>
+
+<ul>
+<li>Clears all pending jobs from its queue (assuming they will be handled by the <em>forking</em> process).</li>
+<li>Deletes all worker threads (they will have died during the fork).</li>
+<li>Resets all job counters (these counts will be reflected in the <em>forking</em> process).</li>
+<li>Begins posting new jobs as normal.</li>
+</ul>
+
+<p>These actions guarantee that all in-flight jobs are processed normally in the forking process and that thread pools, including the global thread pools, remain functional in the forked process(es).</p>
+</div></div>
+
+    <div id="footer">
+  Generated on Wed Aug 15 13:38:39 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.3).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

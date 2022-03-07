@@ -13,7 +13,6 @@ if ENV['COVERAGE']
 
   SimpleCov.start do
     project_name 'concurrent-ruby'
-    add_filter '/build-tests/'
     add_filter '/examples/'
     add_filter '/spec/'
   end

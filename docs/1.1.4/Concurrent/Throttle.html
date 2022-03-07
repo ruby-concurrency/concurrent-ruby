@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Concurrent::Throttle
+  
+    &mdash; Concurrent Ruby
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "Concurrent::Throttle";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (T)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">Throttle</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Concurrent::Throttle
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
+          
+            <li class="next">Concurrent::Throttle</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="Throttle/PromisesIntegration.html" title="Concurrent::Throttle::PromisesIntegration (module)">PromisesIntegration</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib-edge/concurrent/edge/throttle.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p><strong>Edge Features</strong> are under active development and may change frequently.</p>
+
+<ul>
+<li>  Deprecations are not added before incompatible changes.</li>
+<li>  Edge version: <em>major</em> is always 0, <em>minor</em> bump means incompatible change,
+<em>patch</em> bump means compatible change.</li>
+<li>  Edge features may also lack tests and documentation.</li>
+<li>  Features developed in <code>concurrent-ruby-edge</code> are expected to move
+to <code>concurrent-ruby</code> when finalised.</li>
+</ul>
+</div>
+  </div>
+
+<p>A tool manage concurrency level of future tasks.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_data'>data</span>     <span class='op'>=</span> <span class='lparen'>(</span><span class='int'>1</span><span class='op'>..</span><span class='int'>5</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+<span class='id identifier rubyid_db'>db</span>       <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='period'>.</span><span class='id identifier rubyid_update'>update</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='rbrace'>}</span>
+<span class='id identifier rubyid_max_two'>max_two</span>  <span class='op'>=</span> <span class='const'>Throttle</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>2</span>
+
+<span class='id identifier rubyid_futures'>futures</span> <span class='op'>=</span> <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+  <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_future'><span class='object_link'><a href="Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">future</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_data'>data</span><span class='op'>|</span>
+    <span class='comment'># un-throttled, concurrency level equal data.size
+</span>    <span class='id identifier rubyid_data'>data</span> <span class='op'>+</span> <span class='int'>1</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_then_throttled_by'>then_throttled_by</span><span class='lparen'>(</span><span class='id identifier rubyid_max_two'>max_two</span><span class='comma'>,</span> <span class='id identifier rubyid_db'>db</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_db'>db</span><span class='op'>|</span>
+    <span class='comment'># throttled, only 2 tasks executed at the same time
+</span>    <span class='comment'># e.g. limiting access to db
+</span>    <span class='id identifier rubyid_db'>db</span><span class='lbracket'>[</span><span class='id identifier rubyid_v'>v</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+
+<span class='id identifier rubyid_futures'>futures</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value!</span><span class='rparen'>)</span> <span class='comment'># =&gt; [2, 3, 4, 5, nil]</span></code></pre>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_throttled_future'>throttled_future</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span>
+  <span class='id identifier rubyid_arg'>arg</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span>
+<span class='kw'>end</span></code></pre>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_throttled_future_chain'>throttled_future_chain</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_trigger'>trigger</span><span class='op'>|</span>
+  <span class='id identifier rubyid_trigger'>trigger</span><span class='period'>.</span>
+      <span class='comment'># 2 throttled promises
+</span>      <span class='id identifier rubyid_chain'>chain</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span>
+      <span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span>
+<span class='kw'>end</span></code></pre>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_max_two'>max_two</span> <span class='op'>=</span> <span class='const'>Throttle</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>2</span>
+<span class='int'>10</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_max_two'>max_two</span><span class='period'>.</span><span class='id identifier rubyid_throttled_block'>throttled_block</span> <span class='kw'>do</span>
+      <span class='comment'># Only 2 at the same time
+</span>      <span class='id identifier rubyid_do_stuff'>do_stuff</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Throttle/PromisesIntegration.html" title="Concurrent::Throttle::PromisesIntegration (module)">PromisesIntegration</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(limit)  &#x21d2; Throttle </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>New throttle.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#limit-instance_method" title="#limit (instance method)">#<strong>limit</strong>  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The limit.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#release-instance_method" title="#release (instance method)">#<strong>release</strong>  &#x21d2; self </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Has to be called once for each trigger after it is ok to execute another throttled task.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#throttled_block-instance_method" title="#throttled_block (instance method)">#<strong>throttled_block</strong> { ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Blocks current thread until the block can be executed.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#throttled_future-instance_method" title="#throttled_future (instance method)">#<strong>throttled_future</strong>(*args, &amp;task)  &#x21d2; Promises::Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Throttle/PromisesIntegration.html#throttled_future-instance_method" title="Concurrent::Throttle::PromisesIntegration#throttled_future (method)">PromisesIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Behaves as <span class='object_link'><a href="Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">Promises::FactoryMethods#future</a></span> but the future is throttled.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#throttled_future_chain-instance_method" title="#throttled_future_chain (instance method)">#<strong>throttled_future_chain</strong> {|trigger| ... } &#x21d2; Promises::Event, Promises::Future </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Throttle/PromisesIntegration.html#throttled_future_chain-instance_method" title="Concurrent::Throttle::PromisesIntegration#throttled_future_chain (method)">PromisesIntegration</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Allows to throttle a chain of promises.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_s-instance_method" title="#to_s (instance method)">#<strong>to_s</strong>  &#x21d2; String </a>
+    
+
+    
+      (also: #inspect)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Short string representation.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#trigger-instance_method" title="#trigger (instance method)">#<strong>trigger</strong>  &#x21d2; Promises::Event </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>New event which will be resolved when depending tasks can execute.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(limit)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::Throttle (class)">Throttle</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>New throttle.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>limit</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+61
+62
+63
+64
+65
+66</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 61</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_limit'>limit</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='rparen'>)</span>
+  <span class='ivar'>@Limit</span>       <span class='op'>=</span> <span class='id identifier rubyid_limit'>limit</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_can_run'>can_run</span> <span class='op'>=</span> <span class='id identifier rubyid_limit'>limit</span>
+  <span class='ivar'>@Queue</span>       <span class='op'>=</span> <span class='const'>LockFreeQueue</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="limit-instance_method">
+  
+    #<strong>limit</strong>  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The limit.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The limit.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+69
+70
+71</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 69</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_limit'>limit</span>
+  <span class='ivar'>@Limit</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="release-instance_method">
+  
+    #<strong>release</strong>  &#x21d2; <tt>self</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has to be called once for each trigger after it is ok to execute another throttled task.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>self</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#trigger-instance_method" title="Concurrent::Throttle#trigger (method)">#trigger</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 95</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_release'>release</span>
+  <span class='kw'>while</span> <span class='kw'>true</span>
+    <span class='id identifier rubyid_current_can_run'>current_can_run</span> <span class='op'>=</span> <span class='id identifier rubyid_can_run'>can_run</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_can_run'>compare_and_set_can_run</span> <span class='id identifier rubyid_current_can_run'>current_can_run</span><span class='comma'>,</span> <span class='id identifier rubyid_current_can_run'>current_can_run</span> <span class='op'>+</span> <span class='int'>1</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_current_can_run'>current_can_run</span> <span class='op'>&lt;</span> <span class='int'>0</span>
+        <span class='comment'># release called after trigger which pushed a trigger, busy wait is ok
+</span>        <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_pass'>pass</span> <span class='kw'>until</span> <span class='lparen'>(</span><span class='id identifier rubyid_trigger'>trigger</span> <span class='op'>=</span> <span class='ivar'>@Queue</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_trigger'>trigger</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span>
+      <span class='kw'>end</span>
+      <span class='kw'>return</span> <span class='kw'>self</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="throttled_block-instance_method">
+  
+    #<strong>throttled_block</strong> { ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Blocks current thread until the block can be executed.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_max_two'>max_two</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="Concurrent::Throttle (class)">Throttle</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Synchronization/Object.html#new-class_method" title="Concurrent::Synchronization::Object.new (method)">new</a></span></span> <span class='int'>2</span>
+<span class='int'>10</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_max_two'>max_two</span><span class='period'>.</span><span class='id identifier rubyid_throttled_block'>throttled_block</span> <span class='kw'>do</span>
+      <span class='comment'># Only 2 at the same time
+</span>      <span class='id identifier rubyid_do_stuff'>do_stuff</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>to throttled block</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>is used as a result of the method</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the result of the block</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+114
+115
+116
+117
+118
+119</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 114</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_throttled_block'>throttled_block</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_trigger'>trigger</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span>
+  <span class='id identifier rubyid_block'>block</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span>
+<span class='kw'>ensure</span>
+  <span class='id identifier rubyid_release'>release</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="throttled_future-instance_method">
+  
+    #<strong>throttled_future</strong>(*args, &amp;task)  &#x21d2; <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Throttle/PromisesIntegration.html#throttled_future-instance_method" title="Concurrent::Throttle::PromisesIntegration#throttled_future (method)">PromisesIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Behaves as <span class='object_link'><a href="Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">Promises::FactoryMethods#future</a></span> but the future is throttled.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_throttled_future'>throttled_future</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg'>arg</span><span class='op'>|</span>
+  <span class='id identifier rubyid_arg'>arg</span><span class='period'>.</span><span class='id identifier rubyid_succ'>succ</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Promises/FactoryMethods.html#future-instance_method" title="Concurrent::Promises::FactoryMethods#future (method)">Promises::FactoryMethods#future</a></span></li>
+    
+  </ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="throttled_future_chain-instance_method">
+  
+    #<strong>throttled_future_chain</strong> {|trigger| ... } &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Promises::Event</a></span></tt>, <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Throttle/PromisesIntegration.html#throttled_future_chain-instance_method" title="Concurrent::Throttle::PromisesIntegration#throttled_future_chain (method)">PromisesIntegration</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Allows to throttle a chain of promises.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_throttle'>throttle</span><span class='period'>.</span><span class='id identifier rubyid_throttled_future_chain'>throttled_future_chain</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_trigger'>trigger</span><span class='op'>|</span>
+  <span class='id identifier rubyid_trigger'>trigger</span><span class='period'>.</span>
+      <span class='comment'># 2 throttled promises
+</span>      <span class='id identifier rubyid_chain'>chain</span> <span class='lbrace'>{</span> <span class='int'>1</span> <span class='rbrace'>}</span><span class='period'>.</span>
+      <span class='id identifier rubyid_then'>then</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:succ</span><span class='rparen'>)</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="#trigger-instance_method" title="Concurrent::Throttle#trigger (method)">trigger</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a trigger which has to be used to build up a chain of promises, the last one is result
+of the block. When the last one resolves, <span class='object_link'><a href="#release-instance_method" title="Concurrent::Throttle#release (method)">Concurrent::Throttle#release</a></span> is called on the throttle.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Parameters:</p>
+<ul class="yieldparam">
+  
+    <li>
+      
+        <span class='name'>trigger</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Promises::Event</a></span></tt>, <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Yield Returns:</p>
+<ul class="yieldreturn">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Promises::Event</a></span></tt>, <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The final future of the throttled chain.</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Promises::Event</a></span></tt>, <tt><span class='object_link'><a href="Promises/Future.html" title="Concurrent::Promises::Future (class)">Promises::Future</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The final future of the throttled chain.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="to_s-instance_method">
+  
+    #<strong>to_s</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='inspect-instance_method'>inspect</span></span>
+    </span>
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Short string representation.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Short string representation.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+122
+123
+124</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 122</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
+  <span class='id identifier rubyid_format'>format</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%s limit:%s can_run:%d&gt;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='kw'>super</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='op'>-</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='ivar'>@Limit</span><span class='comma'>,</span> <span class='id identifier rubyid_can_run'>can_run</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="trigger-instance_method">
+  
+    #<strong>trigger</strong>  &#x21d2; <tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Promises::Event</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>New event which will be resolved when depending tasks can execute.
+Has to be used and after the critical work is done <span class='object_link'><a href="#release-instance_method" title="Concurrent::Throttle#release (method)">#release</a></span> must be called exactly once.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Promises/Event.html" title="Concurrent::Promises::Event (class)">Promises::Event</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#release-instance_method" title="Concurrent::Throttle#release (method)">#release</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib-edge/concurrent/edge/throttle.rb', line 77</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_trigger'>trigger</span>
+  <span class='kw'>while</span> <span class='kw'>true</span>
+    <span class='id identifier rubyid_current_can_run'>current_can_run</span> <span class='op'>=</span> <span class='id identifier rubyid_can_run'>can_run</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_compare_and_set_can_run'>compare_and_set_can_run</span> <span class='id identifier rubyid_current_can_run'>current_can_run</span><span class='comma'>,</span> <span class='id identifier rubyid_current_can_run'>current_can_run</span> <span class='op'>-</span> <span class='int'>1</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_current_can_run'>current_can_run</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+        <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolved_event'><span class='object_link'><a href="Promises/FactoryMethods.html#resolved_event-instance_method" title="Concurrent::Promises::FactoryMethods#resolved_event (method)">resolved_event</a></span></span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_event'>event</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Promises.html" title="Concurrent::Promises (module)">Promises</a></span></span><span class='period'>.</span><span class='id identifier rubyid_resolvable_event'><span class='object_link'><a href="Promises/FactoryMethods.html#resolvable_event-instance_method" title="Concurrent::Promises::FactoryMethods#resolvable_event (method)">resolvable_event</a></span></span>
+        <span class='ivar'>@Queue</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_event'>event</span>
+        <span class='kw'>return</span> <span class='id identifier rubyid_event'>event</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated by <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_blank">yard</a>.
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    </div>
+  </body>
+</html>

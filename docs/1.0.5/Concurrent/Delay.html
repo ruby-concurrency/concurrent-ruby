@@ -1,0 +1,1734 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Concurrent::Delay
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!Concurrent/Delay.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (D)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">Delay</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: Concurrent::Delay
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'>Synchronization::LockableObject</span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'>Synchronization::LockableObject</span></li>
+          
+            <li class="next">Concurrent::Delay</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+      <dt class="r2">Includes:</dt>
+      <dd class="r2"><span class='object_link'><a href="Concern/Obligation.html" title="Concurrent::Concern::Obligation (module)">Concern::Obligation</a></span></dd>
+      
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/concurrent/delay.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>The default behavior of <code>Delay</code> is to block indefinitely when
+calling either <code>value</code> or <code>wait</code>, executing the delayed operation on
+the current thread. This makes the <code>timeout</code> value completely
+irrelevant. To enable non-blocking behavior, use the <code>executor</code>
+constructor option. This will cause the delayed operation to be
+execute on the given executor, allowing the call to timeout.</p>
+</div>
+  </div>
+
+<p>Lazy evaluation of a block yielding an immutable result. Useful for
+expensive operations that may never be needed. It may be non-blocking,
+supports the <code>Concern::Obligation</code> interface, and accepts the injection of
+custom executor upon which to execute the block. Processing of
+block will be deferred until the first time <code>#value</code> is called.
+At that time the caller can choose to return immediately and let
+the block execute asynchronously, block indefinitely, or block
+with a timeout.</p>
+
+<p>When a <code>Delay</code> is created its state is set to <code>pending</code>. The value and
+reason are both <code>nil</code>. The first time the <code>#value</code> method is called the
+enclosed opration will be run and the calling thread will block. Other
+threads attempting to call <code>#value</code> will block as well. Once the operation
+is complete the <em>value</em> will be set to the result of the operation or the
+<em>reason</em> will be set to the raised exception, as appropriate. All threads
+blocked on <code>#value</code> will return. Subsequent calls to <code>#value</code> will immediately
+return the cached value. The operation will only be run once. This means that
+any side effects created by the operation will only happen once as well.</p>
+
+<p><code>Delay</code> includes the <code>Concurrent::Concern::Dereferenceable</code> mixin to support thread
+safety of the reference returned by <code>#value</code>.</p>
+
+<h2>Copy Options</h2>
+
+<p>Object references in Ruby are mutable. This can lead to serious
+problems when the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Delay#value (method)">#value</a></span> of an object is a mutable reference. Which
+is always the case unless the value is a <code>Fixnum</code>, <code>Symbol</code>, or similar
+&quot;primitive&quot; data type. Each instance can be configured with a few
+options that can help protect the program from potentially dangerous
+operations. Each of these options can be optionally set when the object
+instance is created:</p>
+
+<ul>
+<li><code>:dup_on_deref</code> When true the object will call the <code>#dup</code> method on
+the <code>value</code> object every time the <code>#value</code> method is called
+(default: false)</li>
+<li><code>:freeze_on_deref</code> When true the object will call the <code>#freeze</code>
+method on the <code>value</code> object every time the <code>#value</code> method is called
+(default: false)</li>
+<li><code>:copy_on_deref</code> When given a <code>Proc</code> object the <code>Proc</code> will be run
+every time   the <code>#value</code> method is called. The <code>Proc</code> will be given
+the current <code>value</code> as its only argument and the result returned by
+the block will be the return   value of the <code>#value</code> call. When <code>nil</code>
+this option will be ignored (default: nil)</li>
+</ul>
+
+<p>When multiple deref options are set the order of operations is strictly defined.
+The order of deref operations is:</p>
+
+<ul>
+<li><code>:copy_on_deref</code></li>
+<li><code>:dup_on_deref</code></li>
+<li><code>:freeze_on_deref</code></li>
+</ul>
+
+<p>Because of this ordering there is no need to <code>#freeze</code> an object created by a
+provided <code>:copy_on_deref</code> block. Simply set <code>:freeze_on_deref</code> to <code>true</code>.
+Setting both <code>:dup_on_deref</code> to <code>true</code> and <code>:freeze_on_deref</code> to <code>true</code> is
+as close to the behavior of a &quot;pure&quot; functional language (like Erlang, Clojure,
+or Haskell) as we are likely to get in Ruby.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="Concern/Dereferenceable.html" title="Concurrent::Concern::Dereferenceable (module)">Concern::Dereferenceable</a></span></li>
+    
+  </ul>
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#complete%3F-instance_method" title="#complete? (instance method)">- (Boolean) <strong>complete?</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#complete%3F-instance_method" title="Concurrent::Concern::Obligation#complete? (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Has the obligation completed processing?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#exception-instance_method" title="#exception (instance method)">- (undocumented) <strong>exception</strong>(*args) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#exception-instance_method" title="Concurrent::Concern::Obligation#exception (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fulfilled%3F-instance_method" title="#fulfilled? (instance method)">- (Boolean) <strong>fulfilled?</strong> </a>
+    
+
+    
+      (also: #realized?)
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#fulfilled%3F-instance_method" title="Concurrent::Concern::Obligation#fulfilled? (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Has the obligation been fulfilled?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#incomplete%3F-instance_method" title="#incomplete? (instance method)">- (Boolean) <strong>incomplete?</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#incomplete%3F-instance_method" title="Concurrent::Concern::Obligation#incomplete? (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is the obligation still awaiting completion of processing?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (Delay) <strong>initialize</strong>(opts = {}) { ... }</a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>Delay</code> in the <code>:pending</code> state.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pending%3F-instance_method" title="#pending? (instance method)">- (Boolean) <strong>pending?</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#pending%3F-instance_method" title="Concurrent::Concern::Obligation#pending? (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is obligation completion still pending?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reason-instance_method" title="#reason (instance method)">- (Exception) <strong>reason</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#reason-instance_method" title="Concurrent::Concern::Obligation#reason (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If an exception was raised during processing this will return the exception object.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reconfigure-instance_method" title="#reconfigure (instance method)">- (true, false) <strong>reconfigure</strong> { ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Reconfigures the block returning the value if still <code>#incomplete?</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#rejected%3F-instance_method" title="#rejected? (instance method)">- (Boolean) <strong>rejected?</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#rejected%3F-instance_method" title="Concurrent::Concern::Obligation#rejected? (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Has the obligation been rejected?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#state-instance_method" title="#state (instance method)">- (Symbol) <strong>state</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#state-instance_method" title="Concurrent::Concern::Obligation#state (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The current state of the obligation.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unscheduled%3F-instance_method" title="#unscheduled? (instance method)">- (Boolean) <strong>unscheduled?</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#unscheduled%3F-instance_method" title="Concurrent::Concern::Obligation#unscheduled? (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Is the obligation still unscheduled?.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">- (Object) <strong>value</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value%21-instance_method" title="#value! (instance method)">- (Object) <strong>value!</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait-instance_method" title="#wait (instance method)">- (Object) <strong>wait</strong>(timeout = nil) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Return the value this object represents after applying the options specified by the <code>#set_deref_options</code> method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait%21-instance_method" title="#wait! (instance method)">- (Obligation) <strong>wait!</strong>(timeout = nil) </a>
+    
+
+    
+      (also: #no_error!)
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      included
+      from <span class='object_link'><a href="Concern/Obligation.html#wait%21-instance_method" title="Concurrent::Concern::Obligation#wait! (method)">Concern::Obligation</a></span>
+    </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Wait until obligation is complete or the timeout is reached.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Concurrent::Delay (class)">Delay</a></span></tt>) <strong>initialize</strong>(opts = {}) { ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>Delay</code> in the <code>:pending</code> state.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>opts</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Hash.html" title="Concurrent::Hash (class)">Hash</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>{}</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the options used to define the behavior at update and deref
+and to specify the executor on which to perform actions</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    <p class="tag_title">Options Hash (<tt>opts</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:executor</span>
+          <span class="type">(<tt>Executor</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>when set use the given <code>Executor</code> instance.
+Three special values are also supported: <code>:task</code> returns the global task pool,
+<code>:operation</code> returns the global operation pool, and <code>:immediate</code> returns a new
+<code>ImmediateExecutor</code> object.</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:dup_on_deref</span>
+          <span class="type">(<tt>Boolean</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>false</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>Call <code>#dup</code> before
+returning the data from <span class='object_link'><a href="#value-instance_method" title="Concurrent::Delay#value (method)">#value</a></span></p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:freeze_on_deref</span>
+          <span class="type">(<tt>Boolean</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>false</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>Call <code>#freeze</code> before
+returning the data from <span class='object_link'><a href="#value-instance_method" title="Concurrent::Delay#value (method)">#value</a></span></p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:copy_on_deref</span>
+          <span class="type">(<tt>Proc</tt>)</span>
+          <span class="default">
+            
+              &mdash; default:
+              <tt>nil</tt>
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>When calling the <span class='object_link'><a href="#value-instance_method" title="Concurrent::Delay#value (method)">#value</a></span>
+method, call the given proc passing the internal value as the sole
+argument then return the new value returned from the proc.</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>the delayed operation to perform</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>ArgumentError</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if no block is given</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64
+65
+66</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_ns_initialize'>ns_initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_opts'>opts</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="complete?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>complete?</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#complete%3F-instance_method" title="Concurrent::Concern::Obligation#complete? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has the obligation completed processing?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="exception-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>exception</strong>(*args) 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#exception-instance_method" title="Concurrent::Concern::Obligation#exception (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>allows Obligation to be risen</p>
+</div></p>
+      
+      <pre class="example code"><code><span class='id identifier rubyid_rejected_ivar'>rejected_ivar</span> <span class='op'>=</span> <span class='const'>Ivar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_fail'>fail</span>
+<span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_rejected_ivar'>rejected_ivar</span></code></pre>
+    
+  </div>
+
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fulfilled?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>fulfilled?</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='realized?-instance_method'>realized?</span></span>
+    </span>
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#fulfilled%3F-instance_method" title="Concurrent::Concern::Obligation#fulfilled? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has the obligation been fulfilled?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="incomplete?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>incomplete?</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#incomplete%3F-instance_method" title="Concurrent::Concern::Obligation#incomplete? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is the obligation still awaiting completion of processing?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pending?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>pending?</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#pending%3F-instance_method" title="Concurrent::Concern::Obligation#pending? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is obligation completion still pending?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reason-instance_method">
+  
+    - (<tt>Exception</tt>) <strong>reason</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#reason-instance_method" title="Concurrent::Concern::Obligation#reason (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>If an exception was raised during processing this will return the
+exception object. Will return <code>nil</code> when the state is pending or if
+the obligation has been successfully fulfilled.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the exception raised during processing or <code>nil</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reconfigure-instance_method">
+  
+    - (<tt>true</tt>, <tt>false</tt>) <strong>reconfigure</strong> { ... }
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Reconfigures the block returning the value if still <code>#incomplete?</code></p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>the delayed operation to perform</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>true</tt>, <tt>false</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if success</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 144</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reconfigure'>reconfigure</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>no block given</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_block_given?'>block_given?</span>
+    <span class='kw'>unless</span> <span class='ivar'>@computing</span>
+      <span class='ivar'>@task</span> <span class='op'>=</span> <span class='id identifier rubyid_block'>block</span>
+      <span class='kw'>true</span>
+    <span class='kw'>else</span>
+      <span class='kw'>false</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="rejected?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>rejected?</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#rejected%3F-instance_method" title="Concurrent::Concern::Obligation#rejected? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Has the obligation been rejected?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="state-instance_method">
+  
+    - (<tt>Symbol</tt>) <strong>state</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#state-instance_method" title="Concurrent::Concern::Obligation#state (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The current state of the obligation.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current state</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unscheduled?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>unscheduled?</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#unscheduled%3F-instance_method" title="Concurrent::Concern::Obligation#unscheduled? (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Is the obligation still unscheduled?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value-instance_method">
+  
+    - (<tt>Object</tt>) <strong>value</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>The default behavior of <code>Delay</code> is to block indefinitely when
+calling either <code>value</code> or <code>wait</code>, executing the delayed operation on
+the current thread. This makes the <code>timeout</code> value completely
+irrelevant. To enable non-blocking behavior, use the <code>executor</code>
+constructor option. This will cause the delayed operation to be
+execute on the given executor, allowing the call to timeout.</p>
+</div>
+  </div>
+
+<p>Return the value this object represents after applying the options
+specified by the <code>#set_deref_options</code> method. If the delayed operation
+raised an exception this method will return nil. The execption object
+can be accessed via the <code>#reason</code> method.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current value of the object</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 77</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@executor</span> <span class='comment'># TODO (pitr 12-Sep-2015): broken unsafe read?
+</span>    <span class='kw'>super</span>
+  <span class='kw'>else</span>
+    <span class='comment'># this function has been optimized for performance and
+</span>    <span class='comment'># should not be modified without running new benchmarks
+</span>    <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_execute'>execute</span> <span class='op'>=</span> <span class='ivar'>@computing</span> <span class='op'>=</span> <span class='kw'>true</span> <span class='kw'>unless</span> <span class='ivar'>@computing</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_execute'>execute</span>
+        <span class='kw'>begin</span>
+          <span class='id identifier rubyid_set_state'>set_state</span><span class='lparen'>(</span><span class='kw'>true</span><span class='comma'>,</span> <span class='ivar'>@task</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+        <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex'>ex</span>
+          <span class='id identifier rubyid_set_state'>set_state</span><span class='lparen'>(</span><span class='kw'>false</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ex'>ex</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='kw'>if</span> <span class='ivar'>@do_nothing_on_deref</span>
+      <span class='ivar'>@value</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_apply_deref_options'>apply_deref_options</span><span class='lparen'>(</span><span class='ivar'>@value</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value!-instance_method">
+  
+    - (<tt>Object</tt>) <strong>value!</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>The default behavior of <code>Delay</code> is to block indefinitely when
+calling either <code>value</code> or <code>wait</code>, executing the delayed operation on
+the current thread. This makes the <code>timeout</code> value completely
+irrelevant. To enable non-blocking behavior, use the <code>executor</code>
+constructor option. This will cause the delayed operation to be
+execute on the given executor, allowing the call to timeout.</p>
+</div>
+  </div>
+
+<p>Return the value this object represents after applying the options
+specified by the <code>#set_deref_options</code> method. If the delayed operation
+raised an exception, this method will raise that exception (even when)
+the operation has already been executed).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum number of seconds to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the current value of the object</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when <code>#rejected?</code> raises <code>#reason</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+111
+112
+113
+114
+115
+116
+117
+118
+119</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 111</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value!'>value!</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@executor</span>
+    <span class='kw'>super</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='ivar'>@reason</span> <span class='kw'>if</span> <span class='ivar'>@reason</span>
+    <span class='id identifier rubyid_result'>result</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait-instance_method">
+  
+    - (<tt>Object</tt>) <strong>wait</strong>(timeout = nil) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+  <div class="note notetag">
+    <strong>Note:</strong>
+    <div class='inline'><p>The default behavior of <code>Delay</code> is to block indefinitely when
+calling either <code>value</code> or <code>wait</code>, executing the delayed operation on
+the current thread. This makes the <code>timeout</code> value completely
+irrelevant. To enable non-blocking behavior, use the <code>executor</code>
+constructor option. This will cause the delayed operation to be
+execute on the given executor, allowing the call to timeout.</p>
+</div>
+  </div>
+
+<p>Return the value this object represents after applying the options
+specified by the <code>#set_deref_options</code> method.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>(nil) the maximum number of seconds to wait for
+the value to be computed. When <code>nil</code> the caller will block indefinitely.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+130
+131
+132
+133
+134
+135
+136
+137
+138</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/delay.rb', line 130</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait'>wait</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@executor</span>
+    <span class='id identifier rubyid_execute_task_once'>execute_task_once</span>
+    <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_timeout'>timeout</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>end</span>
+  <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait!-instance_method">
+  
+    - (<tt><span class='object_link'><a href="Concern/Obligation.html" title="Concurrent::Concern::Obligation (module)">Obligation</a></span></tt>) <strong>wait!</strong>(timeout = nil) 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='no_error!-instance_method'>no_error!</span></span>
+    </span>
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in module
+        <span class='object_link'><a href="Concern/Obligation.html#wait%21-instance_method" title="Concurrent::Concern::Obligation#wait! (method)">Concern::Obligation</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Wait until obligation is complete or the timeout is reached. Will re-raise
+any exceptions raised during processing (but will not raise an exception
+on timeout).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>timeout</span>
+      
+      
+        <span class='type'>(<tt>Numeric</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>the maximum time in seconds to wait.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Concern/Obligation.html" title="Concurrent::Concern::Obligation (module)">Obligation</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>self</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Exception</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>raises the reason when rejected</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Wed Aug 15 13:38:42 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.3).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

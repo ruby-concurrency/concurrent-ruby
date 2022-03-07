@@ -1,18 +1,5 @@
---no-private
---embed-mixins
---output-dir ./yardoc
---markup markdown
---title=Concurrent Ruby
---template default
---template-path ./yard-template
---default-return undocumented
-
-./lib/**/*.rb
-./lib-edge/**/*.rb
-./ext/concurrent_ruby_ext/**/*.c
+--error:" use `bundle exec rake yard` instead"
+--output-dir tmp
+--
+no-lib
 -
-doc/thread_pools.md
-doc/promises.out.md
-README.md
-LICENSE.txt
-CHANGELOG.md

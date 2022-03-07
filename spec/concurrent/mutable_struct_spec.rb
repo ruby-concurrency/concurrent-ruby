@@ -149,6 +149,25 @@ module Concurrent
         expect(subject).to receive(:synchronize).at_least(:once).with(no_args).and_call_original
         subject.select{|value| false }
       end
+
+      it 'protects #initialize_copy' do
+        expect(subject).to receive(:synchronize).at_least(:once).with(no_args).and_call_original
+        subject.clone
+      end
+    end
+
+    context 'copy' do
+      context '#dup' do
+        it 'mutates only the copy' do
+          expect(subject.dup.name = 'Jane').not_to eq(subject.name)
+        end
+      end
+
+      context '#clone' do
+        it 'mutates only the copy' do
+          expect(subject.clone.name = 'Jane').not_to eq(subject.name)
+        end
+      end
     end
   end
 end

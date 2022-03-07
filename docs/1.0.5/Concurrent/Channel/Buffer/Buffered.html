@@ -1,0 +1,801 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Concurrent::Channel::Buffer::Buffered
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../../../';
+  framesUrl = "../../../frames.html#!Concurrent/Channel/Buffer/Buffered.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../../_index.html">Index (B)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../root/Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Channel.html" title="Concurrent::Channel (class)">Channel</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Buffer.html" title="Concurrent::Channel::Buffer (module)">Buffer</a></span></span>
+     &raquo; 
+    <span class="title">Buffered</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../../../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../../../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: Concurrent::Channel::Buffer::Buffered
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="Base.html" title="Concurrent::Channel::Buffer::Base (class)">Base</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'>Synchronization::LockableObject</span></li>
+          
+            <li class="next"><span class='object_link'><a href="Base.html" title="Concurrent::Channel::Buffer::Base (class)">Base</a></span></li>
+          
+            <li class="next">Concurrent::Channel::Buffer::Buffered</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/concurrent/channel/buffer/buffered.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A buffer with a fixed internal capacity. Items can be put onto the
+buffer without blocking until the internal capacity is reached. Once
+the buffer is at capacity, subsequent calls to <span class='object_link'><a href="#put-instance_method" title="Concurrent::Channel::Buffer::Buffered#put (method)">#put</a></span> will block until
+an item is removed from the buffer, creating spare capacity.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="Dropping.html" title="Concurrent::Channel::Buffer::Dropping (class)">Dropping</a></span>, <span class='object_link'><a href="Sliding.html" title="Concurrent::Channel::Buffer::Sliding (class)">Sliding</a></span></p>
+</div>
+
+
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#capacity-instance_method" title="#capacity (instance method)">- (undocumented) <strong>capacity</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title not_defined_here">
+      inherited
+      from <span class='object_link'><a href="Base.html#capacity-instance_method" title="Concurrent::Channel::Buffer::Base#capacity (method)">Base</a></span>
+    </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The maximum number of values which can be <span class='object_link'><a href="#put-instance_method" title="Concurrent::Channel::Buffer::Buffered#put (method)">#put</a></span> onto the buffer it becomes full.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#next-instance_method" title="#next (instance method)">- (Object, Boolean) <strong>next</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Take the next &quot;item&quot; from the buffer and also return a boolean indicating if &quot;more&quot; items can be taken.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#offer-instance_method" title="#offer (instance method)">- (Boolean) <strong>offer</strong>(item) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Put an item onto the buffer is possible.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#poll-instance_method" title="#poll (instance method)">- (Object) <strong>poll</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Take the next item from the buffer if one is available else return immediately.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#put-instance_method" title="#put (instance method)">- (Boolean) <strong>put</strong>(item) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Put an item onto the buffer if possible.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#take-instance_method" title="#take (instance method)">- (Object) <strong>take</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Take an item from the buffer if one is available.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <p class="notice">This class inherits a constructor from <span class='object_link'><a href="Base.html#initialize-instance_method" title="Concurrent::Channel::Buffer::Base#initialize (method)">Concurrent::Channel::Buffer::Base</a></span></p>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="capacity=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="capacity-instance_method">
+  
+    - (<tt>undocumented</tt>) <strong>capacity</strong> 
+  
+
+  
+
+  
+    <span class="not_defined_here">
+      Originally defined in class
+        <span class='object_link'><a href="Base.html#capacity-instance_method" title="Concurrent::Channel::Buffer::Base#capacity (method)">Base</a></span>
+    </span>
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The maximum number of values which can be <span class='object_link'><a href="Base.html#put-instance_method" title="Concurrent::Channel::Buffer::Base#put (method)">#put</a></span> onto the buffer
+it becomes full.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="next-instance_method">
+  
+    - (<tt>Object</tt>, <tt>Boolean</tt>) <strong>next</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Take the next &quot;item&quot; from the buffer and also return a boolean
+indicating if &quot;more&quot; items can be taken. Used for iterating
+over a buffer until it is closed and empty.</p>
+
+<p>If the buffer is open but no items remain the calling thread will
+block until an item is available. The second of the two return
+values, &quot;more&quot; (a boolean), will always be <code>true</code> when the buffer is
+open. The &quot;more&quot; value will be <code>false</code> when the channel has been
+closed and all values have already been received. When &quot;more&quot; is
+false the returned item will be <code>Concurrent::NULL</code>.</p>
+
+<p>Note that when multiple threads access the same channel a race
+condition can occur when using this method. A call to <code>next</code> from
+one thread may return <code>true</code> for the second return value, but
+another thread may <code>take</code> the last value before the original
+thread makes another call. Code which iterates over a channel
+must be programmed to properly handle these race conditions.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>, <tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the first return value will be the item
+taken from the buffer and the second return value will be a
+boolean indicating whether or not more items remain.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/channel/buffer/buffered.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='kw'>next</span>
+  <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_ns_closed?'>ns_closed?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_ns_empty?'>ns_empty?</span>
+        <span class='kw'>return</span> <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>NULL</span><span class='comma'>,</span> <span class='kw'>false</span>
+      <span class='kw'>elsif</span> <span class='op'>!</span><span class='id identifier rubyid_ns_empty?'>ns_empty?</span>
+        <span class='id identifier rubyid_item'>item</span> <span class='op'>=</span> <span class='id identifier rubyid_buffer'>buffer</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+        <span class='kw'>return</span> <span class='id identifier rubyid_item'>item</span><span class='comma'>,</span> <span class='kw'>true</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_pass'>pass</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="offer-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>offer</strong>(item) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Put an item onto the buffer is possible. If the buffer is open but
+unable to add an item, probably due to being full, the method will
+return immediately. Similarly, the method will return immediately
+when the buffer is closed. A return value of <code>false</code> does not
+necessarily indicate that the buffer is closed, just that the item
+could not be added.</p>
+
+<p>New items can be put onto the buffer until the number of items in
+the buffer reaches the <span class='object_link'><a href="Base.html#size-instance_method" title="Concurrent::Channel::Buffer::Base#size (method)">Concurrent::Channel::Buffer::Base#size</a></span> value specified during
+initialization.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>item</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the item/value to put onto the buffer.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the item was added to the buffer else
+false (always false when closed).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/channel/buffer/buffered.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_offer'>offer</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_ns_closed?'>ns_closed?</span> <span class='op'>||</span> <span class='id identifier rubyid_ns_full?'>ns_full?</span>
+      <span class='kw'>return</span> <span class='kw'>false</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_ns_put_onto_buffer'>ns_put_onto_buffer</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
+      <span class='kw'>return</span> <span class='kw'>true</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="poll-instance_method">
+  
+    - (<tt>Object</tt>) <strong>poll</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Take the next item from the buffer if one is available else return
+immediately. Failing to return a value does not necessarily
+indicate that the buffer is closed, just that it is empty.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the next item from the buffer or <code>Concurrent::NULL</code> if
+the buffer is empty.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71
+72
+73
+74
+75
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/channel/buffer/buffered.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_poll'>poll</span>
+  <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_ns_empty?'>ns_empty?</span>
+      <span class='const'>Concurrent</span><span class='op'>::</span><span class='const'>NULL</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_buffer'>buffer</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="put-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>put</strong>(item) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Put an item onto the buffer if possible. If the buffer is open
+but not able to accept the item the calling thread will block
+until the item can be put onto the buffer.</p>
+
+<p>New items can be put onto the buffer until the number of items in
+the buffer reaches the <span class='object_link'><a href="Base.html#size-instance_method" title="Concurrent::Channel::Buffer::Base#size (method)">Concurrent::Channel::Buffer::Base#size</a></span> value specified during
+initialization.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>item</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the item/value to put onto the buffer.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>true if the item was added to the buffer else
+false (always false when closed).</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/channel/buffer/buffered.rb', line 19</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_put'>put</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_ns_closed?'>ns_closed?</span>
+        <span class='kw'>return</span> <span class='kw'>false</span>
+      <span class='kw'>elsif</span> <span class='op'>!</span><span class='id identifier rubyid_ns_full?'>ns_full?</span>
+        <span class='id identifier rubyid_ns_put_onto_buffer'>ns_put_onto_buffer</span><span class='lparen'>(</span><span class='id identifier rubyid_item'>item</span><span class='rparen'>)</span>
+        <span class='kw'>return</span> <span class='kw'>true</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_pass'>pass</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="take-instance_method">
+  
+    - (<tt>Object</tt>) <strong>take</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Take an item from the buffer if one is available. If the buffer
+is open and no item is available the calling thread will block
+until an item is available. If the buffer is closed but items
+are available the remaining items can still be taken. Once the
+buffer closes, no remaining items can be taken.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the item removed from the buffer; <code>Concurrent::NULL</code> once
+the buffer has closed.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+50
+51
+52
+53</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent/channel/buffer/buffered.rb', line 50</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_take'>take</span>
+  <span class='id identifier rubyid_item'>item</span><span class='comma'>,</span> <span class='id identifier rubyid__'>_</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_next'>next</span>
+  <span class='id identifier rubyid_item'>item</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Wed Aug 15 13:38:46 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.3).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

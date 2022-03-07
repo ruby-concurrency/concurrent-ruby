@@ -1,0 +1,570 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: CHANGELOG
+  
+    &mdash; Concurrent
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.CHANGELOG.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: CHANGELOG</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'><h2>Release v1.0.5, edge v0.3.1 (26 Feb 2017)</h2>
+
+<p>concurrent-ruby:</p>
+
+<ul>
+<li>Documentation for Event and Semaphore</li>
+<li>Use Unsafe#fullFence and #loadFence directly since the shortcuts were removed in JRuby</li>
+<li>Do not depend on org.jruby.util.unsafe.UnsafeHolder</li>
+</ul>
+
+<p>concurrent-ruby-edge:</p>
+
+<ul>
+<li>(#620) Actors on Pool raise an error</li>
+<li>(#624) Delayed promises did not interact correctly with flatting
+
+<ul>
+<li>Fix arguments yielded by callback methods</li>
+</ul></li>
+<li>Overridable default executor in promises factory methods</li>
+<li>Asking actor to terminate will always resolve to <code>true</code></li>
+</ul>
+
+<h2>Release v1.0.4, edge v0.3.0 (27 Dec 2016)</h2>
+
+<p>concurrent-ruby:</p>
+
+<ul>
+<li>Nothing</li>
+</ul>
+
+<p>concurrent-ruby-edge:</p>
+
+<ul>
+<li>New promises&#39; API renamed, lots of improvements, edge bumped to 0.3.0
+
+<ul>
+<li><strong>Incompatible</strong> with previous 0.2.3 version</li>
+<li>see <a href="https://github.com/ruby-concurrency/concurrent-ruby/pull/522">https://github.com/ruby-concurrency/concurrent-ruby/pull/522</a></li>
+</ul></li>
+</ul>
+
+<h2>Release v1.0.3 (17 Dec 2016)</h2>
+
+<ul>
+<li>Trigger execution of flattened delayed futures</li>
+<li>Avoid forking for processor_count if possible</li>
+<li>Semaphore Mutex and JRuby parity</li>
+<li>Adds Map#each as alias to Map#each_pair</li>
+<li>Fix uninitialized instance variables</li>
+<li>Make Fixnum, Bignum merger ready</li>
+<li>Allows Promise#then to receive an executor</li>
+<li>TimerSet now survives a fork</li>
+<li>Reject promise on any exception</li>
+<li>Allow ThreadLocalVar to be initialized with a block</li>
+<li>Support Alpha with <code>Concurrent::processor_count</code></li>
+<li>Fixes format-security error when compiling ruby_193_compatible.h</li>
+<li>Concurrent::Atom#swap fixed: reraise the exceptions from block</li>
+</ul>
+
+<h2>Release v1.0.2 (2 May 2016)</h2>
+
+<ul>
+<li>Fix bug with <code>Concurrent::Map</code> MRI backend <code>#inspect</code> method</li>
+<li>Fix bug with <code>Concurrent::Map</code> MRI backend using <code>Hash#value?</code></li>
+<li>Improved documentation and examples</li>
+<li>Minor updates to Edge</li>
+</ul>
+
+<h2>Release v1.0.1 (27 February 2016)</h2>
+
+<ul>
+<li>Fix &quot;uninitialized constant Concurrent::ReentrantReadWriteLock&quot; error.</li>
+<li>Better handling of <code>autoload</code> vs. <code>require</code>.</li>
+<li>Improved API for Edge <code>Future</code> zipping.</li>
+<li>Fix reference leak in Edge <code>Future</code> constructor .</li>
+<li>Fix bug which prevented thread pools from surviving a <code>fork</code>.</li>
+<li>Fix bug in which <code>TimerTask</code> did not correctly specify all its dependencies.</li>
+<li>Improved support for JRuby+Truffle</li>
+<li>Improved error messages.</li>
+<li>Improved documentation.</li>
+<li>Updated README and CONTRIBUTING.</li>
+</ul>
+
+<h2>Release v1.0.0 (13 November 2015)</h2>
+
+<ul>
+<li>Rename <code>attr_volatile_with_cas</code> to <code>attr_atomic</code></li>
+<li>Add <code>clear_each</code> to <code>LockFreeStack</code></li>
+<li>Update <code>AtomicReference</code> documentation</li>
+<li>Further updates and improvements to the synchronization layer.</li>
+<li>Performance and memory usage performance with <code>Actor</code> logging.</li>
+<li>Fixed <code>ThreadPoolExecutor</code> task count methods.</li>
+<li>Improved <code>Async</code> performance for both short and long-lived objects.</li>
+<li>Fixed bug in <code>LockFreeLinkedSet</code>.</li>
+<li>Fixed bug in which <code>Agent#await</code> triggered a validation failure.</li>
+<li>Further <code>Channel</code> updates.</li>
+<li>Adopted a project Code of Conduct</li>
+<li>Cleared interpreter warnings</li>
+<li>Fixed bug in <code>ThreadPoolExecutor</code> task count methods</li>
+<li>Fixed bug in &#39;LockFreeLinkedSet&#39;</li>
+<li>Improved Java extension loading</li>
+<li>Handle Exception children in Edge::Future</li>
+<li>Continued improvements to channel</li>
+<li>Removed interpreter warnings.</li>
+<li>Shared constants now in <code>lib/concurrent/constants.rb</code></li>
+<li>Refactored many tests.</li>
+<li>Improved synchronization layer/memory model documentation.</li>
+<li>Bug fix in Edge <code>Future#flat</code></li>
+<li>Brand new <code>Channel</code> implementation in Edge gem.</li>
+<li>Simplification of <code>RubySingleThreadExecutor</code></li>
+<li><code>Async</code> improvements
+
+<ul>
+<li>Each object uses its own <code>SingleThreadExecutor</code> instead of the global thread pool.</li>
+<li>No longers supports executor injection</li>
+<li>Much better documentation</li>
+</ul></li>
+<li><code>Atom</code> updates
+
+<ul>
+<li>No longer <code>Dereferenceable</code></li>
+<li>Now <code>Observable</code></li>
+<li>Added a <code>#reset</code> method</li>
+</ul></li>
+<li>Brand new <code>Agent</code> API and implementation. Now functionally equivalent to Clojure.</li>
+<li>Continued improvements to the synchronization layer</li>
+<li>Merged in the <code>thread_safe</code> gem
+
+<ul>
+<li><code>Concurrent::Array</code></li>
+<li><code>Concurrent::Hash</code></li>
+<li><code>Concurrent::Map</code> (formerly ThreadSafe::Cache)</li>
+<li><code>Concurrent::Tuple</code></li>
+</ul></li>
+<li>Minor improvements to Concurrent::Map</li>
+<li>Complete rewrite of <code>Exchanger</code></li>
+<li>Removed all deprecated code (classes, methods, constants, etc.)</li>
+<li>Updated Agent, MutexAtomic, and BufferedChannel to inherit from Synchronization::Object.</li>
+<li>Many improved tests</li>
+<li>Some internal reorganization</li>
+</ul>
+
+<h2>Release v0.9.1 (09 August 2015)</h2>
+
+<ul>
+<li>Fixed a Rubiniux bug in synchronization object</li>
+<li>Fixed all interpreter warnings (except circular references)</li>
+<li>Fixed require statements when requiring <code>Atom</code> alone</li>
+<li>Significantly improved <code>ThreadLocalVar</code> on non-JRuby platforms</li>
+<li>Fixed error handling in Edge <code>Concurrent.zip</code></li>
+<li><code>AtomicFixnum</code> methods <code>#increment</code> and <code>#decrement</code> now support optional delta</li>
+<li>New <code>AtomicFixnum#update</code> method</li>
+<li>Minor optimizations in <code>ReadWriteLock</code></li>
+<li>New <code>ReentrantReadWriteLock</code> class</li>
+<li><code>ThreadLocalVar#bind</code> method is now public</li>
+<li>Refactored many tests</li>
+</ul>
+
+<h2>Release v0.9.0 (10 July 2015)</h2>
+
+<ul>
+<li>Updated <code>AtomicReference</code>
+
+<ul>
+<li><code>AtomicReference#try_update</code> now simply returns instead of raising exception</li>
+<li><code>AtomicReference#try_update!</code> was added to raise exceptions if an update
+fails. Note: this is the same behavior as the old <code>try_update</code></li>
+</ul></li>
+<li>Pure Java implementations of
+
+<ul>
+<li><code>AtomicBoolean</code></li>
+<li><code>AtomicFixnum</code></li>
+<li><code>Semaphore</code></li>
+</ul></li>
+<li>Fixed bug when pruning Ruby thread pools</li>
+<li>Fixed bug in time calculations within <code>ScheduledTask</code></li>
+<li>Default <code>count</code> in <code>CountDownLatch</code> to 1</li>
+<li>Use monotonic clock for all timers via <code>Concurrent.monotonic_time</code>
+
+<ul>
+<li>Use <code>Process.clock_gettime(Process::CLOCK_MONOTONIC)</code> when available</li>
+<li>Fallback to <code>java.lang.System.nanoTime()</code> on unsupported JRuby versions</li>
+<li>Pure Ruby implementation for everything else</li>
+<li>Effects <code>Concurrent.timer</code>, <code>Concurrent.timeout</code>, <code>TimerSet</code>, <code>TimerTask</code>, and <code>ScheduledTask</code></li>
+</ul></li>
+<li>Deprecated all clock-time based timer scheduling
+
+<ul>
+<li>Only support scheduling by delay</li>
+<li>Effects <code>Concurrent.timer</code>, <code>TimerSet</code>, and <code>ScheduledTask</code></li>
+</ul></li>
+<li>Added new <code>ReadWriteLock</code> class</li>
+<li>Consistent <code>at_exit</code> behavior for Java and Ruby thread pools.</li>
+<li>Added <code>at_exit</code> handler to Ruby thread pools (already in Java thread pools)
+
+<ul>
+<li>Ruby handler stores the object id and retrieves from <code>ObjectSpace</code></li>
+<li>JRuby disables <code>ObjectSpace</code> by default so that handler stores the object reference</li>
+</ul></li>
+<li>Added a <code>:stop_on_exit</code> option to thread pools to enable/disable <code>at_exit</code> handler</li>
+<li>Updated thread pool docs to better explain shutting down thread pools</li>
+<li>Simpler <code>:executor</code> option syntax for all abstractions which support this option</li>
+<li>Added <code>Executor#auto_terminate?</code> predicate method (for thread pools)</li>
+<li>Added <code>at_exit</code> handler to <code>TimerSet</code></li>
+<li>Simplified auto-termination of the global executors
+
+<ul>
+<li>Can now disable auto-termination of global executors</li>
+<li>Added shutdown/kill/wait_for_termination variants for global executors</li>
+</ul></li>
+<li>Can now disable auto-termination for <em>all</em> executors (the nuclear option)</li>
+<li>Simplified auto-termination of the global executors</li>
+<li>Deprecated terms &quot;task pool&quot; and &quot;operation pool&quot;
+
+<ul>
+<li>New terms are &quot;io executor&quot; and &quot;fast executor&quot;</li>
+<li>New functions added with new names</li>
+<li>Deprecation warnings added to functions referencing old names</li>
+</ul></li>
+<li>Moved all thread pool related functions from <code>Concurrent::Configuration</code> to <code>Concurrent</code>
+
+<ul>
+<li>Old functions still exist with deprecation warnings</li>
+<li>New functions have updated names as appropriate</li>
+</ul></li>
+<li>All high-level abstractions default to the &quot;io executor&quot;</li>
+<li>Fixed bug in <code>Actor</code> causing it to prematurely warm global thread pools on gem load
+
+<ul>
+<li>This also fixed a <code>RejectedExecutionError</code> bug when running with minitest/autorun via JRuby</li>
+</ul></li>
+<li>Moved global logger up to the <code>Concurrent</code> namespace and refactored the code</li>
+<li>Optimized the performance of <code>Delay</code>
+
+<ul>
+<li>Fixed a bug in which no executor option on construction caused block execution on a global thread pool</li>
+</ul></li>
+<li>Numerous improvements and bug fixes to <code>TimerSet</code></li>
+<li>Fixed deadlock of <code>Future</code> when the handler raises Exception</li>
+<li>Added shared specs for more classes</li>
+<li>New concurrency abstractions including:
+
+<ul>
+<li><code>Atom</code></li>
+<li><code>Maybe</code></li>
+<li><code>ImmutableStruct</code></li>
+<li><code>MutableStruct</code></li>
+<li><code>SettableStruct</code></li>
+</ul></li>
+<li>Created an Edge gem for unstable abstractions including
+
+<ul>
+<li><code>Actor</code></li>
+<li><code>Agent</code></li>
+<li><code>Channel</code></li>
+<li><code>Exchanger</code></li>
+<li><code>LazyRegister</code></li>
+<li><strong>new Future Framework</strong> <a href="http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html">http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Edge.html</a> - unified
+implementation of Futures and Promises which combines Features of previous <code>Future</code>,
+<code>Promise</code>, <code>IVar</code>, <code>Event</code>, <code>Probe</code>, <code>dataflow</code>, <code>Delay</code>, <code>TimerTask</code> into single framework. It uses extensively
+new synchronization layer to make all the paths <strong>lock-free</strong> with exception of blocking threads on <code>#wait</code>.
+It offers better performance and does not block threads when not required.</li>
+</ul></li>
+<li>Actor framework changes:
+
+<ul>
+<li>fixed reset loop in Pool</li>
+<li>Pool can use any actor as a worker, abstract worker class is no longer needed.</li>
+<li>Actor events not have format <code>[:event_name, *payload]</code> instead of just the Symbol.</li>
+<li>Actor now uses new Future/Promise Framework instead of <code>IVar</code> for better interoperability</li>
+<li>Behaviour definition array was simplified to <code>[BehaviourClass1, [BehaviourClass2, *initialization_args]]</code></li>
+<li>Linking behavior responds to :linked message by returning array of linked actors</li>
+<li>Supervised behavior is removed in favour of just Linking</li>
+<li>RestartingContext is supervised by default now, <code>supervise: true</code> is not required any more</li>
+<li>Events can be private and public, so far only difference is that Linking will
+pass to linked actors only public messages. Adding private :restarting and
+:resetting events which are send before the actor restarts or resets allowing
+to add callbacks to cleanup current child actors.</li>
+<li>Print also object_id in Reference to_s</li>
+<li>Add AbstractContext#default_executor to be able to override executor class wide</li>
+<li>Add basic IO example</li>
+<li>Documentation somewhat improved</li>
+<li>All messages should have same priority. It&#39;s now possible to send <code>actor &lt;&lt; job1 &lt;&lt; job2 &lt;&lt; :terminate!</code> and
+be sure that both jobs are processed first.</li>
+</ul></li>
+<li>Refactored <code>Channel</code> to use newer synchronization objects</li>
+<li>Added <code>#reset</code> and <code>#cancel</code> methods to <code>TimerSet</code></li>
+<li>Added <code>#cancel</code> method to <code>Future</code> and <code>ScheduledTask</code></li>
+<li>Refactored <code>TimerSet</code> to use <code>ScheduledTask</code></li>
+<li>Updated <code>Async</code> with a factory that initializes the object</li>
+<li>Deprecated <code>Concurrent.timer</code> and <code>Concurrent.timeout</code></li>
+<li>Reduced max threads on pure-Ruby thread pools (abends around 14751 threads)</li>
+<li>Moved many private/internal classes/modules into &quot;namespace&quot; modules</li>
+<li>Removed brute-force killing of threads in tests</li>
+<li>Fixed a thread pool bug when the operating system cannot allocate more threads</li>
+</ul>
+
+<h2>Release v0.8.0 (25 January 2015)</h2>
+
+<ul>
+<li>C extension for MRI have been extracted into the <code>concurrent-ruby-ext</code> companion gem.
+Please see the README for more detail.</li>
+<li>Better variable isolation in <code>Promise</code> and <code>Future</code> via an <code>:args</code> option</li>
+<li>Continued to update intermittently failing tests</li>
+</ul>
+
+<h2>Release v0.7.2 (24 January 2015)</h2>
+
+<ul>
+<li>New <code>Semaphore</code> class based on <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Semaphore.html">java.util.concurrent.Semaphore</a></li>
+<li>New <code>Promise.all?</code> and <code>Promise.any?</code> class methods</li>
+<li>Renamed <code>:overflow_policy</code> on thread pools to <code>:fallback_policy</code></li>
+<li>Thread pools still accept the <code>:overflow_policy</code> option but display a warning</li>
+<li>Thread pools now implement <code>fallback_policy</code> behavior when not running (rather than universally rejecting tasks)</li>
+<li>Fixed minor <code>set_deref_options</code> constructor bug in <code>Promise</code> class</li>
+<li>Fixed minor <code>require</code> bug in <code>ThreadLocalVar</code> class</li>
+<li>Fixed race condition bug in <code>TimerSet</code> class</li>
+<li>Fixed race condition bug in <code>TimerSet</code> class</li>
+<li>Fixed signal bug in <code>TimerSet#post</code> method</li>
+<li>Numerous non-functional updates to clear warning when running in debug mode</li>
+<li>Fixed more intermittently failing tests</li>
+<li>Tests now run on new Travis build environment</li>
+<li>Multiple documentation updates</li>
+</ul>
+
+<h2>Release v0.7.1 (4 December 2014)</h2>
+
+<p>Please see the <a href="https://github.com/ruby-concurrency/concurrent-ruby/issues/142">roadmap</a> for more information on the next planned release.</p>
+
+<ul>
+<li>Added <code>flat_map</code> method to <code>Promise</code></li>
+<li>Added <code>zip</code> method to <code>Promise</code></li>
+<li>Fixed bug with logging in <code>Actor</code></li>
+<li>Improvements to <code>Promise</code> tests</li>
+<li>Removed actor-experimental warning</li>
+<li>Added an <code>IndirectImmediateExecutor</code> class</li>
+<li>Allow disabling auto termination of global executors</li>
+<li>Fix thread leaking in <code>ThreadLocalVar</code> (uses <code>Ref</code> gem on non-JRuby systems)</li>
+<li>Fix thread leaking when pruning pure-Ruby thread pools</li>
+<li>Prevent <code>Actor</code> from using an <code>ImmediateExecutor</code> (causes deadlock)</li>
+<li>Added missing synchronizations to <code>TimerSet</code></li>
+<li>Fixed bug with return value of <code>Concurrent::Actor::Utils::Pool#ask</code></li>
+<li>Fixed timing bug in <code>TimerTask</code></li>
+<li>Fixed bug when creating a <code>JavaThreadPoolExecutor</code> with minimum pool size of zero</li>
+<li>Removed confusing warning when not using native extenstions</li>
+<li>Improved documentation</li>
+</ul>
+
+<h2>Release v0.7.0 (13 August 2014)</h2>
+
+<ul>
+<li>Merge the <a href="https://github.com/ruby-concurrency/atomic">atomic</a> gem
+
+<ul>
+<li>Pure Ruby <code>MutexAtomic</code> atomic reference class</li>
+<li>Platform native atomic reference classes <code>CAtomic</code>, <code>JavaAtomic</code>, and <code>RbxAtomic</code></li>
+<li>Automated <a href="https://github.com/ruby-concurrency/rake-compiler-dev-box">build process</a></li>
+<li>Fat binary releases for <a href="https://rubygems.org/gems/concurrent-ruby/versions">multiple platforms</a> including Windows (32/64), Linux (32/64), OS X (64-bit), Solaris (64-bit), and JRuby</li>
+</ul></li>
+<li>C native <code>CAtomicBoolean</code></li>
+<li>C native <code>CAtomicFixnum</code></li>
+<li>Refactored intermittently failing tests</li>
+<li>Added <code>dataflow!</code> and <code>dataflow_with!</code> methods to match <code>Future#value!</code> method</li>
+<li>Better handling of timeout in <code>Agent</code></li>
+<li>Actor Improvements
+
+<ul>
+<li>Fine-grained implementation using chain of behaviors. Each behavior is responsible for single aspect like: <code>Termination</code>, <code>Pausing</code>, <code>Linking</code>, <code>Supervising</code>, etc. Users can create custom Actors easily based on their needs.</li>
+<li>Supervision was added. <code>RestartingContext</code> will pause on error waiting on its supervisor to decide what to do next ( options are <code>:terminate!</code>, <code>:resume!</code>, <code>:reset!</code>, <code>:restart!</code>). Supervising behavior also supports strategies <code>:one_for_one</code> and <code>:one_for_all</code>.</li>
+<li>Linking was added to be able to monitor actor&#39;s events like: <code>:terminated</code>, <code>:paused</code>, <code>:restarted</code>, etc.</li>
+<li>Dead letter routing added. Rejected envelopes are collected in a configurable actor (default: <code>Concurrent::Actor.root.ask!(:dead_letter_routing)</code>)</li>
+<li>Old <code>Actor</code> class removed and replaced by new implementation previously called <code>Actress</code>. <code>Actress</code> was kept as an alias for <code>Actor</code> to keep compatibility.</li>
+<li><code>Utils::Broadcast</code> actor which allows Publish–subscribe pattern.</li>
+</ul></li>
+<li>More executors for managing serialized operations
+
+<ul>
+<li><code>SerializedExecution</code> mixin module</li>
+<li><code>SerializedExecutionDelegator</code> for serializing <em>any</em> executor</li>
+</ul></li>
+<li>Updated <code>Async</code> with serialized execution</li>
+<li>Updated <code>ImmediateExecutor</code> and <code>PerThreadExecutor</code> with full executor service lifecycle</li>
+<li>Added a <code>Delay</code> to root <code>Actress</code> initialization</li>
+<li>Minor bug fixes to thread pools</li>
+<li>Refactored many intermittently failing specs</li>
+<li>Removed Java interop warning <code>executor.rb:148 warning: ambiguous Java methods found, using submit(java.lang.Runnable)</code></li>
+<li>Fixed minor bug in <code>RubyCachedThreadPool</code> overflow policy</li>
+<li>Updated tests to use <a href="http://myronmars.to/n/dev-blog/2014/05/notable-changes-in-rspec-3">RSpec 3.0</a></li>
+<li>Removed deprecated <code>Actor</code> class</li>
+<li>Better support for Rubinius</li>
+</ul>
+
+<h2>Release v0.6.1 (14 June 2014)</h2>
+
+<ul>
+<li>Many improvements to <code>Concurrent::Actress</code></li>
+<li>Bug fixes to <code>Concurrent::RubyThreadPoolExecutor</code></li>
+<li>Fixed several brittle tests</li>
+<li>Moved documentation to <a href="http://ruby-concurrency.github.io/concurrent-ruby/frames.html">http://ruby-concurrency.github.io/concurrent-ruby/frames.html</a></li>
+</ul>
+
+<h2>Release v0.6.0 (25 May 2014)</h2>
+
+<ul>
+<li>Added <code>Concurrent::Observable</code> to encapsulate our thread safe observer sets</li>
+<li>Improvements to new <code>Channel</code></li>
+<li>Major improvements to <code>CachedThreadPool</code> and <code>FixedThreadPool</code></li>
+<li>Added <code>SingleThreadExecutor</code></li>
+<li>Added <code>Current::timer</code> function</li>
+<li>Added <code>TimerSet</code> executor</li>
+<li>Added <code>AtomicBoolean</code></li>
+<li><code>ScheduledTask</code> refactoring</li>
+<li>Pure Ruby and JRuby-optimized <code>PriorityQueue</code> classes</li>
+<li>Updated <code>Agent</code> behavior to more closely match Clojure</li>
+<li>Observer sets support block callbacks to the <code>add_observer</code> method</li>
+<li>New algorithm for thread creation in <code>RubyThreadPoolExecutor</code></li>
+<li>Minor API updates to <code>Event</code></li>
+<li>Rewritten <code>TimerTask</code> now an <code>Executor</code> instead of a <code>Runnable</code></li>
+<li>Fixed many brittle specs</li>
+<li>Renamed <code>FixedThreadPool</code> and <code>CachedThreadPool</code> to <code>RubyFixedThreadPool</code> and <code>RubyCachedThreadPool</code></li>
+<li>Created JRuby optimized <code>JavaFixedThreadPool</code> and <code>JavaCachedThreadPool</code></li>
+<li>Consolidated fixed thread pool tests into <code>spec/concurrent/fixed_thread_pool_shared.rb</code> and  <code>spec/concurrent/cached_thread_pool_shared.rb</code></li>
+<li><code>FixedThreadPool</code> now subclasses <code>RubyFixedThreadPool</code> or <code>JavaFixedThreadPool</code> as appropriate</li>
+<li><code>CachedThreadPool</code> now subclasses <code>RubyCachedThreadPool</code> or <code>JavaCachedThreadPool</code> as appropriate</li>
+<li>New <code>Delay</code> class</li>
+<li><code>Concurrent::processor_count</code> helper function</li>
+<li>New <code>Async</code> module</li>
+<li>Renamed <code>NullThreadPool</code> to <code>PerThreadExecutor</code></li>
+<li>Deprecated <code>Channel</code> (we are planning a new implementation based on <a href="http://golangtutorials.blogspot.com/2011/06/channels-in-go.html">Go</a>)</li>
+<li>Added gem-level <a href="http://robots.thoughtbot.com/mygem-configure-block">configuration</a></li>
+<li>Deprecated <code>$GLOBAL_THREAD_POOL</code> in lieu of gem-level configuration</li>
+<li>Removed support for Ruby <a href="https://www.ruby-lang.org/en/news/2013/12/17/maintenance-of-1-8-7-and-1-9-2/">1.9.2</a></li>
+<li>New <code>RubyThreadPoolExecutor</code> and <code>JavaThreadPoolExecutor</code> classes</li>
+<li>All thread pools now extend the appropriate thread pool executor classes</li>
+<li>All thread pools now support <code>:overflow_policy</code> (based on Java&#39;s <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html">reject policies</a>)</li>
+<li>Deprecated <code>UsesGlobalThreadPool</code> in lieu of explicit <code>:executor</code> option (dependency injection) on <code>Future</code>, <code>Promise</code>, and <code>Agent</code></li>
+<li>Added <code>Concurrent::dataflow_with(executor, *inputs)</code> method to support executor dependency injection for dataflow</li>
+<li>Software transactional memory with <code>TVar</code> and <code>Concurrent::atomically</code></li>
+<li>First implementation of <a href="https://github.com/ruby-concurrency/concurrent-ruby/pull/49">new, high-performance</a> <code>Channel</code></li>
+<li><code>Actor</code> is deprecated in favor of new experimental actor implementation <a href="https://github.com/ruby-concurrency/concurrent-ruby/pull/73">#73</a>. To avoid namespace collision it is living in <code>Actress</code> namespace until <code>Actor</code> is removed in next release.</li>
+</ul>
+
+<h2>Release v0.5.0</h2>
+
+<p>This is the most significant release of this gem since its inception. This release includes many improvements and optimizations. It also includes several bug fixes. The major areas of focus for this release were:</p>
+
+<ul>
+<li>Stability improvements on Ruby versions with thread-level parallelism (<a href="http://jruby.org/">JRuby</a> and <a href="http://rubini.us/">Rubinius</a>)</li>
+<li>Creation of new low-level concurrency abstractions</li>
+<li>Internal refactoring to use the new low-level abstractions</li>
+</ul>
+
+<p>Most of these updates had no effect on the gem API. There are a few notable exceptions which were unavoidable. Please read the <a href="API-Updates-in-v0.5.0">release notes</a> for more information.</p>
+
+<p>Specific changes include:</p>
+
+<ul>
+<li>New class <code>IVar</code></li>
+<li>New class <code>MVar</code></li>
+<li>New class <code>ThreadLocalVar</code></li>
+<li>New class <code>AtomicFixnum</code></li>
+<li>New class method <code>dataflow</code></li>
+<li>New class <code>Condition</code></li>
+<li>New class <code>CountDownLatch</code></li>
+<li>New class <code>DependencyCounter</code></li>
+<li>New class <code>SafeTaskExecutor</code></li>
+<li>New class <code>CopyOnNotifyObserverSet</code></li>
+<li>New class <code>CopyOnWriteObserverSet</code></li>
+<li><code>Future</code> updated with <code>execute</code> API</li>
+<li><code>ScheduledTask</code> updated with <code>execute</code> API</li>
+<li>New <code>Promise</code> API</li>
+<li><code>Future</code> now extends <code>IVar</code></li>
+<li><code>Postable#post?</code> now returns an <code>IVar</code></li>
+<li>Thread safety fixes to <code>Dereferenceable</code></li>
+<li>Thread safety fixes to <code>Obligation</code></li>
+<li>Thread safety fixes to <code>Supervisor</code></li>
+<li>Thread safety fixes to <code>Event</code></li>
+<li>Various other thread safety (race condition) fixes</li>
+<li>Refactored brittle tests</li>
+<li>Implemented pending tests</li>
+<li>Added JRuby and Rubinius as Travis CI build targets</li>
+<li>Added <a href="https://codeclimate.com/">CodeClimate</a> code review</li>
+<li>Improved YARD documentation</li>
+</ul>
+</div></div>
+
+    <div id="footer">
+  Generated on Wed Aug 15 13:38:39 2018 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.4.3).
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+</html>

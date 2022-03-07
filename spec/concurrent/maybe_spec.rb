@@ -21,7 +21,7 @@ module Concurrent
         it 'passes all arguments to the block' do
           expected = [1, 2, 3]
           actual = nil
-          maybe = Maybe.from(*expected) do |*args|
+          Maybe.from(*expected) do |*args|
             actual = args
           end
           expect(actual).to eq expected

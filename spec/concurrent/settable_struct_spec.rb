@@ -171,6 +171,31 @@ module Concurrent
         expect(subject).to receive(:synchronize).at_least(:once).with(no_args).and_call_original
         subject.select{|value| false }
       end
+
+      it 'protects #initialize_copy' do
+        expect(subject).to receive(:synchronize).at_least(:once).with(no_args).and_call_original
+        subject.clone
+      end
+    end
+
+    context 'copy' do
+      context '#dup' do
+        it 'retains settability of members' do
+          subject['name'] = 'John'
+          expect { subject.dup['name'] = 'Jane' }
+            .to raise_error(ImmutabilityError)
+          expect(subject['address'] = 'Earth').to eq('Earth')
+        end
+      end
+
+      context '#clone' do
+        it 'retains settability of members' do
+          subject['name'] = 'John'
+          expect { subject.clone['name'] = 'Jane' }
+            .to raise_error(ImmutabilityError)
+          expect(subject['address'] = 'Earth').to eq('Earth')
+        end
+      end
     end
   end
 end

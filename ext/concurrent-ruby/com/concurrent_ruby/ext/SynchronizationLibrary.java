@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 public class SynchronizationLibrary implements Library {
 
     private static final Unsafe UNSAFE = loadUnsafe();
+    private static final boolean FULL_FENCE = supportsFences();
 
     private static Unsafe loadUnsafe() {
         try {
@@ -140,17 +141,17 @@ public class SynchronizationLibrary implements Library {
         // volatile threadContext is used as a memory barrier per the JVM memory model happens-before semantic
         // on volatile fields. any volatile field could have been used but using the thread context is an
         // attempt to avoid code elimination.
-        private static volatile ThreadContext threadContext = null;
+        private static volatile int volatileField;
 
         @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PUBLIC)
         public static IRubyObject fullMemoryBarrier(ThreadContext context, IRubyObject self) {
             // Prevent reordering of ivar writes with publication of this instance
-            if (!supportsFences()) {
+            if (!FULL_FENCE) {
                 // Assuming that following volatile read and write is not eliminated it simulates fullFence.
                 // If it's eliminated it'll cause problems only on non-x86 platforms.
                 // http://shipilev.net/blog/2014/jmm-pragmatics/#_happens_before_test_your_understanding
-                final ThreadContext oldContext = threadContext;
-                threadContext = context;
+                final int volatileRead = volatileField;
+                volatileField = context.getLine();
             } else {
                 UNSAFE.fullFence();
             }
@@ -163,9 +164,9 @@ public class SynchronizationLibrary implements Library {
                 IRubyObject self,
                 IRubyObject name) {
             // Ensure we ses latest value with loadFence
-            if (!supportsFences()) {
+            if (!FULL_FENCE) {
                 // piggybacking on volatile read, simulating loadFence
-                final ThreadContext oldContext = threadContext;
+                final int volatileRead = volatileField;
                 return ((RubyBasicObject) self).instance_variable_get(context, name);
             } else {
                 UNSAFE.loadFence();
@@ -180,10 +181,10 @@ public class SynchronizationLibrary implements Library {
                 IRubyObject name,
                 IRubyObject value) {
             // Ensure we make last update visible
-            if (!supportsFences()) {
+            if (!FULL_FENCE) {
                 // piggybacking on volatile write, simulating storeFence
                 final IRubyObject result = ((RubyBasicObject) self).instance_variable_set(name, value);
-                threadContext = context;
+                volatileField = context.getLine();
                 return result;
             } else {
                 // JRuby uses StampedVariableAccessor which calls fullFence
@@ -284,21 +285,23 @@ public class SynchronizationLibrary implements Library {
         }
 
         @JRubyMethod(name = "sleep_interruptibly", visibility = Visibility.PUBLIC, module = true)
-        public static IRubyObject sleepInterruptibly(ThreadContext context, IRubyObject receiver, Block block) {
+        public static IRubyObject sleepInterruptibly(final ThreadContext context, IRubyObject receiver, final Block block) {
             try {
-                return context.getThread().executeTask(context, block,
-                        new RubyThread.Task<Block, IRubyObject>() {
-                            public IRubyObject run(ThreadContext context, Block block1) throws InterruptedException {
-                                return block1.call(context);
-                            }
+                context.getThread().executeBlockingTask(new RubyThread.BlockingTask() {
+                    @Override
+                    public void run() throws InterruptedException {
+                        block.call(context);
+                    }
 
-                            public void wakeup(RubyThread thread, Block block1) {
-                                thread.getNativeThread().interrupt();
-                            }
-                        });
+                    @Override
+                    public void wakeup() {
+                        context.getThread().getNativeThread().interrupt();
+                    }
+                });
             } catch (InterruptedException e) {
                 throw context.runtime.newThreadError("interrupted in Concurrent::Synchronization::JRuby.sleep_interruptibly");
             }
+            return context.nil;
         }
     }
 }

@@ -1,39 +1,141 @@
 ## Current
 
+## Release v1.1.9 (5 Jun 2021)
+
 concurrent-ruby:
 
-* [Promises](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Promises.html)
+* (#866) Child promise state not set to :pending immediately after #execute when parent has completed 
+* (#905, #872) Fix RubyNonConcurrentPriorityQueue#delete method
+* (2df0337d) Make sure locks are not shared on shared when objects are dup/cloned
+* (#900, #906, #796, #847, #911) Fix Concurrent::Set tread-safety issues on CRuby
+* (#907) Add new ConcurrentMap backend for TruffleRuby
+
+## Release v1.1.8 (20 January 2021)
+
+concurrent-ruby:
+
+* (#885) Fix race condition in TVar for stale reads 
+* (#884) RubyThreadLocalVar: Do not iterate over hash which might conflict with new pair addition
+
+## Release v1.1.7 (6 August 2020)
+
+concurrent-ruby:
+
+* (#879) Consider falsy value on `Concurrent::Map#compute_if_absent` for fast non-blocking path
+* (#876) Reset Async queue on forking, makes Async fork-safe
+* (#856) Avoid running problematic code in RubyThreadLocalVar on MRI that occasionally results in segfault
+* (#853) Introduce ThreadPoolExecutor without a Queue
+
+## Release v1.1.6, edge v0.6.0 (10 Feb 2020)
+
+concurrent-ruby:
+
+* (#841) Concurrent.disable_at_exit_handlers! is no longer needed and was deprecated.
+* (#841) AbstractExecutorService#auto_terminate= was deprecated and has no effect. 
+  Set :auto_terminate option instead when executor is initialized.
+
+## Release v1.1.6.pre1, edge v0.6.0.pre1 (26 Jan 2020)
+
+concurrent-ruby:
+
+* (#828) Allow to name executors, the name is also used to name their threads 
+* (#838) Implement #dup and #clone for structs
+* (#821) Safer finalizers for thread local variables
+* Documentation fixes
+* (#814) Use Ruby's Etc.nprocessors if available
+* (#812) Fix directory structure not to mess with packaging tools
+* (#840) Fix termination of pools on JRuby
+
+concurrent-ruby-edge:
+
+* Add WrappingExecutor (#830)
+
+## Release v1.1.5, edge v0.5.0 (10 Mar 2019)
+
+concurrent-ruby:
+
+* fix potential leak of context on JRuby and Java 7
+
+concurrent-ruby-edge:
+
+* Add finalized Concurrent::Cancellation
+* Add finalized Concurrent::Throttle
+* Add finalized Concurrent::Promises::Channel
+* Add new Concurrent::ErlangActor
+
+## Release v1.1.4 (14 Dec 2018)
+
+* (#780) Remove java_alias of 'submit' method of Runnable to let executor service work on java 11
+* (#776) Fix NameError on defining a struct with a name which is already taken in an ancestor
+
+## Release v1.1.3 (7 Nov 2018)
+
+* (#775) fix partial require of the gem (although not officially supported)
+
+## Release v1.1.2 (6 Nov 2018)
+
+* (#773) more defensive 1.9.3 support
+
+## Release v1.1.1, edge v0.4.1 (1 Nov 2018)
+
+* (#768) add support for 1.9.3 back 
+
+## Release v1.1.0, edge v0.4.0 (31 OCt 2018) (yanked)
+
+* (#768) yanked because of issues with removed 1.9.3 support 
+
+## Release v1.1.0.pre2, edge v0.4.0.pre2 (18 Sep 2018)
+
+concurrent-ruby:
+
+* fixed documentation and README links
+* fix Set for TruffleRuby and Rubinius
+* use properly supported TruffleRuby APIs
+
+concurrent-ruby-edge:
+
+* add Promises.zip_futures_over_on
+
+## Release v1.1.0.pre1, edge v0.4.0.pre1 (15 Aug 2018)
+
+concurrent-ruby:
+
+* requires at least Ruby 2.0
+* [Promises](http://ruby-concurrency.github.io/concurrent-ruby/1.1.0/Concurrent/Promises.html)
   are moved from `concurrent-ruby-edge` to `concurrent-ruby`
-* #644 Fix Map#each and #each_pair not returning enumerator outside of MRI
-* #659 Edge promises fail during error handling
-* #741 Raise on recursive Delay#value call
-* #727 #717 fix global IO executor on JRuby
-* #740 Drop support for CRuby 1.9, JRuby 1.7, Rubinius.
-* #737 Move AtomicMarkableReference out of Edge
-* #708 Prefer platform specific memory barriers 
 * Add support for TruffleRuby
-  * #734 Fix Array/Hash/Set construction broken on TruffleRuby    
-* #735 Fix wrong expected exception in channel spec assertion
+  * (#734) Fix Array/Hash/Set construction broken on TruffleRuby
+  * AtomicReference fixed    
 * CI stabilization
-* #729 Allow executor option in `Promise#then`
-* #725 fix timeout check to use timeout_interval
-* #719 update engine detection
-* #660 Add specs for Promise#zip/Promise.zip ordering
-* #654 Promise.zip execution changes
-* #666 Add thread safe set implementation
-* #651 #699 #to_s, #inspect should not output negative object IDs.
-* #685 Avoid RSpec warnings about raise_error
-* #680 Avoid RSpec monkey patching, persist spec results locally, use RSpec
-  v3.7.0
-* #665 Initialize the monitor for new subarrays on Rubinius
-* #661 Fix error handling in edge promises
 * remove sharp dependency edge -> core
 * remove warnings
 * documentation updates
+* Exchanger is no longer documented as edge since it was already available in 
+  `concurrent-ruby`
+* (#644) Fix Map#each and #each_pair not returning enumerator outside of MRI
+* (#659) Edge promises fail during error handling
+* (#741) Raise on recursive Delay#value call
+* (#727) #717 fix global IO executor on JRuby
+* (#740) Drop support for CRuby 1.9, JRuby 1.7, Rubinius.
+* (#737) Move AtomicMarkableReference out of Edge
+* (#708) Prefer platform specific memory barriers 
+* (#735) Fix wrong expected exception in channel spec assertion
+* (#729) Allow executor option in `Promise#then`
+* (#725) fix timeout check to use timeout_interval
+* (#719) update engine detection
+* (#660) Add specs for Promise#zip/Promise.zip ordering
+* (#654) Promise.zip execution changes
+* (#666) Add thread safe set implementation
+* (#651) #699 #to_s, #inspect should not output negative object IDs.
+* (#685) Avoid RSpec warnings about raise_error
+* (#680) Avoid RSpec monkey patching, persist spec results locally, use RSpec
+  v3.7.0
+* (#665) Initialize the monitor for new subarrays on Rubinius
+* (#661) Fix error handling in edge promises
   
 concurrent-ruby-edge:
 
-* #659 Edge promises fail during error handling
+* (#659) Edge promises fail during error handling
 * Edge files clearly separated in `lib-edge`
 * added ReInclude
 
