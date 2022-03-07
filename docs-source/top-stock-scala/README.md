@@ -35,7 +35,7 @@ require 'open-uri'
 def get_year_end_closing(symbol, year, api_key)
   uri = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=#{symbol}&apikey=#{api_key}&datatype=csv"
   data = []
-  open(uri) do |f|
+  URI.open(uri) do |f|
     CSV.parse(f, headers: true) do |row|
       data << row['close'] if row['timestamp'].include?(year.to_s)
     end

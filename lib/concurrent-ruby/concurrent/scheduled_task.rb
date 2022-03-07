@@ -59,12 +59,12 @@ module Concurrent
   #
   #   require 'concurrent'
   #   require 'thread'   # for Queue
-  #   require 'open-uri' # for open(uri)
+  #   require 'open-uri' # for URI.open(uri)
   #
   #   class Ticker
   #     def get_year_end_closing(symbol, year)
   #       uri = "http://ichart.finance.yahoo.com/table.csv?s=#{symbol}&a=11&b=01&c=#{year}&d=11&e=31&f=#{year}&g=m"
-  #       data = open(uri) {|f| f.collect{|line| line.strip } }
+  #       data = URI.open(uri) {|f| f.collect{|line| line.strip } }
   #       data[1].split(',')[4].to_f
   #     end
   #   end
