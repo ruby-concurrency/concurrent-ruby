@@ -93,13 +93,8 @@ module Concurrent
     end
 
     # @!visibility private
-    def ready_worker(worker)
-      synchronize { ns_ready_worker worker }
-    end
-
-    # @!visibility private
-    def worker_not_old_enough(worker)
-      synchronize { ns_worker_not_old_enough worker }
+    def ready_worker(worker, last_message)
+      synchronize { ns_ready_worker worker, last_message }
     end
 
     # @!visibility private
@@ -110,6 +105,11 @@ module Concurrent
     # @!visibility private
     def worker_task_completed
       synchronize { @completed_task_count += 1 }
+    end
+
+    # @!macro thread_pool_executor_method_prune_pool
+    def prune_pool
+      synchronize { ns_prune_pool }
     end
 
     private
@@ -192,7 +192,7 @@ module Concurrent
     # @!visibility private
     def ns_assign_worker(*args, &task)
       # keep growing if the pool is not at the minimum yet
-      worker = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
+      worker, _ = (@ready.pop if @pool.size >= @min_length) || ns_add_busy_worker
       if worker
         worker << [task, args]
         true
@@ -223,7 +223,7 @@ module Concurrent
     def ns_worker_died(worker)
       ns_remove_busy_worker worker
       replacement_worker = ns_add_busy_worker
-      ns_ready_worker replacement_worker, false if replacement_worker
+      ns_ready_worker replacement_worker, Concurrent.monotonic_time, false if replacement_worker
     end
 
     # creates new worker which has to receive work to do after it's added
@@ -242,27 +242,19 @@ module Concurrent
     # handle ready worker, giving it new job or assigning back to @ready
     #
     # @!visibility private
-    def ns_ready_worker(worker, success = true)
+    def ns_ready_worker(worker, last_message, success = true)
       task_and_args = @queue.shift
       if task_and_args
         worker << task_and_args
       else
         # stop workers when !running?, do not return them to @ready
         if running?
-          @ready.push(worker)
+          raise unless last_message
+          @ready.push([worker, last_message])
         else
           worker.stop
         end
       end
-    end
-
-    # returns back worker to @ready which was not idle for enough time
-    #
-    # @!visibility private
-    def ns_worker_not_old_enough(worker)
-      # let's put workers coming from idle_test back to the start (as the oldest worker)
-      @ready.unshift(worker)
-      true
     end
 
     # removes a worker which is not in not tracked in @ready
@@ -278,10 +270,17 @@ module Concurrent
     #
     # @!visibility private
     def ns_prune_pool
-      return if @pool.size <= @min_length
-
-      last_used = @ready.shift
-      last_used << :idle_test if last_used
+      now = Concurrent.monotonic_time
+      stopped_workers = 0
+      while !@ready.empty? && (@pool.size - stopped_workers > @min_length)
+        worker, last_message = @ready.first
+        if now - last_message > self.idletime
+          stopped_workers += 1
+          @ready.shift
+          worker << :stop
+        else break
+        end
+      end
 
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
     end
@@ -330,19 +329,10 @@ module Concurrent
 
       def create_worker(queue, pool, idletime)
         Thread.new(queue, pool, idletime) do |my_queue, my_pool, my_idletime|
-          last_message = Concurrent.monotonic_time
           catch(:stop) do
             loop do
 
               case message = my_queue.pop
-              when :idle_test
-                if (Concurrent.monotonic_time - last_message) > my_idletime
-                  my_pool.remove_busy_worker(self)
-                  throw :stop
-                else
-                  my_pool.worker_not_old_enough(self)
-                end
-
               when :stop
                 my_pool.remove_busy_worker(self)
                 throw :stop
@@ -350,9 +340,7 @@ module Concurrent
               else
                 task, args = message
                 run_task my_pool, task, args
-                last_message = Concurrent.monotonic_time
-
-                my_pool.ready_worker(self)
+                my_pool.ready_worker(self, Concurrent.monotonic_time)
               end
             end
           end
