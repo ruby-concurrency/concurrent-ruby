@@ -360,7 +360,7 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 ### Publishing the Gem
 
-* Update`version.rb`
+* Update `version.rb`
 * Update the CHANGELOG
 * Update the Yard documentation
     - Add the new version to `docs-source/signpost.md`. Needs to be done only if there are visible changes in the
