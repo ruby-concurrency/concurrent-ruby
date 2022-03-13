@@ -113,7 +113,8 @@ module Concurrent
       specify '#execution_interval is writeable' do
 
         latch   = CountDownLatch.new(1)
-        subject = TimerTask.new(execution_interval: 1,
+        subject = TimerTask.new(timeout_interval: 1,
+                                execution_interval: 1,
                                 run_now: true) do |task|
           task.execution_interval = 3
           latch.count_down
@@ -128,6 +129,16 @@ module Concurrent
 
         expect(subject.execution_interval).to eq(3)
         subject.kill
+      end
+
+      specify '#timeout_interval being written produces a warning' do
+        subject = TimerTask.new(timeout_interval: 1,
+                                execution_interval: 0.1,
+                                run_now: true) do |task|
+          expect { task.timeout_interval = 3 }.to output("TimerTask timeouts are now ignored as these were not able to be implemented correctly\n").to_stderr
+        end
+
+        expect { subject.timeout_interval = 2 }.to output("TimerTask timeouts are now ignored as these were not able to be implemented correctly\n").to_stderr
       end
     end
 

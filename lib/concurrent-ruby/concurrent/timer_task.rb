@@ -152,6 +152,9 @@ module Concurrent
     # Default `:execution_interval` in seconds.
     EXECUTION_INTERVAL = 60
 
+    # Default `:timeout_interval` in seconds.
+    TIMEOUT_INTERVAL = 30
+
     # Create a new TimerTask with the given task and configuration.
     #
     # @!macro timer_task_initialize
@@ -239,6 +242,20 @@ module Concurrent
       end
     end
 
+    # @!attribute [rw] timeout_interval
+    # @return [Fixnum] Number of seconds the task can run before it is
+    #   considered to have failed.
+    def timeout_interval
+      warn 'TimerTask timeouts are now ignored as these were not able to be implemented correctly'
+    end
+
+    # @!attribute [rw] timeout_interval
+    # @return [Fixnum] Number of seconds the task can run before it is
+    #   considered to have failed.
+    def timeout_interval=(value)
+      warn 'TimerTask timeouts are now ignored as these were not able to be implemented correctly'
+    end
+
     private :post, :<<
 
     private
@@ -247,6 +264,9 @@ module Concurrent
       set_deref_options(opts)
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
+      if opts[:timeout] || opts[:timeout_interval]
+        warn 'TimeTask timeouts are now ignored as these were not able to be implemented correctly'
+      end
       @run_now = opts[:now] || opts[:run_now]
       @executor = Concurrent::SafeTaskExecutor.new(task)
       @running = Concurrent::AtomicBoolean.new(false)
