@@ -23,8 +23,7 @@ module Concurrent
 
     it_should_behave_like :thread_pool_executor
 
-
-    context :prune do
+    context :prune, if: !Concurrent.on_jruby? do # pruning is flaky on JRuby
       subject do
         RubyThreadPoolExecutor.new(idletime: 5, min_threads: 2, max_threads: 10)
       end
