@@ -24,7 +24,7 @@ Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.lib_dir = 'lib/concurrent-ruby/concurrent'
 end
 
-unless Concurrent.on_jruby?
+unless Concurrent.on_jruby? || Concurrent.on_truffleruby?
   require 'rake/extensiontask'
 
   Rake::ExtensionTask.new('concurrent_ruby_ext', ext_gemspec) do |ext|
