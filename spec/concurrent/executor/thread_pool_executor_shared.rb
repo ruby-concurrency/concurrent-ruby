@@ -616,6 +616,46 @@ RSpec.shared_examples :thread_pool_executor do
         executor << proc { latch.count_down }
         latch.wait(0.1)
       end
+
+      specify '#post does not block other jobs running on the worker threads' do
+        log = Queue.new
+
+        # Using a custom instance
+        executor = described_class.new(
+          min_threads: 1,
+          max_threads: 1,
+          max_queue: 1,
+          fallback_policy: :caller_runs)
+        
+        worker_unblocker = Concurrent::CountDownLatch.new(1)
+        executor_unblocker = Concurrent::CountDownLatch.new(1)
+        queue_done = Concurrent::CountDownLatch.new(1)
+        
+        # Block the worker thread
+        executor << proc { worker_unblocker.wait }
+        
+        # Fill the queue
+        executor << proc { log.push :queued; queue_done.count_down }
+        
+        # Block in a caller_runs job
+        caller_runs_thread = Thread.new {
+          executor << proc { executor_unblocker.wait; log.push :unblocked }
+        }
+        
+        # Wait until the caller_runs job is blocked
+        Thread.pass until caller_runs_thread.status == 'sleep'
+        
+        # Now unblock the worker thread
+        worker_unblocker.count_down
+        queue_done.wait
+        executor_unblocker.count_down
+        
+        # Tidy up
+        caller_runs_thread.join
+        
+        # We will see the queued jobs run before the caller_runs job unblocks
+        expect([log.pop, log.pop]).to eq [:queued, :unblocked]
+      end
     end
   end
 end
