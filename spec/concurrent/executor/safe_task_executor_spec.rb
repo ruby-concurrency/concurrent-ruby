@@ -109,6 +109,7 @@ module Concurrent
         end
 
         it 'should return success' do
+          (pending('possible local jump bug on JRuby https://github.com/jruby/jruby/issues/7136'); fails) if Concurrent.on_jruby?
           success, _value, _reason = subject
           expect(success).to be_truthy
         end
@@ -119,6 +120,7 @@ module Concurrent
         end
 
         it 'should return a nil reason' do
+          (pending('possible local jump bug on JRuby https://github.com/jruby/jruby/issues/7136'); fails) if Concurrent.on_jruby?
           _success, _value, reason = subject
           expect(reason).to be_nil
         end

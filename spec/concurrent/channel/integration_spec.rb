@@ -66,6 +66,7 @@ STDOUT
     end
 
     specify 'default-selection.rb', notravis: true do
+      (pending('flaky on JRuby'); fails) if Concurrent.on_jruby?
 expected = <<-STDOUT
     .
     .
