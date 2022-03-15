@@ -29,7 +29,7 @@ is first read or written. If it cannot lock a `TVar` it aborts and retries.
 There is no contention manager so competing transactions may retry eternally.
 
 ```ruby
-require 'concurrent-ruby'
+require 'concurrent'
 
 v1 = Concurrent::TVar.new(0)
 v2 = Concurrent::TVar.new(0)

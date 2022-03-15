@@ -1,4 +1,4 @@
-require 'concurrent-ruby'
+require 'concurrent'
 
 v1 = Concurrent::TVar.new(0)
 v2 = Concurrent::TVar.new(0)
