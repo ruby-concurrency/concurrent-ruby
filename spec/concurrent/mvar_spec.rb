@@ -387,7 +387,7 @@ module Concurrent
           expect(m.put(14)).to eq 14
         end
 
-        it 'returns TIMEOUT on timeout on a full MVar', notravis: true do
+        it 'returns TIMEOUT on timeout on a full MVar' do
           # TODO (pitr-ch 15-Oct-2016): fails on jruby
           result = nil
           in_thread { result = m.put(14, 0.3) }

@@ -927,7 +927,7 @@ module Concurrent
           expect(count).to eq expected
         end
 
-        it 'blocks forever if restarted with :clear_actions true', notravis: true do
+        it 'blocks forever if restarted with :clear_actions true' do
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 
@@ -965,7 +965,7 @@ module Concurrent
           finish.count_down
         end
 
-        it 'returns true when all prior actions have processed', notravis: true do
+        it 'returns true when all prior actions have processed' do
           subject = Agent.new(0)
           subject.send_via(executor) { sleep(1) }
           5.times { subject.send_via(executor) { nil } }
@@ -980,7 +980,7 @@ module Concurrent
           expect(subject.await_for(5)).to eq true
         end
 
-        it 'returns false if restarted with :clear_actions true', notravis: true do
+        it 'returns false if restarted with :clear_actions true' do
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 
@@ -1033,7 +1033,7 @@ module Concurrent
           expect(subject.await_for(5)).to eq true
         end
 
-        it 'raises an error if restarted with :clear_actions true', notravis: true do
+        it 'raises an error if restarted with :clear_actions true' do
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 
@@ -1083,7 +1083,7 @@ module Concurrent
           expect(Concurrent.monotonic_time - start).to be > 0.5
         end
 
-        it 'blocks forever when timeout is nil and restarted with :clear_actions true', notravis: true do
+        it 'blocks forever when timeout is nil and restarted with :clear_actions true' do
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 
@@ -1116,7 +1116,7 @@ module Concurrent
           expect(subject.wait(5)).to eq true
         end
 
-        it 'returns false when timeout is given and restarted with :clear_actions true', notravis: true do
+        it 'returns false when timeout is given and restarted with :clear_actions true' do
           pending('the timing is nearly impossible'); fail
           subject = Agent.new(0, error_mode: :fail)
 

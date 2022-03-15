@@ -201,7 +201,7 @@ module Concurrent
         end
       end
 
-      context 'stress', notravis: true do
+      context 'stress' do
         configurations = [
             { min_threads:    2,
               max_threads:    ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,

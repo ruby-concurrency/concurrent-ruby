@@ -77,8 +77,7 @@ begin
       options      = %w[ --color
                     --backtrace
                     --order defined
-                    --format documentation
-                    --tag ~notravis ]
+                    --format documentation ]
       t.rspec_opts = [*options].join(' ')
     end
 

@@ -110,7 +110,7 @@ Update the [CHANGELOG](CHANGELOG.md) with a description of what you have changed
 
 #### Check on Your Pull Request
 
-Go back to your pull request after a few minutes and see whether it passed muster with Travis-CI and AppVeyor. Everything should look green, otherwise fix issues (amending your commit).
+Go back to your pull request after a few minutes and see whether it passed muster with GitHub Actions. Everything should look green, otherwise fix issues (amending your commit).
 
 Please note that testing concurrency is hard. Very hard. We have a few tests that occasionally fail due (mostly) to incorrect synchronization within the test itself. If everything passes locally but you see an error on CI, it's possibly you've become victim to one of the tests. Don't worry, the Concurrent Ruby team reviews the tests output of all failed CI runs and will let you know if the failing test is unrelated to your commit.
 

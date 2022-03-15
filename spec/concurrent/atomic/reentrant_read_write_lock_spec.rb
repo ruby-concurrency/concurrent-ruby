@@ -277,7 +277,7 @@ unless Concurrent.on_jruby?
           end
         end
 
-        it "wakes up waiting readers when the write lock is released", notravis: true do
+        it "wakes up waiting readers when the write lock is released" do
           latch1,latch2 = CountDownLatch.new,CountDownLatch.new
           good = AtomicFixnum.new(0)
           threads = [

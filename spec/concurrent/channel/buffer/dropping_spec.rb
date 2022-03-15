@@ -2,7 +2,7 @@ require_relative 'buffered_shared'
 
 module Concurrent::Channel::Buffer
 
-  RSpec.describe Dropping, edge: true, notravis: true do
+  RSpec.describe Dropping, edge: true do
 
     subject { described_class.new(10) }
 
