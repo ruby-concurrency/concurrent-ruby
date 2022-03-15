@@ -156,10 +156,11 @@ module Concurrent
       if ns_assign_worker(*args, &task) || ns_enqueue(*args, &task)
         @scheduled_task_count += 1
       else
-        handle_fallback(*args, &task)
+        return fallback_action(*args, &task)
       end
 
       ns_prune_pool if @next_gc_time < Concurrent.monotonic_time
+      nil
     end
 
     # @!visibility private

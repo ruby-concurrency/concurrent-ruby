@@ -20,7 +20,7 @@ if Concurrent.on_jruby?
 
       def post(*args, &task)
         raise ArgumentError.new('no block given') unless block_given?
-        return handle_fallback(*args, &task) unless running?
+        return fallback_action(*args, &task).call unless running?
         @executor.submit Job.new(args, task)
         true
       rescue Java::JavaUtilConcurrent::RejectedExecutionException

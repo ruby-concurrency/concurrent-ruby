@@ -16,10 +16,16 @@ module Concurrent
 
     def post(*args, &task)
       raise ArgumentError.new('no block given') unless block_given?
-      synchronize do
-        # If the executor is shut down, reject this task
-        return handle_fallback(*args, &task) unless running?
-        ns_execute(*args, &task)
+      deferred_action = synchronize {
+        if running?
+          ns_execute(*args, &task)
+        else
+          fallback_action(*args, &task)
+        end
+      }
+      if deferred_action
+        deferred_action.call
+      else
         true
       end
     end

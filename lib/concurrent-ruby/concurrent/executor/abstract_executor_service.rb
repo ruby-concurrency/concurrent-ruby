@@ -75,28 +75,31 @@ module Concurrent
 
     private
 
-    # Handler which executes the `fallback_policy` once the queue size
-    # reaches `max_queue`.
+    # Returns an action which executes the `fallback_policy` once the queue
+    # size reaches `max_queue`. The reason for the indirection of an action
+    # is so that the work can be deferred outside of synchronization.
     #
     # @param [Array] args the arguments to the task which is being handled.
     #
     # @!visibility private
-    def handle_fallback(*args)
+    def fallback_action(*args)
       case fallback_policy
       when :abort
-        raise RejectedExecutionError
+        lambda { raise RejectedExecutionError }
       when :discard
-        false
+        lambda { false }
       when :caller_runs
-        begin
-          yield(*args)
-        rescue => ex
-          # let it fail
-          log DEBUG, ex
-        end
-        true
+        lambda {
+          begin
+            yield(*args)
+          rescue => ex
+            # let it fail
+            log DEBUG, ex
+          end
+          true
+        }
       else
-        fail "Unknown fallback policy #{fallback_policy}"
+        lambda { fail "Unknown fallback policy #{fallback_policy}" }
       end
     end
 
