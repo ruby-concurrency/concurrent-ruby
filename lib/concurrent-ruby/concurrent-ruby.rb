@@ -1,1 +1,1 @@
-require_relative "./concurrent"
+require_relative "concurrent"
