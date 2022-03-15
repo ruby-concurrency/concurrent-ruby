@@ -27,5 +27,5 @@ Gem::Specification.new do |s|
   TXT
   s.metadata["source_code_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby"
   s.metadata["changelog_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby/blob/master/CHANGELOG.md"
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.4.10'
 end
