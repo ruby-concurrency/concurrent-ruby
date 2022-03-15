@@ -35,8 +35,3 @@ group :coverage, optional: !ENV['COVERAGE'] do
   gem 'simplecov', '~> 0.16.0', require: false
   gem 'coveralls', '~> 0.8.2', require: false
 end
-
-group :benchmarks, optional: true do
-  gem 'benchmark-ips', '~> 2.7'
-  gem 'bench9000'
-end
