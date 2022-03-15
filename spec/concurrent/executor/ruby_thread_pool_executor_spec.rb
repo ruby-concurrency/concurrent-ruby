@@ -81,6 +81,8 @@ module Concurrent
       end
 
       it "triggers pruning when posting work if the last prune happened more than gc_interval ago" do
+        pending('flaky on all implementations'); fails
+        
         wakeup_thread_group(@group1)
         @now += 6
         wakeup_thread_group(@group2)
