@@ -1,5 +1,18 @@
 ## Current
 
+## Release v1.1.10
+
+concurrent-ruby:
+
+* (#939, #933) The `caller_runs` fallback policy no longer blocks reads from the job queue by worker threads
+* (#938, #761, #652) You can now explicitly `prune_pool` a thread pool (Sylvain Joyeux)
+* (#937, #757, #670) We switched the Yahoo stock API for demos to Alpha Vantage (Gustavo Caso)
+* (#932, #931) We changed how `SafeTaskExecutor` handles local jump errors (Aaron Jensen)
+* (#927) You can use keyword arguments in your initialize when using `Async` (Matt Larraz)
+* (#926, #639) We removed timeout from `TimerTask` because it wasn't sound, and now it's a no-op with a warning (Jacob Atzen)
+* (#919) If you double-lock a re-entrant read-write lock, we promote to locked for writing (zp yuan)
+* (#915) `monotonic_time` now accepts an optional unit parameter, as Ruby's `clock_gettime` (Jean Boussier)
+
 ## Release v1.1.9 (5 Jun 2021)
 
 concurrent-ruby:
