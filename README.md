@@ -259,7 +259,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 ## Supported Ruby versions
 
-* MRI 2.4.10 and above
+* MRI 2.2.10 and above
 * Latest JRuby 9000
 * Latest TruffleRuby
 
