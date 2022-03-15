@@ -1,6 +1,6 @@
 module Concurrent
 
-   RSpec.describe 'configuration', notravis: true do
+   RSpec.describe 'configuration' do
 
     context 'global executors' do
 

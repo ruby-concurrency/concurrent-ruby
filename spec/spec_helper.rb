@@ -2,14 +2,7 @@ if ENV['COVERAGE']
   require 'simplecov'
   require 'coveralls'
 
-  if ENV['TRAVIS']
-    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-        SimpleCov::Formatter::HTMLFormatter,
-        Coveralls::SimpleCov::Formatter
-    ]
-  else
-    SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-  end
+  SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
 
   SimpleCov.start do
     project_name 'concurrent-ruby'

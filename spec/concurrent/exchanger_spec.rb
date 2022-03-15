@@ -121,7 +121,7 @@ RSpec.shared_examples 'exchanger method cross-thread interactions' do
     expect(get_value(second_value)).to eq :foo
   end
 
-  it 'allows multiple firsts to cancel if necessary', notravis: true do
+  it 'allows multiple firsts to cancel if necessary' do
     first_value   = nil
     second_value  = nil
     cancels       = 3
@@ -204,7 +204,7 @@ module Concurrent
 
     if Concurrent.on_cruby?
 
-      specify 'stress test', notravis: true do
+      specify 'stress test' do
         thread_count   = 100
         exchange_count = 100
         latch          = Concurrent::CountDownLatch.new(thread_count)

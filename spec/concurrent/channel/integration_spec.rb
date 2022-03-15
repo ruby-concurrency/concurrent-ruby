@@ -1,4 +1,4 @@
-RSpec.describe 'channel integration tests', edge: true, notravis: true do
+RSpec.describe 'channel integration tests', edge: true do
 
   let!(:examples_root) { File.expand_path(File.join(File.dirname(__FILE__), '../../../examples')) }
 
@@ -65,7 +65,7 @@ STDOUT
       expect(result).to eq expected
     end
 
-    specify 'default-selection.rb', notravis: true do
+    specify 'default-selection.rb' do
       (pending('flaky on JRuby'); fails) if Concurrent.on_jruby?
 expected = <<-STDOUT
     .

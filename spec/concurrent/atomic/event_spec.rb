@@ -169,7 +169,7 @@ module Concurrent
         expect(latch.wait(0.1)).to be false
       end
 
-      it 'should resist spurious wake ups with timeout', notravis: true do
+      it 'should resist spurious wake ups with timeout' do
         latch = CountDownLatch.new(1)
         t = in_thread{ subject.wait(0.5); latch.count_down }
         t.join(0.1)

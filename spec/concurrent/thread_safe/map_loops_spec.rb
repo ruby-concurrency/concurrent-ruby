@@ -2,7 +2,7 @@ Thread.abort_on_exception = true
 
 module Concurrent
 
-  RSpec.describe 'MapTorture', stress: true, notravis: true do
+  RSpec.describe 'MapTorture', stress: true do
     THREAD_COUNT  = 40
     KEY_COUNT     = (((2**13) - 2) * 0.75).to_i # get close to the doubling cliff
     LOW_KEY_COUNT = (((2**8 ) - 2) * 0.75).to_i # get close to the doubling cliff
@@ -504,5 +504,5 @@ module Concurrent
       expect(sum(cache.values)).to   eq sum(result)
       expect(options[:key_count]).to eq cache.size
     end
-  end unless RUBY_ENGINE == 'rbx' || ENV['TRAVIS']
+  end unless RUBY_ENGINE == 'rbx'
 end

@@ -1,6 +1,6 @@
 module Concurrent
 
- RSpec.describe Channel, edge: true, notravis: true do
+ RSpec.describe Channel, edge: true do
 
     context 'initialization' do
 
@@ -510,7 +510,7 @@ module Concurrent
 
     context '#poll?' do
 
-      it 'returns a just Maybe immediately if available', notravis: true do
+      it 'returns a just Maybe immediately if available' do
         subject # initialize on this thread
         t = in_thread do
           subject.put(42)
@@ -557,7 +557,7 @@ module Concurrent
       end
     end
 
-    context 'goroutines', notravis: true do
+    context 'goroutines' do
 
       let(:default_executor) { Channel.const_get(:GOROUTINES) }
 
