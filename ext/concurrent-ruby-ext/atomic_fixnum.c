@@ -2,7 +2,6 @@
 
 #include "atomic_fixnum.h"
 #include "atomic_reference.h"
-#include "ruby_193_compatible.h"
 
 void atomic_fixnum_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);

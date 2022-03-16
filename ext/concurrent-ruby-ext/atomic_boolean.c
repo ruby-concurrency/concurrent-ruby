@@ -2,7 +2,6 @@
 
 #include "atomic_boolean.h"
 #include "atomic_reference.h"
-#include "ruby_193_compatible.h"
 
 void atomic_boolean_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);
