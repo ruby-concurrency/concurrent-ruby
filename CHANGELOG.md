@@ -4,6 +4,7 @@
 
 concurrent-ruby:
 
+* (#951) Set the Ruby compatibility version at 2.2
 * (#939, #933) The `caller_runs` fallback policy no longer blocks reads from the job queue by worker threads
 * (#938, #761, #652) You can now explicitly `prune_pool` a thread pool (Sylvain Joyeux)
 * (#937, #757, #670) We switched the Yahoo stock API for demos to Alpha Vantage (Gustavo Caso)
