@@ -79,42 +79,9 @@ module Concurrent
       def compute_processor_count
         if Concurrent.on_jruby?
           java.lang.Runtime.getRuntime.availableProcessors
-        elsif Etc.respond_to?(:nprocessors) && (nprocessor = Etc.nprocessors rescue nil)
-          nprocessor
         else
-          os_name = RbConfig::CONFIG["target_os"]
-          if os_name =~ /mingw|mswin/
-            require 'win32ole'
-            result = WIN32OLE.connect("winmgmts://").ExecQuery(
-              "select NumberOfLogicalProcessors from Win32_Processor")
-            result.to_enum.collect(&:NumberOfLogicalProcessors).reduce(:+)
-          elsif File.readable?("/proc/cpuinfo") && (cpuinfo_count = IO.read("/proc/cpuinfo").scan(/^processor/).size) > 0
-            cpuinfo_count
-          elsif File.executable?("/usr/bin/nproc")
-            IO.popen("/usr/bin/nproc --all", &:read).to_i
-          elsif File.executable?("/usr/bin/hwprefs")
-            IO.popen("/usr/bin/hwprefs thread_count", &:read).to_i
-          elsif File.executable?("/usr/sbin/psrinfo")
-            IO.popen("/usr/sbin/psrinfo", &:read).scan(/^.*on-*line/).size
-          elsif File.executable?("/usr/sbin/ioscan")
-            IO.popen("/usr/sbin/ioscan -kC processor", &:read).scan(/^.*processor/).size
-          elsif File.executable?("/usr/sbin/pmcycles")
-            IO.popen("/usr/sbin/pmcycles -m", &:read).count("\n")
-          elsif File.executable?("/usr/sbin/lsdev")
-            IO.popen("/usr/sbin/lsdev -Cc processor -S 1", &:read).count("\n")
-          elsif File.executable?("/usr/sbin/sysconf") and os_name =~ /irix/i
-            IO.popen("/usr/sbin/sysconf NPROC_ONLN", &:read).to_i
-          elsif File.executable?("/usr/sbin/sysctl")
-            IO.popen("/usr/sbin/sysctl -n hw.ncpu", &:read).to_i
-          elsif File.executable?("/sbin/sysctl")
-            IO.popen("/sbin/sysctl -n hw.ncpu", &:read).to_i
-          else
-            # TODO (pitr-ch 05-Nov-2016): warn about failures
-            1
-          end
+          Etc.nprocessors
         end
-      rescue
-        return 1
       end
 
       def compute_physical_processor_count
