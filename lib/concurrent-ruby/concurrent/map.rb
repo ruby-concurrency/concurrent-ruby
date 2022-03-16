@@ -281,7 +281,6 @@ module Concurrent
       each_pair { |k, v| return k if v == value }
       nil
     end unless method_defined?(:key)
-    alias_method :index, :key if RUBY_VERSION < '1.9'
 
     # Is map empty?
     # @return [true, false]

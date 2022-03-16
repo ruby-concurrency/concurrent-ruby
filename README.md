@@ -259,15 +259,11 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 ## Supported Ruby versions
 
-* MRI 2.0 and above
-* JRuby 9000
-* TruffleRuby are supported.
-* Any Ruby interpreter that is compliant with Ruby 2.0 or newer.
+* MRI 2.2 and above
+* Latest JRuby 9000
+* Latest TruffleRuby
 
-Actually we still support mri 1.9.3 and jruby 1.7.27 but we are looking at ways how to drop the support.
-Java 8 is preferred for JRuby but every Java version on which JRuby 9000 runs is supported.
-
-The legacy support for Rubinius is kept but it is no longer maintained, if you would like to help 
+The legacy support for Rubinius is kept for the moment but it is no longer maintained and is liable to be removed. If you would like to help 
 please respond to [#739](https://github.com/ruby-concurrency/concurrent-ruby/issues/739).
 
 ## Usage

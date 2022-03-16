@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.require_paths    = ['lib']
   s.extensions       = 'ext/concurrent-ruby-ext/extconf.rb'
 
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.2'
 
   s.add_runtime_dependency 'concurrent-ruby', "= #{Concurrent::VERSION}"
 end
