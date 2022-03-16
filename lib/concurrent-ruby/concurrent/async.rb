@@ -267,19 +267,12 @@ module Concurrent
 
     # @!visibility private
     module ClassMethods
-      if RUBY_VERSION >= "2.7.0"
-        def new(*args, **kwargs, &block)
-          obj = original_new(*args, **kwargs, &block)
-          obj.send(:init_synchronization)
-          obj
-        end
-      else
-        def new(*args, &block)
-          obj = original_new(*args, &block)
-          obj.send(:init_synchronization)
-          obj
-        end
+      def new(*args, &block)
+        obj = original_new(*args, &block)
+        obj.send(:init_synchronization)
+        obj
       end
+      ruby2_keywords :new if respond_to?(:ruby2_keywords, true)
     end
     private_constant :ClassMethods
 
