@@ -917,6 +917,8 @@ if Concurrent.ruby_version :>=, 2, 1, 0
           end
 
           specify "timing out" do
+            skip('flaky on truffleruby') if Concurrent.on_truffleruby?
+
             count_down = Concurrent::CountDownLatch.new
             body = { on_thread: -> { m = receive; count_down.wait; reply m },
                      on_pool:   -> { receive { |m| count_down.wait; reply m } } }

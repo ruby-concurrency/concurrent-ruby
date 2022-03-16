@@ -4,6 +4,8 @@ require 'thread'
 RSpec.describe 'Concurrent' do
   describe 'Throttle' do
     specify 'acquiring' do
+      skip('flaky on truffleruby') if Concurrent.on_truffleruby?
+
       throttle = Concurrent::Throttle.new 2
       expect(throttle.max_capacity).to eq 2
       expect(throttle.available_capacity).to eq 2
