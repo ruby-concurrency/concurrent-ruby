@@ -8,7 +8,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [2.2, 2.3, 2.4, 2.5, 2.6, 2.7, '3.0', 3.1, jruby, truffleruby]
+        # TODO: when truffleruby 22.1 is out, replace truffleruby-head by truffleruby
+        ruby: [2.2, 2.3, 2.4, 2.5, 2.6, 2.7, '3.0', 3.1, jruby, truffleruby-head]
 
     env:
       JAVA_OPTS: '-Xmx1024m'
