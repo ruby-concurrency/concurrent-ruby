@@ -232,6 +232,8 @@ module Concurrent::Channel::Buffer
       end
 
       it 'returns Concurrent::NULL, false when closed and no items remain' do
+        skip('flaky on truffleruby') if Concurrent.on_truffleruby?
+
         t = in_thread do
           subject.put(:foo)
         end

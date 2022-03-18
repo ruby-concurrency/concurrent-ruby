@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        ruby: [head, jruby-head, truffleruby, truffleruby-head]
+        ruby: [head, jruby-head, truffleruby-head]
 
     env:
       JAVA_OPTS: '-Xmx1024m'

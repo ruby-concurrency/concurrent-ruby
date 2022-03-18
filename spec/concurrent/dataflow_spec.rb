@@ -18,6 +18,8 @@ module Concurrent
     end
 
     specify '#dataflow_with uses the given executor' do
+      skip('flaky on truffleruby') if Concurrent.on_truffleruby?
+
       input = Future.execute{0}
       result = Future.new{0}
 
