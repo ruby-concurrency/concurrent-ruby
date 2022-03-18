@@ -1,7 +1,3 @@
-if Concurrent.ruby_version :<, 2, 1, 0
-  raise 'ErlangActor requires at least ruby version 2.1'
-end
-
 module Concurrent
 
   # This module provides actor abstraction that has same behaviour as Erlang actor.

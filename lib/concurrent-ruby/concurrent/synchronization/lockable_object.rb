@@ -4,9 +4,7 @@ module Concurrent
     # @!visibility private
     # @!macro internal_implementation_note
     LockableObjectImplementation = case
-                                   when Concurrent.on_cruby? && Concurrent.ruby_version(:<=, 1, 9, 3)
-                                     MonitorLockableObject
-                                   when Concurrent.on_cruby? && Concurrent.ruby_version(:>, 1, 9, 3)
+                                   when Concurrent.on_cruby?
                                      MutexLockableObject
                                    when Concurrent.on_jruby?
                                      JRubyLockableObject
