@@ -95,37 +95,35 @@ module Concurrent
         end
       end
 
-      context 'local jump error' do
-        def execute
-          Thread.new do
-            executor = SafeTaskExecutor.new(-> { yield 42 })
-            @result = executor.execute
-          end.join
-        end
+      # These tests only make sense on CRuby as they test a workaround for CRuby bugs: https://github.com/ruby-concurrency/concurrent-ruby/issues/931
+      if Concurrent.on_cruby?
+        context 'local jump error' do
+          def execute
+            Thread.new do
+              executor = SafeTaskExecutor.new(-> { yield 42 })
+              @result = executor.execute
+            end.join
+          end
 
-        subject do
-          to_enum(:execute).first
-          @result
-        end
+          subject do
+            to_enum(:execute).first
+            @result
+          end
 
-        it 'should return success' do
-          (pending('possible local jump bug on JRuby https://github.com/jruby/jruby/issues/7136'); fails) if Concurrent.on_jruby?
-          skip('the test does not make sense: https://github.com/ruby-concurrency/concurrent-ruby/issues/931') if Concurrent.on_truffleruby?
-          success, _value, _reason = subject
-          expect(success).to be_truthy
-        end
+          it 'should return success' do
+            success, _value, _reason = subject
+            expect(success).to be_truthy
+          end
 
-        it 'should return a nil value' do
-          skip('the test does not make sense: https://github.com/ruby-concurrency/concurrent-ruby/issues/931') if Concurrent.on_truffleruby?
-          _success, value, _reason = subject
-          expect(value).to be_nil
-        end
+          it 'should return a nil value' do
+            _success, value, _reason = subject
+            expect(value).to be_nil
+          end
 
-        it 'should return a nil reason' do
-          (pending('possible local jump bug on JRuby https://github.com/jruby/jruby/issues/7136'); fails) if Concurrent.on_jruby?
-          skip('the test does not make sense: https://github.com/ruby-concurrency/concurrent-ruby/issues/931') if Concurrent.on_truffleruby?
-          _success, _value, reason = subject
-          expect(reason).to be_nil
+          it 'should return a nil reason' do
+            _success, _value, reason = subject
+            expect(reason).to be_nil
+          end
         end
       end
     end
