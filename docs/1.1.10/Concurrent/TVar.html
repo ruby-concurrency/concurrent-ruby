@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Concurrent::TVar
+  
+    &mdash; Concurrent Ruby
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "Concurrent::TVar";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (T)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span>
+     &raquo; 
+    <span class="title">TVar</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Concurrent::TVar
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Synchronization/Object.html" title="Concurrent::Synchronization::Object (class)">Synchronization::Object</a></span></li>
+          
+            <li class="next">Concurrent::TVar</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/concurrent-ruby/concurrent/tvar.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A <code>TVar</code> is a transactional variable - a single-element container that
+is used as part of a transaction - see <code>Concurrent::atomically</code>.</p>
+
+<h2>Thread-safe Variable Classes</h2>
+
+<p>Each of the thread-safe variable classes is designed to solve a different
+problem. In general:</p>
+
+<ul>
+<li><em><span class='object_link'><a href="Agent.html" title="Concurrent::Agent (class)">Agent</a></span>:</em> Shared, mutable variable providing independent,
+uncoordinated, <em>asynchronous</em> change of individual values. Best used when
+the value will undergo frequent, complex updates. Suitable when the result
+of an update does not need to be known immediately.</li>
+<li><em><span class='object_link'><a href="Atom.html" title="Concurrent::Atom (class)">Atom</a></span>:</em> Shared, mutable variable providing independent,
+uncoordinated, <em>synchronous</em> change of individual values. Best used when
+the value will undergo frequent reads but only occasional, though complex,
+updates. Suitable when the result of an update must be known immediately.</li>
+<li><em><span class='object_link'><a href="AtomicReference.html" title="Concurrent::AtomicReference (class)">AtomicReference</a></span>:</em> A simple object reference that can be updated
+atomically. Updates are synchronous but fast. Best used when updates a
+simple set operations. Not suitable when updates are complex.
+<span class='object_link'><a href="AtomicBoolean.html" title="Concurrent::AtomicBoolean (class)">AtomicBoolean</a></span> and <span class='object_link'><a href="AtomicFixnum.html" title="Concurrent::AtomicFixnum (class)">AtomicFixnum</a></span> are similar
+but optimized for the given data type.</li>
+<li><em><span class='object_link'><a href="Exchanger.html" title="Concurrent::Exchanger (class)">Exchanger</a></span>:</em> Shared, stateless synchronization point. Used
+when two or more threads need to exchange data. The threads will pair then
+block on each other until the exchange is complete.</li>
+<li><em><span class='object_link'><a href="MVar.html" title="Concurrent::MVar (class)">MVar</a></span>:</em> Shared synchronization point. Used when one thread
+must give a value to another, which must take the value. The threads will
+block on each other until the exchange is complete.</li>
+<li><em><span class='object_link'><a href="ThreadLocalVar.html" title="Concurrent::ThreadLocalVar (class)">ThreadLocalVar</a></span>:</em> Shared, mutable, isolated variable which
+holds a different value for each thread which has access. Often used as
+an instance variable in objects which must maintain different state
+for different threads.</li>
+<li><em><span class='object_link'><a href="" title="Concurrent::TVar (class)">TVar</a></span>:</em> Shared, mutable variables which provide
+<em>coordinated</em>, <em>synchronous</em>, change of <em>many</em> stated. Used when multiple
+value must change together, in an all-or-nothing transaction.
+<code>TVar</code> and <code>atomically</code> implement a software transactional memory. A <code>TVar</code> is a
+single item container that always contains exactly one value. The <code>atomically</code>
+method allows you to modify a set of <code>TVar</code> objects with the guarantee that all
+of the updates are collectively atomic - they either all happen or none of them
+do - consistent - a <code>TVar</code> will never enter an illegal state - and isolated -
+atomic blocks never interfere with each other when they are running. You may
+recognise these properties from database transactions.</p>
+
+<p>There are some very important and unusual semantics that you must be aware of:</p>
+
+<ul>
+<li><p>Most importantly, the block that you pass to <code>atomically</code> may be executed more
+than once. In most cases your code should be free of side-effects, except for
+via <code>TVar</code>.</p></li>
+<li><p>If an exception escapes an <code>atomically</code> block it will abort the transaction.</p></li>
+<li><p>It is undefined behaviour to use <code>callcc</code> or <code>Fiber</code> with <code>atomically</code>.</p></li>
+<li><p>If you create a new thread within an <code>atomically</code>, it will not be part of
+the transaction. Creating a thread counts as a side-effect.</p></li>
+</ul>
+
+<p>We implement nested transactions by flattening.</p>
+
+<p>We only support strong isolation if you use the API correctly. In order words,
+we do not support strong isolation.</p>
+
+<p>Our implementation uses a very simple algorithm that locks each <code>TVar</code> when it
+is first read or written. If it cannot lock a <code>TVar</code> it aborts and retries.
+There is no contention manager so competing transactions may retry eternally.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>concurrent-ruby</span><span class='tstring_end'>'</span></span>
+
+<span class='id identifier rubyid_v1'>v1</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_v2'>v2</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+
+<span class='int'>2</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lbrace'>{</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='kw'>while</span> <span class='kw'>true</span>
+      <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+        <span class='id identifier rubyid_t1'>t1</span> <span class='op'>=</span> <span class='id identifier rubyid_v1'>v1</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+        <span class='id identifier rubyid_t2'>t2</span> <span class='op'>=</span> <span class='id identifier rubyid_v2'>v2</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='lbracket'>[</span><span class='id identifier rubyid_t1'>t1</span><span class='comma'>,</span> <span class='id identifier rubyid_t2'>t2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span> <span class='kw'>if</span> <span class='id identifier rubyid_t1'>t1</span> <span class='op'>!=</span> <span class='id identifier rubyid_t2'>t2</span> <span class='comment'># detect zombie transactions
+</span>      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='int'>100_000</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span>
+      <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+        <span class='id identifier rubyid_v1'>v1</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>1</span>
+        <span class='id identifier rubyid_v2'>v2</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>1</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='rbrace'>}</span>
+</code></pre>
+
+<p>However, the inconsistent reads are detected correctly at commit time. This
+means the script below will always print <code>[2000000, 200000]</code>.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_require'>require</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>concurrent-ruby</span><span class='tstring_end'>'</span></span>
+
+<span class='id identifier rubyid_v1'>v1</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_v2'>v2</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>0</span><span class='rparen'>)</span>
+
+<span class='int'>2</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lbrace'>{</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='kw'>while</span> <span class='kw'>true</span>
+      <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+        <span class='id identifier rubyid_t1'>t1</span> <span class='op'>=</span> <span class='id identifier rubyid_v1'>v1</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+        <span class='id identifier rubyid_t2'>t2</span> <span class='op'>=</span> <span class='id identifier rubyid_v2'>v2</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span>
+    <span class='int'>100_000</span><span class='period'>.</span><span class='id identifier rubyid_times'>times</span> <span class='kw'>do</span>
+      <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+        <span class='id identifier rubyid_v1'>v1</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>1</span>
+        <span class='id identifier rubyid_v2'>v2</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>1</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_p'>p</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span> <span class='rbrace'>}</span>
+
+<span class='id identifier rubyid_p'>p</span> <span class='lbracket'>[</span><span class='id identifier rubyid_v1'>v1</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_v2'>v2</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rbracket'>]</span>
+</code></pre>
+
+<p>This is called a lack of <em>opacity</em>. In the future we will look at more advanced
+algorithms, contention management and using existing Java implementations when
+in JRuby.</p>
+
+<h2>Motivation</h2>
+
+<p>Consider an application that transfers money between bank accounts. We want to
+transfer money from one account to another. It is very important that we don&#39;t
+lose any money! But it is also important that we can handle many account
+transfers at the same time, so we run them concurrently, and probably also in
+parallel.</p>
+
+<p>This code shows us transferring ten pounds from one account to another.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_a'>a</span> <span class='op'>=</span> <span class='const'>BankAccount</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100_000</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_b'>b</span> <span class='op'>=</span> <span class='const'>BankAccount</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100</span><span class='rparen'>)</span>
+
+<span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+<span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+</code></pre>
+
+<p>Before we even start to talk about to talk about concurrency and parallelism, is
+this code safe? What happens if after removing money from account a, we get an
+exception? It&#39;s a slightly contrived example, but if the account totals were
+very large, adding to them could involve the stack allocation of a <code>BigNum</code>, and
+so could cause out of memory exceptions.  In that case the money would have
+disappeared from account a, but not appeared in account b. Disaster!</p>
+
+<p>So what do we really need to do?</p>
+
+<pre class="code ruby"><code class="ruby">a = BankAccount.new(100_000)
+b = BankAccount.new(100)
+
+original_a = a.value
+a.value -= 10
+
+begin
+  b.value += 10
+rescue e =&gt;
+  a.value = original_a
+  raise e
+end
+</code></pre>
+
+<p>This rescues any exceptions raised when setting b and will roll back the change
+we have already made to b. We&#39;ll keep this rescue code in mind, but we&#39;ll leave
+it out of future examples for simplicity.</p>
+
+<p>That might have made the code work when it only runs sequentially. Lets start to
+consider some concurrency. It&#39;s obvious that we want to make the transfer of
+money mutually exclusive with any other transfers - in order words it is a
+critical section.</p>
+
+<p>The usual solution to this would be to use a lock.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+  <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>That should work. Except we said we&#39;d like these transfer to run concurrently,
+and in parallel. With a single lock like that we&#39;ll only let one transfer take
+place at a time. Perhaps we need more locks? We could have one per account:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+    <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>However this is vulnerable to deadlock. If we tried to transfer from a to b, at
+the same time as from b to a, it&#39;s possible that the first transfer locks a, the
+second transfer locks b, and then they both sit there waiting forever to get the
+other lock. Perhaps we can solve that by applying a total ordering to the locks
+and always acquire them in the same order?</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_locks_needed'>locks_needed</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='comma'>,</span> <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span><span class='rbracket'>]</span>
+<span class='id identifier rubyid_locks_in_order'>locks_in_order</span> <span class='op'>=</span> <span class='id identifier rubyid_locks_needed'>locks_needed</span><span class='period'>.</span><span class='id identifier rubyid_sort'>sort</span><span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_x'>x</span><span class='comma'>,</span> <span class='id identifier rubyid_y'>y</span><span class='op'>|</span> <span class='id identifier rubyid_x'>x</span><span class='period'>.</span><span class='id identifier rubyid_number'>number</span> <span class='op'><=></span> <span class='id identifier rubyid_y'>y</span><span class='period'>.</span><span class='id identifier rubyid_number'>number</span> <span class='rbrace'>}</span>
+
+<span class='id identifier rubyid_locks_in_order'>locks_in_order</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_locks_in_order'>locks_in_order</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+    <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>That might work. But we need to know exactly what locks we&#39;re going to need
+before we start. If there were conditions in side the transfer this might be
+more complicated. We also need to remember the rescue code we had above to deal
+with exceptions. This is getting out of hand - and it&#39;s where <code>TVar</code> comes in.</p>
+
+<p>We&#39;ll model the accounts as <code>TVar</code> - transactional variable, and instead of
+locks we&#39;ll use <code>Concurrent::atomically</code>.</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_a'>a</span> <span class='op'>=</span> <span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100_000</span><span class='rparen'>)</span>
+<span class='id identifier rubyid_b'>b</span> <span class='op'>=</span> <span class='const'>TVar</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>100</span><span class='rparen'>)</span>
+
+<span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+  <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>-=</span> <span class='int'>10</span>
+  <span class='id identifier rubyid_b'>b</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>+=</span> <span class='int'>10</span>
+<span class='kw'>end</span>
+</code></pre>
+
+<p>That short piece of code effectively solves all the concerns we identified
+above. How it does it is described in the reference above. You just need to be
+happy that any two <code>atomically</code> blocks (we call them transactions) that use an
+overlapping set of <code>TVar</code> objects will appear to have happened as if there was a
+big global lock on them, and that if any exception is raised in the block, it
+will be as if the block never happened. But also keep in mind the important
+points we detailed right at the start of the article about side effects and
+repeated execution.</li>
+</ul>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(value)  &#x21d2; TVar </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create a new <code>TVar</code> with an initial value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the value of a <code>TVar</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value=-instance_method" title="#value= (instance method)">#<strong>value=</strong>(value)  &#x21d2; undocumented </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Set the value of a <code>TVar</code>.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(value)  &#x21d2; <tt><span class='object_link'><a href="" title="Concurrent::TVar (class)">TVar</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create a new <code>TVar</code> with an initial value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+16
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 16</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='ivar'>@value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='ivar'>@lock</span> <span class='op'>=</span> <span class='const'>Mutex</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="value-instance_method">
+  
+    #<strong>value</strong>  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get the value of a <code>TVar</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+    <span class='const'><span class='object_link'><a href="Transaction.html" title="Concurrent::Transaction (class)">Transaction</a></span></span><span class='op'>::</span><span class='id identifier rubyid_current'><span class='object_link'><a href="Transaction.html#current-class_method" title="Concurrent::Transaction.current (method)">current</a></span></span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value=-instance_method">
+  
+    #<strong>value=</strong>(value)  &#x21d2; <tt>undocumented</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Set the value of a <code>TVar</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+29
+30
+31
+32
+33</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/concurrent-ruby/concurrent/tvar.rb', line 29</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value='>value=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="../Concurrent.html" title="Concurrent (module)">Concurrent</a></span></span><span class='op'>::</span><span class='id identifier rubyid_atomically'><span class='object_link'><a href="../Concurrent.html#atomically-class_method" title="Concurrent.atomically (method)">atomically</a></span></span> <span class='kw'>do</span>
+    <span class='const'><span class='object_link'><a href="Transaction.html" title="Concurrent::Transaction (class)">Transaction</a></span></span><span class='op'>::</span><span class='id identifier rubyid_current'><span class='object_link'><a href="Transaction.html#current-class_method" title="Concurrent::Transaction.current (method)">current</a></span></span><span class='period'>.</span><span class='id identifier rubyid_write'>write</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated by <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_blank">yard</a>.
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-57940973-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    </div>
+  </body>
+</html>
