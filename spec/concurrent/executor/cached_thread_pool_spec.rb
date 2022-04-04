@@ -17,7 +17,34 @@ module Concurrent
 
     let(:latch) { Concurrent::CountDownLatch.new }
 
-    context '#initialize' do
+    context '#initialize with overrides' do
+      subject do
+        described_class.new(
+          max_threads: 300,
+          min_threads: 10,
+          idletime: 30,
+          max_queue: 500,
+        )
+      end
+
+      it 'sets :max_length' do
+        expect(subject.max_length).to eq 300
+      end
+
+      it 'sets :min_length' do
+        expect(subject.min_length).to eq 10
+      end
+
+      it 'sets :idletime' do
+        expect(subject.idletime).to eq 30
+      end
+
+      it 'sets :max_queue' do
+        expect(subject.max_queue).to eq 500
+      end
+    end
+
+    context '#initialize with defaults' do
 
       subject { described_class.new }
 

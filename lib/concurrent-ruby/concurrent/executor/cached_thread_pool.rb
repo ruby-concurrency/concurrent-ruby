@@ -37,11 +37,11 @@ module Concurrent
     #
     #   @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool--
     def initialize(opts = {})
-      defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT }
-      overrides = { min_threads: 0,
+      defaults  = { idletime: DEFAULT_THREAD_IDLETIMEOUT,
+                    min_threads: 0,
                     max_threads: DEFAULT_MAX_POOL_SIZE,
                     max_queue:   DEFAULT_MAX_QUEUE_SIZE }
-      super(defaults.merge(opts).merge(overrides))
+      super(defaults.merge(opts))
     end
 
     private
