@@ -117,31 +117,31 @@ Let's define an inspection helper for methods.
 ```ruby
 def inspect_methods(*methods, of:)
   methods.reduce({}) { |h, m| h.update m => of.send(m) }
-end #
+end
 ```
 
 Event has a `pending` and a `resolved` state. 
 
 ```ruby
-event = Concurrent::Promises.resolvable_event #
+event = Concurrent::Promises.resolvable_event
 inspect_methods(:state, :pending?, :resolved?, of: event)
 
-event.resolve #
+event.resolve
 inspect_methods(:state, :pending?, :resolved?, of: event)
 ```
 
 Future's `resolved` state is further specified to be `fulfilled` or `rejected`.
 
 ```ruby
-future = Concurrent::Promises.resolvable_future #
+future = Concurrent::Promises.resolvable_future
 inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?, 
     of: future)
 
-future.fulfill :value #
+future.fulfill :value
 inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?,
     :result, :value, :reason, of: future)
 
-future = Concurrent::Promises.rejected_future StandardError.new #
+future = Concurrent::Promises.rejected_future StandardError.new
 inspect_methods(:state, :pending?, :resolved?, :fulfilled?, :rejected?, 
     :result, :value, :reason, of: future)
 ```
@@ -218,9 +218,9 @@ Concurrent::Promises.future(arg) { |arg| do_stuff arg }
 Besides chaining it can also be branched.
 
 ```ruby
-head    = Concurrent::Promises.fulfilled_future -1 #
-branch1 = head.then(&:abs) #
-branch2 = head.then(&:succ).then(&:succ) #
+head    = Concurrent::Promises.fulfilled_future -1
+branch1 = head.then(&:abs)
+branch2 = head.then(&:succ).then(&:succ)
 
 branch1.value!
 branch2.value!
@@ -330,10 +330,10 @@ requiring resolution.
 
 ```ruby
 future = Concurrent::Promises.delay { sleep 0.01; 'lazy' }
-sleep 0.01 #
+sleep 0.01
 future.resolved?
 future.touch
-sleep 0.02 #
+sleep 0.02
 future.resolved?
 ```
 
@@ -346,12 +346,12 @@ Concurrent::Promises.delay { :value }.value
 It propagates up through the chain, allowing whole or partial lazy chains.
 
 ```ruby
-head    = Concurrent::Promises.delay { 1 } #
-branch1 = head.then(&:succ) #
-branch2 = head.delay.then(&:succ) #
-join    = branch1 & branch2 #
+head    = Concurrent::Promises.delay { 1 }
+branch1 = head.then(&:succ)
+branch2 = head.delay.then(&:succ)
+join    = branch1 & branch2
 
-sleep 0.01 #
+sleep 0.01
 ```
 
 Nothing resolves.
@@ -364,7 +364,7 @@ Force `branch1` evaluation.
 
 ```ruby
 branch1.value
-sleep 0.01 #
+sleep 0.01
 [head, branch1, branch2, join].map(&:resolved?)
 ```
 
@@ -420,8 +420,8 @@ its parent resolves. Therefore, the following future will be resolved in 0.2 sec
 
 ```ruby
 future = Concurrent::Promises.
-    future { sleep 0.01; :result }.
-    schedule(0.01).
+    future { sleep 0.1; :result }.
+    schedule(0.1).
     then(&:to_s).
     value!
 ```
@@ -555,7 +555,7 @@ Concurrent::Promises.
 
 So `(1 + 1)**2 + 2 = 6`.
 
-The `ask` method returns future.
+The `ask` method returns a future.
 
 ```ruby
 actor.ask(2).then(&:succ).value!
@@ -971,4 +971,3 @@ sleep 0.03 #
 origin.resolve
 result.result
 ```
-
