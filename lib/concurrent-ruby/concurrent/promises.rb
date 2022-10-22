@@ -313,7 +313,7 @@ module Concurrent
       end
 
       # @!macro promises.shortcut.on
-      # @return [Future]
+      # @return [Event]
       def any_event(*futures_and_or_events)
         any_event_on default_executor, *futures_and_or_events
       end
