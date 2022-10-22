@@ -1298,7 +1298,7 @@ module Concurrent
 
       # @!macro promise.param.raise_on_reassign
       #   @param [Boolean] raise_on_reassign should method raise exception if already resolved
-      #   @return [self, false] false is returner when raise_on_reassign is false and the receiver
+      #   @return [self, false] false is returned when raise_on_reassign is false and the receiver
       #     is already resolved.
       #
 
