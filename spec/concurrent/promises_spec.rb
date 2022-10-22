@@ -560,6 +560,18 @@ RSpec.describe 'Concurrent::Promises' do
       expect(event.wait(0, true)).to be_truthy
     end
 
+    specify "#resolve(raise_on_reassign = true)" do
+      event = resolvable_event
+      event.resolve
+      expect { event.resolve }.to raise_error(Concurrent::MultipleAssignmentError)
+    end
+
+    specify "#resolve(raise_on_reassign = false)" do
+      event = resolvable_event
+      event.resolve
+      expect(event.resolve(false)).to be_falsey
+    end
+
     specify "reservation" do
       event = resolvable_event
       expect(event.reserve).to be_truthy
