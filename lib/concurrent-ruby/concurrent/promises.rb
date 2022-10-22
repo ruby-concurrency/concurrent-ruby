@@ -892,7 +892,7 @@ module Concurrent
       private
 
       def rejected_resolution(raise_on_reassign, state)
-        Concurrent::MultipleAssignmentError.new('Event can be resolved only once') if raise_on_reassign
+        raise Concurrent::MultipleAssignmentError.new('Event can be resolved only once') if raise_on_reassign
         return false
       end
 
