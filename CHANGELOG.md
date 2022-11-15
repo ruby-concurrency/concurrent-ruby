@@ -1,6 +1,6 @@
 ## Current
 
-## Release v1.1.10
+## Release v1.1.10 (22 Mar 2022)
 
 concurrent-ruby:
 
