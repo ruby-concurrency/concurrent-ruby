@@ -4,7 +4,7 @@ module Concurrent
 
   # @!macro monotonic_get_time
   #
-  #   Returns the current time a tracked by the application monotonic clock.
+  #   Returns the current time as tracked by the application monotonic clock.
   #
   #   @param [Symbol] unit the time unit to be returned, can be either
   #     :float_second, :float_millisecond, :float_microsecond, :second,
