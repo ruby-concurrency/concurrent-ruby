@@ -374,8 +374,8 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 ## Maintainers
 
-* [Chris Seaton](https://github.com/chrisseaton) — Lead maintainer, point-of-contact.
-* [Benoit Daloze](https://github.com/eregon) — If Chris is not available Benoit can help.
+* [Benoit Daloze](https://github.com/eregon) — Maintainer.
+* We are looking for more `concurrent-ruby` maintainers.
 
 ### Special Thanks to
 
@@ -386,6 +386,7 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 to the past maintainers
 
+* [Chris Seaton](https://github.com/chrisseaton)
 * [Petr Chalupa](https://github.com/pitr-ch)
 * [Michele Della Torre](https://github.com/mighe)
 * [Paweł Obrok](https://github.com/obrok)
