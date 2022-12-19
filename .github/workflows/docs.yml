@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          depth: 0
+          fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
