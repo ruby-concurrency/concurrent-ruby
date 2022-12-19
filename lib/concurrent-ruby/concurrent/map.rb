@@ -197,7 +197,6 @@ module Concurrent
     # @yieldparam key [Object]
     # @yieldreturn [Object] default value
     # @return [Object] the value or default value
-    # @!macro map.atomic_method_with_block
     def fetch_or_store(key, default_value = NULL)
       fetch(key) do
         put(key, block_given? ? yield(key) : (NULL == default_value ? raise_fetch_no_key : default_value))
