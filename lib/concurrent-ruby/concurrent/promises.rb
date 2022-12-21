@@ -2074,8 +2074,8 @@ module Concurrent
 
       private
 
-      def resolvable?(countdown, future, index)
-        future.fulfilled? ||
+      def resolvable?(countdown, event_or_future, index)
+        (event_or_future.is_a?(Event) ? event_or_future.resolved? : event_or_future.fulfilled?) ||
             # inlined super from BlockedPromise
             countdown.zero?
       end
