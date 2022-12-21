@@ -326,7 +326,7 @@ unless Concurrent.on_jruby?
         it "releases read lock if an exception is raised in block" do
           expect {
             lock.with_read_lock { raise "Bad" }
-          }.to raise_error
+          }.to raise_error(RuntimeError, 'Bad')
           expect(lock).to be_free
           expect(Thread.current).not_to hold(lock).for_read
         end
@@ -343,7 +343,7 @@ unless Concurrent.on_jruby?
         it "releases write lock if an exception is raised in block" do
           expect {
             lock.with_write_lock { raise "Bad" }
-          }.to raise_error
+          }.to raise_error(RuntimeError, 'Bad')
           expect(lock).to be_free
           expect(Thread.current).not_to hold(lock).for_write
         end
