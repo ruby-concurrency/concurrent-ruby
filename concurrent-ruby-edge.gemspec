@@ -23,7 +23,7 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 Please see http://concurrent-ruby.com for more information.
   TXT
 
-  s.required_ruby_version = '>= 2.2'
+  s.required_ruby_version = '>= 2.3'
 
   s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION}"
 end
