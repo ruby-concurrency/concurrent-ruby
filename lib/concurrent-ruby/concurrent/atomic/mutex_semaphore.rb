@@ -11,6 +11,7 @@ module Concurrent
     # @!macro semaphore_method_initialize
     def initialize(count)
       Utility::NativeInteger.ensure_integer_and_bounds count
+      Utility::NativeInteger.ensure_positive count
 
       super()
       synchronize { ns_initialize count }

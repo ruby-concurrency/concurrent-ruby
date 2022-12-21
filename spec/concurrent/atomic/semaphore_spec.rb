@@ -17,11 +17,10 @@ RSpec.shared_examples :semaphore do
     end
 
     context 'when initializing with -1' do
-      let(:semaphore) { described_class.new(-1) }
-
       it do
-        semaphore.release
-        expect(semaphore.available_permits).to eq 0
+        expect {
+          described_class.new(-1)
+        }.to raise_error(ArgumentError)
       end
     end
   end
