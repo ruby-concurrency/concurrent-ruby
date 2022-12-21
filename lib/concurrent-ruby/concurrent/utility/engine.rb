@@ -7,10 +7,6 @@ module Concurrent
         RUBY_ENGINE == 'jruby'
       end
 
-      def on_jruby_9000?
-        on_jruby? && ruby_version(JRUBY_VERSION, :>=, 9, 0, 0)
-      end
-
       def on_cruby?
         RUBY_ENGINE == 'ruby'
       end

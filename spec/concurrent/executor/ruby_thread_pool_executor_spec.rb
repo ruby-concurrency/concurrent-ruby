@@ -157,36 +157,34 @@ module Concurrent
       end
     end
 
-    if Concurrent.on_cruby? && Concurrent.ruby_version(:>=, 2, 3, 0)
-      context 'threads naming' do
-        subject do
-          opts = { min_threads: 2 }
-          opts[:name] = pool_name if pool_name
-          described_class.new(opts)
+    context 'threads naming' do
+      subject do
+        opts = { min_threads: 2 }
+        opts[:name] = pool_name if pool_name
+        described_class.new(opts)
+      end
+
+      let(:names) { Concurrent::Set.new }
+
+      before do
+        subject.post(names) { |names| names << Thread.current.name }
+        subject.post(names) { |names| names << Thread.current.name }
+        subject.shutdown
+        subject.wait_for_termination(pool_termination_timeout)
+        expect(names.size).to eq 2
+      end
+
+      context 'without pool name' do
+        let(:pool_name) { }
+        it 'sets counted name' do
+          expect(names.all? { |name| name =~ /^worker-\d+$/ }).to be true
         end
+      end
 
-        let(:names) { Concurrent::Set.new }
-
-        before do
-          subject.post(names) { |names| names << Thread.current.name }
-          subject.post(names) { |names| names << Thread.current.name }
-          subject.shutdown
-          subject.wait_for_termination(pool_termination_timeout)
-          expect(names.size).to eq 2
-        end
-
-        context 'without pool name' do
-          let(:pool_name) { }
-          it 'sets counted name' do
-            expect(names.all? { |name| name =~ /^worker-\d+$/ }).to be true
-          end
-        end
-
-        context 'with pool name' do
-          let(:pool_name) { 'MyExecutor' }
-          it 'sets counted name' do
-            expect(names.all? { |name| name =~ /^MyExecutor-worker-\d+$/ }).to be true
-          end
+      context 'with pool name' do
+        let(:pool_name) { 'MyExecutor' }
+        it 'sets counted name' do
+          expect(names.all? { |name| name =~ /^MyExecutor-worker-\d+$/ }).to be true
         end
       end
     end
