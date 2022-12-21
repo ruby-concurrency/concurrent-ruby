@@ -23,32 +23,11 @@ module Concurrent
       # occasionally poll this property." Subsequently the result will NOT be
       # memoized under JRuby.
       #
-      # Ruby's Etc.nprocessors will be used if available (MRI 2.2+).
-      #
-      # On Windows the Win32 API will be queried for the
-      # `NumberOfLogicalProcessors from Win32_Processor`. This will return the
-      # total number "logical processors for the current instance of the
-      # processor", which taked into account hyperthreading.
-      #
-      # * AIX: /usr/sbin/pmcycles (AIX 5+), /usr/sbin/lsdev
-      # * Alpha: /usr/bin/nproc (/proc/cpuinfo exists but cannot be used)
-      # * BSD: /sbin/sysctl
-      # * Cygwin: /proc/cpuinfo
-      # * Darwin: /usr/bin/hwprefs, /usr/sbin/sysctl
-      # * HP-UX: /usr/sbin/ioscan
-      # * IRIX: /usr/sbin/sysconf
-      # * Linux: /proc/cpuinfo
-      # * Minix 3+: /proc/cpuinfo
-      # * Solaris: /usr/sbin/psrinfo
-      # * Tru64 UNIX: /usr/sbin/psrinfo
-      # * UnixWare: /usr/sbin/psrinfo
+      # Otherwise Ruby's Etc.nprocessors will be used.
       #
       # @return [Integer] number of processors seen by the OS or Java runtime
       #
-      # @see https://github.com/grosser/parallel/blob/4fc8b89d08c7091fe0419ca8fba1ec3ce5a8d185/lib/parallel.rb
-      #
       # @see http://docs.oracle.com/javase/6/docs/api/java/lang/Runtime.html#availableProcessors()
-      # @see http://msdn.microsoft.com/en-us/library/aa394373(v=vs.85).aspx
       def processor_count
         @processor_count.value
       end
