@@ -82,7 +82,7 @@ module Concurrent
     end
 
     describe '#slice' do
-      # This is mostly relevant on Rubinius and TruffleRuby
+      # This is mostly relevant on TruffleRuby
       it 'correctly initializes the monitor' do
         ary.concat([0, 1, 2, 3, 4, 5, 6, 7, 8])
 

@@ -15,12 +15,14 @@ module Concurrent
                         when Concurrent.on_cruby?
                           require 'concurrent/collection/map/mri_map_backend'
                           MriMapBackend
-                        when Concurrent.on_truffleruby? && defined?(::TruffleRuby::ConcurrentMap)
-                          require 'concurrent/collection/map/truffleruby_map_backend'
-                          TruffleRubyMapBackend
-                        when Concurrent.on_truffleruby? || Concurrent.on_rbx?
-                          require 'concurrent/collection/map/atomic_reference_map_backend'
-                          AtomicReferenceMapBackend
+                        when Concurrent.on_truffleruby?
+                          if defined?(::TruffleRuby::ConcurrentMap)
+                            require 'concurrent/collection/map/truffleruby_map_backend'
+                            TruffleRubyMapBackend
+                          else
+                            require 'concurrent/collection/map/atomic_reference_map_backend'
+                            AtomicReferenceMapBackend
+                          end
                         else
                           warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation'
                           require 'concurrent/collection/map/synchronized_map_backend'
@@ -197,7 +199,6 @@ module Concurrent
     # @yieldparam key [Object]
     # @yieldreturn [Object] default value
     # @return [Object] the value or default value
-    # @!macro map.atomic_method_with_block
     def fetch_or_store(key, default_value = NULL)
       fetch(key) do
         put(key, block_given? ? yield(key) : (NULL == default_value ? raise_fetch_no_key : default_value))

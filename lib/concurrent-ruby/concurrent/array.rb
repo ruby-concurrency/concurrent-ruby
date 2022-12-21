@@ -34,16 +34,6 @@ module Concurrent
                           end
                           JRubyArray
 
-                        when Concurrent.on_rbx?
-                          require 'monitor'
-                          require 'concurrent/thread_safe/util/data_structures'
-
-                          class RbxArray < ::Array
-                          end
-
-                          ThreadSafe::Util.make_synchronized_on_rbx RbxArray
-                          RbxArray
-
                         when Concurrent.on_truffleruby?
                           require 'concurrent/thread_safe/util/data_structures'
 

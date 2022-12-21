@@ -23,16 +23,12 @@ module Concurrent
     # The (fixed) size of the tuple.
     attr_reader :size
 
-    # @!visibility private
-    Tuple = defined?(Rubinius::Tuple) ? Rubinius::Tuple : ::Array
-    private_constant :Tuple
-
     # Create a new tuple of the given size.
     #
     # @param [Integer] size the number of elements in the tuple
     def initialize(size)
       @size = size
-      @tuple = tuple = Tuple.new(size)
+      @tuple = tuple = ::Array.new(size)
       i = 0
       while i < size
         tuple[i] = Concurrent::AtomicReference.new

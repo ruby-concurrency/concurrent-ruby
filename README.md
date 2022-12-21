@@ -42,8 +42,8 @@ You can also get started by triaging issues which may include reproducing bug re
 ## Thread Safety
 
 *Concurrent Ruby makes one of the strongest thread safety guarantees of any Ruby concurrency 
-library, providing consistent behavior and guarantees on all four of the main Ruby interpreters 
-(MRI/CRuby, JRuby, Rubinius, TruffleRuby).*
+library, providing consistent behavior and guarantees on all three main Ruby interpreters
+(MRI/CRuby, JRuby, TruffleRuby).*
 
 Every abstraction in this library is thread safe. Specific thread safety guarantees are documented 
 with each abstraction.
@@ -58,9 +58,9 @@ other Ruby library, many of which support the mantra of
 Concurrent Ruby is also the only Ruby library which provides a full suite of thread safe and
 immutable variable types and data structures.
 
-We've also initiated discussion to document [memory model](docs-source/synchronization.md) of Ruby which 
-would provide consistent behaviour and guarantees on all four of the main Ruby interpreters 
-(MRI/CRuby, JRuby, Rubinius, TruffleRuby).
+We've also initiated discussion to document the [memory model](docs-source/synchronization.md) of Ruby which 
+would provide consistent behaviour and guarantees on all three main Ruby interpreters 
+(MRI/CRuby, JRuby, TruffleRuby).
 
 ## Features & Documentation
 
@@ -259,12 +259,9 @@ be obeyed though. Features developed in `concurrent-ruby-edge` are expected to m
 
 ## Supported Ruby versions
 
-* MRI 2.2 and above
+* MRI 2.3 and above
 * Latest JRuby 9000
 * Latest TruffleRuby
-
-The legacy support for Rubinius is kept for the moment but it is no longer maintained and is liable to be removed. If you would like to help 
-please respond to [#739](https://github.com/ruby-concurrency/concurrent-ruby/issues/739).
 
 ## Usage
 
@@ -374,8 +371,8 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 ## Maintainers
 
-* [Chris Seaton](https://github.com/chrisseaton) — Lead maintainer, point-of-contact.
-* [Benoit Daloze](https://github.com/eregon) — If Chris is not available Benoit can help.
+* [Benoit Daloze](https://github.com/eregon) — Maintainer.
+* We are looking for more `concurrent-ruby` maintainers.
 
 ### Special Thanks to
 
@@ -386,6 +383,7 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 to the past maintainers
 
+* [Chris Seaton](https://github.com/chrisseaton)
 * [Petr Chalupa](https://github.com/pitr-ch)
 * [Michele Della Torre](https://github.com/mighe)
 * [Paweł Obrok](https://github.com/obrok)

@@ -28,15 +28,6 @@ module Concurrent
                          end
                          JRubyHash
 
-                       when Concurrent.on_rbx?
-                         require 'monitor'
-                         require 'concurrent/thread_safe/util/data_structures'
-
-                         class RbxHash < ::Hash
-                         end
-                         ThreadSafe::Util.make_synchronized_on_rbx RbxHash
-                         RbxHash
-
                        when Concurrent.on_truffleruby?
                          require 'concurrent/thread_safe/util/data_structures'
 

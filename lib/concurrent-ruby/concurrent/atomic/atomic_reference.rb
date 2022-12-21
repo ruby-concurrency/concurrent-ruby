@@ -171,22 +171,6 @@ module Concurrent
                                       alias_method :swap, :get_and_set
                                     end
                                     TruffleRubyAtomicReference
-                                  when Concurrent.on_rbx?
-                                    # @note Extends `Rubinius::AtomicReference` version adding aliases
-                                    #   and numeric logic.
-                                    #
-                                    # @!visibility private
-                                    # @!macro internal_implementation_note
-                                    class RbxAtomicReference < Rubinius::AtomicReference
-                                      alias_method :_compare_and_set, :compare_and_set
-                                      include AtomicDirectUpdate
-                                      include AtomicNumericCompareAndSetWrapper
-                                      alias_method :value, :get
-                                      alias_method :value=, :set
-                                      alias_method :swap, :get_and_set
-                                      alias_method :compare_and_swap, :compare_and_set
-                                    end
-                                    RbxAtomicReference
                                   else
                                     MutexAtomicReference
                                   end

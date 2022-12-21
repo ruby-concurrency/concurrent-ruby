@@ -504,5 +504,5 @@ module Concurrent
       expect(sum(cache.values)).to   eq sum(result)
       expect(options[:key_count]).to eq cache.size
     end
-  end unless RUBY_ENGINE == 'rbx'
+  end
 end

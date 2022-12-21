@@ -11,7 +11,7 @@ module Concurrent
   #
   #   @param [Fixnum] count the initial count
   #
-  #   @raise [ArgumentError] if `count` is not an integer or is less than zero
+  #   @raise [ArgumentError] if `count` is not an integer
 
   # @!macro semaphore_method_acquire
   #
@@ -21,8 +21,7 @@ module Concurrent
   #
   #   @param [Fixnum] permits Number of permits to acquire
   #
-  #   @raise [ArgumentError] if `permits` is not an integer or is less than
-  #     one
+  #   @raise [ArgumentError] if `permits` is not an integer or is less than zero
   #
   #   @return [nil, BasicObject] Without a block, `nil` is returned. If a block
   #   is given, its return value is returned.
@@ -52,8 +51,7 @@ module Concurrent
   #   @param [Fixnum] timeout the number of seconds to wait for the counter
   #     or `nil` to return immediately
   #
-  #   @raise [ArgumentError] if `permits` is not an integer or is less than
-  #     one
+  #   @raise [ArgumentError] if `permits` is not an integer or is less than zero
   #
   #   @return [true, false, nil, BasicObject] `false` if no permits are
   #     available, `true` when acquired a permit. If a block is given, the
@@ -66,7 +64,7 @@ module Concurrent
   #
   #   @param [Fixnum] permits Number of permits to return to the semaphore.
   #
-  #   @raise [ArgumentError] if `permits` is not a number or is less than one
+  #   @raise [ArgumentError] if `permits` is not a number or is less than zero
   #
   #   @return [nil]
 
