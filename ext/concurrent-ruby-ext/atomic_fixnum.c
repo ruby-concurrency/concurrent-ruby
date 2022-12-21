@@ -8,7 +8,7 @@ void atomic_fixnum_mark(void *value) {
 }
 
 VALUE atomic_fixnum_allocate(VALUE klass) {
-  return rb_data_object_alloc(klass, (void *) Qnil, atomic_fixnum_mark, NULL);
+  return rb_data_object_wrap(klass, (void *) Qnil, atomic_fixnum_mark, NULL);
 }
 
 VALUE method_atomic_fixnum_initialize(int argc, VALUE* argv, VALUE self) {

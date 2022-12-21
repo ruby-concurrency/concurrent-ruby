@@ -8,7 +8,7 @@ void atomic_boolean_mark(void *value) {
 }
 
 VALUE atomic_boolean_allocate(VALUE klass) {
-  return rb_data_object_alloc(klass, (void *) Qfalse, atomic_boolean_mark, NULL);
+  return rb_data_object_wrap(klass, (void *) Qfalse, atomic_boolean_mark, NULL);
 }
 
 VALUE method_atomic_boolean_initialize(int argc, VALUE* argv, VALUE self) {

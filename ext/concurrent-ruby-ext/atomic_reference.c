@@ -44,7 +44,7 @@ void ir_mark(void *value) {
 }
 
 VALUE ir_alloc(VALUE klass) {
-  return rb_data_object_alloc(klass, (void *) Qnil, ir_mark, NULL);
+  return rb_data_object_wrap(klass, (void *) Qnil, ir_mark, NULL);
 }
 
 VALUE ir_initialize(int argc, VALUE* argv, VALUE self) {
@@ -78,7 +78,7 @@ VALUE ir_get_and_set(VALUE self, VALUE new_value) {
 }
 
 VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE new_value) {
-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
   if (OSAtomicCompareAndSwap64(expect_value, new_value, &DATA_PTR(self))) {
     return Qtrue;
   }
