@@ -527,7 +527,7 @@ module Concurrent
 
       it 'with return' do
         with_or_without_default_proc do
-          r = lambda do
+          r = -> do
             @cache.fetch(:a) { return 10 }
           end.call
 
@@ -608,7 +608,7 @@ module Concurrent
 
       it 'with return' do
         with_or_without_default_proc do
-          r = lambda do
+          r = -> do
             @cache.fetch_or_store(:a) { return 10 }
           end.call
 
