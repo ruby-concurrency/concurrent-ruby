@@ -96,7 +96,7 @@ module Concurrent
       end
 
       # These tests only make sense on CRuby as they test a workaround for CRuby bugs: https://github.com/ruby-concurrency/concurrent-ruby/issues/931
-      if Concurrent.on_cruby?
+      if Concurrent.on_cruby? and Concurrent.ruby_version(:<, 3, 2, 0)
         context 'local jump error' do
           def execute
             Thread.new do
