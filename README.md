@@ -359,15 +359,11 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 * Update `version.rb`
 * Update the CHANGELOG
-* Update the Yard documentation
-    - Add the new version to `docs-source/signpost.md`. Needs to be done only if there are visible changes in the
-      documentation.
-    - Run `bundle exec rake yard` to update the master documentation and signpost.
-    - Run `bundle exec rake yard:<new-version>` to add or update the documentation of the new version.
+* Add the new version to `docs-source/signpost.md`. Needs to be done only if there are visible changes in the documentation.
 * Commit (and push) the changes.
-* Use `be rake release` to release the gem. It consists
-  of `['release:checks', 'release:build', 'release:test', 'release:publish']` steps. It will ask at the end before
-  publishing anything. Steps can also be executed individually.
+* Use `bundle exec rake release` to release the gem.
+  It consists of `['release:checks', 'release:build', 'release:test', 'release:publish']` steps.
+  It will ask at the end before publishing anything. Steps can also be executed individually.
 
 ## Maintainers
 
