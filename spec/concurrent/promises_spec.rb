@@ -157,6 +157,24 @@ RSpec.describe 'Concurrent::Promises' do
 
       expect(any.value!).to eq :value
     end
+
+    it 'treats a resolved Event as a fulfilled Future' do
+        any = any_fulfilled_future(
+          resolved_event,
+          fulfilled_future(:value),
+        )
+
+        expect(any.value!).to eq nil
+    end
+
+    it 'treats a pending Event as a pending Future' do
+        any = any_fulfilled_future(
+          resolvable_event,
+          fulfilled_future(:value),
+        )
+
+        expect(any.value!).to eq :value
+    end
   end
 
   describe '.zip' do
