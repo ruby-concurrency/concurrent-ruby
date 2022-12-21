@@ -56,3 +56,11 @@ RSpec.configure do |config|
     end
   end
 end
+
+# Remove verbose and confusing "Pending: (Failures listed here ...)" section at the end.
+# From https://github.com/rspec/rspec-core/issues/2377#issuecomment-275131981
+module RSpecNoPendingOutput
+  def dump_pending(_)
+  end
+end
+RSpec::Core::Formatters::DocumentationFormatter.prepend RSpecNoPendingOutput
