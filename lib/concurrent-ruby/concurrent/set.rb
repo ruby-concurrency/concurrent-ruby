@@ -42,16 +42,6 @@ module Concurrent
 
                         JRubySet
 
-                      when Concurrent.on_rbx?
-                        require 'monitor'
-                        require 'concurrent/thread_safe/util/data_structures'
-
-                        class RbxSet < ::Set
-                        end
-
-                        ThreadSafe::Util.make_synchronized_on_rbx RbxSet
-                        RbxSet
-
                       when Concurrent.on_truffleruby?
                         require 'concurrent/thread_safe/util/data_structures'
 

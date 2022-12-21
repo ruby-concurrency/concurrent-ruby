@@ -527,10 +527,9 @@ module Concurrent
 
       it 'with return' do
         with_or_without_default_proc do
-          r = fetch_with_return
-          # r = lambda do
-          #   @cache.fetch(:a) { return 10 }
-          # end.call
+          r = lambda do
+            @cache.fetch(:a) { return 10 }
+          end.call
 
           expect_no_size_change do
             expect(10).to    eq r
@@ -609,7 +608,9 @@ module Concurrent
 
       it 'with return' do
         with_or_without_default_proc do
-          r = fetch_or_store_with_return
+          r = lambda do
+            @cache.fetch_or_store(:a) { return 10 }
+          end.call
 
           expect_no_size_change do
             expect(10).to    eq r
@@ -905,20 +906,5 @@ module Concurrent
       end
       expect(keys.all? { |k| @cache[k] == k.key }).to be_truthy
     end
-
-    # Took out for compatibility with Rubinius, see https://github.com/rubinius/rubinius/issues/1312
-    def fetch_with_return
-      lambda do
-        @cache.fetch(:a) { return 10 }
-      end.call
-    end
-
-    # Took out for compatibility with Rubinius, see https://github.com/rubinius/rubinius/issues/1312
-    def fetch_or_store_with_return
-      lambda do
-        @cache.fetch_or_store(:a) { return 10 }
-      end.call
-    end
-
   end
 end

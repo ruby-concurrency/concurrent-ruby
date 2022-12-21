@@ -15,10 +15,6 @@ module Concurrent
         RUBY_ENGINE == 'ruby'
       end
 
-      def on_rbx?
-        RUBY_ENGINE == 'rbx'
-      end
-
       def on_truffleruby?
         RUBY_ENGINE == 'truffleruby'
       end

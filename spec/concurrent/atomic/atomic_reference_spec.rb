@@ -95,7 +95,7 @@ RSpec.shared_examples :atomic_reference do
       expect(atomic.compare_and_swap(i, i - 1)).to be_truthy, "CAS failed for numeric #{i} => #{i - 1}"
     end
 
-    # 64-bit idempotent Fixnum (MRI, Rubinius)
+    # 64-bit idempotent Fixnum (MRI, TruffleRuby)
     max_64 = 2 ** 62 - 1
     min_64 = -(2 ** 62)
 
@@ -123,7 +123,7 @@ RSpec.shared_examples :atomic_reference do
       expect(atomic.compare_and_swap(i, i - 1)).to be_truthy, "CAS failed for numeric #{i} => #{i - 1}"
     end
 
-    # non-idempotent Float (JRuby, Rubinius, MRI < 2.0.0 or 32-bit)
+    # non-idempotent Float (JRuby, MRI < 2.0.0 or 32-bit)
     atomic.set(1.0 + 0.1)
     expect(atomic.compare_and_set(1.0 + 0.1, 1.2)).to be_truthy, "CAS failed for #{1.0 + 0.1} => 1.2"
 
@@ -190,10 +190,6 @@ module Concurrent
     elsif Concurrent.allow_c_extensions?
       it 'inherits from CAtomicReference' do
         expect(described_class.ancestors).to include(Concurrent::CAtomicReference)
-      end
-    elsif Concurrent.on_rbx?
-      it 'inherits from RbxAtomicReference' do
-        expect(described_class.ancestors).to include(Concurrent::RbxAtomicReference)
       end
     elsif Concurrent.on_truffleruby?
       it 'inherits from TruffleRubyAtomicReference' do

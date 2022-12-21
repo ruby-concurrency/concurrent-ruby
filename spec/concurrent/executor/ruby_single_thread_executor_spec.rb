@@ -2,7 +2,7 @@ require_relative 'executor_service_shared'
 
 module Concurrent
 
-  RSpec.describe RubySingleThreadExecutor, :type=>:mrirbx do
+  RSpec.describe RubySingleThreadExecutor, :type=>:mri do
 
     after(:each) do
       subject.shutdown

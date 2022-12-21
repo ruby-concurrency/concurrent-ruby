@@ -8,8 +8,6 @@ module Concurrent
                                      MutexLockableObject
                                    when Concurrent.on_jruby?
                                      JRubyLockableObject
-                                   when Concurrent.on_rbx?
-                                     RbxLockableObject
                                    when Concurrent.on_truffleruby?
                                      MutexLockableObject
                                    else

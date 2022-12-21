@@ -2,7 +2,7 @@ require_relative 'thread_pool_executor_shared'
 
 module Concurrent
 
-  RSpec.describe RubyThreadPoolExecutor, :type=>:mrirbx do
+  RSpec.describe RubyThreadPoolExecutor, :type=>:mri do
 
     after(:each) do
       subject.shutdown
