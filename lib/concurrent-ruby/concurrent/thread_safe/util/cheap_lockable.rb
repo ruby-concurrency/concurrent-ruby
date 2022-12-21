@@ -32,8 +32,7 @@ module Concurrent
       # @!visibility private
       module CheapLockable
         private
-        engine = defined?(RUBY_ENGINE) && RUBY_ENGINE
-        if engine == 'rbx'
+        if Concurrent.on_rbx?
           # Making use of the Rubinius' ability to lock via object headers to avoid the overhead of the extra Mutex objects.
           def cheap_synchronize
             Rubinius.lock(self)
@@ -70,7 +69,7 @@ module Concurrent
             waiters.shift << true until waiters.empty?
             self
           end
-        elsif engine == 'jruby'
+        elsif Concurrent.on_jruby?
           # Use Java's native synchronized (this) { wait(); notifyAll(); } to avoid the overhead of the extra Mutex objects
           require 'jruby'
 

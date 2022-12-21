@@ -4,7 +4,7 @@ module Concurrent
     # @!visibility private
     module EngineDetector
       def on_jruby?
-        ruby_engine == 'jruby'
+        RUBY_ENGINE == 'jruby'
       end
 
       def on_jruby_9000?
@@ -12,15 +12,15 @@ module Concurrent
       end
 
       def on_cruby?
-        ruby_engine == 'ruby'
+        RUBY_ENGINE == 'ruby'
       end
 
       def on_rbx?
-        ruby_engine == 'rbx'
+        RUBY_ENGINE == 'rbx'
       end
 
       def on_truffleruby?
-        ruby_engine == 'truffleruby'
+        RUBY_ENGINE == 'truffleruby'
       end
 
       def on_windows?
@@ -33,10 +33,6 @@ module Concurrent
 
       def on_linux?
         !(RbConfig::CONFIG['host_os'] =~ /linux/).nil?
-      end
-
-      def ruby_engine
-        defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
       end
 
       def ruby_version(version = RUBY_VERSION, comparison, major, minor, patch)
