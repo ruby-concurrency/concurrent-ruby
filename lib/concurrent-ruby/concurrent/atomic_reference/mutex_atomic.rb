@@ -13,7 +13,7 @@ module Concurrent
     # @!macro atomic_reference_method_initialize
     def initialize(value = nil)
       super()
-      @__Lock__ = ::Mutex.new
+      @Lock = ::Mutex.new
       @value = value
     end
 
@@ -55,10 +55,10 @@ module Concurrent
 
     # @!visibility private
     def synchronize
-      if @__Lock__.owned?
+      if @Lock.owned?
         yield
       else
-        @__Lock__.synchronize { yield }
+        @Lock.synchronize { yield }
       end
     end
   end

@@ -12,7 +12,7 @@ module Concurrent
     # @!macro atomic_fixnum_method_initialize
     def initialize(initial = 0)
       super()
-      @__Lock__ = ::Mutex.new
+      @Lock = ::Mutex.new
       ns_set(initial)
     end
 
@@ -63,10 +63,10 @@ module Concurrent
 
     # @!visibility private
     def synchronize
-      if @__Lock__.owned?
+      if @Lock.owned?
         yield
       else
-        @__Lock__.synchronize { yield }
+        @Lock.synchronize { yield }
       end
     end
 
