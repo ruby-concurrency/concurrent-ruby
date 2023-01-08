@@ -28,7 +28,7 @@ module Concurrent
       end
 
       def self.safe_initialization!
-        extend SafeInitialization
+        extend SafeInitialization unless safe_initialization?
       end
 
       def self.safe_initialization?
