@@ -1,4 +1,3 @@
-require 'concurrent/synchronization'
 require 'concurrent/utility/native_integer'
 
 module Concurrent
@@ -6,11 +5,13 @@ module Concurrent
   # @!macro atomic_fixnum
   # @!visibility private
   # @!macro internal_implementation_note
-  class MutexAtomicFixnum < Synchronization::LockableObject
+  class MutexAtomicFixnum
 
     # @!macro atomic_fixnum_method_initialize
     def initialize(initial = 0)
       super()
+      @__Lock__ = ::Mutex.new
+      # This synchronize should be good enough to ensure safe initialization
       synchronize { ns_initialize(initial) }
     end
 
@@ -58,6 +59,15 @@ module Concurrent
     end
 
     protected
+
+    # @!visibility private
+    def synchronize
+      if @__Lock__.owned?
+        yield
+      else
+        @__Lock__.synchronize { yield }
+      end
+    end
 
     # @!visibility private
     def ns_initialize(initial)

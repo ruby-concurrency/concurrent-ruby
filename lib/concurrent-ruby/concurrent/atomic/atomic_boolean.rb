@@ -1,5 +1,6 @@
+require 'concurrent/utility/native_extension_loader' # load native parts first
+
 require 'concurrent/atomic/mutex_atomic_boolean'
-require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -79,10 +80,10 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   AtomicBooleanImplementation = case
-                                when defined?(JavaAtomicBoolean)
-                                  JavaAtomicBoolean
-                                when defined?(CAtomicBoolean)
+                                when Concurrent.on_cruby? && Concurrent.c_extensions_loaded?
                                   CAtomicBoolean
+                                when Concurrent.on_jruby?
+                                  JavaAtomicBoolean
                                 else
                                   MutexAtomicBoolean
                                 end

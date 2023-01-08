@@ -161,17 +161,17 @@ module Concurrent
     it_should_behave_like :atomic_reference
   end
 
-  if defined? Concurrent::CAtomicReference
+  if Concurrent.allow_c_extensions?
     RSpec.describe CAtomicReference do
       it_should_behave_like :atomic_reference
     end
   end
-  if defined? Concurrent::JavaAtomicReference
+  if Concurrent.on_jruby?
     RSpec.describe JavaAtomicReference do
       it_should_behave_like :atomic_reference
     end
   end
-  if defined? Concurrent::TruffleRubyAtomicReference
+  if Concurrent.on_truffleruby?
     RSpec.describe TruffleRubyAtomicReference do
       it_should_behave_like :atomic_reference
     end

@@ -140,15 +140,13 @@ module Concurrent
     end
   end
 
-  if defined? Concurrent::CAtomicBoolean
-
+  if Concurrent.allow_c_extensions?
     RSpec.describe CAtomicBoolean do
       it_should_behave_like :atomic_boolean
     end
   end
 
   if Concurrent.on_jruby?
-
     RSpec.describe JavaAtomicBoolean do
       it_should_behave_like :atomic_boolean
     end
@@ -165,7 +163,7 @@ module Concurrent
       it 'inherits from JavaAtomicBoolean' do
         expect(AtomicBoolean.ancestors).to include(JavaAtomicBoolean)
       end
-    elsif defined? Concurrent::CAtomicBoolean
+    elsif Concurrent.allow_c_extensions?
       it 'inherits from CAtomicBoolean' do
         expect(AtomicBoolean.ancestors).to include(CAtomicBoolean)
       end
