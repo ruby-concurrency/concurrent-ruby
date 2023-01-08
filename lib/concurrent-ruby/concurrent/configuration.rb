@@ -136,14 +136,14 @@ module Concurrent
   #
   # @return [ThreadPoolExecutor] the thread pool
   def self.global_fast_executor
-    GLOBAL_FAST_EXECUTOR.value
+    GLOBAL_FAST_EXECUTOR.value!
   end
 
   # Global thread pool optimized for long, blocking (IO) *tasks*.
   #
   # @return [ThreadPoolExecutor] the thread pool
   def self.global_io_executor
-    GLOBAL_IO_EXECUTOR.value
+    GLOBAL_IO_EXECUTOR.value!
   end
 
   def self.global_immediate_executor
@@ -154,7 +154,7 @@ module Concurrent
   #
   # @return [Concurrent::TimerSet] the thread pool
   def self.global_timer_set
-    GLOBAL_TIMER_SET.value
+    GLOBAL_TIMER_SET.value!
   end
 
   # General access point to global executors.
