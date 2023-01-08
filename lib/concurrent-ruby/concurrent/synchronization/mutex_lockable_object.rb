@@ -26,8 +26,8 @@ module Concurrent
 
       safe_initialization!
 
-      def initialize(*defaults)
-        super(*defaults)
+      def initialize
+        super()
         @__Lock__      = ::Mutex.new
         @__Condition__ = ::ConditionVariable.new
       end
@@ -61,8 +61,8 @@ module Concurrent
 
       safe_initialization!
 
-      def initialize(*defaults)
-        super(*defaults)
+      def initialize
+        super()
         @__Lock__      = ::Monitor.new
         @__Condition__ = @__Lock__.new_cond
       end
