@@ -54,7 +54,10 @@ Gem::PackageTask.new(core_gemspec) {} if core_gemspec
 Gem::PackageTask.new(ext_gemspec) {} if ext_gemspec && !Concurrent.on_jruby?
 Gem::PackageTask.new(edge_gemspec) {} if edge_gemspec
 
-CLEAN.include('lib/concurrent-ruby/concurrent/2.*', 'lib/concurrent-ruby/concurrent/*.jar')
+CLEAN.include(
+  'lib/concurrent-ruby/concurrent/concurrent_ruby_ext.*',
+  'lib/concurrent-ruby/concurrent/2.*',
+  'lib/concurrent-ruby/concurrent/*.jar')
 
 begin
   require 'rspec'
