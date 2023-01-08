@@ -4,10 +4,8 @@ module Concurrent
     # @!visibility private
     # @!macro internal_implementation_note
     class AbstractObject
-
-      # @abstract has to be implemented based on Ruby runtime
       def initialize
-        raise NotImplementedError
+        # nothing to do
       end
 
       # @!visibility private

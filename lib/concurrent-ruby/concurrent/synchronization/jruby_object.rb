@@ -2,7 +2,6 @@ module Concurrent
   module Synchronization
 
     if Concurrent.on_jruby? && Concurrent.java_extensions_loaded?
-
       # @!visibility private
       module JRubyAttrVolatile
         def self.included(base)
@@ -30,16 +29,7 @@ module Concurrent
           end
         end
       end
-
-      # @!visibility private
-      # @!macro internal_implementation_note
-      class JRubyObject < AbstractObject
-        include JRubyAttrVolatile
-
-        def initialize
-          # nothing to do
-        end
-      end
     end
+
   end
 end

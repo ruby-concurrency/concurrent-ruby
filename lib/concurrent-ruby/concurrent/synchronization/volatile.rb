@@ -28,7 +28,14 @@ module Concurrent
                when Concurrent.on_truffleruby?
                  TruffleRubyAttrVolatile
                else
+                 warn 'Possibly unsupported Ruby implementation'
                  MriAttrVolatile
                end
+
+    Volatile.class_exec do
+      def full_memory_barrier
+        Concurrent::Synchronization.full_memory_barrier
+      end
+    end
   end
 end

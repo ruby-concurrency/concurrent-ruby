@@ -1,28 +1,17 @@
+require 'concurrent/synchronization/safe_initialization'
+require 'concurrent/synchronization/volatile'
 require 'concurrent/atomic/atomic_reference'
 
 module Concurrent
   module Synchronization
 
-    # @!visibility private
-    # @!macro internal_implementation_note
-    ObjectImplementation = case
-                           when Concurrent.on_cruby?
-                             MriObject
-                           when Concurrent.on_jruby?
-                             JRubyObject
-                           when Concurrent.on_truffleruby?
-                             TruffleRubyObject
-                           else
-                             warn 'Possibly unsupported Ruby implementation'
-                             MriObject
-                           end
-    private_constant :ObjectImplementation
-
     # Abstract object providing final, volatile, ans CAS extensions to build other concurrent abstractions.
     # - final instance variables see {Object.safe_initialization!}
     # - volatile instance variables see {Object.attr_volatile}
     # - volatile instance variables see {Object.attr_atomic}
-    class Object < ObjectImplementation
+    class Object < AbstractObject
+      include Volatile
+
       # TODO make it a module if possible
 
       # @!method self.attr_volatile(*names)
@@ -38,36 +27,12 @@ module Concurrent
         __initialize_atomic_fields__
       end
 
-      # By calling this method on a class, it and all its children are marked to be constructed safely. Meaning that
-      # all writes (ivar initializations) are made visible to all readers of newly constructed object. It ensures
-      # same behaviour as Java's final fields.
-      # @example
-      #   class AClass < Concurrent::Synchronization::Object
-      #     safe_initialization!
-      #
-      #     def initialize
-      #       @AFinalValue = 'value' # published safely, does not have to be synchronized
-      #     end
-      #   end
-      # @return [true]
       def self.safe_initialization!
-        # define only once, and not again in children
-        return if safe_initialization?
-
-        # @!visibility private
-        def self.new(*args, &block)
-          object = super(*args, &block)
-        ensure
-          object.full_memory_barrier if object
-        end
-
-        @safe_initialization = true
+        extend SafeInitialization
       end
 
-      # @return [true, false] if this class is safely initialized.
       def self.safe_initialization?
-        @safe_initialization = false unless defined? @safe_initialization
-        @safe_initialization || (superclass.respond_to?(:safe_initialization?) && superclass.safe_initialization?)
+        self.singleton_class < SafeInitialization
       end
 
       # For testing purposes, quite slow. Injects assert code to new method which will raise if class instance contains
