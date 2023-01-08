@@ -1,16 +1,18 @@
+require 'concurrent/synchronization/safe_initialization'
+
 module Concurrent
 
   # @!macro atomic_boolean
   # @!visibility private
   # @!macro internal_implementation_note
   class MutexAtomicBoolean
+    extend Concurrent::Synchronization::SafeInitialization
 
     # @!macro atomic_boolean_method_initialize
     def initialize(initial = false)
       super()
       @__Lock__ = ::Mutex.new
-      # This synchronize should be good enough to ensure safe initialization
-      synchronize { ns_initialize(initial) }
+      @value = !!initial
     end
 
     # @!macro atomic_boolean_method_value_get
@@ -52,11 +54,6 @@ module Concurrent
       else
         @__Lock__.synchronize { yield }
       end
-    end
-
-    # @!visibility private
-    def ns_initialize(initial)
-      @value = !!initial
     end
 
     private

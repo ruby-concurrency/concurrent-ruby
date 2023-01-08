@@ -1,4 +1,5 @@
 require 'timeout'
+require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -52,22 +53,22 @@ module Concurrent
       end
 
       it 'does not ensure visibility when not needed' do
-        expect_any_instance_of(AAClass).not_to receive(:full_memory_barrier)
+        expect(Concurrent::Synchronization).not_to receive(:full_memory_barrier)
         AAClass.new
       end
 
       it "does ensure visibility when specified" do
-        expect_any_instance_of(ABClass).to receive(:full_memory_barrier)
+        expect(Concurrent::Synchronization).to receive(:full_memory_barrier).exactly(:once)
         ABClass.new
       end
 
       it "does ensure visibility when specified in a parent" do
-        expect_any_instance_of(ACClass).to receive(:full_memory_barrier)
+        expect(Concurrent::Synchronization).to receive(:full_memory_barrier).exactly(:once)
         ACClass.new
       end
 
       it "does ensure visibility once when specified in child again" do
-        expect_any_instance_of(ADClass).to receive(:full_memory_barrier)
+        expect(Concurrent::Synchronization).to receive(:full_memory_barrier).exactly(:once)
         ADClass.new
       end
 
@@ -180,6 +181,7 @@ module Concurrent
       end
 
       specify 'final field always visible' do
+        require 'concurrent/atomic/count_down_latch'
         store = BClass.new 'asd'
         done  = CountDownLatch.new
         in_thread do

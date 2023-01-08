@@ -55,12 +55,6 @@ public class SynchronizationLibrary implements Library {
         }
     }
 
-    private static final ObjectAllocator JRUBY_OBJECT_ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
-            return new JRubyObject(runtime, klazz);
-        }
-    };
-
     private static final ObjectAllocator OBJECT_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new Object(runtime, klazz);
@@ -87,10 +81,7 @@ public class SynchronizationLibrary implements Library {
         RubyModule jrubyAttrVolatileModule = synchronizationModule.defineModuleUnder("JRubyAttrVolatile");
         jrubyAttrVolatileModule.defineAnnotatedMethods(JRubyAttrVolatile.class);
 
-        defineClass(runtime, synchronizationModule, "AbstractObject", "JRubyObject",
-                JRubyObject.class, JRUBY_OBJECT_ALLOCATOR);
-
-        defineClass(runtime, synchronizationModule, "JRubyObject", "Object",
+        defineClass(runtime, synchronizationModule, "AbstractObject", "Object",
                 Object.class, OBJECT_ALLOCATOR);
 
         defineClass(runtime, synchronizationModule, "Object", "AbstractLockableObject",
@@ -143,8 +134,8 @@ public class SynchronizationLibrary implements Library {
         // attempt to avoid code elimination.
         private static volatile int volatileField;
 
-        @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PUBLIC)
-        public static IRubyObject fullMemoryBarrier(ThreadContext context, IRubyObject self) {
+        @JRubyMethod(name = "full_memory_barrier", visibility = Visibility.PUBLIC, module = true)
+        public static IRubyObject fullMemoryBarrier(ThreadContext context, IRubyObject module) {
             // Prevent reordering of ivar writes with publication of this instance
             if (!FULL_FENCE) {
                 // Assuming that following volatile read and write is not eliminated it simulates fullFence.
@@ -195,16 +186,8 @@ public class SynchronizationLibrary implements Library {
         }
     }
 
-    @JRubyClass(name = "JRubyObject", parent = "AbstractObject")
-    public static class JRubyObject extends RubyObject {
-
-        public JRubyObject(Ruby runtime, RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "Object", parent = "JRubyObject")
-    public static class Object extends JRubyObject {
+    @JRubyClass(name = "Object", parent = "AbstractObject")
+    public static class Object extends RubyObject {
 
         public Object(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
@@ -220,7 +203,7 @@ public class SynchronizationLibrary implements Library {
     }
 
     @JRubyClass(name = "JRubyLockableObject", parent = "AbstractLockableObject")
-    public static class JRubyLockableObject extends JRubyObject {
+    public static class JRubyLockableObject extends AbstractLockableObject {
 
         public JRubyLockableObject(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
