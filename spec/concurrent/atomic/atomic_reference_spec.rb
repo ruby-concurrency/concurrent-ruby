@@ -171,11 +171,6 @@ module Concurrent
       it_should_behave_like :atomic_reference
     end
   end
-  if defined? Concurrent::RbxAtomicReference
-    RSpec.describe RbxAtomicReference do
-      it_should_behave_like :atomic_reference
-    end
-  end
   if defined? Concurrent::TruffleRubyAtomicReference
     RSpec.describe TruffleRubyAtomicReference do
       it_should_behave_like :atomic_reference

@@ -27,7 +27,6 @@ ATOMICS = [
   'MutexAtomicReference',
   'CAtomicReference',
   'JavaAtomicReference',
-  'RbxAtomicReference',
 ]
 
 puts "Testing with #{RbConfig::CONFIG['ruby_install_name']} #{RUBY_VERSION}"
