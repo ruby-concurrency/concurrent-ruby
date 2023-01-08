@@ -1,5 +1,4 @@
 require 'rbconfig'
-require 'concurrent/synchronization'
 
 module Concurrent
   module TestHelpers
@@ -15,12 +14,6 @@ module Concurrent
         v2 = yield(v2)
       end
       return (v1 - v2).abs
-    end
-
-    include Utility::EngineDetector
-
-    def use_c_extensions?
-      Concurrent.allow_c_extensions?
     end
 
     def monotonic_interval

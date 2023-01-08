@@ -91,6 +91,19 @@ begin
   desc 'executed in CI'
   task :ci => [:compile, 'spec:ci']
 
+  desc 'run each spec file in a separate process to help find missing requires'
+  task 'spec:isolated' do
+    glob = "#{ENV['DIR'] || 'spec'}/**/*_spec.rb"
+    from = ENV['FROM']
+    env = { 'ISOLATED' => 'true' }
+    Dir[glob].each do |spec|
+      next if from and from != spec
+      from = nil if from == spec
+
+      sh env, 'rspec', spec
+    end
+  end
+
   task :default => [:clobber, :compile, :spec]
 rescue LoadError => e
   puts 'RSpec is not installed, skipping test task definitions: ' + e.message

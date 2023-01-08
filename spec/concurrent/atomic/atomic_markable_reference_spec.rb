@@ -1,3 +1,5 @@
+require 'concurrent/atomic/atomic_markable_reference'
+
 RSpec.describe Concurrent::AtomicMarkableReference do
   subject { described_class.new 1000, true }
 

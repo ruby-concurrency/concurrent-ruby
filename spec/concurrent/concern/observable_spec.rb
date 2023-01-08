@@ -1,3 +1,5 @@
+require 'concurrent/concern/observable'
+
 module Concurrent
   module Concern
 

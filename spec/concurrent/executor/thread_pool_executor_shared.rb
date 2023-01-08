@@ -1,4 +1,5 @@
 require_relative 'thread_pool_shared'
+require 'concurrent/atomic/atomic_fixnum'
 
 RSpec.shared_examples :thread_pool_executor do
 

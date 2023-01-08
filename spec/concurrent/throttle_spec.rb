@@ -1,5 +1,5 @@
-require 'concurrent/edge/promises'
 require 'thread'
+require 'concurrent/edge/throttle'
 
 RSpec.describe 'Concurrent' do
   describe 'Throttle' do

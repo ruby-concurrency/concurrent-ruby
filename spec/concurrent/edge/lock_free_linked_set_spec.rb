@@ -1,5 +1,4 @@
-require 'concurrent'
-require 'concurrent/edge'
+require 'concurrent/edge/lock_free_linked_set'
 require 'securerandom'
 
 RSpec.describe Concurrent::Edge::LockFreeLinkedSet, edge: true do

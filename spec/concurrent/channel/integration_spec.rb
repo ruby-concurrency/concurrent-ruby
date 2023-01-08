@@ -1,3 +1,5 @@
+require 'concurrent/utility/engine'
+
 RSpec.describe 'channel integration tests', edge: true do
 
   let!(:examples_root) { File.expand_path(File.join(File.dirname(__FILE__), '../../../examples')) }

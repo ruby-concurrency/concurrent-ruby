@@ -1,3 +1,5 @@
+require 'concurrent/concern/obligation'
+
 module Concurrent
   module Concern
 

@@ -1,14 +1,7 @@
-require 'concurrent/utility/engine'
+require 'concurrent/utility/native_extension_loader' # load native parts first
 
 require 'concurrent/synchronization/object'
-require 'concurrent/synchronization/volatile'
-
-require 'concurrent/synchronization/abstract_lockable_object'
-require 'concurrent/synchronization/mutex_lockable_object'
-require 'concurrent/synchronization/jruby_lockable_object'
-
 require 'concurrent/synchronization/lockable_object'
-
 require 'concurrent/synchronization/condition'
 require 'concurrent/synchronization/lock'
 

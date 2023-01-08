@@ -1,3 +1,8 @@
+require 'concurrent/utility/engine'
+require 'concurrent/atomic/reentrant_read_write_lock'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/atomic/atomic_boolean'
+
 unless Concurrent.on_jruby?
 
   # NOTE: These tests depend heavily on the private/undocumented

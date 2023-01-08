@@ -1,3 +1,7 @@
+require 'concurrent/edge/lock_free_queue'
+require 'concurrent/promises'
+require 'concurrent/synchronization/object'
+
 module Concurrent
   # A tool managing concurrency level of tasks.
   # The maximum capacity is set in constructor.

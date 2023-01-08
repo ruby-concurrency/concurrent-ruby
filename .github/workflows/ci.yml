@@ -1,5 +1,8 @@
 name: CI
 on: [push, pull_request]
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -26,3 +29,17 @@ jobs:
         bundler-cache: true
     - name: Run tests
       run: bundle exec rake ci
+
+  isolated:
+    name: "Test isolated"
+    runs-on: ubuntu-latest
+    env:
+      RUBYOPT: '-w'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2
+          bundler-cache: true
+      - run: bundle exec rake compile
+      - run: bundle exec rake spec:isolated

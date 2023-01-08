@@ -1,6 +1,5 @@
 require 'thread'
 require 'concurrent/constants'
-require 'concurrent/synchronization'
 require 'concurrent/utility/engine'
 
 module Concurrent

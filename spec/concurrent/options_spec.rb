@@ -1,3 +1,5 @@
+require 'concurrent/options'
+
 module Concurrent
 
   RSpec.describe Options do

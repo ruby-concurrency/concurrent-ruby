@@ -1,3 +1,7 @@
+require 'concurrent/atomic/read_write_lock'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/atomic/atomic_boolean'
+
 module Concurrent
 
   RSpec.describe ReadWriteLock do

@@ -1,4 +1,6 @@
 require 'concurrent/utility/native_extension_loader' # load native parts first
+require 'concurrent/utility/monotonic_time'
+require 'concurrent/synchronization/object'
 
 module Concurrent
   module Synchronization
@@ -36,7 +38,7 @@ module Concurrent
         if timeout
           wait_until = Concurrent.monotonic_time + timeout
           loop do
-            now              = Concurrent.monotonic_time
+            now = Concurrent.monotonic_time
             condition_result = condition.call
             return condition_result if now >= wait_until || condition_result
             ns_wait wait_until - now

@@ -1,4 +1,4 @@
-require 'concurrent/thread_safe/synchronized_delegator.rb'
+require 'concurrent/thread_safe/synchronized_delegator'
 
 module Concurrent
   RSpec.describe SynchronizedDelegator do

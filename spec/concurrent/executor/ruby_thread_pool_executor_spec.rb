@@ -1,4 +1,5 @@
 require_relative 'thread_pool_executor_shared'
+require 'concurrent/executor/thread_pool_executor'
 
 module Concurrent
 
@@ -164,7 +165,10 @@ module Concurrent
         described_class.new(opts)
       end
 
-      let(:names) { Concurrent::Set.new }
+      let(:names) do
+        require 'concurrent/set'
+        Concurrent::Set.new
+      end
 
       before do
         subject.post(names) { |names| names << Thread.current.name }

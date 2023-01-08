@@ -1,4 +1,5 @@
 require_relative 'concern/dereferenceable_shared'
+require 'concurrent/mvar'
 
 module Concurrent
 

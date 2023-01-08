@@ -1,5 +1,6 @@
-module Concurrent
+require 'concurrent/async'
 
+module Concurrent
   RSpec.describe Async do
 
     let(:async_class) do

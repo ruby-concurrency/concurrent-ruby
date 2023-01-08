@@ -1,3 +1,8 @@
+require 'concurrent/utility/engine'
+require 'concurrent/synchronization/abstract_lockable_object'
+require 'concurrent/synchronization/mutex_lockable_object'
+require 'concurrent/synchronization/jruby_lockable_object'
+
 module Concurrent
   module Synchronization
 

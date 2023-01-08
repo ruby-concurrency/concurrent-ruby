@@ -1,4 +1,4 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/object'
 require 'concurrent/utility/monotonic_time'
 
 module Concurrent

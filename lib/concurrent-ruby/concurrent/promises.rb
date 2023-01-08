@@ -1,7 +1,8 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/object'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/collection/lock_free_stack'
+require 'concurrent/configuration'
 require 'concurrent/errors'
 require 'concurrent/re_include'
 

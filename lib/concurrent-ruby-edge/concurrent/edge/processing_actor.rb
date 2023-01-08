@@ -1,3 +1,7 @@
+require 'concurrent/synchronization/object'
+require 'concurrent/promises'
+require 'concurrent/edge/channel'
+
 module Concurrent
 
   # A new implementation of actor which also simulates the process, therefore it can be used

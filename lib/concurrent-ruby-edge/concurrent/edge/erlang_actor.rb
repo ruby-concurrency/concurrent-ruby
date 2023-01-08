@@ -1,3 +1,11 @@
+require 'set'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/concern/logging'
+require 'concurrent/edge/channel'
+require 'concurrent/errors'
+require 'concurrent/promises'
+require 'concurrent/synchronization/object'
+
 module Concurrent
 
   # This module provides actor abstraction that has same behaviour as Erlang actor.

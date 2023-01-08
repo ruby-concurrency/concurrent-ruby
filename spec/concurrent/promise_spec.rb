@@ -1,3 +1,8 @@
+require 'concurrent/promise'
+require 'concurrent/executor/simple_executor_service'
+require 'concurrent/executor/single_thread_executor'
+require 'concurrent/atomic/count_down_latch'
+
 require_relative 'ivar_shared'
 require_relative 'thread_arguments_shared'
 

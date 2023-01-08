@@ -1,3 +1,5 @@
+require 'concurrent/executor/simple_executor_service'
+require 'concurrent/configuration'
 require_relative 'executor_service_shared'
 
 module Concurrent

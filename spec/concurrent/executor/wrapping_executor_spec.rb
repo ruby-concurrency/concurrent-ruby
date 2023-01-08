@@ -1,3 +1,6 @@
+require 'concurrent/executor/wrapping_executor'
+require 'concurrent/configuration'
+
 module Concurrent
   RSpec.describe WrappingExecutor do
 

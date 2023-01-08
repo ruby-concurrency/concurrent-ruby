@@ -1,3 +1,5 @@
+require 'concurrent/edge/erlang_actor'
+
 RSpec.describe 'Concurrent' do
   describe 'ErlangActor', edge: true do
     # TODO (pitr-ch 06-Feb-2019): include constants instead

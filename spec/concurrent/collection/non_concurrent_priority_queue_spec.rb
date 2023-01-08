@@ -1,3 +1,5 @@
+require 'concurrent/collection/non_concurrent_priority_queue'
+
 RSpec.shared_examples :priority_queue do
 
   subject{ described_class.new }

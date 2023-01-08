@@ -1,3 +1,5 @@
+require 'concurrent/atomic/semaphore'
+
 RSpec.shared_examples :semaphore do
   let(:semaphore) { described_class.new(3) }
 

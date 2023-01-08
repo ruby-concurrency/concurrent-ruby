@@ -1,7 +1,7 @@
-if Concurrent.on_jruby?
+require 'concurrent/utility/engine'
 
+if Concurrent.on_jruby?
   require 'concurrent/errors'
-  require 'concurrent/utility/engine'
   require 'concurrent/executor/abstract_executor_service'
 
   module Concurrent

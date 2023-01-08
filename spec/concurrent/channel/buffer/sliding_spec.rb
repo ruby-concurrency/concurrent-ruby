@@ -1,4 +1,5 @@
 require_relative 'buffered_shared'
+require 'concurrent/channel/buffer/sliding'
 
 module Concurrent::Channel::Buffer
 

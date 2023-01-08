@@ -1,4 +1,5 @@
 require_relative 'struct_shared'
+require 'concurrent/settable_struct'
 
 module Concurrent
   RSpec.describe SettableStruct do

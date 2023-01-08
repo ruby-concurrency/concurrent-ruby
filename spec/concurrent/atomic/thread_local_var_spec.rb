@@ -1,8 +1,8 @@
 require 'rbconfig'
+require 'concurrent/atomic/thread_local_var'
+require 'concurrent/atomic/count_down_latch'
 
 module Concurrent
-
-  require 'concurrent/atomic/thread_local_var'
 
   RSpec.describe ThreadLocalVar do
 

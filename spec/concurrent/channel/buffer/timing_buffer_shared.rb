@@ -1,4 +1,5 @@
 require_relative 'base_shared'
+require 'concurrent/atomic/atomic_boolean'
 
 RSpec.shared_examples :channel_timing_buffer do
 

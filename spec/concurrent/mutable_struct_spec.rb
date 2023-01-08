@@ -1,4 +1,5 @@
 require_relative 'struct_shared'
+require 'concurrent/mutable_struct'
 
 module Concurrent
   RSpec.describe MutableStruct do

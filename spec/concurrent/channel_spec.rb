@@ -1,3 +1,7 @@
+require 'concurrent/channel'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/executor/immediate_executor'
+
 module Concurrent
 
  RSpec.describe Channel, edge: true do

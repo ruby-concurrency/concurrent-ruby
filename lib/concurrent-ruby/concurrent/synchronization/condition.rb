@@ -1,3 +1,5 @@
+require 'concurrent/synchronization/lockable_object'
+
 module Concurrent
   module Synchronization
 

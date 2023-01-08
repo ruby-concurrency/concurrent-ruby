@@ -1,5 +1,6 @@
-if Concurrent.on_jruby?
+require 'concurrent/utility/engine'
 
+if Concurrent.on_jruby?
   require_relative 'executor_service_shared'
 
   module Concurrent

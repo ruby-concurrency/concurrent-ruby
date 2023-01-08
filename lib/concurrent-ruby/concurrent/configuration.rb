@@ -3,6 +3,7 @@ require 'concurrent/delay'
 require 'concurrent/errors'
 require 'concurrent/concern/deprecation'
 require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/fixed_thread_pool'
 require 'concurrent/executor/cached_thread_pool'
 require 'concurrent/utility/processor_counter'
 

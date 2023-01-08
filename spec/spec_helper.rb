@@ -26,11 +26,6 @@ if ENV['NO_PATH']
   end
 end
 
-require 'concurrent'
-require 'concurrent-edge'
-
-Concurrent.use_simple_logger Logger::FATAL
-
 require_relative 'support/example_group_extensions'
 require_relative 'support/threadsafe_test'
 
@@ -43,6 +38,13 @@ RSpec.configure do |config|
 
   config.include Concurrent::TestHelpers
   config.extend Concurrent::TestHelpers
+
+  config.before :all do
+    # Only configure logging if it has been required, to make sure the necessary require's are in place
+    if Concurrent.respond_to? :use_simple_logger
+      Concurrent.use_simple_logger Logger::FATAL
+    end
+  end
 
   config.before :each do
     expect(!defined?(@created_threads) || @created_threads.nil? || @created_threads.empty?).to be_truthy

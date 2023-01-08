@@ -1,3 +1,5 @@
+require 'concurrent/atomic/count_down_latch'
+
 RSpec.shared_examples :global_thread_pool do
 
   context '#post' do

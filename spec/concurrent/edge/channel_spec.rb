@@ -1,3 +1,5 @@
+require 'concurrent/edge/channel'
+
 RSpec.describe 'Concurrent' do
   describe 'Promises::Channel', edge: true do
     specify "#capacity" do
