@@ -1,9 +1,9 @@
 require 'concurrent/utility/engine'
+# Synchronization::AbstractObject must be defined before loading the extension
+require 'concurrent/synchronization/abstract_object'
 
 module Concurrent
-
   module Utility
-
     # @!visibility private
     module NativeExtensionLoader
 
@@ -20,10 +20,6 @@ module Concurrent
       end
 
       def load_native_extensions
-        unless defined? Synchronization::AbstractObject
-          raise 'native_extension_loader loaded before Synchronization::AbstractObject'
-        end
-
         if Concurrent.on_cruby? && !c_extensions_loaded?
           ['concurrent/concurrent_ruby_ext',
            "concurrent/#{RUBY_VERSION[0..2]}/concurrent_ruby_ext"
@@ -77,3 +73,4 @@ module Concurrent
   extend Utility::NativeExtensionLoader
 end
 
+Concurrent.load_native_extensions
