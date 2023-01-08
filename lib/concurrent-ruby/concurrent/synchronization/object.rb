@@ -1,3 +1,5 @@
+require 'concurrent/atomic/atomic_reference'
+
 module Concurrent
   module Synchronization
 

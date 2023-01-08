@@ -1,9 +1,8 @@
+require 'concurrent/utility/native_extension_loader' # load native parts first
+
 require 'concurrent/utility/engine'
 
 require 'concurrent/synchronization/abstract_object'
-require 'concurrent/utility/native_extension_loader' # load native parts first
-Concurrent.load_native_extensions
-
 require 'concurrent/synchronization/mri_object'
 require 'concurrent/synchronization/jruby_object'
 require 'concurrent/synchronization/truffleruby_object'
