@@ -202,15 +202,13 @@ module Concurrent
     end
   end
 
-  if defined? Concurrent::CAtomicFixnum
-
+  if Concurrent.allow_c_extensions?
     RSpec.describe CAtomicFixnum do
       it_should_behave_like :atomic_fixnum
     end
   end
 
   if Concurrent.on_jruby?
-
     RSpec.describe JavaAtomicFixnum do
       it_should_behave_like :atomic_fixnum
     end
@@ -227,7 +225,7 @@ module Concurrent
       it 'inherits from JavaAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end
-    elsif defined? Concurrent::CAtomicFixnum
+    elsif Concurrent.allow_c_extensions?
       it 'inherits from CAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
       end

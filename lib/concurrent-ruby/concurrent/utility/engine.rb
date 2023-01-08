@@ -3,12 +3,12 @@ module Concurrent
 
     # @!visibility private
     module EngineDetector
-      def on_jruby?
-        RUBY_ENGINE == 'jruby'
-      end
-
       def on_cruby?
         RUBY_ENGINE == 'ruby'
+      end
+
+      def on_jruby?
+        RUBY_ENGINE == 'jruby'
       end
 
       def on_truffleruby?

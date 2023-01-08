@@ -51,6 +51,7 @@ module Concurrent
 
     protected
 
+    # @!visibility private
     def synchronize
       if @__Lock__.owned?
         yield
@@ -59,6 +60,7 @@ module Concurrent
       end
     end
 
+    # @!visibility private
     def ns_initialize(value)
       @value = value
     end

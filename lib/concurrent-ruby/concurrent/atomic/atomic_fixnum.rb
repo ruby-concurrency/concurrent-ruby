@@ -1,5 +1,6 @@
+require 'concurrent/utility/native_extension_loader' # load native parts first
+
 require 'concurrent/atomic/mutex_atomic_fixnum'
-require 'concurrent/synchronization'
 
 module Concurrent
 
@@ -96,10 +97,10 @@ module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
   AtomicFixnumImplementation = case
-                               when defined?(JavaAtomicFixnum)
-                                 JavaAtomicFixnum
-                               when defined?(CAtomicFixnum)
+                               when Concurrent.on_cruby? && Concurrent.c_extensions_loaded?
                                  CAtomicFixnum
+                               when Concurrent.on_jruby?
+                                 JavaAtomicFixnum
                                else
                                  MutexAtomicFixnum
                                end
