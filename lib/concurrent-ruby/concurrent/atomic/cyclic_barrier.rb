@@ -1,4 +1,4 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/lockable_object'
 require 'concurrent/utility/native_integer'
 
 module Concurrent

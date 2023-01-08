@@ -1,3 +1,4 @@
+require 'concurrent/delay'
 require_relative 'concern/dereferenceable_shared'
 require_relative 'concern/obligation_shared'
 

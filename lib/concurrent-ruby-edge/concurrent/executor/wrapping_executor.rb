@@ -1,3 +1,6 @@
+require 'concurrent/synchronization/object'
+require 'concurrent/executor/executor_service'
+
 module Concurrent
 
   # A delegating executor which modifies each task with arguments

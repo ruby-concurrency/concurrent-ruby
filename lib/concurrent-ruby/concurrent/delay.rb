@@ -1,7 +1,7 @@
 require 'thread'
 require 'concurrent/concern/obligation'
 require 'concurrent/executor/immediate_executor'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 
@@ -67,7 +67,7 @@ module Concurrent
 
     # Return the value this object represents after applying the options
     # specified by the `#set_deref_options` method. If the delayed operation
-    # raised an exception this method will return nil. The execption object
+    # raised an exception this method will return nil. The exception object
     # can be accessed via the `#reason` method.
     #
     # @param [Numeric] timeout the maximum number of seconds to wait

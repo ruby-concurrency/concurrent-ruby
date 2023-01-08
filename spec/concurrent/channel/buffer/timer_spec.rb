@@ -1,4 +1,6 @@
 require_relative 'timing_buffer_shared'
+require 'concurrent/channel/buffer/timer'
+require 'concurrent/atomic/atomic_boolean'
 
 module Concurrent::Channel::Buffer
 

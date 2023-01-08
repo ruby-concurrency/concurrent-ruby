@@ -1,3 +1,6 @@
+require 'concurrent/synchronization/object'
+require 'concurrent/edge/promises'
+
 # @!macro warn.edge
 module Concurrent
   module Promises

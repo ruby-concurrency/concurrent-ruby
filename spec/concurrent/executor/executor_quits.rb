@@ -2,7 +2,7 @@
 lib = File.expand_path '../../../lib/concurrent-ruby/'
 $LOAD_PATH.push lib unless $LOAD_PATH.include? lib
 
-require 'concurrent-ruby'
+require 'concurrent'
 
 executors = [Concurrent::CachedThreadPool.new, Concurrent::SingleThreadExecutor.new, Concurrent::FixedThreadPool.new(1)]
 executors.each do |executor|

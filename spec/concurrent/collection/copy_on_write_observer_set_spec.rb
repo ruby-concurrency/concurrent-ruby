@@ -1,3 +1,4 @@
+require 'concurrent/collection/copy_on_write_observer_set'
 require_relative 'observer_set_shared'
 
 module Concurrent

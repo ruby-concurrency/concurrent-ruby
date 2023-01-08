@@ -29,7 +29,7 @@ is first read or written. If it cannot lock a `TVar` it aborts and retries.
 There is no contention manager so competing transactions may retry eternally.
 
 ```ruby
-require 'concurrent-ruby'
+require 'concurrent'
 
 v1 = Concurrent::TVar.new(0)
 v2 = Concurrent::TVar.new(0)
@@ -60,7 +60,7 @@ However, the inconsistent reads are detected correctly at commit time. This
 means the script below will always print `[2000000, 200000]`.
 
 ```ruby
-require 'concurrent-ruby'
+require 'concurrent'
 
 v1 = Concurrent::TVar.new(0)
 v2 = Concurrent::TVar.new(0)

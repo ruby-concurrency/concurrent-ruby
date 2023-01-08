@@ -1,4 +1,5 @@
 require_relative 'buffered_shared'
+require 'concurrent/channel/buffer/dropping'
 
 module Concurrent::Channel::Buffer
 

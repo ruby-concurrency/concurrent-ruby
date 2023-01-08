@@ -1,3 +1,5 @@
+require 'concurrent/tvar'
+
 module Concurrent
 
   RSpec.describe TVar do

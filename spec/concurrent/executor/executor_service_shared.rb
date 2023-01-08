@@ -1,4 +1,7 @@
 require_relative 'global_thread_pool_shared'
+require 'concurrent/atomic/atomic_boolean'
+require 'concurrent/atomic/atomic_fixnum'
+require 'timeout'
 
 RSpec.shared_examples :executor_service do
 

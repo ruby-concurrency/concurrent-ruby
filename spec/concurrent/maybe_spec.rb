@@ -1,3 +1,5 @@
+require 'concurrent/maybe'
+
 module Concurrent
 
   RSpec.describe Maybe do

@@ -1,9 +1,10 @@
 require 'concurrent/configuration'
 require 'concurrent/atomic/atomic_reference'
+require 'concurrent/atomic/count_down_latch'
 require 'concurrent/atomic/thread_local_var'
 require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/observable'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 

@@ -3,7 +3,8 @@ require 'concurrent/errors'
 require 'concurrent/collection/copy_on_write_observer_set'
 require 'concurrent/concern/obligation'
 require 'concurrent/concern/observable'
-require 'concurrent/synchronization'
+require 'concurrent/executor/safe_task_executor'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 

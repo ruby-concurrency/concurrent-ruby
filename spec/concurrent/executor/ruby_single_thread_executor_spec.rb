@@ -1,3 +1,4 @@
+require 'concurrent/executor/ruby_single_thread_executor'
 require_relative 'executor_service_shared'
 
 module Concurrent

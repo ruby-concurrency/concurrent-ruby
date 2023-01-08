@@ -1,6 +1,6 @@
-require 'concurrent/synchronization/abstract_struct'
 require 'concurrent/errors'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/abstract_struct'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 

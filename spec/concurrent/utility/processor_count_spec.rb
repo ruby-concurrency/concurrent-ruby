@@ -1,3 +1,5 @@
+require 'concurrent/utility/processor_counter'
+
 module Concurrent
 
   RSpec.describe '#processor_count' do

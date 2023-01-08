@@ -1,5 +1,6 @@
 require_relative 'concern/dereferenceable_shared'
 require_relative 'concern/observable_shared'
+require 'concurrent/timer_task'
 
 module Concurrent
 

@@ -1,4 +1,6 @@
 require 'concurrent/concern/deprecation'
+require 'concurrent/synchronization/object'
+require 'concurrent/promises'
 
 module Concurrent
 

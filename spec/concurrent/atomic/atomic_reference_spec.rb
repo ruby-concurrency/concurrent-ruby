@@ -1,3 +1,5 @@
+require 'concurrent/atomic/atomic_reference'
+
 RSpec.shared_examples :atomic_reference do
 
   specify :test_construct do

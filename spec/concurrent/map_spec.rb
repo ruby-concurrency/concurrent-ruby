@@ -1,4 +1,7 @@
 require_relative 'collection_each_shared'
+require 'concurrent/map'
+require 'concurrent/atomic/count_down_latch'
+
 Thread.abort_on_exception = true
 
 module Concurrent

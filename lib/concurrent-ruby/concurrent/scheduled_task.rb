@@ -57,7 +57,7 @@ module Concurrent
   #
   # @example Basic usage
   #
-  #   require 'concurrent'
+  #   require 'concurrent/scheduled_task'
   #   require 'csv'
   #   require 'open-uri'
   #

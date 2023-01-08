@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require "benchmark"
-require "concurrent"
+require 'benchmark'
+require 'concurrent'
 
 hash  = {}
 map = Concurrent::Map.new

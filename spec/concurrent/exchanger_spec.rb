@@ -1,3 +1,6 @@
+require 'concurrent/exchanger'
+require 'concurrent/atomic/atomic_fixnum'
+
 RSpec.shared_examples 'exchanger method with indefinite timeout' do
 
   before(:each) do

@@ -1,6 +1,6 @@
 require 'concurrent/errors'
 require 'concurrent/concern/logging'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
 

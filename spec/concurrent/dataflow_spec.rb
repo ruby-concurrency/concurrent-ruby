@@ -1,3 +1,6 @@
+require 'concurrent/dataflow'
+require 'concurrent/executor/simple_executor_service'
+
 module Concurrent
 
   RSpec.describe 'dataflow' do

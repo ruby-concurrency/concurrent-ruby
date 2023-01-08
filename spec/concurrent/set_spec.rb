@@ -1,4 +1,6 @@
-require 'set'
+require 'concurrent/set'
+require 'concurrent/atomic/cyclic_barrier'
+
 module Concurrent
   RSpec.describe Set do
     let!(:set) { described_class.new }

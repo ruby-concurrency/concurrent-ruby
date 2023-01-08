@@ -1,3 +1,9 @@
+require 'concurrent/agent'
+require 'concurrent/executor/single_thread_executor'
+require 'concurrent/executor/immediate_executor'
+require 'concurrent/executor/fixed_thread_pool'
+require 'concurrent/atomic/count_down_latch'
+
 require_relative 'concern/observable_shared'
 
 module Concurrent

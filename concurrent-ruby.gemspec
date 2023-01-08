@@ -1,5 +1,4 @@
 require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/version')
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/utility/engine')
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")

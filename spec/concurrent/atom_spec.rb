@@ -1,4 +1,7 @@
 require_relative 'concern/observable_shared'
+require 'concurrent/atom'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/atomic/atomic_fixnum'
 
 module Concurrent
 

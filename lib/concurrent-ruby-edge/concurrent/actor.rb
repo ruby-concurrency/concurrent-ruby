@@ -1,6 +1,7 @@
+# NOTE: finer grained than require 'concurrent/actor' not supported
+
 require 'concurrent/configuration'
 require 'concurrent/executor/serialized_execution'
-require 'concurrent/synchronization'
 require 'concurrent/edge/promises'
 
 module Concurrent

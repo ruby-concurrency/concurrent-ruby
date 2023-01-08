@@ -1,4 +1,5 @@
 require_relative 'ivar_shared'
+require 'concurrent/ivar'
 
 module Concurrent
 

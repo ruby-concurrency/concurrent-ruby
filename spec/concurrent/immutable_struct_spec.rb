@@ -1,4 +1,5 @@
 require_relative 'struct_shared'
+require 'concurrent/immutable_struct'
 
 module Concurrent
   RSpec.describe ImmutableStruct do

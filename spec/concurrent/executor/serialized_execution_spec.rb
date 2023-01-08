@@ -1,3 +1,5 @@
+require 'concurrent/executor/serialized_execution_delegator'
+require 'concurrent/executor/immediate_executor'
 require_relative 'executor_service_shared'
 
 module Concurrent

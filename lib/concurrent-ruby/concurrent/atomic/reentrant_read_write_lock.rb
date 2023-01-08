@@ -1,7 +1,9 @@
 require 'thread'
 require 'concurrent/atomic/atomic_reference'
+require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/errors'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/object'
+require 'concurrent/synchronization/lock'
 require 'concurrent/atomic/thread_local_var'
 
 module Concurrent

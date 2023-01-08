@@ -12,7 +12,7 @@ input_paths = if ARGV.empty?
 input_paths.each_with_index do |input_path, i|
 
   pid = fork do
-    require_relative 'init.rb'
+    require_relative 'init'
 
     begin
       output_path = input_path.gsub /\.in\.rb$/, '.out.rb'

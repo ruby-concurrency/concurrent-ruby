@@ -1,3 +1,7 @@
+require 'concurrent/atomic/cyclic_barrier'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/atomic/atomic_fixnum'
+
 module Concurrent
 
   RSpec.describe CyclicBarrier do

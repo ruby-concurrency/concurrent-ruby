@@ -1,3 +1,6 @@
+require 'concurrent/executor/timer_set'
+require 'concurrent/atomic/count_down_latch'
+require 'concurrent/atomic/atomic_boolean'
 require 'timecop'
 
 module Concurrent

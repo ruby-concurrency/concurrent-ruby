@@ -1,5 +1,8 @@
-require 'concurrent/atomics'
+require 'concurrent/atomic/atomic_boolean'
+require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic/event'
 require 'concurrent/executor/executor_service'
+require 'concurrent/executor/ruby_executor_service'
 
 module Concurrent
 

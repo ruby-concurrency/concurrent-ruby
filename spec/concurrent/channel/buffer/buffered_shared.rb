@@ -1,4 +1,5 @@
 require_relative 'base_shared'
+require 'concurrent/channel/buffer/buffered'
 
 RSpec.shared_examples :channel_buffered_buffer do
 

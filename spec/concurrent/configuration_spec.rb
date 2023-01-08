@@ -1,3 +1,5 @@
+require 'concurrent/configuration'
+
 module Concurrent
 
    RSpec.describe 'configuration' do

@@ -1,3 +1,5 @@
+require 'concurrent/executor/safe_task_executor'
+
 module Concurrent
 
   RSpec.describe SafeTaskExecutor do

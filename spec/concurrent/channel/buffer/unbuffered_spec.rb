@@ -1,4 +1,5 @@
 require_relative 'base_shared'
+require 'concurrent/channel/buffer/unbuffered'
 
 module Concurrent::Channel::Buffer
 

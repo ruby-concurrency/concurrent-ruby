@@ -1,3 +1,4 @@
+require 'concurrent/executor/fixed_thread_pool'
 require_relative 'thread_pool_shared'
 
 module Concurrent

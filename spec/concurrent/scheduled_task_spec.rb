@@ -1,3 +1,5 @@
+require 'concurrent/scheduled_task'
+require 'concurrent/atomic/count_down_latch'
 require 'timecop'
 require_relative 'concern/dereferenceable_shared'
 require_relative 'concern/obligation_shared'

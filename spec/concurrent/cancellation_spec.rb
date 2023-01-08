@@ -1,3 +1,5 @@
+require 'concurrent/edge/cancellation'
+
 RSpec.describe 'Concurrent' do
   describe 'Cancellation', edge: true do
     specify 'basic' do

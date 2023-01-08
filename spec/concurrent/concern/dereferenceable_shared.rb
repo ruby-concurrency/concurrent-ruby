@@ -1,3 +1,5 @@
+require 'concurrent/atomic/count_down_latch'
+
 RSpec.shared_examples :dereferenceable do
 
   it 'defaults :dup_on_deref to false' do
@@ -111,7 +113,6 @@ RSpec.shared_examples :dereferenceable do
   it 'supports dereference flags with observers' do
 
     if dereferenceable_subject(0).respond_to?(:add_observer)
-
       latch = Concurrent::CountDownLatch.new
       observer = Class.new do
         def initialize(latch)

@@ -1,3 +1,5 @@
+require 'concurrent/utility/monotonic_time'
+
 module Concurrent
 
   RSpec.describe :monotonic_time do

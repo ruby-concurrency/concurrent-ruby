@@ -1,3 +1,5 @@
+require 'concurrent/atomic/atomic_boolean'
+
 RSpec.shared_examples :atomic_boolean do
 
   describe 'construction' do

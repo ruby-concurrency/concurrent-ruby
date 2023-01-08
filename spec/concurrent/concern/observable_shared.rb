@@ -1,3 +1,5 @@
+require 'concurrent/atomic/count_down_latch'
+
 RSpec.shared_examples :observable do
 
   let(:observer_set) do
@@ -116,7 +118,6 @@ RSpec.shared_examples :observable do
   end
 
   context 'first notification' do
-
     it 'calls the #update method on all observers without a specified :func' do
       latch = Concurrent::CountDownLatch.new(5)
       5.times do

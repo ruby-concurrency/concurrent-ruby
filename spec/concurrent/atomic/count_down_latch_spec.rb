@@ -1,3 +1,5 @@
+require 'concurrent/atomic/count_down_latch'
+
 RSpec.shared_examples :count_down_latch do
 
   let(:latch) { described_class.new(3) }

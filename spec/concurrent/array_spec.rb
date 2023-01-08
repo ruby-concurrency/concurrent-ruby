@@ -1,3 +1,5 @@
+require 'concurrent/array'
+
 module Concurrent
   RSpec.describe Array do
     let!(:ary) { described_class.new }

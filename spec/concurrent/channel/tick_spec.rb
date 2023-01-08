@@ -1,3 +1,5 @@
+require 'concurrent/channel/tick'
+
 module Concurrent
 
   class Channel

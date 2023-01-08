@@ -1,4 +1,5 @@
 require_relative 'timing_buffer_shared'
+require 'concurrent/channel/buffer/ticker'
 
 module Concurrent::Channel::Buffer
 

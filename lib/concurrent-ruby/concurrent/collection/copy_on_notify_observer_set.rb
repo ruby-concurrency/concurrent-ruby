@@ -1,4 +1,4 @@
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
   module Collection

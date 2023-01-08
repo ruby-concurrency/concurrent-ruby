@@ -1,5 +1,7 @@
-module Concurrent
+require 'concurrent/executor/single_thread_executor'
+require 'concurrent/executor/thread_pool_executor'
 
+module Concurrent
   RSpec.describe SingleThreadExecutor do
     if Concurrent.on_jruby?
       it 'inherits from JavaSingleThreadExecutor' do

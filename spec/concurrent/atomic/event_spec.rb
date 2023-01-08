@@ -1,3 +1,6 @@
+require 'concurrent/atomic/event'
+require 'concurrent/atomic/count_down_latch'
+
 module Concurrent
 
   RSpec.describe Event do

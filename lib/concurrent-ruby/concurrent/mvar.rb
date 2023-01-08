@@ -1,5 +1,5 @@
 require 'concurrent/concern/dereferenceable'
-require 'concurrent/synchronization'
+require 'concurrent/synchronization/object'
 
 module Concurrent
 

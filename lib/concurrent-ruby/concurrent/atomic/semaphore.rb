@@ -1,5 +1,4 @@
 require 'concurrent/atomic/mutex_semaphore'
-require 'concurrent/synchronization'
 
 module Concurrent
 

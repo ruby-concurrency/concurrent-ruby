@@ -1,3 +1,5 @@
+require 'concurrent/atomic/atomic_fixnum'
+
 RSpec.shared_examples :atomic_fixnum do
 
   context 'construction' do

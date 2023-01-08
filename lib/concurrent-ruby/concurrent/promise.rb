@@ -66,7 +66,7 @@ module Concurrent
   # Start by requiring promises
   #
   # ```ruby
-  # require 'concurrent'
+  # require 'concurrent/promise'
   # ```
   #
   # Then create one
