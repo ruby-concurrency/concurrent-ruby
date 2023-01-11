@@ -149,9 +149,10 @@ public class SynchronizationLibrary implements Library {
             return context.nil;
         }
 
-        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PUBLIC)
+        @JRubyMethod(name = "instance_variable_get_volatile", visibility = Visibility.PUBLIC, module = true)
         public static IRubyObject instanceVariableGetVolatile(
                 ThreadContext context,
+                IRubyObject module,
                 IRubyObject self,
                 IRubyObject name) {
             // Ensure we ses latest value with loadFence
@@ -165,9 +166,10 @@ public class SynchronizationLibrary implements Library {
             }
         }
 
-        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PUBLIC)
+        @JRubyMethod(name = "instance_variable_set_volatile", visibility = Visibility.PUBLIC, module = true)
         public static IRubyObject InstanceVariableSetVolatile(
                 ThreadContext context,
+                IRubyObject module,
                 IRubyObject self,
                 IRubyObject name,
                 IRubyObject value) {
