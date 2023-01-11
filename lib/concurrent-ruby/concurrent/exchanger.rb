@@ -289,6 +289,7 @@ module Concurrent
   end
 
   if Concurrent.on_jruby?
+    require 'concurrent/utility/native_extension_loader'
 
     # @!macro internal_implementation_note
     # @!visibility private
