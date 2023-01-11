@@ -15,10 +15,6 @@ module Concurrent
         defined?(@c_extensions_loaded) && @c_extensions_loaded
       end
 
-      def java_extensions_loaded?
-        defined?(@java_extensions_loaded) && @java_extensions_loaded
-      end
-
       def load_native_extensions
         if Concurrent.on_cruby? && !c_extensions_loaded?
           ['concurrent/concurrent_ruby_ext',
@@ -48,6 +44,10 @@ module Concurrent
 
       def set_c_extensions_loaded
         @c_extensions_loaded = true
+      end
+
+      def java_extensions_loaded?
+        defined?(@java_extensions_loaded) && @java_extensions_loaded
       end
 
       def set_java_extensions_loaded
