@@ -114,6 +114,19 @@ Go back to your pull request after a few minutes and see whether it passed muste
 
 Please note that testing concurrency is hard. Very hard. We have a few tests that occasionally fail due (mostly) to incorrect synchronization within the test itself. If everything passes locally but you see an error on CI, it's possibly you've become victim to one of the tests. Don't worry, the Concurrent Ruby team reviews the tests output of all failed CI runs and will let you know if the failing test is unrelated to your commit.
 
+#### IntelliJ
+
+To setup this project with IntelliJ Ultimate, this worked well:
+* Save any local changes to `ext/concurrent-ruby`
+* `rm -rf ext/concurrent-ruby`
+* Open the root `concurrent-ruby` folder as a Ruby module
+* Set `lib/concurrent-ruby` as `lib/concurrent-ruby-edge` as sources
+* `git checkout ext/concurrent-ruby`
+* Import `ext/concurrent-ruby` as Java module
+
+If it's imported directly without removing `ext/concurrent-ruby` then the whole project is recognized as a Java module,
+and `require` resolution, etc does not work.
+
 #### Thank You
 
 Please do know that we really appreciate and value your time and work. We love you, really.
