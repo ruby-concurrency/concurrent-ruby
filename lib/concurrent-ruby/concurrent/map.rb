@@ -10,6 +10,7 @@ module Concurrent
     # @!visibility private
     MapImplementation = case
                         when Concurrent.on_jruby?
+                          require 'concurrent/utility/native_extension_loader'
                           # noinspection RubyResolve
                           JRubyMapBackend
                         when Concurrent.on_cruby?

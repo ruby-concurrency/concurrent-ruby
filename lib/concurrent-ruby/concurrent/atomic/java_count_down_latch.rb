@@ -1,4 +1,5 @@
 if Concurrent.on_jruby?
+  require 'concurrent/utility/native_extension_loader'
 
   module Concurrent
 

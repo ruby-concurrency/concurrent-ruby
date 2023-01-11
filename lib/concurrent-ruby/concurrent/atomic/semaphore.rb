@@ -94,8 +94,8 @@ module Concurrent
 
   # @!visibility private
   # @!macro internal_implementation_note
-  SemaphoreImplementation = case
-                            when defined?(JavaSemaphore)
+  SemaphoreImplementation = if Concurrent.on_jruby?
+                              require 'concurrent/utility/native_extension_loader'
                               JavaSemaphore
                             else
                               MutexSemaphore
