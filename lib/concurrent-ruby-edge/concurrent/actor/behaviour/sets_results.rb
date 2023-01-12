@@ -1,3 +1,5 @@
+require 'concurrent/actor/behaviour/abstract'
+
 module Concurrent
   module Actor
     module Behaviour

@@ -1,3 +1,5 @@
+require 'concurrent/actor/context'
+
 module Concurrent
   module Actor
     module Utils

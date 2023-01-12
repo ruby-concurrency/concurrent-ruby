@@ -1,3 +1,4 @@
+require 'concurrent/errors'
 require 'concurrent/synchronization/object'
 
 module Concurrent

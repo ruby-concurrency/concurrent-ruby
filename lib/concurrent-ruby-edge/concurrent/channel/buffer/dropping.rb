@@ -1,4 +1,5 @@
 require 'concurrent/channel/buffer/base'
+require 'concurrent/channel/buffer/buffered'
 
 module Concurrent
   class Channel

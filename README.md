@@ -271,7 +271,12 @@ Everything within this gem can be loaded simply by requiring it:
 require 'concurrent'
 ```
 
-*Requiring only specific abstractions from Concurrent Ruby is not yet supported.*
+You can also require a specific abstraction [part of the public documentation](https://ruby-concurrency.github.io/concurrent-ruby/master/index.html) since concurrent-ruby 1.2.0, for example:
+```ruby
+require 'concurrent/map'
+require 'concurrent/atomic/atomic_reference'
+require 'concurrent/executor/fixed_thread_pool'
+```
 
 To use the tools in the Edge gem it must be required separately:
 

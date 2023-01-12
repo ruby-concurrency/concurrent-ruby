@@ -1,4 +1,5 @@
 require 'set'
+require 'concurrent/actor/context'
 
 module Concurrent
   module Actor
