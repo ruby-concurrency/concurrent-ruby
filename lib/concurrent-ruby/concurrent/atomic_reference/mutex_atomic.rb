@@ -1,3 +1,5 @@
+require 'concurrent/atomic_reference/atomic_direct_update'
+require 'concurrent/atomic_reference/numeric_cas_wrapper'
 require 'concurrent/synchronization/safe_initialization'
 
 module Concurrent

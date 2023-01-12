@@ -1,4 +1,5 @@
 require 'concurrent/thread_safe/util'
+require 'concurrent/utility/engine'
 
 # Shim for TruffleRuby.synchronized
 if Concurrent.on_truffleruby? && !TruffleRuby.respond_to?(:synchronized)

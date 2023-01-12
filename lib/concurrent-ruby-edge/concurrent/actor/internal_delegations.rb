@@ -1,3 +1,6 @@
+require 'logger'
+require 'concurrent/actor/public_delegations'
+
 module Concurrent
   module Actor
     module InternalDelegations

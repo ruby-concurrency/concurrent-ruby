@@ -1,5 +1,6 @@
 require 'concurrent/thread_safe/util'
 require 'concurrent/thread_safe/util/volatile'
+require 'concurrent/utility/engine'
 
 module Concurrent
 

@@ -1,3 +1,6 @@
+require 'concurrent/actor/context'
+require 'concurrent/actor/core'
+
 module Concurrent
   module Actor
     # implements the root actor

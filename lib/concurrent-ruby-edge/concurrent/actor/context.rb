@@ -1,4 +1,6 @@
 require 'concurrent/concern/logging'
+require 'concurrent/actor/type_check'
+require 'concurrent/actor/internal_delegations'
 
 module Concurrent
   module Actor

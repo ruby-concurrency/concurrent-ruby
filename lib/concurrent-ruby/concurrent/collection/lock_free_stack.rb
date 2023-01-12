@@ -1,3 +1,5 @@
+require 'concurrent/synchronization/object'
+
 module Concurrent
 
   # @!macro warn.edge

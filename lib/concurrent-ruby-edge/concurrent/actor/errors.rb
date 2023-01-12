@@ -1,3 +1,5 @@
+require 'concurrent/actor/type_check'
+
 module Concurrent
   module Actor
     Error = Class.new(StandardError)

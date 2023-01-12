@@ -1,3 +1,6 @@
+require 'concurrent/actor/type_check'
+require 'concurrent/actor/public_delegations'
+
 module Concurrent
   module Actor
 

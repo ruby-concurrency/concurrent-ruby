@@ -1,4 +1,5 @@
 require 'concurrent/actor/utils/balancer'
+require 'concurrent/actor/context'
 
 module Concurrent
   module Actor

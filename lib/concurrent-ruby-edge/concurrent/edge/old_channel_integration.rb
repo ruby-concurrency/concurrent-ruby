@@ -1,3 +1,5 @@
+require 'concurrent/promises'
+
 module Concurrent
   module Promises
     module FactoryMethods

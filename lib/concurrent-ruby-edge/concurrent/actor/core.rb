@@ -1,11 +1,11 @@
+require 'set'
+require 'concurrent/actor/type_check'
 require 'concurrent/concern/logging'
 require 'concurrent/executors'
+require 'concurrent/synchronization/lockable_object'
 
 module Concurrent
   module Actor
-
-    require 'set'
-
     # Core of the actor.
     # @note Whole class should be considered private. An user should use {Context}s and {Reference}s only.
     # @note devel: core should not block on anything, e.g. it cannot wait on children to terminate
