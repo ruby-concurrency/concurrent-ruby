@@ -2,6 +2,7 @@ require_relative 'fiber_local_var'
 require_relative 'thread_local_var'
 
 module Concurrent
+  # @!visibility private
   def self.mutex_owned_per_thread?
     mutex = Mutex.new
 
