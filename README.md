@@ -367,8 +367,10 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 
 ## Maintainers
 
-* [Benoit Daloze](https://github.com/eregon) — Maintainer.
-* We are looking for more `concurrent-ruby` maintainers.
+* [Benoit Daloze](https://github.com/eregon)
+* [Matthew Draper](https://github.com/matthewd)
+* [Rafael França](https://github.com/rafaelfranca)
+* [Samuel Williams](https://github.com/ioquatix)
 
 ### Special Thanks to
 
