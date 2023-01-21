@@ -4,7 +4,7 @@ require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/errors'
 require 'concurrent/synchronization/object'
 require 'concurrent/synchronization/lock'
-require 'concurrent/atomic/thread_local_var'
+require 'concurrent/atomic/lock_local_var'
 
 module Concurrent
 
@@ -111,7 +111,7 @@ module Concurrent
       @Counter    = AtomicFixnum.new(0)       # single integer which represents lock state
       @ReadQueue  = Synchronization::Lock.new # used to queue waiting readers
       @WriteQueue = Synchronization::Lock.new # used to queue waiting writers
-      @HeldCount  = ThreadLocalVar.new(0)     # indicates # of R & W locks held by this thread
+      @HeldCount  = LockLocalVar.new(0)       # indicates # of R & W locks held by this thread
     end
 
     # Execute a block operation within a read lock.

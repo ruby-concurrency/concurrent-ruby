@@ -1,104 +1,70 @@
-require 'concurrent/utility/engine'
-require 'concurrent/atomic/ruby_thread_local_var'
-require 'concurrent/atomic/java_thread_local_var'
+require 'concurrent/constants'
 
 module Concurrent
 
-  ###################################################################
-
-  # @!macro thread_local_var_method_initialize
-  #
-  #   Creates a thread local variable.
-  #
-  #   @param [Object] default the default value when otherwise unset
-  #   @param [Proc] default_block Optional block that gets called to obtain the
-  #     default value for each thread
-
-  # @!macro thread_local_var_method_get
-  #
-  #   Returns the value in the current thread's copy of this thread-local variable.
-  #
-  #   @return [Object] the current value
-
-  # @!macro thread_local_var_method_set
-  #
-  #   Sets the current thread's copy of this thread-local variable to the specified value.
-  #
-  #   @param [Object] value the value to set
-  #   @return [Object] the new value
-
-  # @!macro thread_local_var_method_bind
-  #
-  #   Bind the given value to thread local storage during
-  #   execution of the given block.
-  #
-  #   @param [Object] value the value to bind
-  #   @yield the operation to be performed with the bound variable
-  #   @return [Object] the value
-
-
-  ###################################################################
-
-  # @!macro thread_local_var_public_api
-  #
-  #   @!method initialize(default = nil, &default_block)
-  #     @!macro thread_local_var_method_initialize
-  #
-  #   @!method value
-  #     @!macro thread_local_var_method_get
-  #
-  #   @!method value=(value)
-  #     @!macro thread_local_var_method_set
-  #
-  #   @!method bind(value, &block)
-  #     @!macro thread_local_var_method_bind
-
-  ###################################################################
-
-  # @!visibility private
-  # @!macro internal_implementation_note
-  ThreadLocalVarImplementation = case
-                                 when Concurrent.on_jruby?
-                                   JavaThreadLocalVar
-                                 else
-                                   RubyThreadLocalVar
-                                 end
-  private_constant :ThreadLocalVarImplementation
-
   # @!macro thread_local_var
-  #
-  #   A `ThreadLocalVar` is a variable where the value is different for each thread.
-  #   Each variable may have a default value, but when you modify the variable only
-  #   the current thread will ever see that change.
-  #
-  #   @!macro thread_safe_variable_comparison
-  #
-  #   @example
-  #     v = ThreadLocalVar.new(14)
-  #     v.value #=> 14
-  #     v.value = 2
-  #     v.value #=> 2
-  #
-  #   @example
-  #     v = ThreadLocalVar.new(14)
-  #
-  #     t1 = Thread.new do
-  #       v.value #=> 14
-  #       v.value = 1
-  #       v.value #=> 1
-  #     end
-  #
-  #     t2 = Thread.new do
-  #       v.value #=> 14
-  #       v.value = 2
-  #       v.value #=> 2
-  #     end
-  #
-  #     v.value #=> 14
-  #
-  #   @see https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html Java ThreadLocal
-  #
-  # @!macro thread_local_var_public_api
-  class ThreadLocalVar < ThreadLocalVarImplementation
+  class ThreadLocalVar
+    # @!macro thread_local_var_method_initialize
+    def initialize(default = nil, &default_block)
+      if default && block_given?
+        raise ArgumentError, "Cannot use both value and block as default value"
+      end
+
+      if block_given?
+        @default_block = default_block
+        @default = nil
+      else
+        @default_block = nil
+        @default = default
+      end
+
+      @name = :"concurrent_variable_#{object_id}"
+    end
+
+    # @!macro thread_local_var_method_get
+    def value
+      value = Thread.current.thread_variable_get(@name)
+
+      if value.nil?
+        default
+      elsif value.equal?(NULL)
+        nil
+      else
+        value
+      end
+    end
+
+    # @!macro thread_local_var_method_set
+    def value=(value)
+      if value.nil?
+        value = NULL
+      end
+
+      Thread.current.thread_variable_set(@name, value)
+    end
+
+    # @!macro thread_local_var_method_bind
+    def bind(value, &block)
+      if block_given?
+        old_value = self.value
+        begin
+          self.value = value
+          yield
+        ensure
+          self.value = old_value
+        end
+      end
+    end
+
+    protected
+
+    # @!visibility private
+    def default
+      if @default_block
+        self.value = @default_block.call
+      else
+        @default
+      end
+    end
   end
 end

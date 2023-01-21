@@ -26,16 +26,6 @@ module Concurrent
         expect(t2.value).to eq 14
       end
 
-      if Concurrent.on_jruby?
-        it 'extends JavaThreadLocalVar' do
-          expect(described_class.ancestors).to include(Concurrent::JavaThreadLocalVar)
-        end
-      else
-        it 'extends RubyThreadLocalVar' do
-          expect(described_class.ancestors).to include(Concurrent::RubyThreadLocalVar)
-        end
-      end
-
       it 'can set a block to be called to get the initial value' do
         v = described_class.new { 14 }
         expect(v.value).to eq 14
@@ -110,7 +100,7 @@ module Concurrent
       end
 
       it 'does not modify the value for other threads' do
-        v.value = 2
+        v.value = 3
 
         b1 = CountDownLatch.new(2)
         b2 = CountDownLatch.new(2)
