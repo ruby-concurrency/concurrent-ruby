@@ -2,6 +2,7 @@ require 'concurrent/utility/engine'
 require 'concurrent/atomic/reentrant_read_write_lock'
 require 'concurrent/atomic/count_down_latch'
 require 'concurrent/atomic/atomic_boolean'
+require 'concurrent/set'
 require 'timeout'
 require 'fiber'
 
