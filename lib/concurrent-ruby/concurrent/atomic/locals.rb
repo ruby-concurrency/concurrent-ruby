@@ -1,3 +1,4 @@
+require 'concurrent/utility/engine'
 require 'concurrent/constants'
 
 module Concurrent
