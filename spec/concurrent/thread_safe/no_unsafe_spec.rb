@@ -1,4 +1,6 @@
-if defined?(JRUBY_VERSION) && ENV['TEST_NO_UNSAFE']
+require 'concurrent/utility/engine'
+
+if Concurrent.on_jruby? && ENV['TEST_NO_UNSAFE']
   # to be used like this: rake test TEST_NO_UNSAFE=true
   load 'test/package.jar'
   java_import 'thread_safe.SecurityManager'
