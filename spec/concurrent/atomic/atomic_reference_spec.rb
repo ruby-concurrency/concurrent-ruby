@@ -180,6 +180,12 @@ module Concurrent
   end
 
   RSpec.describe AtomicReference do
+    if RUBY_ENGINE != 'ruby'
+      it 'does not load the C extension' do
+        expect(defined?(Concurrent::CAtomicReference)).to be_falsey
+      end
+    end
+
     if Concurrent.on_jruby?
       it 'inherits from JavaAtomicReference' do
         expect(described_class.ancestors).to include(Concurrent::JavaAtomicReference)

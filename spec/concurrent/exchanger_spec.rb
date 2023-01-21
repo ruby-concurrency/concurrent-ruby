@@ -239,7 +239,7 @@ module Concurrent
     end
   end
 
-  if defined? JavaExchanger
+  if Concurrent.on_jruby?
     RSpec.describe JavaExchanger do
       it_behaves_like :exchanger
     end
