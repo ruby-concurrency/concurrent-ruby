@@ -1,8 +1,13 @@
 require 'fileutils'
+require 'mkmf'
+
+unless RUBY_ENGINE == "ruby"
+  File.write("Makefile", dummy_makefile($srcdir).join(""))
+  exit
+end
 
 extension_name = 'concurrent_ruby_ext'
 
-require 'mkmf'
 dir_config(extension_name)
 have_header "libkern/OSAtomic.h"
 
