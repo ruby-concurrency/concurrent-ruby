@@ -1,13 +1,7 @@
 require 'concurrent/constants'
 
 module Concurrent
-
-  # @!macro thread_local_var
-  # @!macro internal_implementation_note
-  # @!visibility private
-  class AbstractThreadLocalVar
-
-    # @!macro thread_local_var_method_initialize
+  class FiberLocalVar
     def initialize(default = nil, &default_block)
       if default && block_given?
         raise ArgumentError, "Cannot use both value and block as default value"
@@ -21,17 +15,17 @@ module Concurrent
         @default = default
       end
 
-      allocate_storage
+      @name = :"concurrent_variable_#{object_id}"
     end
 
     # @!macro thread_local_var_method_get
     def value
-      raise NotImplementedError
+      Thread.current.fetch(@name) {default}
     end
 
     # @!macro thread_local_var_method_set
     def value=(value)
-      raise NotImplementedError
+      Thread.current[@name] = value
     end
 
     # @!macro thread_local_var_method_bind
@@ -48,11 +42,6 @@ module Concurrent
     end
 
     protected
-
-    # @!visibility private
-    def allocate_storage
-      raise NotImplementedError
-    end
 
     # @!visibility private
     def default
