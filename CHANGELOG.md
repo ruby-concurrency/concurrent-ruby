@@ -1,5 +1,12 @@
 ## Current
 
+## Release v1.2.0
+
+* (#962) Fix ReentrantReadWriteLock to use the same granularity for locals as for Mutex it uses.
+* (#983) Add FiberLocalVar
+* (#934) concurrent-ruby now supports requiring individual classes (public classes listed in the docs), e.g., `require 'concurrent/map'`
+* (#976) Let `Promises.any_fulfilled_future` take an `Event`
+* Improve documentation of various classes
 * (#975) Set the Ruby compatibility version at 2.3
 * (#972) Remove Rubinius-related code
 
