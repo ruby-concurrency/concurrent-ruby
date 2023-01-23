@@ -1,6 +1,6 @@
 ## Current
 
-## Release v1.2.0
+## Release v1.2.0 (23 Jan 2023)
 
 * (#962) Fix ReentrantReadWriteLock to use the same granularity for locals as for Mutex it uses.
 * (#983) Add FiberLocalVar
