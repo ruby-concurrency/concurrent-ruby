@@ -34,7 +34,9 @@ namespace :repackage do
   task :all do
     Dir.chdir(__dir__) do
       # store gems in vendor cache for docker
-      sh 'bundle package'
+      Bundler.with_original_env do
+        sh 'bundle package'
+      end
 
       # build only the jar file not the whole gem for java platform, the jar is part the concurrent-ruby-x.y.z.gem
       Rake::Task['lib/concurrent-ruby/concurrent/concurrent_ruby.jar'].invoke
