@@ -23,7 +23,8 @@ module Concurrent
     #  => 1
     #  foo.bar = 2
     #  => 2
-
+    #
+    # @!visibility private
     module Volatile
       def self.included(base)
         base.extend(ClassMethods)

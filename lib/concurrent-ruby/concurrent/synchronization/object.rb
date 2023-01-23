@@ -11,6 +11,7 @@ module Concurrent
     # - final instance variables see {Object.safe_initialization!}
     # - volatile instance variables see {Object.attr_volatile}
     # - volatile instance variables see {Object.attr_atomic}
+    # @!visibility private
     class Object < AbstractObject
       include Volatile
 

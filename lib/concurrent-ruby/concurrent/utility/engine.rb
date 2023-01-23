@@ -1,4 +1,5 @@
 module Concurrent
+  # @!visibility private
   module Utility
 
     # @!visibility private

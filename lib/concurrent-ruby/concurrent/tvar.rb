@@ -149,6 +149,7 @@ module Concurrent
 
   private
 
+  # @!visibility private
   class Transaction
 
     ABORTED = ::Object.new

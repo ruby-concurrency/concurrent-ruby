@@ -31,6 +31,8 @@ module Concurrent
   #
   #   C1.new.respond_to? :a # => false
   #   C2.new.respond_to? :a # => true
+  #
+  # @!visibility private
   module ReInclude
     # @!visibility private
     def included(base)

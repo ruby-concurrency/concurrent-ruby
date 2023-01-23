@@ -3,6 +3,7 @@ require 'concurrent/utility/engine'
 require 'concurrent/synchronization/abstract_object'
 
 module Concurrent
+  # @!visibility private
   module Utility
     # @!visibility private
     module NativeExtensionLoader

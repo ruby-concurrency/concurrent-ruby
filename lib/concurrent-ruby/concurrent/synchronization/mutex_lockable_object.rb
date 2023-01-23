@@ -1,7 +1,6 @@
 require 'concurrent/synchronization/abstract_lockable_object'
 
 module Concurrent
-  # noinspection RubyInstanceVariableNamingConvention
   module Synchronization
 
     # @!visibility private
