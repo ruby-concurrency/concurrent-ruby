@@ -337,9 +337,9 @@ namespace :release do
     desc '** print post release steps'
     task :post_steps do
       # TODO: (petr 05-Jun-2021) automate and renew the process
-      # puts 'Manually: create a release on GitHub with relevant changelog part'
-      # puts 'Manually: send email same as release with relevant changelog part'
-      # puts 'Manually: tweet'
+      puts 'Manually: create a release on GitHub with relevant changelog part'
+      puts 'Manually: send email same as release with relevant changelog part'
+      puts 'Manually: tweet'
     end
   end
 end

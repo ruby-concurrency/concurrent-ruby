@@ -6,8 +6,7 @@ require 'concurrent/synchronization/condition'
 require 'concurrent/synchronization/lock'
 
 module Concurrent
-  # {include:file:docs-source/synchronization.md}
-  # {include:file:docs-source/synchronization-notes.md}
+  # @!visibility private
   module Synchronization
   end
 end
