@@ -34,6 +34,9 @@ versions.each do |version|
 end
 
 sh "git", "checkout", "master"
+
+sh "rm", "-f", "Gemfile.lock"
+sh "bundle", "install"
 sh "bundle", "exec", "rake", "yard"
 
 versions.each do |version|
