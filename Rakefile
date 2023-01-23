@@ -83,13 +83,15 @@ begin
 
     desc '* test packaged and installed gems instead of local files'
     task :installed do
-      Dir.chdir(__dir__) do
-        sh "gem install pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
-        sh "gem install pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem" if Concurrent.on_cruby?
-        sh "gem install pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
-        ENV['NO_PATH'] = 'true'
-        sh 'bundle update'
-        sh 'bundle exec rake spec:ci'
+      Bundler.with_original_env do
+        Dir.chdir(__dir__) do
+          sh "gem install pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
+          sh "gem install pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem" if Concurrent.on_cruby?
+          sh "gem install pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
+          ENV['NO_PATH'] = 'true'
+          sh 'bundle update'
+          sh 'bundle exec rake spec:ci'
+        end
       end
     end
   end
@@ -250,25 +252,18 @@ namespace :release do
   desc '* test actual installed gems instead of cloned repository on MRI and JRuby'
   task :test do
     Dir.chdir(__dir__) do
-      old = ENV['RBENV_VERSION']
+      puts "Testing with the installed gem"
 
-      mri_version   = `ruby -e 'puts RUBY_VERSION'`.chomp
-      jruby_version = File.basename(ENV['CONCURRENT_JRUBY_HOME'])
+      Bundler.with_original_env do
+        sh 'ruby -v'
+        sh 'bundle exec rake spec:installed'
 
-      puts "Using following version:"
-      pp mri_version: mri_version, jruby_version: jruby_version
-
-      ENV['RBENV_VERSION'] = mri_version
-      sh 'rbenv version'
-      sh 'bundle exec rake spec:installed'
-
-      ENV['RBENV_VERSION'] = jruby_version
-      sh 'rbenv version'
-      sh 'bundle exec rake spec:installed'
+        env = { "PATH" => "#{ENV['CONCURRENT_JRUBY_HOME']}/bin:#{ENV['PATH']}" }
+        sh env, 'ruby -v'
+        sh env, 'bundle exec rake spec:installed'
+      end
 
       puts 'Windows build is untested'
-
-      ENV['RBENV_VERSION'] = old
     end
   end
 
