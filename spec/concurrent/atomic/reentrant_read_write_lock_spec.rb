@@ -343,8 +343,9 @@ module Concurrent
         ]
         wait_up_to(0.2) { threads[3].status == 'sleep' }
         # The last 3 threads should be waiting to acquire read locks now...
-        # TODO (pitr-ch 15-Oct-2016): https://travis-ci.org/ruby-concurrency/concurrent-ruby/jobs/166777543
-        (1..3).each { |n| expect(threads[n].status).to eql "sleep" }
+        unless Concurrent.on_jruby? # flaky on JRuby
+          (1..3).each { |n| expect(threads[n].status).to eql "sleep" }
+        end
         (1..3).each { |n| expect(threads[n]).not_to hold(lock).for_read }
         # Throw latch2 and the writer will wake up and release its write lock...
         latch2.count_down
@@ -361,7 +362,9 @@ module Concurrent
         ]
         wait_up_to(0.2) { threads[1].status == 'sleep' }
         # The last thread should be waiting to acquire a write lock now...
-        expect(threads[1].status).to eql "sleep"
+        unless Concurrent.on_jruby? # flaky on JRuby
+          expect(threads[1].status).to eql "sleep"
+        end
         expect(threads[1]).not_to hold(lock).for_write
         # Throw latch2 and the writer will wake up and release its write lock...
         latch2.count_down
