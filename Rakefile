@@ -200,34 +200,6 @@ begin
         *common_yard_options)
       yard.files = ['no-lib']
     end
-
-    define_uptodate_task = -> name do
-      namespace name do
-        desc "** ensure that #{name} generated documentation is matching the source code"
-        task :uptodate do
-          Dir.chdir(__dir__) do
-            begin
-              FileUtils.cp_r 'docs', 'docs-copy', verbose: true
-              Rake::Task["yard:#{name}"].invoke
-              sh 'diff -r docs/ docs-copy/' do |ok, res|
-                unless ok
-                  begin
-                    STDOUT.puts "yard:#{name} is not properly generated and committed.", "Continue? (y/n)"
-                    input = STDIN.gets.strip.downcase
-                  end until %w(y n).include?(input)
-                  exit 1 if input == 'n'
-                end
-              end
-            ensure
-              FileUtils.rm_rf 'docs-copy', verbose: true
-            end
-          end
-        end
-      end
-    end
-
-    define_uptodate_task.call current_yard_version_name
-    define_uptodate_task.call 'master'
   end
 
 rescue LoadError => e
@@ -240,7 +212,7 @@ task :release => ['release:checks', 'release:build', 'release:test', 'release:pu
 namespace :release do
   # Depends on environment of @pitr-ch
 
-  task :checks => "yard:#{current_yard_version_name}:uptodate" do
+  task :checks do
     Dir.chdir(__dir__) do
       sh 'test -z "$(git status --porcelain)"' do |ok, res|
         unless ok
