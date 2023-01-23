@@ -43,7 +43,11 @@ namespace :repackage do
 
       # build all gem files
       %w[x86-mingw32 x64-mingw32].each do |plat|
-        RakeCompilerDock.sh "bundle install --local && bundle exec rake native:#{plat} gem --trace", platform: plat
+        RakeCompilerDock.sh(
+          "bundle install --local && bundle exec rake native:#{plat} gem --trace",
+          platform: plat,
+          options: ['--privileged'], # otherwise the directory in the image is empty
+          runas: false)
       end
     end
   end
