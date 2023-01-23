@@ -23,13 +23,17 @@ module Concurrent
       Concurrent.monotonic_time - start_time
     end
 
+    def in_fiber(&block)
+      Fiber.new(&block)
+    end
+
     def in_thread(*arguments, &block)
       @created_threads ||= Queue.new
-      new_thread       = Thread.new(*arguments) do |*args, &b|
+      new_thread = Thread.new(*arguments) do |*args, &b|
         Thread.abort_on_exception = true
         block.call(*args, &b)
       end
-      @created_threads.push new_thread
+      @created_threads << new_thread
       new_thread
     end
 

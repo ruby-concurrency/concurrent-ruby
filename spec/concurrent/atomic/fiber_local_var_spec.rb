@@ -1,9 +1,8 @@
-require 'concurrent/atomic/thread_local_var'
-require 'concurrent/atomic/count_down_latch'
+require 'concurrent/atomic/fiber_local_var'
 
 module Concurrent
 
-  RSpec.describe ThreadLocalVar do
+  RSpec.describe FiberLocalVar do
 
     context '#initialize' do
 
@@ -17,12 +16,12 @@ module Concurrent
         expect(v.value).to be_nil
       end
 
-      it 'sets the same initial value for all threads' do
-        v  = described_class.new(14)
-        t1 = in_thread { v.value }
-        t2 = in_thread { v.value }
-        expect(t1.value).to eq 14
-        expect(t2.value).to eq 14
+      it 'sets the same initial value for all fibers' do
+        v = described_class.new(14)
+        f1 = in_fiber { v.value }
+        f2 = in_fiber { v.value }
+        expect(f1.resume).to eq 14
+        expect(f2.resume).to eq 14
       end
 
       it 'can set a block to be called to get the initial value' do
@@ -68,14 +67,14 @@ module Concurrent
           expect(v.value).to be 14
         end
 
-        it 'calls the block to initialize the value for each thread' do
+        it 'calls the block to initialize the value for each fiber' do
           block = proc { }
 
           expect(block).to receive(:call).twice
 
           v = described_class.new(&block)
-          in_thread { v.value }.join
-          in_thread { v.value }.join
+          in_fiber { v.value }.resume
+          in_fiber { v.value }.resume
         end
       end
     end
@@ -92,38 +91,32 @@ module Concurrent
         expect(v.value = 2).to eq 2
       end
 
-      it 'does not modify the initial value for other threads' do
+      it 'does not modify the initial value for other fibers' do
         v.value = 2
-        t = in_thread { v.value }
-        expect(t.value).to eq 14
+        f = in_fiber { v.value }
+        expect(f.resume).to eq 14
       end
 
-      it 'does not modify the value for other threads' do
+      it 'does not modify the value for other fibers' do
         v.value = 3
 
-        b1 = CountDownLatch.new(2)
-        b2 = CountDownLatch.new(2)
-
-        t1 = in_thread do
-          b1.count_down
-          b1.wait
+        f1 = in_fiber do
           v.value = 1
-          b2.count_down
-          b2.wait
+          Fiber.yield
           v.value
         end
 
-        t2 = in_thread do
-          b1.count_down
-          b1.wait
+        f2 = in_fiber do
           v.value = 2
-          b2.count_down
-          b2.wait
+          Fiber.yield
           v.value
         end
 
-        expect(t1.value).to eq 1
-        expect(t2.value).to eq 2
+        f1.resume
+        f2.resume
+
+        expect(f1.resume).to eq 1
+        expect(f2.resume).to eq 2
       end
     end
   end
