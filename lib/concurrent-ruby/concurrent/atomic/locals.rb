@@ -32,13 +32,11 @@ module Concurrent
   # them. This is why we need to use a finalizer to clean up the locals array
   # when the EC goes out of scope.
   class AbstractLocals
-    def initialize(name_prefix = :concurrent_locals)
+    def initialize
       @free = []
       @lock = Mutex.new
-      @all_locals = {}
+      @all_arrays = {}
       @next = 0
-
-      @name = :"#{name_prefix}_#{object_id}"
     end
 
     def synchronize
@@ -53,7 +51,7 @@ module Concurrent
       alias_method :weak_synchronize, :synchronize
     end
 
-    def next_index(target)
+    def next_index(local)
       index = synchronize do
         if @free.empty?
           @next += 1
@@ -62,11 +60,11 @@ module Concurrent
         end
       end
 
-      # When the target goes out of scope, we should free the associated index
+      # When the local goes out of scope, we should free the associated index
       # and all values stored into it.
-      ObjectSpace.define_finalizer(target, target_finalizer(index))
+      ObjectSpace.define_finalizer(local, local_finalizer(index))
 
-      return index
+      index
     end
 
     def free_index(index)
@@ -78,7 +76,7 @@ module Concurrent
         #
         # DO NOT use each_value which might conflict with new pair assignment
         # into the hash in #set method.
-        @all_locals.values.each do |locals|
+        @all_arrays.values.each do |locals|
           locals[index] = nil
         end
 
@@ -87,18 +85,13 @@ module Concurrent
       end
     end
 
-    def fetch(index, default = nil)
-      if locals = self.locals
-        value = locals[index]
-      end
+    def fetch(index)
+      locals = self.locals
+      value = locals ? locals[index] : nil
 
-      if value.nil?
-        if block_given?
-          yield
-        else
-          default
-        end
-      elsif value.equal?(NULL)
+      if nil == value
+        yield
+      elsif NULL.equal?(value)
         nil
       else
         value
@@ -107,25 +100,25 @@ module Concurrent
 
     def set(index, value)
       locals = self.locals!
-      locals[index] = (value.nil? ? NULL : value)
+      locals[index] = (nil == value ? NULL : value)
 
       value
     end
 
     private
 
-    # When the target index goes out of scope, clean up that slot across all locals currently assigned.
-    def target_finalizer(index)
+    # When the local goes out of scope, clean up that slot across all locals currently assigned.
+    def local_finalizer(index)
       proc do
         free_index(index)
       end
     end
 
-    # When a target (locals) goes out of scope, delete the locals from all known locals.
-    def locals_finalizer(locals_object_id)
-      proc do |locals_id|
+    # When a thread/fiber goes out of scope, remove the array from @all_arrays.
+    def thread_fiber_finalizer(array_object_id)
+      proc do
         weak_synchronize do
-          @all_locals.delete(locals_object_id)
+          @all_arrays.delete(array_object_id)
         end
       end
     end
@@ -146,23 +139,23 @@ module Concurrent
   # An array-backed storage of indexed variables per thread.
   class ThreadLocals < AbstractLocals
     def locals
-      Thread.current.thread_variable_get(@name)
+      Thread.current.thread_variable_get(:concurrent_thread_locals)
     end
 
     def locals!
       thread = Thread.current
-      locals = thread.thread_variable_get(@name)
+      locals = thread.thread_variable_get(:concurrent_thread_locals)
 
       unless locals
-        locals = thread.thread_variable_set(@name, [])
+        locals = thread.thread_variable_set(:concurrent_thread_locals, [])
         weak_synchronize do
-          @all_locals[locals.object_id] = locals
-          # When the thread goes out of scope, we should delete the associated locals:
-          ObjectSpace.define_finalizer(thread, locals_finalizer(locals.object_id))
+          @all_arrays[locals.object_id] = locals
         end
+        # When the thread goes out of scope, we should delete the associated locals:
+        ObjectSpace.define_finalizer(thread, thread_fiber_finalizer(locals.object_id))
       end
 
-      return locals
+      locals
     end
   end
 
@@ -171,23 +164,25 @@ module Concurrent
   # An array-backed storage of indexed variables per fiber.
   class FiberLocals < AbstractLocals
     def locals
-      Thread.current[@name]
+      Thread.current[:concurrent_fiber_locals]
     end
 
     def locals!
       thread = Thread.current
-      locals = thread[@name]
+      locals = thread[:concurrent_fiber_locals]
 
       unless locals
-        locals = thread[@name] = []
+        locals = thread[:concurrent_fiber_locals] = []
         weak_synchronize do
-          @all_locals[locals.object_id] = locals
-          # When the thread goes out of scope, we should delete the associated locals:
-          ObjectSpace.define_finalizer(Fiber.current, locals_finalizer(locals.object_id))
+          @all_arrays[locals.object_id] = locals
         end
+        # When the fiber goes out of scope, we should delete the associated locals:
+        ObjectSpace.define_finalizer(Fiber.current, thread_fiber_finalizer(locals.object_id))
       end
 
-      return locals
+      locals
     end
   end
+
+  private_constant :AbstractLocals, :ThreadLocals, :FiberLocals
 end
