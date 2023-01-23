@@ -21,6 +21,7 @@ versions.each do |version|
   puts
   puts version
   sh "git", "checkout", "v#{version}"
+  has_docs = Dir.exist?('docs')
 
   sh "rm", "-f", "Gemfile.lock"
   sh "bundle", "install"
@@ -28,7 +29,7 @@ versions.each do |version|
 
   sh "cp", "-R", "docs/#{version}", "site"
   sh "rm", "-rf", "docs/#{version}"
-  sh "git", "restore", "docs"
+  sh "git", "restore", "docs" if has_docs
   sh "git", "restore", "docs-source"
 end
 
