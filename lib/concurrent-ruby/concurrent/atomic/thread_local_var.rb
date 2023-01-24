@@ -108,4 +108,9 @@ module Concurrent
       end
     end
   end
+
+  # @!visibility private
+  # Retained for compatibility, see <https://github.com/ruby-concurrency/concurrent-ruby/issues/986> for more details.
+  RubyThreadLocalVar = ThreadLocalVar
+  deprecate_constant :RubyThreadLocalVar
 end
