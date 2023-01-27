@@ -46,6 +46,12 @@ module Concurrent
     #   @note Atomic methods taking a block do not allow the `self` instance
     #     to be used within the block. Doing so will cause a deadlock.
 
+    # @!method []=(key, value)
+    #   Set a value with key
+    #   @param [Object] key
+    #   @param [Object] value
+    #   @return [Object] the new value
+
     # @!method compute_if_absent(key)
     #   Compute and store new value for key if the key is absent.
     #   @param [Object] key
@@ -119,41 +125,38 @@ module Concurrent
     #   @return [true, false] true if deleted
     #   @!macro map.atomic_method
 
-    #
-    def initialize(options = nil, &block)
-      if options.kind_of?(::Hash)
-        validate_options_hash!(options)
-      else
-        options = nil
+    # NonConcurrentMapBackend handles default_proc natively
+    unless defined?(Collection::NonConcurrentMapBackend) and self < Collection::NonConcurrentMapBackend
+
+      # @param [Hash, nil] options options to set the :initial_capacity or :load_factor. Ignored on some Rubies.
+      # @param [Proc] default_proc Optional block to compute the default value if the key is not set, like `Hash#default_proc`
+      def initialize(options = nil, &default_proc)
+        if options.kind_of?(::Hash)
+          validate_options_hash!(options)
+        else
+          options = nil
+        end
+
+        super(options)
+        @default_proc = default_proc
       end
 
-      super(options)
-      @default_proc = block
-    end
-
-    # Get a value with key
-    # @param [Object] key
-    # @return [Object] the value
-    def [](key)
-      if value = super # non-falsy value is an existing mapping, return it right away
-        value
-        # re-check is done with get_or_default(key, NULL) instead of a simple !key?(key) in order to avoid a race condition, whereby by the time the current thread gets to the key?(key) call
-        # a key => value mapping might have already been created by a different thread (key?(key) would then return true, this elsif branch wouldn't be taken and an incorrent +nil+ value
-        # would be returned)
-        # note: nil == value check is not technically necessary
-      elsif @default_proc && nil == value && NULL == (value = get_or_default(key, NULL))
-        @default_proc.call(self, key)
-      else
-        value
+      # Get a value with key
+      # @param [Object] key
+      # @return [Object] the value
+      def [](key)
+        if value = super # non-falsy value is an existing mapping, return it right away
+          value
+          # re-check is done with get_or_default(key, NULL) instead of a simple !key?(key) in order to avoid a race condition, whereby by the time the current thread gets to the key?(key) call
+          # a key => value mapping might have already been created by a different thread (key?(key) would then return true, this elsif branch wouldn't be taken and an incorrent +nil+ value
+          # would be returned)
+          # note: nil == value check is not technically necessary
+        elsif @default_proc && nil == value && NULL == (value = get_or_default(key, NULL))
+          @default_proc.call(self, key)
+        else
+          value
+        end
       end
-    end
-
-    # Set a value with key
-    # @param [Object] key
-    # @param [Object] value
-    # @return [Object] the new value
-    def []=(key, value)
-      super
     end
 
     alias_method :get, :[]

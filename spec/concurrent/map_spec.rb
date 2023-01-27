@@ -777,8 +777,8 @@ module Concurrent
         end
         expect_no_size_change cache do
           expect_size_change 1, dupped do
-            expect(:default_value).to eq dupped[:d]
-            expect(false).to          eq cache.key?(:d)
+            expect(dupped[:d]).to eq :default_value
+            expect(cache.key?(:d)).to eq false
           end
         end
       end
