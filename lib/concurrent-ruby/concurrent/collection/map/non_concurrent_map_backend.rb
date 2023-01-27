@@ -12,8 +12,10 @@ module Concurrent
       # directly without calling each other. This is important because of the
       # SynchronizedMapBackend which uses a non-reentrant mutex for performance
       # reasons.
-      def initialize(options = nil)
-        @backend = {}
+      def initialize(options = nil, &default_proc)
+        validate_options_hash!(options) if options.kind_of?(::Hash)
+        @backend = Hash.new(&default_proc)
+        @default_proc = default_proc
       end
 
       def [](key)
@@ -55,7 +57,7 @@ module Concurrent
       end
 
       def compute(key)
-        store_computed_value(key, yield(@backend[key]))
+        store_computed_value(key, yield(get_or_default(key, nil)))
       end
 
       def merge_pair(key, value)
@@ -67,7 +69,7 @@ module Concurrent
       end
 
       def get_and_set(key, value)
-        stored_value = @backend[key]
+        stored_value = get_or_default(key, nil)
         @backend[key] = value
         stored_value
       end
@@ -109,13 +111,11 @@ module Concurrent
         @backend.fetch(key, default_value)
       end
 
-      alias_method :_get, :[]
-      alias_method :_set, :[]=
-      private :_get, :_set
       private
+
       def initialize_copy(other)
         super
-        @backend = {}
+        @backend = Hash.new(&@default_proc)
         self
       end
 
