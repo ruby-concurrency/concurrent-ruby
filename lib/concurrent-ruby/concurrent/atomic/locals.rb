@@ -1,6 +1,8 @@
 require 'concurrent/utility/engine'
 require 'concurrent/constants'
 
+require 'fiber'
+
 module Concurrent
   # @!visibility private
   # @!macro internal_implementation_note
