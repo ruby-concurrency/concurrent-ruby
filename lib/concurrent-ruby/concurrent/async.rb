@@ -290,7 +290,7 @@ module Concurrent
         @delegate = delegate
         @queue = []
         @executor = Concurrent.global_io_executor
-        @ruby_pid = Process.pid
+        @ruby_pid = $$
       end
 
       # Delegates method calls to the wrapped object.
@@ -346,9 +346,9 @@ module Concurrent
       end
 
       def reset_if_forked
-        if Process.pid != @ruby_pid
+        if $$ != @ruby_pid
           @queue.clear
-          @ruby_pid = Process.pid
+          @ruby_pid = $$
         end
       end
     end

@@ -76,7 +76,7 @@ module Concurrent
       @task_executor      = Options.executor_from_options(opts) || Concurrent.global_io_executor
       @timer_executor     = SingleThreadExecutor.new
       @condition          = Event.new
-      @ruby_pid           = Process.pid # detects if Ruby has forked
+      @ruby_pid           = $$ # detects if Ruby has forked
     end
 
     # Post the task to the internal queue.
@@ -127,10 +127,10 @@ module Concurrent
     end
 
     def ns_reset_if_forked
-      if Process.pid != @ruby_pid
+      if $$ != @ruby_pid
         @queue.clear
         @condition.reset
-        @ruby_pid = Process.pid
+        @ruby_pid = $$
       end
     end
 
