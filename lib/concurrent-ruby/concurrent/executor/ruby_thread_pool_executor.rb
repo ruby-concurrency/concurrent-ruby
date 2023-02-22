@@ -138,7 +138,7 @@ module Concurrent
       @completed_task_count = 0
       @largest_length       = 0
       @workers_counter      = 0
-      @ruby_pid             = Process.pid # detects if Ruby has forked
+      @ruby_pid             = $$ # detects if Ruby has forked
 
       @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
@@ -287,7 +287,7 @@ module Concurrent
     end
 
     def ns_reset_if_forked
-      if Process.pid != @ruby_pid
+      if $$ != @ruby_pid
         @queue.clear
         @ready.clear
         @pool.clear
@@ -295,7 +295,7 @@ module Concurrent
         @completed_task_count = 0
         @largest_length       = 0
         @workers_counter      = 0
-        @ruby_pid             = Process.pid
+        @ruby_pid             = $$
       end
     end
 
