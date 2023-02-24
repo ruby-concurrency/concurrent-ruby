@@ -14,7 +14,7 @@ module Concurrent
       # reasons.
       def initialize(options = nil, &default_proc)
         validate_options_hash!(options) if options.kind_of?(::Hash)
-        @backend = Hash.new(&default_proc)
+        set_backend(default_proc)
         @default_proc = default_proc
       end
 
@@ -113,9 +113,17 @@ module Concurrent
 
       private
 
+      def set_backend(default_proc)
+        if default_proc
+          @backend = ::Hash.new { |_h, key| default_proc.call(self, key) }
+        else
+          @backend = {}
+        end
+      end
+
       def initialize_copy(other)
         super
-        @backend = Hash.new(&@default_proc)
+        set_backend(@default_proc)
         self
       end
 

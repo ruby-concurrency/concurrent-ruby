@@ -1,5 +1,8 @@
 ## Current
 
+## Release v1.2.2 (24 Feb 2023)
+
+* (#993) Fix arguments passed to `Concurrent::Map`'s `default_proc`.
 
 ## Release v1.2.1 (24 Feb 2023)
 

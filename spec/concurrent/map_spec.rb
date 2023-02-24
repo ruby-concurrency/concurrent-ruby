@@ -10,6 +10,23 @@ module Concurrent
       @cache = described_class.new
     end
 
+    it 'default_proc is called with the Concurrent::Map and the key' do
+      map = Concurrent::Map.new do |h, k|
+        [h, k]
+      end
+      expect(map[:foo][0]).to be(map)
+      expect(map[:foo][1]).to eq(:foo)
+    end
+
+    it 'default_proc is called with the Concurrent::Map and the key after #dup' do
+      map = Concurrent::Map.new do |h, k|
+        [h, k]
+      end
+      copy = map.dup
+      expect(copy[:foo][0]).to be(copy)
+      expect(copy[:foo][1]).to eq(:foo)
+    end
+
     it 'concurrency' do
       (1..Concurrent::ThreadSafe::Test::THREADS).map do |i|
         in_thread do
@@ -45,6 +62,14 @@ module Concurrent
     end
 
     describe '#compute_if_absent' do
+      it 'works in default_proc' do
+        map = Concurrent::Map.new do |map, key|
+          map.compute_if_absent(key) { key * 2 }
+        end
+        expect(map[3]).to eq 6
+        expect(map.keys).to eq [3]
+      end
+
       it 'common' do
         with_or_without_default_proc do
           expect_size_change(3) do
