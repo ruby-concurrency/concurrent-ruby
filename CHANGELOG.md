@@ -1,5 +1,8 @@
 ## Current
 
+
+## Release v1.2.1 (24 Feb 2023)
+
 * (#990) Add missing `require 'fiber'` for `FiberLocalVar`.
 * (#989) Optimize `Concurrent::Map#[]` on CRuby by letting the backing Hash handle the `default_proc`.
 
