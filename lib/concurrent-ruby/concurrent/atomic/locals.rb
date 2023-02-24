@@ -1,7 +1,6 @@
+require 'fiber'
 require 'concurrent/utility/engine'
 require 'concurrent/constants'
-
-require 'fiber'
 
 module Concurrent
   # @!visibility private
