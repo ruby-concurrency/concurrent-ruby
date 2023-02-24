@@ -840,12 +840,18 @@ module Concurrent
 
     def with_or_without_default_proc(&block)
       block.call(false)
-      @cache = Concurrent::Map.new { |h, k| h[k] = :default_value }
+      @cache = Concurrent::Map.new { |h, k|
+        expect(h).to be_kind_of(Concurrent::Map)
+        h[k] = :default_value
+      }
       block.call(true)
     end
 
     def cache_with_default_proc(default_value = 1)
-      Concurrent::Map.new { |cache, k| cache[k] = default_value }
+      Concurrent::Map.new do |map, k|
+        expect(map).to be_kind_of(Concurrent::Map)
+        map[k] = default_value
+      end
     end
 
     def expect_size_change(change, cache = @cache, &block)
