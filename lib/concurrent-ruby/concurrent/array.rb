@@ -21,9 +21,9 @@ module Concurrent
   # @!macro internal_implementation_note
   ArrayImplementation = case
                         when Concurrent.on_cruby?
-                          # Array is thread-safe in practice because CRuby runs
-                          # threads one at a time and does not do context
-                          # switching during the execution of C functions.
+                          # Array is not fully thread-safe on CRuby, see
+                          # https://github.com/ruby-concurrency/concurrent-ruby/issues/929
+                          # So we will need to add synchronization here
                           ::Array
 
                         when Concurrent.on_jruby?
