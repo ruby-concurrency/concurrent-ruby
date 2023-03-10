@@ -15,9 +15,11 @@ module Concurrent
   # @!macro internal_implementation_note
   HashImplementation = case
                        when Concurrent.on_cruby?
-                         # Hash is thread-safe in practice because CRuby runs
-                         # threads one at a time and does not do context
-                         # switching during the execution of C functions.
+                         # Hash is not fully thread-safe on CRuby, see
+                         # https://bugs.ruby-lang.org/issues/19237
+                         # https://github.com/ruby/ruby/commit/ffd52412ab
+                         # https://github.com/ruby-concurrency/concurrent-ruby/issues/929
+                         # So we will need to add synchronization here (similar to Concurrent::Map).
                          ::Hash
 
                        when Concurrent.on_jruby?
