@@ -159,7 +159,7 @@ module Concurrent
     #
     # @!macro timer_task_initialize
     #   @param [Hash] opts the options defining task execution.
-    #   @option opts [Integer] :execution_interval number of seconds between
+    #   @option opts [Float] :execution_interval number of seconds between
     #     task executions (default: EXECUTION_INTERVAL)
     #   @option opts [Boolean] :run_now Whether to run the task immediately
     #     upon instantiation or to wait until the first #  execution_interval
