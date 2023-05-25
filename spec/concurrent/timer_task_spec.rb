@@ -83,6 +83,21 @@ module Concurrent
           expect(subject.execution_interval).to eq 5
         end
 
+        it 'raises an exception if :interval_type is not a valid value' do
+          expect {
+            Concurrent::TimerTask.new(interval_type: :cat) { nil }
+          }.to raise_error(ArgumentError)
+        end
+
+        it 'uses the default :interval_type when no type is given' do
+          subject = TimerTask.new { nil }
+          expect(subject.interval_type).to eq TimerTask::FIXED_DELAY
+        end
+
+        it 'uses the given interval type' do
+          subject = TimerTask.new(interval_type: TimerTask::FIXED_RATE) { nil }
+          expect(subject.interval_type).to eq TimerTask::FIXED_RATE
+        end
       end
 
       context '#kill' do
@@ -113,7 +128,6 @@ module Concurrent
       end
 
       specify '#execution_interval is writeable' do
-
         latch   = CountDownLatch.new(1)
         subject = TimerTask.new(timeout_interval: 1,
                                 execution_interval: 1,
@@ -131,6 +145,28 @@ module Concurrent
 
         expect(subject.execution_interval).to eq(3)
         subject.kill
+      end
+
+      it 'raises on invalid interval_type' do
+        expect {
+          fixed_delay = TimerTask.new(interval_type: TimerTask::FIXED_DELAY,
+                        execution_interval: 0.1,
+                        run_now: true) { nil }
+          fixed_delay.kill
+        }.not_to raise_error
+
+        expect {
+          fixed_rate = TimerTask.new(interval_type: TimerTask::FIXED_RATE,
+                                  execution_interval: 0.1,
+                                  run_now: true) { nil }
+          fixed_rate.kill
+        }.not_to raise_error
+
+        expect {
+          TimerTask.new(interval_type: :unknown,
+                        execution_interval: 0.1,
+                        run_now: true) { nil }
+        }.to raise_error(ArgumentError)
       end
 
       specify '#timeout_interval being written produces a warning' do
@@ -208,6 +244,42 @@ module Concurrent
         subject.kill
 
         expect(executor).to have_received(:post)
+      end
+
+      it 'uses a fixed delay when set' do
+        finished = []
+        latch   = CountDownLatch.new(2)
+        subject = TimerTask.new(interval_type: TimerTask::FIXED_DELAY,
+                                execution_interval: 0.1,
+                                run_now: true) do |task|
+          sleep(0.2)
+          finished << Concurrent.monotonic_time
+          latch.count_down
+        end
+        subject.execute
+        latch.wait(1)
+        subject.kill
+
+        expect(latch.count).to eq(0)
+        expect(finished[1] - finished[0]).to be >= 0.3
+      end
+
+      it 'uses a fixed rate when set' do
+        finished = []
+        latch   = CountDownLatch.new(2)
+        subject = TimerTask.new(interval_type: TimerTask::FIXED_RATE,
+                                execution_interval: 0.1,
+                                run_now: true) do |task|
+          sleep(0.2)
+          finished << Concurrent.monotonic_time
+          latch.count_down
+        end
+        subject.execute
+        latch.wait(1)
+        subject.kill
+
+        expect(latch.count).to eq(0)
+        expect(finished[1] - finished[0]).to be < 0.3
       end
     end
 
