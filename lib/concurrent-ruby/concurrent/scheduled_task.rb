@@ -189,6 +189,8 @@ module Concurrent
         @task = task
         @time = nil
         @executor = Options.executor_from_options(opts) || Concurrent.global_io_executor
+        raise ArgumentError.new("cannot use an executor with fallback_policy: :abort") if @executor.fallback_policy == :abort
+
         self.observers = Collection::CopyOnNotifyObserverSet.new
       end
     end

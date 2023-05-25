@@ -75,6 +75,15 @@ module Concurrent
         }.to raise_error(ArgumentError)
       end
 
+      it 'raises an exception if the executor fallback policy is :abort' do
+        executor = Concurrent::ThreadPoolExecutor.new(fallback_policy: :abort)
+        expect {
+          ScheduledTask.new(1, executor: :abort){ nil }
+        }.to raise_error(ArgumentError)
+
+        executor.shutdown
+      end
+
       it 'sets the initial state to :unscheduled' do
         task = ScheduledTask.new(1){ nil }
         expect(task).to be_unscheduled
