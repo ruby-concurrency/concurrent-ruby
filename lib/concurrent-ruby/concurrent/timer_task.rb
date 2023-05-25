@@ -32,6 +32,17 @@ module Concurrent
   # be tested separately then passed to the `TimerTask` for scheduling and
   # running.
   #
+  # A `TimerTask` supports two different types of interval calculations.
+  # A fixed delay will always wait the same amount of time between the
+  # completion of one task and the start of the next. A fixed rate will
+  # attempt to maintain a constant rate of execution regardless of the
+  # duration of the task. For example, if a fixed rate task is scheduled
+  # to run every 60 seconds but the task itself takes 10 seconds to
+  # complete, the next task will be scheduled to run 50 seconds after
+  # the start of the previous task. If the task takes 70 seconds to
+  # complete, the next task will be start immediately after the previous
+  # task completes. Tasks will not be executed concurrently.
+  #
   # In some cases it may be necessary for a `TimerTask` to affect its own
   # execution cycle. To facilitate this, a reference to the TimerTask instance
   # is passed as an argument to the provided block every time the task is
@@ -73,6 +84,12 @@ module Concurrent
   #   task.execute
   #
   #   #=> 'Boom!'
+  #
+  # @example Configuring `:interval_type` with either :fixed_delay or :fixed_rate, default is :fixed_delay
+  #   task = Concurrent::TimerTask.new(execution_interval: 5, interval_type: :fixed_rate) do
+  #          puts 'Boom!'
+  #        end
+  #   task.interval_type #=> :fixed_rate
   #
   # @example Last `#value` and `Dereferenceable` mixin
   #   task = Concurrent::TimerTask.new(
@@ -152,8 +169,16 @@ module Concurrent
     # Default `:execution_interval` in seconds.
     EXECUTION_INTERVAL = 60
 
-    # Default `:timeout_interval` in seconds.
-    TIMEOUT_INTERVAL = 30
+    # Maintain the interval between the end of one execution and the start of the next execution.
+    FIXED_DELAY = :fixed_delay
+
+    # Maintain the interval between the start of one execution and the start of the next.
+    # If execution time exceeds the interval, the next execution will start immediately
+    # after the previous execution finishes. Executions will not run concurrently.
+    FIXED_RATE = :fixed_rate
+
+    # Default `:interval_type`
+    DEFAULT_INTERVAL_TYPE = FIXED_DELAY
 
     # Create a new TimerTask with the given task and configuration.
     #
@@ -164,6 +189,9 @@ module Concurrent
     #   @option opts [Boolean] :run_now Whether to run the task immediately
     #     upon instantiation or to wait until the first #  execution_interval
     #     has passed (default: false)
+    #   @options opts [Symbol] :interval_type method to calculate the interval
+    #     between executions, can be either :fixed_rate or :fixed_delay.
+    #     (default: :fixed_delay)
     #   @option opts [Executor] executor, default is `global_io_executor`
     #
     #   @!macro deref_options
@@ -243,6 +271,10 @@ module Concurrent
       end
     end
 
+    # @!attribute [r] interval_type
+    # @return [Symbol] method to calculate the interval between executions
+    attr_reader :interval_type
+
     # @!attribute [rw] timeout_interval
     # @return [Fixnum] Number of seconds the task can run before it is
     #   considered to have failed.
@@ -265,10 +297,15 @@ module Concurrent
       set_deref_options(opts)
 
       self.execution_interval = opts[:execution] || opts[:execution_interval] || EXECUTION_INTERVAL
+      if opts[:interval_type] && ![FIXED_DELAY, FIXED_RATE].include?(opts[:interval_type])
+        raise ArgumentError.new('interval_type must be either :fixed_delay or :fixed_rate')
+      end
       if opts[:timeout] || opts[:timeout_interval]
         warn 'TimeTask timeouts are now ignored as these were not able to be implemented correctly'
       end
+
       @run_now = opts[:now] || opts[:run_now]
+      @interval_type = opts[:interval_type] || DEFAULT_INTERVAL_TYPE
       @task = Concurrent::SafeTaskExecutor.new(task)
       @executor = opts[:executor] || Concurrent.global_io_executor
       @running = Concurrent::AtomicBoolean.new(false)
@@ -298,16 +335,27 @@ module Concurrent
     # @!visibility private
     def execute_task(completion)
       return nil unless @running.true?
+      start_time = Concurrent.monotonic_time
       _success, value, reason = @task.execute(self)
       if completion.try?
         self.value = value
-        schedule_next_task
+        schedule_next_task(calculate_next_interval(start_time))
         time = Time.now
         observers.notify_observers do
           [time, self.value, reason]
         end
       end
       nil
+    end
+
+    # @!visibility private
+    def calculate_next_interval(start_time)
+      if @interval_type == FIXED_RATE
+        run_time = Concurrent.monotonic_time - start_time
+        [execution_interval - run_time, 0].max
+      else # FIXED_DELAY
+        execution_interval
+      end
     end
   end
 end
