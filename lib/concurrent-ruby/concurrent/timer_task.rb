@@ -164,6 +164,7 @@ module Concurrent
     #   @option opts [Boolean] :run_now Whether to run the task immediately
     #     upon instantiation or to wait until the first #  execution_interval
     #     has passed (default: false)
+    #   @option opts [Executor] executor, default is `global_io_executor`
     #
     #   @!macro deref_options
     #
@@ -268,7 +269,8 @@ module Concurrent
         warn 'TimeTask timeouts are now ignored as these were not able to be implemented correctly'
       end
       @run_now = opts[:now] || opts[:run_now]
-      @executor = Concurrent::SafeTaskExecutor.new(task)
+      @task = Concurrent::SafeTaskExecutor.new(task)
+      @executor = opts[:executor] || Concurrent.global_io_executor
       @running = Concurrent::AtomicBoolean.new(false)
       @value = nil
 
@@ -289,14 +291,14 @@ module Concurrent
 
     # @!visibility private
     def schedule_next_task(interval = execution_interval)
-      ScheduledTask.execute(interval, args: [Concurrent::Event.new], &method(:execute_task))
+      ScheduledTask.execute(interval, executor: @executor, args: [Concurrent::Event.new], &method(:execute_task))
       nil
     end
 
     # @!visibility private
     def execute_task(completion)
       return nil unless @running.true?
-      _success, value, reason = @executor.execute(self)
+      _success, value, reason = @task.execute(self)
       if completion.try?
         self.value = value
         schedule_next_task
