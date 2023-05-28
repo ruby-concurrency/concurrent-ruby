@@ -82,6 +82,7 @@ module Concurrent
           subject = TimerTask.new(execution_interval: 5) { nil }
           expect(subject.execution_interval).to eq 5
         end
+
       end
 
       context '#kill' do
@@ -180,6 +181,33 @@ module Concurrent
         expect(expected).to eq subject
         expect(latch.count).to eq(0)
         subject.kill
+      end
+
+      it 'uses the global executor by default' do
+        executor = Concurrent::ImmediateExecutor.new
+        allow(Concurrent).to receive(:global_io_executor).and_return(executor)
+        allow(executor).to receive(:post).and_call_original
+
+        latch = CountDownLatch.new(1)
+        subject = TimerTask.new(execution_interval: 0.1, run_now: true) { latch.count_down }
+        subject.execute
+        expect(latch.wait(1)).to be_truthy
+        subject.kill
+
+        expect(executor).to have_received(:post)
+      end
+
+      it 'uses a custom executor when given' do
+        executor = Concurrent::ImmediateExecutor.new
+        allow(executor).to receive(:post).and_call_original
+
+        latch = CountDownLatch.new(1)
+        subject = TimerTask.new(execution_interval: 0.1, run_now: true, executor: executor) { latch.count_down }
+        subject.execute
+        expect(latch.wait(1)).to be_truthy
+        subject.kill
+
+        expect(executor).to have_received(:post)
       end
     end
 
