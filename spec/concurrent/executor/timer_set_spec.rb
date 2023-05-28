@@ -122,6 +122,20 @@ module Concurrent
           expect(task.value).to eq i
         end
       end
+
+      it 'safely handles an executor raising RejectedExecutionError' do
+        # force a task's executor to raise RejectedExecutionError within the TimerSet
+        abort_executor = ImmediateExecutor.new
+        allow(abort_executor).to receive(:post).and_raise(Concurrent::RejectedExecutionError)
+        ScheduledTask.execute(0.2, executor: abort_executor, timer_set: subject){ nil }
+        abort_executor.shutdown
+
+        latch = CountDownLatch.new(1)
+        ScheduledTask.execute(0.3, timer_set: subject) do
+          latch.count_down
+        end
+        expect(latch.wait(1)).to be_truthy
+      end
     end
 
     context 'resolution' do
