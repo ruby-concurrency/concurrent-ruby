@@ -73,6 +73,11 @@ if Concurrent.on_jruby?
         @executor.getCompletedTaskCount
       end
 
+      # @!macro thread_pool_executor_method_active_count
+      def active_count
+        @executor.getActiveCount
+      end
+
       # @!macro thread_pool_executor_attr_reader_idletime
       def idletime
         @executor.getKeepAliveTime(java.util.concurrent.TimeUnit::SECONDS)

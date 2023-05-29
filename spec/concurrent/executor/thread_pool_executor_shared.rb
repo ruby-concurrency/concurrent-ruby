@@ -1,5 +1,6 @@
 require_relative 'thread_pool_shared'
 require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic/cyclic_barrier'
 
 RSpec.shared_examples :thread_pool_executor do
 
@@ -255,6 +256,36 @@ RSpec.shared_examples :thread_pool_executor do
       subject.shutdown
       expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject.remaining_capacity).to eq expected_max
+    end
+  end
+
+  context '#active_count' do
+    subject do
+      described_class.new(
+        min_threads: 5,
+        max_threads: 10,
+        idletime: 60,
+        max_queue: 0,
+        fallback_policy: :discard
+      )
+    end
+
+    it 'returns the number of threads that are actively executing tasks.' do
+      barrier = Concurrent::CyclicBarrier.new(4)
+      latch = Concurrent::CountDownLatch.new(1)
+
+      3.times do
+        subject.post do
+          barrier.wait
+          latch.wait
+        end
+      end
+      barrier.wait
+
+      expect(subject.active_count).to eq 3
+
+      # release
+      latch.count_down
     end
   end
 
@@ -627,33 +658,33 @@ RSpec.shared_examples :thread_pool_executor do
           max_threads: 1,
           max_queue: 1,
           fallback_policy: :caller_runs)
-        
+
         worker_unblocker = Concurrent::CountDownLatch.new(1)
         executor_unblocker = Concurrent::CountDownLatch.new(1)
         queue_done = Concurrent::CountDownLatch.new(1)
-        
+
         # Block the worker thread
         executor << proc { worker_unblocker.wait }
-        
+
         # Fill the queue
         executor << proc { log.push :queued; queue_done.count_down }
-        
+
         # Block in a caller_runs job
         caller_runs_thread = Thread.new {
           executor << proc { executor_unblocker.wait; log.push :unblocked }
         }
-        
+
         # Wait until the caller_runs job is blocked
         Thread.pass until caller_runs_thread.status == 'sleep'
-        
+
         # Now unblock the worker thread
         worker_unblocker.count_down
         queue_done.wait
         executor_unblocker.count_down
-        
+
         # Tidy up
         caller_runs_thread.join
-        
+
         # We will see the queued jobs run before the caller_runs job unblocks
         expect([log.pop, log.pop]).to eq [:queued, :unblocked]
       end
