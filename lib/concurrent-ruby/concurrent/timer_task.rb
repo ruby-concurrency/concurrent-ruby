@@ -101,6 +101,7 @@ module Concurrent
   #   #=> Boom! Boom!
   #   #=> Boom! Boom! Boom!
   #   #=> Boom! Boom! Boom! Boom!
+  #   #=> Boom! Boom! Boom! Boom! Boom!
   #   #=> Stopping...
   #
   # @example Observation
