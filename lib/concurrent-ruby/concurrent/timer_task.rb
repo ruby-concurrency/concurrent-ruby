@@ -87,7 +87,7 @@ module Concurrent
   #
   # @example Controlling execution from within the block
   #   timer_task = Concurrent::TimerTask.new(execution_interval: 1) do |task|
-  #     task.execution_interval.times{ print 'Boom! ' }
+  #     task.execution_interval.to_i.times{ print 'Boom! ' }
   #     print "\n"
   #     task.execution_interval += 1
   #     if task.execution_interval > 5
@@ -96,12 +96,11 @@ module Concurrent
   #     end
   #   end
   #
-  #   timer_task.execute # blocking call - this task will stop itself
+  #   timer_task.execute
   #   #=> Boom!
   #   #=> Boom! Boom!
   #   #=> Boom! Boom! Boom!
   #   #=> Boom! Boom! Boom! Boom!
-  #   #=> Boom! Boom! Boom! Boom! Boom!
   #   #=> Stopping...
   #
   # @example Observation
