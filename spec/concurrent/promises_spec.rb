@@ -380,12 +380,12 @@ RSpec.describe 'Concurrent::Promises' do
     end
 
     it 'chains' do
-      future0 = future { 1 }.then { |v| v + 2 } # both executed on default FAST_EXECUTOR
-      future1 = future0.then_on(:fast) { raise 'boo' } # executed on IO_EXECUTOR
-      future2 = future1.then { |v| v + 1 } # will reject with 'boo' error, executed on default FAST_EXECUTOR
-      future3 = future1.rescue { |err| err.message } # executed on default FAST_EXECUTOR
-      future4 = future0.chain { |success, value, reason| success } # executed on default FAST_EXECUTOR
-      future5 = future3.with_default_executor(:fast) # connects new future with different executor, the new future is resolved when future3 is
+      future0 = future { 1 }.then { |v| v + 2 } # both executed on default IO_EXECUTOR
+      future1 = future0.then_on(:fast) { raise 'boo' } # executed on FAST_EXECUTOR
+      future2 = future1.then { |v| v + 1 } # will reject with 'boo' error, executed on FAST_EXECUTOR
+      future3 = future1.rescue { |err| err.message } # executed on FAST_EXECUTOR
+      future4 = future0.chain { |success, value, reason| success } # executed on FAST_EXECUTOR
+      future5 = future3.with_default_executor(:io) # connects new future with different executor, the new future is resolved when future3 is
       future6 = future5.then(&:capitalize) # executes on IO_EXECUTOR because default was set to :io on future5
       future7 = future0 & future3
       future8 = future0.rescue { raise 'never happens' } # future0 fulfills so future8'll have same value as future 0
@@ -402,12 +402,12 @@ RSpec.describe 'Concurrent::Promises' do
       expect(table.join("\n")).to eq <<-TABLE.gsub(/^\s+\|/, '').strip
         |index success      value reason pool d.pool
         |    0    true          3          io     io
-        |    1   false               boo fast     io
-        |    2   false               boo   io     io
-        |    3    true        boo          io     io
+        |    1   false               boo fast   fast
+        |    2   false               boo fast   fast
+        |    3    true        boo        fast   fast
         |    4    true       true          io     io
-        |    5    true        boo               fast
-        |    6    true        Boo        fast   fast
+        |    5    true        boo                 io
+        |    6    true        Boo          io     io
         |    7    true [3, "boo"]                 io
         |    8    true          3          io     io
       TABLE

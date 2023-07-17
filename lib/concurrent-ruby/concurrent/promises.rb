@@ -611,7 +611,7 @@ module Concurrent
       #   @yieldparam [Object] value
       #   @yieldparam [Object] reason
       def chain_on(executor, *args, &task)
-        ChainPromise.new_blocked_by1(self, @DefaultExecutor, executor, args, &task).future
+        ChainPromise.new_blocked_by1(self, executor, executor, args, &task).future
       end
 
       # @return [String] Short string representation.
@@ -1034,7 +1034,7 @@ module Concurrent
       # @return [Future]
       # @yield [value, *args] to the task.
       def then_on(executor, *args, &task)
-        ThenPromise.new_blocked_by1(self, @DefaultExecutor, executor, args, &task).future
+        ThenPromise.new_blocked_by1(self, executor, executor, args, &task).future
       end
 
       # @!macro promises.shortcut.on
@@ -1052,7 +1052,7 @@ module Concurrent
       # @return [Future]
       # @yield [reason, *args] to the task.
       def rescue_on(executor, *args, &task)
-        RescuePromise.new_blocked_by1(self, @DefaultExecutor, executor, args, &task).future
+        RescuePromise.new_blocked_by1(self, executor, executor, args, &task).future
       end
 
       # @!macro promises.method.zip
