@@ -22,7 +22,7 @@ module Concurrent
     #
     # @!macro promises.param.args
     #   @param [Object] args arguments which are passed to the task when it's executed.
-    #     (It might be prepended with other arguments, see the @yeild section).
+    #     (It might be prepended with other arguments, see the @yield section).
     #
     # @!macro promises.shortcut.on
     #   Shortcut of {#$0_on} with default `:io` executor supplied.
