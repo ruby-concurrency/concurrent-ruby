@@ -12,7 +12,7 @@ gem 'concurrent-ruby-ext', Concurrent::VERSION, options.merge(platform: :mri)
 
 group :development do
   gem 'rake', '~> 13.0'
-  gem 'rake-compiler', '~> 1.0', '>= 1.0.7'
+  gem 'rake-compiler', '~> 1.0', '>= 1.0.7', '!= 1.2.4'
   gem 'rake-compiler-dock', '~> 1.0'
   gem 'pry', '~> 0.11', platforms: :mri
 end
