@@ -88,10 +88,11 @@ if Concurrent.on_jruby?
 
       def initialize(daemonize = true)
         @daemonize = daemonize
+        @java_thread_factory = java.util.concurrent.Executors.defaultThreadFactory
       end
 
       def newThread(runnable)
-        thread = java.util.concurrent.Executors.defaultThreadFactory().newThread(runnable)
+        thread = @java_thread_factory.newThread(runnable)
         thread.setDaemon(@daemonize)
         return thread
       end
