@@ -71,6 +71,7 @@ module Concurrent
         end
 
         start_latch.wait(1)
+        Thread.pass until barrier.number_waiting == 1
         barrier.reset
 
         expect(barrier).not_to be_broken
