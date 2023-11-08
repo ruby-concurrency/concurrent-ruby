@@ -918,7 +918,7 @@ RSpec.describe 'Concurrent' do
         end
 
         specify "timing out" do
-          skip('flaky on truffleruby') if Concurrent.on_truffleruby?
+          skip('flaky on truffleruby and jruby') if Concurrent.on_truffleruby? || Concurrent.on_jruby?
 
           count_down = Concurrent::CountDownLatch.new
           body = { on_thread: -> { m = receive; count_down.wait; reply m },
