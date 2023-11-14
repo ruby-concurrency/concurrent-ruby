@@ -3,7 +3,7 @@ require 'concurrent/atomic/event'
 require 'concurrent/collection/non_concurrent_priority_queue'
 require 'concurrent/executor/executor_service'
 require 'concurrent/executor/single_thread_executor'
-
+require 'concurrent/errors'
 require 'concurrent/options'
 
 module Concurrent
@@ -162,7 +162,11 @@ module Concurrent
           # queue now must have the same pop time, or a closer one, as
           # when we peeked).
           task = synchronize { @queue.pop }
-          task.executor.post { task.process_task }
+          begin
+            task.executor.post { task.process_task }
+          rescue RejectedExecutionError
+            # ignore and continue
+          end
         else
           @condition.wait([diff, 60].min)
         end
