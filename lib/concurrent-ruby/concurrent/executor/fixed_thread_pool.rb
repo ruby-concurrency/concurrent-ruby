@@ -39,6 +39,10 @@ module Concurrent
   #   The number of tasks that have been completed by the pool since construction.
   #   @return [Integer] The number of tasks that have been completed by the pool since construction.
 
+  # @!macro thread_pool_executor_method_active_count
+  #   The number of threads that are actively executing tasks.
+  #   @return [Integer] The number of threads that are actively executing tasks.
+
   # @!macro thread_pool_executor_attr_reader_idletime
   #   The number of seconds that a thread may be idle before being reclaimed.
   #   @return [Integer] The number of seconds that a thread may be idle before being reclaimed.

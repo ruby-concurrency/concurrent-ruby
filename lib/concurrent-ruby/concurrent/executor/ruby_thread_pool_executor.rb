@@ -61,6 +61,13 @@ module Concurrent
       synchronize { @completed_task_count }
     end
 
+    # @!macro thread_pool_executor_method_active_count
+    def active_count
+      synchronize do
+        @pool.length - @ready.length
+      end
+    end
+
     # @!macro executor_service_method_can_overflow_question
     def can_overflow?
       synchronize { ns_limited_queue? }
