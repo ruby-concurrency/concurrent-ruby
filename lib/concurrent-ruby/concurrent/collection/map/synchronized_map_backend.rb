@@ -8,74 +8,77 @@ module Concurrent
     # @!visibility private
     class SynchronizedMapBackend < NonConcurrentMapBackend
 
-      require 'mutex_m'
-      include Mutex_m
-      # WARNING: Mutex_m is a non-reentrant lock, so the synchronized methods are
-      # not allowed to call each other.
+      def initialize(*args, &block)
+        super
+
+        # WARNING: Mutex is a non-reentrant lock, so the synchronized methods are
+        # not allowed to call each other.
+        @mutex = Mutex.new
+      end
 
       def [](key)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def []=(key, value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def compute_if_absent(key)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def compute_if_present(key)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def compute(key)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def merge_pair(key, value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def replace_pair(key, old_value, new_value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def replace_if_exists(key, new_value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def get_and_set(key, value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def key?(key)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def delete(key)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def delete_pair(key, value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def clear
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def size
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       def get_or_default(key, default_value)
-        synchronize { super }
+        @mutex.synchronize { super }
       end
 
       private
       def dupped_backend
-        synchronize { super }
+        @mutex.synchronize { super }
       end
     end
   end
