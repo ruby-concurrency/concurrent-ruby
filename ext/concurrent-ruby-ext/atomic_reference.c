@@ -105,7 +105,7 @@ VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE new_valu
     return Qtrue;
   }
 #else
-  if (__sync_bool_compare_and_swap(&DATA_PTR(self), expect_value, new_value)) {
+  if (__sync_bool_compare_and_swap(&DATA_PTR(self), (void *)expect_value, (void *)new_value)) {
     return Qtrue;
   }
 #endif
