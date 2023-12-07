@@ -754,4 +754,32 @@ RSpec.describe 'Concurrent::Promises' do
   specify 'zip_futures_over' do
     expect(zip_futures_over([1, 2]) { |v| v.succ }.value!).to eq [2, 3]
   end
+
+  describe 'value!' do
+    %w[with without].each do |timeout|
+      it "does not return spuriously #{timeout} timeout" do
+        # https://github.com/ruby-concurrency/concurrent-ruby/issues/1015
+        trapped = false
+        original_handler = Signal.trap(:SIGHUP) { trapped = true }
+        begin
+          task = Concurrent::Promises.future { sleep }
+          main = Thread.current
+          t = Thread.new do
+            Thread.pass until main.stop?
+            Process.kill(:SIGHUP, Process.pid)
+            sleep 0.1
+            main.raise "Done"
+          end
+          expect {
+            timeout == 'with' ? task.value!(3600) : task.value!
+            expect(task).to be_resolved # fail if #value! returned
+          }.to raise_error(RuntimeError, "Done")
+          expect(trapped).to be true
+          t.join
+        ensure
+          Signal.trap(:SIGHUP, original_handler)
+        end
+      end
+    end
+  end
 end
