@@ -5,6 +5,7 @@ require 'concurrent/collection/lock_free_stack'
 require 'concurrent/configuration'
 require 'concurrent/errors'
 require 'concurrent/re_include'
+require 'concurrent/utility/monotonic_time'
 
 module Concurrent
 
@@ -772,8 +773,17 @@ module Concurrent
         @Lock.synchronize do
           @Waiters.increment
           begin
-            unless resolved?
-              @Condition.wait @Lock, timeout
+            if timeout
+              start = Concurrent.monotonic_time
+              until resolved?
+                break if @Condition.wait(@Lock, timeout) == nil # nil means timeout
+                timeout -= (Concurrent.monotonic_time - start)
+                break if timeout <= 0
+              end
+            else
+              until resolved?
+                @Condition.wait(@Lock, timeout)
+              end
             end
           ensure
             # JRuby may raise ConcurrencyError
