@@ -179,7 +179,7 @@ module Concurrent
         if waiting_or_running_writer?(c)
           # Before going to sleep, check again with the ReadQueue mutex held
           @ReadQueue.synchronize do
-            @ReadQueue.ns_wait if waiting_or_running_writer?
+            @ReadQueue.ns_wait while waiting_or_running_writer?
           end
           # Note: the above 'synchronize' block could have used #wait_until,
           #   but that waits repeatedly in a loop, checking the wait condition
@@ -194,7 +194,7 @@ module Concurrent
             c = @Counter.value
             if running_writer?(c)
               @ReadQueue.synchronize do
-                @ReadQueue.ns_wait if running_writer?
+                @ReadQueue.ns_wait while running_writer?
               end
             elsif @Counter.compare_and_set(c, c+1)
               @HeldCount.value = held + 1
@@ -282,7 +282,7 @@ module Concurrent
               # So we have to do another check inside the synchronized section
               # If a writer OR another reader is running, then go to sleep
               c = @Counter.value
-              @WriteQueue.ns_wait if running_writer?(c) || running_readers(c) != held
+              @WriteQueue.ns_wait while running_writer?(c) || running_readers(c) != held
             end
             # Note: if you are thinking of replacing the above 'synchronize' block
             # with #wait_until, read the comment in #acquire_read_lock first!
