@@ -54,14 +54,14 @@ module Concurrent
           extend Volatile
           attr_volatile :mutex
 
-          # Non-reentrant Mutex#syncrhonize
+          # Non-reentrant Mutex#synchronize
           def cheap_synchronize
             true until (my_mutex = mutex) || cas_mutex(nil, my_mutex = Mutex.new)
             my_mutex.synchronize { yield }
           end
 
           # Releases this object's +cheap_synchronize+ lock and goes to sleep waiting for other threads to +cheap_broadcast+, reacquires the lock on wakeup.
-          # Must only be called in +cheap_broadcast+'s block.
+          # Must only be called in +cheap_synchronize+'s block.
           def cheap_wait
             conditional_variable = @conditional_variable ||= ConditionVariable.new
             conditional_variable.wait(mutex)
