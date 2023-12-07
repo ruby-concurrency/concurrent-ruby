@@ -20,8 +20,8 @@ module Concurrent
                             require 'concurrent/collection/map/truffleruby_map_backend'
                             TruffleRubyMapBackend
                           else
-                            require 'concurrent/collection/map/atomic_reference_map_backend'
-                            AtomicReferenceMapBackend
+                            require 'concurrent/collection/map/synchronized_map_backend'
+                            SynchronizedMapBackend
                           end
                         else
                           warn 'Concurrent::Map: unsupported Ruby engine, using a fully synchronized Concurrent::Map implementation'
