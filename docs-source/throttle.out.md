@@ -36,7 +36,7 @@ Notice that the returned array has no number bigger than 2 therefore
 the concurrency level of the block with the `do_stuff` was never bigger than 2. 
 
 ```ruby
-# runs a block, and returns he observed concurrency level during the execution
+# runs a block, and returns the observed concurrency level during the execution
 def monitor_concurrency_level(concurrency_level, &block)
   concurrency_level.increment
   block.call
