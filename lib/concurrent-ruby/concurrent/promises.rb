@@ -64,7 +64,7 @@ module Concurrent
         resolvable_event_on default_executor
       end
 
-      # Created a resolvable event, user is responsible for resolving the event once
+      # Creates a resolvable event, user is responsible for resolving the event once
       # by calling {Promises::ResolvableEvent#resolve}.
       #
       # @!macro promises.param.default_executor
