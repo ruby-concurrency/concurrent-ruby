@@ -29,7 +29,7 @@ jobs:
       - run: ruby support/generate_docs.rb
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
