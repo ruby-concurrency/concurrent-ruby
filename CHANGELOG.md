@@ -1,5 +1,9 @@
 ## Current
 
+## Release v1.2.3 (16 Jan 2024)
+
+* See [the GitHub release](https://github.com/ruby-concurrency/concurrent-ruby/releases/tag/v1.2.3) for details.
+
 ## Release v1.2.2 (24 Feb 2023)
 
 * (#993) Fix arguments passed to `Concurrent::Map`'s `default_proc`.
