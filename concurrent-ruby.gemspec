@@ -27,4 +27,5 @@ Gem::Specification.new do |s|
   s.metadata["source_code_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby"
   s.metadata["changelog_uri"] = "https://github.com/ruby-concurrency/concurrent-ruby/blob/master/CHANGELOG.md"
   s.required_ruby_version = '>= 2.3'
+  # s.add_runtime_dependency 'mutex_m'
 end
