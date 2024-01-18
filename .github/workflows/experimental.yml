@@ -3,12 +3,10 @@ on:
   schedule:
     - cron:  '0 0 * * *' # Runs every day at midnight
   workflow_dispatch:
-    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     strategy:
       matrix:
