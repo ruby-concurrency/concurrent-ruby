@@ -36,8 +36,9 @@ module Concurrent
               when /darwin\d\d/
                 IO.popen("/usr/sbin/sysctl -n hw.physicalcpu", &:read).to_i
               when /linux/
-                if Dir.exist?("/sys/fs/cgroup/cpu,cpuacct") && (cfs_quota_us = IO.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us").to_i) > 0
-                  (cfs_quota_us / IO.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us").to_i.to_f).ceil
+                # https://kernel.googlesource.com/pub/scm/linux/kernel/git/glommer/memcg/+/cpu_stat/Documentation/cgroups/cpu.txt
+                if Dir.exist?("/sys/fs/cgroup/cpu,cpuacct") && (cfs_quota_us = File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us").to_i) > 0
+                  (cfs_quota_us / File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us").to_f).ceil
                 else
                   cores = {} # unique physical ID / core ID combinations
                   phy   = 0
