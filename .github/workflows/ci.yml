@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ 2.3, 3.3 ] # oldest and latest CRuby
+        ruby: [ 2.3, ruby ] # oldest and latest CRuby
     env:
       RUBYOPT: '-w'
     steps:
