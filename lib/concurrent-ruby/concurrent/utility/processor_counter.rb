@@ -11,6 +11,7 @@ module Concurrent
       def initialize
         @processor_count          = Delay.new { compute_processor_count }
         @physical_processor_count = Delay.new { compute_physical_processor_count }
+        @cpu_quota                = Delay.new { compute_cpu_quota }
       end
 
       def processor_count
@@ -19,6 +20,25 @@ module Concurrent
 
       def physical_processor_count
         @physical_processor_count.value
+      end
+
+      def available_processor_count
+        cpu_count = processor_count.to_f
+        quota = cpu_quota
+
+        return cpu_count if quota.nil?
+
+        # cgroup cpus quotas have no limits, so they can be set to higher than the
+        # real count of cores.
+        if quota > cpu_count
+          cpu_count
+        else
+          quota
+        end
+      end
+
+      def cpu_quota
+        @cpu_quota.value
       end
 
       private
@@ -59,6 +79,24 @@ module Concurrent
         ppc > 0 ? ppc : processor_count
       rescue
         return 1
+      end
+
+      def compute_cpu_quota
+        if RbConfig::CONFIG["target_os"].match(/linux/i)
+          if File.exist?("/sys/fs/cgroup/cpu.max")
+            # cgroups v2: https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files
+            cpu_max = File.read("/sys/fs/cgroup/cpu.max")
+            return nil if cpu_max.start_with?("max ") # no limit
+            max, period = cpu_max.split.map(&:to_f)
+            max / period
+          elsif File.exist?("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us")
+            # cgroups v1: https://kernel.googlesource.com/pub/scm/linux/kernel/git/glommer/memcg/+/cpu_stat/Documentation/cgroups/cpu.txt
+            max = File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us").to_i
+            return nil if max == 0
+            period = File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us").to_f
+            max / period
+          end
+        end
       end
     end
   end
@@ -106,5 +144,32 @@ module Concurrent
   # @see http://linux.die.net/man/8/sysctl
   def self.physical_processor_count
     processor_counter.physical_processor_count
+  end
+
+  # Number of processors cores available for process scheduling.
+  # Returns `nil` if there is no #cpu_quota, or a `Float` if the
+  # process is inside a cgroup with a dedicated CPU quota (typically Docker).
+  #
+  # For performance reasons the calculated value will be memoized on the first
+  # call.
+  #
+  # @return [nil, Float] number of available processors seen by the OS or Java runtime
+  def self.available_processor_count
+    processor_counter.available_processor_count
+  end
+
+  # The maximun number of processors cores available for process scheduling.
+  # Returns `nil` if there is no enforced limit, or a `Float` if the
+  # process is inside a cgroup with a dedicated CPU quota (typically Docker).
+  #
+  # Note that nothing prevent to set a CPU quota higher than the actual number of
+  # cores on the system.
+  #
+  # For performance reasons the calculated value will be memoized on the first
+  # call.
+  #
+  # @return [nil, Float] Maximum number of available processors seen by the OS or Java runtime
+  def self.cpu_quota
+    processor_counter.cpu_quota
   end
 end
