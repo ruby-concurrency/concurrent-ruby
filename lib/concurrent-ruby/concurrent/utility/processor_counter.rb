@@ -82,7 +82,7 @@ module Concurrent
       end
 
       def compute_cpu_quota
-        if RbConfig::CONFIG["target_os"].match(/linux/i)
+        if RbConfig::CONFIG["target_os"].include?("linux")
           if File.exist?("/sys/fs/cgroup/cpu.max")
             # cgroups v2: https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files
             cpu_max = File.read("/sys/fs/cgroup/cpu.max")
@@ -158,7 +158,7 @@ module Concurrent
     processor_counter.available_processor_count
   end
 
-  # The maximun number of processors cores available for process scheduling.
+  # The maximum number of processors cores available for process scheduling.
   # Returns `nil` if there is no enforced limit, or a `Float` if the
   # process is inside a cgroup with a dedicated CPU quota (typically Docker).
   #
@@ -168,7 +168,7 @@ module Concurrent
   # For performance reasons the calculated value will be memoized on the first
   # call.
   #
-  # @return [nil, Float] Maximum number of available processors seen by the OS or Java runtime
+  # @return [nil, Float] Maximum number of available processors as set by a cgroup CPU quota, or nil if none set
   def self.cpu_quota
     processor_counter.cpu_quota
   end
