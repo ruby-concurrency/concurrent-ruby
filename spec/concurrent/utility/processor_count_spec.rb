@@ -27,7 +27,7 @@ module Concurrent
     end
 
     it 'returns nil if no quota is detected' do
-      if RbConfig::CONFIG["target_os"].match(/linux/i)
+      if RbConfig::CONFIG["target_os"].include?("linux")
         expect(File).to receive(:exist?).twice.and_return(nil) # Checks for cgroups V1 and V2
       end
       expect(counter.cpu_quota).to be_nil
@@ -72,21 +72,21 @@ module Concurrent
 
     it 'returns #processor_count if #cpu_quota is nil' do
       expect(Concurrent::processor_counter).to receive(:cpu_quota).and_return(nil)
-      available_processor_count = Concurrent::available_processor_count
+      available_processor_count = Concurrent.available_processor_count
       expect(available_processor_count).to be == Concurrent::processor_count
       expect(available_processor_count).to be_a Float
     end
 
     it 'returns #processor_count if #cpu_quota is higher' do
       expect(Concurrent::processor_counter).to receive(:cpu_quota).and_return(Concurrent::processor_count.to_f * 2)
-      available_processor_count = Concurrent::available_processor_count
+      available_processor_count = Concurrent.available_processor_count
       expect(available_processor_count).to be == Concurrent::processor_count
       expect(available_processor_count).to be_a Float
     end
 
     it 'returns #cpu_quota if #cpu_quota is lower than #processor_count' do
       expect(Concurrent::processor_counter).to receive(:cpu_quota).and_return(Concurrent::processor_count.to_f / 2)
-      available_processor_count = Concurrent::available_processor_count
+      available_processor_count = Concurrent.available_processor_count
       expect(available_processor_count).to be == Concurrent::processor_count.to_f / 2
       expect(available_processor_count).to be_a Float
     end
