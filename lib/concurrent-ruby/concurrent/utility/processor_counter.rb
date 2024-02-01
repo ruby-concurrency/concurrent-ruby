@@ -153,7 +153,7 @@ module Concurrent
   # For performance reasons the calculated value will be memoized on the first
   # call.
   #
-  # @return [nil, Float] number of available processors seen by the OS or Java runtime
+  # @return [nil, Float] number of available processors
   def self.available_processor_count
     processor_counter.available_processor_count
   end
