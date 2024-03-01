@@ -57,15 +57,11 @@ if Concurrent.on_jruby?
       end
 
       def ns_shuttingdown?
-        if @executor.respond_to? :isTerminating
-          @executor.isTerminating
-        else
-          false
-        end
+        @executor.isShutdown && !@executor.isTerminated
       end
 
       def ns_shutdown?
-        @executor.isShutdown || @executor.isTerminated
+        @executor.isTerminated
       end
 
       class Job

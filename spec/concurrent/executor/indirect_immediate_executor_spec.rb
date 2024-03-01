@@ -7,7 +7,7 @@ module Concurrent
 
     subject { IndirectImmediateExecutor.new }
 
-    it_should_behave_like :executor_service
+    it_should_behave_like :executor_service, immediate_type: true
 
     it "runs its tasks synchronously" do
       start = Time.now
