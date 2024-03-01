@@ -3,7 +3,7 @@ require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_fixnum'
 require 'timeout'
 
-RSpec.shared_examples :executor_service do
+RSpec.shared_examples :executor_service do |immediate_type: false|
 
   after(:each) do
     subject.shutdown
@@ -81,6 +81,48 @@ RSpec.shared_examples :executor_service do
       subject.kill
       expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
       expect(subject).not_to be_running
+    end
+  end
+
+  context '#shuttingdown?' do
+    it 'returns false when the thread pool is running' do
+      expect(subject).not_to be_shuttingdown
+    end
+
+    it 'returns true when the thread pool is shutting down' do
+      skip "will never be in shuttingdown? state" if immediate_type
+
+      subject.post{ sleep(0.5) }
+      subject.shutdown
+      expect(subject).to be_shuttingdown
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
+    end
+
+    it 'returns false when the thread pool is shutdown' do
+      subject.shutdown
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
+      expect(subject).not_to be_shuttingdown
+    end
+  end
+
+  context '#shutdown?' do
+    it 'returns false when the thread pool is running' do
+      expect(subject).not_to be_shutdown
+    end
+
+    it 'returns false when the thread pool is shutting down' do
+      skip "will never be in shuttingdown? state" if immediate_type
+
+      subject.post{ sleep(0.5) }
+      subject.shutdown
+      expect(subject).not_to be_shutdown
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
+    end
+
+    it 'returns true when the thread pool is shutdown' do
+      subject.shutdown
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
+      expect(subject).to be_shutdown
     end
   end
 
