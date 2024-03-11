@@ -244,7 +244,7 @@ module Concurrent
         expect(task.schedule_time).to eq expected
       end
 
-      it 'reschdules a pending and unpost task when given a valid time' do
+      it 'reschedules a pending and unpost task when given a valid time' do
         initial_delay = 10
         rescheduled_delay = 20
         task = subject.post(initial_delay){ nil }
