@@ -48,7 +48,7 @@ module Concurrent
 
       return nil if posts.empty?
 
-      jobs = posts.map { |executor, args, task| Job.new executor, args, task }
+      jobs = posts.map { |executor, args, task| new_job(args, executor, task) }
 
       job_to_post = synchronize do
         if @being_executed
@@ -66,6 +66,10 @@ module Concurrent
     end
 
     private
+
+    def new_job(args, executor, task)
+      Job.new executor, args, task
+    end
 
     def ns_initialize
       @being_executed = false
