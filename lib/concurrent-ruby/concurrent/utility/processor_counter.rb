@@ -162,7 +162,7 @@ module Concurrent
   # Returns `nil` if there is no enforced limit, or a `Float` if the
   # process is inside a cgroup with a dedicated CPU quota (typically Docker).
   #
-  # Note that nothing prevent to set a CPU quota higher than the actual number of
+  # Note that nothing prevents setting a CPU quota higher than the actual number of
   # cores on the system.
   #
   # For performance reasons the calculated value will be memoized on the first
