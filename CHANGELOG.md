@@ -1,5 +1,9 @@
 ## Current
 
+## Release v1.3.1 (28 May 2024)
+
+* Release 1.3.0 was broken when pushed to RubyGems. 1.3.1 is a packaging fix.
+
 ## Release v1.3.0 (28 May 2024)
 
 * (#1042) Align Java Executor Service behavior for `shuttingdown?`, `shutdown?`
