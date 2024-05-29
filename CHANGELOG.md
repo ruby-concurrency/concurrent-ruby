@@ -1,6 +1,6 @@
 ## Current
 
-## Release v1.3.1 (28 May 2024)
+## Release v1.3.1 (29 May 2024)
 
 * Release 1.3.0 was broken when pushed to RubyGems. 1.3.1 is a packaging fix.
 
