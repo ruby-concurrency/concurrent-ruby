@@ -7,7 +7,7 @@
 ## Release v1.3.0 (28 May 2024)
 
 * (#1042) Align Java Executor Service behavior for `shuttingdown?`, `shutdown?`
-* (#1038) Add `Concurrent.usable_processor_count` that is cgroups aware.
+* (#1038) Add `Concurrent.available_processor_count` that is cgroups aware.
 
 ## Release v1.2.3 (16 Jan 2024)
 
