@@ -68,10 +68,20 @@ module Concurrent
                 end
                 cores.count
               when /mswin|mingw/
-                require 'win32ole'
-                result_set = WIN32OLE.connect("winmgmts://").ExecQuery(
-                  "select NumberOfCores from Win32_Processor")
-                result_set.to_enum.collect(&:NumberOfCores).reduce(:+)
+                # Get-CimInstance introduced in PowerShell 3 or earlier: https://learn.microsoft.com/en-us/previous-versions/powershell/module/cimcmdlets/get-ciminstance?view=powershell-3.0
+                result = run('powershell -command "Get-CimInstance -ClassName Win32_Processor  | Select-Object -Property NumberOfCores"')
+                if !result || $?.exitstatus != 0
+                  # fallback to deprecated wmic for older systems
+                  result = run("wmic cpu get NumberOfCores")
+                end
+                if !result || $?.exitstatus != 0
+                  # Bail out if both commands returned something unexpected
+                  processor_count
+                else
+                  # powershell: "\nNumberOfCores\n-------------\n            4\n\n\n" 
+                  # wmic:       "NumberOfCores  \n\n4              \n\n\n\n"
+                  result.scan(/\d+/).map(&:to_i).reduce(:+)
+                end
               else
                 processor_count
               end
@@ -79,6 +89,11 @@ module Concurrent
         ppc > 0 ? ppc : processor_count
       rescue
         return 1
+      end
+
+      def run(command)
+        IO.popen(command, &:read)
+      rescue Errno::ENOENT
       end
 
       def compute_cpu_quota
