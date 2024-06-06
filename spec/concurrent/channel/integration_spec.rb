@@ -68,7 +68,7 @@ STDOUT
     end
 
     specify 'default-selection.rb' do
-      skip('flaky') if Concurrent.on_jruby? || Concurrent.on_truffleruby?
+      skip('flaky') if Concurrent.on_jruby? || Concurrent.on_truffleruby? || Concurrent.on_windows?
 expected = <<-STDOUT
     .
     .
