@@ -758,6 +758,7 @@ RSpec.describe 'Concurrent::Promises' do
   describe 'value!' do
     %w[with without].each do |timeout|
       it "does not return spuriously #{timeout} timeout" do
+        skip "SIGHUP not supported" if Concurrent.on_windows?
         # https://github.com/ruby-concurrency/concurrent-ruby/issues/1015
         trapped = false
         original_handler = Signal.trap(:SIGHUP) { trapped = true }
