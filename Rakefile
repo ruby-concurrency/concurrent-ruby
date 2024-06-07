@@ -282,8 +282,8 @@ namespace :release do
   task :publish => ['publish:ask', 'publish:tag', 'publish:rubygems', 'publish:post_steps']
 
   namespace :publish do
-    publish_base = true
-    publish_edge = false
+    publish_base = nil
+    publish_edge = nil
 
     task :ask do
       begin
@@ -291,8 +291,15 @@ namespace :release do
         input = STDIN.gets.strip.downcase
       end until %w(y n).include?(input)
       exit 1 if input == 'n'
+
       begin
-        STDOUT.puts 'It will publish `concurrent-ruby`. Do you want to publish `concurrent-ruby-edge`? (y/n)'
+        STDOUT.puts 'Do you want to publish `concurrent-ruby`? (y/n)'
+        input = STDIN.gets.strip.downcase
+      end until %w(y n).include?(input)
+      publish_base = input == 'y'
+
+      begin
+        STDOUT.puts 'Do you want to publish `concurrent-ruby-edge`? (y/n)'
         input = STDIN.gets.strip.downcase
       end until %w(y n).include?(input)
       publish_edge = input == 'y'
