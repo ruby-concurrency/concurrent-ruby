@@ -28,6 +28,10 @@ unless Concurrent.on_jruby? || Concurrent.on_truffleruby?
   end
 end
 
+def which?(executable)
+  !`which #{executable} 2>/dev/null`.empty?
+end
+
 require 'rake_compiler_dock'
 namespace :repackage do
   desc '* with Windows fat distributions'
@@ -42,12 +46,19 @@ namespace :repackage do
       Rake::Task['lib/concurrent-ruby/concurrent/concurrent_ruby.jar'].invoke
 
       # build all gem files
+      rack_compiler_dock_kwargs = {}
+      if which?('podman') and (!which?('docker') || `docker --version`.include?('podman'))
+        # podman and only podman available, so RakeCompilerDock will use podman, otherwise it uses docker
+        rack_compiler_dock_kwargs = {
+          options: ['--privileged'], # otherwise the directory in the image is empty
+          runas: false
+        }
+      end
       %w[x86-mingw32 x64-mingw32].each do |plat|
         RakeCompilerDock.sh(
           "bundle install --local && bundle exec rake native:#{plat} gem --trace",
           platform: plat,
-          options: ['--privileged'], # otherwise the directory in the image is empty
-          runas: false)
+          **rack_compiler_dock_kwargs)
       end
     end
   end
