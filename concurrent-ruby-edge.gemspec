@@ -25,5 +25,5 @@ Please see http://concurrent-ruby.com for more information.
 
   s.required_ruby_version = '>= 2.3'
 
-  s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION}"
+  s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION.split('.')[0..1].join('.')}"
 end
