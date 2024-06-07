@@ -1,6 +1,10 @@
 ## Current
 
-## Edge 0.7.1 (7 June 2024)
+## Release v1.3.2, edge v0.7.1 (29 May 2024)
+
+concurrent-ruby:
+
+* (#1051) Remove dependency on `win32ole`.
 
 concurrent-ruby-edge:
 
