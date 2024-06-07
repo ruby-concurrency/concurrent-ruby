@@ -1,5 +1,11 @@
 ## Current
 
+## Edge 0.7.1 (7 June 2024)
+
+concurrent-ruby-edge:
+
+* (#1052) Fix dependency on `concurrent-ruby` to allow the latest release.
+
 ## Release v1.3.1 (29 May 2024)
 
 * Release 1.3.0 was broken when pushed to RubyGems. 1.3.1 is a packaging fix.
