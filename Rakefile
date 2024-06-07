@@ -269,7 +269,7 @@ namespace :release do
         sh 'ruby -v'
         sh 'bundle exec rake spec:installed'
 
-        env = { "PATH" => "#{ENV['CONCURRENT_JRUBY_HOME']}/bin:#{ENV['PATH']}" }
+        env = { "PATH" => "#{ENV.fetch('CONCURRENT_JRUBY_HOME')}/bin:#{ENV['PATH']}" }
         sh env, 'ruby -v'
         sh env, 'bundle exec rake spec:installed'
       end
