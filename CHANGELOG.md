@@ -1,6 +1,10 @@
 ## Current
 
-## Release v1.3.2, edge v0.7.1 (29 May 2024)
+## Release v1.3.3 (9 June 2024)
+
+* (#1053) Improve the speed of `Concurrent.physical_processor_count` on Windows.
+
+## Release v1.3.2, edge v0.7.1 (7 June 2024)
 
 concurrent-ruby:
 
