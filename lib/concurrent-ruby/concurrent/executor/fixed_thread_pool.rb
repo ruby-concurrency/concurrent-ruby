@@ -144,6 +144,8 @@ module Concurrent
   #     subsequent tasks will be rejected in accordance with the configured `fallback_policy`.
   #   * `auto_terminate`: When true (default), the threads started will be marked as daemon.
   #   * `fallback_policy`: The policy defining how rejected tasks are handled.
+  #   * `prestart`: Defaults to false. When true, the minimum number of threads
+  #     will be started when the pool is created.
   #
   #   Three fallback policies are supported:
   #
