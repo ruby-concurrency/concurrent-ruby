@@ -128,8 +128,8 @@ module Concurrent
   # `java.lang.Runtime.getRuntime.availableProcessors` will be used. According
   # to the Java documentation this "value may change during a particular
   # invocation of the virtual machine... [applications] should therefore
-  # occasionally poll this property." Subsequently the result will NOT be
-  # memoized under JRuby.
+  # occasionally poll this property." We still memoize this value once under
+  # JRuby.
   #
   # Otherwise Ruby's Etc.nprocessors will be used.
   #
