@@ -12,6 +12,7 @@ module Concurrent
         @processor_count          = Delay.new { compute_processor_count }
         @physical_processor_count = Delay.new { compute_physical_processor_count }
         @cpu_quota                = Delay.new { compute_cpu_quota }
+        @cpu_shares               = Delay.new { compute_cpu_shares }
       end
 
       def processor_count
@@ -39,6 +40,10 @@ module Concurrent
 
       def cpu_quota
         @cpu_quota.value
+      end
+
+      def cpu_shares
+        @cpu_shares.value
       end
 
       private
@@ -110,6 +115,20 @@ module Concurrent
             return nil if max == 0
             period = File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us").to_f
             max / period
+          end
+        end
+      end
+
+      def compute_cpu_shares
+        if RbConfig::CONFIG["target_os"].include?("linux")
+          if File.exist?("/sys/fs/cgroup/cpu.weight")
+            # cgroups v2: https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files
+            # Ref: https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
+            weight = File.read("/sys/fs/cgroup/cpu.weight").to_f
+            ((((weight - 1) * 262142) / 9999) + 2) / 1024
+          elsif File.exist?("/sys/fs/cgroup/cpu/cpu.shares")
+            # cgroups v1: https://kernel.googlesource.com/pub/scm/linux/kernel/git/glommer/memcg/+/cpu_stat/Documentation/cgroups/cpu.txt
+            File.read("/sys/fs/cgroup/cpu/cpu.shares").to_f / 1024
           end
         end
       end
@@ -186,5 +205,13 @@ module Concurrent
   # @return [nil, Float] Maximum number of available processors as set by a cgroup CPU quota, or nil if none set
   def self.cpu_quota
     processor_counter.cpu_quota
+  end
+
+  # The CPU shares requested by the process. For performance reasons the calculated
+  # value will be memoized on the first call.
+  #
+  # @return [Float, nil] CPU shares requested by the process, or nil if not set
+  def self.cpu_shares
+    processor_counter.cpu_shares
   end
 end

@@ -92,4 +92,26 @@ module Concurrent
     end
 
   end
+
+  RSpec.describe '#cpu_shares' do
+    let(:counter) { Concurrent::Utility::ProcessorCounter.new }
+
+    it 'returns a float when cgroups v2 sets a cpu.weight' do
+      expect(RbConfig::CONFIG).to receive(:[]).with("target_os").and_return("linux")
+      expect(File).to receive(:exist?).with("/sys/fs/cgroup/cpu.weight").and_return(true)
+
+      expect(File).to receive(:read).with("/sys/fs/cgroup/cpu.weight").and_return("10000\n")
+      expect(counter.cpu_shares).to be == 256.0
+    end
+
+    it 'returns a float if cgroups v1 sets a cpu.shares' do
+      expect(RbConfig::CONFIG).to receive(:[]).with("target_os").and_return("linux")
+      expect(File).to receive(:exist?).with("/sys/fs/cgroup/cpu.weight").and_return(false)
+      expect(File).to receive(:exist?).with("/sys/fs/cgroup/cpu/cpu.shares").and_return(true)
+
+      expect(File).to receive(:read).with("/sys/fs/cgroup/cpu/cpu.shares").and_return("512\n")
+      expect(counter.cpu_shares).to be == 0.5
+    end
+
+  end
 end
