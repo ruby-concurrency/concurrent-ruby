@@ -83,7 +83,7 @@ module Concurrent
                   # Bail out if both commands returned something unexpected
                   processor_count
                 else
-                  # powershell: "\nNumberOfCores\n-------------\n            4\n\n\n" 
+                  # powershell: "\nNumberOfCores\n-------------\n            4\n\n\n"
                   # wmic:       "NumberOfCores  \n\n4              \n\n\n\n"
                   result.scan(/\d+/).map(&:to_i).reduce(:+)
                 end
@@ -181,13 +181,14 @@ module Concurrent
   end
 
   # Number of processors cores available for process scheduling.
-  # Returns `nil` if there is no #cpu_quota, or a `Float` if the
-  # process is inside a cgroup with a dedicated CPU quota (typically Docker).
+  # This method takes in account the CPU quota if the process is inside a cgroup with a
+  # dedicated CPU quota (typically Docker).
+  # Otherwise it returns the same value as #processor_count but as a Float.
   #
   # For performance reasons the calculated value will be memoized on the first
   # call.
   #
-  # @return [nil, Float] number of available processors
+  # @return [Float] number of available processors
   def self.available_processor_count
     processor_counter.available_processor_count
   end
