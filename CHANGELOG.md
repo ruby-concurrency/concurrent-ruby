@@ -1,5 +1,7 @@
 ## Current
 
+* (#1060) Fix bug with return value of `Concurrent.available_processor_count` when `cpu.cfs_quota_us` is -1.
+
 ## Release v1.3.3 (9 June 2024)
 
 * (#1053) Improve the speed of `Concurrent.physical_processor_count` on Windows.

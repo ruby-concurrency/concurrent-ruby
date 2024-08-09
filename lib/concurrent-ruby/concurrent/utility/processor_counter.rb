@@ -112,7 +112,9 @@ module Concurrent
           elsif File.exist?("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us")
             # cgroups v1: https://kernel.googlesource.com/pub/scm/linux/kernel/git/glommer/memcg/+/cpu_stat/Documentation/cgroups/cpu.txt
             max = File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us").to_i
-            return nil if max == 0
+            # If the cpu.cfs_quota_us is -1, cgroup does not adhere to any CPU time restrictions
+            # https://docs.kernel.org/scheduler/sched-bwc.html#management
+            return nil if max <= 0
             period = File.read("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us").to_f
             max / period
           end
