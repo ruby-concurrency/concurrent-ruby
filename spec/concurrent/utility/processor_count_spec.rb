@@ -56,6 +56,15 @@ module Concurrent
       expect(counter.cpu_quota).to be_nil
     end
 
+    it 'returns nil if cgroups v1 and cpu.cfs_quota_us is -1' do
+      expect(RbConfig::CONFIG).to receive(:[]).with("target_os").and_return("linux")
+      expect(File).to receive(:exist?).with("/sys/fs/cgroup/cpu.max").and_return(false)
+      expect(File).to receive(:exist?).with("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us").and_return(true)
+
+      expect(File).to receive(:read).with("/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us").and_return("-1\n")
+      expect(counter.cpu_quota).to be_nil
+    end
+
     it 'returns a float if cgroups v1 sets a limit' do
       expect(RbConfig::CONFIG).to receive(:[]).with("target_os").and_return("linux")
       expect(File).to receive(:exist?).with("/sys/fs/cgroup/cpu.max").and_return(false)
