@@ -1,6 +1,5 @@
 version = File.read("#{__dir__}/lib/concurrent-ruby/concurrent/version.rb")[/'(.+)'/, 1] or raise
 edge_version = File.read("#{__dir__}/lib/concurrent-ruby-edge/concurrent/edge/version.rb")[/'(.+)'/, 1] or raise
-require_relative 'lib/concurrent-ruby/concurrent/utility/engine'
 
 core_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby.gemspec')
 ext_gemspec  = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-ext.gemspec')
@@ -8,14 +7,14 @@ edge_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby-edge.
 
 require 'rake/javaextensiontask'
 
-ENV['JRUBY_HOME'] = ENV['CONCURRENT_JRUBY_HOME'] if ENV['CONCURRENT_JRUBY_HOME'] && !Concurrent.on_jruby?
+ENV['JRUBY_HOME'] = ENV['CONCURRENT_JRUBY_HOME'] if ENV['CONCURRENT_JRUBY_HOME'] && RUBY_ENGINE != 'jruby'
 
 Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.ext_dir = 'ext/concurrent-ruby'
   ext.lib_dir = 'lib/concurrent-ruby/concurrent'
 end
 
-unless Concurrent.on_jruby? || Concurrent.on_truffleruby?
+if RUBY_ENGINE == 'ruby'
   require 'rake/extensiontask'
 
   Rake::ExtensionTask.new('concurrent_ruby_ext', ext_gemspec) do |ext|
@@ -68,7 +67,7 @@ require 'rubygems'
 require 'rubygems/package_task'
 
 Gem::PackageTask.new(core_gemspec) {} if core_gemspec
-Gem::PackageTask.new(ext_gemspec) {} if ext_gemspec && !Concurrent.on_jruby?
+Gem::PackageTask.new(ext_gemspec) {} if ext_gemspec && RUBY_ENGINE != 'jruby'
 Gem::PackageTask.new(edge_gemspec) {} if edge_gemspec
 
 CLEAN.include(
@@ -97,7 +96,7 @@ begin
       Bundler.with_original_env do
         Dir.chdir(__dir__) do
           sh "gem install pkg/concurrent-ruby-#{version}.gem"
-          sh "gem install pkg/concurrent-ruby-ext-#{version}.gem" if Concurrent.on_cruby?
+          sh "gem install pkg/concurrent-ruby-ext-#{version}.gem" if RUBY_ENGINE == 'ruby'
           sh "gem install pkg/concurrent-ruby-edge-#{edge_version}.gem"
           ENV['NO_PATH'] = 'true'
           sh 'bundle update'
