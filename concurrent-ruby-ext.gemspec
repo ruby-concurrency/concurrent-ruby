@@ -1,8 +1,8 @@
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/version')
+version = File.read("#{__dir__}/lib/concurrent-ruby/concurrent/version.rb")[/'(.+)'/, 1] or raise
 
 Gem::Specification.new do |s|
   s.name        = 'concurrent-ruby-ext'
-  s.version     = Concurrent::VERSION
+  s.version     = version
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jerry D'Antonio", 'The Ruby Concurrency Team']
   s.email       = 'concurrent-ruby@googlegroups.com'
@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.3'
 
-  s.add_runtime_dependency 'concurrent-ruby', "= #{Concurrent::VERSION}"
+  s.add_runtime_dependency 'concurrent-ruby', "= #{version}"
 end

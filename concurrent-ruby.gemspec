@@ -1,10 +1,10 @@
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/version')
+version = File.read("#{__dir__}/lib/concurrent-ruby/concurrent/version.rb")[/'(.+)'/, 1] or raise
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
 
   s.name             = 'concurrent-ruby'
-  s.version          = Concurrent::VERSION
+  s.version          = version
   s.platform         = Gem::Platform::RUBY
   s.authors          = ["Jerry D'Antonio", 'Petr Chalupa', 'The Ruby Concurrency Team']
   s.email            = 'concurrent-ruby@googlegroups.com'

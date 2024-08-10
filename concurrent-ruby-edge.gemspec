@@ -1,11 +1,11 @@
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby/concurrent/version')
-require File.join(File.dirname(__FILE__ ), 'lib/concurrent-ruby-edge/concurrent/edge/version')
+version = File.read("#{__dir__}/lib/concurrent-ruby/concurrent/version.rb")[/'(.+)'/, 1] or raise
+edge_version = File.read("#{__dir__}/lib/concurrent-ruby-edge/concurrent/edge/version.rb")[/'(.+)'/, 1] or raise
 
 Gem::Specification.new do |s|
   git_files = `git ls-files`.split("\n")
 
   s.name             = 'concurrent-ruby-edge'
-  s.version          = Concurrent::EDGE_VERSION
+  s.version          = edge_version
   s.platform         = Gem::Platform::RUBY
   s.authors          = ["Jerry D'Antonio", 'Petr Chalupa', 'The Ruby Concurrency Team']
   s.email            = 'concurrent-ruby@googlegroups.com'
@@ -25,5 +25,5 @@ Please see http://concurrent-ruby.com for more information.
 
   s.required_ruby_version = '>= 2.3'
 
-  s.add_runtime_dependency 'concurrent-ruby', "~> #{Concurrent::VERSION.split('.')[0..1].join('.')}"
+  s.add_runtime_dependency 'concurrent-ruby', "~> #{version.split('.')[0..1].join('.')}"
 end
