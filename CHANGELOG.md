@@ -1,6 +1,9 @@
 ## Current
 
+## Release v1.3.4 (10 August 2024)
+
 * (#1060) Fix bug with return value of `Concurrent.available_processor_count` when `cpu.cfs_quota_us` is -1.
+* (#1058) Add `Concurrent.cpu_shares` that is cgroups aware.
 
 ## Release v1.3.3 (9 June 2024)
 
