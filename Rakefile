@@ -1,5 +1,5 @@
-require_relative 'lib/concurrent-ruby/concurrent/version'
-require_relative 'lib/concurrent-ruby-edge/concurrent/edge/version'
+version = File.read("#{__dir__}/lib/concurrent-ruby/concurrent/version.rb")[/'(.+)'/, 1] or raise
+edge_version = File.read("#{__dir__}/lib/concurrent-ruby-edge/concurrent/edge/version.rb")[/'(.+)'/, 1] or raise
 require_relative 'lib/concurrent-ruby/concurrent/utility/engine'
 
 core_gemspec = Gem::Specification.load File.join(__dir__, 'concurrent-ruby.gemspec')
@@ -96,9 +96,9 @@ begin
     task :installed do
       Bundler.with_original_env do
         Dir.chdir(__dir__) do
-          sh "gem install pkg/concurrent-ruby-#{Concurrent::VERSION}.gem"
-          sh "gem install pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem" if Concurrent.on_cruby?
-          sh "gem install pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem"
+          sh "gem install pkg/concurrent-ruby-#{version}.gem"
+          sh "gem install pkg/concurrent-ruby-ext-#{version}.gem" if Concurrent.on_cruby?
+          sh "gem install pkg/concurrent-ruby-edge-#{edge_version}.gem"
           ENV['NO_PATH'] = 'true'
           sh 'bundle update'
           sh 'bundle exec rake spec:ci'
@@ -128,7 +128,7 @@ rescue LoadError => e
   puts 'RSpec is not installed, skipping test task definitions: ' + e.message
 end
 
-current_yard_version_name = Concurrent::VERSION
+current_yard_version_name = version
 
 begin
   require 'yard'
@@ -314,21 +314,21 @@ namespace :release do
     desc '** tag HEAD with current version and push to github'
     task :tag => :ask do
       Dir.chdir(__dir__) do
-        sh "git tag v#{Concurrent::VERSION}" if publish_base
-        sh "git push origin v#{Concurrent::VERSION}" if publish_base
-        sh "git tag edge-v#{Concurrent::EDGE_VERSION}" if publish_edge
-        sh "git push origin edge-v#{Concurrent::EDGE_VERSION}" if publish_edge
+        sh "git tag v#{version}" if publish_base
+        sh "git push origin v#{version}" if publish_base
+        sh "git tag edge-v#{edge_version}" if publish_edge
+        sh "git push origin edge-v#{edge_version}" if publish_edge
       end
     end
 
     desc '** push all *.gem files to rubygems'
     task :rubygems => :ask do
       Dir.chdir(__dir__) do
-        sh "gem push pkg/concurrent-ruby-#{Concurrent::VERSION}.gem" if publish_base
-        sh "gem push pkg/concurrent-ruby-edge-#{Concurrent::EDGE_VERSION}.gem" if publish_edge
-        sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}.gem" if publish_base
-        sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x64-mingw32.gem" if publish_base
-        sh "gem push pkg/concurrent-ruby-ext-#{Concurrent::VERSION}-x86-mingw32.gem" if publish_base
+        sh "gem push pkg/concurrent-ruby-#{version}.gem" if publish_base
+        sh "gem push pkg/concurrent-ruby-edge-#{edge_version}.gem" if publish_edge
+        sh "gem push pkg/concurrent-ruby-ext-#{version}.gem" if publish_base
+        sh "gem push pkg/concurrent-ruby-ext-#{version}-x64-mingw32.gem" if publish_base
+        sh "gem push pkg/concurrent-ruby-ext-#{version}-x86-mingw32.gem" if publish_base
       end
     end
 
