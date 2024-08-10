@@ -232,6 +232,8 @@ namespace :release do
   # Depends on environment of @pitr-ch
 
   task :checks do
+    raise '$CONCURRENT_JRUBY_HOME must be set' unless ENV['CONCURRENT_JRUBY_HOME']
+
     Dir.chdir(__dir__) do
       sh 'test -z "$(git status --porcelain)"' do |ok, res|
         unless ok
@@ -262,6 +264,8 @@ namespace :release do
 
   desc '* test actual installed gems instead of cloned repository on MRI and JRuby'
   task :test do
+    raise '$CONCURRENT_JRUBY_HOME must be set' unless ENV['CONCURRENT_JRUBY_HOME']
+
     Dir.chdir(__dir__) do
       puts "Testing with the installed gem"
 
