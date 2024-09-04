@@ -284,7 +284,7 @@ To use the tools in the Edge gem it must be required separately:
 require 'concurrent-edge'
 ```
 
-If the library does not behave as expected, `Concurrent.use_stdlib_logger(Logger::DEBUG)` could 
+If the library does not behave as expected, `Concurrent.use_simple_logger(:DEBUG)` could
 help to reveal the problem.
 
 ## Installation

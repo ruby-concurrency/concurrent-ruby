@@ -124,12 +124,12 @@ Spawned actor cannot be garbage-collected until it's terminated. There is a refe
 
 Actors are running on shared thread poll which allows user to create many actors cheaply.
 Downside is that these actors cannot be directly used to do IO or other blocking operations.
-Blocking operations could starve the `default_task_pool`. However there are two options:
+Blocking operations could starve the `global_fast_executor`. However there are two options:
 
-- Create an regular actor which will schedule blocking operations in `global_operation_pool`
+- Create an regular actor which will schedule blocking operations in `global_io_executor`
   (which is intended for blocking operations) sending results back to self in messages.
-- Create an actor using `global_operation_pool` instead of `global_task_pool`, e.g.
-  `AnIOActor.spawn name: :blocking, executor: Concurrent.configuration.global_operation_pool`.
+- Create an actor using `global_io_executor` instead of `global_fast_executor`, e.g.
+  `AnIOActor.spawn name: :blocking, executor: Concurrent.global_io_executor`.
   
 ### Example
   
