@@ -1,7 +1,6 @@
 require 'concurrent'
 
-# logger = Logger.new(STDOUT)
-# Concurrent.configuration.logger = logger.method(:add)
+# Concurrent.use_simple_logger(:WARN, STDOUT)
 
 # First option is to use operation pool
 

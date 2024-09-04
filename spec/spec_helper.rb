@@ -42,7 +42,7 @@ RSpec.configure do |config|
   config.before :all do
     # Only configure logging if it has been required, to make sure the necessary require's are in place
     if Concurrent.respond_to? :use_simple_logger
-      Concurrent.use_simple_logger Logger::FATAL
+      Concurrent.use_simple_logger :FATAL
     end
   end
 

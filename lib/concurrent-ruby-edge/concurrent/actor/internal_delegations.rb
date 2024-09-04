@@ -1,11 +1,11 @@
-require 'logger'
+require 'concurrent/concern/logging'
 require 'concurrent/actor/public_delegations'
 
 module Concurrent
   module Actor
     module InternalDelegations
       include PublicDelegations
-      include Logger::Severity
+      include Concurrent::Concern::Logging
 
       # @see Core#children
       def children

@@ -674,7 +674,7 @@ module Concurrent
       end
 
       def tell_op(message)
-        log Logger::DEBUG, @Pid, told: message
+        log DEBUG, @Pid, told: message
         if (mailbox = @Mailbox)
           mailbox.push_op(message).then { @Pid }
         else
@@ -683,7 +683,7 @@ module Concurrent
       end
 
       def tell(message, timeout = nil)
-        log Logger::DEBUG, @Pid, told: message
+        log DEBUG, @Pid, told: message
         if (mailbox = @Mailbox)
           timed_out = mailbox.push message, timeout
           timeout ? timed_out : @Pid
@@ -693,7 +693,7 @@ module Concurrent
       end
 
       def ask(message, timeout, timeout_value)
-        log Logger::DEBUG, @Pid, asked: message
+        log DEBUG, @Pid, asked: message
         if @Terminated.resolved?
           raise NoActor.new(@Pid)
         else
@@ -724,7 +724,7 @@ module Concurrent
       end
 
       def ask_op(message, probe)
-        log Logger::DEBUG, @Pid, asked: message
+        log DEBUG, @Pid, asked: message
         if @Terminated.resolved?
           probe.reject NoActor.new(@Pid), false
         else
@@ -1029,7 +1029,7 @@ module Concurrent
       end
 
       def after_termination(final_reason)
-        log Logger::DEBUG, @Pid, terminated: final_reason
+        log DEBUG, @Pid, terminated: final_reason
         clean_reply NoActor.new(@Pid)
         while true
           message = @Mailbox.try_pop NOTHING
@@ -1071,7 +1071,7 @@ module Concurrent
         inner_run(*args, &body).
             run(Run::TEST).
             then(&method(:after_termination)).
-            rescue { |e| log Logger::ERROR, e }
+            rescue { |e| log ERROR, e }
       end
 
       def receive(*rules, timeout: nil, timeout_value: nil, keep: false, &given_block)
@@ -1163,7 +1163,7 @@ module Concurrent
                          end
 
         message_future.then(start, self) do |message, s, _actor|
-          log Logger::DEBUG, pid, got: message
+          log DEBUG, pid, got: message
           catch(JUMP) do
             if (message = consume_signal(message)) == NOTHING
               @timeout = [@timeout + s - Concurrent.monotonic_time, 0].max if s
@@ -1230,7 +1230,7 @@ module Concurrent
         matcher       = -> m { m.is_a?(Ask) ? rules_matcher === m.message : rules_matcher === m }
         while true
           message = @Mailbox.pop_matching(matcher, timeout, TIMEOUT)
-          log Logger::DEBUG, pid, got: message
+          log DEBUG, pid, got: message
           unless (message = consume_signal(message)) == NOTHING
             rules.each do |rule, job|
               return eval_task(message, job) if rule === message
@@ -1535,7 +1535,7 @@ module Concurrent
     def self.create(type, channel, environment, name, executor)
       actor = KLASS_MAP.fetch(type).new(channel, environment, name, executor)
     ensure
-      log Logger::DEBUG, actor.pid, created: caller[1] if actor
+      log Concern::Logging::DEBUG, actor.pid, created: caller[1] if actor
     end
 
     KLASS_MAP = {

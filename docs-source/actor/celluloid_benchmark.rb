@@ -7,11 +7,7 @@ require 'celluloid/autostart'
 # require 'stackprof'
 # require 'profiler'
 
-logger                          = Logger.new($stderr)
-logger.level                    = Logger::INFO
-Concurrent.configuration.logger = lambda do |level, progname, message = nil, &block|
-  logger.add level, message, progname, &block
-end
+Concurrent.use_simple_logger(:INFO)
 
 scale       = 1
 ADD_TO      = (100 * scale).to_i

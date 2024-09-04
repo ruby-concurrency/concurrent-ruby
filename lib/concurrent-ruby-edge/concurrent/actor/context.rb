@@ -84,7 +84,7 @@ module Concurrent
         Reference
       end
 
-      # override to se different default executor, e.g. to change it to global_operation_pool
+      # override to se different default executor, e.g. to change it to global_fast_executor
       # @return [Executor]
       def default_executor
         Concurrent.global_io_executor
@@ -109,7 +109,7 @@ module Concurrent
       # @example by option hash
       #   inc2 = AdHoc.spawn(name:     'increment by 2',
       #                      args:     [2],
-      #                      executor: Concurrent.configuration.global_task_pool) do |increment_by|
+      #                      executor: Concurrent.global_fast_executor) do |increment_by|
       #     lambda { |number| number + increment_by }
       #   end
       #   inc2.ask!(2) # => 4
