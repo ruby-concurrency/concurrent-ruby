@@ -119,6 +119,14 @@ module Concurrent
       synchronize { ns_prune_pool }
     end
 
+    def prestartCoreThread
+      ns_add_idle_worker
+    end
+
+    def prestartAllCoreThreads
+      @min_length.times { ns_add_idle_worker }
+    end
+
     private
 
     # @!visibility private
@@ -149,6 +157,10 @@ module Concurrent
 
       @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
+
+      if opts.fetch(:prestart, false)
+        prestartAllCoreThreads
+      end
     end
 
     # @!visibility private
@@ -244,6 +256,20 @@ module Concurrent
       @workers_counter += 1
       @pool << (worker = Worker.new(self, @workers_counter))
       @largest_length = @pool.length if @pool.length > @largest_length
+      worker
+    end
+
+    # creates new worker which is ready
+    # @return [nil, Worker] nil of max capacity is reached
+    #
+    # @!visibility private
+    def ns_add_idle_worker
+      return if @pool.size >= @max_length
+
+      @workers_counter += 1
+      @pool << (worker = Worker.new(self, @workers_counter))
+      @largest_length = @pool.length if @pool.length > @largest_length
+      @ready << [worker, Concurrent.monotonic_time]
       worker
     end
 
