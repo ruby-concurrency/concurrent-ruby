@@ -79,9 +79,15 @@ VALUE ir_get_and_set(VALUE self, VALUE new_value) {
 
 VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE new_value) {
 #if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#if defined(__i386__) || defined(__ppc__)
+  if (OSAtomicCompareAndSwap32(expect_value, new_value, &DATA_PTR(self))) {
+    return Qtrue;
+  }
+#else
   if (OSAtomicCompareAndSwap64(expect_value, new_value, &DATA_PTR(self))) {
     return Qtrue;
   }
+#endif
 #elif defined(__sun)
   /*  Assuming VALUE is uintptr_t */
   /*  Based on the definition of uintptr_t from /usr/include/sys/int_types.h */
