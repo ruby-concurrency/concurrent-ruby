@@ -177,6 +177,19 @@ module Concurrent
       end
     end
 
+    context 'prestart' do
+
+      it 'starts threads when prestart is called' do
+        pool = described_class.new(5, prestart: false)
+        expect(pool.length).to eq 0
+        pool.prestartAllCoreThreads
+        expect(pool.length).to eq 5
+        pool.shutdown
+        expect(pool.wait_for_termination(pool_termination_timeout)).to eq true
+      end
+
+    end
+
     context 'worker creation and caching' do
 
       it 'never creates more than :num_threads threads' do
@@ -189,6 +202,14 @@ module Concurrent
         pool.shutdown
         expect(pool.wait_for_termination(pool_termination_timeout)).to eq true
       end
+
+      it 'creates threads on creation if :prestart is true' do
+        pool = described_class.new(5, prestart: true)
+        expect(pool.length).to eq 5
+        pool.shutdown
+        expect(pool.wait_for_termination(pool_termination_timeout)).to eq true
+      end
+
     end
 
     context 'fallback policy' do
