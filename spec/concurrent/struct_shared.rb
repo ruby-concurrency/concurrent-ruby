@@ -27,13 +27,15 @@ RSpec.shared_examples :struct do
     end
 
     it 'ignores methods on ancestor classes' do
-      ancestor = described_class.ancestors.first
-      ancestor.class_eval { def foo; end }
+      ancestor = described_class.ancestors.last
+      ancestor.class_eval { def foo(bar); end }
 
       clazz = described_class.new(:foo)
-      expect{ described_class.const_get(clazz.to_s) }.to raise_error(NameError)
-      expect(clazz).to be_a Class
-      expect(clazz.ancestors).to include described_class
+      struct = clazz.new
+
+      expect(struct).to respond_to :foo
+      method = struct.method(:foo)
+      expect(method.arity).to eq 0
 
       ancestor.send :remove_method, :foo
     end
