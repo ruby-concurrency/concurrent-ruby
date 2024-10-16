@@ -26,6 +26,18 @@ RSpec.shared_examples :struct do
       expect(clazz.ancestors).to include described_class
     end
 
+    it 'ignores methods on ancestor classes' do
+      ancestor = described_class.ancestors.first
+      ancestor.class_eval { def foo; end }
+
+      clazz = described_class.new(:foo)
+      expect{ described_class.const_get(clazz.to_s) }.to raise_error(NameError)
+      expect(clazz).to be_a Class
+      expect(clazz.ancestors).to include described_class
+
+      ancestor.send :remove_method, :foo
+    end
+
     it 'raises an exception when given an invalid class name' do
       expect{ described_class.new('lowercase') }.to raise_error(NameError)
       expect{ described_class.new('_') }.to raise_error(NameError)
