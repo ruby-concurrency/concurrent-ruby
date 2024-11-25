@@ -46,8 +46,9 @@ if Concurrent.on_jruby?
       def kill
         synchronize do
           @executor.shutdownNow
-          nil
         end
+        wait_for_termination
+        nil
       end
 
       private
