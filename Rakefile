@@ -12,6 +12,8 @@ ENV['JRUBY_HOME'] = ENV['CONCURRENT_JRUBY_HOME'] if ENV['CONCURRENT_JRUBY_HOME']
 Rake::JavaExtensionTask.new('concurrent_ruby', core_gemspec) do |ext|
   ext.ext_dir = 'ext/concurrent-ruby'
   ext.lib_dir = 'lib/concurrent-ruby/concurrent'
+  ext.source_version = '8'
+  ext.target_version = '8'
 end
 
 if RUBY_ENGINE == 'ruby'
