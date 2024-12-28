@@ -47,7 +47,7 @@ if conf[:vary] == "threads"
   end
 elsif conf[:vary] == "speed"
   # Varies the execution time of the update block
-  # by using long calulation (MD5)
+  # by using long calculation (MD5)
   #
   # NOTE: Thread.pass and sleep() are not usable by the atomic
   #       lock. It needs to run the whole block without hitting

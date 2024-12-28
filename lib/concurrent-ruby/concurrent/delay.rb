@@ -19,7 +19,7 @@ module Concurrent
   #
   # When a `Delay` is created its state is set to `pending`. The value and
   # reason are both `nil`. The first time the `#value` method is called the
-  # enclosed opration will be run and the calling thread will block. Other
+  # enclosed operation will be run and the calling thread will block. Other
   # threads attempting to call `#value` will block as well. Once the operation
   # is complete the *value* will be set to the result of the operation or the
   # *reason* will be set to the raised exception, as appropriate. All threads

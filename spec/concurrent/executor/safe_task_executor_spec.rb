@@ -33,7 +33,7 @@ module Concurrent
           expect(expected).to eq [1, 2, 3]
         end
 
-        it 'protectes #execute with a mutex' do
+        it 'protects #execute with a mutex' do
           expect(subject).to receive(:synchronize).with(no_args)
           subject.execute
         end

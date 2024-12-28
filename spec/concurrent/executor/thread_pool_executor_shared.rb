@@ -411,7 +411,7 @@ RSpec.shared_examples :thread_pool_executor do
           subject << proc { all_tasks_posted.wait; initial_executed.increment; }
         end
 
-        # Inject 20 more tasks, which should throw an exeption
+        # Inject 20 more tasks, which should throw an exception
         20.times do
           expect {
             subject << proc { subsequent_executed.increment; }

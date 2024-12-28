@@ -371,7 +371,7 @@ module Concurrent
     # @param [Float] timeout the maximum number of seconds to wait
     # @return [Boolean] true if all actions complete before timeout
     #
-    # @raise [Concurrent::TimeoutError] when timout is reached
+    # @raise [Concurrent::TimeoutError] when timeout is reached
     #
     # @!macro agent_await_warning
     def await_for!(timeout)
@@ -477,7 +477,7 @@ module Concurrent
       # @param [Array<Concurrent::Agent>] agents the Agents on which to wait
       # @return [Boolean] true if all actions complete before timeout
       #
-      # @raise [Concurrent::TimeoutError] when timout is reached
+      # @raise [Concurrent::TimeoutError] when timeout is reached
       # @!macro agent_await_warning
       def await_for!(timeout, *agents)
         raise Concurrent::TimeoutError unless await_for(timeout, *agents)

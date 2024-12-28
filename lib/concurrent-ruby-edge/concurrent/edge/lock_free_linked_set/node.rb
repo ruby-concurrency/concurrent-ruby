@@ -38,7 +38,7 @@ module Concurrent
           @SuccessorReference.value
         end
 
-        # This method provides a unqiue key for the data which will be used for
+        # This method provides a unique key for the data which will be used for
         # ordering. This is configurable, and changes depending on how you wish
         # the nodes to be ordered.
         def key_for(data)

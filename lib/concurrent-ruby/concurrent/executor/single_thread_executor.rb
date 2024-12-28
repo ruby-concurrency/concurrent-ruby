@@ -27,7 +27,7 @@ module Concurrent
   #   is received. This pattern has several issues. The thread itself is highly
   #   susceptible to errors during processing. Also, the thread itself must be
   #   constantly monitored and restarted should it die. `SingleThreadExecutor`
-  #   encapsulates all these bahaviors. The task processor is highly resilient
+  #   encapsulates all these behaviors. The task processor is highly resilient
   #   to errors from within tasks. Also, should the thread die it will
   #   automatically be restarted.
   #

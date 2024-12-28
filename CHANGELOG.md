@@ -296,7 +296,7 @@ concurrent-ruby-edge:
 * Simplification of `RubySingleThreadExecutor`
 * `Async` improvements
   - Each object uses its own `SingleThreadExecutor` instead of the global thread pool.
-  - No longers supports executor injection
+  - No longer supports executor injection
   - Much better documentation
 * `Atom` updates
   - No longer `Dereferenceable`
@@ -471,7 +471,7 @@ Please see the [roadmap](https://github.com/ruby-concurrency/concurrent-ruby/iss
 * Fixed bug with return value of `Concurrent::Actor::Utils::Pool#ask`
 * Fixed timing bug in `TimerTask`
 * Fixed bug when creating a `JavaThreadPoolExecutor` with minimum pool size of zero
-* Removed confusing warning when not using native extenstions
+* Removed confusing warning when not using native extensions
 * Improved documentation
 
 ## Release v0.7.0 (13 August 2014)

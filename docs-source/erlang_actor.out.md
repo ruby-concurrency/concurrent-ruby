@@ -276,7 +276,7 @@ The one exception from the original Erlang naming is exit.
 To avoid clashing with `Kernel#exit` it's called `terminate`. 
 
 Until there is more information available here, the chapters listed below from 
-a book [lern you some Erlang](https://learnyousomeerlang.com) 
+a book [learn you some Erlang](https://learnyousomeerlang.com) 
 are excellent source of information. 
 The Ruby ErlangActor implementation has same behaviour. 
 

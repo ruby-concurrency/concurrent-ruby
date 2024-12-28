@@ -133,7 +133,7 @@ end
 # NOTE: It seems to me that this measurement method
 #       is sensible to how the system dispatches his resources.
 #
-#       More precise caluclation could be done using
+#       More precise calculation could be done using
 #       getrusage's times
 ret = Benchmark.measure do
   $go = true

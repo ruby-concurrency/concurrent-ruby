@@ -193,7 +193,7 @@ module Concurrent
       end
     end
 
-    # The `delay` value given at instanciation.
+    # The `delay` value given at instantiation.
     #
     # @return [Float] the initial delay.
     def initial_delay
