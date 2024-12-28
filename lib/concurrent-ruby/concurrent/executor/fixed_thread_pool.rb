@@ -83,7 +83,7 @@ module Concurrent
   #
   #   This is a no-op on some pool implementation (e.g. the Java one).  The Ruby
   #   pool will auto-prune each time a new job is posted. You will need to call
-  #   this method explicitely in case your application post jobs in bursts (a
+  #   this method explicitly in case your application post jobs in bursts (a
   #   lot of jobs and then nothing for long periods)
 
   # @!macro thread_pool_executor_public_api

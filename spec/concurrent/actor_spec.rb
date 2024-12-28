@@ -160,7 +160,7 @@ module Concurrent
       end
 
       describe 'dead letter routing' do
-        it 'logs by deafault' do
+        it 'logs by default' do
           ping = Ping.spawn! :ping, []
           ping << :terminate!
           ping << 'asd'

@@ -15,7 +15,7 @@ module Concurrent
       # Usage:
       #   x = XorShiftRandom.get # uses Kernel.rand to generate an initial seed
       #   while true
-      #     if (x = XorShiftRandom.xorshift).odd? # thread-localy generate a next random number
+      #     if (x = XorShiftRandom.xorshift).odd? # thread-locally generate a next random number
       #       do_something_at_random
       #     end
       #   end

@@ -58,7 +58,7 @@ module Concurrent
 
       # Creates methods for reading and writing to a instance variable with
       # volatile (Java) semantic as {.attr_volatile} does.
-      # The instance variable should be accessed oly through generated methods.
+      # The instance variable should be accessed only through generated methods.
       # This method generates following methods: `value`, `value=(new_value) #=> new_value`,
       # `swap_value(new_value) #=> old_value`,
       # `compare_and_set_value(expected, value) #=> true || false`, `update_value(&block)`.

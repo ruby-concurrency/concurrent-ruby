@@ -153,7 +153,7 @@ module Concurrent
         }.to raise_error(ArgumentError)
       end
 
-      it 'raises an error when pasing too many arguments (arity >= 0)' do
+      it 'raises an error when passing too many arguments (arity >= 0)' do
         expect {
           subject.async.echo(1, 2, 3, 4, 5)
         }.to raise_error(StandardError)
@@ -224,7 +224,7 @@ module Concurrent
         }.to raise_error(ArgumentError)
       end
 
-      it 'raises an error when pasing too many arguments (arity >= 0)' do
+      it 'raises an error when passing too many arguments (arity >= 0)' do
         expect {
           subject.await.echo(1, 2, 3, 4, 5)
         }.to raise_error(StandardError)

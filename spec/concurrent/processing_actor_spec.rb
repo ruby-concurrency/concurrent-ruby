@@ -29,7 +29,7 @@ RSpec.describe 'Concurrent::ProcessingActor' do
           # continue running
           count(actor, count)
         when Integer
-          # this will call count again to set up what to do on next message, based on new state `count + numer`
+          # this will call count again to set up what to do on next message, based on new state `count + number`
           count(actor, count + number_or_command)
         end
       end

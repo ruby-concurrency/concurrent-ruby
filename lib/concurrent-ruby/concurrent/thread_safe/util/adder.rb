@@ -9,7 +9,7 @@ module Concurrent
     # @!visibility private
     module Util
 
-      # A Ruby port of the Doug Lea's jsr166e.LondAdder class version 1.8
+      # A Ruby port of the Doug Lea's jsr166e.LongAdder class version 1.8
       # available in public domain.
       #
       # Original source code available here:

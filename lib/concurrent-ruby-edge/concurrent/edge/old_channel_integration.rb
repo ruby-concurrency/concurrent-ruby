@@ -36,7 +36,7 @@ module Concurrent
 
         # @!visibility private
 
-        # Zips with selected value form the suplied channels
+        # Zips with selected value form the supplied channels
         # @return [Future]
         def then_select(*channels)
           future = Concurrent::Promises.select(*channels)

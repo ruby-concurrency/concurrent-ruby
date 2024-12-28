@@ -218,7 +218,7 @@ module Concurrent
 
     # @!method self.new(*args, &block)
     #
-    #   Instanciate a new object and ensure proper initialization of the
+    #   Instantiate a new object and ensure proper initialization of the
     #   synchronization mechanisms.
     #
     #   @param [Array<Object>] args Zero or more arguments to be passed to the

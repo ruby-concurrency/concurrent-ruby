@@ -113,7 +113,7 @@ module Concurrent
     # @option opts [Proc] :validator (nil) Optional proc used to validate new
     #   values. It must accept one and only one argument which will be the
     #   intended new value. The validator will return true if the new value
-    #   is acceptable else return false (preferrably) or raise an exception.
+    #   is acceptable else return false (preferably) or raise an exception.
     #
     # @!macro deref_options
     #

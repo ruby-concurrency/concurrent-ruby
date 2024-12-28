@@ -148,7 +148,7 @@ module Concurrent
         if value = super # non-falsy value is an existing mapping, return it right away
           value
           # re-check is done with get_or_default(key, NULL) instead of a simple !key?(key) in order to avoid a race condition, whereby by the time the current thread gets to the key?(key) call
-          # a key => value mapping might have already been created by a different thread (key?(key) would then return true, this elsif branch wouldn't be taken and an incorrent +nil+ value
+          # a key => value mapping might have already been created by a different thread (key?(key) would then return true, this elsif branch wouldn't be taken and an incorrect +nil+ value
           # would be returned)
           # note: nil == value check is not technically necessary
         elsif @default_proc && nil == value && NULL == (value = get_or_default(key, NULL))
