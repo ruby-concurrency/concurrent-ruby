@@ -358,7 +358,8 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 * Recent CRuby
 * JRuby, `rbenv install jruby-9.2.17.0`
 * Set env variable `CONCURRENT_JRUBY_HOME` to point to it, e.g. `/usr/local/opt/rbenv/versions/jruby-9.2.17.0`
-* Install Docker, required for Windows builds
+* Install Docker or Podman, required for Windows builds
+* If `bundle config get path` is set, use `bundle config set --local path.system true` otherwise the `gem name, path: '.'` gems won't be found (Bundler limitation).
 
 ### Publishing the Gem
 
