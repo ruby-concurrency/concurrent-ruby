@@ -1,5 +1,15 @@
 ## Current
 
+## Release v1.3.5, edge v0.7.2 (15 January 2025)
+
+concurrent-ruby:
+
+* (#1062) Remove dependency on logger.
+
+concurrent-ruby-edge:
+
+* (#1062) Remove dependency on logger.
+
 ## Release v1.3.4 (10 August 2024)
 
 * (#1060) Fix bug with return value of `Concurrent.available_processor_count` when `cpu.cfs_quota_us` is -1.
