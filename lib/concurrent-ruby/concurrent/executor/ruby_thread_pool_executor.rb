@@ -20,8 +20,11 @@ module Concurrent
     # @!macro thread_pool_executor_constant_default_max_queue_size
     DEFAULT_MAX_QUEUE_SIZE     = 0
 
-    # @!macro thread_pool_executor_constant_default_thread_timeout
+    # @!macro thread_pool_executor_constant_default_thread_idle_timeout
     DEFAULT_THREAD_IDLETIMEOUT = 60
+
+    # @!macro thread_pool_executor_constant_default_pool_prune_timeout
+    DEFAULT_POOL_PRUNETIMEOUT = 30
 
     # @!macro thread_pool_executor_constant_default_synchronous
     DEFAULT_SYNCHRONOUS = false
@@ -149,6 +152,8 @@ module Concurrent
 
       @gc_interval  = opts.fetch(:gc_interval, @idletime / 2.0).to_i # undocumented
       @next_gc_time = Concurrent.monotonic_time + @gc_interval
+
+      ns_set_pruner
     end
 
     # @!visibility private
@@ -166,7 +171,6 @@ module Concurrent
         return fallback_action(*args, &task)
       end
 
-      ns_prune_pool if @next_gc_time < Concurrent.monotonic_time
       nil
     end
 
@@ -183,6 +187,8 @@ module Concurrent
         # no more tasks will be accepted, just stop all workers
         @pool.each(&:stop)
       end
+
+      ns_pruner&.kill
     end
 
     # @!visibility private
@@ -218,7 +224,7 @@ module Concurrent
     # @!visibility private
     def ns_enqueue(*args, &task)
       return false if @synchronous
-      
+
       if !ns_limited_queue? || @queue.size < @max_queue
         @queue << [task, args]
         true
@@ -303,8 +309,24 @@ module Concurrent
         @largest_length       = 0
         @workers_counter      = 0
         @ruby_pid             = $$
+
+        ns_set_pruner
       end
     end
+
+    def ns_pruner
+      return if @min_length == @max_length
+
+      return @pruner if @pruner && @pruner.alive?
+
+      @pruner = Thread.new do
+        until stopped_event&.set?
+          sleep DEFAULT_POOL_PRUNETIMEOUT
+          ns_prune_pool
+        end
+      end
+    end
+    alias_method :ns_set_pruner, :ns_pruner
 
     # @!visibility private
     class Worker

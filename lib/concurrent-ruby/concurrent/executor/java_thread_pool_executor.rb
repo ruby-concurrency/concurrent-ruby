@@ -18,7 +18,7 @@ if Concurrent.on_jruby?
       # @!macro thread_pool_executor_constant_default_max_queue_size
       DEFAULT_MAX_QUEUE_SIZE = 0
 
-      # @!macro thread_pool_executor_constant_default_thread_timeout
+      # @!macro thread_pool_executor_constant_default_thread_idle_timeout
       DEFAULT_THREAD_IDLETIMEOUT = 60
 
       # @!macro thread_pool_executor_constant_default_synchronous
