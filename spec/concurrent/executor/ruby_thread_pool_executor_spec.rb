@@ -56,68 +56,49 @@ module Concurrent
       end
 
       before(:each) do
-        @now = Concurrent.monotonic_time
-        allow(Concurrent).to receive(:monotonic_time) { @now }
-
         @group1 = prepare_thread_group(5)
         @group2 = prepare_thread_group(5)
       end
 
       def eventually(mutex: nil, timeout: 5, &block)
-          start = Time.now
-          while Time.now - start < timeout
-            begin
-              if mutex
-                mutex.synchronize do
-                  return yield
-                end
-              else
+        start = Time.now
+        while Time.now - start < timeout
+          begin
+            if mutex
+              mutex.synchronize do
                 return yield
               end
-            rescue Exception => last_failure
+            else
+              return yield
             end
-            Thread.pass
+          rescue Exception => last_failure
           end
-          raise last_failure
+          Thread.pass
+        end
+        raise last_failure
       end
 
-      it "triggers pruning when posting work if the last prune happened more than gc_interval ago" do
+      it "triggers pruning if the thread idletimes have elapsed" do
         wakeup_thread_group(@group1)
-        @now += 6
+        sleep 6
         wakeup_thread_group(@group2)
-        subject.post { }
 
         eventually { expect(@group1.threads).to all(have_attributes(status: false)) }
         eventually { expect(@group2.threads).to all(have_attributes(status: 'sleep')) }
       end
 
-      it "does not trigger pruning when posting work if the last prune happened less than gc_interval ago" do
+      it "does not trigger pruning if the thread idletimes have not elapsed " do
         wakeup_thread_group(@group1)
-        @now += 3
-        subject.prune_pool
-        @now += 3
         wakeup_thread_group(@group2)
-        subject.post { }
 
-        eventually { expect(@group1.threads).to all(have_attributes(status: false)) }
-        eventually { expect(@group2.threads).to all(have_attributes(status: 'sleep')) }
-      end
-
-      it "reclaims threads that have been idle for more than idletime seconds" do
-        wakeup_thread_group(@group1)
-        @now += 6
-        wakeup_thread_group(@group2)
-        subject.prune_pool
-
-        eventually { expect(@group1.threads).to all(have_attributes(status: false)) }
+        eventually { expect(@group1.threads).to all(have_attributes(status: 'sleep')) }
         eventually { expect(@group2.threads).to all(have_attributes(status: 'sleep')) }
       end
 
       it "keeps at least min_length workers" do
         wakeup_thread_group(@group1)
         wakeup_thread_group(@group2)
-        @now += 12
-        subject.prune_pool
+        sleep 6
         all_threads = @group1.threads + @group2.threads
         eventually do
           finished_threads = all_threads.find_all { |t| !t.status }
