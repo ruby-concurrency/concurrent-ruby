@@ -204,7 +204,7 @@ module Concurrent
     end
   end
 
-  if Concurrent.allow_c_extensions?
+  if Concurrent.c_extensions_loaded?
     RSpec.describe CAtomicFixnum do
       it_should_behave_like :atomic_fixnum
     end
@@ -227,7 +227,7 @@ module Concurrent
       it 'inherits from JavaAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(JavaAtomicFixnum)
       end
-    elsif Concurrent.allow_c_extensions?
+    elsif Concurrent.c_extensions_loaded?
       it 'inherits from CAtomicFixnum' do
         expect(AtomicFixnum.ancestors).to include(CAtomicFixnum)
       end

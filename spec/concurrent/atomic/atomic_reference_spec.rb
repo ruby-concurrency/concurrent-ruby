@@ -163,7 +163,7 @@ module Concurrent
     it_should_behave_like :atomic_reference
   end
 
-  if Concurrent.allow_c_extensions?
+  if Concurrent.c_extensions_loaded?
     RSpec.describe CAtomicReference do
       it_should_behave_like :atomic_reference
     end
@@ -190,7 +190,7 @@ module Concurrent
       it 'inherits from JavaAtomicReference' do
         expect(described_class.ancestors).to include(Concurrent::JavaAtomicReference)
       end
-    elsif Concurrent.allow_c_extensions?
+    elsif Concurrent.c_extensions_loaded?
       it 'inherits from CAtomicReference' do
         expect(described_class.ancestors).to include(Concurrent::CAtomicReference)
       end
