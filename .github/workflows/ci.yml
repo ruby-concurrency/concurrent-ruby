@@ -6,6 +6,7 @@ concurrency:
 
 jobs:
   build:
+    name: "Tests: Ruby ${{ matrix.ruby }} - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}-latest
     timeout-minutes: 10
 
@@ -23,7 +24,6 @@ jobs:
       RUBYOPT: '-w'
       JRUBY_OPTS: '--dev'
 
-    name: "Tests: Ruby ${{ matrix.ruby }} - ${{ matrix.os }}"
     steps:
     - name: Clone Repo
       uses: actions/checkout@v4
@@ -34,6 +34,21 @@ jobs:
         bundler-cache: true
     - name: Run tests
       run: bundle exec rake ci
+
+  no-extensions:
+    name: "Test without C extension"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUBYOPT: '-w'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ruby
+        bundler-cache: true
+    - name: Run tests
+      run: bundle exec rake spec:ci
 
   isolated:
     name: "Test isolated"
