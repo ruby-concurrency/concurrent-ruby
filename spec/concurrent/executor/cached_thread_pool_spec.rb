@@ -158,9 +158,7 @@ module Concurrent
             latch = Concurrent::CountDownLatch.new(4)
             4.times { subject.post { sleep 0.1; latch.count_down } }
             expect(latch.wait(1)).to be true
-            sleep 0.2
-            subject.post {}
-            sleep 0.2
+            sleep 36
             expect(subject.length).to be < 4
           end
 
