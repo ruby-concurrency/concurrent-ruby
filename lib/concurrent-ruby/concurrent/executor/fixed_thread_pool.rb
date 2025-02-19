@@ -12,7 +12,7 @@ module Concurrent
   # @!macro thread_pool_executor_constant_default_max_queue_size
   #   Default maximum number of tasks that may be added to the task queue.
 
-  # @!macro thread_pool_executor_constant_default_thread_timeout
+  # @!macro thread_pool_executor_constant_default_thread_idle_timeout
   #   Default maximum number of seconds a thread in the pool may remain idle
   #   before being reclaimed.
 
