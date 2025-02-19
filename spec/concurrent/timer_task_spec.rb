@@ -1,5 +1,6 @@
 require_relative 'concern/dereferenceable_shared'
 require_relative 'concern/observable_shared'
+require 'concurrent/atomic/atomic_fixnum'
 require 'concurrent/timer_task'
 
 module Concurrent
@@ -115,6 +116,19 @@ module Concurrent
           task = TimerTask.execute(run_now: false) { nil }
           sleep(0.1)
           expect(task.shutdown).to be_truthy
+        end
+
+        it 'will cancel pre-shutdown task even if restarted to avoid double-runs' do
+          counter = Concurrent::AtomicFixnum.new(0)
+          task = TimerTask.execute(execution_interval: 0.2, run_now: true) { counter.increment }
+          sleep 0.05
+          expect(counter.value).to eq 1
+
+          task.shutdown
+          task.execute
+
+          sleep 0.25
+          expect(counter.value).to eq 3
         end
       end
     end
