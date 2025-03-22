@@ -207,7 +207,7 @@ Deprecated features are still available and bugs are being fixed, but new featur
 These are available in the `concurrent-ruby-edge` companion gem.
 
 These features are under active development and may change frequently. They are expected not to
-keep backward compatibility (there may also lack tests and documentation). Semantic versions will
+keep backward compatibility (they may also lack tests and documentation). Semantic versions will
 be obeyed though. Features developed in `concurrent-ruby-edge` are expected to move to
 `concurrent-ruby` when final.
 
