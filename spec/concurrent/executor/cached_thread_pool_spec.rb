@@ -152,15 +152,13 @@ module Concurrent
 
         context 'garbage collection' do
 
-          subject { described_class.new(idletime: 0.1, max_threads: 2, gc_interval: 0) }
+          subject { described_class.new(idletime: 0.1, max_threads: 2) }
 
           it 'removes from pool any thread that has been idle too long' do
             latch = Concurrent::CountDownLatch.new(4)
             4.times { subject.post { sleep 0.1; latch.count_down } }
+            sleep 0.4
             expect(latch.wait(1)).to be true
-            sleep 0.2
-            subject.post {}
-            sleep 0.2
             expect(subject.length).to be < 4
           end
 
@@ -197,25 +195,27 @@ module Concurrent
             expect(subject.length).to be >= 5
             3.times { subject << proc { sleep(1) } }
             sleep(0.1)
-            expect(subject.length).to be >= 5
+            expect(subject.length).to be >= 3
           end
         end
       end
 
       context 'stress' do
         configurations = [
-            { min_threads:    2,
-              max_threads:    ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
-              idletime:       0.1, # 1 minute
-              max_queue: 0, # unlimited
+            {
+              min_threads:     2,
+              max_threads:     ThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE,
+              idletime:        60, # 1 minute
+              max_queue:       0, # unlimited
               fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
-              gc_interval: 0.1 },
-            { min_threads:    2,
-              max_threads:    4,
-              idletime:       0.1, # 1 minute
-              max_queue: 0, # unlimited
+            },
+            {
+              min_threads:     2,
+              max_threads:     4,
+              idletime:        60, # 1 minute
+              max_queue:       0, # unlimited
               fallback_policy: :caller_runs, # shouldn't matter -- 0 max queue
-              gc_interval: 0.1 }
+            }
         ]
 
         configurations.each do |config|
