@@ -66,7 +66,7 @@ There are a few guidelines which we follow when adding features. Consider that s
 
 #### Write Documentation
 
-Document any external behavior in the [README](README.md).
+Document any external behavior in the [README](../README.md).
 
 #### Commit Changes
 
@@ -106,7 +106,7 @@ git push origin my-feature-branch -f
 
 #### Update CHANGELOG
 
-Update the [CHANGELOG](CHANGELOG.md) with a description of what you have changed.
+Update the [CHANGELOG](../CHANGELOG.md) with a description of what you have changed.
 
 #### Check on Your Pull Request
 
