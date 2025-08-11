@@ -26,7 +26,7 @@ jobs:
 
     steps:
     - name: Clone Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Setup Ruby ${{ matrix.ruby }}
       uses: ruby/setup-ruby@v1
       with:
@@ -42,7 +42,7 @@ jobs:
     env:
       RUBYOPT: '-w'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ruby
@@ -61,7 +61,7 @@ jobs:
     env:
       RUBYOPT: '-w'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
