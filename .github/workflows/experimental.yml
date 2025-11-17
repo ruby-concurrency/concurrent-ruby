@@ -10,6 +10,7 @@ jobs:
     timeout-minutes: 10
 
     strategy:
+      fail-fast: false
       matrix:
         ruby: [head, jruby-head, truffleruby-head]
 
