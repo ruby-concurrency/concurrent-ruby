@@ -5,6 +5,9 @@
 #include <atomic.h>
 #endif
 
+#if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 101200
+#include <stdatomic.h>
+#endif
 #ifdef HAVE_LIBKERN_OSATOMIC_H
 #include <libkern/OSAtomic.h>
 #endif
