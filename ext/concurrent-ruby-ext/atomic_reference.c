@@ -78,7 +78,11 @@ VALUE ir_get_and_set(VALUE self, VALUE new_value) {
 }
 
 VALUE ir_compare_and_set(volatile VALUE self, VALUE expect_value, VALUE new_value) {
-#if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 101200
+  if (atomic_compare_exchange_strong_explicit((_Atomic uintptr_t *)&DATA_PTR(self), &expect_value, new_value, memory_order_seq_cst, memory_order_seq_cst)) {
+    return Qtrue;
+  }
+#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
   if (OSAtomicCompareAndSwap64(expect_value, new_value, &DATA_PTR(self))) {
     return Qtrue;
   }
