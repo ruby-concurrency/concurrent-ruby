@@ -7,8 +7,16 @@ void atomic_fixnum_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);
 }
 
+const rb_data_type_t atomic_fixnum_type = {
+  "Concurrent::CAtomicFixnum",
+  {
+    atomic_fixnum_mark,
+    RUBY_NEVER_FREE,
+  },
+};
+
 VALUE atomic_fixnum_allocate(VALUE klass) {
-  return rb_data_object_wrap(klass, (void *) Qnil, atomic_fixnum_mark, NULL);
+  return rb_data_typed_object_wrap(klass, (void *) Qnil, &atomic_fixnum_type);
 }
 
 VALUE method_atomic_fixnum_initialize(int argc, VALUE* argv, VALUE self) {
