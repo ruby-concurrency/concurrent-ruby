@@ -43,8 +43,16 @@ void ir_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);
 }
 
+const rb_data_type_t ir_type = {
+  "Concurrent::CAtomicReference",
+  {
+    ir_mark,
+    RUBY_NEVER_FREE,
+  },
+};
+
 VALUE ir_alloc(VALUE klass) {
-  return rb_data_object_wrap(klass, (void *) Qnil, ir_mark, NULL);
+  return rb_data_typed_object_wrap(klass, (void *) Qnil, &ir_type);
 }
 
 VALUE ir_initialize(int argc, VALUE* argv, VALUE self) {

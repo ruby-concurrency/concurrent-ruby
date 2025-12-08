@@ -7,8 +7,16 @@ void atomic_boolean_mark(void *value) {
   rb_gc_mark_maybe((VALUE) value);
 }
 
+const rb_data_type_t atomic_boolean_type = {
+  "Concurrent::CAtomicBoolean",
+  {
+    atomic_boolean_mark,
+    RUBY_NEVER_FREE,
+  },
+};
+
 VALUE atomic_boolean_allocate(VALUE klass) {
-  return rb_data_object_wrap(klass, (void *) Qfalse, atomic_boolean_mark, NULL);
+  return rb_data_typed_object_wrap(klass, (void *) Qfalse, &atomic_boolean_type);
 }
 
 VALUE method_atomic_boolean_initialize(int argc, VALUE* argv, VALUE self) {
