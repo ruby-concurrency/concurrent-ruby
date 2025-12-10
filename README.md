@@ -379,6 +379,7 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 * [Charles Oliver Nutter](https://github.com/headius)
 * [Ben Sheldon](https://github.com/bensheldon)
 * [Samuel Williams](https://github.com/ioquatix)
+* [Joshua Young](https://github.com/joshuay03)
 
 ### Special Thanks to
 
