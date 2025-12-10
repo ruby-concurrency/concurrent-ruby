@@ -86,16 +86,15 @@ RSpec.shared_examples :thread_pool do
     it 'returns zero on creation' do
       expect(subject.completed_task_count).to eq 0
     end
-
-    unless Concurrent.on_jruby?
-
-      it 'returns the approximate number of tasks that have been completed thus far' do
-        5.times{ subject.post{ raise StandardError } }
-        5.times{ subject.post{ nil } }
-        subject.post { latch.count_down }
-        latch.wait(1)
-        expect(subject.completed_task_count).to be > 0
-      end
+    
+    it 'returns the approximate number of tasks that have been completed thus far' do
+      5.times{ subject.post{ raise StandardError } }
+      5.times{ subject.post{ nil } }
+      subject.post { latch.count_down }
+      latch.wait(1)
+      subject.shutdown
+      expect(subject.wait_for_termination(pool_termination_timeout)).to eq true
+      expect(subject.completed_task_count).to be > 0
     end
   end
 
