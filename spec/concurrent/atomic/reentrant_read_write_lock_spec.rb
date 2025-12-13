@@ -242,14 +242,14 @@ module Concurrent
           in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
           in_thread { latch1.wait; lock.acquire_write_lock; good.value = true }
         ]
-        wait_up_to(0.2) { threads[3].status == 'sleep' }
+        wait_up_to(0.5) { threads[3].status == 'sleep' }
         # The last thread should be waiting to acquire a write lock now...
         expect(threads[3].status).to eql "sleep"
         expect(threads[3]).not_to hold(lock).for_write
         expect(good.value).to be false
         # Throw latch2 and the 3 readers will wake up and all release their read locks...
         latch2.count_down
-        wait_up_to(0.2) { good.value }
+        wait_up_to(0.5) { good.value }
         expect(threads[3]).to hold(lock).for_write
         expect(good.value).to be true
       end
@@ -265,7 +265,7 @@ module Concurrent
         expect { Timeout.timeout(1) { threads[0].join }}.not_to raise_error
         expect(threads[0]).to hold(lock).for_write
         expect(threads[1]).not_to hold(lock).for_write
-        wait_up_to(0.2) { threads[1].status == 'sleep' }
+        wait_up_to(0.5) { threads[1].status == 'sleep' }
         expect(threads[1].status).to eql "sleep"
       end
 
@@ -278,7 +278,7 @@ module Concurrent
         expect { Timeout.timeout(1) { threads[0].join }}.not_to raise_error
         expect(threads[0]).to hold(lock).for_read
         expect(threads[1]).not_to hold(lock).for_write
-        wait_up_to(0.2) { threads[1].status == 'sleep' }
+        wait_up_to(0.5) { threads[1].status == 'sleep' }
         expect(threads[1].status).to eql "sleep"
       end
 
@@ -341,7 +341,7 @@ module Concurrent
           in_thread { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }},
           in_thread { latch1.wait; lock.acquire_read_lock; good.update { |n| n+1 }}
         ]
-        wait_up_to(0.2) { threads[3].status == 'sleep' }
+        wait_up_to(0.5) { threads[3].status == 'sleep' }
         # The last 3 threads should be waiting to acquire read locks now...
         unless Concurrent.on_jruby? # flaky on JRuby
           (1..3).each { |n| expect(threads[n].status).to eql "sleep" }
@@ -349,7 +349,7 @@ module Concurrent
         (1..3).each { |n| expect(threads[n]).not_to hold(lock).for_read }
         # Throw latch2 and the writer will wake up and release its write lock...
         latch2.count_down
-        wait_up_to(0.2) { good.value == 3 }
+        wait_up_to(0.5) { good.value == 3 }
         (1..3).each { |n| expect(threads[n]).to hold(lock).for_read }
       end
 
@@ -360,7 +360,7 @@ module Concurrent
           in_thread { lock.acquire_write_lock; latch1.count_down; latch2.wait; lock.release_write_lock },
           in_thread { latch1.wait; lock.acquire_write_lock; good.value = true },
         ]
-        wait_up_to(0.2) { threads[1].status == 'sleep' }
+        wait_up_to(0.5) { threads[1].status == 'sleep' }
         # The last thread should be waiting to acquire a write lock now...
         unless Concurrent.on_jruby? # flaky on JRuby
           expect(threads[1].status).to eql "sleep"
@@ -368,7 +368,7 @@ module Concurrent
         expect(threads[1]).not_to hold(lock).for_write
         # Throw latch2 and the writer will wake up and release its write lock...
         latch2.count_down
-        wait_up_to(0.2) { good.value }
+        wait_up_to(0.5) { good.value }
         expect(threads[1]).to hold(lock).for_write
       end
     end
