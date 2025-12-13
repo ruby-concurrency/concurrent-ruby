@@ -1,5 +1,11 @@
 ## Current
 
+## Release v1.3.6 (13 December 2025)
+
+concurrent-ruby:
+
+* See the [release notes on GitHub](https://github.com/ruby-concurrency/concurrent-ruby/releases/tag/v1.3.6).
+
 ## Release v1.3.5, edge v0.7.2 (15 January 2025)
 
 concurrent-ruby:
