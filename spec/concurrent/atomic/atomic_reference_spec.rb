@@ -1,4 +1,5 @@
 require 'concurrent/atomic/atomic_reference'
+require 'timeout'
 
 RSpec.shared_examples :atomic_reference do
 
@@ -80,6 +81,16 @@ RSpec.shared_examples :atomic_reference do
     expect(tries).to eq 2
   end
 
+  specify :test_update_nan do
+    atomic = described_class.new(Float::NAN)
+    tries  = 0
+    result = Timeout.timeout(2) { atomic.update { |_| tries += 1; 0.0 } }
+
+    expect(result).to eq 0.0
+    expect(atomic.value).to eq 0.0
+    expect(tries).to eq 1
+  end
+
   specify :test_numeric_cas do
     atomic = described_class.new(0)
 
@@ -142,6 +153,16 @@ RSpec.shared_examples :atomic_reference do
     require 'complex' unless ''.respond_to? :to_c
     atomic.set(Complex(1, 2))
     expect(atomic.compare_and_set(Complex(1, 2), 0)).to be_truthy, "CAS failed for #{Complex(1, 2)} => 0"
+  end
+
+  specify :test_numeric_cas_nan do
+    atomic = described_class.new(Float::NAN)
+    expect(atomic.compare_and_set(Float::NAN, 0.0)).to be_truthy, "CAS should swap NaN for 0.0"
+    expect(atomic.value).to eq 0.0
+
+    atomic.set(1.0)
+    expect(atomic.compare_and_set(Float::NAN, 0.0)).to be_falsey, "CAS should not swap when current is not NaN"
+    expect(atomic.value).to eq 1.0
   end
 end
 
