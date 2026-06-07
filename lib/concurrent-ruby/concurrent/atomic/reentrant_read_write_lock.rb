@@ -158,9 +158,11 @@ module Concurrent
     # @return [Boolean] true if the lock is successfully acquired
     #
     # @raise [Concurrent::ResourceLimitError] if the maximum number of readers
-    #   is exceeded.
+    #   or per-thread reentrant acquires is exceeded.
     def acquire_read_lock
       if (held = @HeldCount.value) > 0
+        raise ResourceLimitError.new('Too many reader holds on this thread') if (held & READ_LOCK_MASK) == READ_LOCK_MASK
+
         # If we already have a lock, there's no need to wait
         if held & READ_LOCK_MASK == 0
           # But we do need to update the counter, if we were holding a write
@@ -212,8 +214,13 @@ module Concurrent
     # acquired immediately, return false.
     #
     # @return [Boolean] true if the lock is successfully acquired
+    #
+    # @raise [Concurrent::ResourceLimitError] if the maximum number of per-thread
+    #   reentrant acquires is exceeded.
     def try_read_lock
       if (held = @HeldCount.value) > 0
+        raise ResourceLimitError.new('Too many reader holds on this thread') if (held & READ_LOCK_MASK) == READ_LOCK_MASK
+
         if held & READ_LOCK_MASK == 0
           # If we hold a write lock, but not a read lock...
           @Counter.update { |c| c + 1 }

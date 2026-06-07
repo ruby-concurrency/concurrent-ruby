@@ -176,6 +176,15 @@ module Concurrent
         end
       end
 
+      it "cannot be acquired more times than fits the per-thread counter" do
+        ReentrantReadWriteLock::READ_LOCK_MASK.times { expect(lock.acquire_read_lock).to be true }
+        expect { lock.acquire_read_lock }.to raise_error(ResourceLimitError)
+        expect { lock.try_read_lock }.to raise_error(ResourceLimitError)
+        expect(lock.try_write_lock).to be false
+        ReentrantReadWriteLock::READ_LOCK_MASK.times { expect(lock.release_read_lock).to be true }
+        expect(lock).to be_free
+      end
+
       it "can be acquired while holding a write lock" do
         Timeout.timeout(3) do
           expect(lock.acquire_write_lock).to be true
