@@ -122,6 +122,7 @@ module Concurrent
 
       it 'acquires the lock' do
         expect(subject).to receive(:acquire_read_lock).with(no_args)
+        allow(subject).to receive(:release_read_lock)
         subject.with_read_lock { nil }
       end
 
@@ -163,6 +164,7 @@ module Concurrent
 
       it 'acquires the lock' do
         expect(subject).to receive(:acquire_write_lock).with(no_args)
+        allow(subject).to receive(:release_write_lock)
         subject.with_write_lock { nil }
       end
 
@@ -333,8 +335,8 @@ module Concurrent
         expect(subject.release_read_lock).to be true
       end
 
-      it 'returns true if the lock was never set' do
-        expect(subject.release_read_lock).to be true
+      it 'raises an exception if the lock was never set' do
+        expect { subject.release_read_lock }.to raise_error(IllegalOperationError)
       end
     end
 
@@ -488,8 +490,22 @@ module Concurrent
         expect(subject.release_write_lock).to be true
       end
 
-      it 'returns true if the lock was never set' do
-        expect(subject.release_write_lock).to be true
+      it 'raises an exception if the lock was never set' do
+        expect { subject.release_write_lock }.to raise_error(IllegalOperationError)
+      end
+
+      it 'raises an exception if called by a thread that did not acquire the write lock' do
+        subject.acquire_write_lock
+        intruder_error = nil
+        Thread.new do
+          begin
+            subject.release_write_lock
+          rescue => e
+            intruder_error = e
+          end
+        end.join
+        expect(intruder_error).to be_a(IllegalOperationError)
+        subject.release_write_lock
       end
     end
   end

@@ -1,5 +1,6 @@
 require 'thread'
 require 'concurrent/atomic/atomic_fixnum'
+require 'concurrent/atomic/atomic_reference'
 require 'concurrent/errors'
 require 'concurrent/synchronization/object'
 require 'concurrent/synchronization/lock'
@@ -58,7 +59,8 @@ module Concurrent
     # Create a new `ReadWriteLock` in the unlocked state.
     def initialize
       super()
-      @Counter   = AtomicFixnum.new(0) # single integer which represents lock state
+      @Counter   = AtomicFixnum.new(0)      # single integer which represents lock state
+      @Writer    = AtomicReference.new(nil) # the thread currently holding the write lock
       @ReadLock  = Synchronization::Lock.new
       @WriteLock = Synchronization::Lock.new
     end
@@ -137,9 +139,13 @@ module Concurrent
     # Release a previously acquired read lock.
     #
     # @return [Boolean] true if the lock is successfully released
+    #
+    # @raise [Concurrent::IllegalOperationError] if no read lock is currently held.
     def release_read_lock
       while true
         c = @Counter.value
+        raise IllegalOperationError, 'Cannot release a read lock which is not held' if running_readers(c) == 0
+
         if @Counter.compare_and_set(c, c-1)
           # If one or more writers were waiting, and we were the last reader, wake a writer up
           if waiting_writer?(c) && running_readers(c) == 1
@@ -187,14 +193,21 @@ module Concurrent
           break
         end
       end
+      @Writer.set(Thread.current)
       true
     end
 
     # Release a previously acquired write lock.
     #
     # @return [Boolean] true if the lock is successfully released
+    #
+    # @raise [Concurrent::IllegalOperationError] if the write lock is not held
+    #   by the current thread.
     def release_write_lock
-      return true unless running_writer?
+      unless @Writer.compare_and_set(Thread.current, nil)
+        raise IllegalOperationError, 'Cannot release a write lock which is not held by the current thread'
+      end
+
       c = @Counter.update { |counter| counter - RUNNING_WRITER }
       @ReadLock.broadcast
       @WriteLock.signal if waiting_writers(c) > 0
