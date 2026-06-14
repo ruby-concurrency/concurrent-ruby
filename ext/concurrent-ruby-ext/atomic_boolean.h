@@ -1,16 +1,17 @@
-#ifndef __ATOMIC_BOOLEAN_H__
-#define __ATOMIC_BOOLEAN_H__
+#ifndef CONCURRENT_RUBY_ATOMIC_BOOLEAN_H
+#define CONCURRENT_RUBY_ATOMIC_BOOLEAN_H 1
 
-#define TRUTHY(value)(value == Qfalse || value == Qnil ? Qfalse : Qtrue)
+#include <ruby.h>
 
-void atomic_boolean_mark(void*);
-VALUE atomic_boolean_allocate(VALUE);
-VALUE method_atomic_boolean_initialize(int, VALUE*, VALUE);
-VALUE method_atomic_boolean_value(VALUE);
-VALUE method_atomic_boolean_value_set(VALUE, VALUE);
-VALUE method_atomic_boolean_true_question(VALUE);
-VALUE method_atomic_boolean_false_question(VALUE);
-VALUE method_atomic_boolean_make_true(VALUE);
-VALUE method_atomic_boolean_make_false(VALUE);
+#define TRUTHY(value) ((value) == Qfalse || (value) == Qnil ? Qfalse : Qtrue)
+
+VALUE atomic_boolean_allocate(VALUE klass);
+VALUE method_atomic_boolean_initialize(int argc, VALUE *argv, VALUE self);
+VALUE method_atomic_boolean_value(VALUE self);
+VALUE method_atomic_boolean_value_set(VALUE self, VALUE value);
+VALUE method_atomic_boolean_true_question(VALUE self);
+VALUE method_atomic_boolean_false_question(VALUE self);
+VALUE method_atomic_boolean_make_true(VALUE self);
+VALUE method_atomic_boolean_make_false(VALUE self);
 
 #endif
