@@ -496,15 +496,11 @@ module Concurrent
 
       it 'raises an exception if called by a thread that did not acquire the write lock' do
         subject.acquire_write_lock
-        intruder_error = nil
-        Thread.new do
-          begin
+        Thread.new {
+          expect {
             subject.release_write_lock
-          rescue => e
-            intruder_error = e
-          end
-        end.join
-        expect(intruder_error).to be_a(IllegalOperationError)
+          }.to raise_error(IllegalOperationError)
+        }.join
         subject.release_write_lock
       end
     end
