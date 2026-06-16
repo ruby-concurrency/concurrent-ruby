@@ -22,7 +22,6 @@ module Concurrent
                                     class CAtomicReference
                                       include AtomicDirectUpdate
                                       include AtomicNumericCompareAndSetWrapper
-                                      alias_method :compare_and_swap, :compare_and_set
                                     end
                                     CAtomicReference
                                   when Concurrent.on_jruby?
@@ -30,14 +29,22 @@ module Concurrent
                                     # @!macro internal_implementation_note
                                     class JavaAtomicReference
                                       include AtomicDirectUpdate
+                                      include AtomicNumericCompareAndSetWrapper
                                     end
                                     JavaAtomicReference
                                   when Concurrent.on_truffleruby?
                                     class TruffleRubyAtomicReference < TruffleRuby::AtomicReference
                                       include AtomicDirectUpdate
+                                      if private_method_defined?(:compare_and_set_reference)
+                                        alias_method :_compare_and_set, :compare_and_set_reference
+                                        private :_compare_and_set
+                                        include AtomicNumericCompareAndSetWrapper
+                                      else
+                                        # AtomicNumericCompareAndSetWrapper behavior already in TruffleRuby::AtomicReference
+                                        alias_method :compare_and_swap, :compare_and_set
+                                      end
                                       alias_method :value, :get
                                       alias_method :value=, :set
-                                      alias_method :compare_and_swap, :compare_and_set
                                       alias_method :swap, :get_and_set
                                     end
                                     TruffleRubyAtomicReference

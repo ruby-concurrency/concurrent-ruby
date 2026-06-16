@@ -30,5 +30,7 @@ module Concurrent
       end
     end
 
+    alias_method :compare_and_swap, :compare_and_set
+
   end
 end

@@ -10,7 +10,6 @@ module Concurrent
     extend Concurrent::Synchronization::SafeInitialization
     include AtomicDirectUpdate
     include AtomicNumericCompareAndSetWrapper
-    alias_method :compare_and_swap, :compare_and_set
 
     # @!macro atomic_reference_method_initialize
     def initialize(value = nil)
@@ -42,7 +41,7 @@ module Concurrent
     alias_method :swap, :get_and_set
 
     # @!macro atomic_reference_method_compare_and_set
-    def _compare_and_set(old_value, new_value)
+    private def _compare_and_set(old_value, new_value)
       synchronize do
         if @value.equal? old_value
           @value = new_value

@@ -27,7 +27,7 @@ void Init_concurrent_ruby_ext(void) {
   rb_define_method(rb_cAtomicReference, "get", ir_get, 0);
   rb_define_method(rb_cAtomicReference, "set", ir_set, 1);
   rb_define_method(rb_cAtomicReference, "get_and_set", ir_get_and_set, 1);
-  rb_define_method(rb_cAtomicReference, "_compare_and_set", ir_compare_and_set, 2);
+  rb_define_private_method(rb_cAtomicReference, "_compare_and_set", ir_compare_and_set, 2);
   rb_define_alias(rb_cAtomicReference, "value", "get");
   rb_define_alias(rb_cAtomicReference, "value=", "set");
   rb_define_alias(rb_cAtomicReference, "swap", "get_and_set");
