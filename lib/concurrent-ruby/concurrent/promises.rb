@@ -915,6 +915,7 @@ module Concurrent
     # Represents a value which will become available in future. May reject with a reason instead,
     # e.g. when the tasks raises an exception.
     class Future < AbstractEventFuture
+      SET_BACKTRACE_LOCATIONS_SUPPORTED = RUBY_VERSION >= '3.4'
 
       # Is it in fulfilled state?
       # @return [Boolean]
@@ -1014,9 +1015,10 @@ module Concurrent
         raise Concurrent::Error, 'it is not rejected' unless rejected?
         raise ArgumentError unless args.size <= 1
         reason = Array(internal_state.reason).flatten.compact
+        callsites = SET_BACKTRACE_LOCATIONS_SUPPORTED ? caller_locations : caller
         if reason.size > 1
           ex = Concurrent::MultipleErrors.new reason
-          ex.set_backtrace(caller)
+          ex.set_backtrace(callsites)
           ex
         else
           ex = if reason[0].respond_to? :exception
@@ -1024,7 +1026,11 @@ module Concurrent
                else
                  RuntimeError.new(reason[0]).exception(*args)
                end
-          ex.set_backtrace Array(ex.backtrace) + caller
+          if SET_BACKTRACE_LOCATIONS_SUPPORTED && (locations = ex.backtrace_locations)
+            ex.set_backtrace locations + callsites
+          else
+            ex.set_backtrace Array(ex.backtrace) + callsites.map(&:to_s)
+          end
           ex
         end
       end

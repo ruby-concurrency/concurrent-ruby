@@ -566,6 +566,44 @@ RSpec.describe 'Concurrent::Promises' do
       expect(exception).to be_a Concurrent::MultipleErrors
       expect(strip_methods[backtrace] - strip_methods[exception.backtrace]).to be_empty
     end
+
+    it 'sets a consistent backtrace and backtrace_locations for an exception with captured locations' do
+      skip 'backtrace_locations is only populated on Ruby >= 3.4' if RUBY_VERSION < '3.4'
+
+      raised    = (raise TypeError, 'boom' rescue $!)
+      exception = rejected_future(raised).exception
+
+      expect(exception).to be_a TypeError
+      expect(exception.backtrace).not_to be_nil
+      expect(exception.backtrace_locations).not_to be_nil
+      expect(exception.backtrace_locations.map(&:to_s)).to eq exception.backtrace
+    end
+
+    it 'preserves a String-only backtrace when no locations are available' do
+      skip 'backtrace_locations is only populated on Ruby >= 3.4' if RUBY_VERSION < '3.4'
+
+      string_only = TypeError.new
+      string_only.set_backtrace %W[/a /b /c]
+      expect(string_only.backtrace_locations).to be_nil
+
+      exception = rejected_future(string_only).exception
+
+      expect(exception).to be_a TypeError
+      expect(exception.backtrace).not_to be_nil
+      expect(exception.backtrace_locations).to be_nil
+      expect(exception.backtrace).to start_with %W[/a /b /c]
+    end
+
+    it 'sets a consistent backtrace and backtrace_locations for MultipleErrors' do
+      skip 'backtrace_locations is only populated on Ruby >= 3.4' if RUBY_VERSION < '3.4'
+
+      exception = (rejected_future(TypeError.new) & rejected_future(TypeError.new)).exception
+
+      expect(exception).to be_a Concurrent::MultipleErrors
+      expect(exception.backtrace).not_to be_nil
+      expect(exception.backtrace_locations).not_to be_nil
+      expect(exception.backtrace_locations.map(&:to_s)).to eq exception.backtrace
+    end
   end
 
   describe 'ResolvableEvent' do
