@@ -70,6 +70,28 @@ module Concurrent
         expect(map.keys).to eq [3]
       end
 
+      if defined?(Ractor)
+        it 'works in a Ractor' do
+          ractor = Ractor.new do
+            inner_map = Concurrent::Map.new do |map, key|
+              map.compute_if_absent(key) { key * 2 }
+            end
+
+            inner_map[3]
+            inner_map
+          end
+
+          map = if ractor.respond_to?(:take)
+            ractor.take
+          else
+            ractor.value # Ruby 4.0
+          end
+
+          expect(map[3]).to eq 6
+          expect(map.keys).to eq [3]
+        end
+      end
+
       it 'common' do
         with_or_without_default_proc do
           expect_size_change(3) do
