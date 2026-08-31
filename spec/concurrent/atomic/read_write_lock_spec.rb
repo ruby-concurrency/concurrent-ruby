@@ -338,6 +338,13 @@ module Concurrent
       it 'raises an exception if the lock was never set' do
         expect { subject.release_read_lock }.to raise_error(IllegalOperationError)
       end
+
+      it 'does not corrupt the lock state after an invalid release' do
+        expect { subject.release_read_lock }.to raise_error(IllegalOperationError)
+
+        expect(subject.acquire_read_lock).to be true
+        expect(subject.release_read_lock).to be true
+      end
     end
 
     context '#acquire_write_lock' do
@@ -492,6 +499,13 @@ module Concurrent
 
       it 'raises an exception if the lock was never set' do
         expect { subject.release_write_lock }.to raise_error(IllegalOperationError)
+      end
+
+      it 'does not corrupt the lock state after an invalid release' do
+        expect { subject.release_write_lock }.to raise_error(IllegalOperationError)
+
+        expect(subject.acquire_write_lock).to be true
+        expect(subject.release_write_lock).to be true
       end
 
       it 'raises an exception if called by a thread that did not acquire the write lock' do
