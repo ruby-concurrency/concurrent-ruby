@@ -174,6 +174,45 @@ module Concurrent
       end
     end
 
+    context 'rescheduling while the timer reads the schedule time' do
+      [:reset, :reschedule].each do |operation|
+        it "does not deadlock during #{operation}" do
+          timer = TimerSet.new
+          task = ScheduledTask.execute(3600, timer_set: timer) { nil }
+          task_locked = CountDownLatch.new(1)
+          timer_locked = CountDownLatch.new(1)
+          threads = []
+
+          begin
+            threads << in_thread do
+              task.send(:synchronize) do
+                task_locked.count_down
+                raise 'timer did not acquire its lock' unless timer_locked.wait(2)
+                operation == :reset ? task.reset : task.reschedule(7200)
+              end
+            end
+            threads << in_thread do
+              raise 'task did not acquire its lock' unless task_locked.wait(2)
+              timer.send(:synchronize) do
+                timer_locked.count_down
+                # Queue comparisons read schedule_time while holding the timer lock.
+                task.schedule_time
+              end
+            end
+
+            threads.each { |thread| expect(thread.join(2)).not_to be_nil }
+            expect(task).to be_pending
+            expected_delay = operation == :reset ? 3600 : 7200
+            expect(task.initial_delay).to eq expected_delay
+            expect(task.schedule_time).to be_within(5).of(Concurrent.monotonic_time + expected_delay)
+          ensure
+            threads.each { |thread| thread.kill; thread.join }
+            timer.shutdown
+          end
+        end
+      end
+    end
+
     context '#cancel' do
 
       it 'returns false if the task has already been performed' do

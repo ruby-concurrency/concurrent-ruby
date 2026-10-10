@@ -187,7 +187,7 @@ module Concurrent
         @args = get_arguments_from(opts)
         @delay = delay.to_f
         @task = task
-        @time = nil
+        self.schedule_time = nil
         @executor = Options.executor_from_options(opts) || Concurrent.global_io_executor
         self.observers = Collection::CopyOnNotifyObserverSet.new
       end
@@ -203,9 +203,10 @@ module Concurrent
     # The monotonic time at which the the task is scheduled to be executed.
     #
     # @return [Float] the schedule time or nil if `unscheduled`
-    def schedule_time
-      synchronize { @time }
-    end
+    # TimerSet reads this while holding its own lock. Do not acquire the task
+    # lock here: rescheduling takes the task lock before the TimerSet lock.
+    attr_volatile :schedule_time
+    private :schedule_time=
 
     # Comparator which orders by schedule time.
     #
@@ -311,7 +312,7 @@ module Concurrent
     # @!visibility private
     def ns_schedule(delay)
       @delay = delay
-      @time = Concurrent.monotonic_time + @delay
+      self.schedule_time = Concurrent.monotonic_time + @delay
       @parent.send(:post_task, self)
     end
 

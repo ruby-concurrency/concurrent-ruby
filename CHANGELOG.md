@@ -1,5 +1,8 @@
 ## Current
 
+* Fix a lock inversion between `ScheduledTask#reschedule`/`#reset` and `TimerSet`
+  by using a volatile schedule time (#1099).
+
 ## Release v1.3.8 (19 July 2026)
 
 concurrent-ruby:
