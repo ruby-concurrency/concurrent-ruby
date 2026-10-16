@@ -104,9 +104,9 @@ git rebase upstream/master
 git push origin my-feature-branch -f
 ```
 
-#### Update CHANGELOG
+#### Release Notes
 
-Update the [CHANGELOG](../CHANGELOG.md) with a description of what you have changed.
+Release notes are generated from the titles of merged pull requests, so give your pull request a title that describes the change. There is no need to update the [CHANGELOG](../CHANGELOG.md); maintainers update it when releasing.
 
 #### Check on Your Pull Request
 
