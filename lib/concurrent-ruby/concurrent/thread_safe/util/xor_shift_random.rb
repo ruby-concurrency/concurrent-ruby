@@ -1,4 +1,5 @@
 require 'concurrent/thread_safe/util'
+require 'rbconfig/sizeof'
 
 module Concurrent
 
@@ -29,7 +30,9 @@ module Concurrent
         end
 
         # xorshift based on: http://www.jstatsoft.org/v08/i14/paper
-        if 0.size == 4
+        # Use the pointer width, not Integer#size (the C `long` width), since
+        # the two diverge on LLP64 platforms (64-bit Windows) - see #1057.
+        if RbConfig::SIZEOF['void*'] == 4
           # using the "yˆ=y>>a; yˆ=y<<b; yˆ=y>>c;" transform with the (a,b,c) tuple with values (3,1,14) to minimise Bignum overflows
           def xorshift(x)
             x ^= x >> 3

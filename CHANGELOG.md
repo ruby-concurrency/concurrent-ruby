@@ -1,5 +1,7 @@
 ## Current
 
+* (#1057) Fix `Integer#size`-derived width constants (`Utility::NativeInteger` bounds, `ThreadSafe::Util::FIXNUM_BIT_SIZE`/`MAX_INT`, `XorShiftRandom`'s transform selection) being wrong on 64-bit Windows (LLP64), where `Integer#size` reports the 4-byte C `long` width instead of the 8-byte pointer width.
+
 ## Release v1.3.8 (19 July 2026)
 
 concurrent-ruby:
