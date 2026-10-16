@@ -306,6 +306,32 @@ module Concurrent
         expect(success).to be false
         expect(task.schedule_time).to be_within(0.01).of(expected)
       end
+
+      it 'does not deadlock when the timer reads the schedule time during rescheduling' do
+        task = subject.post(10){ nil }
+        task_locked = Concurrent::CountDownLatch.new
+        timer_locked = Concurrent::CountDownLatch.new
+
+        rescheduler = in_thread do
+          task.send(:synchronize) do
+            task_locked.count_down
+            timer_locked.wait(2)
+            task.reschedule(20)
+          end
+        end
+        reader = in_thread do
+          task_locked.wait(2)
+          subject.send(:synchronize) do
+            timer_locked.count_down
+            task.schedule_time
+          end
+        end
+
+        rescheduled = rescheduler.join(2)
+        [rescheduler, reader].each(&:kill) # cleanup, so the timer set can shut down after a deadlock
+        expect(rescheduled).not_to be_nil
+        expect(rescheduler.value).to be true
+      end
     end
 
     context 'task resetting' do
