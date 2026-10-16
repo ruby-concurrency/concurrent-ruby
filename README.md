@@ -364,7 +364,7 @@ best practice is to depend on `concurrent-ruby` and let users to decide if they 
 ### Publishing the Gem
 
 * Update `version.rb`
-* Update the CHANGELOG
+* Update the CHANGELOG with a section for the new version linking to its GitHub release notes
 * Add the new version to `docs-source/signpost.md`. Needs to be done only if there are visible changes in the documentation.
 * Commit (and push) the changes.
 * Use `bundle exec rake release` to release the gem.
