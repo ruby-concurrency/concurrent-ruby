@@ -203,9 +203,7 @@ module Concurrent
     # The monotonic time at which the the task is scheduled to be executed.
     #
     # @return [Float] the schedule time or nil if `unscheduled`
-    # TimerSet reads this while holding its own lock. Do not acquire the task
-    # lock here: rescheduling takes the task lock before the TimerSet lock.
-    attr_volatile :schedule_time
+    attr_volatile :schedule_time # read by TimerSet under its own lock, so it must not take the task lock
     private :schedule_time=
 
     # Comparator which orders by schedule time.
