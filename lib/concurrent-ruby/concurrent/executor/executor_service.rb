@@ -68,10 +68,9 @@ module Concurrent
 
   # @!macro executor_service_method_kill
   #
-  #   Begin an immediate shutdown. In-progress tasks will be allowed to
-  #   complete but enqueued tasks will be dismissed and no new tasks
-  #   will be accepted. Has no additional effect if the thread pool is
-  #   not running.
+  #   Begin an immediate shutdown. In-progress tasks may be interrupted,
+  #   enqueued tasks will be dismissed, and no new tasks will be accepted.
+  #   Has no additional effect if the thread pool is not running.
 
   # @!macro executor_service_method_wait_for_termination
   #
