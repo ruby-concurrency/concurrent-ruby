@@ -241,7 +241,10 @@ module Concurrent
     #
     # @return [Boolean] true if the lock is successfully released
     def release_read_lock
-      held = @HeldCount.value = @HeldCount.value - 1
+      held = @HeldCount.value
+      raise IllegalOperationError, "Cannot release a read lock which is not held" if held & READ_LOCK_MASK == 0
+
+      held = @HeldCount.value = held - 1
       rlocks_held = held & READ_LOCK_MASK
       if rlocks_held == 0
         c = @Counter.update { |counter| counter - 1 }
@@ -249,8 +252,6 @@ module Concurrent
         if waiting_or_running_writer?(c) && running_readers(c) == 0
           @WriteQueue.signal
         end
-      elsif rlocks_held == READ_LOCK_MASK
-        raise IllegalOperationError, "Cannot release a read lock which is not held"
       end
       true
     end
@@ -334,14 +335,15 @@ module Concurrent
     #
     # @return [Boolean] true if the lock is successfully released
     def release_write_lock
-      held = @HeldCount.value = @HeldCount.value - WRITE_LOCK_HELD
+      held = @HeldCount.value
+      raise IllegalOperationError, "Cannot release a write lock which is not held" if held & WRITE_LOCK_MASK == 0
+
+      held = @HeldCount.value = held - WRITE_LOCK_HELD
       wlocks_held = held & WRITE_LOCK_MASK
       if wlocks_held == 0
         c = @Counter.update { |counter| counter - RUNNING_WRITER }
         @ReadQueue.broadcast
         @WriteQueue.signal if waiting_writers(c) > 0
-      elsif wlocks_held == WRITE_LOCK_MASK
-        raise IllegalOperationError, "Cannot release a write lock which is not held"
       end
       true
     end
