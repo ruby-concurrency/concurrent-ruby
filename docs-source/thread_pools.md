@@ -144,7 +144,7 @@ The `shutdown?` method will return true for a stopped pool, regardless of whethe
 
 ## Global Thread Pools
 
-Concurrent Ruby provides several global thread pools. Higher-level abstractions use global thread pools, by default, for running asynchronous operations without creating new threads more often than necessary. These executors are lazy-loaded so they do not create overhead when not needed. The global executors may also be accessed directly if desired. For more information regarding the global thread pools and their configuration, refer to the [API documentation](http://ruby-concurrency.github.io/concurrent-ruby/Concurrent/Configuration.html).
+Concurrent Ruby provides several global thread pools. Higher-level abstractions use global thread pools, by default, for running asynchronous operations without creating new threads more often than necessary. These executors are lazy-loaded so they do not create overhead when not needed. The global executors may also be accessed directly if desired. For more information regarding the global thread pools and their configuration, refer to the [API documentation](https://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent.html).
 
 When using a higher-level abstraction, which ordinarily uses a global thread pool, you may wish to instead supply your own thread pool, for separation of work, or to control the thread pool behavior with configuration.
 
