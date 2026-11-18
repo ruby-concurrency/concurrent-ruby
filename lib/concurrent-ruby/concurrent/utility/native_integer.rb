@@ -1,11 +1,15 @@
+require 'rbconfig/sizeof'
+
 module Concurrent
   # @!visibility private
   module Utility
     # @private
     module NativeInteger
       # http://stackoverflow.com/questions/535721/ruby-max-integer
-      MIN_VALUE = -(2**(0.size * 8 - 2))
-      MAX_VALUE = (2**(0.size * 8 - 2) - 1)
+      # Use the pointer width, not Integer#size (the C `long` width), since
+      # the two diverge on LLP64 platforms (64-bit Windows) - see #1057.
+      MIN_VALUE = -(2**(RbConfig::SIZEOF['void*'] * 8 - 2))
+      MAX_VALUE = (2**(RbConfig::SIZEOF['void*'] * 8 - 2) - 1)
 
       def ensure_upper_bound(value)
         if value > MAX_VALUE
