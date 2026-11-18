@@ -34,6 +34,7 @@ module Concurrent
     class ValidationError < Error
       def initialize(message = nil)
         message ||= 'invalid value'
+        super(message)
       end
     end
 
