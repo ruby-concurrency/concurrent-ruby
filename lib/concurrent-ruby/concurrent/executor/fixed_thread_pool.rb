@@ -33,10 +33,15 @@ module Concurrent
 
   # @!macro thread_pool_executor_attr_reader_scheduled_task_count
   #   The number of tasks that have been scheduled for execution on the pool since construction.
+  #   On JRuby this is Java's `ThreadPoolExecutor#getTaskCount`, which is only approximate:
+  #   a task that was just posted to an idle thread may not be counted until it starts.
   #   @return [Integer] The number of tasks that have been scheduled for execution on the pool since construction.
 
   # @!macro thread_pool_executor_attr_reader_completed_task_count
   #   The number of tasks that have been completed by the pool since construction.
+  #   On JRuby this is Java's `ThreadPoolExecutor#getCompletedTaskCount`, which is only approximate.
+  #   A task that was just posted can be missing from both this count and `scheduled_task_count`,
+  #   so the two can be equal while that task has not run yet.
   #   @return [Integer] The number of tasks that have been completed by the pool since construction.
 
   # @!macro thread_pool_executor_method_active_count
