@@ -162,7 +162,7 @@ module Concurrent
         subject = Channel.new(capacity: 10, validator: validator)
         expect{
           subject.put!(42)
-        }.to raise_error(Channel::ValidationError)
+        }.to raise_error(Channel::ValidationError, 'invalid value')
       end
 
       it 'rejects when the validator raises an exception' do
@@ -176,7 +176,7 @@ module Concurrent
       it 'rejects nil' do
         expect {
           subject.put!(nil)
-        }.to raise_error(Channel::ValidationError)
+        }.to raise_error(Channel::ValidationError, 'nil is not a valid value')
       end
     end
 
