@@ -24,6 +24,15 @@ module Concurrent
         def with_block
           yield
         end
+        def echo_kw(msg:)
+          msg
+        end
+        def gather_kw(first, second: nil, **rest)
+          [first, second, rest]
+        end
+        def with_kw_and_block(msg:)
+          yield(msg)
+        end
       end
     end
 
@@ -208,6 +217,28 @@ module Concurrent
         val = subject.async.with_block{ :foo }
         expect(val.value).to eq :foo
       end
+
+      it 'supports methods with keyword arguments' do
+        val = subject.async.echo_kw(msg: :foo)
+        expect(val.value).to eq :foo
+        expect(val).to be_fulfilled
+
+        val = subject.async.gather_kw(:a)
+        expect(val.value).to eq [:a, nil, {}]
+        expect(val).to be_fulfilled
+
+        val = subject.async.gather_kw(:a, second: :b, extra: :c)
+        expect(val.value).to eq [:a, :b, { extra: :c }]
+        expect(val).to be_fulfilled
+
+        val = subject.async.with_kw_and_block(msg: :foo) { |m| [m, :bar] }
+        expect(val.value).to eq [:foo, :bar]
+        expect(val).to be_fulfilled
+
+        val = subject.async.echo({ a: 1 })
+        expect(val.value).to eq({ a: 1 })
+        expect(val).to be_fulfilled
+      end
     end
 
     context '#await' do
@@ -276,6 +307,28 @@ module Concurrent
       it 'supports methods with blocks' do
         val = subject.await.with_block{ :foo }
         expect(val.value).to eq :foo
+      end
+
+      it 'supports methods with keyword arguments' do
+        val = subject.await.echo_kw(msg: :foo)
+        expect(val.value).to eq :foo
+        expect(val).to be_fulfilled
+
+        val = subject.await.gather_kw(:a)
+        expect(val.value).to eq [:a, nil, {}]
+        expect(val).to be_fulfilled
+
+        val = subject.await.gather_kw(:a, second: :b, extra: :c)
+        expect(val.value).to eq [:a, :b, { extra: :c }]
+        expect(val).to be_fulfilled
+
+        val = subject.await.with_kw_and_block(msg: :foo) { |m| [m, :bar] }
+        expect(val.value).to eq [:foo, :bar]
+        expect(val).to be_fulfilled
+
+        val = subject.await.echo({ a: 1 })
+        expect(val.value).to eq({ a: 1 })
+        expect(val).to be_fulfilled
       end
     end
 
