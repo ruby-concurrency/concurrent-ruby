@@ -249,18 +249,26 @@ module Concurrent
           in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
           in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
           in_thread { lock.acquire_read_lock; latch1.count_down; latch2.wait; lock.release_read_lock },
-          in_thread { latch1.wait; lock.acquire_write_lock; good.value = true }
+          in_thread { latch1.wait; lock.with_write_lock { good.value = true } }
         ]
-        wait_up_to(0.5) { threads[3].status == 'sleep' }
-        # The last thread should be waiting to acquire a write lock now...
-        expect(threads[3].status).to eql "sleep"
-        expect(threads[3]).not_to hold(lock).for_write
+        # A failed try can race with the writer updating the counter.
+        new_readers_blocked = lambda do
+          2.times.all? do
+            acquired = lock.try_read_lock
+            lock.release_read_lock if acquired
+            Thread.pass
+            !acquired
+          end
+        end
+        wait_up_to(0.5, &new_readers_blocked)
+        # New readers should be blocked once a writer is queued...
+        expect(new_readers_blocked.call).to be true
         expect(good.value).to be false
         # Throw latch2 and the 3 readers will wake up and all release their read locks...
         latch2.count_down
         wait_up_to(0.5) { good.value }
-        expect(threads[3]).to hold(lock).for_write
         expect(good.value).to be true
+        threads.each(&:join)
       end
     end
 
