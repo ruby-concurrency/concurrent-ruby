@@ -315,6 +315,7 @@ module Concurrent
 
         ivar
       end
+      ruby2_keywords :method_missing if respond_to?(:ruby2_keywords, true)
 
       # Check whether the method is responsive
       #
@@ -380,6 +381,7 @@ module Concurrent
         ivar.wait
         ivar
       end
+      ruby2_keywords :method_missing if respond_to?(:ruby2_keywords, true)
 
       # Check whether the method is responsive
       #
