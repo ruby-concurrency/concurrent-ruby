@@ -726,7 +726,7 @@ module Concurrent
       # For inspection.
       # @!visibility private
       def waiting_threads
-        @Waiters.each.to_a
+        @Waiters.value
       end
 
       # @!visibility private
